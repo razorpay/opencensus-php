@@ -79,8 +79,20 @@ class Core extends Base\Core
 
     protected function getRedisKey($currency)
     {
-        $key = self::EXCHANGE_RATE_KEY . strtoupper($currency);
+        $key = 'currency:' . self::EXCHANGE_RATE_KEY . strtoupper($currency);
 
         return $key;
+    }
+
+    /**
+     * Function to get all rzp supported_currency and the min supported
+     * amount for transaction, code, symbol, exponent
+     * @return array|null
+     */
+    public function getSupportedCurrenciesDetails()
+    {
+        $details = Currency::getDetails();
+
+        return $details;
     }
 }

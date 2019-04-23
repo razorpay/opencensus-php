@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\BankAccount;
 
+use RZP\Models\P2p\Base\Libraries\Card;
 use RZP\Models\P2p\Base\Libraries\Rules;
 use RZP\Models\P2p\Base\Upi\ClientLibrary;
 
@@ -10,17 +11,24 @@ class Credentials
     const CREDS         = 'creds';
     const TYPE          = 'type';
     const SUB_TYPE      = 'sub_type';
+    const ACTION        = 'action';
     const SET           = 'set';
+    const RESET         = 'reset';
+    const CHANGE        = 'change';
     const LENGTH        = 'length';
     const FORMAT        = 'format';
-    const CODE          = 'code';
-    const STRING        = 'string';
-    const KI            = 'ki';
+
+    // Valid Types
+    const PIN           = 'pin';
+    const OTP           = 'otp';
+
+    // Valid SubTypes
+    const SMS           = 'sms';
+    const UPI_PIN       = 'upipin';
+    const ATM_PIN       = 'atmpin';
 
     protected $credDefault = [
-        self::TYPE      => null,
-        self::SUB_TYPE  => null,
-        self::FORMAT    => null,
+        self::FORMAT    => 'ALPHANUM',
         self::LENGTH    => 0,
         self::SET       => false,
     ];
@@ -47,34 +55,56 @@ class Credentials
             self::SUB_TYPE          => 'string',
             self::FORMAT            => 'string',
             self::LENGTH            => 'integer',
-            self::CODE              => 'string',
-            self::STRING            => 'string',
-            self::KI                => 'string',
         ]);
+    }
+
+    public static function actionRules()
+    {
+        $actions = implode(',', self::allowedActions());
+
+        $base = new Rules([
+            self::ACTION => 'required|string|in:' . $actions,
+            Card::CARD   => 'required_unless:action,change|array'
+        ]);
+
+        $rules = Card::rules()->with([
+            Card::EXPIRY_MONTH  => 'required_unless:action,change',
+            Card::EXPIRY_YEAR   => 'required_unless:action,change',
+            Card::LAST6         => 'required_unless:action,change',
+        ]);
+
+        $rules->wrapRules(Card::CARD);
+
+        $rules->merge($base);
+
+        return $rules;
+    }
+
+    public static function allowedActions(): array
+    {
+        return [self::SET, self::RESET, self::CHANGE];
     }
 
     public function setCred(array $cred): self
     {
-        $merged = array_merge($this->credDefault, $cred);
+        $unique = $cred[self::SUB_TYPE];
 
-        $unique = $merged[self::TYPE].$merged[self::SUB_TYPE];
+        $this->creds[$unique] = array_merge($this->credDefault, $cred);
 
-        $merged[ClientLibrary::CL] = $this->getClData($merged);
+        return $this;
+    }
 
-        $this->creds[$unique] = $merged;
+    public function mergeCred(string $unique, array $cred)
+    {
+        $this->creds[$unique] = array_merge($this->credDefault,
+                                            $this->creds[$unique],
+                                            $cred);
 
         return $this;
     }
 
     public function toArray(): array
     {
-        return array_values($this->creds);
-    }
-
-    private function getClData(array $input): array
-    {
-        return [
-            self::FORMAT    => array_get($this->clFormatMap, $input[self::FORMAT])
-        ];
+        return $this->creds;
     }
 }

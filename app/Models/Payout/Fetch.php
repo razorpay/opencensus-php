@@ -21,17 +21,21 @@ class Fetch extends BaseFetch
             Entity::UTR               => 'sometimes|string|max:255',
             Entity::CONTACT_NAME      => 'sometimes|string|max:50',
             Entity::CONTACT_PHONE     => 'sometimes|contact_syntax',
-            Entity::CONTACT_ID        => 'sometimes|public_id|size:19',
             Entity::CONTACT_EMAIL     => 'sometimes|email|max:50',
             Entity::CONTACT_TYPE      => 'sometimes|string',
+            Entity::CONTACT_ID        => 'sometimes|public_id|size:19',
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
+            Entity::BATCH_ID          => 'sometimes|string|public_id|size:20',
             Entity::STATUS            => 'sometimes|string|custom',
             Entity::REFERENCE_ID      => 'sometimes|string|max:40',
+            Entity::PURPOSE           => 'sometimes|string|max:255',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:50',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
+            // Because, dashboard thinks there can be just one mode (live/test).
+            Entity::PAYOUT_MODE     => 'sometimes|string|custom',
         ],
     ];
 
@@ -49,12 +53,15 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID,
             Entity::STATUS,
             Entity::REFERENCE_ID,
+            Entity::PURPOSE,
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
             Entity::MODE,
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
+            Entity::BATCH_ID,
+            Entity::PAYOUT_MODE
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -69,6 +76,7 @@ class Fetch extends BaseFetch
         Entity::TRANSACTION_ID,
         Entity::CONTACT_ID,
         Entity::FUND_ACCOUNT_ID,
+        Entity::BATCH_ID,
     ];
 
     const ES_FIELDS = [
@@ -85,6 +93,7 @@ class Fetch extends BaseFetch
         Entity::METHOD,
         Entity::BALANCE_ID,
         Entity::STATUS,
+        Entity::PURPOSE,
     ];
 
     protected function validateMethod(string $attribute, string $value)
@@ -98,6 +107,11 @@ class Fetch extends BaseFetch
     }
 
     protected function validateMode(string $attribute, string $value)
+    {
+        Mode::validateMode($value);
+    }
+
+    protected function validatePayoutMode(string $attribute, string $value)
     {
         Mode::validateMode($value);
     }

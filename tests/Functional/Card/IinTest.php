@@ -27,6 +27,11 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddIinWithRecurring()
+    {
+        $this->startTest();
+    }
+
     public function testEditIinFailedInvalidMessageType()
     {
         $this->testAddIin();
@@ -69,11 +74,12 @@ class IinTest extends TestCase
             'pin'          => '1',
             'headless_otp' => '1',
             'otp'          => '1',
+            'iframe'       => '1',
             ];
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless', 'charge_at_will']);
 
         $this->startTest();
     }
@@ -194,6 +200,7 @@ class IinTest extends TestCase
             'pin'          => '1',
             'headless_otp' => '1',
             'otp'          => '1',
+            'iframe'       => '1',
         ];
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
@@ -202,7 +209,9 @@ class IinTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('iframe', $response);
     }
 
     public function testGetCardPaymentFlowsFromIin()
@@ -221,7 +230,6 @@ class IinTest extends TestCase
 
         $this->startTest();
     }
-
 
     public function testGetBulkFlows()
     {
@@ -256,7 +264,7 @@ class IinTest extends TestCase
 
         $this->assertEquals([401200], $response['iins']);
 
-         $flows = [
+        $flows = [
             'pin' => '1',
             'headless_otp' => '1',
         ];
@@ -268,6 +276,52 @@ class IinTest extends TestCase
         $this->assertEquals(1, $response['count']);
 
         $this->assertEquals([401200], $response['iins']);
+    }
+
+    public function testBulkFlowsUpdateEnable()
+    {
+        $flows = [
+            'pin' => '1',
+            'otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $flows = [
+            'pin' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('234567', $response);
+
+    }
+
+    public function testBulkFlowsUpdateDisable()
+    {
+        $flows = [
+            'pin' => '1',
+            'otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $flows = [
+            'pin' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('234567', $response);
+
     }
 
     public function startTest($testDataToReplace = [])

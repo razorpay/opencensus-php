@@ -86,6 +86,7 @@ class Validator extends Base\Validator
         'use_queue'           => 'sometimes|boolean',
         'all'                 => 'sometimes|integer',
         'testSettleTimeStamp' => 'sometimes|integer',
+        'logging'             => 'sometimes|boolean',
     ];
 
     protected function validateFailedResponse($attribute, $value)

@@ -7,6 +7,7 @@ use RZP\Models\P2p\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $initiateAddRules;
     protected static $addRules;
     protected static $addSuccessRules;
     protected static $assignBankAccountRules;
@@ -15,6 +16,7 @@ class Validator extends Base\Validator
     protected static $checkAvailabilitySuccessRules;
     protected static $deleteRules;
     protected static $deleteSuccessRules;
+    protected static $initiateCheckAvailabilityRules;
 
     public function rules()
     {
@@ -61,7 +63,14 @@ class Validator extends Base\Validator
         return $this->makeRules([
             Entity::USERNAME        => 'required',
             Entity::HANDLE          => 'required',
-            Entity::GATEWAY_DATA    => 'sometimes',
+        ]);
+    }
+
+    public function makeInitiateAddRules()
+    {
+        return $this->makeRules([
+            Entity::USERNAME        => 'sometimes',
+            Entity::BANK_ACCOUNT_ID => 'required',
         ]);
     }
 
@@ -69,7 +78,7 @@ class Validator extends Base\Validator
     {
         $rules = $this->makeRules([
             Entity::USERNAME        => 'required',
-            Entity::BANK_ACCOUNT_ID => 'sometimes',
+            Entity::BANK_ACCOUNT_ID => 'required',
         ]);
 
         return $rules;
@@ -119,10 +128,11 @@ class Validator extends Base\Validator
     public function makeCheckAvailabilitySuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::SUCCESS     => 'required|boolean|in:1'
+            Entity::USERNAME        => 'required',
+            Entity::HANDLE          => 'required',
+            Entity::AVAILABLE       => 'required',
+            Entity::SUGGESTIONS     => 'sometimes',
         ]);
-
-        $rules->arrayRules(Entity::VPA, $this->makeVpaSuccessRules()->toArray());
 
         return $rules;
     }
@@ -144,4 +154,14 @@ class Validator extends Base\Validator
 
         return $rules;
     }
+
+    public function makeInitiateCheckAvailabilityRules()
+    {
+        $rules = $this->makeRules([
+            Entity::USERNAME    => 'required',
+        ]);
+
+        return $rules;
+    }
+
 }

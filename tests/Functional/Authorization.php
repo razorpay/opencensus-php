@@ -98,6 +98,13 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function batchAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.batch')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function addAppAuthHeaders($hostName)
     {
         if ($hostName === null)
@@ -237,6 +244,34 @@ class Authorization
         }
 
         $this->setSecret($secret);
+
+        $this->basicAuth($key, $secret);
+    }
+
+    /**
+     * Format - (100DemoAccount, rzp_test_partner_TestClientId, TestClientSecret)
+     *
+     * @param      $key
+     * @param null $secret
+     */
+    public function partnerAuth($submerchantId, $key, $secret = null)
+    {
+        $type = 'private';
+
+        $this->key = $key;
+
+        if ($secret === null)
+        {
+            $type = 'public';
+
+            $secret = '';
+        }
+
+        $this->type = $type;
+
+        $this->setSecret($secret);
+
+        $this->addAccountAuth($submerchantId);
 
         $this->basicAuth($key, $secret);
     }

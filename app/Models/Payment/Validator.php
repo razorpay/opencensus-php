@@ -90,12 +90,16 @@ class Validator extends Base\Validator
         'ott'                           => 'sometimes_if:method,cardless_emi|string',
     ];
 
-    protected static $editRules = [
+    protected static $editAcquirerRules = [
         Entity::VPA                  => 'sometimes|string|max:100',
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',
+    ];
+
+    protected static $editRules = [
+        Entity::NOTES                => 'sometimes|notes',
     ];
 
     protected static $captureRules = [
@@ -201,6 +205,10 @@ class Validator extends Base\Validator
         'token_expire_by',
         'auth_type',
         'preferred_auth',
+    ];
+
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
     protected function validateIfsc(array $input)
@@ -498,12 +506,7 @@ class Validator extends Base\Validator
 
         if ($method !== Payment\Method::EMANDATE)
         {
-            if ($amount < 100)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
-                    'amount');
-            }
+            $this->validateInputValues('min_amount_check', $input);
         }
 
         if (($method === Payment\Method::WALLET) and
@@ -892,6 +895,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED,
+                null,
                 [
                     'payment_id'    => $payment->getId(),
                     'status'        => $payment->getStatus(),

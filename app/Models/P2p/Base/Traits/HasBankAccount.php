@@ -35,4 +35,9 @@ trait HasBankAccount
 
         $array[self::BANK_ACCOUNT_ID] = $bankAccountId;
     }
+
+    public function setPublicBankAccountAttribute(array & $array)
+    {
+        $array[self::BANK_ACCOUNT] = $this->bankAccount ? $this->bankAccount->toArrayPublic() : null;
+    }
 }

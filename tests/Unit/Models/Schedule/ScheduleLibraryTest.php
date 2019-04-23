@@ -143,6 +143,8 @@ class ScheduleLibraryTest extends TestCase
 
         $hour = $schedule->getHour();
 
+//        sd($timeObject->getTimestamp(), $timeObject->minute(15)->second(0)->getTimestamp());
+
         return $timeObject->hour($hour)->minute(0)->second(0)->getTimestamp();
     }
 
@@ -159,5 +161,10 @@ class ScheduleLibraryTest extends TestCase
     private function getTimeObjectFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, Timezone::IST);
+    }
+
+    public function testMinuteSchedule()
+    {
+        $this->startScheduleLibraryTest();
     }
 }

@@ -11,6 +11,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 
 class Validator extends Base\Validator
@@ -32,13 +33,13 @@ class Validator extends Base\Validator
         Entity::METHOD                  => 'required|string|max:30',
         Entity::METHOD_TYPE             => 'filled|string|max:10',
         Entity::ISSUER                  => 'filled|string',
-        Entity::NETWORK                 => 'filled|string|max:10',
+        Entity::NETWORK                 => 'sometimes|string|max:10',
         Entity::MIN_AMOUNT              => 'filled|integer|min:0',
         Entity::MAX_AMOUNT              => 'filled|integer|min:1',
         Entity::EMI_DURATION            => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
         Entity::EMI_SUBVENTION          => 'required_only_if:method,emi|in:customer,merchant',
         Entity::IINS                    => 'filled|array',
-        Entity::CURRENCY                => 'filled|in:INR,USD,EUR,SGD',
+        Entity::CURRENCY                => 'filled|string|size:3|custom',
         Entity::COMMENTS                => 'filled|string|max:255',
         Entity::RECURRING               => 'filled|boolean',
         Entity::RECURRING_TYPE          => 'sometimes_if:recurring,1|in:auto,initial',
@@ -492,6 +493,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'load is editable only for sorter rules');
+        }
+    }
+
+    protected function validateCurrency($attribute, $currency)
+    {
+        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'currency not supported');
         }
     }
 

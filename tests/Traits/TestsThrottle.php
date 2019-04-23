@@ -48,7 +48,7 @@ trait TestsThrottle
 
     protected function initRedisConnection()
     {
-        $this->redis = Redis::connection('throttle')->client();
+        $this->redis = Redis::connection()->client();
     }
 
     protected function setRedisGlobalSettings(array $parameters = [K::SKIP => 0, K::MOCK => 0])

@@ -12,16 +12,38 @@ return [
             'url' => '/iins',
             'method' => 'post',
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
             ],
         ],
         'response' => [
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => false,
+            ],
+        ],
+    ],
+
+    'testAddIinWithRecurring' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'content' => [
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => true,
             ],
         ],
     ],
@@ -36,8 +58,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'pin' => true,
-                'otp' => true,
+                'pin'       => true,
+                'otp'       => true,
+                'recurring' => false,
+                'iframe'    => true,
             ],
         ],
     ],
@@ -121,6 +145,7 @@ return [
                 'issuer_name'    => 'HDFC',
                 'emi'            => true,
                 'message_type'   => 'SMS',
+                'recurring'      => false,
             ],
         ],
     ],
@@ -166,7 +191,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 23,
+                'count' => 27,
                 'items' => [
                     [
                     ]
@@ -351,6 +376,52 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testBulkFlowsUpdateEnable' => [
+        'request' => [
+            'url'     => '/iins/flows/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'flow'   => 'otp',
+                'iins'   => ['401200', '401201', '234567'],
+                'action' => 'enable'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '401200' => [
+                                "pin",
+                                "otp",
+                            ],
+                '401201' => [
+                                "pin",
+                                "otp",
+                            ],
+            ],
+        ],
+    ],
+
+    'testBulkFlowsUpdateDisable' => [
+        'request' => [
+            'url'     => '/iins/flows/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'flow'   => 'otp',
+                'iins'   => ['401200', '401201', '234567'],
+                'action' => 'disable'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    '401200' => [
+                                    "pin",
+                    ],
+                    '401201' => [
+                                    "pin",
+                    ],
             ],
         ],
     ]

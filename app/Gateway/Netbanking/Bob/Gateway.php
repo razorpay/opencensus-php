@@ -284,15 +284,22 @@ class Gateway extends Base\Gateway
      */
     protected function parseVerifyResponse(string $body): array
     {
-        $pairs = explode(Constants::VERIFY_PAIR_SEPARATOR, $body);
-
         $content = [];
 
-        foreach ($pairs as $value)
+        if ((strlen($body) === 1) and ($body === 'F'))
         {
-            $pair = explode(Constants::VERIFY_KEY_VALUE_SEPARATOR, $value, 2);
+            $content[ResponseFields::STATUS] = $body;
+        }
+        else
+        {
+            $pairs = explode(Constants::VERIFY_PAIR_SEPARATOR, $body);
 
-            $content[$pair[0]] = $pair[1];
+            foreach ($pairs as $value)
+            {
+                $pair = explode(Constants::VERIFY_KEY_VALUE_SEPARATOR, $value, 2);
+                
+                $content[$pair[0]] = $pair[1];
+            }
         }
 
         return $content;

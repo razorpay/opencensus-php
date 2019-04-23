@@ -21,6 +21,20 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountPartnerAuth' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'description'     => 'VA for tests',
+        'receivers'  => [
+            [
+                'entity' => 'bank_account',
+                'ifsc'   => 'RAZR0000001',
+                'name'   => 'Test virtual account'
+            ],
+        ],
+    ],
+
     'testCreateVirtualAccountForOrder' => [
         'name'            => 'Test Merchant',
         'entity'          => 'virtual_account',

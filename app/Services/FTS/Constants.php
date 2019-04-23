@@ -8,6 +8,8 @@ final class Constants
 
     const VPA                           = 'vpa';
 
+    const CARD                          = 'card';
+
     const TYPE                          = 'type';
 
     const MODE                          = 'mode';
@@ -16,13 +18,15 @@ final class Constants
 
     const AMOUNT                        = 'amount';
 
+    const STATUS                        = 'status';
+
     const PAYOUT                        = 'payout';
+
+    const SAVING                        = 'saving';
 
     const REFUND                        = 'refund';
 
     const ACCOUNT                       = 'account';
-
-    const CHANNEL                       = 'channel';
 
     const TRANSFER                      = 'transfer';
 
@@ -38,7 +42,13 @@ final class Constants
 
     const SOURCE_ID                     = 'source_id';
 
+    const MODE_IMPS                     = 'IMPS';
+
     const SETTLEMENT                    = 'settlement';
+
+    const ISSUER_BANK                   = 'issuer_bank';
+
+    const VAULT_TOKEN                   = 'vault_token';
 
     const SOURCE_TYPE                   = 'source_type';
 
@@ -50,6 +60,8 @@ final class Constants
 
     const ACCOUNT_TYPE                  = 'account_type';
 
+    const STATUS_CREATED                = 'created';
+
     const ACCOUNT_NUMBER                = 'account_number';
 
     const FUND_ACCOUNT_ID               = 'fund_account_id';
@@ -58,6 +70,8 @@ final class Constants
 
     const BENEFICIARY_PIN               = 'beneficiary_pin';
 
+    const STATUS_INITIATED              = 'initiated';
+
     const BENEFICIARY_NAME              = 'beneficiary_name';
 
     const BENEFICIARY_CODE              = 'beneficiary_code';
@@ -65,6 +79,8 @@ final class Constants
     const BENEFICIARY_CITY              = 'beneficiary_city';
 
     const FUND_TRANSFER_ID              = 'fund_transfer_id';
+
+    const PREFERRED_CHANNEL             = 'preferred_channel';
 
     const BENEFICIARY_EMAIL             = 'beneficiary_email';
 

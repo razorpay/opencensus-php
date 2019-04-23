@@ -56,6 +56,12 @@ class Mailable extends BaseMailable
         $app = App::getFacadeRoot();
         $trace = $app['trace'];
 
+        // If mailer is not enabled in config for org but org entry exists then block
+        if ($this->isEmailEnabledForOrg() === false)
+        {
+            return;
+        }
+
         try
         {
             Container::getInstance()->call([$this, 'build']);
@@ -105,6 +111,12 @@ class Mailable extends BaseMailable
      */
     public function queue(Queue $queue)
     {
+        // If mailer is not enabled in config for org but org entry exists then block
+        if ($this->isEmailEnabledForOrg() === false)
+        {
+            return;
+        }
+
         $connection = property_exists($this, 'connection') ? $this->connection : null;
         $queueName  = property_exists($this, 'queue') ? $this->queue : null;
 
@@ -255,5 +267,39 @@ class Mailable extends BaseMailable
                             $this->mode);
 
         return strtolower($variant) === 'on' ? $newView : $oldView;
+    }
+
+    protected function isEmailEnabledForOrg(): bool
+    {
+        $app = App::getFacadeRoot();
+
+        /** @var Trace $trace */
+        $trace = $app['trace'];
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $app['basicauth']->getMerchant();
+
+        $class = get_class($this);
+
+        // Not a merchant flow so let the email be sent, we only block based
+        // on merchant context in the flow and not based on the recipient
+        if (empty($merchant) === true)
+        {
+            $trace->info(TraceCode::NO_MERCHANT_CONTEXT_MAIL, ['mail' => $class]);
+
+            return true;
+        }
+
+        $orgCode = $merchant->org->getCustomCode();
+
+
+        $res = OrgWiseConfig::getEmailEnabledForOrg($orgCode, $class, $merchant);
+
+        if ($res === false)
+        {
+            $trace->info(TraceCode::ORG_MAILER_BLOCKED, ['org_code' => $orgCode, 'mail' => $class]);
+        }
+
+        return $res;
     }
 }

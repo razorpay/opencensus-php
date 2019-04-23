@@ -14,6 +14,7 @@ class Repository extends BaseRepository
 
     protected $proxyFetchParamRules = [
         Entity::ID                => 'filled|string|size:19',
+        Entity::TYPE              => 'filled|string|in:'. Type::IMPLICIT .','. Type::EXPLICIT,
         Entity::STATUS            => 'filled|string|custom',
         Entity::SOURCE_ID         => 'sometimes|string|min:14|max:19',
         Entity::PARTNER_ID        => 'required|string|size:14',

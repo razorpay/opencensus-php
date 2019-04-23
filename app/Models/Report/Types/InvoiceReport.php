@@ -111,6 +111,8 @@ class InvoiceReport extends BaseReport
         $this->invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData(
                                     $this->merchant->getId(), $this->month, $this->year);
 
+        $invoice = null;
+
         if ($this->invoiceBreakup->count() === 0)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -118,14 +120,27 @@ class InvoiceReport extends BaseReport
                 ' for year ' . $this->year . ' and month ' . $this->month);
         }
 
-        $this->invoiceNo = $this->invoiceBreakup[0]->getInvoiceNumber();
+        // we don't consider adjustments to construct basic data of invoice.
+        // finOps can create adjustment at any time. If the records comes first
+        // then entire records will be invalid in terms of date and can create confusion
+        foreach ($this->invoiceBreakup as $invoiceItem)
+        {
+            if ($invoiceItem->getType() !== Invoice\Type::ADJUSTMENT)
+            {
+                $invoice = $invoiceItem;
 
-        $createdTimestamp = $this->invoiceBreakup[0]->getCreatedAt();
+                break;
+            }
+        }
+
+        $this->invoiceNo = $invoice->getInvoiceNumber();
+
+        $createdTimestamp = $invoice->getCreatedAt();
 
         $this->invoiceDate = Carbon::createFromTimestamp($createdTimestamp, Timezone::IST)
                                     ->format('d/m/Y');
 
-        $this->gstin = $this->invoiceBreakup[0]->getGstin();
+        $this->gstin = $invoice->getGstin();
 
         $this->taxComponents = $this->getTaxComponents($this->gstin);
 

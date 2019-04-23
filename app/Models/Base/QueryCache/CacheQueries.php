@@ -22,7 +22,7 @@ trait CacheQueries
                     ->find($id, $columns);
     }
 
-    protected function getCacheTtl(): int
+    public function getCacheTtl(): int
     {
         return E::CACHED_ENTITIES[$this->entity][Constants::TTL] ?? Constants::DEFAULT_QUERY_CACHE_TTL;
     }

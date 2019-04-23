@@ -26,6 +26,8 @@ class Processor extends Base\Core
 
     protected $mutex;
 
+    protected $logging;
+
     /**
      * Merchant keyed by ID for easy access later
      */
@@ -34,6 +36,8 @@ class Processor extends Base\Core
     const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s_%s';
 
     const MUTEX_DAILY_RESOURCE  = 'SETTLEMENT_DAILY_PROCESSING_%s';
+
+    const MUTEX_ADHOC_RESOURCE  = 'SETTLEMENT_ADHOC_PROCESSING_%s';
 
     const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
@@ -44,6 +48,8 @@ class Processor extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->logging = true;
     }
 
     /**
@@ -57,6 +63,8 @@ class Processor extends Base\Core
     public function processDailySettlements(array $input)
     {
         $this->increaseAllowedSystemLimits();
+
+        $this->setTraceStatus($input);
 
         $mutexResource = sprintf(self::MUTEX_DAILY_RESOURCE, $this->mode);
 
@@ -107,6 +115,8 @@ class Processor extends Base\Core
 
     public function process(array $input, $channel)
     {
+        $this->setTraceStatus($input);
+
         $this->preSettlementProcessing($input);
 
         $useQueue = $this->shouldUseQueue($input);
@@ -332,15 +342,16 @@ class Processor extends Base\Core
      * @param string $channel
      * @param array $inMids
      * @param array $notInMids
+     * @param boolean $useLimit
      * @return mixed
      */
     protected function fetchRequiredEntities(
-        int $settledAtCutOff, string $channel, array $inMids = [], array $notInMids = [])
+        int $settledAtCutOff, string $channel, array $inMids = [], array $notInMids = [], $useLimit = false)
     {
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
         $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                    $settledAtCutOff, $channel, $inMids, $notInMids);
+                    $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit);
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
@@ -479,7 +490,9 @@ class Processor extends Base\Core
                                     ->feature
                                     ->findMerchantIdsHavingFeatures([Feature\Constants::BLOCK_SETTLEMENTS]);
 
-        $skipMids = array_merge($dailySetlMids, $skipMfIds, $skipSetlFeatureMids);
+        $skipAdhocMids = $this->getMerchantOnAdhocSettlement();
+
+        $skipMids = array_merge($dailySetlMids, $skipMfIds, $skipSetlFeatureMids, $skipAdhocMids);
 
         return $skipMids;
     }
@@ -553,13 +566,6 @@ class Processor extends Base\Core
             return [true, null];
         }
 
-        $today = Carbon::today(Timezone::IST);
-
-        if (Holidays::isWorkingDay($today) === false)
-        {
-            return [false, Holidays::HOLIDAY_MESSAGE];
-        }
-
         //
         // If the force flag is set,
         // let the settlements go
@@ -568,6 +574,13 @@ class Processor extends Base\Core
             ($input['ignore_time_limit'] === '1'))
         {
             return [true, null];
+        }
+
+        $today = Carbon::today(Timezone::IST);
+
+        if (Holidays::isWorkingDay($today) === false)
+        {
+            return [false, Holidays::HOLIDAY_MESSAGE];
         }
 
         if ($this->isInvalidSettlementTime() === true)
@@ -687,5 +700,127 @@ class Processor extends Base\Core
     protected function shouldUseQueue(array $input)
     {
         return (bool)isset($input['use_queue']) ?? false;
+    }
+
+    public function processAdhocSettlements(array $input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $mutexResource = sprintf(self::MUTEX_ADHOC_RESOURCE, $this->mode);
+
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
+
+        if ($shouldProcess === true)
+        {
+            $data = $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function ()
+                {
+                    return $this->createAdhocSettlements();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+
+        return $data;
+    }
+
+    protected function createAdhocSettlements(): array
+    {
+        $channels = $this->getArrayedChannels();
+
+        $response = $this->makeResponse($channels);
+
+        try
+        {
+            $mids = $this->getMerchantOnAdhocSettlement();
+
+            $merchants = $this->repo->merchant->findMany(
+                $mids,
+                [
+                    MerchantModel\Entity::ID,
+                    MerchantModel\Entity::CHANNEL,
+                    MerchantModel\Entity::HOLD_FUNDS
+                ]);
+
+            $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+            foreach ($merchants as $merchant)
+            {
+                $channel = $merchant->getChannel();
+
+                if ($merchant->getHoldFunds() === true)
+                {
+                    $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_ON_HOLD, ['merchant_id' => $merchant->getId()]);
+
+                    continue;
+                }
+
+                $mid = $merchant->getId();
+
+                $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [$mid], [], true);
+
+                $filteredTxns = $this->processMerchantSettlement($txns, $mid);
+
+                if (isset($filteredTxns[$mid]) === false)
+                {
+                    $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_SKIPPED, ['merchant_id' => $mid]);
+
+                    continue;
+                }
+
+                $setlResponse = $this->createSettlementEntities($filteredTxns, $channel);
+
+                $response[$channel]['count']    += $setlResponse['settlement_count'];
+                $response[$channel]['txnCount'] += $setlResponse['txn_count'];
+            }
+            $this->trace->info(
+                TraceCode::ADHOC_SETTLEMENT_ENTITIES_CREATED,
+                $response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ADHOC_SETTLEMENT_CREATE_FAILED
+            );
+
+            $this->settlementFailure(null, $e, TraceCode::ADHOC_SETTLEMENT_CREATE_FAILED);
+        }
+
+        return $response;
+    }
+
+    protected function getMerchantOnAdhocSettlement()
+    {
+        $mids = $this->repo
+                     ->feature
+                     ->findMerchantIdsHavingFeatures([Feature\Constants::ADHOC_SETTLEMENT]);
+
+        return $mids;
+    }
+
+    public function enableLogs()
+    {
+        $this->logging = true;
+    }
+
+    public function disableLogs()
+    {
+        $this->logging = false;
+    }
+
+    public function isLogEnabled()
+    {
+        return $this->logging;
+    }
+
+    protected function setTraceStatus(array $input)
+    {
+        if (array_key_exists('logging', $input) === true)
+        {
+            $this->logging = (bool)$input['logging'];
+        }
     }
 }

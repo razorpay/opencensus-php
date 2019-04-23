@@ -8,7 +8,7 @@ class DynamicUrlChangeMetric
     const DOGSTATSD_DRIVER       = 'dogstatsd_gateway';
 
     // This is the metric name in which we are pushing the data
-    const NETBANKING_DYNAMIC_URL = 'netbanking_dynamic_url';
+    const NETBANKING_DYNAMIC_URL = 'dynamic_netbanking_url';
 
     // Following are the dimensions that we push in above given metric.
     const BANK_ID                = 'bank_id';
@@ -17,7 +17,9 @@ class DynamicUrlChangeMetric
 
     const BANK_NEW_URL           = 'bank_new_url';
 
-    public function getDimensions($input, $oldUrl, $newUrl)
+    const GATEWAY                = 'gateway';
+
+    public function getDimensions($input, $gateway, $oldUrl, $newUrl)
     {
         $bank = $this->getBank($input);
 
@@ -27,6 +29,7 @@ class DynamicUrlChangeMetric
             self::BANK_ID       => $bank,
             self::BANK_OLD_URL  => $oldUrl,
             self::BANK_NEW_URL  => $newUrl,
+            self::GATEWAY       => $gateway,
         ];
 
         return $dimensions;
@@ -34,17 +37,17 @@ class DynamicUrlChangeMetric
 
     protected function getBank($input)
     {
-        if (isset($input['gateway']['bank']))
+        if (isset($input['payment']['bank']))
         {
-            return $input['gateway']['bank'];
+            return $input['payment']['bank'];
         }
 
         return '';
     }
 
-    public function pushDimensions($input, $oldUrl, $newUrl)
+    public function pushDimensions($input, $gateway, $oldUrl, $newUrl)
     {
-        $dimensions = $this->getDimensions($input, $oldUrl, $newUrl);
+        $dimensions = $this->getDimensions($input, $gateway, $oldUrl, $newUrl);
 
 //        $dynamicUrlMetric = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
 

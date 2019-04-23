@@ -13,6 +13,11 @@ class Type
     const PRICING    = 'pricing';
     const COMMISSION = 'commission';
 
+    protected static $types = [
+        self::PRICING,
+        self::COMMISSION,
+    ];
+
     /**
      * @param string $type
      *
@@ -36,5 +41,10 @@ class Type
         {
             throw new BadRequestValidationFailureException('Invalid type: ' . $type);
         }
+    }
+
+    public static function getTypes()
+    {
+        return self::$types;
     }
 }

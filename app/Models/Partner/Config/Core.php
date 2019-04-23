@@ -113,7 +113,9 @@ class Core extends Base\Core
      */
     public function fetchAllConfigForApp(Application\Entity $application)
     {
-        return $this->repo->partner_config->fetchAllConfigForApp($application->getId());
+        $appIds = [$application->getId()];
+
+        return $this->repo->partner_config->fetchAllConfigForApps($appIds);
     }
 
     /**
@@ -154,7 +156,12 @@ class Core extends Base\Core
             return null;
         }
 
-        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+        $pricingPlan = $this->repo->pricing->getPlan($pricingPlanId);
+
+        if (empty($pricingPlan) === true)
+        {
+            return null;
+        }
 
         return $pricingPlan;
     }
@@ -178,9 +185,27 @@ class Core extends Base\Core
             return null;
         }
 
-        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+        $pricingPlan = $this->repo->pricing->getPlan($pricingPlanId);
 
         return $pricingPlan;
+    }
+
+    public function fetchAllConfigsByPartner(Merchant\Entity $merchant)
+    {
+        if ($merchant->isPartner() === false)
+        {
+            return new Base\PublicCollection;
+        }
+
+        // if the merchant is a partner, there will be at least one partner app
+        $appType         = $merchant->isPurePlatformPartner() ? null : Application\Type::PARTNER;
+
+        $applications    = (new Application\Repository)
+                                    ->findActiveApplicationsByMerchantIdAndType($merchant->getId(), $appType);
+
+        $appIds = $applications->getIds();
+
+        return $this->repo->partner_config->fetchAllConfigForApps($appIds);
     }
 
     protected function validatePricingPlans(array $input)

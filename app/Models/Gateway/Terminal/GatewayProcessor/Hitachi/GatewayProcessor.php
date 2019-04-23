@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi;
 
+use Config;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Terminal\Core;
 use RZP\Models\Terminal\Entity;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\BaseGatewayProcessor;
+use RZP\Trace\TraceCode;
 
 class GatewayProcessor extends BaseGatewayProcessor
 {

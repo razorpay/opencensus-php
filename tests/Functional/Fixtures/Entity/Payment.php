@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Carbon\Carbon;
+
 class Payment extends Base
 {
     use TransactionTrait;
@@ -89,7 +91,7 @@ class Payment extends Base
 
     public function createCardCaptured(array $attributes = array())
     {
-        $time = time();
+        $time = Carbon::now()->getTimestamp();
 
         $createdAt = $time - 10;
         $updatedAt = $time + 10;
@@ -98,7 +100,7 @@ class Payment extends Base
             'authorized_at' => $createdAt + 1,
             'captured_at'   => $updatedAt,
             'created_at'    => $createdAt,
-            'updated_at'    => $updatedAt
+            'updated_at'    => $updatedAt,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -149,6 +151,8 @@ class Payment extends Base
 
     public function createNetbankingAuthorized(array $attributes = array())
     {
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
             'bank'           => 'HDFC',
             'status'         => 'authorized',
@@ -156,8 +160,8 @@ class Payment extends Base
             'method'         => 'netbanking',
             'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
-            'created_at'     => time() - 10,
-            'updated_at'     => time() - 5
+            'created_at'     => $now - 10,
+            'updated_at'     => $now - 5
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -194,14 +198,16 @@ class Payment extends Base
 
     public function createUpiAuthorized(array $attributes = array())
     {
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
             'status'         => 'authorized',
             'gateway'        => 'sharp',
             'method'         => 'upi',
             'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
-            'created_at'     => time() - 10,
-            'updated_at'     => time() - 5
+            'created_at'     => $now - 10,
+            'updated_at'     => $now - 5
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -221,6 +227,8 @@ class Payment extends Base
 
     public function createNetbankingCreated(array $attributes = array())
     {
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
             'bank'           => 'HDFC',
             'status'         => 'created',
@@ -228,8 +236,8 @@ class Payment extends Base
             'method'         => 'netbanking',
             'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
-            'created_at'     => time() - 10,
-            'updated_at'     => time() - 5
+            'created_at'     => $now - 10,
+            'updated_at'     => $now - 5
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -243,6 +251,8 @@ class Payment extends Base
 
     public function createNetbankingFailed(array $attributes = array())
     {
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
             'bank'           => 'HDFC',
             'status'         => 'failed',
@@ -251,8 +261,8 @@ class Payment extends Base
             'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
             'verify_bucket'  => 0,
-            'created_at'     => time() - 10,
-            'updated_at'     => time() - 5
+            'created_at'     => $now - 10,
+            'updated_at'     => $now - 5
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -277,9 +287,11 @@ class Payment extends Base
     {
         $card = $this->fixtures->create('card');
 
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
             'merchant_id'   => '10000000000000',
-            'authorized_at' => time(),
+            'authorized_at' => $now,
             'status'        => 'authorized',
             'terminal_id'   => '1n25f6uN5S1Z5a',
             'card_id'       => $card['id'],
@@ -314,9 +326,11 @@ class Payment extends Base
 
     public function createEmandateAuthorized(array $attributes = array())
     {
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
             'merchant_id'   => '10000000000000',
-            'authorized_at' => time(),
+            'authorized_at' => $now,
             'status'        => 'authorized',
             'terminal_id'   => '1n25f6uN5S1Z5a',
             'method'        => 'emandate',
@@ -360,8 +374,10 @@ class Payment extends Base
 
         $card = $this->fixtures->create('card', $cardAttributes);
 
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
-            'authorized_at' => time(),
+            'authorized_at' => $now,
             'status'        => 'authorized',
             'terminal_id'   => '1n25f6uN5S1Z5a',
             'card_id'       => $card['id'],
@@ -420,10 +436,12 @@ class Payment extends Base
 
     public function createMethodTransfer(array $attributes = [])
     {
+        $now = Carbon::now()->getTimestamp();
+
         $defaultValues = [
             'status'        => 'captured',
             'method'        => 'transfer',
-            'captured_at'   => time(),
+            'captured_at'   => $now,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

@@ -2,11 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use ApiResponse;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
-use View;
+use RZP\Exception\LogicException;
 
 class SubscriptionController extends Controller
 {
@@ -201,8 +203,33 @@ class SubscriptionController extends Controller
 
     public function postUpdateData(string $subscriptionId)
     {
-        //We are proxying this API request to subserv
-        //This should not come here at all, added this method to make sure
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function postPaymentProcess(string $subscriptionId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function postSubscriptionChargeCycle(string $subscriptionId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function postSubscriptionSkipCycle(string $subscriptionId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
     }
 }

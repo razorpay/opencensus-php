@@ -15,8 +15,8 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
+use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Base\PublicCollection;
 
 trait Capture
 {
@@ -216,7 +216,6 @@ trait Capture
                 [
                     'payment_id' => $this->payment->getId(),
                 ]);
-
 
             return $this->mutex->acquireAndRelease(
                 $this->payment->getId(),
@@ -432,6 +431,14 @@ trait Capture
         }
         catch (\Throwable $ex)
         {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYMENT_CAPTURE_FAILURE_EXCEPTION,
+                [
+                    'gateway'       => $data['payment']['gateway'],
+                ]);
+
             $this->handleExceptionOnCapture($data, $ex);
         }
     }
@@ -520,6 +527,7 @@ trait Capture
 
     protected function recordCapture($autoCaptured = false)
     {
+        /** @var Payment\Entity $payment */
         $payment = $this->payment;
 
         $this->repo->transaction(function() use ($payment, $autoCaptured)
@@ -534,7 +542,20 @@ trait Capture
 
             $this->updatePaymentCaptured($payment, $autoCaptured);
 
-            $this->createTransactionFromCapturedPayment($payment);
+            //
+            // We want to take balance lock towards the end of the transaction.
+            //
+            // If you are adding more merchant IDs here, ensure credits stuff is handled in `handleLateBalanceUpdate`.
+            // Currently, since we are doing this only for Dream11, we are not handling credits.
+            // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
+            //
+            if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
+                ($payment->getMerchantId() === Preferences::MID_DREAM11))
+            {
+                $payment->setLateBalanceUpdate();
+            }
+
+            list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
 
             $this->updateOrderAfterCapture($payment);
 
@@ -542,8 +563,33 @@ trait Capture
 
             $this->createPartnerCommission($payment);
 
+            if ($payment->isLateBalanceUpdate() === true)
+            {
+                $this->handleLateBalanceUpdate($txn, $merchantBalance);
+            }
+
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
+    }
+
+    protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)
+    {
+        //
+        // The inspiration for this block of code is from Transaction\Processor\Base
+        // block where `isLateBalanceUpdate` is being used.
+        //
+
+        // NOTE: THIS MUST BE USED ONLY IN PAYMENT CAPTURE FLOW
+        // SINCE THIS DOES NOT HAVE BALANCE GOING NEGATIVE CHECK!
+        $amountToUpdate = $txn->getNetAmount();
+
+        $this->repo->balance->updateBalanceDirectly($merchantBalance, $amountToUpdate);
+
+        // Not updating transaction balance for now and will do it later via offline cron.
+        // $txn->setBalance($merchantBalance->getBalance());
+        // $this->repo->saveOrFail($txn);
+
+        // NOTE: Since we are doing this only for Dream11, we are not handling credits as of now.
     }
 
     /**
@@ -707,8 +753,6 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $feesSplit = new PublicCollection;
-
         list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
         $payment->setTax($txn->getTax());
@@ -719,6 +763,19 @@ trait Capture
             $payment->setFee($txn->getFee());
         }
 
+        // $merchantBalance is required in the caller function only if lateBalanceUpdate is set to true.
+
+        $merchantBalance = null;
+
+        if ($payment->isLateBalanceUpdate() === true)
+        {
+            $merchantId = $txn->getMerchantId();
+
+            $merchantBalance = $this->repo->balance->findOrFail($merchantId);
+
+            $txn->accountBalance()->associate($merchantBalance);
+        }
+
         $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
         $this->repo->saveOrFail($txn);
@@ -726,6 +783,8 @@ trait Capture
         $this->repo->saveOrFail($payment);
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
+
+        return [$txn, $merchantBalance];
     }
 
     protected function setVerifyPaymentIfApplicable(Payment\Entity & $payment)
@@ -943,7 +1002,6 @@ trait Capture
     {
         $paymentBaseAmount = $payment->getBaseAmount();
         $txnFee            = $txn->getFee();
-        $mdrFee            = 0;
 
         switch (true)
         {

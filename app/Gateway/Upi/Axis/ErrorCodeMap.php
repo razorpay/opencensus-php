@@ -22,11 +22,13 @@ class ErrorCodeMap
         Status::VERIFY_REJECT           => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
         Status::CALLBACK_FAILED         => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         Status::CALLBACK_REJECTED       => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+        Status::REFUND_ABSENT           => ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT,
         'A79'                           => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         'A78'                           => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         '077'                           => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         '076'                           => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         '222'                           => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        'ML01'                          => ErrorCode::GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND,
     ];
 
     const CODEMAP = [
@@ -45,11 +47,13 @@ class ErrorCodeMap
         Status::VERIFY_REJECT           => 'Transaction rejected',
         Status::CALLBACK_FAILED         => 'Payment failed',
         Status::CALLBACK_REJECTED       => 'Payment rejected',
+        Status::REFUND_ABSENT           => 'Refund not found',
         'A79'                           => 'REFUND AMOUNT CANNOT BE ZERO OR NEGATIVE',
         'A78'                           => 'DUPLICATE REFUND ID',
         '077'                           => 'RECORD NOT AVAILABLE',
         '076'                           => 'REFUND LIMIT CROSSED',
         '222'                           => 'ERROR WHILE PROCESSING REFUND REQUEST',
+        'ML01'                          => 'Multiple Order Ids found',
     ];
 
 

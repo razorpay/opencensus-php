@@ -339,7 +339,10 @@ class Metric
                 $exc,
                 Trace::ERROR,
                 TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
-                [$action]);
+                [
+                    'action'    => $action ?? 'none',
+                    'gateway'   => $gateway ?? 'none',
+                ]);
         }
     }
 

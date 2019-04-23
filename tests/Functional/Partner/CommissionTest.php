@@ -48,6 +48,19 @@ class CommissionTest extends OAuthTestCase
         $this->assertCommissionData($partner, $subMerchant, $payment, $result['items']);
     }
 
+    public function testGetCommissionById()
+    {
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission();
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/commissions/comm_' . $commission->getId();
+
+        $this->startTest($testData);
+    }
+
     /**
      * commissions across multiple partners should not be accessible by other partners
      */
@@ -164,6 +177,9 @@ class CommissionTest extends OAuthTestCase
     {
         $expected = [
             [
+                'source'      => [
+                    'id' => $source->getPublicId(),
+                ],
                 'merchant'    => [
                     'id' => $subMerchant->getId(),
                 ],

@@ -60,6 +60,9 @@ class CreateCommissionsTable extends Migration
             $table->char(Commission::TRANSACTION_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
+            $table->tinyInteger(Commission::RECORD_ONLY)
+                  ->default(0);
+
             $table->text(Commission::NOTES);
 
             $table->integer(Commission::CREATED_AT);

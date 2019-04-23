@@ -8,6 +8,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Listeners\ApiEventSubscriber;
@@ -150,6 +151,8 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($virtualAccount);
 
+            (new EntityOrigin\Core)->createEntityOrigin($virtualAccount);
+
             return $virtualAccount;
         });
 
@@ -245,6 +248,15 @@ class Core extends Base\Core
 
     protected function validateReceiver(string $receiver, Entity $virtualAccount)
     {
+        //
+        // Don't validate receivers for banking virtual accounts
+        // This has been taken care of previously in validateReceiversForBanking()
+        //
+        if ($virtualAccount->isBalanceTypeBanking() === true)
+        {
+            return;
+        }
+
         switch ($receiver)
         {
             case Receiver::BANK_ACCOUNT:

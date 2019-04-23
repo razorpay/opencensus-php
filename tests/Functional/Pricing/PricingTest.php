@@ -2,13 +2,20 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Event;
+
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 
 class PricingTest extends TestCase
 {
@@ -149,6 +156,9 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /**
+     * check that commission plan can be added to rzp org
+     */
     public function testAddCommissionPlanNBRule()
     {
         $content = $this->createPricingPlan(['type' => 'commission']);
@@ -300,6 +310,16 @@ class PricingTest extends TestCase
         $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
 
         $this->assertNotNull($rule['deleted_at']);
+    }
+
+    /**
+     * Asserts that commission plan cannot be added for non-rzp org
+     */
+    public function testCreateCommissionPlanBySBIOrg()
+    {
+        $this->ba->adminAuth('test', null, null, null, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest();
     }
 
     /**
@@ -493,6 +513,17 @@ class PricingTest extends TestCase
         $this->startTest();
 
         $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
+    public function testGetMerchantPlansWithFilters()
+    {
+        $this->createPricingPlan();
+
+        $this->createCommissionPlan();
+
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -928,7 +959,33 @@ class PricingTest extends TestCase
             'payment_issuer'      => 'HDFC',
             'percent_rate'        => 1000,
             'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay'
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+        ];
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $plan = $plan->toArray();
+
+        $plan['id'] = $plan['plan_id'];
+
+        return $plan;
+    }
+
+    protected function createCommissionPlan($pricingPlan = [])
+    {
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan9',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'commission',
         ];
 
         $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
@@ -1083,5 +1140,72 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testQueryCacheHitForPricingPlan()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertContains(E::PRICING, $tag);
+                }
+            }
+            return true;
+        });
+        //
+        // Asserts that key is inserted into cache
+        //
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertContains(E::PRICING, $tag);
+                }
+            }
+            return true;
+        });
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertNotDispatched(CacheHit::class);
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertContains(
+                        implode(':', [
+                            CacheConstants::QUERY_CACHE_PREFIX,
+                            CacheConstants::DEFAULT_QUERY_CACHE_VERSION,
+                            E::PRICING]),
+                        $e->key
+                    );
+                }
+            }
+            return true;
+        });
     }
 }

@@ -8,10 +8,13 @@ use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
+use RZP\Models\Adjustment\Core as AdjustmentCore;
 
 class Core extends Base\Core
 {
@@ -117,13 +120,77 @@ class Core extends Base\Core
     }
 
     /**
-     * Create a full reversal for a payout
+     * Creates a customer reversal and credits merchant fee.
      *
      * @param Payout\Entity $payout
      *
      * @return Entity
      */
-    public function reverseForPayout(Payout\Entity $payout): Entity
+    private function reverseCustomerPayout(Payout\Entity $payout): Entity
+    {
+        // Not taking a mutex lock because we have select for update on customer and merchant balances and
+        // Reversals are initiated by internal razorpay FTA recon cron.
+        $reversalInput = [
+            Entity::AMOUNT   => $payout->getAmount(),
+            Entity::CURRENCY => $payout->getCurrency(),
+        ];
+
+        $payoutFee = $payout->getFees();
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->setChannel($payout->getChannel());
+
+        $reversal->merchant()->associate($payout->merchant);
+
+        $reversal->entity()->associate($payout);
+
+        $reversal->customer()->associate($payout->customer);
+
+        $reversal = $this->repo->transaction(function () use ($reversal, $payoutFee)
+        {
+            // Creates a customer transaction for crediting the amount debited during the payout.
+            $customerTxn = (new Customer\Transaction\Core)->createForCustomerCredit($reversal,
+                                                                                    $reversal->getAmount(),
+                                                                                    $reversal->getCustomerId(),
+                                                                                    $reversal->merchant);
+            $reversal->transaction()->associate($customerTxn);
+
+            if ($payoutFee > 0)
+            {
+                // Creating the positive adjustment with source as reversal for the merchant fee charged on payout.
+                $this->reverseMerchantFeeForCustomerPayoutReversal($reversal, $payoutFee);
+            }
+
+            $this->repo->saveOrFail($reversal);
+
+            return $reversal;
+        });
+
+        return $reversal;
+    }
+
+    private function reverseMerchantFeeForCustomerPayoutReversal(Entity $reversal, int $payoutFee)
+    {
+        // For crediting customer payout fee we will create a positive adjustment for the merchant.
+        $adjustmentData = [
+            Adjustment\Entity::CURRENCY    => $reversal->getCurrency(),
+            Adjustment\Entity::AMOUNT      => $payoutFee,
+            Adjustment\Entity::DESCRIPTION => 'Credit wallet withdrawal fee amount for payout reversal',
+        ];
+
+        // Create merchant adjustment.
+        (new AdjustmentCore)->createAdjustmentForSource($adjustmentData, $reversal);
+    }
+
+    /**
+     * Creates a merchant payout reversal.
+     *
+     * @param \RZP\Models\Payout\Entity $payout
+     *
+     * @return Entity
+     */
+    private function reverseMerchantPayout(Payout\Entity $payout): Entity
     {
         $reversalInput = [
             Entity::AMOUNT   => $payout->getAmount() + $payout->getFees(),
@@ -149,6 +216,27 @@ class Core extends Base\Core
 
             return $reversal;
         });
+
+        return $reversal;
+    }
+
+    /**
+     * Create a full reversal for a payout
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return Entity
+     */
+    public function reverseForPayout(Payout\Entity $payout): Entity
+    {
+        if ($payout->isCustomerPayout() === true)
+        {
+            $reversal = $this->reverseCustomerPayout($payout);
+        }
+        else
+        {
+            $reversal = $this->reverseMerchantPayout($payout);
+        }
 
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_CREATED,
@@ -179,8 +267,8 @@ class Core extends Base\Core
         $reversal->merchant()->associate($refund->merchant);
         $reversal->entity()->associate($refund);
 
-        // Todo: change below line in refunds balance_id PR - currently refunds does not have any balance
-         $reversal->balance()->associate($refund->merchant->primaryBalance);
+        // Todo: remove null balance check after backfilling is done
+        $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
 
         $reversal = $this->repo->transaction(function() use ($reversal)
         {
@@ -198,8 +286,9 @@ class Core extends Base\Core
             [
                 'refund_id'   => $refund->getId(),
                 'reversal_id' => $reversal->getId(),
-                'payment_id'  => $refund->getPaymentId()
-            ]);
+                'payment_id'  => $refund->getPaymentId(),
+                'balance_id'  =>  $reversal->balance->getId(),
+             ]);
 
         return $reversal;
     }

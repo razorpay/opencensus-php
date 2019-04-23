@@ -515,6 +515,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const DUMMY_VPA = 'dummy@razorpay';
 
+    protected $lateBalanceUpdate = false;
+
     // --------------------- Modifiers ---------------------------------------------
 
     protected function modifyEmail(& $input)
@@ -1039,6 +1041,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
+    }
+
+    public function setLateBalanceUpdate()
+    {
+        $this->lateBalanceUpdate = true;
+    }
+
+    public function isLateBalanceUpdate()
+    {
+        return ($this->lateBalanceUpdate === true);
     }
 
     public function setMetadataKey($key, $value)
@@ -3000,7 +3012,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         parent::verifyIdAndStripSign($id);
 
-        return 'upi.polling.' . $id . '.status';
+        return 'payment:upi.polling.' . $id . '.status';
     }
 
     public static function getCardlessEmiOnetimeTokenCacheKey(string $token): string

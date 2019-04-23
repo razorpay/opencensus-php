@@ -23,6 +23,18 @@ class SharpGatewayTest extends TestCase
 
         $this->gateway = 'sharp';
 
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '400666',
+                'category'      => 'STANDARD',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'recurring'     => '1'
+            ]);
+
         $this->mockCardVault();
     }
 
@@ -481,7 +493,16 @@ class SharpGatewayTest extends TestCase
 
     protected function setupCacheMock($paymentId)
     {
-        $key = 'upi.polling.' . $paymentId . '.status';
+        $key = 'payment:upi.polling.' . $paymentId . '.status';
+
+        $store = Cache::store();
+
+        Cache::shouldReceive('driver')
+            ->andReturnUsing(function() use ($store)
+            {
+                return $store;
+            });
+
 
          Cache::shouldReceive('get')
             ->once()
@@ -523,7 +544,7 @@ class SharpGatewayTest extends TestCase
 
     protected function setupCacheMissMock($paymentId)
     {
-        $key = 'upi.polling.' . $paymentId . '.status';
+        $key = 'payment:upi.polling.' . $paymentId . '.status';
 
         Cache::shouldReceive('get')
             ->once()

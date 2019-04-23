@@ -825,8 +825,6 @@ class MerchantFeeTest extends TestCase
 
         $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT);
 
-         $this->expectException(\RZP\Exception\LogicException::class);
-
         $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT, false, false, 'qr_code');
     }
 
@@ -1407,12 +1405,18 @@ class MerchantFeeTest extends TestCase
 
         $this->assertEquals($expectedTax, $tax);
 
+        $totalFee = 0;
+
         foreach ($feeSplit as $feeSplitComponent)
         {
+            $totalFee += $feeSplitComponent['amount'];
+
             $componentName = $feeSplitComponent['name'];
 
             $this->assertEquals($feeSplitComponent['amount'], $expectedFeeSplit[$componentName]);
         }
+
+        $this->assertEquals($totalFee, $expectedFee);
     }
 
     public function testDebitCardRuleSelectionWithEsAutomatic()

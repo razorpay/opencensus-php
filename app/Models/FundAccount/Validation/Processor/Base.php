@@ -39,6 +39,8 @@ abstract class Base extends Core
         $this->txnCore = new Transaction\Core();
     }
 
+    public abstract function validateRetry();
+
     protected abstract function getAccount();
 
     public abstract function preProcessValidation();
@@ -81,43 +83,20 @@ abstract class Base extends Core
 
     protected function markValidationAsCompleted(string $accountStatus)
     {
-        $this->validation->setAccountStatus($accountStatus);
-
         $this->validation->setStatus(Status::COMPLETED);
 
-        try
-        {
-            // right now we are creating transaction even though we failed because of internal reason
-            $txn = $this->createTransaction();
+        $this->validation->setAccountStatus($accountStatus);
 
-            $this->validation->setFees($txn->getFee());
+        $this->repo->saveOrFail($this->validation);
 
-            $this->validation->setTax($txn->getTax());
-        }
-        catch (\Exception $ex)
-        {
-            // This might happen probably because of insufficient Fee Credits/Balance
-            $traceArray = [
-                'validation_id' => $this->validation->getId(),
-                'message'       => $ex->getMessage(),
-            ];
-
-            $this->trace->traceException(
-                $ex, Logger::CRITICAL, TraceCode::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED, $traceArray);
-
-            $this->slack->queue(
-                TraceCode::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED,
-                $traceArray,
-                Constants::slackSettings()
-            );
-        }
+        $this->triggerValidationCompletedWebhook();
     }
 
     /**
      * @return Transaction\Entity
      * @throws Exception\LogicException
      */
-    protected function createTransaction(): Transaction\Entity
+    public function createTransaction(): Transaction\Entity
     {
         list ($txn, $feeSplit) = $this->txnCore->createTransactionForSource($this->validation);
 

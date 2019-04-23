@@ -75,6 +75,7 @@ return [
         'bt_kotak',
         'bajajfinserv',
         'p2p_upi_sharp',
+        'p2p_upi_axis',
         'paysecure',
     ],
 
@@ -140,8 +141,17 @@ return [
     'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
     'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
+    'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
+
+    'p2p_upi_axis' => [
+        'bank_public_key'           => env('P2P_UPI_AXIS_BANK_PUBLIC_KEY'),
+        'merchant_private_key'      => env('P2P_UPI_AXIS_MERCHANT_PRIVATE_KEY'),
+        'merchant_id'               => env('P2P_UPI_AXIS_MERCHANT_ID'),
+        'merchant_channel_id'       => env('P2P_UPI_AXIS_MERCHANT_CHANNEL_ID'),
+        'merchant_category_code'    => env('P2P_UPI_AXIS_MERCHANT_CATEGORY_CODE'),
+    ],
 
     'hdfc' => [
         'test_terminal_id'                 => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
@@ -346,7 +356,7 @@ return [
         'live_client_secret'                => env('UPI_RBL_LIVE_CLIENT_SECRET'),
         'cert_dir_name'                     => env('UPI_RBL_GATEWAY_CERT_DIR'),
     ],
-    
+
     'upi_yesbank' => [
         'test_merchant_id'            => env('UPI_YESBANK_TEST_MERCHANT_ID'),
         'live_merchant_id'            => env('UPI_YESBANK_LIVE_MERCHANT_ID'),
@@ -553,9 +563,19 @@ return [
     ],
 
     'netbanking_kotak' => [
-        'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret_tpv' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+        'live_hash_secret'          => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'          => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret_tpv'      => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+
+        'live_encrypt_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_ENCRYPT_HASH_SECRET'),
+        'test_encrypt_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_ENCRYPT_HASH_SECRET'),
+
+        'test_verify_hash_secret'   => env('NETBANKING_KOTAK_GATEWAY_TEST_VERIFY_HASH_SECRET'),
+
+        'test_token_client_id'      => env('NETBANKING_KOTAK_GATEWAY_TEST_TOKEN_CLIENT_ID'),
+        'test_token_client_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_TOKEN_SECRET'),
+        'live_token_client_id'      => env('NETBANKING_KOTAK_GATEWAY_LIVE_TOKEN_CLIENT_ID'),
+        'live_token_client_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_TOKEN_SECRET'),
     ],
 
     'netbanking_bob' => [
@@ -719,6 +739,36 @@ return [
         '8STmhcK1Gd1JVo' => [
             'gateway_merchant_id'           => 'Wibmo_Goomo_Axis_Expay',
             'gateway_merchant_name'         => 'Goomo_Axis_Expay',
+        ],
+
+        'C1fjEduvEkBUEK' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fmOZYiZiezoD' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fnUMHBmitlPB' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fo6ARXco94tP' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fp6DAnDH4YUz' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fq8jgl8NRKnh' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
         ],
 
         'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),

@@ -325,14 +325,9 @@ class GatewayStatus extends BaseStatus
         self::RZP_DUPLICATE_PAYOUT              => 'Duplicate reference id passed. Reference id needs to be unique',
         self::RZP_FTA_REQUEST_INVALID           => 'Payout failed. Contact support for help.',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_TIMED_OUT              => 'Payout request timed out. Try again later',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'Payout request timed out. Try again later',
-        self::RZP_RESPONSE_DECRYPTION_FAILED    => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_UNKNOWN_ERROR          => 'Payout failed. Contact support for help.',
         self::RZP_REF_ID_MISMATCH               => 'Payout failed. Contact support for help.',
         self::RZP_AMOUNT_MISMATCH               => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_VERIFY_TIMED_OUT       => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE => 'Payout failed. Contact support for help.',
     ];
 
     const FAILURE_CODE_INTERNAL_MAPPING = [
@@ -485,7 +480,7 @@ class GatewayStatus extends BaseStatus
         self::U45                               => 'Form processing has been failed in UPI',
         self::U46                               => 'Request credit is not found',
         self::U47                               => 'Request debit is not found',
-        self::U48                               => 'Transaction is id not present',
+        self::U48                               => 'Transaction id not present',
         self::U49                               => 'Request message id is not present',
         self::U50                               => 'IFSC is not present',
         self::U51                               => 'Request refund is not found',
@@ -569,14 +564,9 @@ class GatewayStatus extends BaseStatus
         self::RZP_DUPLICATE_PAYOUT              => 'RZP: A payout with given reference Id already exists',
         self::RZP_FTA_REQUEST_INVALID           => 'RZP: payout fta request is invalid',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'RZP: request encryption failure',
-        self::RZP_PAYOUT_TIMED_OUT              => 'RZP: payout request timed out',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'RZP: payout request failed',
-        self::RZP_RESPONSE_DECRYPTION_FAILED    => 'RZP: response decryption failed',
-        self::RZP_PAYOUT_UNKNOWN_ERROR          => 'RZP: fatal error, please contact gateway',
         self::RZP_REF_ID_MISMATCH               => 'RZP: Validation error, ref id mismatch',
         self::RZP_AMOUNT_MISMATCH               => 'RZP: amount mismatch',
-        self::RZP_PAYOUT_VERIFY_TIMED_OUT       => 'RZP: verify payout timed out',
-        self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE => 'RZP: verify payout request failed',
     ];
 
     public static function getSuccessfulStatus(): array
@@ -595,6 +585,8 @@ class GatewayStatus extends BaseStatus
     public static function getCriticalErrorStatus(): array
     {
        return [
+           self::RZP_PAYOUT_VERIFY_TIMED_OUT,
+           self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE,
            self::RZP_DUPLICATE_PAYOUT,
            self::RZP_FTA_REQUEST_INVALID,
            self::RZP_REQUEST_ENCRYPTION_FAILURE,

@@ -39,7 +39,8 @@ class Core extends Base\Core
 
             $sourceType = $vpa->getEntityType();
 
-            switch ($sourceType)
+            //TODO:: Enable it once fts is live
+            /*switch ($sourceType)
             {
                 case Constants\Entity::CONTACT:
                     CreateAccount::dispatch($this->mode, $id, Type::VPA, Constants\Entity::PAYOUT);
@@ -53,6 +54,7 @@ class Core extends Base\Core
                     'vpa_id'      => $id,
                     'source_type' => $sourceType,
                 ]);
+            */
         }
         catch(\Throwable $e)
         {

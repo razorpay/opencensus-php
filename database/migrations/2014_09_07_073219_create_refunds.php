@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Reversal\Entity as Reversal;
 use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Merchant\Balance\Entity as Balance;
 
 class CreateRefunds extends Migration
 {
@@ -96,6 +97,9 @@ class CreateRefunds extends Migration
             $table->integer(Refund::REFERENCE6)
                   ->nullable();
 
+            $table->char(Refund::BALANCE_ID, Balance::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Refund::SETTLED_BY)
                   ->nullable();
 
@@ -112,6 +116,9 @@ class CreateRefunds extends Migration
             $table->char(Refund::REVERSAL_ID, Reversal::ID_LENGTH)
                   ->nullable();
 
+            $table->tinyInteger(Refund::IS_SCROOGE)
+                  ->default(0);
+
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 
@@ -126,6 +133,7 @@ class CreateRefunds extends Migration
             $table->index(Refund::UPDATED_AT);
             $table->index([Refund::MERCHANT_ID, Refund::CREATED_AT]);
             $table->index(Refund::FTS_TRANSFER_ID);
+            $table->index(Refund::IS_SCROOGE);
 
             $table->unique([Refund::MERCHANT_ID, Refund::RECEIPT]);
 
@@ -143,6 +151,11 @@ class CreateRefunds extends Migration
                   ->references(Transaction::ID)
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
+
+            $table->foreign(Refund::BALANCE_ID)
+                ->references(Balance::ID)
+                ->on(Table::BALANCE)
+                ->on_delete('restrict');
         });
     }
 
@@ -160,6 +173,8 @@ class CreateRefunds extends Migration
             $table->dropForeign(Table::REFUND.'_'.Refund::PAYMENT_ID.'_foreign');
 
             $table->dropForeign(Table::REFUND.'_'.Refund::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(Table::REFUND.'_'.Refund::BALANCE_ID.'_foreign');
         });
 
         Schema::drop(Table::REFUND);

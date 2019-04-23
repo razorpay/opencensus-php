@@ -267,7 +267,7 @@ class UpiMindgateGatewayTest extends TestCase
         $this->payment['_']['flow'] = 'intent';
 
         // Adding current merchant for test only
-        \Cache::forever('npci_upi_demo',
+        \Cache::forever('config:npci_upi_demo',
                         [
                             'merchants' => [
                                 '10000000000000' => 'https://cdn.razorpay.com/i?',
@@ -276,7 +276,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        \Cache::forget('npci_upi_demo');
+        \Cache::forget('config:npci_upi_demo');
 
         // Co Proto must be working
         $this->assertEquals('intent', $response['type']);
@@ -625,6 +625,9 @@ class UpiMindgateGatewayTest extends TestCase
         $this->refundPayment($payment['id'], 10000);
 
         $refund = $this->getLastEntity('refund', true);
+
+        // Mindgate refunds are processed via scrooge, so is_scrooge will be true
+        $this->assertEquals($refund[RefundEntity::IS_SCROOGE], true);
 
         $this->assertNotNull($refund[PaymentEntity::ACQUIRER_DATA][RefundEntity::RRN]);
     }

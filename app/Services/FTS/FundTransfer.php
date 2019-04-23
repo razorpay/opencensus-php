@@ -2,9 +2,12 @@
 
 namespace RZP\Services\FTS;
 
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Core as VPACore;
+use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -18,6 +21,8 @@ class FundTransfer extends Base
     protected $fta;
 
     protected $source;
+
+    protected $accountType;
 
     const SOURCE_TYPES = [
         Constants::REFUND,
@@ -35,34 +40,56 @@ class FundTransfer extends Base
 
     /**
      * @param string $ftaId
-     * @param string $accountType
      * @param bool   $isRegistered
      * @return array
      * @throws LogicException
      * @throws \RZP\Exception\RuntimeException
      * @throws \Throwable
      */
-    public function requestFundTransfer(string $ftaId, string $accountType, bool $isRegistered): array
+    public function requestFundTransfer(string $ftaId, bool $isRegistered): array
     {
-        $input = $this->makeRequestUsingType($ftaId, $accountType, $isRegistered);
+        $input = $this->makeRequestUsingType($ftaId, $isRegistered);
 
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_CREATE_URI,
             'POST', $input);
 
-        $this->handleResponse($response['body'], $accountType);
+        $this->handleResponse($response['body'], $this->accountType);
 
         return $response;
     }
 
     /**
+     * @return string
+     * @throws LogicException
+     */
+    public function getAccountType(): string
+    {
+        if ($this->fta->hasBankAccount())
+        {
+            return Constants::BANK_ACCOUNT;
+        }
+        else if ($this->fta->hasVpa())
+        {
+            return Constants::VPA;
+        }
+        else if ($this->fta->hasCard())
+        {
+            return Constants::CARD;
+        }
+        else
+        {
+            throw new LogicException('Account Type is not supported ');
+        }
+    }
+
+    /**
      * @param string $ftaId
-     * @param string $type
      * @param bool   $isRegistered
      * @return array
      * @throws LogicException
      */
-    public function makeRequestUsingType(string $ftaId, string $type, bool $isRegistered): array
+    public function makeRequestUsingType(string $ftaId, bool $isRegistered): array
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
@@ -71,6 +98,8 @@ class FundTransfer extends Base
         $this->setSourceEntityByType($sourceType);
 
         $product = $sourceType;
+
+        $this->accountType = $this->getAccountType();
 
         if (($sourceType === Constants::PAYOUT) and
             ($this->fta->isRefund() === true))
@@ -91,7 +120,7 @@ class FundTransfer extends Base
         }
         else
         {
-            switch ($type)
+            switch ($this->accountType)
             {
                 case Constants::BANK_ACCOUNT:
                     $request = $this->addBankAccountDetails($request);
@@ -103,8 +132,13 @@ class FundTransfer extends Base
 
                     break;
 
+                case Constants::CARD:
+                    $request = $this->addCardDetails($request);
+
+                    break;
+
                 default:
-                    throw new LogicException('Account Type is not supported ' . $type);
+                    throw new LogicException('Account Type is not supported ' . $this->accountType);
             }
         }
 
@@ -117,21 +151,27 @@ class FundTransfer extends Base
      */
     protected function addTransferBlock(array $request): array
     {
+        $mode = $this->fta->getMode();
+
+        if(empty($mode) === true)
+        {
+            $mode = Constants::MODE_IMPS;
+        }
 
         $request[Constants::TRANSFER] = [
-            Constants::MODE              => $this->fta->getMode(),
+            Constants::MODE              => $mode,
             Constants::AMOUNT            => $this->source->getAmount(),
-            Constants::CHANNEL           => $this->fta->getChannel(),
             Constants::NARRATION         => $this->fta->getNarration(),
             Constants::SOURCE_ID         => $this->fta->getSourceId(),
             Constants::SOURCE_TYPE       => $this->fta->getSourceType(),
             Constants::INITIATE_AT       => $this->fta->getInitiateAt(),
+            Constants::PREFERRED_CHANNEL => $this->fta->getChannel(),
         ];
 
         return $request;
     }
 
-    public function addFTSFundAccountId(array $request):array
+    protected function addFTSFundAccountId(array $request):array
     {
         $request[Constants::ACCOUNT] = array(
             Constants::FUND_ACCOUNT_ID   => $this->fta->bankAccount->getFtsFundAccountId(),
@@ -140,12 +180,19 @@ class FundTransfer extends Base
         return $request;
     }
 
-    public function addBankAccountDetails(array $request):array
+    protected function addBankAccountDetails(array $request):array
     {
+        $accountType = $this->fta->bankAccount->getAccountType();
+
+        if(empty($accountType) === true)
+        {
+            $accountType = Constants::SAVING;
+        }
+
         $request[Constants::ACCOUNT] = [
                 Constants::BANK_ACCOUNT => [
                         Constants::IFSC_CODE                  => $this->fta->bankAccount->getIfscCode(),
-                        Constants::ACCOUNT_TYPE               => $this->fta->bankAccount->getAccountType(),
+                        Constants::ACCOUNT_TYPE               => $accountType,
                         Constants::ACCOUNT_NUMBER             => $this->fta->bankAccount->getAccountNumber(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
                         Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity(),
@@ -161,13 +208,24 @@ class FundTransfer extends Base
         return $request;
     }
 
-    public function addVpaDetails(array $request):array
+    protected function addVpaDetails(array $request):array
     {
         $request[Constants::ACCOUNT] = [
-
                 Constants::VPA => [
                         Constants::HANDLE       => $this->fta->vpa->getHandle(),
                         Constants::USERNAME     => $this->fta->vpa->getUsername(),
+                ],
+        ];
+
+        return $request;
+    }
+
+    protected function addCardDetails(array $request):array
+    {
+        $request[Constants::ACCOUNT] = [
+                Constants::CARD => [
+                        Constants::ISSUER_BANK => $this->fta->card->getIssuer(),
+                        Constants::VAULT_TOKEN => $this->getCardVaultToken($this->fta->card),
                 ],
         ];
 
@@ -191,7 +249,6 @@ class FundTransfer extends Base
     /**
      * @param array  $responseBody
      * @param string $type
-     * @throws LogicException
      */
     protected function handleResponse(array $responseBody, string $type)
     {
@@ -202,13 +259,19 @@ class FundTransfer extends Base
 
     /**
      * @param array $responseBody
-     * @throws LogicException
      */
     protected function updateFTA(array $responseBody)
     {
         $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
 
-        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody['status']);
+        $responseBody[Constants::STATUS] = strtolower($responseBody[Constants::STATUS]);
+
+        if(strcasecmp($responseBody[Constants::STATUS], Constants::STATUS_CREATED) === 0)
+        {
+            $responseBody[Constants::STATUS] = Constants::STATUS_INITIATED;
+        }
+
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
 
         $this->updateSource($ftsTransferId);
     }
@@ -241,5 +304,38 @@ class FundTransfer extends Base
         $sourceCore = new $sourceCoreClass();
 
         $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
+    }
+
+    /**
+     * If card is used for the 1st time on a RZP gateway then a vault token is generated in card entity.
+     * If vault has been already encountered then vault token is null and a global card id is present.
+     * This contains the vault token generated.
+     * If no vault token is present then null is returned to mark fta as failed.
+     *
+     * @param CardVault $card
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function getCardVaultToken(CardVault $card)
+    {
+        $token = $card->getCardVaultToken();
+
+        if ($token === null)
+        {
+            $this->trace->error(
+                TraceCode::CARD_TOKEN_IS_NOT_AVAILABLE,
+                [
+                    'card_id' => $card->getId()
+                ]);
+
+            (new SlackNotification())->send(
+                'Vault token missing',
+                [
+                    'card_id' => $card->getId()
+                ],
+                null, 1, 'fts_alerts');
+        }
+
+        return $token;
     }
 }

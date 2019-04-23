@@ -101,11 +101,12 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function getAsyncCallbackContent(array $upiEntity, array $payment, string $status = '00')
+    public function getAsyncCallbackContent(array $upiEntity, array $payment, string $status = '00',
+                                            string $result = 'Success')
     {
         $this->action = Action::CALLBACK;
 
-        $content = $this->callbackResponseContent($upiEntity, $payment, $status);
+        $content = $this->callbackResponseContent($upiEntity, $payment, $status, $result);
 
         $this->content($content,'callback');
 
@@ -114,7 +115,7 @@ class Server extends Base\Mock\Server
         return ['data' => $content];
     }
 
-    protected function callbackResponseContent(array $upiEntity, array $payment, string $status)
+    protected function callbackResponseContent(array $upiEntity, array $payment, string $status, string $result)
     {
          $data = [
             Fields::CUSTOMER_VPA                => $upiEntity['vpa'] ?? self::DEFAULT_VPA,
@@ -125,7 +126,7 @@ class Server extends Base\Mock\Server
             Fields::TRANSACTION_AMOUNT          => $this->formatAmount($upiEntity['amount']),
             Fields::GATEWAY_TRANSACTION_ID      => 'AXIS00090439839',
             Fields::GATEWAY_RESPONSE_CODE       => $status,
-            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Success',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => $result,
             Fields::RRN                         => '714513318376',
             Fields::CHECKSUM                    => 'CHECKSUM NOT REQUIRED'
         ];
@@ -168,6 +169,39 @@ class Server extends Base\Mock\Server
         $this->content($response,'verify');
 
         return $this->makeResponse($response, Action::VERIFY);
+    }
+
+    public function verifyRefund($input)
+    {
+        parent::verifyRefund($input);
+
+        $input = $this->parseInput($input, Action::VERIFY);
+
+        $this->request($input, $this->action);
+
+        $app = App::getFacadeRoot();
+
+        $paymentId = $input['unqTxnId'];
+
+        $payment = $app['repo']->payment->find($paymentId);
+
+        $response = $this->getDefaultVerifyRefundResponse($input, $payment);
+
+        $this->content($response,'verify_refund');
+
+        return $this->makeResponse($response, Action::VERIFY);
+    }
+
+    protected function getDefaultVerifyRefundResponse(array $input, $payment): array
+    {
+        return [
+            Fields::CODE => "000",
+            Fields::RESULT => "REFUND REQUEST SUCCESSFUL",
+            Fields::DATA => [
+                Fields::VERIFY_REFUND_ORDER_ID => $payment['id'],
+                Fields::TXN_REFUND_ID => $input['txnRefundId']
+            ]
+        ];
     }
 
     protected function getDefaultVerifyResponse(array $input, $payment): array

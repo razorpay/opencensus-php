@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Mail;
 use Event;
+use Redis;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
@@ -19,6 +20,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -435,6 +437,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmail()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
@@ -463,6 +467,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmailUserExists()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
@@ -3999,5 +4005,157 @@ class MerchantTest extends TestCase
         $this->ba->directAuth();
 
         $this->startTest();
+    }
+
+    public function testInternationalEnable()
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('On');
+
+        $merchantDetailsData = [
+            'business_category'     => 'not_for_profit',
+            'business_subcategory'  => 'educational',
+            'activation_status'     => 'activated',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableWhenAlreadyActive()
+    {
+        $merchantData = [
+            'international'     => 1,
+            'activated'         => 1,
+            'convert_currency'  => false,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableWhenWebsiteNotSet()
+    {
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+            'website'           => ''
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        $merchantDetailsData =[
+            'merchant_id'      => $merchant['id'],
+            'business_website' => '',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalDisable()
+    {
+        $merchantData = [
+            'international'     => 1,
+            'activated'         => 1,
+            'convert_currency'  => false,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalDisableWhenAlreadyInActive()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => false,
+        ];
+
+        $this->fixtures->edit('merchant', $merchant['id'], $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalToggleWithInvalidValue()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    /**
+     * Test case for merchant query cache , verifies that in live and test mode only live cache key is getting
+     * populated.
+     */
+    public function testMerchantCacheSyncInBothMode()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $merchantId = 10000000000000;
+
+        $admin = $this->ba->getAdmin();
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $testKeyValue = Redis::connection()->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection()->get('live:tag:merchant_10000000000000:key');
+
+        $this->assertNull($testKeyValue);
+        $this->assertNotNull($liveKeyValue);
+
+        Redis::connection()->flushdb();
+        Redis::connection()->flushdb();
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_live_' . $merchantId);
+
+        $this->startTest();
+
+        $testKeyValue = Redis::connection()->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection()->get('live:tag:merchant_10000000000000:key');
+
+        $this->assertNull($testKeyValue);
+        $this->assertNotNull($liveKeyValue);
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant\Partner;
 
 use DB;
 use Mail;
+use Carbon\Carbon;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
@@ -232,9 +233,11 @@ class PartnerTest extends OAuthTestCase
 
     public function testApprovingUnmarkAsPartnerMerchantRequest()
     {
+        $submerchant = $this->allowAdminToAccessSubMerchant();
+
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
-        $this->fixtures->merchant->createDummyPartnerApp();
+        $app = $this->fixtures->merchant->createDummyPartnerApp();
 
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
@@ -243,11 +246,47 @@ class PartnerTest extends OAuthTestCase
         // Set the admin auth
         $liveMode = $this->app['basicauth']->getLiveConnection();
 
-        $this->markMerchantAsPartner($merchantId, Merchant\Constants::RESELLER);
+        $this->markMerchantAsPartner($merchantId, Merchant\Constants::AGGREGATOR);
 
         $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
 
         $this->assertTrue($merchant->isPartner());
+
+        // attach a submerchant to the partner and give dashboard access
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        // create mapping on live mode too
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'user_id'     => $submerchantUser['id'],
+            'role'        => 'owner',
+        ], 'live');
+
+        // giving dashboard access
+        $mappingParams = [
+            'role' => 'owner',
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'created_at'  => Carbon::now()->getTimestamp(),
+            'updated_at'  => Carbon::now()->getTimestamp(),
+        ];
+
+        $submerchant->setConnection('test')->users()->attach([$partnerUser['id'] => $mappingParams]);
+        $submerchant->setConnection('live')->users()->attach([$partnerUser['id'] => $mappingParams]);
+
+        $accessMap = [
+            'id'              => 'CMe2wjY0hiWBrL',
+            'entity_type'     => 'application',
+            'entity_id'       => $app->getId(),
+            'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
+        ];
+        $accessMap = $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantUsers = $submerchant->users()->get()->toArrayPublic();
+
+        $this->assertEquals(2, $submerchantUsers['count']);
 
         $this->ba->adminAuth($liveMode);
 
@@ -265,6 +304,21 @@ class PartnerTest extends OAuthTestCase
         $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
 
         $this->assertFalse($merchant->isPartner());
+
+        // test that on unmark, all dashboard access mappings, access maps are deleted
+        $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID, 'live');
+
+        $submerchantUsers = $submerchant->setConnection('test')->users()->get()->toArrayPublic();
+        $this->assertEquals(1, $submerchantUsers['count']);
+
+        $submerchantUsers = $submerchant->setConnection('live')->users()->get()->toArrayPublic();
+        $this->assertEquals(1, $submerchantUsers['count']);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'live');
+        $this->assertNull($accessMapEntity);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'test');
+        $this->assertNull($accessMapEntity);
     }
 
     public function testApprovingPurePlatformActivationRequest()
@@ -425,6 +479,21 @@ class PartnerTest extends OAuthTestCase
         $actualTags = $submerchant->tagNames();
 
         $this->assertEquals($existingTags, $actualTags);
+    }
+
+    public function testPartnerLinkHimselfAsSubmerchant()
+    {
+        $partner = $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testAddPartnerAccessMapForDiffOrgSubmerchant()
@@ -1313,6 +1382,37 @@ class PartnerTest extends OAuthTestCase
 
             return true;
         });
+    }
+
+    public function testGetAffiliatedPartnersForMerchant()
+    {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        // create another partner and attach submerchant
+        $this->fixtures->merchant->createAccount('10000000000001');
+        $this->fixtures->merchant->edit('10000000000001', ['partner_type' => 'reseller']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['id' => '8ckeirnw84ifkf']);
+
+        // Link new submerchants to the partner account
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, '10000000000001');
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        // add one more app for the same partner and map the submerchant to it
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['id' => '8ckeirnw84ifkg']);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, '10000000000001');
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->allowAdminToAccessMerchant('10000000000001');
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $this->startTest();
     }
 
     protected function createMerchantRequest(

@@ -411,6 +411,30 @@ return [
         ],
     ],
 
+    'testPartnerLinkHimselfAsSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000000/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT,
+        ],
+    ],
+
     'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
@@ -1079,5 +1103,30 @@ return [
             'content'     => [],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'testGetAffiliatedPartnersForMerchant' => [
+        'request'  => [
+            'url'    => '/merchants/10000000000009/partners',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'           => '10000000000000',
+                        'entity'       => 'merchant',
+                        'partner_type' => 'fully_managed',
+                    ],
+                    [
+                        'id'           => '10000000000001',
+                        'entity'       => 'merchant',
+                        'partner_type' => 'reseller',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

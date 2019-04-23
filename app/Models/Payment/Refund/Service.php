@@ -33,6 +33,15 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
+    const ENTITIES          = 'entities';
+    const REFUND_IDS        = 'refund_ids';
+    const DB_FETCH_LIMIT    = 'limit';
+    const GATEWAY_ENTITY    = 'gateway_entity';
+    const REFUND_REFERENCE1 = 'refund_reference1';
+
+    const MAX_REFUND_VERIFY_REQUESTS     = 20;
+    const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
+
     protected $mutex;
 
     public function __construct()
@@ -313,6 +322,179 @@ class Service extends Base\Service
         $response = $refund->toArray();
 
         return $response;
+    }
+
+    /*
+     * Sample request:
+     * {
+     *   "refund":["amount"],
+     *   "payment":["reference2"],
+     *   "entities":{
+     *       "card":["iin", "last4"],
+     *       "terminal":["gateway_terminal_id", "gateway_merchant_id"],
+     *       "gateway_entity":{
+     *           "axis_migs":{
+     *               "authorize":["vpc_ReceiptNo"]
+     *               }
+     *           }
+     *       },
+     *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
+     * }
+     *
+     * Sample response:
+     * {
+     *    "C6rXXXXXXXX43": {
+     *        "entities": {
+     *            "refund": {
+     *                "amount": 100
+     *            },
+     *            "payment": {
+     *                "reference2": "54543"
+     *            },
+     *            "card": {
+     *                "iin": "401200",
+     *                "last4": "3335"
+     *            },
+     *            "terminal": {
+     *                "gateway_terminal_id": "test_terminal",
+     *               "gateway_merchant_id": "test_merchant"
+     *           },
+     *           "gateway_entity": {
+     *               "axis_migs": {
+     *             "authorize": {
+     *                       "vpc_ReceiptNo": "492348230fd"
+     *                   }
+     *                }
+     *            }
+     *        }
+     *    }
+     *}
+     */
+    public function scroogeFetchEntities($input)
+    {
+        $responseArray = [];
+
+        $skippedRefunds = [];
+
+        if (isset($input[self::REFUND_IDS]) === true)
+        {
+            foreach ($input[self::REFUND_IDS] as $id)
+            {
+                try
+                {
+                    $refund = $this->repo->refund->findOrFailPublic($id);
+
+                    $refundEntity = $refund->toArrayGateway();
+
+                    $payment = $refund->payment;
+
+                    $paymentEntity = $payment->toArrayGateway();
+
+                    $response = [];
+
+                    if (isset($input[Constants\Entity::REFUND]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::REFUND] as $value)
+                        {
+                            $map[$value] = $refundEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::REFUND] = $map;
+                    }
+
+                    if (isset($input[Constants\Entity::PAYMENT]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::PAYMENT] as $value)
+                        {
+                            $map[$value] = $paymentEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::PAYMENT] = $map;
+                    }
+
+                    if (isset($input[self::ENTITIES]) === true)
+                    {
+                        foreach ($input[self::ENTITIES] as $key => $values)
+                        {
+                            /*
+                             * This is the structure of gateway_entity
+                             * "gateway_entity":{
+                             *           "axis_migs":{
+                             *               "authorize":["vpc_ReceiptNo"]
+                             *               }
+                             *           }
+                             *       },
+                             */
+                            if ($key === self::GATEWAY_ENTITY)
+                            {
+                                foreach ($values as $gatewayEntity => $action)
+                                {
+                                    foreach ($action as $gatewayAction => $columns)
+                                    {
+                                        if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
+                                        {
+                                            $entity = $this->repo
+                                                ->$gatewayEntity
+                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                ->toArray();
+
+                                            $map = [];
+
+                                            foreach ($columns as $column)
+                                            {
+                                                $map[$column] = $entity[$column];
+                                            }
+
+                                            $response[self::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $entity = $payment->$key;
+
+                                $map = [];
+
+                                foreach ($values as $value)
+                                {
+                                    $map[$value] = $entity[$value];
+                                }
+
+                                $response[self::ENTITIES][$key] = $map;
+                            }
+                        }
+                    }
+
+                    $responseArray[$id] = $response;
+                }
+                catch (\Exception $ex)
+                {
+                    array_push($skippedRefunds, [
+                        $id =>
+                            [
+                                'code'    => $ex->getCode(),
+                                'message' => $ex->getMessage()
+                            ]
+                    ]);
+                }
+            }
+        }
+
+        $traceData = [
+            'skipped_refunds'   => $skippedRefunds,
+            'request_count'     => count($input[self::REFUND_IDS] ?? []),
+            'success_count'     => count($responseArray),
+            'failure_count'     => count($skippedRefunds),
+        ];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
+
+        return $responseArray;
     }
 
     public function fetchMultiple($input)
@@ -984,6 +1166,27 @@ class Service extends Base\Service
         ];
     }
 
+    public function update($id, array $input)
+    {
+        $refundId = Entity::verifyIdAndStripSign($id);
+
+        $refund = $this->mutex->acquireAndRelease($refundId,
+            function() use ($refundId, $input)
+            {
+                $refund = $this->repo->refund->findByIdAndMerchant($refundId, $this->merchant);
+
+                $refund->edit($input);
+
+                $this->repo->saveOrFail($refund);
+
+                return $refund;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $refund->toArrayPublic();
+    }
+
     public function updateScroogeRefundStatus(string $refundId, array $input)
     {
         $this->trace->info(
@@ -1118,7 +1321,8 @@ class Service extends Base\Service
                     'event'         => $event,
                     'gateway_keys'  =>
                     [
-                        Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? ''
+                        Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? '',
+                        Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
                     ]
                 ]
             ],
@@ -1265,6 +1469,7 @@ class Service extends Base\Service
     protected function updateRefund($refund, $input)
     {
         if ((empty($input[RefundEntity::BANK_REFERENCE_NO]) === false) and
+            ($input[RefundEntity::BANK_REFERENCE_NO] !== 'NA') and
             (empty($refund->getReference1()) === true))
         {
             $refund->setReference1($input[RefundEntity::BANK_REFERENCE_NO]);
@@ -1273,9 +1478,9 @@ class Service extends Base\Service
 
     public function updateProcessedAt(array $input)
     {
-        if (isset($input['limit']) === true)
+        if (isset($input[self::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input['limit']);
+            $limit = intval($input[self::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1296,9 +1501,9 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_PROCESSED_AT_INITIATED,
             [
-                'start_time' => $start,
-                'limit'      => $limit,
-                'created_at' => $createdAt,
+                'start_time'         => $start,
+                'created_at'         => $createdAt,
+                self::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = $this->repo->refund->updateProcessedAt($limit, $createdAt);
@@ -1324,48 +1529,60 @@ class Service extends Base\Service
 
     public function bulkUpdateRefundsReference1(array $input)
     {
-        if (empty($input['refunds']) === true)
+        $updateFailures = [];
+
+        if (empty($input[self::REFUND_REFERENCE1]) === true)
         {
             return [
-                'success_count' => 0
+                'success_count'       => 0,
+                'time_taken'          => 0,
+                'api_failed_count'    => 0,
+                'api_failures'        => $updateFailures,
             ];
         }
 
         $start = microtime(true);
 
-        $successCount = $failedCount = $validationErrorCount = 0;
-
-        $failedRefundIds = [];
-
-        foreach ($input['refunds'] as $refund)
+        foreach ($input[self::REFUND_REFERENCE1] as $refund)
         {
             if ((empty($refund[Refund\Entity::ID]) === true) or (empty($refund[Refund\Entity::REFERENCE1]) === true))
             {
-                $validationErrorCount += 1;
+                // Format error cases, Adding to failed entities
+                $updateFailures[] = $refund;
 
                 continue;
             }
 
-            $refundEntity = $this->repo->refund->findOrFail($refund[Refund\Entity::ID]);
-
-            $this->trace->info(
-                TraceCode::REFUND_UPDATE_REFERENCE1,
-                [
-                    'refund_id'      => $refund[Refund\Entity::ID],
-                    'old_reference1' => $refundEntity->getReference1(),
-                    'new_reference1' => $refund[Refund\Entity::REFERENCE1],
-                ]
-            );
-
-            if ($this->repo->refund->updateRefundReference1($refund) === 1)
+            try
             {
-                $successCount += 1;
+                $refundEntity = $this->repo->refund->findOrFail($refund[Refund\Entity::ID]);
+
+                if ($refund[Refund\Entity::REFERENCE1] === 'NA')
+                {
+                    $refund[Refund\Entity::REFERENCE1] = null;
+                }
+
+                $this->trace->info(
+                    TraceCode::REFUND_UPDATE_REFERENCE1,
+                    [
+                        'refund_id'      => $refund[Refund\Entity::ID],
+                        'old_reference1' => $refundEntity->getReference1(),
+                        'new_reference1' => $refund[Refund\Entity::REFERENCE1],
+                    ]
+                );
+
+                // Adding to failed entities if reference1 is not as expected and failed to update
+                if (($refundEntity->getReference1() !== $refund[Refund\Entity::REFERENCE1]) and
+                    ($this->repo->refund->updateRefundReference1($refund) !== 1))
+                {
+                    $updateFailures[] = $refund;
+                }
             }
-            else
+            catch (\Exception $exception)
             {
-                $failedCount += 1;
+                $this->trace->traceException($exception);
 
-                $failedRefundIds[] = $refund[Refund\Entity::ID];
+                $updateFailures[] = $refund;
             }
         }
 
@@ -1373,12 +1590,16 @@ class Service extends Base\Service
 
         $processingTime = $end - $start;
 
+        $failedCount = count($updateFailures);
+
+        // Should be modified here if any new entities are created in future.
+        $successCount = count($input[self::REFUND_REFERENCE1]) - $failedCount;
+
         $response = [
-            'success_count'          => $successCount,
-            'failed_count'           => $failedCount,
-            'validation_error_count' => $validationErrorCount,
-            'time_taken'             => $processingTime,
-            'failed_refund_ids'      => $failedRefundIds,
+            'success_count'    => $successCount,
+            'api_failed_count' => $failedCount,
+            'time_taken'       => $processingTime,
+            'api_failures'     => $updateFailures,
         ];
 
         $this->trace->info(
@@ -1391,9 +1612,9 @@ class Service extends Base\Service
 
     public function backfillUpiMindgateReference1(array $input)
     {
-        if (isset($input['limit']) === true)
+        if (isset($input[self::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input['limit']);
+            $limit = intval($input[self::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1435,11 +1656,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_RRN_INITIATED,
             [
-                'start_time' => $start,
-                'limit'      => $limit,
-                'from'       => $from,
-                'to'         => $to,
-                'delay'      => $delay,
+                'start_time'         => $start,
+                'from'               => $from,
+                'to'                 => $to,
+                'delay'              => $delay,
+                self::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = 0;
@@ -1476,7 +1697,7 @@ class Service extends Base\Service
     {
         $gateways = [Payment\Gateway::UPI_MINDGATE, Payment\Gateway::UPI_ICICI];
 
-        $limit = (isset($input['limit']) === true) ? intval($input['limit']) : 500;
+        $limit = (isset($input[self::DB_FETCH_LIMIT]) === true) ? intval($input[self::DB_FETCH_LIMIT]) : 500;
 
         $offset = (isset($input['offset']) === true) ? intval($input['offset']) : 0;
 
@@ -1495,11 +1716,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_SCROOGE_VERIFY_INITIATED,
             [
-                'limit'      => $limit,
-                'from'       => $from,
-                'to'         => $to,
-                'gateways'   => $gateways,
-                'refunds'    => $scroogeRefunds,
+                'from'               => $from,
+                'to'                 => $to,
+                'gateways'           => $gateways,
+                'refunds'            => $scroogeRefunds,
+                self::DB_FETCH_LIMIT => $limit,
             ]);
 
         if (empty($scroogeRefunds) === true)
@@ -1574,5 +1795,185 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BULK_SCROOGE_REFUND_VERIFY_JOB_DISPATCHED, $traceData);
 
         return $traceData;
+    }
+
+    public function validateInputForVerifyRefundsInBulk(array $input)
+    {
+        $data = [
+            'refund_data'     => [],
+            'invalid_refunds' => [],
+            'refund_count'    => 0
+        ];
+
+        foreach ($input['refund_data'] as $refundEntity)
+        {
+            $refundArray = explode (':', $refundEntity);
+
+            $refundId = $refundArray[0];
+
+            try
+            {
+                Refund\Entity::verifyIdAndStripSign($refundId);
+
+                $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+                $payment = $refund->payment;
+
+                $attempts = 1;
+
+                if (($payment->isUpi() === true) and (isset($refundArray[1]) === true))
+                {
+                    $attempts = (int)$refundArray[1];
+                }
+
+                $data['refund_count'] += $attempts;
+
+                $data['refund_data'][] = [
+                    'refund'               => $refund,
+                    RefundEntity::ATTEMPTS => $attempts
+                ];
+            }
+            catch (\Throwable $ex)
+            {
+                $data['invalid_refunds'][] = [
+                    RefundEntity::ID       => $refundId,
+                    'failure_message'      => 'Verify Refund Not Called. Error : ' . $ex->getMessage()
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    public function verifyRefundsInBulk(array $input)
+    {
+        $this->trace->info(TraceCode::BULK_REFUND_VERIFY_REQUEST, $input);
+
+        $data = $this->validateInputForVerifyRefundsInBulk($input);
+
+        $response = [
+            'message'    => 'Request Processed Successfully',
+            'result'     => []
+        ];
+
+        if ($data['refund_count'] > self::MAX_REFUND_VERIFY_REQUESTS)
+        {
+            $response['message'] = 'Maximum refunds that can be verified at once is ' . self::MAX_REFUND_VERIFY_REQUESTS;
+
+            return $response;
+        }
+
+        $fileData = [];
+
+        $refundEntities = $data['refund_data'];
+
+        if (empty($refundEntities) === false)
+        {
+            foreach ($refundEntities as $refundEntity)
+            {
+                $merchant = $refundEntity['refund']->merchant;
+
+                $results = $this->getNewProcessor($merchant)->verifyScroogeRefundWithAttempts($refundEntity['refund'],
+                                                                                              $refundEntity[RefundEntity::ATTEMPTS],
+                                                                                              true);
+
+                array_push($fileData, ...$results);
+            }
+        }
+
+        if (empty($data['invalid_refunds']) === false)
+        {
+            foreach ($data['invalid_refunds'] as $invalidRefund)
+            {
+                $fileData[] = [
+                    'refund_id'         => $invalidRefund[RefundEntity::ID],
+                    'attempt_number'    => 'NA',
+                    'success'           => 'NA',
+                    'payment_id'        => 'NA',
+                    'verify_response'   => $invalidRefund['failure_message']
+                ];
+            }
+        }
+
+        $response['result'] = $fileData;
+
+        return $response;
+    }
+
+    public function isScroogeBackFill(array $input)
+    {
+        $mode = $input['mode'] ?? Mode::LIVE;
+
+        $this->auth->setModeAndDbConnection($mode);
+
+        $limit = (isset($input[self::DB_FETCH_LIMIT]) === true)? intval($input[self::DB_FETCH_LIMIT]) : 5000;
+
+        $isScrooge = (empty($input[RefundEntity::IS_SCROOGE]) === false) ?
+                     ($input[RefundEntity::IS_SCROOGE] === 'true') : true;
+
+        $updatedCount = 0;
+
+        $requestData = [
+            self::DB_FETCH_LIMIT => $limit,
+
+            RefundEntity::IS_SCROOGE => $isScrooge,
+
+            self::ENTITIES => []
+        ];
+
+        $responseData = [];
+
+        if (empty($input[self::ENTITIES]) === false)
+        {
+            foreach ($input[self::ENTITIES] as $gateways)
+            {
+                if ($limit <= 0)
+                {
+                    break;
+                }
+
+                $fromTime = (empty($gateways['from']) === false) ? intval($gateways['from']) : time();
+
+                $toTime = (empty($gateways['to']) === false) ?
+                          intval($gateways['to']) : self::SCROOGE_TAGGING_LIVE_TIMESTAMP;
+
+                $data = [
+                    RefundEntity::GATEWAY    => $gateways[RefundEntity::GATEWAY],
+                    self::DB_FETCH_LIMIT     => $limit,
+                    'from'                   => $fromTime,
+                    'to'                     => $toTime
+                ];
+
+                $requestData[self::ENTITIES][] = $data;
+
+                if ($fromTime > $toTime)
+                {
+                    continue;
+                }
+
+                $count = $this->repo->refund->backfillIsScrooge($data, $isScrooge, true);
+
+                $updatedCount += $count;
+
+                $limit -= $count;
+            }
+        }
+
+        if (empty($input[self::REFUND_IDS]) === false)
+        {
+            $count = $this->repo->refund->backfillIsScrooge($input[self::REFUND_IDS], $isScrooge, false);
+
+            $requestData[self::REFUND_IDS] = $input[self::REFUND_IDS];
+
+            $updatedCount += $count;
+        }
+
+        $responseData['refunds_updated'] = $updatedCount;
+
+        $this->trace->info(TraceCode::REFUND_UPDATE_IS_SCROOGE_REQUEST, $requestData);
+
+        $this->trace->info(TraceCode::REFUND_IS_SCROOGE_UPDATED_COUNT, $responseData);
+
+        return $responseData;
     }
 }

@@ -15,7 +15,7 @@ class Type
     // Request Types to the bank
     // based on these type interaction with nodal account may differ
     const PRIMARY       = 'primary';
-    const BANKIING      = 'banking';
+    const BANKING       = 'banking';
     const SYNC          = 'sync';
 
     protected static $validTypes = [
@@ -23,6 +23,11 @@ class Type
         self::SETTLEMENT,
         self::PAYOUT,
         self::REFUND,
+    ];
+
+    protected static $instantReconEntities = [
+        self::PAYOUT,
+        self::FUND_ACCOUNT_VALIDATION,
     ];
 
     protected static $notifyTypes = [
@@ -36,6 +41,11 @@ class Type
             throw new Exception\InvalidArgumentException(
                 'Not a valid FundTransferAttempt type: ' . $type);
         }
+    }
+
+    public static function isInstantReconEntity(string $type)
+    {
+        return (in_array($type, self::$instantReconEntities, true) === true);
     }
 
     public static function isNotifyType(string $type): bool

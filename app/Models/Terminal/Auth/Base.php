@@ -46,8 +46,7 @@ abstract class Base
         return $validAuths;
     }
 
-
-    public function getAuthenticationTerminals(): array
+    public function getAuthenticationTerminals($terminals): array
     {
         $validAuths = $this->getValidAuths();
 
@@ -57,20 +56,15 @@ abstract class Base
 
         $this->trace->info(TraceCode::AUTH_SELECTION_VALID_AUTHS, $traceData);
 
-        $authTerminals = AuthTerminals::AUTHENTICATION_TERMINALS;
-
         $selectedAuthTerminals = [];
-
-        $gateway = $this->payment->terminal->gateway;
 
         foreach ($validAuths as $auth)
         {
             $terminal = array_filter(
-                            $authTerminals,
-                            function ($terminal) use ($gateway, $auth)
+                            $terminals,
+                            function ($terminal) use ($auth)
                             {
-                                if (($terminal[AuthTerminals::GATEWAY] === $gateway) and
-                                    ($terminal[AuthTerminals::AUTH_TYPE] === $auth))
+                                if ($terminal[AuthTerminals::AUTH_TYPE] === $auth)
                                 {
                                     return true;
                                 }
@@ -81,10 +75,10 @@ abstract class Base
             if (empty($terminal) === false)
             {
                 /*
-                 * head(array_values($terminal)), in the result we get a map with
+                 * in the result we get a map with
                  * index as key and terminal as value
                  */
-                array_push($selectedAuthTerminals, head(array_values($terminal)));
+                 $selectedAuthTerminals = array_merge($selectedAuthTerminals, array_values($terminal));
             }
         }
 
@@ -95,7 +89,7 @@ abstract class Base
 
     public function setAuthsApplicableForMethod()
     {
-        $authType = $this->payment->getAuthType() ?? Payment\AuthType::UNKNOWN ;
+        $authType = $this->payment->getAuthType() ?? Payment\AuthType::UNKNOWN;
 
         $method = $this->payment->getMethod();
 

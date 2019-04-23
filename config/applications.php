@@ -295,4 +295,12 @@ return [
             'fts_secret'        => env('FTS_SECRET_LIVE'),
         ],
     ],
+
+    'batch' => [
+        'secret'            => env('BATCH_API_SECRET'),
+        'mock'              => env('BATCH_MOCK',false),
+        'url'               => env('BATCH_SERVICE_URL'),
+        'username'          => env('BATCH_USERNAME'),
+        'password'          => env('BATCH_PASSWORD'),
+    ],
 ];

@@ -11,6 +11,7 @@ use View;
 
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Environment;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
@@ -93,11 +94,6 @@ class PaymentCreateController extends Controller
             $input['view'] = 'html';
 
             return $this->createFeeBearerCustomerPayment($input);
-        }
-
-        if ($this->app['basicauth']->isPrivateAuth())
-        {
-            $input = $this->service(E::PAYMENT_ANALYTICS)->setMetadataForS2SPayment($input);
         }
 
         $data = $this->service(E::PAYMENT)->process($input);
@@ -591,6 +587,7 @@ class PaymentCreateController extends Controller
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
         $postFormData['name'] = $merchant->getBillingLabel();
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
+        $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);

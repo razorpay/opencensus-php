@@ -259,15 +259,15 @@ class Core extends Base\Core
             // Set the product activation status as pending
             if ($action === Constants::CREATE)
             {
+                $featureStatus = $this->getFeatureStatus($merchant, $featureName);
+
                 $this->updateFeatureActivationStatus(
                     $merchantId,
                     $featureName,
-                    Merchant\Detail\Entity::PENDING);
+                    $featureStatus);
 
                 $saved = true;
             }
-
-            $this->notifyFeatureOnboardingFormSubmitOnSlack($merchant, $featureName);
         }
 
         return $saved;
@@ -750,40 +750,6 @@ class Core extends Base\Core
         return true;
     }
 
-    /**
-     * Posts the feature onboarding responses to slack,
-     * We post only when the submission is created by the merchant and not admin
-     *
-     * @param Merchant\Entity $merchant
-     * @param string          $productName
-     */
-    protected function notifyFeatureOnboardingFormSubmitOnSlack(
-        Merchant\Entity $merchant,
-        string $productName)
-    {
-        if ($this->app['basicauth']->isAdminAuth() === false)
-        {
-            $isLive = ($merchant->isLive() === true) ? "true" : "false";
-
-            $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
-
-            $merchantDetails = $merchant->merchantDetail;
-
-            $submitted = (($merchantDetails !== null) and
-                ($merchantDetails->isSubmitted() === true)) ? "true" : "false";
-
-            $data = [
-                'id'                        => $merchant->getId(),
-                'activated'                 => $isActivated,
-                'activation_form_submitted' => $submitted,
-                'live'                      => $isLive,
-                'product'                   => $productName
-            ];
-
-            $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
-        }
-    }
-
     public function getOnboardingQuestions(array $features): array
     {
         $response = [];
@@ -799,5 +765,30 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    /**
+     * Returns applicable feature status . If merchant is in activated state and feature should be auto approve
+     * then returns approved state else returns pending status.
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $featureName
+     *
+     * @return string
+     */
+    private function getFeatureStatus(Merchant\Entity $merchant, string $featureName): string
+    {
+        $featureStatus = Merchant\Detail\Entity::PENDING;
+        //
+        //For instantly activated merchants or already activated merchants instantly approve subscription and
+        //marketplace request.
+        //
+        $merchantRequestCore = new MerchantRequest\Core;
+        if (($merchantRequestCore->isInstantActivationOfProductsEnabled() === true) and
+            (Merchant\Request\Constants::isAutoApproveFeatureRequest($merchant, $featureName)))
+        {
+            $featureStatus = Merchant\Detail\Entity::APPROVED;
+        }
+        return $featureStatus;
     }
 }

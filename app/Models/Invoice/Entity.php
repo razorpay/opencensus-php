@@ -8,13 +8,13 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use RZP\Models\LineItem;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Address;
+use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
@@ -71,6 +71,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_LABEL            = 'merchant_label';
     const ENTITY_TYPE               = 'entity_type';
     const ENTITY_ID                 = 'entity_id';
+    const STATUSES                  = 'statuses';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -805,6 +806,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::PAID);
     }
 
+    public function isPartiallyPaid(): bool
+    {
+        return ($this->getStatus() === Status::PARTIALLY_PAID);
+    }
+
     public function isCancelled(): bool
     {
         return ($this->getStatus() === Status::CANCELLED);
@@ -813,6 +819,23 @@ class Entity extends Base\PublicEntity
     public function isExpired(): bool
     {
         return ($this->getStatus() === Status::EXPIRED);
+    }
+
+    /**
+     * Checks if expiry date has passed irrespective of the status
+     *
+     * @return bool
+     */
+    public function isPastExpireBy(): bool
+    {
+        $expireBy = $this->getExpireBy();
+
+        if (empty($expireBy) === true)
+        {
+            return false;
+        }
+
+        return (Carbon::now()->timestamp > $expireBy);
     }
 
     public function hasCustomer(): bool
@@ -880,7 +903,7 @@ class Entity extends Base\PublicEntity
     public function isTypeOfSubscriptionRegistration(): bool
     {
         return (($this->getEntityType() !== null) and
-               ($this->getRelation("entity") instanceof SubscriptionRegistration\Entity));
+               ($this->getRelation('entity') instanceof SubscriptionRegistration\Entity));
     }
 
     /**
@@ -1054,6 +1077,11 @@ class Entity extends Base\PublicEntity
     public function setSubscriptionId(string $subscriptionId)
     {
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
+    }
+
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
     }
 
     public function setShortUrl(string $shortUrl)

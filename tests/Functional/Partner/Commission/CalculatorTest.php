@@ -2,23 +2,24 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
-use RZP\Models\Partner\Commission\Calculator;
-use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
-use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\Commission\Base;
 
 class CalculatorTest extends OAuthTestCase
 {
     use OAuthTrait;
 
+    /**
+     * @var Base\Engine
+     */
     private $ruleEngine;
 
     public function setUp()
     {
         parent::setUp();
 
-        include_once __DIR__ . "/Base/Engine.php";
+        include_once __DIR__ . '/Base/Engine.php';
 
         $this->ruleEngine = new Base\Engine($this->fixtures);
 
@@ -28,6 +29,21 @@ class CalculatorTest extends OAuthTestCase
     }
 
     public function testImplicitVariable()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitFixed()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitFixedCommissionGreaterThanMerchantFees()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitFixedCommissionIsZero()
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
@@ -51,16 +67,6 @@ class CalculatorTest extends OAuthTestCase
      * Asserts that the commission doesn't get created if neither implicit nor explicit pricing are defined
      */
     public function testImplicitExplicitPricingDoesNotExist()
-    {
-        $this->ruleEngine->execute(__FUNCTION__);
-    }
-
-    public function testCustomerFeeBearer()
-    {
-        $this->ruleEngine->execute(__FUNCTION__);
-    }
-
-    public function testPostpaidFeeModel()
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
@@ -113,4 +119,116 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    /**
+     * Asserts that the calculator does not calculate implicit variable commission if the pricing rule is missing.
+     */
+    public function testMissingPartnerPricingRule()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * Asserts that the commission gets created if implicit pricing is expired and but explicit pricing is defined.
+     */
+    public function testGSTOnCommissionForPaymentWithNoGST()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that explicit commission is calculated correctly
+     */
+    public function testExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that commission is created for record-only model
+     */
+    public function testExplicitRecordOnly()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that gst is being charged for add on commission irrespective of base_amount < 2k
+     */
+    public function testGSTOnExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that explicit commission is calculated correctly for fixed fee instead of percentage commission plan
+     */
+    public function testExplicitFixedFeesType()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that both implicit and explicit commissions are created
+     * if both implicit variable and explicit plans are present
+     */
+    public function testImplicitVariableAndExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that both implicit and explicit commissions are created
+     * if both implicit fixed and explicit plans are present
+     */
+    public function testImplicitFixedAndExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that commissions are not created if total commission greater than base amount
+     */
+    public function testImplicitAndExplicitGreaterThanAmount()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that explicit commission is calculated correctly for recurring payments
+     */
+    public function testExplicitWithAddOnPricingRules()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * Asserts that the implicit commission gets created if the merchant is on a customer fee bearer model
+     * @throws \Exception
+     */
+    public function testImplicitCustomerFeeBearer()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitVariablePostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitFixedPostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testExplicitPostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitFixedAndExplicitPostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
 }

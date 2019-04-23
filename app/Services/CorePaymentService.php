@@ -6,6 +6,8 @@ use Requests;
 use Requests_Session;
 
 use RZP\Exception;
+use RZP\Constants\Entity;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
@@ -17,9 +19,10 @@ class CorePaymentService
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
+    const X_REQUEST_ID             = 'X-Request-ID';
     const APPLICATION_JSON         = 'application/json';
 
-    const REQUEST_TIMEOUT = 20;
+    const REQUEST_TIMEOUT = 40;
     const MAX_RETRY_COUNT = 1;
 
     // request and response fields
@@ -27,6 +30,7 @@ class CorePaymentService
     const ACTION    = 'action';
     const INPUT     = 'input';
     const DATA      = 'data';
+    const ERROR     = 'error';
 
     protected $baseUrl;
 
@@ -65,6 +69,11 @@ class CorePaymentService
 
     public function action(string $gateway, string $action, array $input)
     {
+        if (empty($input[Entity::TERMINAL]) === false)
+        {
+            $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+        }
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
@@ -84,7 +93,7 @@ class CorePaymentService
             'content' => $data,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
-                self::X_RAZORPAY_MODE_HEADER   => $this->app['rzp.mode'],
+                self::X_REQUEST_ID             => $this->app['request']->getId(),
             ],
         ];
 
@@ -177,14 +186,19 @@ class CorePaymentService
     protected function traceRequest(array $request)
     {
         unset($request['options']['auth']);
-        unset($request['content']['card']);
+        unset($request['content'][self::INPUT]['card']);
+        unset($request['content'][self::INPUT]['gateway_config']);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
 
         $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_REQUEST, $request);
     }
 
-    protected function traceResponse(array $response)
+    protected function traceResponse($response)
     {
-        $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_RESPONSE, $response);
+        $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_RESPONSE, $response ?? []);
     }
 
     protected function throwServiceErrorException(\Throwable $e)
@@ -206,7 +220,7 @@ class CorePaymentService
 
         $responseBody = $this->jsonToArray($response->body);
 
-        if ($code === 200)
+        if ($this->isSuccessResponse($code, $responseBody))
         {
             return $responseBody[self::DATA];
         }
@@ -216,32 +230,59 @@ class CorePaymentService
         }
     }
 
+    protected function isSuccessResponse($code, $responseBody)
+    {
+        if (($code === 200) and
+            (empty($responseBody[self::ERROR]) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function handleBadRequestErrors(array $error)
     {
-        $code = $error['internal_error_code'];
-
-        $field = $error['field'] ?? null;
+        $errorCode = $error['internal_error_code'];
 
         $data = $error['data'] ?? null;
 
         $description = $error['description'] ?? null;
 
-        throw new Exception\BadRequestException($code, $field, $data, $description);
+        if (empty($error['gateway_error_code']) === false)
+        {
+            $this->handleGatewayErrors($error);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                $description,
+                $errorCode,
+                $data);
+        }
     }
 
     protected function handleInternalServerErrors(array $error)
     {
-        $message = $error['description'] ?? 'core payment service request failed';
+        $code = $error['internal_error_code'];
 
-        throw new Exception\ServerErrorException(
-            $message,
-            ErrorCode::SERVER_ERROR_CORE_PAYMENT_SERVICE_FAILURE,
-            $error);
+        $data = $error['data'] ?? null;
+
+        $description = $error['description'] ?? 'core payment service request failed';
+
+        throw new Exception\LogicException(
+            $description,
+            $code,
+            $data);
     }
 
     protected function handleGatewayErrors(array $error)
     {
         $errorCode = $error['internal_error_code'];
+
+        $gatewayErrorCode = $error['gateway_error_code'] ?? null;
+
+        $gatewayErrorDesc = $error['gateway_error_description'] ?? null;
 
         switch ($errorCode)
         {
@@ -252,32 +293,35 @@ class CorePaymentService
                 throw new Exception\GatewayTimeoutException($errorCode);
 
             default:
-                throw new Exception\GatewayErrorException($error['internal_error_code']);
+                throw new Exception\GatewayErrorException($errorCode,
+                                                          $gatewayErrorCode,
+                                                          $gatewayErrorDesc);
         }
     }
 
     protected function checkForErrors($response)
     {
-        $errorCode = $response['internal_error_code'];
+        $errorCode = $response[self::ERROR]['internal_error_code'];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
 
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($response['error']);
+                $this->handleGatewayErrors($response[self::ERROR]);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($response['error']);
+                $this->handleBadRequestErrors($response[self::ERROR]);
                 break;
 
             case ErrorClass::SERVER:
-                $this->handleInternalServerErrors($response['error']);
+                $this->handleInternalServerErrors($response[self::ERROR]);
                 break;
 
             default:
-                throw new Exception\InvalidArgumentException('Not a valid error code class');
+                throw new Exception\InvalidArgumentException('Not a valid error code class',
+                ['errorClass' => $class]);
         }
     }
 

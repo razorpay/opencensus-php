@@ -321,6 +321,28 @@ return [
         ],
     ],
 
+    'testBankTransferToReallyReallyLongPayeeAccount' => [
+        'request' => [
+            'url' => '/ecollect/validate',
+            'method' => 'post',
+            'content' => [
+                'payee_account'  => '11122200123456781112220012345678',
+                'payee_ifsc'     => 'RAZR0000001',
+                'payer_ifsc'     => 'HDFC0000001',
+                'mode'           => 'neft',
+                'transaction_id' => 'vba_4567',
+                'time'           => 148415544000,
+                'amount'         => 50000,
+                'description'    => 'NEFT payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid' => true,
+            ],
+        ],
+    ],
+
     'testBankTransferProcessDuplicateUtr' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',

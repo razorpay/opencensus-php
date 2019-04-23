@@ -13,6 +13,8 @@ class Fields
     const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
     const CATEGORY                  = 'category';
     const NARRATION                 = 'narration';
+    const ACCOUNT_NUMBER            = 'account_number';
+    const IFSC_CODE                 = 'ifsc_code';
 
     // ==== RESPONSE FIELDS FROM GATEWAY SERVICE TO FTS ====
 

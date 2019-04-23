@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\AuthType;
+use RZP\Models\Terminal\Capability;
 
 class AuthenticationTerminals
 {
@@ -19,6 +20,8 @@ class AuthenticationTerminals
     const GATEWAY                = 'gateway';
 
     const GATEWAY_ACQUIRERS      = 'gateway_acquirers';
+
+    const CAPABILITY             = 'capability';
 
     const AUTHENTICATION_TERMINALS = [
         [
@@ -54,6 +57,22 @@ class AuthenticationTerminals
             self::GATEWAY                   => Gateway::HITACHI,
             self::AUTHENTICATION_GATEWAY    => null,
             self::AUTH_TYPE                 => AuthType::SKIP,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::HDFC,
+            self::CAPABILITY                => Capability::AUTHORIZE,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::HDFC,
+            self::CAPABILITY                => Capability::AUTHORIZE,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
         [
@@ -125,6 +144,62 @@ class AuthenticationTerminals
             self::AUTHENTICATION_GATEWAY    => null,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::IVR,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_ENSTAGE,
+            self::AUTH_TYPE                 => AuthType::OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::AXIS_MIGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::AXIS_MIGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::IVR,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::AXIS_MIGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_ENSTAGE,
+            self::AUTH_TYPE                 => AuthType::OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::AXIS_MIGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
         ],
     ];
 }

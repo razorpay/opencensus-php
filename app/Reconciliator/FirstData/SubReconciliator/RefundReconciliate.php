@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\FirstData\SubReconciliator;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\FirstData;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Spine\Exception\DbQueryException;
 
@@ -160,7 +161,29 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getGatewayRefund(string $refundId)
     {
-        $gatewayEntities = $this->repo->first_data->findSuccessfulRefundByRefundId($refundId);
+        try
+        {
+            $gatewayEntities = $this->repo->first_data->findSuccessfulRefundByRefundId($refundId);
+        }
+        catch (LogicException $e)
+        {
+            //
+            // Sometimes we get multiple gateway entities in the above
+            // query to DB, and there we throw Logic Exception.
+            // To avoid abrupt termination of batch processing, just trace it here and
+            // return gateway refund as null, so that the remaining rows can be processed.
+            //
+
+            $this->trace->debug(
+                TraceCode::GATEWAY_REFUND_ENTITY_FETCH_ERROR,
+                [
+                    'message'   => $e->getMessage(),
+                    'refund_id' => $refundId,
+                    'gateway'   => $this->gateway,
+                ]);
+
+            return null;
+        }
 
         if ($gatewayEntities->count() === 0)
         {

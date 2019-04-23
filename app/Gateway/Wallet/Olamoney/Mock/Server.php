@@ -274,10 +274,11 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($this->mockRequest['content']);
 
         $response = [
-            ResponseFields::STATUS          => 'completed',
-            ResponseFields::AMOUNT          => '500.00',
-            ResponseFields::TYPE            => 'debit',
-            ResponseFields::UNIQUE_BILL_ID  => 'bgho5botne16',
+            ResponseFields::STATUS             => 'completed',
+            ResponseFields::AMOUNT             => '500.00',
+            ResponseFields::TYPE               => 'debit',
+            ResponseFields::UNIQUE_BILL_ID     => 'bgho5botne16',
+            ResponseFields::GLOBAL_MERCHANT_ID => 'ek78-s35w-ffm8'
         ];
 
         $this->content($response);

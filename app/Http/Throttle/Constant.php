@@ -19,17 +19,17 @@ final class Constant
     /**
      * Redis key for global settings
      */
-    const GLOBAL_SETTINGS_KEY        = 't';
+    const GLOBAL_SETTINGS_KEY        = 'throttle:t';
 
     /**
      * Redis key prefix for identifier level settings
      */
-    const ID_SETTINGS_KEY_PREFIX     = 't:i:';
+    const ID_SETTINGS_KEY_PREFIX     = 'throttle:t:i:';
 
     /**
      * Key id -> Mid is kept in cache for faster access
      */
-    const KEYID_MID_KEY_PREFIX       = 't:km:';
+    const KEYID_MID_KEY_PREFIX       = 'throttle:t:km:';
 
     const BLOCK                      = 'block';
     const SKIP                       = 'skip';

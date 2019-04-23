@@ -6,13 +6,16 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
+use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
@@ -20,6 +23,7 @@ use RZP\Models\Emi\Subvention as EmiSubvention;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use Cacheable;
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
@@ -64,6 +68,7 @@ class Entity extends Base\PublicEntity
     const NETWORK_CATEGORY              = 'network_category';
     const TYPE                          = 'type';
     const MODE                          = 'mode';
+    const DIRECT                        = 'direct';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -273,11 +278,12 @@ class Entity extends Base\PublicEntity
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
         self::CARDLESS_EMI              => 'boolean',
+        self::DIRECT                    => 'boolean',
     ];
 
     protected $appends = [
         self::SHARED,
-        self::BANKING_TYPES
+        self::BANKING_TYPES,
     ];
 
     protected $publicSetters = [
@@ -342,6 +348,11 @@ class Entity extends Base\PublicEntity
     public function isUsed()
     {
         return $this->getAttribute(self::USED);
+    }
+
+    public function getMerchantId(): string
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getCategory()
@@ -464,27 +475,16 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * For a given merchant, checks if the terminal can be considered direct
-     * for the merchant based on the below two cases
-     * - terminal's primary merchant is given merchant
-     * - any of the sub-merchants of the terminal has this merchant
+     * NOTE: This function must be used with caution.
+     * Any function using this must also use the standard
+     * repo function `addMerchantWhereCondition` and should
+     * also SET the terminal entity's `direct` attribute.
      *
-     * @param  Merchant\Entity $merchant    Merchant entity for which we want to check
-     * @return boolean
+     * @return bool
      */
-    public function isDirectForMerchant(Merchant\Entity $merchant): bool
+    public function isDirectForMerchant(): bool
     {
-        $result = ($merchant->getId() === $this->getAttribute(self::MERCHANT_ID));
-
-        if ($result === false)
-        {
-            $result = $this->merchants->contains(function ($subMerchant) use ($merchant)
-            {
-                return ($merchant->getId() === $subMerchant[Merchant\Entity::ID]);
-            });
-        }
-
-        return $result;
+        return ($this->getAttribute(self::DIRECT) === true);
     }
 
     /**
@@ -504,7 +504,7 @@ class Entity extends Base\PublicEntity
             return true;
         }
 
-        return $this->isDirectForMerchant($merchant);
+        return $this->isDirectForMerchant();
     }
 
     /**
@@ -726,6 +726,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENABLED] = $status;
     }
 
+    public function setDirectForMerchant($isDirect)
+    {
+        $this->attributes[self::DIRECT] = $isDirect;
+    }
+
     protected function setTypeAttribute($type)
     {
         $hex = 0;
@@ -792,7 +797,7 @@ class Entity extends Base\PublicEntity
         if ((empty($input[self::GATEWAY]) === false) and
             ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
         {
-            $input[self::TYPE][Type::DIRECT_SETTLEMENT] = '1';
+            $input[self::TYPE][Type::DIRECT_SETTLEMENT_WITH_REFUND] = '1';
         }
     }
 
@@ -1115,7 +1120,18 @@ class Entity extends Base\PublicEntity
 
     public function isDirectSettlement()
     {
-        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT) === true);
+        return (($this->isDirectSettlementWithRefund() === true) or
+                ($this->isDirectSettlementWithoutRefund() === true));
+    }
+
+    public function isDirectSettlementWithRefund(): bool
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT_WITH_REFUND) === true);
+    }
+
+    public function isDirectSettlementWithoutRefund()
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT_WITHOUT_REFUND) === true);
     }
 
     public function isInternational()
@@ -1165,5 +1181,10 @@ class Entity extends Base\PublicEntity
         }
 
         return parent::toArrayAdmin();
+    }
+
+    public static function getCacheTag($id)
+    {
+        return implode('_', [E::TERMINAL, $id]);
     }
 }

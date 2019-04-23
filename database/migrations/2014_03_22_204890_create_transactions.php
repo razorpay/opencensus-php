@@ -172,6 +172,10 @@ class CreateTransactions extends Migration
 
             $table->index(Transaction::GRATIS);
 
+            $table->index(Transaction::DEBIT);
+
+            $table->index(Transaction::CREDIT);
+
             $table->index(Transaction::CREATED_AT);
 
             $table->index(Transaction::UPDATED_AT);

@@ -38,9 +38,13 @@ class AttemptsRecon extends Job
         {
             parent::handle();
 
+            //
+            // fetch all the fta regardless of who processed it
+            // This will only used to reconcile (derive the final state) the fta
+            //
             $fta = $this->repoManager
                         ->fund_transfer_attempt
-                        ->findByIdWithStatus($this->ftaId, Status::INITIATED);
+                        ->findByIdWithStatus($this->ftaId, Status::INITIATED, null);
 
             if ($fta === null)
             {

@@ -6,6 +6,7 @@ use Str;
 use Carbon\Carbon;
 use Requests_Hooks;
 
+use RZP\Gateway\Mpi;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -21,11 +22,14 @@ use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
+    use Base\CardCacheTrait;
     use Base\AuthorizeFailed;
 
     protected $gateway = 'axis_migs';
 
     protected $authorize = true;
+
+    protected $secureCacheDriver;
 
     const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
 
@@ -34,6 +38,8 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $content = $this->getPaymentAuthorizeRequestContent($input);
+
+        $this->gatewayEntity = $this->createGatewayPaymentEntity($content, $input);
 
         $this->addSubMerchantDetails($content, $input);
 
@@ -45,16 +51,38 @@ class Gateway extends Base\Gateway
             return $this->authorizeRecurring($content, $input);
         }
 
-        $request = $this->getAuthRequestArray($content);
+        $authenticationGateway = $this->decideAuthenticationGateway($input);
 
-        $traceRequest = $request;
-        unset($traceRequest['content']['vpc_SecureHash']);
-        unset($traceRequest['content']['vpc_SecureHashType']);
-        unset($traceRequest['content']['vpc_Card']);
-        unset($traceRequest['content']['vpc_CardNum']);
-        unset($traceRequest['content']['vpc_CardExp']);
-        unset($traceRequest['content']['vpc_CardSecurityCode']);
-        unset($traceRequest['content']['vpc_AccessCode']);
+        switch ($authenticationGateway)
+        {
+            case Payment\Gateway::MPI_BLADE:
+            case Payment\Gateway::MPI_ENSTAGE:
+                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+                $this->traceGatewayPaymentRequest($authResponse, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
+                if ($authResponse !== null)
+                {
+                    $this->persistCardDetailsTemporarily($input);
+
+                    return $authResponse;
+                }
+
+                return $this->authorizeNotEnrolled($content, $input);
+                break;
+            default:
+                $request = $this->getAuthRequestArray($content);
+
+                $traceRequest = $request;
+                unset($traceRequest['content']['vpc_SecureHash']);
+                unset($traceRequest['content']['vpc_SecureHashType']);
+                unset($traceRequest['content']['vpc_Card']);
+                unset($traceRequest['content']['vpc_CardNum']);
+                unset($traceRequest['content']['vpc_CardExp']);
+                unset($traceRequest['content']['vpc_CardSecurityCode']);
+                unset($traceRequest['content']['vpc_AccessCode']);
+                break;
+        }
 
         $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
@@ -80,35 +108,158 @@ class Gateway extends Base\Gateway
         $this->checkTransactionResponse($response, $input);
     }
 
+    protected function authorizeNotEnrolled(array $content, array $input)
+    {
+        $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        $this->traceGatewayPaymentResponse(
+            $response, $input, TraceCode::GATEWAY_NOT_ENROLLED_REQUEST);
+
+        $response['received'] = '1';
+
+        $this->gatewayEntity->fill($response);
+
+        $this->repo->saveOrFail($this->gatewayEntity);
+
+        $this->checkTransactionResponse($response, $input);
+    }
+
+    protected function authorizeEnrolled(array $input, array $authResponse)
+    {
+        // Adding dummy callback URL
+        $input['callbackUrl'] = '';
+
+        $content = $this->getPaymentAuthorizeRequestContent($input);
+
+        $this->addAuthenticationData($content, $authResponse);
+
+        $content['vpc_SecureHash'] = $this->generateHash($content);
+        $content['vpc_SecureHashType'] = strtoupper(HashAlgo::SHA256);
+
+        $gatewayEntity = $this->createGatewayPaymentEntity($content, $input);
+
+        $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        $this->traceGatewayPaymentResponse(
+            $response, $input, TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST);
+
+        $response['received'] = '1';
+
+        $gatewayEntity->fill($response);
+
+        $this->repo->saveOrFail($gatewayEntity);
+
+        $this->checkTransactionResponse($response, $input);
+
+        return $response;
+    }
+
+    protected function addAuthenticationData(&$content, $authResponse)
+    {
+        $content['vpc_3DSECI'] = $authResponse[Mpi\Base\Entity::ECI];
+        $content['vpc_3DSXID'] = $authResponse[Mpi\Base\Entity::XID];
+        $content['vpc_3DSenrolled'] = $authResponse[Mpi\Base\Entity::ENROLLED];
+        $content['vpc_3DSstatus'] = $authResponse[Mpi\Base\Entity::STATUS];
+        $content['vpc_VerToken'] = $authResponse[Mpi\Base\Entity::CAVV];
+        $content['vpc_VerType'] = '3DS';
+
+        unset($content['vpc_ReturnURL'], $content['vpc_gateway']);
+    }
+
+    public function otpGenerate(array $input)
+    {
+        if ((isset($input['otp_resend']) === true) and
+            ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
+        return $this->authorize($input);
+    }
+
+    public function otpResend(array $input)
+    {
+        parent::action($input, Base\Action::OTP_RESEND);
+
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        if ($mpiEntity->getGateway() !== Payment\Gateway::MPI_ENSTAGE)
+        {
+            //
+            // This error is consistent with error thrown in otpResend trait
+            throw new Exception\LogicException(
+                'Gateway does not support OTP resend',
+                null,
+                ['payment_id' => $input['payment']['id']]);
+        }
+
+        $authenticationGateway = $mpiEntity->getGateway();
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        return $authResponse;
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
 
-        if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
+        $authenticationGateway = $this->gateway;
+
+        if ($mpiEntity !== null)
         {
-            // Payment fails since vpc_MerchTxnRef not set, throw exception
-            throw new Exception\GatewayErrorException(
-                        Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
         }
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
+        switch ($authenticationGateway)
+        {
+            case Payment\Gateway::MPI_BLADE:
+            case Payment\Gateway::MPI_ENSTAGE:
+                parent::callback($input);
 
-        $expectedAmount = (string) $input['payment']['amount'];
-        $this->assertAmount($expectedAmount, $input['gateway']['vpc_Amount']);
+                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+                $this->setCardNumberAndCvv($input);
+
+                $input['gateway'] = $this->authorizeEnrolled($input, $authResponse);
+                break;
+
+            default:
+                if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
+                {
+                    // Payment fails since vpc_MerchTxnRef not set, throw exception
+                    throw new Exception\GatewayErrorException(
+                        Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                }
+
+                $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
+
+                $expectedAmount = (string) $input['payment']['amount'];
+                $this->assertAmount($expectedAmount, $input['gateway']['vpc_Amount']);
+
+                $this->verifySecureHash($input['gateway']);
+                break;
+        }
 
         $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
-            $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
-
-        $this->verifySecureHash($input['gateway']);
+                    $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
         $input['gateway']['received'] = 1;
         $gatewayPayment->fill($input['gateway']);
         $gatewayPayment->saveOrFail();
 
         return $this->verifyPaymentCallbackResponse($gatewayPayment, $input);
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
     }
 
     public function capture(array $input)
@@ -769,8 +920,6 @@ class Gateway extends Base\Gateway
             'vpc_MerchTxnRef' => $input['payment']['id'],
         ];
 
-        $this->gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
-
         $network = $input['card']['network'];
 
         $content = [
@@ -887,8 +1036,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $this->getNewGatewayPaymentEntity();
 
-        // if ($paymentId )
-        //     $paymentId = $attributes['vpc_MerchTxnRef'];
+        unset($attributes['vpc_Card']);
 
         $paymentId = $input['payment']['id'];
         $attributes['terminal_id'] = $input['terminal']['id'];
@@ -911,11 +1059,15 @@ class Gateway extends Base\Gateway
 
         unset($traceContent['vpc_CardNum']);
         unset($traceContent['vpc_CardExp']);
+        unset($traceContent['vpc_CardSecurityCode']);
 
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
-            ['action' => 'Support action request array',
-            'content' => $traceContent]);
+            [
+                'gateway' => 'axis_migs',
+                'action' => 'Support action request array',
+                'content' => $traceContent
+            ]);
 
         $this->addAmaTransactionFields($content, $input);
 
@@ -971,7 +1123,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        $secret = pack("H*", $this->getSecret());
+        $secret = pack('H*', $this->getSecret());
 
         return strtoupper(hash_hmac(HashAlgo::SHA256, $str, $secret));
     }
@@ -1212,5 +1364,28 @@ class Gateway extends Base\Gateway
                 Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
                 Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
             ]);
+    }
+
+    protected function decideAuthenticationGateway($input)
+    {
+        if (empty($input['authenticate']['gateway']) === false)
+        {
+            $authenticationGateway = $input['authenticate']['gateway'];
+        }
+        else
+        {
+            $authenticationGateway = Payment\Gateway::AXIS_MIGS;
+        }
+
+        return $authenticationGateway;
+    }
+
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
+    {
+        return $this->app['gateway']->call(
+            $authenticationGateway,
+            $this->action,
+            $input,
+            $this->mode);
     }
 }

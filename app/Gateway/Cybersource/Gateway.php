@@ -107,6 +107,19 @@ class Gateway extends Base\Gateway
         return $attr;
     }
 
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
+    }
 
     protected function mapInReverseWay($gatewayPayment)
     {
@@ -145,6 +158,12 @@ class Gateway extends Base\Gateway
 
                     return $authResponse;
                 }
+
+                $this->mpiEntity = $this->app['repo']
+                                        ->mpi
+                                        ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
+
+                $this->validateEci($input, $this->mpiEntity);
 
                 return $this->authorizeNotEnrolled($input);
 
@@ -193,6 +212,42 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function otpGenerate(array $input)
+    {
+        if ((isset($input['otp_resend']) === true) and
+            ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
+        return $this->authorize($input);
+    }
+
+    public function otpResend(array $input)
+    {
+        parent::action($input, Base\Action::OTP_RESEND);
+
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        if ($mpiEntity->getGateway() !== Payment\Gateway::MPI_ENSTAGE)
+        {
+            //
+            // This error is consistent with error thrown in otpResend trait
+            throw new Exception\LogicException(
+                'Gateway does not support OTP resend',
+                null,
+                ['payment_id' => $input['payment']['id']]);
+        }
+
+        $authenticationGateway = $mpiEntity->getGateway();
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        return $authResponse;
+    }
+
     public function capture(array $input)
     {
         parent::action($input, Action::CAPTURE);
@@ -205,6 +260,11 @@ class Gateway extends Base\Gateway
         $input['gateway']['pay_init'] = $this->mapInReverseWay($gatewayPayment);
 
         $this->sendMozartRequest($input);
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
     }
 
     public function callback(array $input)
@@ -274,9 +334,9 @@ class Gateway extends Base\Gateway
 
     public function formatDataForMozart($input, $response)
     {
-        $verifyContent['commerce_indicator']     = $response[Mpi\Base\Entity::ECI];
+        $verifyContent['commerce_indicator']     = $this->getCommerceIndicator($input, $response);
         $verifyContent['authentication_status']  = $response[Mpi\Base\Entity::STATUS];
-        $verifyContent['eci']                    = $response[Mpi\Base\Entity::ECI];
+        $verifyContent['eci']                    = (int) $response[Mpi\Base\Entity::ECI];
         $verifyContent['xid']                    = $response[Mpi\Base\Entity::XID];
         $verifyContent['cavv']                   = $response[Mpi\Base\Entity::CAVV];
 
@@ -286,6 +346,42 @@ class Gateway extends Base\Gateway
         $data['authenticate_init']               = $initContent;
 
         return $data;
+    }
+
+    protected function getCommerceIndicator($input, $response)
+    {
+        $eci = $response[Mpi\Base\Entity::ECI];
+
+        $commerceIndicatorMap = [
+            Card\Network::VISA => [
+                '5'  => 'vbv',
+                '05' => 'vbv',
+                '6'  => 'vbv_attempted',
+                '06' => 'vbv_attempted',
+                '7'  => 'internet',
+                '07' => 'internet',
+            ]
+        ];
+
+        switch($input['card'][Card\Entity::NETWORK_CODE])
+        {
+            case Card\Network::VISA:
+                if (isset($commerceIndicatorMap[Card\Network::VISA][$eci]) === true)
+                {
+                    return $commerceIndicatorMap[Card\Network::VISA][$eci];
+                }
+                else
+                {
+                    return '';
+                }
+            case Card\Network::MC:
+            case Card\Network::MAES:
+                return 'spa';
+            case Card\Network::AMEX:
+                return 'aesk';
+            default:
+                return '';
+        }
     }
 
     protected function decideAuthenticationGateway($input)
@@ -307,7 +403,17 @@ class Gateway extends Base\Gateway
         // not enrolled card. send authorize request using enroll response.
         parent::action($input, 'pay_init');
 
-        $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->gatewayPayment);
+        if (isset($this->mpiEntity) == true)
+        {
+            $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->mpiEntity);
+
+            $input['gateway']['authenticate_init']['commerce_indicator'] =
+                $this->getCommerceIndicator($input, $this->mpiEntity);
+        }
+        else
+        {
+            $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->gatewayPayment);
+        }
 
         $this->sendMozartRequest($input);
     }
@@ -538,7 +644,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
 
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+            $this->createGatewayRefundEntity($gatewayAttributes, $input, $this->action);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -607,7 +713,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
 
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+            $this->createGatewayRefundEntity($gatewayAttributes, $input, $this->action);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -668,10 +774,12 @@ class Gateway extends Base\Gateway
                 if ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal')
                 {
                     $status = Status::REVERSED;
+                    $action = Action::REVERSE;
                 }
                 else if ($refundReply[0]['@attributes'][F::NAME] === 'ics_credit')
                 {
                     $status = Status::REFUNDED;
+                    $action = Action::REFUND;
                 }
                 else
                 {
@@ -705,7 +813,7 @@ class Gateway extends Base\Gateway
                     $attributes = $this->getRefundAttributesFromVerify($responseRequest);
                     $attributes[E::STATUS] = $status;
 
-                    $this->createGatewayRefundEntity($attributes, $input);
+                    $this->createGatewayRefundEntity($attributes, $input, $action);
                 }
 
                 return $scroogeResponse->setSuccess(true)
@@ -976,7 +1084,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes, $input)
+    protected function createGatewayRefundEntity($attributes, $input, $action)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
@@ -994,7 +1102,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setCurrency($currency);
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
 
         $gatewayPayment->setAcquirer($acquirer);
 

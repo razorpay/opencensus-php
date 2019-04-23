@@ -20,7 +20,15 @@ class Validator extends Base\Validator
         'vpc_SecureHash'            => 'required|alpha_num|size:64',
         'vpc_SecureHashType'        => 'required|in:SHA256',
         'vpc_User'                  => 'required|string',
-        'vpc_Password'              => 'required|string'
+        'vpc_Password'              => 'required|string',
+        'vpc_Card'                  => 'required_if:vpc_VerType,3DS|in:MasterCard,Visa',
+        'vpc_CardSecurityCode'      => 'required_if:vpc_VerType,3DS|numeric|digits_between:2,4',
+        'vpc_3DSECI'                => 'required_if:vpc_VerType,3DS',
+        'vpc_3DSXID'                => 'required_if:vpc_VerType,3DS',
+        'vpc_3DSenrolled'           => 'required_if:vpc_VerType,3DS',
+        'vpc_3DSstatus'             => 'required_if:vpc_VerType,3DS',
+        'vpc_VerToken'              => 'required_if:vpc_VerType,3DS',
+        'vpc_VerType'               => 'sometimes|in:3DS'
     ];
 
     protected static $authenticateRules = [

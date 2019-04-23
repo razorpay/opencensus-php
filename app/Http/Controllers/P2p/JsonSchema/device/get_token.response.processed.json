@@ -1,0 +1,18 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "title": "The Root Schema",
+    "required": [
+        "id",
+        "auth_token"
+    ],
+    "properties": {
+        "id" : {"$ref" : "definitions.json#/device_response/id"},
+        "auth_token" : {"$ref" : "definitions.json#/device_response/id"},
+        "status" : {"$ref" : "definitions.json#/device_response/status"},
+        "expire_at" : {"$ref" : "definitions.json#/device_response/expire_at"},
+        "vpa" : {"$ref" : "definitions.json#/device_response/vpa"}
+    }
+}

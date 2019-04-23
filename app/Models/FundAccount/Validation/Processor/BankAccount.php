@@ -3,7 +3,10 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use RZP\Exception;
+use Monolog\Logger;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as Table;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Constants;
@@ -18,6 +21,36 @@ class BankAccount extends Base
         parent::__construct($validation);
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateRetry()
+    {
+        if ($this->validation->getStatus() !== Status::CREATED)
+        {
+            $e = [
+                'validation'    => $this->validation->getId(),
+                'status'        => $this->validation->getStatus()
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
+        }
+
+        $notFailedFTAs = $this->repo->fund_transfer_attempt->getAttemptBySourceIdAndNotFailed($this->validation->getId(), Table::FUND_ACCOUNT_VALIDATION);
+
+        if ($notFailedFTAs->count() !== 0)
+        {
+            $e = [
+                'validation'    => $this->validation->getId(),
+                'active_ftas'   => $notFailedFTAs->toArray(),
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
+        }
+    }
+
     public function getAccount(): BankAccountEntity
     {
         return $this->account;
@@ -25,9 +58,33 @@ class BankAccount extends Base
 
     public function preProcessValidation()
     {
-        $this->repo->assertTransactionActive();
+        try
+        {
+            $this->createFundTransferAttempt();
+        }
+        catch (\Throwable $e)
+        {
+            // If for any reason we failed to create fund account validation.
+            // We should not revert the created Fund Account Validation.
+            // Rather we should retry creating FTA.
 
-        $this->createFundTransferAttempt();
+            $traceArray = [
+                'fund_account_validation_id'    => $this->validation->getId()
+            ];
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED,
+                $traceArray
+            );
+
+            $this->slack->queue(
+                TraceCode::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED,
+                $traceArray,
+                Constants::slackSettings()
+            );
+        }
     }
 
     /**
@@ -94,28 +151,23 @@ class BankAccount extends Base
      */
     public function updateWithDetailsBeforeFtaRecon(array $input)
     {
-        $this->repo->transaction(function () use ($input)
+        if (empty( $this->validation->getRegisteredName()) === false)
         {
-            if ($this->validation->getStatus() === Status::COMPLETED)
-            {
-                // Validation is already processed.
-                // We might have reached here because of status check API call on FTA.
-                return;
-            }
+            // Registered Name is already set.
+            // We might have reached here because of status check API call on FTA.
+            return;
+        }
 
-            $beneficiaryName = $input['beneficiary_name'];
+        $beneficiaryName = $input['beneficiary_name'];
 
-            if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
-            {
-                $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+        if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
+        {
+            $this->validation->setRegisteredName($beneficiaryName);
 
-                $this->validation->setRegisteredName($beneficiaryName);
+            $this->repo->saveOrFail($this->validation);
 
-                $this->repo->saveOrFail($this->validation);
-
-                $this->triggerValidationCompletedWebhook();
-            }
-        });
+            return;
+        }
     }
 
     /**
@@ -167,72 +219,48 @@ class BankAccount extends Base
      */
     protected function updateValidationAfterFtaProcessed(array $input)
     {
-        if ($this->validation->getStatus() === Status::CREATED)
+        $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+
+        if ($this->validation->getRegisteredName() === null)
         {
-            // This will happen when beneficiary name was not present at the time of initiating but FTA is processed now.
-
-            // TODO: If beneficiary name is not coming for a bank always,
-            // we should be able to disable the feature for that bank.
-            // Otherwise this may result in losses.
-
             $traceArray = [
-                'input' => $input,
+                'input'             => $input,
                 'validation_status' => $this->validation->getStatus(),
             ];
-
-            $this->trace->info(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
 
             $this->slack->queue(
                 TraceCode::BENEFICIARY_NAME_NOT_PRESENT,
                 $traceArray,
                 Constants::slackSettings()
             );
+
+            $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
         }
     }
 
     /**
      * @param array $input
-     * @throws Exception\LogicException
      */
     protected function updateValidationAfterFtaFailed(array $input)
     {
-        $this->repo->transaction(function () use ($input)
+        if ($input['internal_error'] === false)
         {
-            if ($this->validation->getStatus() === Status::COMPLETED)
-            {
-                // This probably happened because FTA status might have moved from Initiated(with beneficiary name) to failed.
+            $this->markValidationAsCompleted(AccountStatus::INVALID);
 
-                $this->slack->queue(
-                    'Validation is already processed. Cannot mark it as failed now.',
-                    [
-                        'input' => $input,
-                        'validation_status' => $this->validation->getStatus(),
-                    ],
-                    Constants::slackSettings()
-                );
+            return;
+        }
 
-                throw new Exception\LogicException('Validation is already processed. Should not have reached here');
-            }
+        $traceArray = [
+            'input'             => $input,
+            'validation_status' => $this->validation->getStatus(),
+        ];
 
-            if ($input['internal_error'] === false)
-            {
-                $this->markValidationAsCompleted(AccountStatus::INVALID);
+        $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR, $traceArray);
 
-                $this->repo->saveOrFail($this->validation);
-
-                $this->triggerValidationCompletedWebhook();
-            }
-            else
-            {
-                $this->slack->queue(
-                    'Penny Testing Failed due to critical reasons.',
-                    [
-                        'input' => $input,
-                        'validation_status' => $this->validation->getStatus(),
-                    ],
-                    Constants::slackSettings()
-                );
-            }
-        });
+        $this->slack->queue(
+            TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR,
+            $traceArray,
+            Constants::slackSettings()
+        );
     }
 }

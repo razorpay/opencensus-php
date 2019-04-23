@@ -15,17 +15,6 @@ class Repository extends Base\Repository
         Entity::ACTIVE      => 'sometimes|in:0,1',
     );
 
-    public function getMethodsForMerchant(Merchant\Entity $merchant)
-    {
-        $methods = $this->find($merchant->getId());
-
-        $methods->merchant()->associate($merchant);
-
-        $merchant->setRelation('methods', $methods);
-
-        return $methods;
-    }
-
     public function findByMerchant($merchant)
     {
         $webhook = $this->newQuery()
@@ -46,7 +35,7 @@ class Repository extends Base\Repository
 
     public function findMultipleByMerchantAndEntityId(
         Merchant\Entity $merchant,
-        string $entityId = null)
+        string $entityId = null): Base\PublicCollection
     {
         return $this->newQuery()
                     ->merchantId($merchant->getId())
@@ -72,7 +61,7 @@ class Repository extends Base\Repository
         $webhook->saveOrFail();
     }
 
-    public function findMultipleByApplicationIds(array $appIds)
+    public function findMultipleByApplicationIds(array $appIds): Base\PublicCollection
     {
         $webhooks = $this->newQuery()
                          ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
@@ -80,6 +69,30 @@ class Repository extends Base\Repository
                          ->get();
 
         return $webhooks;
+    }
+
+    public function getWebhooksByEventEnabled(string $event): Base\PublicCollection
+    {
+        $position = Event::getBitPosition($event);
+
+        // This is a number of the form 100000.. in binary. The idea is that
+        // only the bit corresponding to the event being queried is set. When
+        // AND-ed with the webhook event value, the result will be the same
+        // number if the bit is set, or else 0.
+        $bitComparator = (1 << ($position - 1));
+
+        //
+        // SELECT *
+        // FROM `webhooks`
+        // WHERE `active` = 1
+        //   AND events & 1024 = 1024
+        // -- Here the event queried has position 10, so comparator is 1024
+        //
+        $query = $this->newQuery()
+                      ->where(Entity::ACTIVE, true)
+                      ->whereRaw(Entity::EVENTS . ' & ' . $bitComparator . ' = ' . $bitComparator);
+
+        return $query->get();
     }
 
     protected function addQueryParamApplicationId(BuilderEx $query, array $params)

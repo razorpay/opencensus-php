@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Isg;
 
+use RZP\Error;
+use RZP\Exception;
 use RZP\Gateway\Base;
 
 class Repository extends Base\Repository

@@ -13,6 +13,8 @@ use RZP\Models\Base\QueryCache\CacheQueryBuilder;
  * return an instance of the CacheQueryBuilder, which is required
  * for query caching. This trait needs to be included in whichever
  * entity we want to use query caching.
+ *
+ * If entity is synced in live and test mode then only live cache key will be used.
  */
 trait Cacheable
 {
@@ -41,11 +43,17 @@ trait Cacheable
     /**
      * Gets the query cache driver to use depending on the mode set.
      * If mode is null, the test mode driver is used.
+     * If Entity is in sync in both test and live mode , then always use live query cache driver.
      *
      * @return string
      */
     protected function getQueryCacheDriver(): string
     {
+        if (E::isEntitySyncedInLiveAndTest($this->entity) === true)
+        {
+            return 'query_cache_live';
+        }
+
         $app = App::getFacadeRoot();
 
         $mode = $app['rzp.mode'] ?? null;

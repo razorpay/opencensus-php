@@ -73,7 +73,9 @@ return [
                 'bank_account_type'   => 'savings',
                 'business_name'       => 'Test',
                 'business_type'       => 1,
-                'submit'              => true
+                'submit'              => true,
+                'business_category'   => 'financial_services',
+                'business_subcategory'=> 'accounting',
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST'

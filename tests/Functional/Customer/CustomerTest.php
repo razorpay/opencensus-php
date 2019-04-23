@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Customer;
 
+use RZP\Models\Payout;
+use RZP\Models\Reversal;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -498,6 +500,8 @@ class CustomerTest extends TestCase
 
         // After recon we update the reconiledat value.
         $this->assertNotNull($customerTransaction->getReconciledAt());
+
+        return $payout;
     }
 
     protected function mockRaven()
@@ -518,5 +522,62 @@ class CustomerTest extends TestCase
                     });
 
         $this->app->instance('raven', $raven);
+    }
+
+    public function testCustomerWalletPayoutReversal()
+    {
+        $payout = $this->testCustomerWalletPayout();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'     => 'failed',
+            'failure_reason' => '',
+        ]);
+
+        $payout->reload();
+
+        $input = [
+            'entity_type' => 'payout',
+            'entity_id' => $payout->getId()
+        ];
+
+        $reversals = (new Reversal\Repository)->fetch($input, $payout->merchant->getId());
+
+        $reversal = $reversals->first();
+
+        $this->assertEquals('reversed',$payout->getStatus());
+
+        $this->assertEquals(800, $reversal->getAmount());
+
+        // Assert Reversal and customer balance
+
+        // Assert Customer transactions.
+        $customerTransaction = $reversal->transaction;
+
+        $this->assertEquals(800, $customerTransaction->getAmount());
+
+        $this->assertEquals(800, $customerTransaction->getCredit());
+
+        $this->assertEquals(1000, $customerTransaction->getBalance());
+
+        $this->assertEquals('reversal', $customerTransaction->type);
+
+        // Assert Merchant balance and adjustment.
+
+        // Merchant Adjustments for fee.
+        $adjustment = $this->getDbEntities('adjustment', ['entity_id'   => $reversal->getId(),
+                                                          'entity_type' => 'reversal',
+                                                          'merchant_id' => '10000000000000'])->first();
+
+        $this->assertNotEmpty($adjustment);
+
+        $this->assertEquals($adjustment->getAmount(), 600);
+
+        // Asserts Merchant transaction and balance.
+        $merchantFeeCreditTransaction = $adjustment->transaction;
+
+        $this->assertNotEmpty($merchantFeeCreditTransaction);
+
+        $this->assertEquals($merchantFeeCreditTransaction->getAmount(), 600);
+        $this->assertEquals($merchantFeeCreditTransaction->getBalance(), 1000);
     }
 }

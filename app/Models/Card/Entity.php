@@ -13,7 +13,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 
 /**
- * @property Merchant\Entity    $merchant
+ * @property Merchant\Entity $merchant
+ * @property mixed           iinRelation
  */
 class Entity extends Base\PublicEntity
 {
@@ -87,7 +88,12 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = [self::ID];
 
-    protected static $modifiers = ['expiry_year', 'expiry_month', 'number'];
+    protected static $modifiers = [
+        self::EXPIRY_YEAR,
+        self::EXPIRY_MONTH,
+        self::NUMBER,
+        self::NAME,
+    ];
 
     protected static $generators = [
         self::ID,
@@ -211,9 +217,16 @@ class Entity extends Base\PublicEntity
 
     protected function generateVaultToken($input)
     {
-        if (isset($input[self::VAULT]))
+        if (isset($input[self::VAULT]) === true)
         {
             $tempInput['card'] = $input['number'];
+
+            $tempInput['scheme'] = Card\Vault::RZP_VAULT_SCHEME;
+
+            if ($input[self::VAULT] === Card\Vault::RZP_ENCRYPTION)
+            {
+                $tempInput['scheme'] = Card\Vault::RZP_ENCRYPTION_SCHEME;
+            }
 
             $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
 
@@ -256,6 +269,17 @@ class Entity extends Base\PublicEntity
             $input[Entity::EXPIRY_YEAR]    = self::DUMMY_EXPIRY_YEAR;
             $input[Entity::EXPIRY_MONTH]   = self::DUMMY_EXPIRY_MONTH;
             $input[Entity::CVV]            = self::DUMMY_CVV;
+        }
+    }
+
+    public function modifyName(& $input)
+    {
+        // Don't want empty strings of varying length
+        // in the DB, replacing them all with null
+        if ((isset($input[self::NAME]) === true) and
+            (trim($input[self::NAME]) === ''))
+        {
+            $input[self::NAME] = '';
         }
     }
 
@@ -659,45 +683,42 @@ class Entity extends Base\PublicEntity
 
     public function isRecurringSupported()
     {
-        return $this->isRecurringSupportedOnNetworkAndIssuerAndType(
-                                                        $this->merchant,
-                                                        $this->getNetworkCode(),
-                                                        $this->getIssuer(),
-                                                        $this->getType());
+        $iin = $this->iinRelation;
+
+        return $this->isRecurringSupportedOnIIN($this->merchant, $iin);
     }
 
-    public function isRecurringSupportedOnNetworkAndIssuerAndType(
-                                                Merchant\Entity $merchant,
-                                                string $networkCode = null,
-                                                string $issuer = null,
-                                                string $type = null)
+    public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null)
     {
-        $isSupportedNetwork = in_array($networkCode, Payment\Gateway::getNetworksSupportedForCardRecurring(), true);
-
-        $isSupportedDebitBank = in_array($issuer, Payment\Gateway::getIssuersSupportedForDebitCardRecurring(), true);
-
-        $debitCheck = false;
-
-        if (($type === Type::DEBIT) and
-            ($isSupportedNetwork === true))
+        if($iin === null)
         {
-            if ($issuer === IFSC::HDFC)
-            {
-                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
-                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-            }
-            else if ($isSupportedDebitBank === true)
-            {
-                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
-                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-            }
+            return false;
         }
 
-        $creditCheck = (($type === Type::CREDIT) and
-                        ($isSupportedNetwork === true));
+        if ($iin->isRecurring() === false)
+        {
+            return false;
+        }
 
-        return (($debitCheck === true) or
-                ($creditCheck === true));
+        $type = $this->getType() ?? $iin->getType();
+
+        if ($type !== Type::DEBIT)
+        {
+            return true;
+        }
+
+        $issuer = $iin->getIssuer();
+
+        if ($issuer === IFSC::HDFC)
+        {
+            return (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
+                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+        }
+        else
+        {
+            return (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
+                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+        }
     }
 
     public function isBlocked()
@@ -806,5 +827,39 @@ class Entity extends Base\PublicEntity
         }
 
         return $card;
+    }
+
+
+    /**
+     * If card is used for the 1st time on a RZP gateway then a vault token is generated in card entity.
+     * If vault has been already encountered then vault token is null and a global card id is present.
+     * This contains the vault token generated.
+     * If no vault token is present then null is returned to mark fta as failed.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getCardVaultToken()
+    {
+        $token = $this->getVaultToken();
+
+        if ($token !== null)
+        {
+            return $token;
+        }
+
+        if ($this->globalCard !== null)
+        {
+            $card = $this->globalCard;
+
+            $token = $card->getVaultToken();
+
+            if ($token !== null)
+            {
+                return $token;
+            }
+        }
+
+        return null;
     }
 }

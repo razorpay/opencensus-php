@@ -9,11 +9,12 @@ return [
 
     'testCreateSubMerchantBatchAggregator' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
                 'auto_submit' => 1,
+                'partner_id'  => '10000000000000',
             ],
         ],
         'response' => [
@@ -33,14 +34,15 @@ return [
 
     'testProcessSubMerchantBatchPartnerNotDummyAllSteps' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
-                'autofill_details' => 1,
+                'type'               => 'sub_merchant',
+                'auto_submit'        => 1,
+                'autofill_details'   => 1,
                 'use_email_as_dummy' => 0,
-                'auto_activate' => 1,
+                'auto_activate'      => 1,
+                'partner_id'         => '10000000000000',
             ],
         ],
         'response' => [
@@ -60,14 +62,15 @@ return [
 
     'testProcessSubMerchantBatchPartnerNotDummySubmit' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
-                'autofill_details' => 1,
+                'type'               => 'sub_merchant',
+                'auto_submit'        => 1,
+                'autofill_details'   => 1,
                 'use_email_as_dummy' => 0,
-                'auto_activate' => 0,
+                'auto_activate'      => 0,
+                'partner_id'         => '10000000000000',
             ],
         ],
         'response' => [
@@ -87,12 +90,13 @@ return [
 
     'testProcessSubMerchantBatchPartnerDummyEmailAllSteps' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
+                'type'             => 'sub_merchant',
+                'auto_submit'      => 1,
                 'autofill_details' => 1,
+                'partner_id'       => '10000000000000',
             ],
         ],
         'response' => [
@@ -112,12 +116,13 @@ return [
 
     'testProcessSubMerchantBatchPartnerDummyEmailCreate' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 0,
+                'type'             => 'sub_merchant',
+                'auto_submit'      => 0,
                 'autofill_details' => 0,
+                'partner_id'       => '10000000000000',
             ],
         ],
         'response' => [
@@ -137,12 +142,13 @@ return [
 
     'testProcessSubMerchantBatchPartnerInvalidFileEntriesForActivate' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
+                'type'             => 'sub_merchant',
+                'auto_submit'      => 1,
                 'autofill_details' => 1,
+                'partner_id'       => '10000000000000',
             ],
         ],
         'response' => [
@@ -162,12 +168,13 @@ return [
 
     'testProcessSubMerchantBatchPartnerInvalidInput' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
-                'type'        => 'sub_merchant',
-                'auto_submit' => 1,
+                'type'             => 'sub_merchant',
+                'auto_submit'      => 1,
                 'autofill_details' => 'blah',
+                'partner_id'       => '10000000000000',
             ],
         ],
         'response' => [
@@ -187,11 +194,12 @@ return [
 
     'testCreateSubMerchantBatchPartner' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
                 'auto_submit' => 1,
+                'partner_id'  => '10000000000000',
             ],
         ],
         'response' => [
@@ -211,11 +219,12 @@ return [
 
     'testCreateSubMerchantBatchInvalidHeaders' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
                 'auto_submit' => 1,
+                'partner_id'  => '10000000000000',
             ],
         ],
         'response' => [
@@ -247,7 +256,7 @@ return [
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
-            Header::BUSINESS_CATEGORY        => 'finance',
+            Header::BUSINESS_CATEGORY        => 'financial_services',
             Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',
@@ -283,7 +292,7 @@ return [
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
-            Header::BUSINESS_CATEGORY        => 'finance',
+            Header::BUSINESS_CATEGORY        => 'financial_services',
             Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',
@@ -319,7 +328,7 @@ return [
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
-            Header::BUSINESS_CATEGORY        => 'finance',
+            Header::BUSINESS_CATEGORY        => 'financial_services',
             Header::BUSINESS_SUB_CATEGORY    => 'lending',
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',

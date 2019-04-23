@@ -58,6 +58,7 @@ class GatewayPriorityTest extends TestCase
             ->andReturnUsing(function ()
             {
                 return [
+                    'paysecure'   => '60',
                     'hdfc'        => '50',
                     'axis_migs'   => '40',
                     'amex'        => '30',

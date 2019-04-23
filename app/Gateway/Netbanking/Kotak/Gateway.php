@@ -14,6 +14,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Netbanking\Kotak\AESCrypto;
 use RZP\Gateway\Netbanking\Base\Entity as E;
 
 class Gateway extends Base\Gateway
@@ -62,14 +63,21 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content, $input);
 
-        $request = $this->getRequestArray($content);
+        $content = ['msg' => implode('|', $content)];
+
+        $request = $this->getStandardRequestArray($content);
 
         if ($this->mock === true)
         {
             $request['content']['msg'] = $request['content']['msg'] . '|' . $input['callbackUrl'];
         }
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_AUTHORIZE,
+            [
+                'request' => $request,
+                'gateway' => 'netbanking_kotak',
+            ]);
 
         return $request;
     }
@@ -266,6 +274,8 @@ class Gateway extends Base\Gateway
             }
         }
 
+        $data['checksum'] = $this->getHashOfArray($data);
+
         return $data;
     }
 
@@ -277,7 +287,7 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
-        $content = [
+        $contentArray = [
             'MessageCode'   => MessageCodes::VERIFY,
             'DateTimeInGMT' => $date,
             'MerchantId'    => $gatewayPayment['merchant_code'],
@@ -286,13 +296,24 @@ class Gateway extends Base\Gateway
             'Future2'       => '',
         ];
 
-        $request = $this->getRequestArray($content);
+        $msg = $this->getMessageStringWithHash($contentArray);
 
-        $request['options']['verify'] = $this->getCaInfo();
+        $encryptedContent = $this->getCrypter()->encryptString($msg);
+
+        $this->domainType = $this->mode . '_api_gw';
+
+        $request = $this->getStandardRequestArray($encryptedContent, 'post');
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $request);
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'content' => $msg,
+                'gateway' => 'netbanking_kotak'
+            ]);
+
+        $request['options']['verify'] = $this->getCaInfo();
+        $request['headers']['Authorization'] = 'Bearer ' . $this->getToken();
 
         $response = $this->sendGatewayRequest($request);
 
@@ -302,9 +323,9 @@ class Gateway extends Base\Gateway
 
         $content = $response->body;
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            ['responseBody' => $content]);
+        $encObj = $this->getCrypter();
+
+        $content = $encObj->decryptString($content);
 
         $content = $this->getDataFromResponse($content);
 
@@ -312,7 +333,7 @@ class Gateway extends Base\Gateway
         $this->validateCallbackChecksum($content);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             ['responseContent' => $content]);
 
         $verify->verifyResponse = $response;
@@ -322,31 +343,18 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getRequestArray($content)
-    {
-        $msg = $this->getMessageStringWithHash($content);
-
-        $request = array(
-            'url' => $this->getUrl($this->action),
-            'method' => 'post',
-            'content' => ['msg' => $msg],
-        );
-
-        return $request;
-    }
-
     protected function getRelativeUrl($type)
     {
         $ns = $this->getGatewayNamespace();
 
         if ($this->action === Action::AUTHORIZE)
         {
-            $type = $this->mode.'_'.$type;
-
-            $type = strtoupper($type);
+            $type = $this->mode . '_' . $type;
         }
 
-        return constant($ns.'\Url::'.$type);
+        $type = strtoupper($type);
+
+        return constant($ns . '\Url::' . $type);
     }
 
     public function getMessageStringWithHash($content)
@@ -358,7 +366,14 @@ class Gateway extends Base\Gateway
 
     protected function getTestMerchantId()
     {
-        return 'OSTEST';
+        if ($this->action === Action::VERIFY)
+        {
+            return 'OSTECH';
+        }
+        else
+        {
+            return 'OSRAZOR';
+        }
     }
 
     protected function getTestTpvMerchantId()
@@ -389,7 +404,7 @@ class Gateway extends Base\Gateway
     {
         $str = $str . '|' . $this->getSecret();
 
-        return str_pad((crc32($str)), 8, '0', STR_PAD_LEFT);
+        return (string)(crc32($str));
     }
 
     protected function getHashOfArray($content)
@@ -455,5 +470,139 @@ class Gateway extends Base\Gateway
         $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
 
         return $clientCertPath;
+    }
+
+    protected function getCrypter(): AESCrypto
+    {
+        $masterKey = $this->getEncryptionSecret();
+
+        return new AESCrypto($masterKey);
+    }
+
+    protected function getEncryptionSecret()
+    {
+        $key = null;
+
+        switch ($this->mode)
+        {
+            case Mode::TEST:
+                switch ($this->action)
+                {
+                    case Action::VERIFY:
+                        $key = 'test_encrypt_hash_secret';
+                        break;
+                }
+                break;
+            case Mode::LIVE:
+                switch ($this->action)
+                {
+                    case Action::VERIFY:
+                        $key = 'live_encrypt_hash_secret';
+                        break;
+                }
+                break;
+        }
+
+        return $this->config[$key] ?? '';
+    }
+
+    protected function getTestSecret()
+    {
+        assert($this->mode === Mode::TEST);
+
+        switch ($this->action)
+        {
+            case Action::VERIFY:
+                return $this->config['test_verify_hash_secret'];
+
+            default:
+                return $this->config['test_hash_secret'];
+
+        }
+    }
+
+    protected function getToken()
+    {
+        $content = $this->getTokenRequestContent();
+
+        $request = $this->getStandardRequestArray($content, 'post', 'token');
+
+        $request['headers']['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        $this->traceTokenData($request, TraceCode::GATEWAY_TOKEN_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseArray = $this->checkTokenResponse($response);
+
+        return $responseArray['access_token'];
+    }
+
+    protected function checkTokenResponse($response)
+    {
+        $response = $this->jsonToArray($response->body);
+
+        $this->traceTokenData($response, TraceCode::GATEWAY_TOKEN_RESPONSE);
+
+        if (isset($response['error']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED,
+                $response['error'],
+                $response['error_description'],
+                ['gateway' => $this->gateway]);
+        }
+
+        return $response;
+    }
+
+    public function traceTokenData($traceData, $traceCode)
+    {
+        unset($traceData['content']['client_id']);
+        unset($traceData['content']['client_secret']);
+        unset($traceData['access_token']);
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'response' => $traceData,
+                'gateway'  => $this->gateway,
+            ]);
+    }
+
+    protected function getTokenRequestContent()
+    {
+        list($clientId, $clientSecret) = $this->getTokenClientIDSecret();
+
+        $scope = $this->getTokenScope();
+
+        $data = [
+            'grant_type'     => 'client_credentials',
+            'client_id'      => $clientId,
+            'client_secret'  => $clientSecret,
+            'scope'          => $scope,
+        ];
+
+        return $data;
+    }
+
+    protected function getTokenClientIDSecret()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return [$this->config['test_token_client_id'], $this->config['test_token_client_secret']];
+        }
+
+        return [$this->config['live_token_client_id'], $this->config['live_token_client_secret']];
+    }
+
+    protected function getTokenScope()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return Fields::TEST_SCOPE;
+        }
+
+        return Fields::LIVE_SCOPE;
     }
 }

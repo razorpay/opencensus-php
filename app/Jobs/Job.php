@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use Illuminate\Bus\Queueable;
+use RZP\Models\Admin\ConfigKey;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,6 +29,16 @@ class Job implements ShouldQueue
     protected $mode;
 
     /**
+     * This is a name of the current job which is being executed.
+     *
+     * Can be set in the child classes.
+     * If not explicitly set, this is snake case name of the job class
+     *
+     * @var string|null
+     */
+    protected $jobName = null;
+
+    /**
      * In case of sync queue implementaiton it's needed that we keep mode of
      * current request context and once job is processed we reset back to that.
      *
@@ -47,7 +58,6 @@ class Job implements ShouldQueue
     /**
      * Trace instance
      *
-     * @var \RZP\Trace
      */
     protected $trace;
 
@@ -67,13 +77,30 @@ class Job implements ShouldQueue
 
         $app = App::getFacadeRoot();
 
-        $this->previousMode = $app['basicauth']->getMode();
+        $previousMode = $app['basicauth']->getMode();
+
+        if (isset($this->app['rzp.mode']) === true)
+        {
+            $previousMode = $this->app['rzp.mode'];
+        }
+
+        $this->previousMode = $previousMode;
+
         $this->taskId       = $app['request']->getTaskId();
+        $this->jobName      = $this->jobName ?? snake_case(class_basename($this));
     }
 
     public function handle()
     {
         $this->init();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getJobName()
+    {
+        return $this->jobName;
     }
 
     /**
@@ -115,6 +142,9 @@ class Job implements ShouldQueue
         // For jobs, we set the task id to the task_id of the api request which queued the job
         $app['request']->setTaskId($this->taskId);
 
+        // For current job running set the context data, which can then be used application wide
+        $app['worker.ctx']->init($this);
+
         $this->trace = $app['trace'];
 
         $this->cache = $app['cache'];
@@ -129,5 +159,7 @@ class Job implements ShouldQueue
         }
 
         $this->repoManager->resetConnectionAttributes();
+
+        ConfigKey::resetFetchedKeys();
     }
 }

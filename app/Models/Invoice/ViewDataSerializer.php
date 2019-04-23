@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -16,7 +17,6 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Checkout;
 use RZP\Models\Merchant\Preferences;
-use RZP\Exception\BadRequestException;
 use RZP\Models\SubscriptionRegistration;
 
 /**
@@ -100,7 +100,7 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantId = $this->merchant->getId();
 
-        $customLabels = [];
+        $customLabels = ['hide_issued_to' => false];
 
         switch ($merchantId)
         {
@@ -110,17 +110,30 @@ class ViewDataSerializer extends Base\Core
 
                 $customLabels = [
                     'receipt_number'           => 'CREDIT CARD NUMBER',
-                    'first_payment_min_amount' => 'Minimum Amount Due',
+                    'first_payment_min_amount' => 'MINIMUM AMOUNT DUE',
+                    'hide_issued_to'           => true,
                 ];
 
                 break;
 
             case Preferences::MID_RBLLOAN:
+            case Preferences::MID_DELINQUENT_LOANS:
             case Preferences::MID_AMIT_RBLLOAN:
 
                 $customLabels = [
-                    'receipt_number'           => 'Loan Account Number',
-                    'first_payment_min_amount' => 'EMI Amount',
+                    'receipt_number'           => 'LOAN ACCOUNT NUMBER',
+                    'first_payment_min_amount' => 'EMI AMOUNT',
+                    'hide_issued_to'           => true,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_TOTAL_BASE:
+
+                $customLabels = [
+                    'receipt_number' => 'CREDIT CARD NUMBER',
+                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'hide_issued_to' => true,
                 ];
 
                 break;
@@ -144,17 +157,80 @@ class ViewDataSerializer extends Base\Core
         $gstin         = $this->merchant->getGstin();
         $hasCinOrGstin = (($cin !== null) or ($gstin !== null));
 
+        $partner = $this->merchant->getNonPurePlatformPartner();
+
+        // Check if partner enforces its config on submerchant
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+
+        if ($overrideConfig === true)
+        {
+            //
+            // Checkout needs this to apply `remove border` for submerchants in cases where partner requires so (MSwipe)
+            //
+            // TODO: Ideally this ask is slightly more specific to MSwipe and the others like logo/theme overriding
+            // are more generic and could be asked by/used for more merchants. When that happens, the check for this
+            // block should move to a different feature.
+            //
+            $data['image_frame'] = false;
+            $data['image_padding'] = false;
+        }
+
         return [
             'id'                               => $this->merchant->getId(),
             'name'                             => $this->invoice->getMerchantLabel(),
-            'image'                            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
-            'brand_color'                      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
-            'brand_text_color'                 => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
+            'image'                            => $this->getMerchantLogo($partner),
+            'brand_color'                      => $this->getMerchantBrandColor($partner),
+            'brand_text_color'                 => $this->getMerchantBrandTextColor($partner),
             'cin'                              => $cin,
             'gstin'                            => $gstin,
             'has_cin_or_gstin'                 => $hasCinOrGstin,
             'business_registered_address_text' => $this->merchant->getBusinessRegisteredAddressAsText(', '),
         ];
+    }
+
+    protected function getMerchantLogo(Merchant\Entity $partner = null)
+    {
+        // Check if partner enforces its config on submerchant
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+
+        $image = null;
+
+        if ($overrideConfig === true)
+        {
+            $image = $partner->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE);
+        }
+
+        return $image ?: $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE);
+    }
+
+    protected function getMerchantBrandColor(Merchant\Entity $partner = null): string
+    {
+        // Check if partner enforces its config on submerchant
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+
+        $color = null;
+
+        if ($overrideConfig === true)
+        {
+            $color = get_rgb_value($partner->getBrandColorOrDefault());
+        }
+
+        return $color ?: get_rgb_value($this->merchant->getBrandColorOrDefault());
+    }
+
+    protected function getMerchantBrandTextColor(Merchant\Entity $partner = null): string
+    {
+        // Check if partner enforces its config on submerchant
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+
+        $textColor = null;
+
+        if ($overrideConfig === true)
+        {
+            $textColor = get_brand_text_color($partner->getBrandColorOrDefault());
+        }
+
+        return $textColor ?: get_brand_text_color($this->merchant->getBrandColorOrDefault());
     }
 
     protected function serializeInvoiceForHosted(): array

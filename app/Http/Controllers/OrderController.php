@@ -7,6 +7,8 @@ use Request;
 
 class OrderController extends Controller
 {
+    use Traits\HasCrudMethods;
+
     public function createOrder()
     {
         $input = Request::all();

@@ -26,6 +26,13 @@ return [
     'permissions' => [
         PermissionCategory::GENERAL => [
             Permission::VIEW_HOMEPAGE => 'View Dashboard Home',
+            Permission::UPDATE_CONFIG_KEY  => [
+                'description' => 'update config keys',
+                'assignable'  => true,
+            ],
+            Permission::CONFIRM_USER => [
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORX => [
@@ -44,7 +51,15 @@ return [
             Permission::MANAGE_ONBOARDING_SUBMISSIONS => [
                 'description' => 'View and update product onboarding submissions and the activation statuses',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::MERCHANT_EMAIL_EDIT           => [
+                'description' => 'Edit Merchant Email',
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_PRICING_PLANS => [
+                'description' => 'List all the merchant pricing plans',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_REQUEST => [
@@ -112,6 +127,12 @@ return [
             Permission::EDIT_MERCHANT_FEATURES              => [
                 'assignable' => true,
             ],
+            Permission::MANAGE_BULK_FEATURE_MAPPING         => [
+                'assignable' => true,
+            ],
+            Permission::MERCHANT_BENEFICIARY_UPLOAD         => [
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
             Permission::EDIT_IIN_RULE                       => '',
@@ -152,6 +173,14 @@ return [
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL              => '',
+            Permission::TOGGLE_TERMINAL                     => [
+                'description' => 'Ability to enable or disable a terminal',
+                'assignable' => true,
+            ],
+            Permission::TERMINAL_MANAGE_MERCHANT            => [
+                'description' => 'Ability to add or remove sub merchants to a terminal',
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_PRICING               => '',
             Permission::EDIT_MERCHANT_COMMENTS              => '',
             Permission::VIEW_MERCHANT_COMPANY_INFO          => [
@@ -160,6 +189,10 @@ return [
             Permission::VIEW_MERCHANT_CREDITS_LOG           => '',
             Permission::ADD_MERCHANT_CREDITS                => [
                 'assignable' => true,
+            ],
+            Permission::EDIT_MERCHANT_CREDITS => [
+                'description' => 'Ability to merchant edit credits',
+                'assignable'  => true,
             ],
             Permission::DELETE_MERCHANT_CREDITS             => '',
             Permission::EDIT_MERCHANT_SCREENSHOT            => [
@@ -171,13 +204,32 @@ return [
             Permission::EDIT_AUTHORIZED_FAILED_PAYMENT      => '',
             Permission::VIEW_REFUND_PAYMENTS                => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT      => '',
+            Permission::AUTHORIZE_PAYMENT                   => [
+                'assignable'  => true,
+            ],
+            Permission::VERIFY_PAYMENT                      => [
+                'assignable'  => true,
+            ],
+            Permission::VERIFY_REFUND                       => [
+                'assignable'  => true,
+            ],
             Permission::RETRY_REFUND_FAILED                 => '',
             Permission::EDIT_REFUND                         => [
                 'description' => 'edit_refund_permission',
                 'assignable'  => true,
             ],
+            Permission::UPDATE_SCROOGE_REFUND_REFERENCE1    => [
+                'description' => 'update_scrooge_refund_reference1_permission',
+                'assignable'  => true,
+            ],
             Permission::RETRY_REFUND                        => [
                 'description' => 'Retry refunds',
+                'assignable'  => true,
+            ],
+            Permission::GENERATE_REFUND_EXCEL               => [
+                'assignable'  => true,
+            ],
+            Permission::GENERATE_EMI_EXCEL                  => [
                 'assignable'  => true,
             ],
             Permission::EDIT_PAYMENT_REFUND                 => '',
@@ -189,6 +241,9 @@ return [
             Permission::CREATE_BENEFICIARY_FILE             => '',
             Permission::CREATE_NETBANKING_REFUND            => '',
             Permission::CREATE_EMI_FILES                    => '',
+            Permission::MANAGE_EMI_PLANS                    => [
+                'assignable' => true,
+            ],
             Permission::CREATE_SETTLEMENT_INITIATE          => '',
             Permission::DELETE_TERMINAL                     => '',
             Permission::EDIT_TERMINAL                       => '',
@@ -284,8 +339,16 @@ return [
             Permission::CREATE_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create VAs for a merchant',
             ],
+            Permission::BANK_TRANSFER_INSERT => [
+                'description' => 'Insert bank transfers for failed payments',
+                'assignable'  => true,
+            ],
             Permission::USER_PASSWORD_RESET => [
                 'description' => 'Reset user password on associated merchant page',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_OPERATIONS_REPORT => [
+                'description' => 'View Operations Reports',
                 'assignable'  => true,
             ],
         ],
@@ -336,6 +399,10 @@ return [
         PermissionCategory::ENTITY   => [
             Permission::VIEW_ALL_ENTITY => [
                 'description' => 'view all entity',
+            ],
+            Permission::VIEW_SCROOGE_REFUNDS => [
+                'description' => 'view scrooge refunds dashboard',
+                'assignable'  => true,
             ],
         ],
 
@@ -538,6 +605,17 @@ return [
                 'description' => 'view_merchant_invite',
                 'assignable'  => true,
             ],
+        ],
+
+        PermissionCategory::GATEWAY => [
+            Permission::CREATE_GATEWAY_FILE => [
+                'description' => 'create_gateway_file',
+                'assignable'  => true,
+            ],
+            Permission::MANAGE_IINS => [
+                'description' => 'manage_iins',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::GATEWAY_RULE  => [

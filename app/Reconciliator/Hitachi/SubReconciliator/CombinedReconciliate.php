@@ -10,18 +10,18 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_MESSAGE_TYPE = 'message_type';
+    const COLUMN_TRANSACTION_TYPE = 'transaction_type';
 
-    const PURCHASE_TXN    = '0200';
-    const REFUND_TXN      = '0220';
+    const PURCHASE_TXN    = '00';
+    const REFUND_TXN      = '20';
 
-    const MESSAGE_TYPE_TO_RECONCILIATION_TYPE_MAP = [
+    const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
         self::PURCHASE_TXN => BaseReconciliate::PAYMENT,
         self::REFUND_TXN   => BaseReconciliate::REFUND
     ];
 
     /**
-     * Column Message Type in excel indicates whether
+     * Column Transaction Type in excel indicates whether
      * txn is payment or refund
      *
      * For payment, value is '0200'
@@ -33,15 +33,15 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     protected function getReconciliationTypeForRow($row)
     {
         //
-        // If the "message_type" column is not present
+        // If the "transaction_type" column is not present
         // in the parsed row, not processing the row
-        if (isset($row[self::COLUMN_MESSAGE_TYPE]) === false)
+        if (isset($row[self::COLUMN_TRANSACTION_TYPE]) === false)
         {
             return null;
         }
 
-        $messageType = $row[self::COLUMN_MESSAGE_TYPE];
+        $transactionType = $row[self::COLUMN_TRANSACTION_TYPE];
 
-        return self::MESSAGE_TYPE_TO_RECONCILIATION_TYPE_MAP[$messageType] ?? self::NA;
+        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? self::NA;
     }
 }

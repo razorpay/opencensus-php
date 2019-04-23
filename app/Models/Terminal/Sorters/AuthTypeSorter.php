@@ -52,7 +52,6 @@ class AuthTypeSorter extends Terminal\Sorter
 
             foreach ($terminals as $key => $terminal)
             {
-
                 if (($terminal->isAuthTypeEnabled($authType, $networkCode) === true) and
                     ($this->filterOtpAuthType($payment, $terminal, $authType) === true))
                 {
@@ -79,7 +78,7 @@ class AuthTypeSorter extends Terminal\Sorter
             (($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) or
              ($payment->card->iinRelation->supports(Card\IIN\Flow::IVR) === true)))
         {
-            return ($terminal->getGateway() === Payment\Gateway::HITACHI);
+            return (Payment\Gateway::isOnlyAuthorizationGateway($terminal->getGateway()) === true);
         }
 
         // headless check

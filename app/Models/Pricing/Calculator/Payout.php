@@ -18,7 +18,7 @@ class Payout extends Base
         return $rule;
     }
 
-    protected function validateFees($totalFees, $amount)
+    public function validateFees($totalFees)
     {
         // For payout, we don't have to check for fees > amount, since
         // the balance check and balance deduction happens almost together.

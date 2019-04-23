@@ -354,7 +354,16 @@ class Notifier extends Base\Core
             'amount'        => $this->invoice->getAmount() / 100,
         ];
 
-        $custom         = $this->getCustomRavenTemplateAndParams($merchant);
+        if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
+        {
+            $custom = $this->getCustomTemplateAndParamsForSubscriptionRegistration($merchant);
+        }
+
+        else
+        {
+            $custom = $this->getCustomRavenTemplateAndParams($merchant);
+        }
+
         $customTemplate = $custom['template'];
         $customParams   = $custom['params'];
         $customSender   = $custom['sender'];
@@ -405,6 +414,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_RBLLOAN:
+            case Preferences::MID_DELINQUENT_LOANS:
             case Preferences::MID_AMIT_RBLLOAN:
 
                 $template = 'sms.custom_invoice.rbl_loan';
@@ -428,15 +438,6 @@ class Notifier extends Base\Core
 
                 break;
 
-            case Preferences::MID_DMI_FINANCE:
-
-                $template = 'sms.custom_invoice.dmi_finance';
-                $params   = [
-                    'receipt'      => $receipt,
-                    'invoice_link' => $invoiceLink,
-                ];
-
-                break;
 
             case Preferences::MID_VARTHANA_FINANCE:
 
@@ -454,6 +455,65 @@ class Notifier extends Base\Core
                 [
                     'parameter' => Entity::RECEIPT,
                 ]);
+        }
+
+        return ['template' => $template, 'params' => $params, 'sender' => $sender];
+    }
+
+    protected function getCustomTemplateAndParamsForSubscriptionRegistration(Merchant\Entity $merchant): array
+    {
+        $template = $params = $sender = null;
+
+        $receipt = $this->invoice->getReceipt();
+
+        $invoiceLink = $this->invoice->getShortUrl();
+
+        switch ($merchant->getId())
+        {
+            case Preferences::MID_DMI_FINANCE:
+
+                $template = 'sms.custom_invoice.dmi_finance';
+
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_INDIABULLS_FINANCE:
+
+                $template = 'sms.custom_invoice.indiabulls_finance';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            default:
+
+                $subscriptionRegistration = $this->invoice->entity;
+
+                if ($subscriptionRegistration->isMethodCard() === true)
+                {
+                    $template = 'sms.custom_invoice.subr_card';
+                }
+
+                if ($subscriptionRegistration->isMethodEmandate() === true)
+                {
+                    $template = 'sms.custom_invoice.subr_emandate';
+                }
+
+                $merchantName = $merchant->getBillingLabel();
+
+                $merchantName = substr($merchantName, 0, 30);
+
+                $params   = [
+                    'merchant_name' => $merchantName,
+                    'invoice_link'  => $this->invoice->getShortUrl(),
+                    'amount'        => $this->invoice->getAmount() / 100,
+                ];
         }
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];

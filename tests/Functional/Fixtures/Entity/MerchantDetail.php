@@ -28,14 +28,14 @@ class MerchantDetail extends Base
 
     public function createValidFields(array $attributes = array())
     {
-        $merchantDetailArray = $this->createMerchantDetail();
+        $merchantDetailArray = $this->createMerchantDetail($attributes);
 
         return $this->create($merchantDetailArray);
     }
 
     public function createInvalidFields(array $attributes = array())
     {
-        $merchantDetailArray = $this->createMerchantDetail();
+        $merchantDetailArray = $this->createMerchantDetail($attributes);
 
         unset($merchantDetailArray["contact_name"]);
 
@@ -60,9 +60,9 @@ class MerchantDetail extends Base
         return $this->create($merchantDetailArray);
     }
 
-    protected function createMerchantDetail()
+    protected function createMerchantDetail(array $attributes = [])
     {
-        return [
+        $return = [
             "contact_name"                  => "test",
             "contact_email"                 => "test.test3@razorpay.com",
             "contact_mobile"                => "9123456789",
@@ -118,5 +118,9 @@ class MerchantDetail extends Base
             "business_proof_url"            => "124",
             "promoter_address_url"          => "124",
         ];
+
+        $return = array_replace($return, $attributes);
+
+        return $return;
     }
 }

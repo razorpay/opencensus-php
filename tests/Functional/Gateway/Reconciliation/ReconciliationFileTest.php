@@ -1160,6 +1160,7 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->overrideHitachiPayment($payment, $forceOverride);
 
         $facade['message_type'] = '0220';
+        $facade['transaction_type'] = '20';
         $facade[HitachiRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
 
         return $facade;
@@ -1623,11 +1624,13 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->testData['facades']['hdfc'];
 
-        $entries[0]['merchant_trackid'] = substr($refund['id'], 5);
+        $entries[0]['merchant_trackid'] = 'razorrfnd' . substr($refund['id'], 5);
 
         $entries[0]['rec_fmt'] = 'CVD';
 
         $entries[0]['domestic_amt'] = '1.00';
+
+        $entries[0]['card_type'] = 'BHARAT QR';
 
         $file = $this->writeToExcelFile($entries, 'HDFC-MPR');
 

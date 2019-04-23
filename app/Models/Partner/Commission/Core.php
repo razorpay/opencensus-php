@@ -38,6 +38,7 @@ class Core extends Base\Core
      * @param Payment\Entity $payment
      *
      * @return array
+     * @throws \RZP\Exception\LogicException
      */
     public function createFromCapturedPayment(Payment\Entity $payment): array
     {

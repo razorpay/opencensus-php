@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Mockery;
 use Closure;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
@@ -39,6 +41,8 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
         $this->fixtures->merchant->addFeatures('bharat_qr');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
@@ -62,6 +66,10 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->on('test');
 
         $this->setupMockDns();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateVirtualAccount()
@@ -71,6 +79,28 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin('merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountPartnerAuth()
+    {
+        list($response, $submerchantId, $client) = $this->createVirtualAccountPartnerAuth();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin('application', $client->getApplicationId());
+    }
+
+    private function verifyEntityOrigin($originType, $originId)
+    {
+        $entityOrigin = $this->getDbLastEntity('entity_origin');
+
+        $this->assertEquals($originType, $entityOrigin['origin_type']);
+
+        $this->assertEquals($originId, $entityOrigin['origin_id']);
     }
 
     public function testCreateVirtualAccountForOrder()
@@ -180,7 +210,7 @@ class VirtualAccountTest extends TestCase
 
         $visaValue = $tlvArray['02'];
 
-        $this->assertEquals(16, strlen($masterCardValue));
+        $this->assertEquals(15, strlen($masterCardValue));
 
         $this->assertEquals(16, strlen($visaValue));
 
@@ -235,6 +265,38 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount([
             'receiver_types'  => 'qr_code',
         ]);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithNoMethodsEnabled()
+    {
+        $this->fixtures->merchant->disableMethod('10000000000000', 'credit_card');
+        $this->fixtures->merchant->disableMethod('10000000000000', 'debit_card');
+        $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
+
+        $this->expectException(\RZP\Exception\LogicException::class);
+        $this->expectExceptionMessage('No identifiers found for the merchant');
+
+        $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithUpiDisabled()
+    {
+        $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
+
+        $this->createVirtualAccount(['receiver_types'  => 'qr_code']);
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+        $tlvArray = $this->getTagMappedValues($qrCode['qr_string']);
+
+        // Card identifiers present
+        $this->assertArrayHasKey('02', $tlvArray);
+        $this->assertArrayHasKey('04', $tlvArray);
+        $this->assertArrayHasKey('06', $tlvArray);
+        // UPI identifiers not present
+        $this->assertArrayNotHasKey('26', $tlvArray);
+        $this->assertArrayNotHasKey('27', $tlvArray);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithOneTerminal()

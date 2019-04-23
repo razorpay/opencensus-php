@@ -44,11 +44,6 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
-    public function testPostpaidFeeModel(array $postSetupData, array & $postActionData)
-    {
-        $this->instantiateCalculator($postSetupData, $postActionData);
-    }
-
     public function testCommissionDisabled(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
@@ -72,6 +67,15 @@ class Action
     public function testPublicAuthPaymentForAggregator(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testMissingPartnerPricingRule(array $postSetupData, array & $postActionData)
+    {
+        $calculator = new Calculator($postSetupData['source_entity']);
+
+        $this->invokePrivateMethod($calculator, Calculator::class, 'calculate');
+
+        $postActionData['calculator'] = $calculator;
     }
 
     public function instantiateCalculator(array $postSetupData, array & $postActionData)

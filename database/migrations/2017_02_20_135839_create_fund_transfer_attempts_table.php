@@ -57,6 +57,9 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->char(FundTransferAttempt::MODE, 30)
                   ->nullable();
 
+            $table->tinyInteger(FundTransferAttempt::IS_FTS)
+                  ->default(0);
+
             $table->string(FundTransferAttempt::STATUS);
 
             $table->string(FundTransferAttempt::UTR)

@@ -19,6 +19,15 @@ class VpaController extends Controller
         return $this->response($response);
     }
 
+    public function initiateCreate()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->initiateAdd($input);
+
+        return $this->response($response);
+    }
+
     public function create()
     {
         $input = $this->request()->all();
@@ -52,6 +61,15 @@ class VpaController extends Controller
         $input[Entity::BANK_ACCOUNT_ID] = $this->request()->route('ba_id');
 
         $response = $this->service->assignBankAccount($input);
+
+        return $this->response($response);
+    }
+
+    public function initiateCheckAvailability()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->initiateCheckAvailability($input);
 
         return $this->response($response);
     }

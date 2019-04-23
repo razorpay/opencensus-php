@@ -65,6 +65,7 @@ class Entity
     const PROMOTION                 = 'promotion';
     const LINE_ITEM                 = 'line_item';
     const APP_TOKEN                 = 'app_token';
+    const AUTH_TOKEN                = 'auth_token';
     const INVITATION                = 'invitation';
     const ADJUSTMENT                = 'adjustment';
     const FILE_STORE                = 'file_store';
@@ -91,6 +92,7 @@ class Entity
     const VIRTUAL_ACCOUNT           = 'virtual_account';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const TERMINAL_ACTION           = 'terminal_action';
+    const PAYMENT_DOWNTIME          = 'payment.downtime';
     const MERCHANT_REQUEST          = 'merchant_request';
     const CUSTOMER_BALANCE          = 'customer_balance';
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
@@ -221,12 +223,15 @@ class Entity
 
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
+    const P2P_UPI_AXIS           = 'p2p_upi_axis';
 
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 
     // External Service Entity (ServiceName.EntityName)
+    const BATCH_SERVICE                = 'batch.service';
+    const BATCH_FILE_STORE             = 'batch.file_store';
     const REPORTING_LOGS               = 'reporting.logs';
     const REPORTING_CONFIGS            = 'reporting.configs';
     const REPORTING_SCHEDULES          = 'reporting.schedules';
@@ -256,6 +261,22 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 1,
         ],
+        self::TERMINAL  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
+        ],
+        self::PRICING  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
+        ],
+        self::AUTH_TOKEN  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 5,
+        ],
+        self::METHODS  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
+        ],
     ];
 
     /**
@@ -282,6 +303,7 @@ class Entity
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
         Entity::BANK_TRANSFER,
+        Entity::REFUND,
     ];
 
     public static $namespace = [
@@ -334,6 +356,7 @@ class Entity
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
+        self::PAYMENT_DOWNTIME          => \RZP\Models\Payment\Downtime::class,
         self::GATEWAY_RULE              => \RZP\Models\Gateway\Rule::class,
         self::GATEWAY_FILE              => \RZP\Models\Gateway\File::class,
         self::MERCHANT_EMAIL            => \RZP\Models\Merchant\Email::class,
@@ -456,6 +479,7 @@ class Entity
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
+        self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
     ];
@@ -513,6 +537,8 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
 
         self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
+
+        self::PAYMENT_DOWNTIME       => \RZP\Models\Payment\Downtime::class,
     ];
 
     protected static $externalServiceClass = [
@@ -524,6 +550,8 @@ class Entity
         self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
+        self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
+        self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -667,6 +695,9 @@ class Entity
 
     public static function isValidEntity($entity)
     {
+        // For dealing with sub.entity types
+        $entity = str_replace('.', '_', $entity);
+
         return (defined(__CLASS__ . '::' . strtoupper($entity)));
     }
 

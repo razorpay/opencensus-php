@@ -196,6 +196,9 @@ return [
 
     'commission_mapping'      => [
         'properties' => [
+            'type' => [
+                'type' => 'keyword',
+            ],
             'partner_id' => [
                 'type' => 'keyword',
             ],
@@ -287,6 +290,9 @@ return [
             ],
             'activated' => [
                 'type' => 'boolean',
+            ],
+            'partner_type' => [
+                'type' => 'keyword',
             ],
             'activated_at' => [
                 'type'   => 'date',
@@ -475,6 +481,9 @@ return [
                 'type'  => 'keyword',
             ],
             'status' => [
+                'type'  => 'keyword',
+            ],
+            'purpose' => [
                 'type'  => 'keyword',
             ],
             'created_at' => [

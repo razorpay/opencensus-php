@@ -138,6 +138,8 @@ class SubscriptionV2CardsTest extends TestCase
 
         $this->registerMockedClient($requestMock);
 
+        $this->mockSession();
+
         $response = $this->doAuthPayment($paymentRequest);
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
@@ -193,9 +195,11 @@ class SubscriptionV2CardsTest extends TestCase
         $mockSuccessResponse->success = true;
         $mockSuccessResponse->body = json_encode($subscription->attributesToArray());
 
-        $requestMock->expects($this->exactly(4))->method('request')->will($this->returnValue($mockSuccessResponse));
+        $requestMock->expects($this->exactly(3))->method('request')->will($this->returnValue($mockSuccessResponse));
 
         $this->registerMockedClient($requestMock);
+
+        $this->mockSession();
 
         $response = $this->doAuthPayment($paymentRequest);
 
@@ -208,7 +212,7 @@ class SubscriptionV2CardsTest extends TestCase
         // ------------
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
-        $paymentRequest['card']['number'] = '4000000000000002';
+        $paymentRequest['card']['number'] = '4012002073742250';
         $paymentRequest['subscription_card_change'] = 1;
 
         $response2 = $this->doAuthPayment($paymentRequest);
@@ -457,7 +461,7 @@ class SubscriptionV2CardsTest extends TestCase
         $mockSuccessResponse->success = true;
         $mockSuccessResponse->body = json_encode($subscription->attributesToArray());
 
-        $requestMock->expects($this->exactly(4))->method('request')->will($this->returnValue($mockSuccessResponse));
+        $requestMock->expects($this->exactly(3))->method('request')->will($this->returnValue($mockSuccessResponse));
 
         $this->registerMockedClient($requestMock);
 
@@ -476,8 +480,10 @@ class SubscriptionV2CardsTest extends TestCase
         // ------------
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
-        $paymentRequest['card']['number'] = '4000000000000002';
+        $paymentRequest['card']['number'] = '4012002073742250';
         $paymentRequest['subscription_card_change'] = 1;
+
+        $this->mockSession();
 
         $this->mockSession();
 
@@ -603,113 +609,9 @@ class SubscriptionV2CardsTest extends TestCase
         $this->assertEquals('3RecurringTerm', $payment['terminal_id']);
     }
 
-    public function testSubscriptionV2LocalFlowDifferentCardsAndAuths()
-    {
-        // --- 1st 2FA with local token
-
-        Carbon::setTestNow();
-
-        $subscription = $this->createSubscription(
-            false, [], ['customer_id' => 'cust_100000customer'], false, false, false);
-
-        $requestMock = $this->createMock(Requests_Session::class);
-
-        $subscriptionEntity = $this->getDbLastEntity('subscription');
-        $subscriptionEntity->setGlobalCustomer(true);
-
-        $mockSuccessResponse = new Requests_Response;
-
-        $mockSuccessResponse->status_code = 200;
-        $mockSuccessResponse->success = true;
-        $mockSuccessResponse->body = json_encode($subscriptionEntity->attributesToArray());
-
-        $requestMock->expects($this->exactly(3))->method('request')->will($this->returnValue($mockSuccessResponse));
-
-        $this->registerMockedClient($requestMock);
-
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000, 'token_100000custcard');
-
-        $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
-
-        $response = $this->doAuthPayment($paymentRequest);
-
-        $subscription1 = $this->getLastEntity('subscription', true);
-
-        $gatewayToken1 = $this->getLastEntity('gateway_token', true);
-
-        // --- the above should have created a gateway token entity.
-        // --- the second 2FA on this should go through successfully.
-        //     a different gateway_token entity is created for this.
-
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_100001custcard');
-
-        $this->fixtures->base->editEntity('card', '100000001lcard', ['type' => 'credit']);
-        $paymentRequest['subscription_card_change'] = 1;
-        $response = $this->doAuthPayment($paymentRequest);
-
-        $subscription2 = $this->getLastEntity('subscription', true);
-
-        $gatewayToken2 = $this->getLastEntity('gateway_token', true);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertNotEquals($gatewayToken1['token_id'], $gatewayToken2['token_id']);
-
-        $this->assertEquals('authorized', $payment['status']);
-
-         // --- The above 2 2FAs would have created two different tokens.
-        // --- Now, on the same token, attempt a normal payment. Not a subscription one.
-        //     It should go through successfully without any issue.
-
-        $paymentRequest = $this->getDefaultPaymentArray();
-        $paymentRequest['save'] = 1;
-        $paymentRequest['token'] = 'token_' . $gatewayToken2['token_id'];
-        $paymentRequest['subscription_card_change'] = 1;
-
-        $response = $this->doAuthPayment($paymentRequest);
-
-        // --- the third 2FA should go through successfully.
-        // --- but this 2FA is done with an existing recurring token only.
-        // --- earlier, the logic was that if there's a second recurring
-        //     on the same token, then it should be on private auth only.
-        //
-
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest(
-            $subscription, null, 'token_' . $gatewayToken1['token_id']);
-        unset($paymentRequest['card']);
-        $paymentRequest['card'] = ['cvv' => 111];
-
-        // Doing this so that a different terminal is picked for this 2FA.
-        $this->fixtures->terminal->disableTerminal();
-
-        $paymentRequest['subscription_card_change'] = 1;
-        $this->doAuthPayment($paymentRequest);
-
-        $this->fixtures->terminal->enableTerminal();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        // Should go through 2FA.
-        $this->assertEquals('not_applicable', $payment['two_factor_auth']);
-        $this->assertEquals('authorized', $payment['status']);
-        $this->assertEquals('token_' . $gatewayToken1['token_id'], $payment['token_id']);
-        $this->assertEquals('3RecurringTerm', $payment['terminal_id']);
-
-        $gatewayTokens = $this->getEntities('gateway_token', [], true);
-
-        // No new gateway token should be created. Use an existing one
-        // and update its terminal.
-        $this->assertEquals(2, $gatewayTokens['count']);
-
-        $gatewayToken1Refreshed = $this->getEntityById('gateway_token', $gatewayToken1['id'], true);
-
-        // Since we are using the same old token.
-        $this->assertEquals($gatewayToken1['token_id'], $gatewayToken1Refreshed['token_id']);
-
-        $this->assertNotEquals($gatewayToken1['terminal_id'], $gatewayToken1Refreshed['terminal_id']);
-
-        $this->assertEquals('3RecurringTerm', $gatewayToken1Refreshed['terminal_id']);
-    }
+    /**
+     *
+     */
 
     protected function registerMockedClient($requestMock)
     {

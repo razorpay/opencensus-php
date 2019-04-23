@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use DB;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -10,9 +11,12 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     protected $entity = 'terminal';
 
     protected $appFetchParamRules = array(
@@ -60,7 +64,14 @@ class Repository extends Base\Repository
 
     public function getByTypeAndMerchantIds($type, $merchantIds)
     {
+        $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $terminalAllColumn = $this->dbColumn('*');
+
+        // IF(terminals.merchant_id != '100000Razorpay', 1, 0) AS direct
+        $queryDirectCol = 'IF(' . $terminalMerchantIdColumn . ' != "' . Account::SHARED_ACCOUNT . '", 1, 0) AS direct';
+
         return $this->newQuery()
+                    ->select($terminalAllColumn, DB::raw($queryDirectCol))
                     ->type([$type])
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->enabled()
@@ -85,7 +96,6 @@ class Repository extends Base\Repository
                     ->withTrashed()
                     ->findOrFailPublic($id);
     }
-
 
     public function getByMerchantId($mid)
     {
@@ -141,23 +151,15 @@ class Repository extends Base\Repository
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
+        $cacheTag = Entity::getCacheTag($merchant->getId());
+
         $query = $this->newQuery()
                       ->enabled();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
-        return $query->get();
-    }
-
-    public function getAllDirectTerminalsForMerchantAndGateway(Merchant\Entity $merchant, string $gateway)
-    {
-        $merchantIds = [$merchant->getId()];
-
-        $query = $this->newQuery()
-                      ->where(Entity::GATEWAY, $gateway)
-                      ->enabled();
-
-        $this->addMerchantWhereCondition($query, $merchantIds);
+        $query->remember($this->getCacheTtl())
+              ->cachetags($cacheTag);
 
         return $query->get();
     }
@@ -195,28 +197,29 @@ class Repository extends Base\Repository
 
     protected function addMerchantWhereCondition($query, array $merchantIds)
     {
+        //
+        // TODO: If a shared terminal has sub-merchants, this query would return
+        // back the same terminal twice. Once as shared and second time as direct.
+        // This will increase the number of terminals to filter and sort through
+        // unnecessarily. We should be only taking the direct terminal. A unique
+        // has to be done on this, ensuring that only the direct terminal is used!
+        //
+
         $newQuery = clone $query;
 
-        $query->where(
-            function ($query) use ($merchantIds)
-            {
-                // Condition for the merchant id being directly in the terminal
-                $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+        $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
-                // //
-                // // Condition for getting terminals where merchant id is
-                // // associated through the many-to-many association in
-                // // merchant-terminal table.
-                // //
-                // $query->orWhereHas(
-                //     'merchants',
-                //     function ($query) use ($merchantIds)
-                //     {
-                //         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
-                //     });
-            });
+        $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $terminalAllColumn = $this->dbColumn('*');
 
-        $unionQuery = $newQuery->select($this->getTableName().'.*')
+        // IF(terminals.merchant_id != '100000Razorpay', 1, 0) AS direct
+        $queryDirectCol = 'IF(' . $terminalMerchantIdColumn . ' != "' . Account::SHARED_ACCOUNT . '", 1, 0) AS direct';
+
+        $query->select($terminalAllColumn, DB::raw($queryDirectCol));
+
+        $newQueryDirectCol = '1 AS direct';
+
+        $unionQuery = $newQuery->select($terminalAllColumn, DB::raw($newQueryDirectCol))
                                ->join(Table::MERCHANT_TERMINAL, Entity::TERMINAL_ID, Entity::ID)
                                ->where(function ($q) use ($merchantIds)
                                {

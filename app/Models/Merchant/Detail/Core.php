@@ -14,6 +14,7 @@ use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -71,7 +72,7 @@ class Core extends Base\Core
 
                 $this->markSubmittedAndLock($merchantDetails);
 
-                $this->updateActivationSource($merchantDetails, $originProduct);
+                $this->updateActivationSource($merchant, $originProduct);
 
                 $activationStatusData = [
                     Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
@@ -112,8 +113,9 @@ class Core extends Base\Core
     }
 
     /**
-     * fetches activation flow from business category and subcategory and
-     * updates merchant activation flow
+     * fetches activation_flow and international_activation value
+     * using business category and subcategory, then updates in
+     * merchant_details table
      *
      * @param Entity $merchantDetails
      *
@@ -127,6 +129,14 @@ class Core extends Base\Core
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
         $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
+
+        $isExperimentEnabled = (new Merchant\Core)->isInternationalActivationsExperimentEnabled($this->merchant);
+
+        if ($isExperimentEnabled === true)
+        {
+            $merchantDetails->setInternationalActivationFlow(
+                $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
+        }
     }
 
     /**
@@ -192,19 +202,6 @@ class Core extends Base\Core
             // Sync few input fields to merchant entity
             $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
 
-            //
-            // The merchant entity returned by the '$merchantDetails->merchant' relation gets reloaded here.
-            // The function autoUpdateMerchantCategoryDetailsIfApplicable() updates a few merchant attributes.
-            // Since the $merchantDetails variable in saveInstantActivationDetails() is defined before updating these
-            // merchant entity attributes, these values will not be reflected in the relation unless explicitly 
-            // reloaded.
-            //
-            // This has been moved here because we want to reload the merchant even if the instant activations workflow
-            // is not triggered, this is useful for activating international payments.
-            // Which is done in function syncMerchantEntityFields()
-            //
-            $merchantDetails->load('merchant');
-
             // $activationFlow will be an instance of the ActivationFlowInterface
             $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
             $activationFlow->process($merchantDetails);
@@ -223,27 +220,6 @@ class Core extends Base\Core
 
             return $response;
         });
-    }
-
-    /**
-     * Logs for debugging merchant activated =  false issue for some whitelist merchant
-     *
-     * @param Merchant\Entity $merchant
-     * @param Entity          $merchantDetails
-     * @param string          $traceContext
-     */
-    public function addLogForDebugging(Merchant\Entity $merchant, Entity $merchantDetails, string $traceContext)
-    {
-        if (($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST) and
-            ($merchant->isActivated() === false))
-        {
-            $data = [
-                EntityConstant::MERCHANT        => $merchant->toArrayPublic(),
-                EntityConstant::MERCHANT_DETAIL => $merchantDetails->toArrayPublic()
-            ];
-
-            $this->trace->info($traceContext, $data);
-        }
     }
 
     /**
@@ -441,14 +417,9 @@ class Core extends Base\Core
 
         $this->adminNotifyActivationSubmission($merchantDetails);
 
-        // We also send over details to slack
-        $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$merchantId}/activation|See activation form>";
-
-        $this->logActionToSlack($merchant, SlackActions::SUBMIT_ACTIVATION, $customer, $link);
-
         $zapierData = $this->activationZapierData($customer, $merchant);
 
-        $this->postFormSubmissionToZapier($zapierData, 'submissions');
+        $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -463,9 +434,11 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function postFormSubmissionToZapier($data, $zapierAction)
+    public function postFormSubmissionToZapier($data, $zapierAction, Merchant\Entity $merchant)
     {
-        if (Config::get('zapier.mock'))
+        // Don't send data to zapier for hdfc org.
+        // TODO:: Move the check to a feature flag after org level feature flags are implemented.
+        if ((Config::get('zapier.mock') === true) or ($merchant->getOrgId() === Org\Entity::HDFC_ORG_ID))
         {
             return;
         }
@@ -538,20 +511,16 @@ class Core extends Base\Core
         }
 
         $merchant->setHasKeyAccess(true);
-
-        $this->repo->saveOrFail($merchant);
     }
 
     /**
      * Updates the product business banking or primary from where the activation form was submitted.
      *
-     * @param Entity $merchantDetails
-     * @param string $originProduct
+     * @param Merchant\Entity $merchant
+     * @param string          $originProduct
      */
-    public function updateActivationSource(Entity $merchantDetails, string $originProduct)
+    public function updateActivationSource(Merchant\Entity $merchant, string $originProduct)
     {
-        $merchant = $merchantDetails->merchant;
-
         $merchant->setActivationSource($originProduct);
 
         $this->repo->saveOrFail($merchant);
@@ -779,6 +748,8 @@ class Core extends Base\Core
 
             $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
+            $this->repo->saveOrFail($merchant);
+
             $response = $merchantDetails->toArrayPublic();
 
             $response[Merchant\Entity::HAS_KEY_ACCESS] = $merchant->getHasKeyAccess();
@@ -950,10 +921,9 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
-        $response[Merchant\Entity::ACTIVATED]        = (int) $merchant->isActivated();
-        $response[Merchant\Entity::LIVE]             = $merchant->isLive();
-        $response[Entity::ACTIVATION_FLOW]           = $merchantDetails->getActivationFlow();
-        $response[Merchant\Entity::INTERNATIONAL]    = $merchant->isInternational();
+        $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
+        $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
+        $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
 
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 

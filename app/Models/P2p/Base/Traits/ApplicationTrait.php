@@ -10,6 +10,7 @@ use Illuminate\Contracts\Foundation\Application;
 
 trait ApplicationTrait
 {
+    use ExceptionTrait;
     /**
      * @var Application
      */
@@ -60,6 +61,11 @@ trait ApplicationTrait
     protected function mode()
     {
         return $this->app['rzp.mode'];
+    }
+
+    protected function environment()
+    {
+        return $this->app->environment();
     }
 
     protected function repo(): RepositoryManager

@@ -240,6 +240,10 @@ class Validator extends Base\Validator
         'contact' => 'required|contact_syntax',
     ];
 
+    protected static $toggleInternationalRules = [
+        Entity::INTERNATIONAL => 'required|boolean'
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;
@@ -918,6 +922,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER);
 
+        }
+    }
+
+    public function validatePartnerIsNotSubmerchant(Entity $partner, Entity $submerchant)
+    {
+        if ($submerchant->getId() === $partner->getId())
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT);
         }
     }
 

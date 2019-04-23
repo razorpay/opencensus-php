@@ -127,6 +127,12 @@ return [
         'status'          => Status::FAILURE
     ],
 
+    'testAuthFailedVerifyFailedEntity' => [
+        'received'        => true,
+        'bank'            => 'BARB_R',
+        'status'          => Status::FAILURE
+    ],
+
     'testPaymentVerifySuccessEntity' => [
         'bank_payment_id' => '12345678',
         'received'        => true,

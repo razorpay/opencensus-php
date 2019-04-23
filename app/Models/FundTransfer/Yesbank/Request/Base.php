@@ -6,8 +6,9 @@ use Config;
 use Requests_Hooks;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
-use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\FundTransfer\Attempt\Type;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Base\Initiator\ApiProcessor;
 
 abstract class Base extends ApiProcessor
@@ -81,7 +82,7 @@ abstract class Base extends ApiProcessor
             case Type::PRIMARY:
                 return Config::get('nodal.yesbank.primary');
 
-            case Type::BANKIING:
+            case Type::BANKING:
                 return Config::get('nodal.yesbank.banking');
 
             case Type::SYNC:
@@ -239,6 +240,8 @@ abstract class Base extends ApiProcessor
     {
         $this->entity = $entity;
 
+        $this->ftaId = $entity->getId();
+
         return $this;
     }
 
@@ -253,6 +256,14 @@ abstract class Base extends ApiProcessor
     {
         if ((isset($input['failed_response']) === true) and
             ($input['failed_response'] === '1'))
+        {
+            return $this->mockGenerateFailedResponse();
+        }
+
+        $possibleFailureReceipts = ['failed_response', 'failed_response_insufficient_funds'];
+
+        if (($this->entity->source instanceof Entity) and
+            (in_array($this->entity->source->getReceipt(), $possibleFailureReceipts) === true))
         {
             return $this->mockGenerateFailedResponse();
         }

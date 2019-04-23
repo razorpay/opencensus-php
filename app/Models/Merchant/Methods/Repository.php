@@ -4,10 +4,13 @@ namespace RZP\Models\Merchant\Methods;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'methods';

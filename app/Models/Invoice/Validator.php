@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use RZP\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -19,6 +18,7 @@ use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -255,6 +255,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID,
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
         self::RECEIPT_REQUIRED,
+        Features::INVOICE_EXPIRE_BY_REQD,
     ];
 
     protected static $editDraftValidators = [
@@ -262,11 +263,13 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID,
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
         self::RECEIPT_REQUIRED,
+        Features::INVOICE_EXPIRE_BY_REQD,
     ];
 
     protected static $editIssuedValidators = [
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
         self::RECEIPT_REQUIRED,
+        Features::INVOICE_EXPIRE_BY_REQD,
     ];
 
     protected static $validExternalEntities = [
@@ -324,6 +327,29 @@ class Validator extends Base\Validator
                 'Either of customer_id or customer must be sent in input');
         }
     }
+
+    /**
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateInvoiceExpireByReqd(array $input)
+    {
+        $type = $input[Entity::TYPE] ?? $this->entity->getType();
+
+        $expireBy = $input[Entity::EXPIRE_BY] ?? $this->entity->getExpireBy();
+
+        if ((empty($type) === false) and (Type::isPaymentLinkType($type) === true))
+        {
+            $expiryRequiredFeature = $this->entity->merchant->isFeatureEnabled(Features::INVOICE_EXPIRE_BY_REQD);
+
+            if (($expiryRequiredFeature === true) and (empty($expireBy) === true))
+            {
+                throw new BadRequestValidationFailureException("expire_by is required.");
+            }
+        }
+    }
+
 
     /**
      * Checks if amount is expected in input key.
@@ -480,7 +506,7 @@ class Validator extends Base\Validator
         {
             $skipUniquenessCheck = $this->entity
                                         ->merchant
-                                        ->isFeatureEnabled(Feature\Constants::INVOICE_NO_RECEIPT_UNIQUE);
+                                        ->isFeatureEnabled(Features::INVOICE_NO_RECEIPT_UNIQUE);
 
             if ($skipUniquenessCheck === true)
             {
@@ -506,7 +532,7 @@ class Validator extends Base\Validator
 
         $minAmountAllowed = $this->entity
                                  ->merchant
-                                 ->isFeatureEnabled(Feature\Constants::PL_FIRST_MIN_AMOUNT);
+                                 ->isFeatureEnabled(Features::PL_FIRST_MIN_AMOUNT);
 
         if ($minAmountAllowed === false)
         {
@@ -558,7 +584,7 @@ class Validator extends Base\Validator
         {
             $isReceiptMandatory = $this->entity
                                        ->merchant
-                                       ->isFeatureEnabled(Feature\Constants::INVOICE_RECEIPT_MANDATORY);
+                                       ->isFeatureEnabled(Features::INVOICE_RECEIPT_MANDATORY);
 
             if ($isReceiptMandatory === true)
             {
@@ -786,15 +812,27 @@ class Validator extends Base\Validator
         $invoice = $this->entity;
         $status  = $invoice->getStatus();
 
+        $typeLabel = $invoice->getTypeLabel();
+
         if ($invoice->trashed() === true)
         {
             throw new BadRequestValidationFailureException(
-                $invoice->getTypeLabel() . ' is not payable as it is deleted.');
+                $typeLabel . ' is not payable as it is deleted.');
         }
 
         if (in_array($status, [Status::ISSUED, Status::PARTIALLY_PAID], true) === false)
         {
-            $message = $invoice->getTypeLabel() . ' is not payable in ' . $status . ' status.';
+            $message = $typeLabel . ' is not payable in ' . $status . ' status.';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+
+        // Link partially paid past expiry with payments blocked (feature: BLOCK_PL_PAY_POST_EXPIRY)
+        if (($invoice->isTypeLink() === true) and
+            ($invoice->isPastExpireBy() === true) and
+            ($invoice->merchant->isFeatureEnabled(Features::BLOCK_PL_PAY_POST_EXPIRY) === true))
+        {
+            $message = $typeLabel . ' is not payable post its expiry time';
 
             throw new BadRequestValidationFailureException($message);
         }
@@ -821,6 +859,15 @@ class Validator extends Base\Validator
         else if (($invoice->isCancelled() === true) and ($invoice->isTypeInvoice() === true))
         {
             throw new BadRequestValidationFailureException("$label with id $id is cancelled");
+        }
+        // Link partially paid past expiry with payments blocked (feature: BLOCK_PL_PAY_POST_EXPIRY)
+        // Should act like expired for these cases so throwing error
+        else if (($invoice->isPartiallyPaid() === true) and
+                 ($invoice->isTypeLink() === true) and
+                 ($invoice->isPastExpireBy() === true) and
+                 ($invoice->merchant->isFeatureEnabled(Features::BLOCK_PL_PAY_POST_EXPIRY) === true))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is past its expiry");
         }
         // Expired: All views show custom torn or some kind of page and need data
     }

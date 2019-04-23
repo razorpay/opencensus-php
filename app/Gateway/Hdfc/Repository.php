@@ -512,6 +512,27 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function retrieveCapturedOrAcceptedCaptureFailuresOrFail($paymentId)
+    {
+        $payment = $this->newQuery()
+                        ->where('payment_id', '=', $paymentId)
+                        ->where('status', '=', Payment\Status::CAPTURED)
+                        ->first();
+
+        if ($payment !== null)
+        {
+            return $payment;
+        }
+
+        $errorCodes = [Hdfc\ErrorCodes\ErrorCodes::GW00176, Hdfc\ErrorCodes\ErrorCodes::GW00177];
+
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
+                    ->where('status', '=', Payment\Status::CAPTURE_FAILED)
+                    ->whereIn('error_code2', $errorCodes)
+                    ->firstOrFail();
+    }
+
     public function retrieveCapturedOrAcceptedCaptureError($paymentId)
     {
         try

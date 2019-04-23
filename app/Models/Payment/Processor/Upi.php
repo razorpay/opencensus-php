@@ -7,30 +7,46 @@ use RZP\Models\Payment;
 
 class Upi
 {
+    const ABHY = 'ABHY';
     const ABPB = 'ABPB';
+    const ACBX = 'ACBX';
+    const ADBX = 'ADBX';
+    const AGVX = 'AGVX';
     const AIRP = 'AIRP';
     const ALLA = 'ALLA';
+    const AMCB = 'AMCB';
     const ANDB = 'ANDB';
     const APBL = 'APBL';
     const APGB = 'APGB';
     const APGV = 'APGV';
     const APMC = 'APMC';
     const ASBL = 'ASBL';
+    const AUGX = 'AUGX';
     const BACB = 'BACB';
-    const BARB = 'BARB';
+    const BARB_R = 'BARB_R';
     const BDBL = 'BDBL';
+    const BGBX = 'BGBX';
+    const BGGX = 'BGGX';
+    const BHUX = 'BHUX';
     const BKDN = 'BKDN';
     const BKID = 'BKID';
+    const BRGX = 'BRGX';
+    const BUGX = 'BUGX';
     const CBIN = 'CBIN';
+    const CGBX = 'CGBX';
+    const CGGX = 'CGGX';
     const CITI = 'CITI';
     const CIUB = 'CIUB';
     const CNRB = 'CNRB';
+    const COLX = 'COLX';
     const CORP = 'CORP';
     const COSB = 'COSB';
     const CSBK = 'CSBK';
     const DBSS = 'DBSS';
     const DCBL = 'DCBL';
+    const DEGX = 'DEGX';
     const DEUT = 'DEUT';
+    const DGBX = 'DGBX';
     const DLXB = 'DLXB';
     const DNSB = 'DNSB';
     const ESFB = 'ESFB';
@@ -40,7 +56,10 @@ class Upi
     const GSCB = 'GSCB';
     const HCBL = 'HCBL';
     const HDFC = 'HDFC';
+    const HGBX = 'HGBX';
+    const HMBX = 'HMBX';
     const HSBC = 'HSBC';
+    const HUTX = 'HUTX';
     const IBKL = 'IBKL';
     const ICIC = 'ICIC';
     const IDFB = 'IDFB';
@@ -55,77 +74,123 @@ class Upi
     const JSFB = 'JSFB';
     const KAIJ = 'KAIJ';
     const KARB = 'KARB';
+    const KDIX = 'KDIX';
+    const KGRB = 'KGRB';
+    const KGSX = 'KGSX';
     const KJSB = 'KJSB';
     const KKBK = 'KKBK';
     const KLGB = 'KLGB';
     const KVBL = 'KVBL';
     const KVGB = 'KVGB';
-    const LAVB = 'LAVB';
+    const LAVB_R = 'LAVB_R';
+    const LDRX = 'LDRX';
     const MAHB = 'MAHB';
     const MAHG = 'MAHG';
+    const MBGX = 'MBGX';
     const MCBL = 'MCBL';
+    const MDGX = 'MDGX';
+    const MERX = 'MERX';
+    const MGRB = 'MGRB';
+    const MRBX = 'MRBX';
+    const MRTX = 'MRTX';
     const MSCI = 'MSCI';
+    const MSLM = 'MSLM';
     const MSNU = 'MSNU';
+    const MUBL = 'MUBL';
+    const MZRX = 'MZRX';
     const NKGS = 'NKGS';
+    const NTBL = 'NTBL';
     const ORBC = 'ORBC';
+    const PASX = 'PASX';
     const PJSB = 'PJSB';
     const PKGB = 'PKGB';
     const PMCB = 'PMCB';
     const PRTH = 'PRTH';
     const PSIB = 'PSIB';
-    const PUNB = 'PUNB';
+    const PUGX = 'PUGX';
+    const PUNB_R = 'PUNB_R';
+    const PURX = 'PURX';
     const PYTM = 'PYTM';
     const RATN = 'RATN';
     const RNSB = 'RNSB';
+    const SAGX = 'SAGX';
     const SBIN = 'SBIN';
     const SCBL = 'SCBL';
+    const SCOB = 'SCOB';
     const SIBL = 'SIBL';
     const SPCB = 'SPCB';
     const SRCB = 'SRCB';
+    const SSDX = 'SSDX';
+    const SUBX = 'SUBX';
+    const SURY = 'SURY';
     const SUTB = 'SUTB';
+    const SUVX = 'SUVX';
     const SVCB = 'SVCB';
     const SYNB = 'SYNB';
     const TBSB = 'TBSB';
+    const TGBX = 'TGBX';
     const TJSB = 'TJSB';
     const TMBL = 'TMBL';
     const TSAB = 'TSAB';
+    const TUDX = 'TUDX';
+    const TUMX = 'TUMX';
     const UBIN = 'UBIN';
     const UCBA = 'UCBA';
     const UJVN = 'UJVN';
+    const UMSX = 'UMSX';
     const UTBI = 'UTBI';
+    const UTGX = 'UTGX';
     const UTIB = 'UTIB';
     const VARA = 'VARA';
+    const VCOB = 'VCOB';
+    const VGBX = 'VGBX';
     const VIJB = 'VIJB';
     const VSBL = 'VSBL';
     const VVSB = 'VVSB';
+    const XJKG = 'XJKG';
     const YESB = 'YESB';
 
-
     protected static $supportedUpiBanks = [
+        self::ABHY,
         self::ABPB,
+        self::ACBX,
+        self::ADBX,
+        self::AGVX,
         self::AIRP,
         self::ALLA,
+        self::AMCB,
         self::ANDB,
         self::APBL,
         self::APGB,
         self::APGV,
         self::APMC,
         self::ASBL,
+        self::AUGX,
         self::BACB,
-        self::BARB,
+        self::BARB_R,
         self::BDBL,
+        self::BGBX,
+        self::BGGX,
+        self::BHUX,
         self::BKDN,
         self::BKID,
+        self::BRGX,
+        self::BUGX,
         self::CBIN,
+        self::CGBX,
+        self::CGGX,
         self::CITI,
         self::CIUB,
         self::CNRB,
+        self::COLX,
         self::CORP,
         self::COSB,
         self::CSBK,
         self::DBSS,
         self::DCBL,
+        self::DEGX,
         self::DEUT,
+        self::DGBX,
         self::DLXB,
         self::DNSB,
         self::ESFB,
@@ -135,7 +200,10 @@ class Upi
         self::GSCB,
         self::HCBL,
         self::HDFC,
+        self::HGBX,
+        self::HMBX,
         self::HSBC,
+        self::HUTX,
         self::IBKL,
         self::ICIC,
         self::IDFB,
@@ -150,49 +218,80 @@ class Upi
         self::JSFB,
         self::KAIJ,
         self::KARB,
+        self::KDIX,
+        self::KGRB,
+        self::KGSX,
         self::KJSB,
         self::KKBK,
         self::KLGB,
         self::KVBL,
         self::KVGB,
-        self::LAVB,
+        self::LAVB_R,
+        self::LDRX,
         self::MAHB,
         self::MAHG,
+        self::MBGX,
         self::MCBL,
+        self::MDGX,
+        self::MERX,
+        self::MGRB,
+        self::MRBX,
+        self::MRTX,
         self::MSCI,
+        self::MSLM,
         self::MSNU,
+        self::MUBL,
+        self::MZRX,
         self::NKGS,
+        self::NTBL,
         self::ORBC,
+        self::PASX,
         self::PJSB,
         self::PKGB,
         self::PMCB,
         self::PRTH,
         self::PSIB,
-        self::PUNB,
+        self::PUGX,
+        self::PUNB_R,
+        self::PURX,
         self::PYTM,
         self::RATN,
         self::RNSB,
+        self::SAGX,
         self::SBIN,
         self::SCBL,
+        self::SCOB,
         self::SIBL,
         self::SPCB,
         self::SRCB,
+        self::SSDX,
+        self::SUBX,
+        self::SURY,
         self::SUTB,
+        self::SUVX,
         self::SVCB,
         self::SYNB,
         self::TBSB,
+        self::TGBX,
         self::TJSB,
         self::TMBL,
         self::TSAB,
+        self::TUDX,
+        self::TUMX,
         self::UBIN,
         self::UCBA,
         self::UJVN,
+        self::UMSX,
         self::UTBI,
+        self::UTGX,
         self::UTIB,
         self::VARA,
+        self::VCOB,
+        self::VGBX,
         self::VIJB,
         self::VSBL,
         self::VVSB,
+        self::XJKG,
         self::YESB,
     ];
 

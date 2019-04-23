@@ -202,6 +202,14 @@ class UpiAxisGatewayTest extends TestCase
     {
         $payment = $this->testPayment();
 
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content[Fields::CODE] = '111';
+            }
+        }, $this->gateway);
+
         // Attempt a partial refund
         $this->refundPayment($payment->getPublicId(), 100);
 
@@ -390,6 +398,14 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertSame(1, $payment['verified']);
 
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content[Fields::CODE] = '111';
+            }
+        }, $this->gateway);
+
         $this->refundPayment($payment->getPublicId(), 100);
 
         $upi1 = $this->getDbLastEntity('upi');
@@ -571,7 +587,60 @@ class UpiAxisGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
+    }
+
+    public function testVerifyRefund()
+    {
+        $payment = $this->testPayment();
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['code'] = 'A79';
+        }, $this->gateway);
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $response['status']);
+
+        $this->resetMockServer();
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+    }
+
+    public function testVerifyRefundFailed()
+    {
+        $payment = $this->testPayment();
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if (($action === 'refund') or ($action === 'verify_refund'))
+            {
+                $content[Fields::CODE] = '111';
+            }
+        }, $this->gateway);
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->resetMockServer();
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testRefundAndVerifyOnIntent()
@@ -586,6 +655,14 @@ class UpiAxisGatewayTest extends TestCase
                 $this->assertEquals('RAZORPPROD4264718195', $requestArray['merchId']);
                 $this->assertEquals('RAZORPPRODAPP4264718195', $requestArray['merchChanId']);
             });
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content[Fields::CODE] = '111';
+            }
+        }, $this->gateway);
 
         $this->refundPayment('pay_' . $payment['id']);
 
@@ -620,5 +697,59 @@ class UpiAxisGatewayTest extends TestCase
         $status = $response['status'];
 
         $this->assertEquals($expectedStatus, $status);
+    }
+
+    public function testDuplicateErrorCode()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray(), '111',
+            'TOKEN NOT FOUND');
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $payment->reload();
+
+        $this->assertEquals('GATEWAY_ERROR_TOKEN_NOT_FOUND', $payment['internal_error_code']);
+        $this->assertEquals('Payment processing failed due to error at bank or wallet gateway',
+            $payment['error_description']);
+    }
+
+    public function testDuplicateErrorCode2()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray(), '111',
+            'DUPLICATE TOKEN');
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $payment->reload();
+
+        $this->assertEquals('GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST', $payment['internal_error_code']);
+        $this->assertEquals('Payment processing failed due to error at bank or wallet gateway',
+            $payment['error_description']);
     }
 }
