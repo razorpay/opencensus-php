@@ -29,7 +29,7 @@ export default class BatchListContainer extends Component {
         gaEvents={gaEvents}
         createBatch={this.props.createBatch}
         validateBatch={this.props.validateBatch}
-        docUrl="" // https://razorpay.com/docs/payment-links/batch-upload/" TODO: add the docs after docs are updated
+        docUrl="" // https://razorpay.com/docs/linked_account/batch-upload/" TODO: add the docs after docs are updated
         sampleUrl="/files/sample_batch_linked_account_reversals.xlsx"
       />
     );
