@@ -115,7 +115,7 @@ class Entity extends Base\PublicEntity
     public function setPublicMerchantAttribute(array &$array)
     {
         // payment, refund, etc
-        $sourceRelation = $this->relationLoaded('source') ? $this->getRelation('source') : null;
+        $sourceRelation = $this->getAttribute('source');
 
         // corresponding merchant entity
         $merchant = optional($sourceRelation)->getAttribute('merchant');
