@@ -221,7 +221,7 @@ class HeartbeatLagChecker implements LagChecker
         // So is mode is not set we take it from worker if its a worker
         // else mode will be set to null
         //
-        $this->mode = $this->mode ??  $this->workerContext->getMode();
+        $this->mode = $this->mode ?? $this->workerContext->getMode();
 
         $currentRoute = $this->reqCtx->getRoute() ?? $this->workerContext->getJobName();
 
@@ -299,6 +299,8 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->lag = $result['replica_lag_milli'];
 
+        $this->trace->histogram(Metric::HEARTBEAT_REPLICA_LAG, $this->lag);
+
         return ($this->lag > $threshold);
     }
 
@@ -346,7 +348,7 @@ class HeartbeatLagChecker implements LagChecker
             $value = 0;
         }
 
-        return $absolute || !$diff->invert ? $value : -$value;
+        return ($absolute or !$diff->invert) ? $value : ($value * (-1));
     }
 
     protected function traceConnectionSelection(string $traceCode, bool $useSlave, array $extra = [])
