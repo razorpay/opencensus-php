@@ -440,5 +440,61 @@ return [
             'step'          => 'authentication',
         ],
     ],
+
+    'testAuthenticationGatewayHdfcAuthCapabilityFilter' => [
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hdfc',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hdfc',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+            'capability'    => 2,
+            'authentication_gateway' => 'mpi_blade'
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hdfc',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 1,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'authentication_gateway' => 'mpi_blade',
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hdfc',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 9,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+            'capability'    => 2
+        ],
+
+    ],
 ];
 

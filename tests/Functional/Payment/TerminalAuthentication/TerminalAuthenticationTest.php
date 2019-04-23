@@ -4,11 +4,19 @@ namespace RZP\Tests\Functional\Payment\TerminalAuthenitcation;
 
 use Redis;
 
+use RZP\Models\Card;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\AuthType;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Terminal\Capability;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Terminal\Options as TerminalOptions;
+use RZP\Models\Terminal\AuthenticationTerminals as AuthTerminals;
 
 class TerminalAuthenticationTest extends TestCase
 {
@@ -455,6 +463,85 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('authorized', $payment['status']);
 
         self::assertEquals('hdfc', $payment['gateway']);
+    }
+
+    public function testAuthenticationGatewayHdfcAuthCapabilityFilter()
+    {
+        $this->createGatewayRules($this->testData[__FUNCTION__]);
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ],
+            'capability' => 2
+        ]);
+
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+        $terminal = Terminal\Entity::find('1000HdfcShared');
+
+        $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($terminal);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $expectedTerminal = [
+            AuthTerminals::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            AuthTerminals::GATEWAY                   => Gateway::HDFC,
+            AuthTerminals::CAPABILITY                => Capability::AUTHORIZE,
+            AuthTerminals::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            AuthTerminals::AUTH_TYPE                 => AuthType::_3DS,
+            AuthTerminals::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ];
+
+        TerminalOptions::setTestChance(0);
+
+        $paymentAuthSelect = new Terminal\AuthSelector($input);
+
+        $authTerminal = $paymentAuthSelect->select();
+
+        $this->assertEquals($expectedTerminal, $authTerminal);
+
+        TerminalOptions::setTestChance(900);
+
+         $expectedTerminal = [
+            AuthTerminals::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            AuthTerminals::GATEWAY                   => Gateway::HDFC,
+            AuthTerminals::AUTHENTICATION_GATEWAY    => null,
+            AuthTerminals::AUTH_TYPE                 => AuthType::_3DS,
+            AuthTerminals::GATEWAY_AUTH_TYPE         => null,
+        ];
+
+        $paymentAuthSelect = new Terminal\AuthSelector($input);
+
+        $authTerminal = $paymentAuthSelect->select();
+
+        $this->assertEquals($expectedTerminal, $authTerminal);
     }
 
     protected function createGatewayRules($rules)
