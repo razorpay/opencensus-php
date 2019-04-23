@@ -5,8 +5,19 @@ $fee-breakup-bg = #EEF1F2
   height: 70px
   background-color: $fee-breakup-bg
   display: table
-  border-left: 2px solid $prime
+  border-left: 2px solid
   padding: 5px 0
+
+  /* types of fee breakup */
+  &.primary
+    border-left-color: $prime
+
+  &.warning
+    border-left-color: #F5C723;
+
+  &.danger
+    border-left-color: #EF7A88;
+  /* */
 
   &--item,
   &--add-symbol
