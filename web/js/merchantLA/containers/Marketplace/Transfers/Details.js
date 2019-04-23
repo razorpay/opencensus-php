@@ -11,6 +11,7 @@ import {
 import * as ModalActions from 'rzp/modules/modals';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import { showNotification } from 'rzp/modules/notifications';
+import setGaTrack from './ga';
 
 const gaEvents = setGaTrack('LA Dashboard - Transfers');
 

@@ -176,7 +176,9 @@ export default class RefundToCustomerModal extends React.Component {
                 />
               </div>
               {!!amountError ? (
-                <div class="text-danger">{amountError}</div>
+                <div class="InputField__ErrorText text-danger">
+                  {amountError}
+                </div>
               ) : (
                 <small class="help-block">
                   This will be reflected as a{' '}

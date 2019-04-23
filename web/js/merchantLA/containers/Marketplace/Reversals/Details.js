@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import { fetchReversal } from 'merchantLA/modules/marketplace/reversal';
 import ReversalDetails from 'merchantLA/components/Marketplace/Reversals/Details';
 
+import setGaTrack from './ga';
+
 const gaEvents = setGaTrack('LA Dashboard - Reversals');
 
 @connect(state => ({ ...state.reversal, ...state.session }), {
