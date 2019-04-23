@@ -70,31 +70,37 @@ export default class extends React.Component {
   state = this.initState();
 
   initState() {
-    const currencyList = [...defaultCurrencies];
+    let currencyList = [...defaultCurrencies],
+      currency = currencyList[0].options[0], // Selecting first currency in 'Frequently used' group;
+      isDisabled = this.props.disabled;
 
-    let currency = currencyList[0].options[0]; // Selecting first currency in 'Frequently used' group;
+    if (!this.props.user.international) {
+      currencyList = [currencyList[0].options[0]]; // Only inr in the list
+      isDisabled = true;
+    } else {
+      const defaultValue = this.props.defaultValue;
 
-    const defaultValue = this.props.defaultValue;
-
-    if (defaultValue) {
-      let option = currencyList[0].options.filter(
-        cur => cur.name === defaultValue
-      ); // Check in "Frequently Used"
-
-      if (!option) {
-        option = currencyList[1].options.filter(
+      if (defaultValue) {
+        let option = currencyList[0].options.filter(
           cur => cur.name === defaultValue
-        ); // Check in "All others"
-      }
+        ); // Check in "Frequently Used"
 
-      if (option.length) {
-        currency = option[0];
+        if (!option) {
+          option = currencyList[1].options.filter(
+            cur => cur.name === defaultValue
+          ); // Check in "All others"
+        }
+
+        if (option.length) {
+          currency = option[0];
+        }
       }
     }
 
     return {
       currencyList,
       currency,
+      disabled: isDisabled,
     };
   }
 
@@ -102,12 +108,14 @@ export default class extends React.Component {
     // Make API call to get the currencies list if doesn't exist
     const moreCurrenciesList = this.props.user.getCurrencyList || [];
 
-    this.state.currencyList[1].options = this.state.currencyList[1].options.concat(
-      moreCurrenciesList
-    );
-    const newCurrencyList = this.state.currencyList;
+    if (this.state.disabled && this.props.user.international) {
+      this.state.currencyList[1].options = this.state.currencyList[1].options.concat(
+        moreCurrenciesList
+      );
+      const newCurrencyList = this.state.currencyList;
 
-    this.setState({ currencyList: newCurrencyList });
+      this.setState({ currencyList: newCurrencyList });
+    }
   }
 
   onSelectCurrency = ({ option }) => {
@@ -125,7 +133,7 @@ export default class extends React.Component {
   getSelectedCurrencyOption = ({ option }) => {
     const optionContent = SelectedCurrencyOption(option);
 
-    return this.props.disabled ? (
+    return this.state.disabled ? (
       <AmountTooltip
         currency={this.props.currency}
         parentQuerySelector={this.props.parentQuerySelector}
@@ -170,7 +178,7 @@ export default class extends React.Component {
                 }
                 showClear={false}
                 searchEnabled
-                disabled={props.disabled}
+                disabled={this.state.disabled}
               />
             </div>
           </div>
