@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -150,7 +151,44 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $settledAt = Helper::getArrayFirstValue($row, self::COLUMN_SETTLED_AT);
 
-        return Carbon::createFromFormat('d/m/Y', $settledAt, Timezone::IST)->getTimestamp();
+        //
+        // settledAt date comes in two formats : "16/04/2019" or "16/04/19"
+        // Need to get the timestamp accordingly
+        //
+
+        $explodedArray = explode('/', $settledAt);
+        $year = end($explodedArray);
+
+        $format = 'd/m/y';
+
+        if (strlen($year) > 2)
+        {
+            // if year is in 4 digit format
+            $format = 'd/m/Y';
+        }
+
+        $settledAtTimestamp = null;
+
+        try
+        {
+            $settledAtTimestamp = Carbon::createFromFormat($format, $settledAt, Timezone::IST)->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'         => Base\InfoCode::INCORRECT_DATE_FORMAT,
+                    'settled_at'        => $settledAt,
+                    'expected_format'   => $format,
+                    'payment_id'        => $this->payment->getId(),
+                    'gateway'           => $this->gateway
+                ]
+            );
+        }
+
+        return $settledAtTimestamp;
     }
 
     protected function getGatewayPaymentId(array $row)
