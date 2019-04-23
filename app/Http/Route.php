@@ -611,6 +611,7 @@ final class Route
         'offer_deactivate'                         => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
         'currency_update_rates'                    => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_all'                       => ['get',      'currency/all',                                   'CurrencyController@getAllCurrency'                                 ],
+        'currency_fetch_all_proxy'                 => ['get',      'currency/all/proxy',                             'CurrencyController@getAllCurrency'                                 ],
         'currency_update_rates_multiple'           => ['post',     'currency/rates',                                 'CurrencyController@postCurrencyRatesMultiple'                      ],
         'currency_fetch_rates'                     => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
@@ -1620,6 +1621,7 @@ final class Route
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
         'commissions_get',
+        'currency_fetch_all_proxy',
     ];
 
     // These will run on internal auth with the assurance
@@ -2612,6 +2614,7 @@ final class Route
             'subscription_manual_retry',
             'token_fetch_card',
             'subscription_payment_fetch_by_id',
+            'currency_fetch_all_proxy',
         ],
 
         'kotak' => [
