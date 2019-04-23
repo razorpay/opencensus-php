@@ -795,7 +795,7 @@ class ReconciliationFileTest extends TestCase
 
         $entry1 = $this->overrideAtomPayment($gatewayPayment1);
 
-        $this->rightShiftRowValues($entry1);
+        $this->rightShiftRowValuesForAtom($entry1);
 
         $entries[] = $entry1;
 
@@ -837,6 +837,9 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($updatedTransaction2['gateway_fee']);
         $this->assertNotNull($updatedTransaction2['gateway_service_tax']);
 
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(2, $batch['success_count']);
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
@@ -1908,10 +1911,11 @@ class ReconciliationFileTest extends TestCase
     }
 
     /**
+     * This function is specifically for testAtomReconExtraCommaPaymentFile()
      * @param $row  Here we are changing the row intentionally to mock a row in MIS file
      * which has comma in the merchant_name and it causes the row values to shift right.
      */
-    protected function rightShiftRowValues(&$row)
+    protected function rightShiftRowValuesForAtom(&$row)
     {
         $row['Merchant Name'] = 'Bangalore';
 
