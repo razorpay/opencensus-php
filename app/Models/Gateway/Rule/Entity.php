@@ -98,8 +98,7 @@ class Entity extends Base\PublicEntity
 
     const AUTHENTICATION_COMPARISION_ATTRIBUTES = [
         self::AUTHENTICATION_GATEWAY,
-        self::AUTH_TYPE,
-        self::CAPABILITY,
+        self::AUTH_TYPE
     ];
 
     /**
@@ -137,11 +136,6 @@ class Entity extends Base\PublicEntity
         self::GROUP,
         self::NETWORK,
         self::ISSUER,
-        self::CAPABILITY,
-    ];
-
-    const AUTHENTICATION_TERMINAL_NULLABLE_ATTRIBUTES = [
-        self::CAPABILITY,
     ];
 
 
@@ -703,12 +697,6 @@ class Entity extends Base\PublicEntity
         {
             if ((in_array($key, self::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true) and
                 ($this->isAttributeNull($key) === true))
-            {
-                continue;
-            }
-
-            if ((in_array($key, self::AUTHENTICATION_TERMINAL_NULLABLE_ATTRIBUTES, true) === true) and
-                (empty($terminal[$key]) === true))
             {
                 continue;
             }
