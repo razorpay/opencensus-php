@@ -3,6 +3,7 @@ import { merge, set } from 'rzp/utils/immutable';
 
 const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS';
 const FETCH_BALANCE = 'FETCH_BALANCE';
+const FETCH_CREDITS = 'FETCH_CREDITS';
 
 const getCreditsData = _ => merchantFetch('credits');
 const fetchBalance = _ => merchantFetch('balance');
@@ -32,12 +33,29 @@ export const fetchBalanceAction = () => {
   };
 };
 
+export const fetchCreditsAction = () => {
+  return {
+    type: FETCH_CREDITS,
+    payload: getCreditsData().then(values => {
+      return values;
+    }),
+  };
+};
+
 let initialState = {
   loading: true,
   creditsData: {
-    items: [],
+    data: {
+      items: [],
+    },
+    loading: false,
+    error: null,
   },
-  balanceData: {},
+  balanceData: {
+    data: {},
+    loading: false,
+    error: null,
+  },
   error: null,
 };
 
@@ -49,15 +67,16 @@ export default function(state = initialState, action) {
     case `${FETCH_BALANCE_AND_CREDITS}::SUCCESS`:
       return merge(state, {
         loading: false,
-        creditsData: action.payload[0].data,
-        balanceData: action.payload[1].data,
-        error: null,
-      });
-
-    case `${FETCH_BALANCE}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        balanceData: action.payload.data,
+        creditsData: {
+          data: action.payload[0].data,
+          loading: false,
+          error: null,
+        },
+        balanceData: {
+          data: action.payload[1].data,
+          loading: false,
+          error: null,
+        },
         error: null,
       });
 
@@ -65,6 +84,52 @@ export default function(state = initialState, action) {
       return merge(state, {
         loading: false,
         error: action.payload.errors,
+      });
+
+    // Balance
+    case `${FETCH_BALANCE}::PENDING`:
+      return set(state, 'balanceData.loading', true);
+
+    case `${FETCH_BALANCE}::SUCCESS`:
+      return merge(state, {
+        ...state,
+        balanceData: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${FETCH_BALANCE}::ERROR`:
+      return merge(state, {
+        balanceData: {
+          ...state.balanceData,
+          loading: false,
+          error: action.payload.errors,
+        },
+      });
+
+    // Credits
+    case `${FETCH_CREDITS}::PENDING`:
+      return set(state, 'creditsData.loading', true);
+
+    case `${FETCH_CREDITS}::SUCCESS`:
+      return merge(state, {
+        ...state,
+        creditsData: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${FETCH_CREDITS}::ERROR`:
+      return merge(state, {
+        creditsData: {
+          ...state.creditsData,
+          loading: false,
+          error: action.payload.errors,
+        },
       });
 
     default:

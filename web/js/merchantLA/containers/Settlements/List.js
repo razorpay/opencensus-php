@@ -19,7 +19,7 @@ import Amount from 'rzp/ui/Amount';
 @connect(
   state => ({
     ...state.settlements,
-    credits: state.credits,
+    balanceData: state.credits.balanceData,
     user: state.session.user,
     merchant: state.merchant,
   }),
@@ -31,7 +31,7 @@ import Amount from 'rzp/ui/Amount';
 )
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
-    if (this.props.user.current && !this.props.credits.balanceData.balance) {
+    if (this.props.user.current && !this.props.balanceData.data.balance) {
       this.props.fetchBalanceAction();
     }
 
@@ -88,7 +88,7 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, items, error, credits: { balanceData } } = this.props;
+    const { loading, items, error, balanceData } = this.props;
 
     return (
       <tabbed-container>
@@ -103,12 +103,12 @@ export default class SettlementsListContainer extends ListContainer {
               >
                 How settlements work?&nbsp;<span class="icon i-external-link" />
               </a>
-              {this.props.credits.loading ? (
+              {this.props.balanceData.loading ? (
                 <PlaceholderLoader />
               ) : (
                 <span class="settlement-balance-amount">
                   Current Balance:{' '}
-                  <Amount value={balanceData.balance} currency={'INR'} />
+                  <Amount value={balanceData.data.balance} currency={'INR'} />
                 </span>
               )}
             </div>

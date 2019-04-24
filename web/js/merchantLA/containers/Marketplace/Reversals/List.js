@@ -6,33 +6,28 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import ReversalsTable from './ReversalsTable';
 import Credit from './Credit';
 import BatchUploadList from './BatchUpload/List';
-import { fetchCreditBalance } from 'merchantLA/modules/credits';
+import { fetchBalanceAction } from 'merchantLA/modules/credits';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Amount from 'rzp/ui/Amount';
 @connect(
   state => {
     return {
-      credits: state.credits,
+      balanceData: state.credits.balanceData,
       user: state.session.user,
     };
   },
-  { fetchCreditBalance }
+  { fetchBalanceAction }
 )
 export default class ReversalsListContainer extends Component {
   componentDidMount() {
-    if (
-      this.props.user.current &&
-      !this.props.credits.balanceData.balance &&
-      this.props.user.merchants[this.props.user.current].refund_source ===
-        'credits'
-    ) {
-      this.props.fetchCreditBalance();
+    if (this.props.user.current && !this.props.balanceData.data.balance) {
+      this.props.fetchBalanceAction();
     }
   }
 
   render() {
-    const { credits: { loading, balanceData }, user } = this.props,
+    const { balanceData: { loading, data: balanceData }, user } = this.props,
       merchant = user.merchants[user.current] || {},
       isBalanceSource = merchant.refund_source === 'balance',
       balance = isBalanceSource

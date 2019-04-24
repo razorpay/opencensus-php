@@ -10,7 +10,11 @@ const { trackToggleHistory } = gaTrack('LA Dashboard - Reversals Credits');
 @connect(
   state => {
     return {
-      credits: state.credits,
+      credits: {
+        ...state.credits,
+        creditsData: state.credits.creditsData.data,
+        balanceData: state.credits.balanceData.data,
+      },
       user: state.session.user,
     };
   },
