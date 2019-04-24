@@ -411,7 +411,7 @@ return [
         ],
     ],
 
-    'testPartnerLinkHimselfAsSubmerchant' => [
+    'testPartnerLinkItselfAsSubmerchant' => [
         'request'   => [
             'url'     => '/merchants/10000000000000/access_maps',
             'method'  => 'POST',
@@ -424,14 +424,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF,
         ],
     ],
 

@@ -929,7 +929,7 @@ class Validator extends Base\Validator
     {
         if ($submerchant->getId() === $partner->getId())
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF);
         }
     }
 

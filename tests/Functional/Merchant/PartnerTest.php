@@ -11,6 +11,7 @@ use RZP\Models\User\Role;
 use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
+use RZP\Models\Merchant\AccessMap;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -319,6 +320,17 @@ class PartnerTest extends OAuthTestCase
 
         $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'test');
         $this->assertNull($accessMapEntity);
+
+        // Assert that the access maps are getting soft-deleted
+        $accessMapEntity = (new AccessMap\Entity);
+
+        $accessMapEntity->setConnection('test')
+                        ->withTrashed()
+                        ->findOrFail($accessMap->getId());
+
+        $accessMapEntity->setConnection('live')
+                        ->withTrashed()
+                        ->findOrFail($accessMap->getId());
     }
 
     public function testApprovingPurePlatformActivationRequest()
@@ -481,7 +493,7 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals($existingTags, $actualTags);
     }
 
-    public function testPartnerLinkHimselfAsSubmerchant()
+    public function testPartnerLinkItselfAsSubmerchant()
     {
         $partner = $this->allowAdminToAccessPartnerMerchant();
 
