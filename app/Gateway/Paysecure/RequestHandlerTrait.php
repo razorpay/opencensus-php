@@ -119,7 +119,7 @@ trait RequestHandlerTrait
         // In UAT they want us to pass 6012
         $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
 
-        $mcc = $this->getMappedMcc($mcc);
+        $mcc = Mcc::getMappedMcc($mcc);
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 

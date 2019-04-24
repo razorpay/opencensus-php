@@ -4,7 +4,6 @@ namespace RZP\Gateway\Paysecure;
 
 use View;
 use Cache;
-use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -14,7 +13,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
@@ -431,21 +429,6 @@ class Gateway extends Base\Gateway
     // ------------ Verify request helpers end ---------------
 
     // ------------ General helpers --------------------------
-    public static function getMappedMcc($mcc)
-    {
-        $blacklistedMccs = Cache::get(ConfigKey::PAYSECURE_BLACKLISTED_MCCS);
-
-        $defaultMcc = '7994';
-
-        if ((empty($blacklistedMccs) === false) and
-            (in_array($mcc, $blacklistedMccs) === true))
-        {
-            return $defaultMcc;
-        }
-
-        return $mcc;
-    }
-
     protected function getSoapClientObject($request)
     {
         $soapClient = new SoapClient($request['wsdl'], $request['options']);

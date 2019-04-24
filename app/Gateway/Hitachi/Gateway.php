@@ -823,7 +823,7 @@ class Gateway extends Base\Gateway
         // Use 6012 in UAT
         $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
 
-        $content[RequestFields::MCC] = Paysecure\Gateway::getMappedMcc($mcc);
+        $content[RequestFields::MCC] = Paysecure\Mcc::getMappedMcc($mcc);
 
         $traceContent = $content;
 
