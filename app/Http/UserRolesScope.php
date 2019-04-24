@@ -55,7 +55,7 @@ class UserRolesScope
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
             // profile routes
-            'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE],
+            'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE, Role::MANAGER],
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
 
             // merchant routes
