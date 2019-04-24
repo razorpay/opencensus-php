@@ -15,6 +15,8 @@ import {
   fetchReversals,
 } from 'merchantLA/modules/marketplace/transfer';
 
+import { trackClickCreateRefund } from './ga';
+
 const selector = formValueSelector('refundModal');
 
 @connect(
@@ -125,11 +127,7 @@ export default class RefundToCustomerModal extends React.Component {
                 this.props.fetchReversals(id),
               ]);
 
-              window.rzpAnalytics({
-                eventCategory: 'LA Dashboard - Transfers',
-                eventAction: 'Click - Reverse details',
-                eventLabel: partial ? 'partial' : 'full',
-              });
+              trackClickCreateRefund(`${partial ? 'partial' : 'full'} | Yes `);
 
               this.props.closeModal();
             })
@@ -146,7 +144,11 @@ export default class RefundToCustomerModal extends React.Component {
             });
         },
       })
-      .catch(() => {});
+      .catch(() => {
+        trackClickCreateRefund(
+          `${isPartialPayment(this.props) ? 'partial' : 'full'} | No `
+        );
+      });
   };
 
   render() {

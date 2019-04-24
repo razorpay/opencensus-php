@@ -12,6 +12,12 @@ import { reversalId, amount, createdAt } from 'merchantLA/utils/item/pair';
 import { openModal } from 'rzp/modules/modals';
 import RefundToCustomerModal from './RefundToCustomerModal';
 
+import {
+  trackClickReverseDetails,
+  trackClickReversalID,
+  trackClickRefundToCustomer,
+} from './ga';
+
 /*
  * Design:
  * https://projects.invisionapp.com/share/5ED7Z2RSM#/screens/249521201
@@ -43,40 +49,61 @@ const NumReversals = ({ reversals, titleCase = false }) => {
   );
 };
 
-const ReversalsList = ({ transfer, reversals }) => {
-  const reversalHeading = {
-    title: 'Reversal Details',
-    subTitle: <NumReversals reversals={reversals} titleCase={true} />,
+class ReversalsList extends React.Component {
+  onToggleClick = _ => {
+    setTimeout(() => {
+      const isOpen = document.querySelector(
+        '.reversals-list.full-width-item.sub-entity-list'
+      );
+      trackClickReverseDetails(
+        `${this.props.reversalStatus} | ${isOpen ? 'Open' : 'Close'}`
+      );
+    });
   };
 
-  var transferReversalId = {
-    ...reversalId,
-    value: item => (
-      <Link to={`/transfers/${transfer.id}/${item.id}`}>
-        <code>{item.id}</code>
-      </Link>
-    ),
+  onClickReversalId = _ => {
+    trackClickReversalID(this.props.reversalStatus);
   };
 
-  return (
-    <ContentToggler>
-      <span>Reversal Details</span>
-      <div className="reversals-list full-width-item sub-entity-list">
-        <DataTable
-          title="Reversals"
-          customClass="reversals-table"
-          progressLoader={true}
-          columns={[transferReversalId, amount, createdAtWithStyle]}
-          items={reversals.items}
-          loading={reversals.loading}
-          showHeaders={false}
-          noStripe={true}
-          panelHeading={reversalHeading}
-        />
-      </div>
-    </ContentToggler>
-  );
-};
+  render() {
+    const { transfer, reversals } = this.props;
+    const reversalHeading = {
+      title: 'Reversal Details',
+      subTitle: <NumReversals reversals={reversals} titleCase={true} />,
+    };
+
+    const transferReversalId = {
+      ...reversalId,
+      value: item => (
+        <Link
+          to={`/transfers/${transfer.id}/${item.id}`}
+          onClick={this.onClickReversalId}
+        >
+          <code>{item.id}</code>
+        </Link>
+      ),
+    };
+
+    return (
+      <ContentToggler>
+        <span onClick={this.onToggleClick}>Reversal Details</span>
+        <div className="reversals-list full-width-item sub-entity-list">
+          <DataTable
+            title="Reversals"
+            customClass="reversals-table"
+            progressLoader={true}
+            columns={[transferReversalId, amount, createdAtWithStyle]}
+            items={reversals.items}
+            loading={reversals.loading}
+            showHeaders={false}
+            noStripe={true}
+            panelHeading={reversalHeading}
+          />
+        </div>
+      </ContentToggler>
+    );
+  }
+}
 
 @connect(_ => ({}), { openModal })
 export default class TransferReversal extends React.PureComponent {
@@ -85,6 +112,8 @@ export default class TransferReversal extends React.PureComponent {
       size: 'small',
       component: <RefundToCustomerModal transfer={this.props.transfer} />,
     });
+
+    trackClickRefundToCustomer();
   };
 
   renderRefundToCustomerButton = () =>
@@ -121,7 +150,11 @@ export default class TransferReversal extends React.PureComponent {
               in <NumReversals reversals={reversals} />
             </div>
           </Definition>
-          <ReversalsList transfer={transfer} reversals={reversals} />
+          <ReversalsList
+            reversalStatus={reversalStatus}
+            transfer={transfer}
+            reversals={reversals}
+          />
         </div>
       );
     }
@@ -141,7 +174,11 @@ export default class TransferReversal extends React.PureComponent {
           </Definition>
         </div>
         <p />
-        <ReversalsList transfer={transfer} reversals={reversals} />
+        <ReversalsList
+          reversalStatus={reversalStatus}
+          transfer={transfer}
+          reversals={reversals}
+        />
       </div>
     );
   }

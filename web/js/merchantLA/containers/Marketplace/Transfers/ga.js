@@ -6,12 +6,12 @@ export default eventCategory => {
   return {
     trackOpenDetails: _ => {
       track({
-        eventAction: 'Open details - Refunds',
+        eventAction: 'Open details - Transfers',
       });
     },
     trackCloseDetails: _ => {
       track({
-        eventAction: 'Close details - Refunds',
+        eventAction: 'Close details - Transfers',
       });
     },
   };
