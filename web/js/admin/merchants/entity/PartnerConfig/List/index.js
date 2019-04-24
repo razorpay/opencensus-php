@@ -1,8 +1,6 @@
 import { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import Collection from 'model/collection';
-
 import Form from 'ui/Form';
 import { ModalContent } from 'component/Modal';
 
@@ -15,6 +13,7 @@ import Write from '../Write';
 import Filter from './SubmerchantsFilter';
 import PartnerDetails from './PartnerDetails';
 import SubmerchantsList from './SubmerchantsList';
+import Collection from './SubmerchantCollection';
 import { SelectApplication, WriteConfigButton } from './ConfigFormFields';
 
 @observer
@@ -47,7 +46,7 @@ export default class PartnerConfigList extends Component {
     });
   };
 
-  onWriteConfig = ({ submerchant, config }) => () => {
+  onWriteConfig = ({ submerchant, config, onSuccess }) => () => {
     if (!(config || {}).id) {
       values = {
         partner_id: !this.applicationId ? this.merchantId : undefined,
@@ -74,6 +73,7 @@ export default class PartnerConfigList extends Component {
             buttonText={!!(config || {}).id ? 'Update' : 'Create'}
             submerchant={submerchant}
             config_id={(config || {}).id}
+            onSuccess={onSuccess}
           />
         </ModalContent>
       </div>
@@ -87,6 +87,12 @@ export default class PartnerConfigList extends Component {
       application_id: this.applicationId,
       partner_id: !this.applicationId ? this.merchantId : undefined,
       ...filters,
+    });
+  };
+
+  onDefaultUpdateSuccess = newConfig => {
+    this.setState({
+      defaultConfigs: [{ ...newConfig }],
     });
   };
 
@@ -193,6 +199,7 @@ export default class PartnerConfigList extends Component {
                   <WriteConfigButton
                     defaultConfigs={this.state.defaultConfigs}
                     onWriteConfig={this.onWriteConfig}
+                    onSuccess={this.onDefaultUpdateSuccess}
                   />
                 )}
               </Form>
@@ -235,6 +242,10 @@ function sanitizeConfig(data = {}) {
 
 function getDefaultValues() {
   return {
+    commissions_enabled: 0,
+    explicit_should_charge: 0,
+    explicit_refund_fees: 0,
+    default_plan_id: null,
     revisit_at: moment()
       .add(1, 'year')
       .format('X'),

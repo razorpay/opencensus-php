@@ -27,6 +27,7 @@ export function WriteConfigButton(props) {
         style={{ marginBottom: '0' }}
         onClick={props.onWriteConfig({
           config: props.defaultConfigs[0],
+          onSuccess: props.onSuccess,
         })}
       >
         {isPresent(props.defaultConfigs) ? 'Update' : 'Create'} Default Settings

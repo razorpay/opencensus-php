@@ -12,14 +12,6 @@ import Entity from 'merchant/components/PartnerDashboard/Submerchant/Entity';
 import InviteMerchant from './Invite';
 import { trackListEvents } from '../ga';
 
-const fullDetailsAccessMap = {
-  fully_managed: true,
-  aggregator: true,
-  bank: false,
-  reseller: false,
-  pure_platform: false,
-};
-
 @withRouter
 @connect(
   state => ({
