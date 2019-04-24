@@ -39,6 +39,7 @@ class ConfigKey
     const BLOCK_YESBANK                         = self::PREFIX . 'block_yesbank';
     const BLOCK_AADHAAR_REG                     = self::PREFIX . 'block_aadhaar_reg';
     const HITACHI_DYNAMIC_DESCR_ENABLED         = self::PREFIX . 'hitachi_dynamic_descr_enabled';
+    const HITACHI_NEW_URL_ENABLED               = self::PREFIX . 'hitachi_new_url_enabled';
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
     const FTS_TEST_MERCHANT                     = self::PREFIX . 'fts_test_merchant';
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';
@@ -73,6 +74,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIMES,
         self::FTS_TEST_MERCHANT,
         self::CURL_INFO_LOG_VERBOSE,
+        self::HITACHI_NEW_URL_ENABLED,
     ];
 
     public static function isSensitive(string $key)

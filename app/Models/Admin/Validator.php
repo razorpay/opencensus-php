@@ -61,6 +61,7 @@ class Validator extends Base\Validator
         ConfigKey::ENABLE_PAYMENT_DOWNTIMES           => 'filled|boolean',
         ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string|size:14',
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
+        ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [
