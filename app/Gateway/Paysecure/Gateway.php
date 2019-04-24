@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Paysecure;
 
 use View;
-use Carbon\Carbon;
+use Cache;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -362,6 +362,7 @@ class Gateway extends Base\Gateway
             $input,
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
     }
+
     protected function verifyPayment(Base\Verify $verify)
     {
         $verify->status = $this->getVerifyMatchStatus($verify);
@@ -370,6 +371,7 @@ class Gateway extends Base\Gateway
 
         $verify->payment = $this->saveVerifyContentIfNeeded($verify);
     }
+
     protected function getVerifyMatchStatus(Base\Verify $verify)
     {
         $status = VerifyResult::STATUS_MATCH;

@@ -77,6 +77,15 @@ class PaysecureGatewayTest extends TestCase
         return $authResponse;
     }
 
+    public function testPaymentAuthViaRedirectForBlacklistedMcc()
+    {
+        $this->addBlacklistConfig(['6012' => '7994']);
+
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+    }
+
     public function testS2SPaymentAuthViaRedirect()
     {
         $this->fixtures->merchant->addFeatures(['s2s']);
@@ -485,5 +494,20 @@ class PaysecureGatewayTest extends TestCase
         );
 
         return $payment;
+    }
+
+    protected function addBlacklistConfig(array $mapping)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:paysecure_blacklisted_mccs' => $mapping
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }
