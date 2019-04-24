@@ -298,6 +298,21 @@ return [
         ],
     ],
 
+    'testBatchCreateForwardingToNewBatchService'    => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+                'name' => 'My batch entity',
+                'draft'=> 0,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testCreateBatchWithHumanReadableExpireBy' => [
         'request' => [
             'url'     => '/batches',
@@ -487,6 +502,40 @@ return [
                         ],
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'testFetchBatchOfPaymentLinkTypeIfBatchServiceIsDown' => [
+        'request'   => [
+            'url'    => '/batches/batch_C7e2YqUIpZ2KwZ',
+            'method' => 'get',
+            'content'=> [
+                'type'        => 'payment_link',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'id'        => 'batch_C7e2YqUIpZ2KwZ',
+                'type'      => 'payment_link',
+                'status'    => 'created',
+            ],
+        ],
+    ],
+
+    'testFetchBatchOfTypePaymentLinkFromBatchService' => [
+        'request'   => [
+            'url'    => '/batches/batch_C3fzDCb4hA4F6b',
+            'method' => 'get',
+            'content'=> [
+                'type'        => 'payment_link',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                        'id'        => 'batch_C3fzDCb4hA4F6b',
+                        'type'      => 'payment_link',
+                        'status'    => 'processed',
             ],
         ],
     ],

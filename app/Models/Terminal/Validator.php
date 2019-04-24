@@ -112,6 +112,15 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
     ];
 
+    protected static $upiAirtelTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_airtel',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+    ];
+
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -766,12 +775,20 @@ class Validator extends Base\Validator
 
     public function validateType()
     {
+        $type = $this->entity->getType();
+
+        if (( in_array(Type::DIRECT_SETTLEMENT_WITH_REFUND, $type) === true ) and
+            ( in_array(Type::DIRECT_SETTLEMENT_WITHOUT_REFUND, $type) === true ))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Direct Settlement Terminal should be either with refund enabled or without refund.',
+                Entity::TYPE);
+        }
+
         if ($this->entity->isBankTransferEnabled() === false)
         {
             return;
         }
-
-        $type = $this->entity->getType();
 
         if ( in_array(Type::NON_RECURRING, $type ) === false )
         {

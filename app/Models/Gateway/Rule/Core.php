@@ -81,7 +81,7 @@ class Core extends Base\Core
         return $applicableRules;
     }
 
-    public function fetchAuthenticationRules(array $input, string $type = Entity::FILTER):Base\PublicCollection
+    public function fetchApplicableAuthenticationRulesForPayment(array $input): Base\PublicCollection
     {
         $payment = $input['payment'];
 
@@ -98,7 +98,6 @@ class Core extends Base\Core
             Entity::AUTH_TYPE     => $validAuths,
             Entity::NETWORK       => $card->getNetworkCode(),
             Entity::ISSUER        => $card->getIssuer(),
-            Entity::TYPE          => $type,
             Entity::STEP          => Entity::AUTHENTICATION,
         ];
 
@@ -106,7 +105,7 @@ class Core extends Base\Core
 
         $applicableRules = $this->repo
                                 ->gateway_rule
-                                ->fetchAuthenitcationRulesForSearchCriteria($searchCriteria);
+                                ->fetchAuthenticationRulesForSearchCriteria($searchCriteria);
 
         return $applicableRules;
     }
@@ -262,9 +261,7 @@ class Core extends Base\Core
     {
         $searchCriteria = $rule->getSearchCriteria();
 
-        $matchingRules = $this->repo
-                              ->gateway_rule
-                              ->fetchRulesForSearchCriteria($searchCriteria);
+        $matchingRules = $this->getMatchingRules($rule, $searchCriteria);
 
         if ($rule->isMethodCardOrEmi() === true)
         {
@@ -272,6 +269,20 @@ class Core extends Base\Core
         }
 
         return $matchingRules;
+    }
+
+    protected function getMatchingRules(Entity $rule, array $searchCriteria): Base\PublicCollection
+    {
+        if ($rule->getStep() === Entity::AUTHENTICATION)
+        {
+            return $this->repo
+                        ->gateway_rule
+                        ->fetchAuthenticationRulesForSearchCriteria($searchCriteria);
+        }
+
+        return $this->repo
+                    ->gateway_rule
+                    ->fetchRulesForSearchCriteria($searchCriteria);
     }
 
     /**

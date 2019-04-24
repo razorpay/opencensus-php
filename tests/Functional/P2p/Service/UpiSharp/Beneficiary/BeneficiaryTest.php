@@ -6,6 +6,24 @@ use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 
 class BeneficiaryTest extends TestCase
 {
+    public function testValidateVpa()
+    {
+        $helper = $this->getBeneficiaryHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->validateVpa();
+    }
+
+    public function testValidateBankAccount()
+    {
+        $helper = $this->getBeneficiaryHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->validateBankAccount();
+    }
+
     public function testCreate()
     {
         $helper = $this->getBeneficiaryHelper();
@@ -13,15 +31,6 @@ class BeneficiaryTest extends TestCase
         $helper->withSchemaValidated();
 
         $helper->create();
-    }
-
-    public function testValidate()
-    {
-        $helper = $this->getBeneficiaryHelper();
-
-        $helper->withSchemaValidated();
-
-        $helper->validate();
     }
 
     public function testFetch()

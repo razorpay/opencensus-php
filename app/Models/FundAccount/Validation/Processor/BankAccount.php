@@ -151,9 +151,9 @@ class BankAccount extends Base
      */
     public function updateWithDetailsBeforeFtaRecon(array $input)
     {
-        if ($this->validation->getStatus() === Status::COMPLETED)
+        if (empty( $this->validation->getRegisteredName()) === false)
         {
-            // Validation is already processed.
+            // Registered Name is already set.
             // We might have reached here because of status check API call on FTA.
             return;
         }

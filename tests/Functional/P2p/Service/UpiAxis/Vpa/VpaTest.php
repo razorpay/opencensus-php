@@ -93,18 +93,26 @@ class VpaTest extends TestCase
 
         $request = $helper->initiateCheckVpaAvailable();
 
-        $content = $this->handleSdkRequest($request);
-
-        $content['sdk']['available'] = false;
-
-        $content['sdk']['vpaSuggestions'] = [
+        $suggestions = [
             'sample1@razoraxis',
             'sample2@razoraxis',
             'sample3@razoraxis'
         ];
 
+        $this->mockSdkContentFunction(function(& $content) use ($suggestions)
+        {
+            $content['available'] = false;
+
+            $content['vpaSuggestions'] = $suggestions;
+        });
+
+        $content = $this->handleSdkRequest($request);
+
         $helper->withSchemaValidated();
 
         $response = $helper->checkAvailability($request['callback'], $content);
+
+        $this->assertArrayHasKey(Entity::SUGGESTIONS, $response);
+        $this->assertSame($response[Entity::SUGGESTIONS], $suggestions);
     }
 }

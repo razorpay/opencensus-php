@@ -409,7 +409,7 @@ class Repository extends Base\Repository
      *
      * @throws Exception\LogicException
      */
-    public function settled($txns, array $values)
+    public function settled($txns, array $values, $logging = true)
     {
         $txnCount = $txns->count();
 
@@ -422,7 +422,10 @@ class Repository extends Base\Repository
 
         $batchedIds = array_chunk($ids, 1000);
 
-        $startTime = microtime(true);
+        if ($logging === true)
+        {
+            $startTime = microtime(true);
+        }
 
         foreach ($batchedIds as $batch)
         {
@@ -446,9 +449,12 @@ class Repository extends Base\Repository
             }
         }
 
-        $timeTaken = microtime(true) - $startTime;
+        if ($logging === true)
+        {
+            $timeTaken = microtime(true) - $startTime;
 
-        $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
+            $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
+        }
 
         return $txnCount;
     }

@@ -267,8 +267,8 @@ class Core extends Base\Core
         $reversal->merchant()->associate($refund->merchant);
         $reversal->entity()->associate($refund);
 
-        // Todo: change below line in refunds balance_id PR - currently refunds does not have any balance
-         $reversal->balance()->associate($refund->merchant->primaryBalance);
+        // Todo: remove null balance check after backfilling is done
+        $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
 
         $reversal = $this->repo->transaction(function() use ($reversal)
         {
@@ -286,8 +286,9 @@ class Core extends Base\Core
             [
                 'refund_id'   => $refund->getId(),
                 'reversal_id' => $reversal->getId(),
-                'payment_id'  => $refund->getPaymentId()
-            ]);
+                'payment_id'  => $refund->getPaymentId(),
+                'balance_id'  =>  $reversal->balance->getId(),
+             ]);
 
         return $reversal;
     }

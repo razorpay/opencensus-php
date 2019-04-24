@@ -363,6 +363,10 @@ final class RequestContext
         {
             $this->auth = Type::DIRECT_AUTH;
         }
+        else if ($this->setAdditionalVarsForP2pDirectAuth() === true)
+        {
+            $this->auth = Type::DIRECT_AUTH;
+        }
         else if ($this->setAdditionalVarsForPrivilegeAuth() == true)
         {
             $this->auth = Type::PRIVILEGE_AUTH;
@@ -480,6 +484,11 @@ final class RequestContext
     protected function setAdditionalVarsForDirectAuth()
     {
         return in_array($this->route, Route::$direct, true);
+    }
+
+    protected function setAdditionalVarsForP2pDirectAuth(): bool
+    {
+        return in_array($this->route, P2pRoute::$direct, true);
     }
 
     protected function setAdditionalVarsForPrivilegeAuth()

@@ -13,7 +13,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 
 /**
- * @property Merchant\Entity    $merchant
+ * @property Merchant\Entity $merchant
+ * @property mixed           iinRelation
  */
 class Entity extends Base\PublicEntity
 {
@@ -826,5 +827,39 @@ class Entity extends Base\PublicEntity
         }
 
         return $card;
+    }
+
+
+    /**
+     * If card is used for the 1st time on a RZP gateway then a vault token is generated in card entity.
+     * If vault has been already encountered then vault token is null and a global card id is present.
+     * This contains the vault token generated.
+     * If no vault token is present then null is returned to mark fta as failed.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getCardVaultToken()
+    {
+        $token = $this->getVaultToken();
+
+        if ($token !== null)
+        {
+            return $token;
+        }
+
+        if ($this->globalCard !== null)
+        {
+            $card = $this->globalCard;
+
+            $token = $card->getVaultToken();
+
+            if ($token !== null)
+            {
+                return $token;
+            }
+        }
+
+        return null;
     }
 }

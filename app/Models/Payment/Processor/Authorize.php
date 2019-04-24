@@ -4415,7 +4415,6 @@ trait Authorize
      */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
-
         // temp change.
         $merchantIds = [
             '8S0i1kWYyF2woQ', // swiggy
@@ -4433,16 +4432,6 @@ trait Authorize
         if ($vault === true)
         {
             $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
-        }
-
-        if ($vault === false)
-        {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
-
-            if (strtolower($response) === 'on')
-            {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-            }
         }
 
         $cardCore = new Card\Core;

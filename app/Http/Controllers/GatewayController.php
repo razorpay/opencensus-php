@@ -41,6 +41,11 @@ class GatewayController extends Controller
         $this->callbackGateway('axis');
     }
 
+    public function callbackUpiAirtel()
+    {
+        $this->callbackGateway('upi_airtel');
+    }
+
     protected function processServerCallback($input, $gatewayDriver)
     {
         $gateway = $this->app['gateway']->gateway($gatewayDriver);
@@ -50,11 +55,11 @@ class GatewayController extends Controller
         //
         // Eg: gateway request needs to be decrypted, this shouldn't be direct method call
         // TODO: change this to utilize callGatewayFunction
-        $input = $gateway->preProcessServerCallback($input);
+        $input = $gateway->preProcessServerCallback($input, $gatewayDriver);
 
         // TODO: this should also utilize callGatewayFunction, although we should have
         // used preProcessServerCallback itself to return it in some way
-        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);
 
         $paymentRepo = $this->app['repo']->payment;
 
@@ -169,6 +174,7 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
+            case Gateway::UPI_AIRTEL:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
@@ -332,6 +338,7 @@ class GatewayController extends Controller
 
         return Redirect::to($url);
     }
+
     public function callbackCanara()
     {
         $input = Request::all();

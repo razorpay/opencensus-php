@@ -159,7 +159,7 @@ class BusinessSubCategoryMetaData
             Merchant::CATEGORY2            => Category::OTHERS,
             Entity::ACTIVATION_FLOW        => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION           => ActivationFlow::GREYLIST,
-            self::INTERNATIONAL_ACTIVATION => ActivationFlow::GREYLIST,
+            self::INTERNATIONAL_ACTIVATION => ActivationFlow::BLACKLIST,
         ],
         Sub::CLINIC                        => [
             Merchant::CATEGORY             => 8062,

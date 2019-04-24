@@ -58,10 +58,81 @@ class PayInitData extends Base\Mock\Server
                     'url' => 'www.test.com',
                 ]
             ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            "external_trace_id" => "DUMMY_REQUEST_ID",
+        ];
+
+        return $response;
+    }
+
+    public function wallet_phonepe($entities)
+    {
+        $paymentId = $entities['payment']['id'];
+
+        $publicId = $this->getSignedPaymentId($paymentId);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+
+        $output = [
+            'code'    => 'PAYMENT_SUCCESS',
+            'merchantId' => 'abc',
+            'transactionId' => $entities['payment']['id'],
+            'amount' => $entities['payment']['amount'],
+            'providerReferenceId' => 'phonepeProviderRefId',
+            'key' => $entities['terminal']['gateway_secure_secret'],
+        ];
+
+        $salt = $entities['terminal']['gateway_access_code'];
+
+        $output['checksum'] = $this->getGatewayInstance()->generatePhonepeHash($output).'###'.$salt;
+
+        $url .= '?' . http_build_query($output);
+
+        $response = [
+            'data' => [
+                '_raw' => "",
+                'code'=> "PAYMENT_SUCCESS",
+                'message'=> "this is successfull",
+                'received'=> true,
+                'status'=> "authorization_successfull",
+                'success'=> true
+            ],
+            'error'=> null,
+            'external_trace_id'=> "",
+            'mozart_id'=> "",
+            'next'=> [
+                'redirect' => [
+                    'content' => $output,
+                    'method' => 'post',
+                    'url' => $url,
+                ]
+            ],
+            'success'=> true
+        ];
+
+        return $response;
+    }
+
+    public function upi_airtel($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'code' => '0',
+                    'errorCode' => '000',
+                    'messageText' => 'Success',
+                    'rrn' => '987654321',
+                    'hdnOrderID' => $entities['payment']['id'],
+                    'hash' => 'abcd',
+                    '_raw' => "{\"rrn\":\"910501000855\",\"txnStatus\":\"PENDING\",\"hdnOrderID\":\"ablxasabsjahskajkg\",\"hash\":\"abcd\",\"messageText\":\"Success\",\"code\":\"0\",\"errorCode\":\"000\",\"txnId\":\"AIR461D026C5D8A48C8AED25897B9AB1877\"}",
+                    'status' => 'authorization_successful',
+                ],
             'error'             => null,
             'success'           => true,
             'mozart_id'         => 'DUMMY_MOZART_ID',
-            "external_trace_id" => "DUMMY_REQUEST_ID",
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];
 
         return $response;

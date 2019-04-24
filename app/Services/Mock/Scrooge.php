@@ -67,12 +67,24 @@ class Scrooge extends BaseScrooge
     public function bulkUpdateRefundStatus(array $input, bool $throwExceptionOnFailure = false): array
     {
         return json_decode('{
-               "errors": [{
-                  "refund_id": "abc1234d",
-                  "code": "INVALID_STATE",
-                  "description": "State transition invalid"
-               }]
-            }', true);
+           "errors": [{
+              "refund_id": "abc1234d",
+              "code": "INVALID_STATE",
+              "description": "State transition invalid"
+           }]
+        }', true);
+    }
+
+    public function bulkUpdateRefundReference1(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return json_decode('{
+            "api_failed_count": 0,
+            "api_failures": [],
+            "scrooge_failed_count": 0,
+            "scrooge_failures": [],
+            "success_count": 1,
+            "time_taken": 0.24121499061584473
+        }', true);
     }
 
     public function getRefunds(array $input): array

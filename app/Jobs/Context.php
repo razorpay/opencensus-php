@@ -10,6 +10,7 @@ use RZP\Foundation\Application;
 class Context
 {
     const PREFIX = 'worker:';
+
     /**
      * @var Application
      */

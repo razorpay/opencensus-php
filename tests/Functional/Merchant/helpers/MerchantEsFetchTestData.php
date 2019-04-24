@@ -202,4 +202,24 @@ return [
             ],
         ],
     ],
+
+    'testGetMerchantsFromEsByPartnerType' => [
+        'request' => [
+            'url'     => '/admins/merchants',
+            'method'  => 'GET',
+            'content' => [
+                'partner_type' => 'reseller',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'id'           => '10000000000014',
+                        'partner_type' => 'reseller',
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

@@ -226,6 +226,34 @@ class CommissionCreateTest extends TestCase
     }
 
     /**
+     * checks that both implicit and explicit commissions are created
+     * if both implicit and explicit plans are present and the fee model is postpaid
+     */
+    public function testImplicitVariableAndExplicitPostpaid()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'implicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $this->setPostpaidFeeModel(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $this->startTest($testData);
+
+        $this->assertAndGetCommissionByType(CommissionType::IMPLICIT, 2);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT, 2);
+
+        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+    }
+
+    /**
      * checks that tax is charged on commissions even when tax is not charged on merchant fee
      * when payment less than 2k
      */

@@ -102,7 +102,7 @@ class Selector extends Base\Core
 
     public function createDirectTerminal($gateway)
     {
-        $merchantId = $this->input['merchant']->getId();
+        $merchant = $this->input['merchant'];
 
         $payment = $this->input['payment'];
 
@@ -118,7 +118,7 @@ class Selector extends Base\Core
             'gateway_input'  => $gatewayInput,
         ];
 
-        return (new TerminalService)->onboardMerchant($merchantId, $input, true);
+        return (new TerminalService)->onboardMerchant($merchant, $input, true);
     }
 
     public function select()

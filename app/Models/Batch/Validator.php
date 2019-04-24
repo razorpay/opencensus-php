@@ -8,6 +8,7 @@ use RZP\Models\User;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\FundTransfer;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
@@ -200,6 +201,7 @@ class Validator extends Base\Validator
         ME::AUTOFILL_DETAILS   => 'filled|boolean',
         ME::AUTO_ACTIVATE      => 'filled|boolean',
         ME::USE_EMAIL_AS_DUMMY => 'filled|boolean',
+        ME::PARTNER_ID         => 'required|string|size:14',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [
@@ -256,7 +258,7 @@ class Validator extends Base\Validator
         Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
-        Header::PAYOUT_MODE                 => 'sometimes|nullable|string',
+        Header::PAYOUT_MODE                 => 'required|string|custom',
         Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Header::FUND_ACCOUNT_ID             => 'sometimes|nullable|public_id|size:17',
         Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
@@ -291,6 +293,11 @@ class Validator extends Base\Validator
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
+    }
+
+    protected function validatePayoutMode($attribute, $value)
+    {
+        FundTransfer\Mode::validateMode($value);
     }
 
     /**
@@ -720,13 +727,16 @@ class Validator extends Base\Validator
 
     protected function validateSubMerchantEntries(array & $entries, array $params, ME $merchant)
     {
-        if ($merchant->isNonPurePlatformPartner() === false)
+        /** @var Merchant\Entity $partner */
+        $partner = (new Merchant\Repository)->findOrFailPublic($params[ME::PARTNER_ID]);
+
+        if ($partner->isNonPurePlatformPartner() === false)
         {
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT,
                 null,
                 [
-                    Entity::MERCHANT_ID => $merchant->getId(),
+                    Entity::MERCHANT_ID => $partner->getId(),
                 ]);
         }
     }

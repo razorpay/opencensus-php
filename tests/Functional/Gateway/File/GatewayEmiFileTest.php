@@ -309,17 +309,21 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertQueued(EmiMail\Password::class);
-
         $amountData = [58846,44894];
         $merchantNames = ['A WEIRD MERCH NT NAME  W TH SPECIAL CHAR'];
 
         $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames);
 
-        // todo: Uncomment when beam changes are done
-        // Queue::assertPushed(BeamJob::class, 1);
+         Queue::assertPushed(BeamJob::class, 1);
 
-        // Queue::assertPushedOn('general_test', BeamJob::class);
+         Queue::assertPushedOn('general_test', BeamJob::class);
+
+        Mail::assertQueued(EmiMail\File::class, function ($mail)
+        {
+            $this->assertEmpty($mail->attachments);
+
+            return $mail->hasTo('emi.ops@sbicard.com');
+        });
     }
 
     public function testGenerateEmiFileForSbiWithDuplicateSbiEmiTerminal()
@@ -395,13 +399,11 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertQueued(EmiMail\Password::class);
-
         $this->assertSbiEmiFileData($content, 1);
 
-        // Queue::assertPushed(BeamJob::class, 1);
+         Queue::assertPushed(BeamJob::class, 1);
 
-        // Queue::assertPushedOn('general_test', BeamJob::class);
+         Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForSbiWithNoSbiEmiTerminal()
@@ -452,8 +454,6 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertQueued(EmiMail\Password::class);
-
         $this->assertSbiEmiFileData($content, 1);
 
         // Queue::assertPushed(BeamJob::class, 1);
@@ -468,10 +468,10 @@ class GatewayEmiFileTest extends TestCase
         $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
 
         $encryptor = new Encryption\Handler(
-            Beam\Service::ENCRYPTION_TYPE,
+            Encryption\Type::AES_GCM_ENCRYPTION,
             [
-                'mode'   => Beam\Service::ENCRYPTION_MODE,
                 'secret' => File\Processor\Emi\Sbi::TEST_ENCRYPTION_KEY,
+                'iv'     => File\Processor\Emi\Sbi::TEST_ENCRYPTION_IV,
             ]
         );
 

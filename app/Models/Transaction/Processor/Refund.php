@@ -72,6 +72,11 @@ class Refund extends Base
 
         $settledBy = $refund->payment->getSettledBy();
 
+        if ($refund->isDirectSettlementRefund() === false)
+        {
+            $settledBy = 'Razorpay';
+        }
+
         $netAmount = $refund->getBaseAmount();
 
         if ($settledBy !== 'Razorpay')
@@ -105,5 +110,14 @@ class Refund extends Base
                 $this->txn->setCreditType(Transaction\CreditType::REFUND);
             }
         }
+    }
+
+    protected function setMerchantBalanceLockForUpdate()
+    {
+        // TODO: Remove the second condition later once we backfill refunds
+        // with all existing refunds having primaryBalance filled in.
+        $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
+
+        $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
     }
 }

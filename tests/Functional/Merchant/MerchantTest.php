@@ -4022,7 +4022,7 @@ class MerchantTest extends TestCase
 
         $merchantDetailsData = [
             'business_category'     => 'not_for_profit',
-            'business_subcategory'  => 'charity',
+            'business_subcategory'  => 'educational',
             'activation_status'     => 'activated',
         ];
 

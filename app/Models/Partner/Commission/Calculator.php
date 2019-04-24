@@ -459,13 +459,6 @@ class Calculator extends Base\Core
             return false;
         }
 
-        if ($this->getSubMerchant()->isPrepaid() === false)
-        {
-            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL);
-
-            return false;
-        }
-
         //
         // if both implicit and explicit commissions are not applicable, skip
         // This is possible, if partner config is created just to assign default pricing plan for submerchant

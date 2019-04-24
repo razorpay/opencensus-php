@@ -139,6 +139,8 @@ class Status extends Base
 
         $status = ValidStatus::getStatus($statusCode, $transactionType, $bankSubStatus);
 
+        $beneName = $response[Constants::BENEFICIARY_NAME] ?? null;
+
         return [
             ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
             ReconConstants::UTR                  => $this->getNullOnEmpty($utr),
@@ -149,6 +151,7 @@ class Status extends Base
             ReconConstants::TRANSFER_TYPE        => $transactionType,
             ReconConstants::REFERENCE_NUMBER     => null,
             ReconConstants::MODE                 => $mode,
+            ReconConstants::NAME_WITH_BENE_BANK  => $beneName,
         ];
     }
 

@@ -80,6 +80,7 @@ return array(
                 'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+                'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ],
         ],
 
@@ -116,6 +117,7 @@ return array(
                 'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+                'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ],
         ],
 
@@ -161,12 +163,12 @@ return array(
     ],
 
     /*
-      |--------------------------------------------------------------------------
-      | DB Query Timeout Config -- Milliseconds
-      |--------------------------------------------------------------------------
-      |
-      | This is the query-timeout limit for all select queries. Value is in
-      | milliseconds.
+    |--------------------------------------------------------------------------
+    | DB Query Timeout Config -- Milliseconds
+    |--------------------------------------------------------------------------
+    |
+    | This is the query-timeout limit for all select queries. Value is in
+    | milliseconds.
     */
     'db_mysql_query_timeout' => env('DB_MYSQL_QUERY_TIMEOUT', 900000),
 

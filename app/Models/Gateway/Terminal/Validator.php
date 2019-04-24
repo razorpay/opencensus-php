@@ -15,8 +15,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $merchantOnboardRules = [
-        Terminal\Entity::GATEWAY                        => 'required|string|custom',
-        Service::GATEWAY_INPUT                          => 'required|array',
+        Terminal\Entity::GATEWAY    => 'required|string|custom',
+        Service::GATEWAY_INPUT      => 'required|array',
     ];
 
     protected function validateGateway($attribute, $value)

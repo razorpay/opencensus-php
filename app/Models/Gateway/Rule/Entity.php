@@ -167,6 +167,19 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
     ];
 
+    const AUTHENTICATION_SORTER_SEARCH_ATTRIBUTES = [
+        self::GATEWAY,
+        self::STEP,
+        self::AUTHENTICATION_GATEWAY,
+    ];
+
+    const AUTHENTICATION_FILTER_SEARCH_ATTRIBUTES = [
+        self::GATEWAY,
+        self::STEP,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
+    ];
+
     /**
      * Defines the attribute scores used for calculating
      * specificity score for a rule. Each attribute is given
@@ -380,6 +393,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STEP);
     }
 
+    public function isAuthentication()
+    {
+        return ($this->getAttribute(self::STEP) === self::AUTHENTICATION);
+    }
+
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
@@ -557,6 +575,11 @@ class Entity extends Base\PublicEntity
     {
         $key = __CLASS__ . '::' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
 
+        if ($this->isAuthentication() === true)
+        {
+            $key = __CLASS__ . '::' . strtoupper(self::AUTHENTICATION) . '_' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
+        }
+
         $searchAttributesForType = [];
 
         if (defined($key) === true)
@@ -663,7 +686,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->comapreAuthTerminal($key, $terminal, $payment) === false)
+            if ($this->compareAuthTerminal($key, $terminal, $payment) === false)
             {
                 return false;
             }
@@ -672,7 +695,7 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function comapreAuthTerminal($key, $terminal, $payment)
+    protected function compareAuthTerminal($key, $terminal, $payment)
     {
         return ($this->getAttribute($key) === $terminal[$key]);
     }

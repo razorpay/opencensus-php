@@ -221,6 +221,14 @@ final class P2pRoute
                 'customer/transactions/{transaction_id}/reject',
                 'TransactionController@reject'
             ],
+
+        /*************** Callbacks **************/
+        Requests::P2P_GATEWAY_CALLBACK =>
+            [
+                'post',
+                'callback/{gateway}',
+                'GatewayController@callback'
+            ],
     ];
 
     public static $public = [
@@ -264,6 +272,10 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE,
         Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
         Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT,
+    ];
+
+    public static $direct = [
+        Requests::P2P_GATEWAY_CALLBACK,
     ];
 
     public static $routePermission = [];

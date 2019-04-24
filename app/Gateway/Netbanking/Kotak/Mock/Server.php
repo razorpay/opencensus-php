@@ -183,7 +183,7 @@ class Server extends Base\Mock\Server
 
         $str = $str . '|' . $secret;
 
-        return str_pad((crc32($str)), 8, '0', STR_PAD_LEFT);
+        return (string)(crc32($str));
     }
 
     public function getMessageStringWithHash($content)

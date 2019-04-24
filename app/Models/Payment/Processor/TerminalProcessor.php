@@ -79,7 +79,7 @@ class TerminalProcessor extends Base\Core
 
         $paymentAuthSelect = new Terminal\AuthSelector($input);
 
-        $terminal = $paymentAuthSelect->selectAuth();
+        $terminal = $paymentAuthSelect->select();
 
         $this->trace->info(
                 TraceCode::AUTH_SELECTION_FINAL_TERMINAL,

@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Gateway\Base\Terminal;
 use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Entity as Merchant;
 
 class Service extends Base\Service
 {
@@ -26,7 +27,7 @@ class Service extends Base\Service
         $this->mutex = App::getFacadeRoot()['api.mutex'];
     }
 
-    public function onboardMerchant(string $merchantId, array $input, bool $checkFeatureEnabled)
+    public function onboardMerchant(Merchant $merchant, array $input, bool $checkFeatureEnabled)
     {
         (new Validator)->validateInput(self::MERCHANT_ONBOARD, $input);
 
@@ -36,7 +37,7 @@ class Service extends Base\Service
 
         $gatewayProcessor = GatewayFactory::build($gateway);
 
-        $createTerminal = $this->shouldCreateTerminal($checkFeatureEnabled, $merchantId);
+        $createTerminal = $this->shouldCreateTerminal($checkFeatureEnabled, $merchant->getId());
 
         if ($createTerminal === false)
         {
@@ -46,11 +47,9 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::MERCHANT_ONBOARD_REQUEST,
             [
-                'merchant_id' => $merchantId,
+                'merchant_id' => $merchant->getId(),
                 'input'       => $input,
             ]);
-
-        $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
         $gatewayProcessor->validateGatewayInput($gatewayInput, $merchant);
 
@@ -98,6 +97,11 @@ class Service extends Base\Service
                 }
             },
             self::MUTEX_LOCK_TIMEOUT);
+
+        if ($terminal !== null)
+        {
+            $terminal->setDirectForMerchant(true);
+        }
 
         return $terminal;
     }

@@ -726,6 +726,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENABLED] = $status;
     }
 
+    public function setDirectForMerchant($isDirect)
+    {
+        $this->attributes[self::DIRECT] = $isDirect;
+    }
+
     protected function setTypeAttribute($type)
     {
         $hex = 0;
@@ -792,7 +797,7 @@ class Entity extends Base\PublicEntity
         if ((empty($input[self::GATEWAY]) === false) and
             ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
         {
-            $input[self::TYPE][Type::DIRECT_SETTLEMENT] = '1';
+            $input[self::TYPE][Type::DIRECT_SETTLEMENT_WITH_REFUND] = '1';
         }
     }
 
@@ -1115,7 +1120,18 @@ class Entity extends Base\PublicEntity
 
     public function isDirectSettlement()
     {
-        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT) === true);
+        return (($this->isDirectSettlementWithRefund() === true) or
+                ($this->isDirectSettlementWithoutRefund() === true));
+    }
+
+    public function isDirectSettlementWithRefund(): bool
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT_WITH_REFUND) === true);
+    }
+
+    public function isDirectSettlementWithoutRefund()
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT_WITHOUT_REFUND) === true);
     }
 
     public function isInternational()
@@ -1167,8 +1183,8 @@ class Entity extends Base\PublicEntity
         return parent::toArrayAdmin();
     }
 
-    public static function getCacheTag($merchantId)
+    public static function getCacheTag($id)
     {
-        return implode('_', [E::TERMINAL, $merchantId]);
+        return implode('_', [E::TERMINAL, $id]);
     }
 }

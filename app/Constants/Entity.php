@@ -209,6 +209,7 @@ class Entity
     const CARDLESS_EMI           = 'cardless_emi';
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
+    const UPI_AIRTEL             = 'upi_airtel';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -231,6 +232,8 @@ class Entity
     const TAX_GROUP             = 'tax_group';
 
     // External Service Entity (ServiceName.EntityName)
+    const BATCH_SERVICE                = 'batch.service';
+    const BATCH_FILE_STORE             = 'batch.file_store';
     const REPORTING_LOGS               = 'reporting.logs';
     const REPORTING_CONFIGS            = 'reporting.configs';
     const REPORTING_SCHEDULES          = 'reporting.schedules';
@@ -302,6 +305,7 @@ class Entity
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
         Entity::BANK_TRANSFER,
+        Entity::REFUND,
     ];
 
     public static $namespace = [
@@ -445,6 +449,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
+        self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -549,6 +554,8 @@ class Entity
         self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
+        self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
+        self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
     ];
 
     protected static $syncedInLiveAndTest = [

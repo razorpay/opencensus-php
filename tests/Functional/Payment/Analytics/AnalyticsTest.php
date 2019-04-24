@@ -193,6 +193,21 @@ class AnalyticsTest extends TestCase
         $this->assertEquals('s2s', $paymentAnalytics['library']);
     }
 
+    public function testLibrarySetPushForBankTransferPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+        $this->fixtures->create('terminal:shared_bank_account_terminal');
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $paymentAnalytics = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals('push', $paymentAnalytics['library']);
+    }
+
     public function testLibrarySetDirectForPostPaymentRoute()
     {
         $payment = $this->getDefaultPaymentArray();

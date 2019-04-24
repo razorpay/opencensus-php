@@ -4859,7 +4859,7 @@ ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;
 
 ALTER TABLE invoices
     DROP FOREIGN KEY invoices_batch_id_foreign;
-    
+
 ALTER TABLE commissions
     ADD COLUMN record_only TINYINT(1) NOT NULL DEFAULT 0 AFTER transaction_id;
 
@@ -4868,3 +4868,28 @@ ALTER TABLE paysecure
 
 ALTER TABLE bank_transfers
     MODIFY COLUMN payee_account VARCHAR(255) NOT NULL;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN is_fts INT(1) DEFAULT 0 AFTER status;
+
+ALTER TABLE payouts
+    MODIFY notes TEXT DEFAULT NULL;
+
+ALTER TABLE refunds
+    CHANGE reference11 balance_id CHAR(14) DEFAULT NULL,
+    ADD INDEX refunds_balance_id_index (`balance_id`);
+
+-- P2P - Beneficiary Handling #11532
+
+/* The Bank Id, Handle and Device Id will be null for Beneficiary  */
+ALTER TABLE `p2p_bank_accounts` MODIFY `device_id` VARCHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NULL,
+                                MODIFY `handle` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_bin NULL,
+                                MODIFY `bank_id` VARCHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NULL;
+
+/*  Device Id will be null for Beneficiary
+    Username has to be case insensitive, why mb4?
+    https://stackoverflow.com/questions/901066/mysql-case-sensitive-search-for-utf8-bin-field */
+ALTER TABLE `p2p_vpa` MODIFY `device_id` VARCHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NULL,
+                      MODIFY `username` VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+-- P2P - Beneficiary Handling #11532

@@ -243,38 +243,6 @@ return [
         ],
     ],
 
-    'testPostpaidFeeModel' => [
-        'setup' => [
-            'create_partner'     => [
-                'id'   => 'BptVjGnFv6ITBm',
-                'type' => 'fully_managed',
-            ],
-            'create_plans'       => [
-                [
-                    'plan_id'      => '200MerchantPln',
-                    'percent_rate' => '200',
-                ],
-                [
-                    'plan_id'      => '180PartnerPlan',
-                    'percent_rate' => '180',
-                ],
-            ],
-            'attach_submerchant' => [
-                'partner_id'      => 'BptVjGnFv6ITBm',
-                'pricing_plan_id' => '200MerchantPln',
-                'fee_model'       => 'postpaid',
-            ],
-            'define_config'      => [
-                'type'             => 'partner',
-                'implicit_plan_id' => '180PartnerPlan',
-            ],
-            'create_payment'     => [
-                'amount' => 4000 * 100, // paise
-                'auth'   => 'partner',
-            ],
-        ],
-    ],
-
     'testCommissionDisabled' => [
         'setup' => [
             'create_partner'     => [
@@ -854,6 +822,123 @@ return [
                 'amount' => (4000 * 100) + (4000 * 100 * 18 / 100), // amount+fee
                 'auth'   => 'partner',
                 'fee'    => (4000 * 100 * 18 / 100),
+            ],
+        ],
+    ],
+
+    'testImplicitVariablePostpaid' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '180',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+                'fee_model'       => 'postpaid',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitFixedPostpaid' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'    => 'BptVjGnFv6ITBm',
+                'type'  => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => 200,
+                ],
+                [
+                    'plan_id'      => '003PartnerPlan',
+                    'percent_rate' => 30,
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+                'fee_model'       => 'postpaid',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '003PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testExplicitPostpaid' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'fee_model'       => 'postpaid',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'explicit_plan_id' => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitFixedAndExplicitPostpaid' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => 'FixedCommPlanA',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '800',
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => 'FixedCommPlanA',
+                'explicit_plan_id' => 'FixedCommPlanA',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
             ],
         ],
     ],

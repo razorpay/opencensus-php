@@ -314,6 +314,10 @@ class Processor
         {
             (new Payment\Analytics\Service)->setMetadataForPublicAuthPayment($input);
         }
+        else if ($this->app['basicauth']->isAppAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
+        }
     }
 
     public function getPayment(): Payment\Entity
@@ -836,11 +840,21 @@ class Processor
             return;
         }
 
+        $this->trace->info(TraceCode::CPS_ROUTE_CONFIG, [
+            'payment_id' => $payment->getId(),
+            'cps_config' => Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false),
+        ]);
+
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
 
             $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
+
+            $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
+                'payment_id'     => $payment->getId(),
+                'razorx_variant' => $variant,
+            ]);
 
             if (strtolower($variant) === 'cps')
             {

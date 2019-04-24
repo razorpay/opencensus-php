@@ -38,6 +38,7 @@ class Scrooge
         'retry'                         => 'retry',
         'get_reports'                   => 'reports',
         'bulk_status_update'            => 'bulk-status-update',
+        'bulk_reference1_update'        => 'bulk-reference1-update',
         'get_refunds'                   => 'refunds',
         'get_dashboard_init_data'       => 'init',
         'status_update'                 => 'status-update',
@@ -138,6 +139,19 @@ class Scrooge
     public function bulkUpdateRefundStatus(array $input,  bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function bulkUpdateRefundReference1(array $input,  bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_reference1_update'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

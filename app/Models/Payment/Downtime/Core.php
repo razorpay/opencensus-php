@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Downtime;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,7 +14,7 @@ class Core extends Base\Core
     public function create(array $input): Entity
     {
         $this->trace->info(
-            TraceCode::METHOD_DOWNTIME_CREATE,
+            TraceCode::PAYMENT_DOWNTIME_CREATE,
             $input
         );
 
@@ -26,7 +27,7 @@ class Core extends Base\Core
 
     public function edit(Entity $downtime, array $input): Entity
     {
-        $this->trace->info(TraceCode::METHOD_DOWNTIME_EDIT, $input);
+        $this->trace->info(TraceCode::PAYMENT_DOWNTIME_EDIT, $input);
 
         $downtime->edit($input);
 
@@ -39,11 +40,14 @@ class Core extends Base\Core
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes();
 
-        $this->processUpi($gatewayDowntimes);
-    }
+        foreach (Payment\Method::getAllPaymentMethods() as $method)
+        {
+            $downtimeProcessor = __NAMESPACE__ . '\\' . studly_case($method) . 'Processor';
 
-    protected function processUpi(Collection $gatewayDowntimes)
-    {
-        (new UpiProcessor)->process($gatewayDowntimes);
+            if (class_exists($downtimeProcessor) === true)
+            {
+                (new $downtimeProcessor)->process($gatewayDowntimes);
+            }
+        }
     }
 }

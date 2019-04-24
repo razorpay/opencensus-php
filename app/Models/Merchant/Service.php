@@ -39,6 +39,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
@@ -2680,6 +2681,20 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch the list of all merchants the submerchant is associated with
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function fetchAffiliatedPartners(string $merchantId): array
+    {
+        $partners = $this->core()->fetchAffiliatedPartners($merchantId);
+
+        return $partners->toArrayPublic();
+    }
+
+    /**
      * Takes Merchant from auth context and sends it to razorx.
      *
      * @param string $featureFlag
@@ -2950,5 +2965,13 @@ class Service extends Base\Service
         $this->sendSubMerchantCreationMail($subMerchant, $merchant, $subMerchantUser, true, true);
 
         return ['success' => true];
+    }
+
+    public function onboardMerchant(string $id, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        return (new TerminalService)->onboardMerchant($merchant, $input, false)
+                                    ->toArrayPublic();
     }
 }

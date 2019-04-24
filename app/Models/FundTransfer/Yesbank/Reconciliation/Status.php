@@ -319,6 +319,16 @@ class Status extends BaseStatus
     /**
      * {{@inheritdoc}}
      */
+    public static function getInternalErrorStatus(): array
+    {
+        return [
+            self::TECHNICAL_ERROR,
+        ];
+    }
+
+    /**
+     * {{@inheritdoc}}
+     */
     public static function getCriticalErrorRemarks(): array
     {
         return [];
@@ -364,6 +374,19 @@ class Status extends BaseStatus
         }
 
         return self::STATUS_MAP[$status][$identifier] ?? $status;
+    }
+
+    public static function isInternalError(Attempt\Entity $entity): bool
+    {
+        $bankStatusCode = $entity->getBankStatusCode();
+
+        if((self::isCriticalError($entity) === true) or
+            (in_array($bankStatusCode, self::getInternalErrorStatus(), true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

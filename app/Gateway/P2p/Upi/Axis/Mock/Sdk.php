@@ -42,6 +42,8 @@ class Sdk
 
         $content = $this->{$action}();
 
+        $this->content($content, $this->action);
+
         return $content;
     }
 

@@ -285,8 +285,8 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * Overwritng this here, as we want to reuse the find method overriden
-     * in certain repository classes (required for query caching). We want to execurte find and throw exception
+     * Overwriting this here, as we want to reuse the find method overridden
+     * in certain repository classes (required for query caching). We want to execute find and throw exception
      * if the entity is not found.
      *
      * TODO: Move this to spine

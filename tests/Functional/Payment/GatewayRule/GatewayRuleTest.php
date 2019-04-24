@@ -2,6 +2,8 @@
 
 namespace RZP\Functional\Payment\GatewayRule;
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -153,5 +155,160 @@ class GatewayRuleTest extends TestCase
         }
 
         return $ruleIds;
+    }
+
+    public function testGatewayRuleAuthSorterLoadTest()
+    {
+        $this->ba->adminAuth();
+
+        $testDataRule1 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'hdfc',
+                        'type'          => 'sorter',
+                        'load'          => 50,
+                        'group'         => 'authentication',
+                        'auth_type'     => '3ds',
+                        'step'          => 'authentication',
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule1);
+
+        $testDataRule2 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'first_data',
+                        'type'          => 'sorter',
+                        'load'          => 100,
+                        'group'         => 'authentication',
+                        'auth_type'     => '3ds',
+                        'step'          => 'authentication',
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule2);
+
+        $testDataRule3 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'first_data',
+                        'type'          => 'sorter',
+                        'load'          => 100,
+                        'group'         => 'authentication',
+                        'auth_type'     => 'headless_otp',
+                        'step'          => 'authentication',
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                'response' => [
+                    'content' =>[
+                        'error' => [
+                            'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                            'description' => 'Load across all gateway rules must be less than 100 percent',
+                        ]
+                    ],
+                    'status_code' => 400
+                    ],
+                'exception' => [
+                    'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                ],
+        ];
+
+
+        $this->runRequestResponseFlow($testDataRule3);
+    }
+
+    public function testGatewayRuleAuthFilterTest()
+    {
+        $this->ba->adminAuth();
+
+        $testDataRule1 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'hdfc',
+                        'type'          => 'filter',
+                        'filter_type'   => 'select',
+                        'group'         => 'authentication',
+                        'auth_type'     => '3ds',
+                        'step'          => 'authentication',
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule1);
+
+        $testDataRule2 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'cybersource',
+                        'type'          => 'filter',
+                        'filter_type'   => 'select',
+                        'group'         => 'authentication',
+                        'auth_type'     => '3ds',
+                        'step'          => 'authentication',
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule2);
+
+        $testDataRule3 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'hdfc',
+                        'type'          => 'filter',
+                        'filter_type'   => 'select',
+                        'group'         => 'authentication',
+                        'auth_type'     => 'headless_otp',
+                        'step'          => 'authentication',
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                 'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule3);
     }
 }
