@@ -827,7 +827,7 @@ class TransactionFilter extends Terminal\Filter
         $payment = $this->input['payment'];
 
         if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === false) or
-            ($terminal->getCapability() === Terminal\Capability::ALL))
+            ($terminal->getCapability() !== Terminal\Capability::AUTHORIZE))
         {
             return true;
         }

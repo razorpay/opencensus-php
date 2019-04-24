@@ -476,7 +476,6 @@ class TerminalAuthenticationTest extends TestCase
             'capability' => 2
         ]);
 
-
         $cardArray = [
             'number'        => '4012001036275556',
             'expiry_month'  => '1',

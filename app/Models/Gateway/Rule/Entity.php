@@ -138,7 +138,6 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
     ];
 
-
     /**
      * Attributes which define search criteria for both sorter / filter rules
      */
