@@ -1543,6 +1543,7 @@ trait Authorize
                 TraceCode::AUTH_SELECTION_FAILURE,
                 [
                     'payment_id'  => $payment->getId(),
+                    'payment_auth_type' => $payment->getAuthType(),
                 ]
             );
         }
