@@ -11,8 +11,7 @@ class Mcc
     {
         $blacklistedMccs = Cache::get(ConfigKey::PAYSECURE_BLACKLISTED_MCCS);
 
-        if ((empty($blacklistedMccs) === false) and
-            (isset($blacklistedMccs[$mcc]) === true))
+        if (empty($blacklistedMccs[$mcc]) === false)
         {
             return $blacklistedMccs[$mcc];
         }
