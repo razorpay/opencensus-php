@@ -15,6 +15,9 @@ use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
+    // 10 minutes
+    const DEFAULT_DOWNTIME_DURATION = 600;
+
     /**
      * Prevent duplicate creation of the same error model.
      * Basically, since we pass an empty 'to', it means, this is for an unscheduled
@@ -177,6 +180,27 @@ class Core extends Base\Core
                           ->fetchApplicableDowntimesForPayment($params);
 
         return $downtimes;
+    }
+
+    public function createForGatewayException(string $gateway, array $gatewayData)
+    {
+        $method = $gatewayData['payment']['method'];
+
+        if ((new GatewayErrorThrottler($gateway, $method))->attempt() === false)
+        {
+            $now = Carbon::now()->getTimestamp();
+
+            $this->create([
+                Entity::GATEWAY     => $gateway,
+                Entity::REASON_CODE => ReasonCode::HIGHER_ERRORS,
+                Entity::BEGIN       => $now,
+                Entity::END         => $now + self::DEFAULT_DOWNTIME_DURATION,
+                Entity::METHOD      => $gatewayData['payment']['method'],
+                Entity::SOURCE      => Source::INTERNAL,
+                Entity::COMMENT     => 'Downtime created by internal gateway response analysis and throttling',
+                Entity::SCHEDULED   => false,
+            ]);
+        }
     }
 
     /**

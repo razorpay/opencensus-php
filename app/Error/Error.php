@@ -93,6 +93,19 @@ class Error extends Support\Fluent
         return in_array($internalCode, $terminalRelatedErrors, true);
     }
 
+    public function isGatewayDowntimeError()
+    {
+        $gatewayDowntimeRelatedErrors = [
+            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+            ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+            ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ];
+
+        $internalCode = $this->getInternalErrorCode();
+
+        return in_array($internalCode, $gatewayDowntimeRelatedErrors, true);
+    }
+
     protected function setInternalErrorCode($code)
     {
         self::checkErrorCode($code);
