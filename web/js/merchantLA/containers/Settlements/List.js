@@ -104,7 +104,7 @@ export default class SettlementsListContainer extends ListContainer {
                 How settlements work?&nbsp;<span class="icon i-external-link" />
               </a>
               {this.props.balanceData.loading ? (
-                <PlaceholderLoader />
+                <PlaceholderLoader style={{ width: 150 }} />
               ) : (
                 <span class="settlement-balance-amount">
                   Current Balance:{' '}
