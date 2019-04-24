@@ -52,7 +52,7 @@ export default {
   addons: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
   virtual_accounts: ['owner', 'admin', 'manager', 'operations', 'finance'],
   customers: ['owner', 'admin', 'manager'],
-  reports: ['owner', 'admin', 'manager', 'rbl_supervisor'],
+  reports: ['owner', 'admin', 'manager', 'rbl_supervisor', 'agent'],
   api_keys: ['owner', 'admin'],
   profile: [
     'owner',
