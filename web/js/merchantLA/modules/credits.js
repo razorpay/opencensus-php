@@ -2,6 +2,7 @@ import { merchantFetch } from 'merchantLA/utils/ajax';
 import { merge, set } from 'rzp/utils/immutable';
 
 const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS';
+const FETCH_BALANCE = 'FETCH_BALANCE';
 
 const getCreditsData = _ => merchantFetch('credits');
 const fetchBalance = _ => merchantFetch('balance');
@@ -17,6 +18,15 @@ export const fetchCreditBalance = () => {
       ) {
         throw "Couldn't load credits data";
       }
+      return values;
+    }),
+  };
+};
+
+export const fetchBalanceAction = () => {
+  return {
+    type: FETCH_BALANCE,
+    payload: fetchBalance().then(values => {
       return values;
     }),
   };
@@ -41,6 +51,13 @@ export default function(state = initialState, action) {
         loading: false,
         creditsData: action.payload[0].data,
         balanceData: action.payload[1].data,
+        error: null,
+      });
+
+    case `${FETCH_BALANCE}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        balanceData: action.payload.data,
         error: null,
       });
 

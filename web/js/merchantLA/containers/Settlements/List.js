@@ -13,7 +13,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import { fetchCreditBalance } from 'merchantLA/modules/credits';
+import { fetchBalanceAction } from 'merchantLA/modules/credits';
 import Amount from 'rzp/ui/Amount';
 
 @connect(
@@ -25,14 +25,14 @@ import Amount from 'rzp/ui/Amount';
   }),
   {
     fetchAll,
-    fetchCreditBalance,
+    fetchBalanceAction,
     ...ModalActions,
   }
 )
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
     if (this.props.user.current && !this.props.credits.balanceData.balance) {
-      this.props.fetchCreditBalance();
+      this.props.fetchBalanceAction();
     }
 
     window.rzpAnalytics({
