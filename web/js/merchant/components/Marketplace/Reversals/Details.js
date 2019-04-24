@@ -68,7 +68,7 @@ export default class ReversalDetails extends Component {
                   <EntityDetailRow
                     label="Customer Refund ID"
                     value={_ => {
-                      reversal.customer_refund_id;
+                      return reversal.customer_refund_id;
                     }}
                   />
                 )}

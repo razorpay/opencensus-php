@@ -21,7 +21,11 @@ import Amount from 'rzp/ui/Amount';
 )
 export default class ReversalsListContainer extends Component {
   componentDidMount() {
-    if (this.props.user.current && !this.props.credits.balanceData.balance) {
+    if (
+      this.props.user.current &&
+      !this.props.credits.balanceData.balance &&
+      this.props.user.features.includes('allow_reversals_from_la')
+    ) {
       this.props.fetchCreditBalance();
     }
   }
@@ -33,7 +37,8 @@ export default class ReversalsListContainer extends Component {
       balance = isBalanceSource
         ? balanceData.balance
         : balanceData.refund_credits,
-      balanceTitle = isBalanceSource ? 'Current Balance:' : 'Refund Credits:';
+      balanceTitle = isBalanceSource ? 'Current Balance:' : 'Refund Credits:',
+      showRefundToCustomer = user.features.includes('allow_reversals_from_la');
 
     return (
       <div>
@@ -42,37 +47,48 @@ export default class ReversalsListContainer extends Component {
             <NavLink exact to="/reversals">
               Reversals
             </NavLink>
-            <NavLink exact to="/reversals/batchreversals">
-              Batch
-            </NavLink>
-            {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
-            <HeaderAction>
-              <span class="reversal-balance-amount">
-                {loading ? (
-                  <PlaceholderLoader />
-                ) : (
-                  <React.Fragment>
-                    {balanceTitle}{' '}
-                    <Amount value={balance} currency={balanceData.currency} />
-                  </React.Fragment>
-                )}
-              </span>
-            </HeaderAction>
+            {showRefundToCustomer && (
+              <React.Fragment>
+                <NavLink exact to="/reversals/batchreversals">
+                  Batch
+                </NavLink>
+                {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
+                <HeaderAction>
+                  <span class="reversal-balance-amount">
+                    {loading ? (
+                      <PlaceholderLoader />
+                    ) : (
+                      <React.Fragment>
+                        {balanceTitle}{' '}
+                        <Amount
+                          value={balance}
+                          currency={balanceData.currency}
+                        />
+                      </React.Fragment>
+                    )}
+                  </span>
+                </HeaderAction>
+              </React.Fragment>
+            )}
           </header>
           <TestModeBanner />
           <content>
             <Switch>
               <Route exact path="/reversals" component={ReversalsTable} />
-              <Route
-                exact
-                path="/reversals/batchreversals"
-                component={BatchUploadList}
-              />
-              <ShowWhenRoute
-                path="/credits"
-                component={Credit}
-                additionalCondition={_ => !isBalanceSource}
-              />
+              {showRefundToCustomer && (
+                <React.Fragment>
+                  <Route
+                    exact
+                    path="/reversals/batchreversals"
+                    component={BatchUploadList}
+                  />
+                  <ShowWhenRoute
+                    path="/credits"
+                    component={Credit}
+                    additionalCondition={_ => !isBalanceSource}
+                  />
+                </React.Fragment>
+              )}
             </Switch>
           </content>
         </tabbed-container>
