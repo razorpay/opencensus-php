@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Http\Controllers\P2p\Requests;
 
 class Action extends Base\Action
 {
@@ -25,6 +26,16 @@ class Action extends Base\Action
     const AUTHORIZE_TRANSACTION         = 'authorizeTransaction';
     const AUTHORIZE_TRANSACTION_SUCCESS = 'authorizeTransactionSuccess';
 
+    const INITIATE_REJECT               = 'initiateReject';
+    const INITIATE_REJECT_SUCCESS       = 'initiateRejectSuccess';
+
     const REJECT                        = 'reject';
     const REJECT_SUCCESS                = 'rejectSuccess';
+
+    protected $actionToRoute = [
+        self::INITIATE_PAY              => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
+        self::INITIATE_COLLECT          => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
+        self::INITIATE_AUTHORIZE        => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
+        self::INITIATE_REJECT           => Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT,
+    ];
 }

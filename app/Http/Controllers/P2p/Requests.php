@@ -40,7 +40,8 @@ class Requests
     const P2P_CUSTOMER_TRANSACTIONS_FETCH                   = 'p2p_customer_transactions_fetch';
     const P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE      = 'p2p_customer_transactions_initiate_authorize';
     const P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE               = 'p2p_customer_transactions_authorize';
-    const P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT          = 'p2p_customer_transactions_reject_collect';
+    const P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT         = 'p2p_customer_transactions_initiate_reject';
+    const P2P_CUSTOMER_TRANSACTIONS_REJECT                  = 'p2p_customer_transactions_reject';
 
     const P2P_GATEWAY_CALLBACK                              = 'p2p_gateway_callback';
 }

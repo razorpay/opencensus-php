@@ -80,7 +80,6 @@ class Properties
                 $payer          = $this->getTransactionPayer(true);
                 $payee          = $this->getTransactionPayee(false);
                 $bankAccount    = $this->getTransactionBankAccount($payer);
-
                 break;
 
             case Action::INITIATE_COLLECT :
@@ -108,10 +107,8 @@ class Properties
         ]);
 
         $this->input->forget([
-            Entity::PAYER_TYPE,
-            Entity::PAYER_ID,
-            Entity::PAYEE_TYPE,
-            Entity::PAYEE_ID,
+            Entity::PAYER,
+            Entity::PAYEE,
         ]);
     }
 
@@ -120,11 +117,11 @@ class Properties
         // Since only VPA as Payer is allowed
         if ($onus === false)
         {
-            $payer = (new Vpa\Core)->find($this->input->get(Entity::PAYER_ID));
+            $payer = (new Vpa\Core)->find($this->input->get(Entity::PAYER)[Entity::ID]);
         }
         else
         {
-            $payer = (new Vpa\Core)->fetch($this->input->get(Entity::PAYER_ID));
+            $payer = (new Vpa\Core)->fetch($this->input->get(Entity::PAYER)[Entity::ID]);
         }
 
         return $payer;
@@ -135,11 +132,11 @@ class Properties
         // Since only VPA as Payee is allowed
         if ($onus === false)
         {
-            $payee = (new Vpa\Core)->find($this->input->get(Entity::PAYEE_ID));
+            $payee = (new Vpa\Core)->find($this->input->get(Entity::PAYEE)[Entity::ID]);
         }
         else
         {
-            $payee = (new Vpa\Core)->fetch($this->input->get(Entity::PAYEE_ID));
+            $payee = (new Vpa\Core)->fetch($this->input->get(Entity::PAYEE)[Entity::ID]);
         }
 
         return $payee;
