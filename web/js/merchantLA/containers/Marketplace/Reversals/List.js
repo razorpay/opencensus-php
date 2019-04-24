@@ -24,7 +24,8 @@ export default class ReversalsListContainer extends Component {
     if (
       this.props.user.current &&
       !this.props.credits.balanceData.balance &&
-      this.props.user.features.includes('allow_reversals_from_la')
+      this.props.user.merchants[this.props.user.current].refund_source ===
+        'credits'
     ) {
       this.props.fetchCreditBalance();
     }
@@ -48,47 +49,40 @@ export default class ReversalsListContainer extends Component {
               Reversals
             </NavLink>
             {showRefundToCustomer && (
-              <React.Fragment>
-                <NavLink exact to="/reversals/batchreversals">
-                  Batch
-                </NavLink>
-                {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
-                <HeaderAction>
-                  <span class="reversal-balance-amount">
-                    {loading ? (
-                      <PlaceholderLoader />
-                    ) : (
-                      <React.Fragment>
-                        {balanceTitle}{' '}
-                        <Amount
-                          value={balance}
-                          currency={balanceData.currency}
-                        />
-                      </React.Fragment>
-                    )}
-                  </span>
-                </HeaderAction>
-              </React.Fragment>
+              <NavLink exact to="/reversals/batchreversals">
+                Batch
+              </NavLink>
             )}
+            {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
+            <HeaderAction>
+              <span class="reversal-balance-amount">
+                {loading ? (
+                  <PlaceholderLoader />
+                ) : (
+                  <React.Fragment>
+                    {balanceTitle}{' '}
+                    <Amount value={balance} currency={balanceData.currency} />
+                  </React.Fragment>
+                )}
+              </span>
+            </HeaderAction>
           </header>
           <TestModeBanner />
           <content>
             <Switch>
               <Route exact path="/reversals" component={ReversalsTable} />
               {showRefundToCustomer && (
-                <React.Fragment>
-                  <Route
-                    exact
-                    path="/reversals/batchreversals"
-                    component={BatchUploadList}
-                  />
-                  <ShowWhenRoute
-                    path="/credits"
-                    component={Credit}
-                    additionalCondition={_ => !isBalanceSource}
-                  />
-                </React.Fragment>
+                <Route
+                  exact
+                  path="/reversals/batchreversals"
+                  component={BatchUploadList}
+                />
               )}
+              <ShowWhenRoute
+                path="/credits"
+                component={Credit}
+                additionalCondition={_ => !isBalanceSource}
+              />
             </Switch>
           </content>
         </tabbed-container>
