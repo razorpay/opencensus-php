@@ -446,14 +446,14 @@ class Selector extends Base\Core
                 $headers = ['Content-Type: application/json'];
 
                 $payment_data = [
-                    'amount' => $payment->getAmount(),
-                    'currency' => $payment->getCurrency(),
-                    'bank' => $payment->getBank(),
-                    'method' => $payment->getMethod(),
-                    'notes' => $payment->getNotes(),
+                    'amount'      => $payment->getAmount(),
+                    'currency'    => $payment->getCurrency(),
+                    'bank'        => $payment->getBank(),
+                    'method'      => $payment->getMethod(),
+                    'notes'       => $payment->getNotes(),
                     'merchant_id' => $payment->merchant->getId(),
-                    'contact' => $payment->getContact(),
-                    'email' => $payment->getEmail()
+                    'contact'     => $payment->getContact(),
+                    'email'       => $payment->getEmail()
                 ];
 
                 $downtimes = $this->repo->useSlave(function () use ($filteredTerminals) {
@@ -463,11 +463,11 @@ class Selector extends Base\Core
                 $failedTerminalIds = $this->options->getFailedTerminals();
 
                 $data = [
-                    'payment' => $payment_data,
-                    'merchant' => $merchant,
-                    'allTerminals' => $allTerminals,
-                    'sortedTerminals' => $sortedTerminals,
-                    'downtimes' => $downtimes,
+                    'payment'            => $payment_data,
+                    'merchant'           => $merchant,
+                    'allTerminals'       => $allTerminals,
+                    'sortedTerminals'    => $sortedTerminals,
+                    'downtimes'          => $downtimes,
                     'failedTerminalsIds' => $failedTerminalIds,
                 ];
 
