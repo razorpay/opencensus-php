@@ -109,4 +109,22 @@ class TransactionHelper extends P2pHelper
 
         return $this->get($request);
     }
+
+    public function callbackIncomingCollect(string $gateway, array $content = [])
+    {
+        // This API work on direct auth
+        $this->setMerchantInContext(false);
+        $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
+
+        $request = $this->request('callback/%s', [$gateway]);
+
+        $this->resetContexts();
+
+        $default = [];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
 }

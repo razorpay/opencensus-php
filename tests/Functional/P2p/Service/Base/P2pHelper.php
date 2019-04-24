@@ -38,6 +38,12 @@ class P2pHelper
     ];
 
     /**
+     * For all API routes which has merchant key, its set true
+     * @var bool
+     */
+    protected $isMerchantInContext;
+
+    /**
      * For all API routes which starts with customer, its set true
      * @var bool
      */
@@ -65,6 +71,19 @@ class P2pHelper
         $this->resetContexts();
 
         $this->resetResponseCallbacks([[$this, 'defaultResponseCallback']]);
+    }
+
+    /**
+     * Enable or disable Merchant Context
+     *
+     * @param bool $context
+     * @return P2pHelper
+     */
+    public function setMerchantInContext(bool $context): self
+    {
+        $this->isMerchantInContext = $context;
+
+        return $this;
     }
 
     /**
@@ -98,6 +117,7 @@ class P2pHelper
      */
     public function resetContexts()
     {
+        $this->setMerchantInContext(true);
         $this->setCustomerInContext(true);
         $this->setDeviceInContext(true);
     }
@@ -402,14 +422,20 @@ class P2pHelper
 
     protected function makeServer()
     {
-        $servers = $this->serverHeaders;
+        $servers = [];
+
+        if ($this->isMerchantInContext === true)
+        {
+            $servers = $this->serverHeaders;
+
+            // We only expect vpa handle in request for Public and Device Auth, where merchant is in context
+            $servers['HTTP_X_RAZORPAY_VPA_HANDLE'] = $this->fixtures->handle->getCode();
+        }
 
         if ($this->isDeviceInContext === true)
         {
             $servers['PHP_AUTH_PW'] = $this->fixtures->device->getAuthToken();
         }
-
-        $servers['HTTP_X_RAZORPAY_VPA_HANDLE'] = $this->fixtures->handle->getCode();
 
         return $servers;
     }
