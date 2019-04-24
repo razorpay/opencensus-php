@@ -208,6 +208,7 @@ class Entity
     const CARDLESS_EMI           = 'cardless_emi';
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
+    const UPI_AIRTEL             = 'upi_airtel';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -446,6 +447,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
+        self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,

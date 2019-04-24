@@ -11,4 +11,6 @@ class Action
     const REFUND            = 'refund';
     const VERIFY            = 'verify';
     const VERIFY_REFUND     = 'verify_refund';
+
+    const AUTHORIZE         = 'authorize';
 }

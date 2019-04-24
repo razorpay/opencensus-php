@@ -2389,6 +2389,24 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiAirtelTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_AIRTEL_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_airtel',
+            'gateway_merchant_id'       => 'razorpay upi airtel',
+            'gateway_terminal_password' => 'upipassword',
+            'upi'                       => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [

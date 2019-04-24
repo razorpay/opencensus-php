@@ -73,6 +73,7 @@ class Gateway
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
+    const UPI_AIRTEL             = 'upi_airtel';
 
     const CARD_FSS               = 'card_fss';
 
@@ -689,6 +690,7 @@ class Gateway
             self::UPI_SBI,
             self::UPI_HULK,
             self::UPI_YESBANK,
+            self::UPI_AIRTEL,
         ],
 
         Method::AEPS => [
@@ -786,6 +788,7 @@ class Gateway
         self::UPI_AXIS,
         self::UPI_RBL,
         self::UPI_YESBANK,
+        self::UPI_AIRTEL,
     ];
 
     public static $headless = [
@@ -1183,6 +1186,7 @@ class Gateway
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
+        Gateway::UPI_AIRTEL,
     ];
 
     /**

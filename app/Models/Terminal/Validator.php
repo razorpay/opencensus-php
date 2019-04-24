@@ -112,6 +112,15 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
     ];
 
+    protected static $upiAirtelTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_airtel',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+    ];
+
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
