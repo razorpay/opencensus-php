@@ -7,6 +7,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import ShowWhen from 'merchant/components/ShowWhen';
+import Button from 'component/Button';
 
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
@@ -84,6 +85,12 @@ export default ({
     }
   }
 
+  const allowUpdateSubscription = [
+    'authenticated',
+    'active',
+    'created',
+  ].indexOf(subscription.status);
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -95,6 +102,11 @@ export default ({
           <div class="panel-heading">
             <i class="i i-refresh text-main icon--formal" />{' '}
             <strong>{subscription.id}</strong>
+            <ShowWhen additionalCondition={_ => allowUpdateSubscription}>
+              <div class="pull-right">
+                <Button.Primary>Update</Button.Primary>
+              </div>
+            </ShowWhen>
           </div>
 
           <div class="SliderPanel__Body">
