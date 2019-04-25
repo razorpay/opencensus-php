@@ -30,8 +30,13 @@ return [
 
     'testGetCommissionById' => [
         'request'  => [
-            'url'    => '/commissions/{id}',
-            'method' => 'GET',
+            'url'     => '/commissions/{id}',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => [
+                    'source.merchant',
+                ],
+            ],
         ],
         'response' => [
             'content' => [
@@ -41,7 +46,7 @@ return [
                 'partner_id'  => 'DefaultPartner',
                 'source_type' => 'payment',
                 'merchant'    => [
-                    'id' => 'submerchantNum'
+                    'id' => 'submerchantNum',
                 ],
             ],
         ],
