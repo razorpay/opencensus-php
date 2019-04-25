@@ -24,11 +24,11 @@ class Validator extends Base\Validator
     // validation for the actual operation.
     //
     protected static $createRules = [
-        Entity::DESTINATION     => 'required|public_id',
-        Entity::PURPOSE         => 'sometimes|string',
-        Entity::AMOUNT          => 'sometimes|integer',
-        Entity::CURRENCY        => 'sometimes|size:3',
-        Entity::NOTES           => 'sometimes|notes',
+        Entity::DESTINATION          => 'required|public_id',
+        Entity::PURPOSE              => 'sometimes|string',
+        Entity::AMOUNT               => 'sometimes|integer',
+        Entity::CURRENCY             => 'sometimes|size:3',
+        Entity::NOTES                => 'sometimes|notes',
         Entity::CUSTOMER_ID          => 'sometimes|public_id',
         Entity::DESTINATION          => 'sometimes|public_id',
         Entity::TYPE                 => 'sometimes|string',
@@ -144,7 +144,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateQueued($attribute, $value)
+    protected function validateQueueIfLowBalance($attribute, $value)
     {
         if (boolval($value) === false)
         {
