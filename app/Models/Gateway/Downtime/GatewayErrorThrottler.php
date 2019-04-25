@@ -111,10 +111,7 @@ class GatewayErrorThrottler
 
     protected function loadSettingsFromRedis(): array
     {
-        return $this->redis->pipeline(function ($pipe) {
-                /** @var $pipe Pipeline */
-                $pipe->hgetall(self::SETTINGS_KEY);
-            });
+        return $this->redis->hgetall(self::SETTINGS_KEY);
     }
 
     protected function attemptThrottleAndReturnAllowedIfApplicable(): bool
@@ -193,7 +190,7 @@ class GatewayErrorThrottler
      * @param  int|string $default
      * @return int|string
      */
-    protected function getThrottleValue(string $key, $default): int
+    protected function getThrottleValue(string $key, $default)
     {
         //
         // Redis data structures which is used in cascading fashion to get

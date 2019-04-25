@@ -937,7 +937,7 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client'])
                           ->getMock();
 
         Redis::shouldReceive('connection')

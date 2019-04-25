@@ -75,6 +75,7 @@ trait PaymentTrait
      * @var boolean
      */
     protected $failPaymentOnBankPage = false;
+    protected $gatewayDown = false;
 
     protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency = 'INR')
     {

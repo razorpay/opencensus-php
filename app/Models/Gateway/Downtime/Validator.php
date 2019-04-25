@@ -369,7 +369,8 @@ class Validator extends Base\Validator
 
         $gateway = strtolower($input[Entity::GATEWAY]);
 
-        if ($gateway === strtolower(Entity::ALL))
+        if (($gateway === strtolower(Entity::ALL)) or
+            ($gateway === Gateway::SHARP))
         {
             return;
         }
