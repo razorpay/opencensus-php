@@ -110,6 +110,8 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
+        // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
+
         if (empty($gatewayInput['selected_terminals_ids']) === false)
         {
             $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
@@ -1541,6 +1543,7 @@ trait Authorize
                 TraceCode::AUTH_SELECTION_FAILURE,
                 [
                     'payment_id'  => $payment->getId(),
+                    'payment_auth_type' => $payment->getAuthType(),
                 ]
             );
         }
@@ -4241,7 +4244,8 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) and
+                if (((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+                     ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE)) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)
@@ -4413,7 +4417,6 @@ trait Authorize
      */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
-
         // temp change.
         $merchantIds = [
             '8S0i1kWYyF2woQ', // swiggy
@@ -4431,16 +4434,6 @@ trait Authorize
         if ($vault === true)
         {
             $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
-        }
-
-        if ($vault === false)
-        {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
-
-            if (strtolower($response) === 'on')
-            {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-            }
         }
 
         $cardCore = new Card\Core;

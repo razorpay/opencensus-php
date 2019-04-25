@@ -70,4 +70,6 @@ class Fields
     // --------------------- VPA -------------------- //
     const CUSTOMER_VPA                  = 'customerVpa';
     const AVAILABLE                     = 'available';
+    const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
+    const CUSTOMER_NAME                 = 'customerName';
 }

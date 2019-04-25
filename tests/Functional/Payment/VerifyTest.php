@@ -36,7 +36,7 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $this->ba->appAuth();
 
@@ -89,7 +89,7 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', [
@@ -104,7 +104,7 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -114,40 +114,54 @@ class VerifyTest extends TestCase
 
     public function testVerifyMultipleFailedPaymentsByVerifyAt()
     {
-        $this->setupRedisMock();
-
-        $createdAt = time() - 180;
-
-        $payment = $this->fixtures->create(
-            'payment:netbanking_failed', ['created_at' => $createdAt]);
-
-        $createdAt = time() - 240;
-
-        $payment2 = $this->fixtures->create(
-            'payment:netbanking_failed', ['created_at' => $createdAt]);
-
-        $time = Carbon::now(Timezone::IST);
-
-        $time->addMinutes(15);
-
+        // These tests are always so much easier to debug
+        // if they aren't affected by the current time.
+        $time = Carbon::create(2018, 1, 1, 12, 0, 0, Timezone::IST);
+        // It's 12:00pm now
         Carbon::setTestNow($time);
 
+        $this->setupRedisMock();
+
+        // A payment created at 11.57am, verify_at 12.07pm
+        $createdAt = Carbon::now()->subMinutes(3);
+        $verifyAt = $createdAt->addMinutes(10);
+        $this->fixtures->create('payment:netbanking_failed', [
+            'id'         => 'verifyPayment1',
+            'created_at' => $createdAt->getTimestamp(),
+            'verify_at'  => $verifyAt->getTimestamp(),
+        ]);
+
+        // A payment created at 11.56pm, verify_at 12.06pm
+        $createdAt = Carbon::now()->subMinutes(4);
+        $verifyAt = $createdAt->addMinutes(10);
+        $this->fixtures->create('payment:netbanking_failed', [
+            'id'         => 'verifyPayment2',
+            'created_at' => $createdAt->getTimestamp(),
+            'verify_at'  => $verifyAt->getTimestamp(),
+        ]);
+
+        // A third payment was created in `setUp`, it's outside our verify window
+
+        // It's 12:14pm now
+        $time = Carbon::create(2018, 1, 1, 12, 14, 0, Timezone::IST);
+        Carbon::setTestNow($time);
+
+        // Verify is called with delay=300. This means payments with
+        // verify_at between now-300 and now-3*300 will be considered.
+        // For this test, that's 11:59pm to 12:09pm, so both payments.
         $this->startTest();
-
-        Carbon::setTestNow();
     }
-
 
     public function testVerifyMultipleFailedPayments()
     {
         $this->setupRedisMock();
 
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $createdAt = time() - 240;
+        $createdAt = Carbon::now()->subMinutes(4)->getTimestamp();
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -165,7 +179,7 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -247,12 +261,12 @@ class VerifyTest extends TestCase
 
     public function testVerifyWithLockedPayments()
     {
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
 
-        $createdAt = time() - 240;
+        $createdAt = Carbon::now()->subMinutes(4)->getTimestamp();
 
         $payment2 = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -273,7 +287,7 @@ class VerifyTest extends TestCase
 
     public function testVerifyWithLockedPaymentsExceedingThreshold()
     {
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $payment = $this->fixtures->times(102)->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -339,7 +353,7 @@ class VerifyTest extends TestCase
 
         Carbon::setTestNow();
 
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_created', ['created_at' => $createdAt]);
@@ -563,7 +577,7 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        $createdAt = time() - 3600;
+        $createdAt = Carbon::now()->subHour()->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -593,7 +607,7 @@ class VerifyTest extends TestCase
 
         $data = $this->testData['testInvalidFilter'];
 
-        $createdAt = time() - 3600;
+        $createdAt = Carbon::now()->subHour()->getTimestamp();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -618,7 +632,12 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100, 'method'=>'netbanking']);
+        $createdAt = Carbon::now()->subMinutes(100)->getTimestamp();
+
+        $payment = $this->fixtures->create('payment:status_created', [
+            'created_at' => $createdAt,
+            'method'=>'netbanking'
+        ]);
 
         $filter = 'payments_failed';
 
@@ -918,6 +937,12 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+               ->andReturn($redisMock);
+
         Redis::shouldReceive('hGetAll')
             ->andReturn([]);
 
@@ -930,26 +955,43 @@ class VerifyTest extends TestCase
         Redis::shouldReceive('incr')
             ->andReturn(1);
 
-        Redis::shouldReceive('set')
-            ->andReturnUsing(
-                function ($arg) use ($paymentArray)
-                {
-                    foreach ($paymentArray as $payment)
-                    {
-                        if ('mutex:' . $payment['id'] . '_verify' === $arg)
-                        {
-                            return null;
-                        }
-                    }
-                    return true;
-                });
-
-        Redis::shouldReceive('get')
+         Redis::shouldReceive('expire')
             ->andReturn(true);
+
+        $redisMock->method('set')->will($this->returnCallback(function ($resourceId, $requestId) use ($paymentArray)
+        {
+            foreach ($paymentArray as $payment)
+            {
+                if ('mutex:' . $payment['id'] . '_verify' === $resourceId)
+                {
+                        return null;
+                }
+            }
+            return true;
+        }));
+
+        $store = \Cache::store();
+
+        \Cache::shouldReceive('store')
+                ->withAnyArgs()
+                ->andReturn($store);
+
+
+        \Cache::shouldReceive('get')
+                ->andReturn([]);
+
+        $redisMock->method('get')->will($this->returnValue(''));
     }
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])
     {
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function() use($conn){
+                return $conn;
+             });
+
         Redis::shouldReceive('hGetAll')
             ->andReturn(
                 [],
@@ -985,6 +1027,13 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMockForBlockedPayments()
     {
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function() use($conn){
+                return $conn;
+             });
+
         Redis::shouldReceive('hGetAll')
             ->andReturn(
                 [],
@@ -1167,6 +1216,7 @@ class VerifyTest extends TestCase
             'not_applicable' => 0,
             'unknown'        => 0,
             'bucket_filter'  => [],
+            'request_error'  => 0
         ];
 
         $total = array_sum($defaultParams);

@@ -20,8 +20,6 @@ class PaysecureGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->markTestSkipped("Rupay disabled from network list of Hitachi");
-
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -77,6 +75,24 @@ class PaysecureGatewayTest extends TestCase
         $this->assertSuccess($authResponse, 'redirect');
 
         return $authResponse;
+    }
+
+    public function testPaymentAuthViaRedirectForBlacklistedMcc()
+    {
+        $this->addBlacklistConfig(['6012' => '7994']);
+
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+    }
+
+    public function testS2SPaymentAuthViaRedirect()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $authResponse = $this->doS2SPrivateAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
     }
 
     /**
@@ -478,5 +494,20 @@ class PaysecureGatewayTest extends TestCase
         );
 
         return $payment;
+    }
+
+    protected function addBlacklistConfig(array $mapping)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:paysecure_blacklisted_mccs' => $mapping
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }

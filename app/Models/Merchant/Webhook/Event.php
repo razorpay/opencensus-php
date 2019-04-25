@@ -46,6 +46,8 @@ class Event
     const PAYOUT_PROCESSED                  = 'payout.processed';
     const PAYOUT_REVERSED                   = 'payout.reversed';
     const FUND_ACCOUNT_VALIDATION_COMPLETED = 'fund_account.validation.completed';
+    const PAYMENT_DOWNTIME_STARTED          = 'payment.downtime.started';
+    const PAYMENT_DOWNTIME_RESOLVED         = 'payment.downtime.resolved';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -79,6 +81,8 @@ class Event
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
+        self::PAYMENT_DOWNTIME_STARTED,
+        self::PAYMENT_DOWNTIME_RESOLVED,
     ];
 
     /**
@@ -118,6 +122,8 @@ class Event
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
+        self::PAYMENT_DOWNTIME_STARTED,
+        self::PAYMENT_DOWNTIME_RESOLVED,
     ];
 
     protected static $bitPosition = [
@@ -153,6 +159,8 @@ class Event
         self::PAYOUT_PROCESSED                  => 30,
         self::PAYOUT_REVERSED                   => 31,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => 32,
+        self::PAYMENT_DOWNTIME_STARTED          => 33,
+        self::PAYMENT_DOWNTIME_RESOLVED         => 34,
     ];
 
     /**
@@ -188,6 +196,8 @@ class Event
         self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
+        self::PAYMENT_DOWNTIME_STARTED          => [Product::PRIMARY],
+        self::PAYMENT_DOWNTIME_RESOLVED         => [Product::PRIMARY],
     ];
 
     /**
@@ -224,6 +234,8 @@ class Event
         self::PAYOUT_PROCESSED                  => Entity::PAYOUT,
         self::PAYOUT_REVERSED                   => Entity::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => FundAccount\Validation\Entity::PUBLIC_ENTITY_NAME,
+        self::PAYMENT_DOWNTIME_STARTED          => Entity::PAYMENT_DOWNTIME,
+        self::PAYMENT_DOWNTIME_RESOLVED         => Entity::PAYMENT_DOWNTIME,
     ];
 
     public static $eventsToFeatureMap = [

@@ -26,6 +26,8 @@ class Processor extends Base\Core
 
     protected $mutex;
 
+    protected $logging;
+
     /**
      * Merchant keyed by ID for easy access later
      */
@@ -46,6 +48,8 @@ class Processor extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->logging = true;
     }
 
     /**
@@ -59,6 +63,8 @@ class Processor extends Base\Core
     public function processDailySettlements(array $input)
     {
         $this->increaseAllowedSystemLimits();
+
+        $this->setTraceStatus($input);
 
         $mutexResource = sprintf(self::MUTEX_DAILY_RESOURCE, $this->mode);
 
@@ -109,6 +115,8 @@ class Processor extends Base\Core
 
     public function process(array $input, $channel)
     {
+        $this->setTraceStatus($input);
+
         $this->preSettlementProcessing($input);
 
         $useQueue = $this->shouldUseQueue($input);
@@ -793,4 +801,26 @@ class Processor extends Base\Core
         return $mids;
     }
 
+    public function enableLogs()
+    {
+        $this->logging = true;
+    }
+
+    public function disableLogs()
+    {
+        $this->logging = false;
+    }
+
+    public function isLogEnabled()
+    {
+        return $this->logging;
+    }
+
+    protected function setTraceStatus(array $input)
+    {
+        if (array_key_exists('logging', $input) === true)
+        {
+            $this->logging = (bool)$input['logging'];
+        }
+    }
 }

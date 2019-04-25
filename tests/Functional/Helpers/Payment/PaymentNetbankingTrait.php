@@ -27,6 +27,9 @@ trait PaymentNetbankingTrait
             $gateway === 'netbanking_corporation' or
             $gateway === 'netbanking_canara')
         {
+            // Make sure bank's callback are on public auth
+            $this->ba->publicCallbackAuth();
+
             $response = $this->sendRequest($data);
             $this->assertEquals($response->getStatusCode(), '302');
 

@@ -141,15 +141,15 @@ class Setup
         $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
 
         $transfer = $this->fixtures->create(
-                        'transfer:to_account',
-                        [
-                            'account'       => $account,
-                            'source_id'     => $payment->getId(),
-                            'source_type'   => 'payment',
-                            'amount'        => 2500,
-                            'currency'      => 'INR',
-                            'on_hold'       => '0',
-                        ]);
+            'transfer:to_account',
+            [
+                'account'       => $account,
+                'source_id'     => $payment->getId(),
+                'source_type'   => 'payment',
+                'amount'        => 2500,
+                'currency'      => 'INR',
+                'on_hold'       => '0',
+            ]);
 
         $output['source_entity'] = $transfer;
     }
@@ -175,9 +175,11 @@ class Setup
     protected function getDefaultPartnerConfig()
     {
         return [
-            'default_plan_id' => '1hDYlICobzOCYt',
-            'implicit_plan_id' => '',
-            'commissions_enabled' => true,
+            'default_plan_id'        => '1hDYlICobzOCYt',
+            'implicit_plan_id'       => null,
+            'explicit_plan_id'       => null,
+            'commissions_enabled'    => true,
+            'explicit_should_charge' => 0,
         ];
     }
 

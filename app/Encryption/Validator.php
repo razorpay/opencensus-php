@@ -19,4 +19,9 @@ class Validator extends Base\Validator
         AESEncryption::IV          => 'sometimes|string',
         AESEncryption::SECRET      => 'required|string',
     ];
+
+    protected static $aesGcmEncryptionRules = [
+        AESEncryption::IV          => 'sometimes|string',
+        AESEncryption::SECRET      => 'required|string',
+    ];
 }

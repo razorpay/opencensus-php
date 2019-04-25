@@ -53,6 +53,10 @@ class Gateway extends Base\Gateway
      */
     protected $s2sFlowFlag = false;
 
+    protected $verifyInternalErrorCodes = [
+        ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+    ];
+
     public function setGatewayParams($input, $mode, $terminal)
     {
         parent::setGatewayParams($input, $mode, $terminal);
@@ -971,6 +975,34 @@ class Gateway extends Base\Gateway
                                                                            ->ProcessorApprovalCode
             ];
 
+            if ($this->shouldUpdatePaymentInternalErrorCode($input['payment']) === true)
+            {
+                $approvalCode = (string) $verifyAuthResponse->children('ipgapi', true)->IPGApiOrderResponse
+                                                                                      ->ApprovalCode;
+
+                $this->setApproval($approvalCode);
+
+                // there could be cases when payment is successful at gateway end and not successful at our end
+                // also there could be case where it has failed at both the ends, in both the cases we would want to update the
+                // payment internal error code with actual error code returned by the gateway. Only in cases where its a happy
+                // flow, meaning payment successful at both the ends, We will not update the internal errorcode.
+
+                if ($this->approvalCode->isSuccess() !== true)
+                {
+                    $errorCode = $this->approvalCode->getErrorCode();
+
+                    $internalErrorCode = ErrorCodes::getMappedCode($errorCode);
+
+                    $exception = new Exception\GatewayErrorException($internalErrorCode);
+
+                    $error = $exception->getError();
+
+                    $verify->error = $error->getAttributes();
+
+                    $verifyContent[Entity::APPROVAL_CODE] = $this->approvalCode->getFormattedCode();
+                }
+            }
+
             $verify->gatewaySuccess = (in_array($verifyContent[Entity::STATUS],
                                                 Status::SUCCESSFUL_AUTH_STATES,
                                                 true) === true);
@@ -991,6 +1023,11 @@ class Gateway extends Base\Gateway
         // expects it to be an array. This avoids an error being thrown
         // during failed->auth process.
         $verify->setVerifyResponseContent([]);
+    }
+
+    protected function shouldUpdatePaymentInternalErrorCode($payment)
+    {
+        return in_array($payment['internal_error_code'], $this->verifyInternalErrorCodes, true);
     }
 
     protected function isRelevantVerifyType(string $type)
@@ -2035,6 +2072,13 @@ class Gateway extends Base\Gateway
         if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $networkCode) === false) or
             (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
              ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
+        {
+            $txnType = TxnType::SALE;
+        }
+
+        $terminalMode = $input['terminal']['mode'];
+
+        if ($terminalMode === Terminal\Mode::PURCHASE)
         {
             $txnType = TxnType::SALE;
         }

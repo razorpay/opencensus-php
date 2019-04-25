@@ -33,6 +33,8 @@ If everything is setup correctly, running `$ php -v` should give you 7.0.+.
 
 Note: We will use the phpunit that comes along with composer. We do not explicitly need phpunit to be installed for the docker setup.
 
+Note: If you are unable to install php-gmp, use `brew install php` to install php and gmp will be auto bundled with it. The php version that comes bundled High Sierra and does not include the gmp extension. Installing it manually does not work either since it's removed from brew. At the time of writing this, the above command installed php 7.3.3. You may need to unlink the older version. `php -v` should read 7.3.3
+
 ##### Install docker
 [Docker installation and Hello World!](https://docs.docker.com/engine/getstarted/step_one/)
 
@@ -55,7 +57,7 @@ Ensure that you have a dockerhub user that is added to the Razorpay Organization
  - Admin Contact: `nemo@razorpay.com`
 
 ###### Mac Users
-Run Docker for Mac while signed-in as this user.
+Run Docker for Mac while signed-in as this user. If it still says access denied while pulling docker images, login via the console as well using docker login.
 
 ###### Linux Users
 use the `docker login` command to sign-in with the aforementioned dockerhub user.

@@ -7,6 +7,7 @@ use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
 use RZP\Error\P2p\ErrorCode;
 use Illuminate\Http\Request;
+use RZP\Http\BasicAuth\Type;
 use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\P2p\Base\Traits;
 use RZP\Trace\P2pTraceProcessor;
@@ -37,7 +38,7 @@ class Context extends ArrayObject
 
     const OPTIONS_RULES = [
         self::REQUEST_ID                            => 'nullable|string|max:50',
-        self::HANDLE                                => 'filled|string',
+        self::HANDLE                                => 'required|string',
         self::DEVICE                                => 'array',
         self::DEVICE . '.' . Device\Entity::IP      => 'nullable|ipv4',
         self::DEVICE . '.' . Device\Entity::GEOCODE => 'nullable|string|max:20',
@@ -73,46 +74,67 @@ class Context extends ArrayObject
      */
     protected $gatewayData = [];
 
+    public function __construct()
+    {
+        $this->options = new ArrayBag();
+    }
+
     public function loadWithRequest(Request $request)
     {
-        // Setting the options first as options will be use to resolve the context
-        $this->setOptions(ContextMap::resolveRequestHeaders($request));
-
-        // Handle is set in context from the options, each HTTP request will have handle specified
-        $this->setHandle(app('repo')->p2p_handle->findOrFailPublic($this->options[self::HANDLE]));
-
-        // As the context is loaded from HTTP request, we are using the basic auth
-        // for merchant and device, later we will have to change this if we change the auth.
-        // We are only going to set the context entities if the are available in basic auth.
         $basicAuth = app('basicauth');
 
-        if (($basicAuth->getMerchant() instanceof Merchant\Entity) === false)
+        // Merchant and handle are required over Public and Device Auth
+        if (($basicAuth->getAuthType() === Type::PUBLIC_AUTH) or
+            ($basicAuth->getAuthType() === Type::DEVICE_AUTH))
         {
-            // Merchant must be in basic auth as the auth is either public or device
-            throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED);
-        }
-        $this->setMerchant($basicAuth->getMerchant());
+            // Setting the options first as options will be use to resolve the context
+            $this->setOptions(ContextMap::resolveRequestHeaders($request));
 
-        if ($basicAuth->getDevice() instanceof Device\Entity)
-        {
-            $this->setDevice($basicAuth->getDevice());
+            // Handle is set in context from the options, each HTTP request will have handle specified
+            $this->setHandle(app('repo')->p2p_handle->findOrFailPublic($this->options[self::HANDLE]));
 
-            $deviceToken = $this->device->deviceTokens()
-                                        ->handle($this->handle)
-                                        ->verified()->latest()->first();
-
-            // If there is no device token found, the context will fail
-            if (($deviceToken instanceof Device\DeviceToken\Entity) === false)
+            // As the context is loaded from HTTP request, we are using the basic auth
+            // for merchant and device, later we will have to change this if we change the auth.
+            // We are only going to set the context entities if the are available in basic auth.
+            if (($basicAuth->getMerchant() instanceof Merchant\Entity))
             {
-                throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE);
+                // Merchant must be in basic auth as the auth is either public or device
+                $this->setMerchant($basicAuth->getMerchant());
             }
-
-            // Setting the device token with the device
-            $this->setDeviceToken($deviceToken);
+            else
+            {
+                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED);
+            }
         }
+
+        // Device and Device Token are required over Device Auth
+        if ($basicAuth->getAuthType() === Type::DEVICE_AUTH)
+        {
+            if ($basicAuth->getDevice() instanceof Device\Entity)
+            {
+                $this->setDevice($basicAuth->getDevice());
+
+                $deviceToken = $this->device->deviceTokens()
+                                            ->handle($this->handle)
+                                            ->verified()->latest()->first();
+
+                // If there is no device token found, the context will fail
+                if (($deviceToken instanceof Device\DeviceToken\Entity) === false)
+                {
+                    throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE);
+                }
+
+                // Setting the device token with the device
+                $this->setDeviceToken($deviceToken);
+            }
+            else
+            {
+                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_DEVICE_REQUIRED);
+            }
+        }
+
         // Note:: We are not putting application as instance variable
         // to ensure that context is independent of application container.
-
         $this->registerServices();
     }
 

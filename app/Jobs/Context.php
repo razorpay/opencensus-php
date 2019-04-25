@@ -10,6 +10,7 @@ use RZP\Foundation\Application;
 class Context
 {
     const PREFIX = 'worker:';
+
     /**
      * @var Application
      */
@@ -40,6 +41,14 @@ class Context
         $this->mode = $job->getMode();
 
         $this->jobName = self::PREFIX . $job->getJobName();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMode()
+    {
+        return $this->mode;
     }
 
     /**

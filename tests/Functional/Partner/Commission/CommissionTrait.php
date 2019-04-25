@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Partner\Commission;
 use RZP\Models\Pricing\Calculator\Base;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
 trait CommissionTrait
 {
@@ -62,5 +63,30 @@ trait CommissionTrait
         }
 
         return ($this->getFeeWithoutTax($amount, $rate) * Constants::GST_RATE / 100);
+    }
+
+    /**
+     * This function returns commission type fee break ups
+     *
+     * @param array $payment
+     *
+     * @return mixed
+     */
+    protected function getExplicitCommissionFeeBreakup(array $payment)
+    {
+        $transactionId = $payment['transaction_id'];
+
+        $feeBreakUps = $this->getDbEntities(
+            'fee_breakup',
+            [
+                'transaction_id' => $transactionId
+            ]);
+
+        $feeBreakUps = $feeBreakUps->filter(function ($breakup) use ($transactionId)
+        {
+            return starts_with($breakup->getName(), CommissionConstants::COMMISSION_BREAK_UP_PREFIX);
+        });
+
+        return $feeBreakUps;
     }
 }

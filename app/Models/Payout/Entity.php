@@ -97,10 +97,12 @@ class Entity extends Base\PublicEntity
     const CONTACT_TYPE    = 'contact_type';
 
     // Input keys
-    const ACCOUNT_NUMBER = 'account_number';
+    const ACCOUNT_NUMBER  = 'account_number';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
+
+    const PAYOUT_MODE     = 'payout_mode';
 
     // Relations
     const USER          = 'user';

@@ -126,7 +126,7 @@ class BajajFinservEmiTest extends TestCase
             [
                 'payment_id'        => $payment->getId(),
                 'amount'            => 100,
-                'action'            => 'pay_init',
+                'action'            => 'authorize',
             ]);
 
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
@@ -224,7 +224,7 @@ class BajajFinservEmiTest extends TestCase
             [
                 'payment_id'        => $payment->getId(),
                 'amount'            => 100,
-                'action'            => 'pay_init',
+                'action'            => 'authorize',
             ]);
 
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
@@ -284,7 +284,7 @@ class BajajFinservEmiTest extends TestCase
                 'id'                => 1,
                 'payment_id'        => $payment->getId(),
                 'amount'            => 100,
-                'action'            => 'pay_verify',
+                'action'            => 'authorize',
             ]);
 
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
@@ -297,7 +297,7 @@ class BajajFinservEmiTest extends TestCase
 
         $this->assertEquals($mozart['id'], 1);
 
-        $this->assertEquals($mozart['action'], 'verify');
+        $this->assertEquals($mozart['action'], 'authorize');
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -342,7 +342,7 @@ class BajajFinservEmiTest extends TestCase
             [
                 'payment_id'        => $payment->getId(),
                 'amount'            => 100,
-                'action'            => 'pay_init',
+                'action'            => 'authorize',
             ]);
 
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);

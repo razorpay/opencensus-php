@@ -36,7 +36,7 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                   => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
         Entity::VPA                         => 'sometimes|string|max:255',
-        Entity::CATEGORY                    => 'sometimes|string|integer|digits:4',
+        Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMANDATE                    => 'sometimes|boolean',
@@ -110,6 +110,15 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string|max:20',
         Entity::TYPE                       => 'sometimes|array',
+    ];
+
+    protected static $upiAirtelTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_airtel',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
     ];
 
     protected static $atomTerminalRules = [
@@ -759,12 +768,20 @@ class Validator extends Base\Validator
 
     public function validateType()
     {
+        $type = $this->entity->getType();
+
+        if (( in_array(Type::DIRECT_SETTLEMENT_WITH_REFUND, $type) === true ) and
+            ( in_array(Type::DIRECT_SETTLEMENT_WITHOUT_REFUND, $type) === true ))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Direct Settlement Terminal should be either with refund enabled or without refund.',
+                Entity::TYPE);
+        }
+
         if ($this->entity->isBankTransferEnabled() === false)
         {
             return;
         }
-
-        $type = $this->entity->getType();
 
         if ( in_array(Type::NON_RECURRING, $type ) === false )
         {

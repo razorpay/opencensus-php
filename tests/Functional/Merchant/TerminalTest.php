@@ -335,6 +335,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateDirectSettlementTerminalValidationFailure()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateDirectSettlemtTerminalFailure()
     {
         $url = '/merchants/100000Razorpay/terminals';
@@ -345,6 +354,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateCardlessEmiTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateUpiAirtelTerminal()
     {
         $url = '/merchants/10000000000000/terminals';
 

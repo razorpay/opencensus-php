@@ -11,6 +11,7 @@ class Entity extends Base\Entity
     use Base\Traits\HasHandle;
     use Base\Traits\SoftDeletes;
     use Base\Traits\HasBankAccount;
+    use Base\Traits\BeneficiaryTrait;
 
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
@@ -100,7 +101,7 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::GATEWAY_DATA     => null,
+        Entity::GATEWAY_DATA     => [],
         Entity::BANK_ACCOUNT_ID  => null,
         Entity::BENEFICIARY_NAME => null,
         Entity::FREQUENCY        => Frequency::MULTIPLE,

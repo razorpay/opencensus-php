@@ -23,13 +23,16 @@ class CreateP2pVpaTable extends Migration
             $table->string(Entity::ID, 255)
                   ->primary();
 
-            $table->string(Entity::DEVICE_ID, Entity::ID_LENGTH);
+            $table->string(Entity::DEVICE_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Entity::HANDLE, 50);
 
             $table->text(Entity::GATEWAY_DATA);
 
-            $table->string(Entity::USERNAME, 200);
+            $column = $table->string(Entity::USERNAME, 200);
+            // Laravel's method collate does not work
+            $column->collation = 'utf8mb4_unicode_ci';
 
             $table->string(Entity::BANK_ACCOUNT_ID, Entity::ID_LENGTH)
                   ->nullable();

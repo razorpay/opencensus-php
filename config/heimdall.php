@@ -218,6 +218,10 @@ return [
                 'description' => 'edit_refund_permission',
                 'assignable'  => true,
             ],
+            Permission::UPDATE_SCROOGE_REFUND_REFERENCE1    => [
+                'description' => 'update_scrooge_refund_reference1_permission',
+                'assignable'  => true,
+            ],
             Permission::RETRY_REFUND                        => [
                 'description' => 'Retry refunds',
                 'assignable'  => true,
@@ -334,6 +338,10 @@ return [
             ],
             Permission::CREATE_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create VAs for a merchant',
+            ],
+            Permission::BANK_TRANSFER_INSERT => [
+                'description' => 'Insert bank transfers for failed payments',
+                'assignable'  => true,
             ],
             Permission::USER_PASSWORD_RESET => [
                 'description' => 'Reset user password on associated merchant page',

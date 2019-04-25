@@ -32,6 +32,13 @@ class Job extends BaseJob
     const CAPTURED              = 'captured';
 
     /**
+     * Custom job name
+     *
+     * @var string
+     */
+    protected $jobName = 'invoice_action';
+
+    /**
      * {@inheritDoc}
      */
     protected $queueConfigKey = 'invoice';

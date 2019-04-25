@@ -180,6 +180,7 @@ class Entity extends Base\PublicEntity
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
+    const PARTNER_ID                = 'partner_id';
     const BANKING_ACCOUNT           = 'banking_account';
 
     protected $entity = 'merchant';
@@ -404,7 +405,7 @@ class Entity extends Base\PublicEntity
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
-    const RISK_THRESHOLD_DEFAULT     = 5;
+    const RISK_THRESHOLD_DEFAULT     = 8;
 
     protected function generateTransactionReportEmail($input)
     {
@@ -573,6 +574,21 @@ class Entity extends Base\PublicEntity
     public function isExposeCardExpiryEnabled(): bool
     {
        return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY) === true);
+    }
+
+    /**
+     * Get the non-pureplatform partner if it exists
+     *
+     * @return null|Entity
+     */
+    public function getNonPurePlatformPartner()
+    {
+        $accessMap = (new AccessMap\Repository)->getNonPurePlatformPartnerMapping($this->getId());
+
+        /** @var Merchant\Entity $partner */
+        $partner = optional($accessMap)->entityOwner;
+
+        return $partner;
     }
 
     /**
@@ -1770,6 +1786,8 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentFlows(IIN\Entity $iin = null)
     {
+        $app = App::getFacadeRoot();
+
         $data = [];
 
         if (empty($iin) === true)
@@ -1803,6 +1821,14 @@ class Entity extends Base\PublicEntity
         }
 
         $data[IIN\Entity::RECURRING] = (new Card\Entity)->isRecurringSupportedOnIIN($this, $iin);
+
+        /*
+         * Iframe is only cosumed by checkout public auth.
+         */
+        if ($app['basicauth']->isPublicAuth() === true)
+        {
+            $data[IIN\Flow::IFRAME] = $iin->isIframeApplicable();
+        }
 
         return $data;
     }

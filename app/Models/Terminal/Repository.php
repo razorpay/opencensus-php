@@ -64,7 +64,14 @@ class Repository extends Base\Repository
 
     public function getByTypeAndMerchantIds($type, $merchantIds)
     {
+        $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $terminalAllColumn = $this->dbColumn('*');
+
+        // IF(terminals.merchant_id != '100000Razorpay', 1, 0) AS direct
+        $queryDirectCol = 'IF(' . $terminalMerchantIdColumn . ' != "' . Account::SHARED_ACCOUNT . '", 1, 0) AS direct';
+
         return $this->newQuery()
+                    ->select($terminalAllColumn, DB::raw($queryDirectCol))
                     ->type([$type])
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->enabled()

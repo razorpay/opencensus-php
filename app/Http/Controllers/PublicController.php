@@ -2,11 +2,14 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Services\EsClient;
+use Requests;
 use View, Request, ApiResponse;
 use Illuminate\Support\Facades\DB;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Services\EsClient;
 use RZP\Base\JitValidator;
 
 class PublicController extends Controller
@@ -286,5 +289,59 @@ class PublicController extends Controller
         }
 
         return 'error';
+    }
+
+    /**
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function getFTSStatus()
+    {
+        $request = $this->getFTSHealthCheckRequest();
+
+        try
+        {
+            $response = Requests::request(
+                $request['url'],
+                $request['headers'],
+                null,
+                'GET',
+                $request['options']);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_HEALTH_CHECK_FAILED,
+                [
+                    'message' => $e->getMessage()
+                ]);
+        }
+
+        return ApiResponse::json($response->status_code);
+    }
+
+    /**
+     * @param $request
+     * @return mixed
+     */
+    protected function getFTSHealthCheckRequest(): array
+    {
+        $config = $this->app['config']->get('applications.fts');
+
+        $url = $config['live']['url'] . '/status';
+
+        $request['url'] = str_replace('/v1', '', $url);
+
+        $headers['Content-Type']  = 'application/json';
+
+        $request['headers'] = $headers;
+
+        $request['options'] = [
+            'timeout' => 30
+        ];
+
+        return $request;
     }
 }

@@ -201,6 +201,30 @@ class AdminFetch
                     ]
                 ],
             ],
+            Entity::BATCH_SERVICE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'processing',
+                        'failed',
+                        'completed',
+                    ],
+                ],
+                'type' => [
+                    Fetch::LABEL  => 'Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'payment_link',
+                    ],
+                ],
+            ],
+            Entity::BATCH_FILE_STORE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
         ];
     }
 
@@ -419,6 +443,23 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'refund_id' => Fetch::FIELD_REFUND_ID,
+            ],
+
+            Entity::BHARAT_QR => [
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'virtual_account_id' => [
+                    Fetch::LABEL  => 'Virtual Account ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'method'        => Fetch::FIELD_METHOD,
+                'provider_reference_id' => [
+                    Fetch::LABEL  => 'Provider Reference ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'merchant_reference' => [
+                    Fetch::LABEL  => 'Merchant Reference',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::BATCH => [

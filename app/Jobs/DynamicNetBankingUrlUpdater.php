@@ -50,7 +50,7 @@ class DynamicNetBankingUrlUpdater extends Job
 
         $this->app = App::getFacadeRoot();
 
-        $this->redis = $this->app['redis']->connection('redis_labs');
+        $this->redis = $this->app['redis']->connection();
 
         list($this->username, $this->apiKey, $this->statusCakeUrl, $this->statusCakeUpdateUrl) =
             $this->fetchStatusCakeCredentials();

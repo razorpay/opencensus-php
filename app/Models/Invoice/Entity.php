@@ -71,6 +71,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_LABEL            = 'merchant_label';
     const ENTITY_TYPE               = 'entity_type';
     const ENTITY_ID                 = 'entity_id';
+    const STATUSES                  = 'statuses';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -902,7 +903,7 @@ class Entity extends Base\PublicEntity
     public function isTypeOfSubscriptionRegistration(): bool
     {
         return (($this->getEntityType() !== null) and
-               ($this->getRelation("entity") instanceof SubscriptionRegistration\Entity));
+               ($this->getRelation('entity') instanceof SubscriptionRegistration\Entity));
     }
 
     /**

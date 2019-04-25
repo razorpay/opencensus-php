@@ -36,13 +36,14 @@ class Merchant
     protected $setlTime;
     protected $setlDetailAmounts;
     protected $scheduleTasks;
+    protected $logging;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
     protected $ba;
 
-    public function __construct($merchant, $channel, $repo = null)
+    public function __construct($merchant, $channel, $repo = null, $logging = false)
     {
         $app = App::getFacadeRoot();
 
@@ -58,6 +59,8 @@ class Merchant
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
+
+        $this->logging = $logging;
     }
 
     public function retryFailedSettlement(Settlement\Entity $setl)
@@ -96,7 +99,10 @@ class Merchant
 
         $this->setlDetails = new Base\PublicCollection;
 
-        $startTime = microtime(true);
+        if ($this->logging === true)
+        {
+            $startTime = microtime(true);
+        }
 
         $this->repo->transaction(function()
         {
@@ -116,9 +122,12 @@ class Merchant
             $this->updateTransactions();
         });
 
-        $timeTaken = microtime(true) - $startTime;
+        if ($this->logging === true)
+        {
+            $timeTaken = microtime(true) - $startTime;
 
-        $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN, ['time_taken' => $timeTaken]);
+            $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN, ['time_taken' => $timeTaken]);
+        }
 
         return $this->setl;
     }
@@ -157,7 +166,7 @@ class Merchant
             Transaction\Entity::SETTLEMENT_ID   => $this->setl->getId(),
         ];
 
-        $this->repo->transaction->settled($this->txns, $values);
+        $this->repo->transaction->settled($this->txns, $values, $this->logging);
     }
 
     public function createSettlementDetails($setl)
@@ -391,7 +400,8 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
-        (new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, FundAccountType::BANK_ACCOUNT, true);
+        //TODO:: disabled fts flow for settlement
+        //(new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, true);
     }
 
     protected function saveSettlementEntitiesToDb()

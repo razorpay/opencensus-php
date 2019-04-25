@@ -13,6 +13,15 @@ final class RazorxTreatment
     // Decide whom to send new design mailers
     const MJML_BASED_MAILERS = 'mjml_based_mailers';
 
+    //Control when to enable instant activation of 2.0 products
+    const INSTANT_ACTIVATION_2_0_PRODUCTS = 'instant_activation_2_0_products';
+
     // Decide whom to activate on international payments
     const INTERNATIONAL_ACTIVATIONS = 'international_activations';
+
+    // Razorx treatment constant for whom to forward/redirect to New Batch service.
+    const BATCH_SERVICE_PAYMENT_LINK = 'batch_service_payment_link';
+
+    // Razorx treatment constant whether batchService be called or not.
+    const BATCH_SERVICE_BE_CALLED = 'batch_service_be_called';
 }

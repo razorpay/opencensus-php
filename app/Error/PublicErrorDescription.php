@@ -191,6 +191,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
+    const BAD_REQUEST_SCROOGE_DASHBOARD_ERROR                                   = 'Scrooge dashboard error';
     const BAD_REQUEST_REFUND_NOT_ALLOWED                                        = 'Refunds cannot be created on your account.';
     const BAD_REQUEST_CARD_REFUND_NOT_ALLOWED                                   = 'Refunds cannot be created on your account for card payments';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                  = 'Refund failed';
@@ -697,6 +698,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
+    const BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF                             = 'Partner cannot add himself as a submerchant';
     const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                           = 'Reseller partner is not allowed the requested access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
@@ -722,6 +724,8 @@ class PublicErrorDescription
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                       = 'Unexpected status from gateway';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
     const GATEWAY_ERROR_REFUND_DEEMED                                           = 'Refund is in pending status';
+
+    const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                             = 'Batch file upload failed due to batch server error';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 

@@ -17,9 +17,7 @@ class Observer extends BaseObserver
      */
     public function created(Entity $pricing)
     {
-        $this->validateEntity($pricing);
-        $pricing->flushCache(Entity::getCacheTags($pricing->getEntity(),
-            $pricing->getPlanId(), $pricing->getType()));
+        $this->flushCache($pricing);
     }
 
     /**
@@ -31,9 +29,7 @@ class Observer extends BaseObserver
      */
     public function deleted(Entity $pricing)
     {
-        $this->validateEntity($pricing);
-        $pricing->flushCache(Entity::getCacheTags($pricing->getEntity(),
-            $pricing->getPlanId(), $pricing->getType()));
+        $this->flushCache($pricing);
     }
 
     /**
@@ -45,8 +41,18 @@ class Observer extends BaseObserver
      */
     public function updated($pricing)
     {
+        $this->flushCache($pricing);
+    }
+
+    protected function flushCache($pricing)
+    {
         $this->validateEntity($pricing);
-        $pricing->flushCache(Entity::getCacheTags($pricing->getEntity(),
-            $pricing->getPlanId(), $pricing->getType()));
+
+        $pricing->flushCache(Entity::getCacheTags($pricing->getEntity(), $pricing->getPlanId()));
+
+        foreach (Type::getTypes() as $type)
+        {
+            $pricing->flushCache(Entity::getCacheTags($pricing->getEntity(), $pricing->getPlanId(), $type));
+        }
     }
 }

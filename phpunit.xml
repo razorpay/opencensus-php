@@ -137,6 +137,7 @@
           <directory>./tests/Functional/Gateway/Hdfc/</directory>
           <directory>./tests/Functional/Gateway/Hitachi/</directory>
           <directory>./tests/Functional/Gateway/CardlessEmi</directory>
+          <directory>./tests/Functional/Gateway/Mozart/</directory>
       </testsuite>
   </testsuites>
   <listeners>

@@ -19,7 +19,25 @@ class VpaFailureTest extends TestCase
         });
 
         $response = $helper->initiateCheckVpaAvailable([
-            'username' => 'a.b'
+            'username' => 'ab'
+        ]);
+    }
+
+    public function testVpaCreateWithAlreadyTaken()
+    {
+        $helper = $this->getVpaHelper();
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'Duplicate VPA address, try a different username',
+                'action'      => 'initiateCheckAvailability'
+            ], $error);
+        });
+
+        $request = $helper->intiateCreateVpa([
+            'username' => strtolower($this->fixtures->vpa->getUsername()), // ALC01custVpa03
         ]);
     }
 }

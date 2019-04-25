@@ -10,6 +10,9 @@ trait PaymentWalletAmazonpayTrait
 
         $requestUrl = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
+        // Make sure the amazon callback is on direct auth
+        $this->ba->publicCallbackAuth();
+
         $requestUrl = $this->makeFirstGatewayPaymentMockRequest($requestUrl, $method, $content);
 
         $request = [

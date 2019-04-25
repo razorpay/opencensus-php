@@ -149,6 +149,7 @@ class Type
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
+    const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -359,7 +360,6 @@ class Type
             self::INDUSIND_EMI_FILE,
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
-            self::SBI_EMI_FILE,
             self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
@@ -402,7 +402,6 @@ class Type
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
-            self::SBI_EMI_FILE,
             self::CITI_EMI_FILE,
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
@@ -417,7 +416,10 @@ class Type
         self::H2H_DEFAULT_BUCKET_CONFIG => [
             self::FUND_TRANSFER_DEFAULT
         ],
-        // todo: Add a bucket config for EMI
+
+        self::BEAM_BUCKET_CONFIG => [
+            self::SBI_EMI_FILE,
+        ],
     ];
 
     /**

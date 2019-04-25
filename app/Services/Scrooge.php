@@ -38,7 +38,9 @@ class Scrooge
         'retry'                         => 'retry',
         'get_reports'                   => 'reports',
         'bulk_status_update'            => 'bulk-status-update',
+        'bulk_reference1_update'        => 'bulk-reference1-update',
         'get_refunds'                   => 'refunds',
+        'get_dashboard_init_data'       => 'init',
         'status_update'                 => 'status-update',
         'download_refunds'              => 'refunds/download',
         'enqueue'                       => 'enqueue',
@@ -147,6 +149,19 @@ class Scrooge
      * @throws Exception\RuntimeException
      * @throws \Requests_Exception
      */
+    public function bulkUpdateRefundReference1(array $input,  bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_reference1_update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
     public function enqueueRefunds(array $input,  bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['enqueue'],
@@ -174,6 +189,15 @@ class Scrooge
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds_gateway_file'],
             Requests::POST, $input);
+    }
+
+    public function dashboardInit(array $input): array
+    {
+        return $this->sendRequest(
+            self::ListBaseURL . '/' . self::URLS['get_dashboard_init_data'],
+            Requests::GET,
+            $input
+        );
     }
 
     /**

@@ -707,6 +707,18 @@ return [
         ],
     ],
 
+    'testDirectSettlementRefundSettledBy' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
     'testRefundEditNotes' => [
         'request'  => [
             'content' => [
@@ -725,6 +737,19 @@ return [
                 ],
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testFetchRefundPublicStatus' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'status' => 'pending'
+            ],
         ],
     ],
 ];

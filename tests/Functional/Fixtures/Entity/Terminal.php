@@ -1009,6 +1009,31 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDirectHitachiRecurringTerminalWithBothRecurringTypes(array $attributes = [])
+    {
+        $terminalId = \RZP\Models\Terminal\Shared::HITACHI_DIRECT_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $terminalId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'gateway_acquirer'          => 'ratn',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS     => '1',
+                Type::DEBIT_RECURRING   => '1',
+            ],
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createBankAccountTerminal(array $attributes = [])
     {
         $defaultValues = [
@@ -2364,6 +2389,24 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiAirtelTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_AIRTEL_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_airtel',
+            'gateway_merchant_id'       => 'razorpay upi airtel',
+            'gateway_terminal_password' => 'upipassword',
+            'upi'                       => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [
@@ -2557,8 +2600,30 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'type'                      => [
-                Type::DIRECT_SETTLEMENT => '1',
-                Type::NON_RECURRING     => '1',
+                Type::DIRECT_SETTLEMENT_WITHOUT_REFUND => '1',
+                Type::NON_RECURRING                    => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createDirectSettlementRefundHdfcTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::NON_RECURRING                 => '1',
             ],
         ];
 

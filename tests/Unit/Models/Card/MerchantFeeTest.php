@@ -1405,12 +1405,18 @@ class MerchantFeeTest extends TestCase
 
         $this->assertEquals($expectedTax, $tax);
 
+        $totalFee = 0;
+
         foreach ($feeSplit as $feeSplitComponent)
         {
+            $totalFee += $feeSplitComponent['amount'];
+
             $componentName = $feeSplitComponent['name'];
 
             $this->assertEquals($feeSplitComponent['amount'], $expectedFeeSplit[$componentName]);
         }
+
+        $this->assertEquals($totalFee, $expectedFee);
     }
 
     public function testDebitCardRuleSelectionWithEsAutomatic()

@@ -44,6 +44,35 @@ class FirstDataS2sGatewayTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
+    public function testPaymentAuthAndCaptureForPurchaseModeTerminal()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_first_data_terminal', [
+            'id' => '1000FrstDataTk',
+            'mode' => '2'
+        ]);
+
+        $this->mockServerRequestFunction(
+            function(& $request)
+            {
+                $requestArray = $this->parseXmlAndReturnArray($request);
+
+                $txnType =  $requestArray['SOAP-ENVBody']['ipgapiIPGApiOrderRequest']
+                            ['v1Transaction']['v1CreditCardTxType']['v1Type'];
+
+                $this->assertEquals('sale', $txnType);
+            });
+
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue( $payment['gateway_captured']);
+
+        $this->assertNotNull($payment['transaction_id']);
+    }
+
     protected function runPaymentCallbackFlowFirstData($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
@@ -473,5 +502,16 @@ class FirstDataS2sGatewayTest extends TestCase
             $content['ApprovalCode']      = 'N:-5008:Order does not exist.';
             $content['TransactionResult'] = 'FAILED';
         });
+    }
+
+    protected function parseXmlAndReturnArray($xml)
+    {
+        $xml = preg_replace('/(<\/?)(\w+-*\w+):([^>]*>)/', '$1$2$3', $xml);
+
+        $formattedXml = simplexml_load_string($xml);
+
+        $responseArray = json_decode(json_encode($formattedXml), true);
+
+        return $responseArray;
     }
 }

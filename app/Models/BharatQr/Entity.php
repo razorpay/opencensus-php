@@ -57,6 +57,18 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_REFERENCE,
     ];
 
+    protected $public = [
+        self::ID,
+        self::ENTITY,
+        self::EXPECTED,
+        self::AMOUNT,
+        self::PAYMENT_ID,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::METHOD,
+        self::PROVIDER_REFERENCE_ID,
+        self::MERCHANT_REFERENCE,
+    ];
+
     protected $casts = [
         self::EXPECTED => 'bool',
         self::AMOUNT   => 'int',
