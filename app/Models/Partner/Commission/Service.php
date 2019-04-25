@@ -3,6 +3,7 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
+use RZP\Models\Base\Repository as BaseRepository;
 
 class Service extends Base\Service
 {
@@ -20,9 +21,13 @@ class Service extends Base\Service
         return $commissions->toArrayPublic();
     }
 
-    public function fetch(string $id, array $input = []): array
+    public function fetch(string $id): array
     {
         $partner = $this->merchant;
+
+        $input = [
+            BaseRepository::EXPAND => [Entity::SOURCE_MERCHANT]
+        ];
 
         //
         // findByPublicIdAndMerchant() function here, filters by partner_id.
@@ -30,10 +35,6 @@ class Service extends Base\Service
         //
         $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner, $input);
 
-        $commissionData = $commission->toArrayPublic();
-
-        unset($commissionData[Entity::SOURCE]);
-
-        return $commissionData;
+        return $commission->toArrayPublic();
     }
 }
