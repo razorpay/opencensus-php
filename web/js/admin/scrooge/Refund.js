@@ -126,7 +126,7 @@ export default class RefundsList extends Component {
               </option>
             ))}
           </SelectField>
-          <Field name="arn" label="ARN" />
+          <Field name="reference1" label="Reference1" />
           <button>Update</button>
         </Form>
       </ModalContent>
@@ -139,7 +139,7 @@ export default class RefundsList extends Component {
       data: {
         event: data.event,
         gateway_keys: {
-          arn: data.arn,
+          reference1: data.reference1,
         },
       },
     }).then(data => {
@@ -167,7 +167,7 @@ const fields = [
   ],
   item => ['Payment Gateway Captured', item.payment_gateway_captured],
   item => ['Reconciled At', formatDate(item.reconciled_at)],
-  item => ['ARN', item.arn],
+  item => ['Reference1', item.reference1],
   item => ['Last Attempted At', formatDate(item.last_attempted_at)],
   item => ['Next Attempt At', formatDate(item.next_attempt_at)],
   item => [

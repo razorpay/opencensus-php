@@ -9,7 +9,10 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-@connect(null, { closeModal, showNotification })
+@connect(
+  null,
+  { closeModal, showNotification }
+)
 @reduxForm({
   form: 'updateDisplayNameForm',
 })
@@ -58,8 +61,8 @@ export default class DisplayNameForm extends PureComponent {
               autoFocus={true}
             />
             <small class="help-block">
-              This is the display name that will be displayed in the Switch
-              Merchant dropdown.
+              This is the display name that you and your team will see on the
+              Razorpay dashboard.
             </small>
           </div>
 
