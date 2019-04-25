@@ -1,6 +1,7 @@
 <?php
 
 namespace RZP\Gateway\Mozart\Mock;
+
 use RZP\Gateway\Base;
 use RZP\Gateway\Mozart;
 
@@ -28,6 +29,36 @@ class RefundData extends Base\Mock\Server
         ];
 
         $this->content($response, 'verify');
+
+        return $response;
+    }
+
+    public static function wallet_phonepe($entities)
+    {
+        $response = [
+            'data' => [
+                '_raw' => '',
+                'code' => 'PAYMENT_SUCCESS',
+                'data' => [
+                    'amount'                => $entities['refund']['amount'],
+                    'merchantId'            => 'abc',
+                    'mobileNumber'          => null,
+                    'payResponseCode'       => 'PAYMENT_SUCCESS',
+                    'providerReferenceId'   => 'phonepeProviderRefId',
+                    'status'                => 'SUCCESS',
+                    'transactionId'         => $entities['refund']['id'],
+                ],
+                'message' => 'Payment succeded',
+                'received' => true,
+                'status' => 'refund_successfull',
+                'success' => false
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [],
+            'success' => true
+        ];
 
         return $response;
     }

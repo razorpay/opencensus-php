@@ -205,6 +205,7 @@ class Entity
     const WALLET_AIRTELMONEY     = 'wallet_airtelmoney';
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
+    const WALLET_PHONEPE         = 'wallet_phonepe';
     const CARDLESS_EMI           = 'cardless_emi';
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
@@ -447,6 +448,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
+        self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
 
         // heimdall

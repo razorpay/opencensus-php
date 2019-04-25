@@ -2676,4 +2676,24 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedPhonepeTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+        $defaultValues = [
+            'id'                        => '1ShrdPhnepeTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'wallet_phonepe',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'RazorpayPhonepe',
+            'gateway_secure_secret'     => 'secure_secret',
+            'gateway_access_code'       => 'access_code',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
 }
