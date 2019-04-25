@@ -3,6 +3,7 @@ import Form from 'ui/Form';
 import { SelectField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { adminPut } from 'common/fetch';
+import { closeModal, notifySuccess } from 'common/modal';
 
 BulkEditIIN.title = 'Bulk Edit IIN';
 export default function BulkEditIIN() {
@@ -37,12 +38,17 @@ export default function BulkEditIIN() {
         type="submit"
         onSubmit={data => {
           data.iins = data.iins
-            .split(',')
+            .split(",")
             .map(p => p.trim())
             .filter(p => p.length === 6);
           return adminPut({
             url: `live/iins/flows/bulk`,
             data
+          }).then(response => {
+            if (response.data && response.data.success) {
+              notifySuccess('IIN Flows updated successfully.');
+              closeModal();
+            }
           });
         }
         }
