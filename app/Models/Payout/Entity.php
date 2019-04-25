@@ -216,6 +216,7 @@ class Entity extends Base\PublicEntity
         self::QUEUED_AT,
         self::INITIATED_AT,
         self::PROCESSED_AT,
+        self::REVERSED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
     ];
@@ -248,6 +249,7 @@ class Entity extends Base\PublicEntity
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::PROCESSED_AT,
+        self::REVERSED_AT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::TRANSACTION,
@@ -1018,6 +1020,22 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::PROCESSED_AT]);
+        }
+    }
+
+    public function setPublicReversedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::REVERSED_AT]);
         }
     }
 
