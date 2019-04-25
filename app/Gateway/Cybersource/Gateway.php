@@ -945,8 +945,6 @@ class Gateway extends Base\Gateway
 
     protected function getAttributeFromAuthReversalResponse(array $input, array $response)
     {
-        $ccAuthReversalReply = $response[F::CC_AUTH_REVERSAL_REPLY];
-
         $attributes = [
             E::REF                => $response[F::REQUEST_ID],
             E::REASON_CODE        => $response[F::REASON_CODE],
