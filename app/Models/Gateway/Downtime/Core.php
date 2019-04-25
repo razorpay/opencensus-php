@@ -75,7 +75,8 @@ class Core extends Base\Core
      */
     protected function allowUpdateOfExistingDowntimes()
     {
-        if ($this->app['basicauth']->isDashboardApp() === true)
+        if (($this->app['basicauth']->isAdminAuth() === true) and
+            ($this->app['basicauth']->isDashboardApp() === true))
         {
             return false;
         }

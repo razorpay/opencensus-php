@@ -29,11 +29,6 @@ use RZP\Models\Admin\ConfigKey;
 class GatewayErrorThrottler
 {
     /**
-     * @var array
-     */
-    protected $config;
-
-    /**
      * @var Trace
      */
     protected $trace;

@@ -37,14 +37,14 @@ class GatewayErrorThrottlerTest extends TestCase
 
     public function tearDown()
     {
-        $this->flushRedis();
+        $this->redis->flushall();
 
         parent::tearDown();
     }
 
     // ------------------------- Tests -----------------------------------------
 
-    public function testGatewayFailure()
+    public function testGatewayFailureDowntimeCreate()
     {
         $data = $this->getErrorTestData();
 
@@ -63,6 +63,22 @@ class GatewayErrorThrottlerTest extends TestCase
         $downtime = $this->getLastEntity('gateway_downtime', true);
         $this->assertEquals('sharp', $downtime['gateway']);
         $this->assertEquals(600, $downtime['end'] - $downtime['begin']);
+    }
+
+    public function testGatewayFailureDowntimeEdit()
+    {
+        $this->testGatewayFailureDowntimeCreate();
+
+        $downtime1 = $this->getLastEntity('gateway_downtime', true);
+
+        $data = $this->getErrorTestData();
+
+        $this->runRequestResponseFlow($data, function () {
+            $this->doAuthPayment();
+        });
+
+        $downtime2 = $this->getLastEntity('gateway_downtime', true);
+        $this->assertEquals($downtime1['id'], $downtime2['id']);
     }
 
     // ------------------------------ Helpers ----------------------------------
@@ -92,33 +108,20 @@ class GatewayErrorThrottlerTest extends TestCase
 
         $settings = array_merge($defaultRedisSettings, $settings);
 
-        $this->setRedisKey(ConfigKey::DOWNTIME_THROTTLE, $settings);
+        $this->redis->hmset(ConfigKey::DOWNTIME_THROTTLE, ...seq_array($settings));
     }
 
     protected function getDefaultRedisSettings()
     {
+        // Low limits to make it easy to get throttled
         return [
+            // Enable gateway error throttle
             'skip' => 0,
+            // Super low leak rate
             'lrv'  => 1,
             'lrd'  => 60,
+            // Practically non-existent burst
             'mbs'  => 1,
         ];
-    }
-
-    protected function setRedisKey(string $key, array $parameters)
-    {
-        if (empty($parameters) === false)
-        {
-            $this->redis->hmset($key, ...seq_array($parameters));
-        }
-        else
-        {
-            $this->redis->del($key);
-        }
-    }
-
-    protected function flushRedis()
-    {
-        $this->redis->flushall();
     }
 }
