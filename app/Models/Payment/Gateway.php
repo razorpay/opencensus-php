@@ -224,7 +224,6 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
-        self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CORPORATION,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,

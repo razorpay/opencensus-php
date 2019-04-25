@@ -511,13 +511,14 @@ class Gateway extends Base\Gateway
         if ($accepted === RegistrationStatus::SUCCESS)
         {
             $attr[Base\Entity::STATUS]               = RegistrationStatus::SUCCESS;
-            $attr[Base\Entity::GATEWAY_REFERENCE_ID] = $data[ResponseXmlTags::ACCEPT_REF_NO]; // TODO is there a better field
+            $attr[Base\Entity::GATEWAY_REFERENCE_ID] = $data[ResponseXmlTags::ORIGINGAL_MSG_ID];
         }
         else
         {
-            $attr[Base\Entity::STATUS]              = RegistrationStatus::FAILURE;
-            $attr[Base\Entity::ERROR_CODE]          = $data[ResponseXmlTags::REJECTION_CODE];
-            $attr[Base\Entity::ERROR_MESSAGE]       = $data[ResponseXmlTags::REJECT_DESCRIPTION];
+            $attr[Base\Entity::STATUS]               = RegistrationStatus::FAILURE;
+            $attr[Base\Entity::GATEWAY_REFERENCE_ID] = $data[ResponseXmlTags::ORIGINGAL_MSG_ID];
+            $attr[Base\Entity::ERROR_CODE]           = $data[ResponseXmlTags::REJECTION_CODE];
+            $attr[Base\Entity::ERROR_MESSAGE]        = $data[ResponseXmlTags::REJECT_DESCRIPTION];
         }
 
         $attr[Base\Entity::ACKNOWLEDGE_STATUS] = 'true';
