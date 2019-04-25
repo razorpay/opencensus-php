@@ -1751,6 +1751,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION         = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
     const CPS_ROUTE_CONFIG                              = 'CPS_ROUTE_CONFIG';
     const CPS_RAZORX_VARIANT                            = 'CPS_RAZORX_VARIANT';
+    const CPS_SWITCH_ROUTE                              = 'CPS_SWITCH_ROUTE';
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                 = 'GET_BATCHES_BATCH_SERVICE';
