@@ -1041,6 +1041,8 @@ final class Route
 
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
+
+        'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
     ];
 
     public static $public = [
@@ -1416,6 +1418,7 @@ final class Route
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
         'downtime_trigger_cron',
+        'entity_origin_create',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2614,6 +2617,7 @@ final class Route
             'subscription_manual_retry',
             'token_fetch_card',
             'subscription_payment_fetch_by_id',
+            'entity_origin_create',
             'currency_fetch_all_proxy',
         ],
 

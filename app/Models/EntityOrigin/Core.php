@@ -7,6 +7,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity as E;
 
 class Core extends Base\Core
 {
@@ -31,7 +32,23 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($entityOrigin);
 
+        // @todo : Remove later, not required
+        $this->trace->info(TraceCode::ORIGIN_CREATED,
+            [
+                Entity::ID => $entityOrigin->getId(),
+            ]);
+
         return $entityOrigin;
+    }
+
+    public function createFromInternalApp(array $input): Entity
+    {
+        (new Validator)->validateInput('create_from_internal_app', $input);
+
+        $entity = $this->fetchEntityByType($input[Entity::ENTITY_TYPE], $input[Entity::ENTITY_ID]);
+        $origin = $this->fetchEntityByType($input[Entity::ORIGIN_TYPE], $input[Entity::ORIGIN_ID]);
+
+        return $this->create($entity, $origin);
     }
 
     /**
@@ -43,9 +60,16 @@ class Core extends Base\Core
     {
         try
         {
-            list($originType, $originId) = app('basicauth')->getOriginDetailsFromAuth();
+            $subscription = $entity->subscription;
 
-            $originEntity = $this->fetchOriginEntity($originType, $originId);
+            if (empty($subscription) === false)
+            {
+                $originEntity = $this->getOriginEntityFromSubscription($subscription);
+            }
+            else
+            {
+                $originEntity = $this->getOriginEntityFromAuth();
+            }
 
             //
             // Non null origin details are returned only for public auth, partner auth and bearer auth.
@@ -56,13 +80,7 @@ class Core extends Base\Core
                 return;
             }
 
-            $entityOrigin = $this->create($entity, $originEntity);
-
-            // @todo : Remove later, not required
-            $this->trace->info(TraceCode::ORIGIN_CREATED,
-                                    [
-                                        Entity::ID => $entityOrigin->getId(),
-                                    ]);
+            $this->create($entity, $originEntity);
         }
         catch (\Throwable $e)
         {
@@ -157,5 +175,56 @@ class Core extends Base\Core
         }
 
         return $originEntity;
+    }
+
+    protected function fetchEntityByType(string $entityType, string $entityId)
+    {
+        $entity = null;
+
+        switch ($entityType)
+        {
+            case Constants::APPLICATION:
+                $entity = (new OAuthApp\Repository)->findOrFail($entityId);
+                break;
+
+            default:
+                $entityClass = E::getEntityObject($entityType);
+                $entityId    = $entityClass->verifyIdAndSilentlyStripSign($entityId);
+
+                $entity = $this->repo->$entityType->findOrFail($entityId);
+        }
+
+        return $entity;
+    }
+
+    /**
+     * Returns origin entity for the subscription if present
+     *
+     * @param Base\PublicEntity $subscription
+     *
+     * @return mixed|null
+     */
+    protected function getOriginEntityFromSubscription(Base\PublicEntity $subscription)
+    {
+        $subscriptionId   = $subscription->getId();
+        $subscriptionName = $subscription->getEntityName();
+
+        $entityOrigin = $this->repo
+            ->entity_origin
+            ->fetchByEntityTypeAndEntityId($subscriptionName, $subscriptionId);
+
+        return optional($entityOrigin)->origin;
+    }
+
+    /**
+     * Extracts the origin entity from BasicAuth
+     *
+     * @return mixed|null
+     */
+    protected function getOriginEntityFromAuth()
+    {
+        list($originType, $originId) = app('basicauth')->getOriginDetailsFromAuth();
+
+        return $this->fetchOriginEntity($originType, $originId);
     }
 }
