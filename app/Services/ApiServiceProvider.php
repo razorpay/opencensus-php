@@ -185,6 +185,12 @@ class ApiServiceProvider extends BaseServiceProvider
             return new EventTrackerClient($app);
         });
 
+        $this->app->singleton('diag', function($app)
+        {
+            return new DiagClient($app);
+        });
+
+
         $this->app->singleton('eventManager', function($app)
         {
             $harvesterClientMock = $app['config']->get('applications.harvester.mock');

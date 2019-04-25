@@ -10,6 +10,7 @@ use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Diag\EventCode;
 
 class Service extends Base\Service
 {
@@ -24,15 +25,45 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $merchant = $this->merchant;
+        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, $input);
 
-        $this->modifyOfferRequestFromOldFormat($input);
+        $order = null;
 
-        $this->modifyBankAccountRequestFromOldFormat($input);
+        try
+        {
+            $merchant = $this->merchant;
 
-        $order = (new Core)->create($input, $merchant);
+            $this->modifyOfferRequestFromOldFormat($input);
 
-        return $order->toArrayPublic();
+            $this->modifyBankAccountRequestFromOldFormat($input);
+
+            $order = (new Core)->create($input, $merchant);
+
+            $data = [
+                'error_code' => 'SUCCESS',
+                'order_id'   => $order->getId(),
+                'amount'     => $order->getAmount(),
+                'currency'   => $order->getCurrency()
+            ];
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $data['error_code'] = $ex->getCode();
+
+            throw $ex
+        }
+        catch (\Throwable $ex)
+        {
+            $data['error_code'] = 'UNHANDLLED_ERROR';
+
+            throw $ex
+        }
+        finally 
+        {
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $data);
+        }
+
+        return $order;
     }
 
     /**
