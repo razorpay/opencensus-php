@@ -75,6 +75,34 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals($data['expected_terminal'], $payment['terminal_id']);
     }
 
+    public function testCapabilityTerminalsSelection()
+    {
+        $this->fixtures->create('terminal:shared_axis_terminal');
+        $this->fixtures->create('terminal:shared_axis_terminal', ['id' => '1001AxisTrmnal', 'capability' => 2]);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockCardVault();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        foreach ($testData as $data)
+        {
+            $rules = $this->createRules($data['method'], $data['rules']);
+
+            Options::setTestChance($data['test_chance']);
+
+            $paymentData = $this->getPaymentArray($data['method']);
+
+            $content = $this->doAuthAndCapturePayment($paymentData);
+
+            $payment = $this->getLastEntity('payment', true);
+
+            $this->assertEquals($data['expected_terminal'], $payment['terminal_id']);
+
+            $this->fixtures->gateway_rule->delete($rules);
+        }
+    }
+
     public function testInternationalAndDomesticPaymentsWithRules()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal', ['international' => true]);

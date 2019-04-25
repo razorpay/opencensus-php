@@ -1543,6 +1543,7 @@ trait Authorize
                 TraceCode::AUTH_SELECTION_FAILURE,
                 [
                     'payment_id'  => $payment->getId(),
+                    'payment_auth_type' => $payment->getAuthType(),
                 ]
             );
         }
@@ -4243,7 +4244,8 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) and
+                if (((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+                     ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE)) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)

@@ -4722,6 +4722,9 @@ ALTER TABLE gateway_rules
     ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway,
     ADD COLUMN step varchar(255) NOT NULL DEFAULT 'authorization' AFTER auth_type;
 
+ALTER TABLE gateway_rules
+    ADD COLUMN capability TINYINT(1) DEFAULT 0 AFTER recurring;
+
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
 

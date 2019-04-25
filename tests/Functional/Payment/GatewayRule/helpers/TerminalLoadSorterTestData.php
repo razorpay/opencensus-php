@@ -226,6 +226,62 @@ return [
         'expected_terminal' => '1000HdfcShared',
     ],
 
+    'testCapabilityTerminalsSelection' => [
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'type'       => 'sorter',
+                    'gateway'    => 'axis_migs',
+                    'network'    => 'VISA',
+                    'load'       => 10,
+                    'capability' => 2
+                ],
+                [
+                    'type'       => 'sorter',
+                    'gateway'    => 'axis_migs',
+                    'network'    => 'VISA',
+                    'load'       => 90
+                ]
+            ],
+            'test_chance' => 900,
+            'expected_terminal' => '1001AxisTrmnal',
+        ],
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'type'       => 'sorter',
+                    'gateway'    => 'axis_migs',
+                    'network'    => 'VISA',
+                    'load'       => 10,
+                    'capability' => 2
+                ],
+                [
+                    'type'       => 'sorter',
+                    'gateway'    => 'axis_migs',
+                    'network'    => 'VISA',
+                    'load'       => 90
+                ]
+            ],
+            'test_chance' => 8000,
+            'expected_terminal' => '1000AxisMigsTl',
+        ],
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'type'       => 'sorter',
+                    'gateway'    => 'axis_migs',
+                    'network'    => 'VISA',
+                    'load'       => 10,
+                ]
+            ],
+            'test_chance' => 2000,
+            'expected_terminal' => '1000AxisMigsTl',
+        ],
+    ],
+
     'testInternationalAndDomesticPaymentsWithRules' => [
         // domestic payment with rule applicable for both domestic / international
         [
