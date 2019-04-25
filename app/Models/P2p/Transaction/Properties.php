@@ -2,12 +2,18 @@
 
 namespace RZP\Models\P2p\Transaction;
 
-use RZP\Models\P2p\Base\Libraries\Context;
+use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
+use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 class Properties
 {
+    /**
+     * Default expire at is set to be 30 minutes in seconds
+     */
+    const DEFAULT_EXPIRE_AT = 1800;
+
     /**
      * @var string
      */
@@ -90,6 +96,7 @@ class Properties
                         Entity::MODE                => Mode::DEFAULT,
                         Entity::STATUS              => Status::CREATED,
                         Entity::INTERNAL_STATUS     => Status::CREATED,
+                        Entity::EXPIRE_AT           => $this->getTransactionExpireAt(),
                     ]);
 
                 $payer          = $this->getTransactionPayer(false);
@@ -151,5 +158,17 @@ class Properties
         }
 
         return $bankAccount;
+    }
+
+    protected function getTransactionExpireAt()
+    {
+        $expireAt = $this->input->get(Entity::EXPIRE_AT);
+
+        if (empty($expireAt) === true)
+        {
+            $expireAt = Carbon::now()->addSeconds(self::DEFAULT_EXPIRE_AT)->getTimestamp();
+        }
+
+        return $expireAt;
     }
 }

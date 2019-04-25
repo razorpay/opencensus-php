@@ -61,7 +61,6 @@ class TransactionAction extends Action
                 Fields::REMARKS                 => 'sometimes',
                 Fields::UPI_REQUEST_ID          => 'required',
                 Fields::TIME_STAMP              => 'required',
-                Fields::CURRENCY                => 'required',
             ],
             self::SIGNATURE => [
                 Fields::ACCOUNT_REFERENCE_ID,
@@ -78,23 +77,5 @@ class TransactionAction extends Action
                 Fields::UPI_REQUEST_ID,
             ],
         ],
-    ];
-
-    const SIGNATURE_MAP = [
-        self::AUTHORIZE_TRANSACTION => [
-            Fields::AMOUNT,
-            Fields::BANK_ACCOUNT_UNIQUE_ID,
-            Fields::BANK_CODE,
-            Fields::CUSTOMER_MOBILE_NUMBER,
-            Fields::CUSTOMER_VPA,
-            Fields::GATEWAY_REFERENCE_ID,
-            Fields::GATEWAY_RESPONSE_CODE,
-            Fields::GATEWAY_RESPONSE_MESSAGE,
-            Fields::GATEWAY_TRANSACTION_ID,
-            Fields::MASKED_ACCOUNT_NUMBER,
-            Fields::PAY_TYPE,
-            Fields::TRANSACTION_TIME_STAMP,
-            Fields::UDF_PARAMETERS,
-        ]
     ];
 }

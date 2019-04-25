@@ -106,22 +106,9 @@ class Gateway extends Upi\Gateway
         return $this->input->get(Fields::SDK)->get(Fields::GATEWAY_RESPONSE_CODE) != '00';
     }
 
-    protected function handleGatewayResponse(ArrayBag $sdk)
-    {
-        if ($sdk->get(Fields::GATEWAY_RESPONSE_CODE) !== '00')
-        {
-            $this->throwP2pGatewayException();
-        }
-    }
-
     protected function getTimeStamp()
     {
         return (string) (Carbon::now(Timezone::IST)->getTimestamp() * 1000);
-    }
-
-    protected function getFormattedAmount(string $amount)
-    {
-        return number_format($amount, 2, '.', '');
     }
 
     protected function toBoolean($value)
@@ -158,12 +145,10 @@ class Gateway extends Upi\Gateway
 
     protected function getMerchantCustomerId()
     {
-        $device = $this->getContextDevice();
         $deviceToken = $this->getContextDeviceToken();
 
         // Merchant Customer Id needs to be picked from Gateway Data
-        $merchantCustomerId = $deviceToken->get(Device\Entity::GATEWAY_DATA)[Fields::MERCHANT_CUSTOMER_ID] ??
-                              $this->formatMerchantCustomerId($device->get(Device\Entity::CUSTOMER_ID));
+        $merchantCustomerId = $deviceToken->get(Device\Entity::GATEWAY_DATA)[Fields::MERCHANT_CUSTOMER_ID];
 
         return $merchantCustomerId;
     }
