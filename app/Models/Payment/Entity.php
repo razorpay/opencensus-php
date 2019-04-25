@@ -25,6 +25,7 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
@@ -1276,7 +1277,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             case Method::WALLET:
 
-                $acquirerData = [];
+                $acquirerData = [
+                    'transaction_id' => $this->getAttribute(self::REFERENCE1)
+                ];
                 break;
 
             case Method::UPI:
@@ -1666,6 +1669,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     }
 
 // ----------------------- Getters ---------------------------------------------
+
+    public function getHiddenInReport()
+    {
+        $gateway = $this->getGateway();
+
+        if ((empty($gateway) === false) and
+            ($gateway === E::PAYTM))
+        {
+            unset($this->hiddenInReport[self::ACQUIRER_DATA]);
+        }
+
+        return $this->hiddenInReport;
+    }
 
     public function getPspFromVpa()
     {
