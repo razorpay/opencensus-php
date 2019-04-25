@@ -43,6 +43,8 @@ class Status
      * @var array
      */
     public static $timestampedStatuses = [
+        // We have a special logic for `created` in entity status setter
+        self::CREATED,
         self::PROCESSED,
         self::REVERSED,
         self::QUEUED,

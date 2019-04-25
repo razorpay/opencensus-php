@@ -132,7 +132,7 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::CANCELLED_AT)
                   ->nullable();
 
-            $table->integer(Payout::PROCESSING_TIME)
+            $table->integer(Payout::INITIATED_AT)
                   ->nullable();
 
             $table->integer(Payout::SETTLED_ON)
@@ -152,7 +152,7 @@ class CreatePayoutsTable extends Migration
 
             $table->index(Payout::REVERSED_AT);
 
-            $table->index(Payout::PROCESSING_TIME);
+            $table->index(Payout::INITIATED_AT);
 
             $table->index(Payout::QUEUED_AT);
 

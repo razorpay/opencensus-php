@@ -29,15 +29,15 @@ class Validator extends Base\Validator
         Entity::AMOUNT          => 'sometimes|integer',
         Entity::CURRENCY        => 'sometimes|size:3',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'sometimes|public_id',
-        Entity::DESTINATION     => 'sometimes|public_id',
-        Entity::TYPE            => 'sometimes|string',
-        Entity::BALANCE_ID      => 'sometimes|string|size:14',
-        Entity::FUND_ACCOUNT_ID => 'sometimes|public_id',
-        Entity::MODE            => 'sometimes|nullable|string',
-        Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION       => 'sometimes|nullable|string|max:30',
-        Entity::QUEUED          => 'sometimes|filled|boolean',
+        Entity::CUSTOMER_ID          => 'sometimes|public_id',
+        Entity::DESTINATION          => 'sometimes|public_id',
+        Entity::TYPE                 => 'sometimes|string',
+        Entity::BALANCE_ID           => 'sometimes|string|size:14',
+        Entity::FUND_ACCOUNT_ID      => 'sometimes|public_id',
+        Entity::MODE                 => 'sometimes|nullable|string',
+        Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION            => 'sometimes|nullable|string|max:30',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     /**
@@ -45,16 +45,16 @@ class Validator extends Base\Validator
      * @var array
      */
     protected static $fundAccountPayoutRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
-        Entity::CURRENCY        => 'required|size:3|in:INR',
-        Entity::NOTES           => 'sometimes|notes',
-        Entity::BALANCE_ID      => 'sometimes|filled|size:14',
-        Entity::FUND_ACCOUNT_ID => 'required|public_id',
-        Entity::MODE            => 'sometimes|nullable|string|custom',
-        Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Entity::QUEUED          => 'sometimes|filled|boolean|custom',
+        Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
+        Entity::AMOUNT               => 'required|integer|min:100|max:500000000',
+        Entity::CURRENCY             => 'required|size:3|in:INR',
+        Entity::NOTES                => 'sometimes|notes',
+        Entity::BALANCE_ID           => 'sometimes|filled|size:14',
+        Entity::FUND_ACCOUNT_ID      => 'required|public_id',
+        Entity::MODE                 => 'sometimes|nullable|string|custom',
+        Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean|custom',
     ];
 
     protected static $customerWalletPayoutRules = [

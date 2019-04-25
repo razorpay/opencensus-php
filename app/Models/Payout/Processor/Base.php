@@ -168,8 +168,6 @@ abstract class Base extends BaseCore
 
                         $payout->setStatus(Payout\Status::CREATED);
 
-                        $payout->setProcessingTime();
-
                         $this->repo->saveOrFail($payout);
 
                         $this->trace->info(
@@ -308,8 +306,8 @@ abstract class Base extends BaseCore
         //
         $this->runInputValidations($payout, $input);
 
-        if ((isset($input[Payout\Entity::QUEUED]) === true) and
-            (boolval($input[Payout\Entity::QUEUED]) === true))
+        if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
+            (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
         {
             $payout->setQueueFlag(true);
         }

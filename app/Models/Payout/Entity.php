@@ -75,7 +75,7 @@ class Entity extends Base\PublicEntity
     const NARRATION              = 'narration';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const BATCH_ID               = 'batch_id';
-    const PROCESSING_TIME        = 'processing_time';
+    const INITIATED_AT           = 'initiated_at';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -101,8 +101,8 @@ class Entity extends Base\PublicEntity
     const CONTACT_TYPE  = 'contact_type';
 
     // Input keys
-    const ACCOUNT_NUMBER    = 'account_number';
-    const QUEUED            = 'queued';
+    const ACCOUNT_NUMBER       = 'account_number';
+    const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
@@ -184,7 +184,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::BATCH_ID,
         self::INTERNAL_STATUS,
-        self::PROCESSING_TIME,
+        self::INITIATED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -212,7 +212,10 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::BATCH_ID,
         self::REVERSAL,
-        self::PROCESSING_TIME,
+        self::CANCELLED_AT,
+        self::QUEUED_AT,
+        self::INITIATED_AT,
+        self::PROCESSED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
     ];
@@ -241,7 +244,10 @@ class Entity extends Base\PublicEntity
         // This might cause confusions and hence we show UTR only when either
         // the payout is in processed or reversed state.
         self::UTR,
-        self::PROCESSING_TIME,
+        self::INITIATED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
+        self::PROCESSED_AT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::TRANSACTION,
@@ -282,7 +288,7 @@ class Entity extends Base\PublicEntity
         self::REVERSED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
-        self::PROCESSING_TIME,
+        self::INITIATED_AT,
         self::SETTLED_ON,
     ];
 
@@ -668,17 +674,28 @@ class Entity extends Base\PublicEntity
         {
             $timestampKey = $status . '_at';
 
+            //
+            // In case of queued, the payout moves from queued -> created.
+            // created_at is set when payout entity is created.
+            // But we want to know when payout moves to `created` state.
+            // We keep a track of this using `initiated_at`.
+            //
+            if ($status === Status::CREATED)
+            {
+                $timestampKey = self::INITIATED_AT;
+            }
+
             $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }
     }
 
-    public function setProcessingTime()
+    public function setInitiatedAt()
     {
         $currentTime = Carbon::now()->getTimestamp();
 
-        $this->setAttribute(self::PROCESSING_TIME, $currentTime);
+        $this->setAttribute(self::INITIATED_AT, $currentTime);
     }
 
     /**
@@ -940,7 +957,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicProcessingTimeAttribute(array & $attributes)
+    public function setPublicInitiatedAtAttribute(array & $attributes)
     {
         //
         // We are currently exposing this timestamp only for dashboard.
@@ -952,7 +969,55 @@ class Entity extends Base\PublicEntity
 
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
-            unset($attributes[self::PROCESSING_TIME]);
+            unset($attributes[self::INITIATED_AT]);
+        }
+    }
+
+    public function setPublicQueuedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::QUEUED_AT]);
+        }
+    }
+
+    public function setPublicCancelledAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::CANCELLED_AT]);
+        }
+    }
+
+    public function setPublicProcessedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::PROCESSED_AT]);
         }
     }
 
