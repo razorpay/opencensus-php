@@ -34,21 +34,23 @@ export default props => {
                 </button>
               </div>
             ) */}
-            <div class="btn-toolbar pull-right">
-              <AsyncButton
-                text="Resend Invite"
-                pendingText="Sending..."
-                class="btn btn-primary btn-sm"
-                onClick={onResendInvite}
-              />
-            </div>
+            {submerchant.user && (
+              <div class="btn-toolbar pull-right">
+                <AsyncButton
+                  text="Resend Invite"
+                  pendingText="Sending..."
+                  class="btn btn-primary btn-sm"
+                  onClick={onResendInvite}
+                />
+              </div>
+            )}
           </div>
           <Alert type="error" message={error} />
           <div class="SliderPanel__Body">
             <div class="panel-body">
               <div class="list-group details-row-container">
                 {/* sub-merchant Id */}
-                <EntityDetailRow value={submerchant.id} label="Merchant ID" />
+                <EntityDetailRow value={submerchant.id} label="Account ID" />
 
                 {/* Registered email of sub-merchant */}
                 <EntityDetailRow
