@@ -1645,7 +1645,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Commission trace codes
     const COMMISSION_SAVED                                      = 'COMMISSION_SAVED';
-    const COMMISSION_LOGGED                                     = 'COMMISSION_LOGGED';
     const COMMISSION_NOT_ENABLED                                = 'COMMISSION_NOT_ENABLED';
     const COMMISSION_NOT_DEFINED                                = 'COMMISSION_NOT_DEFINED';
     const COMMISSION_COMPUTED_ZERO                              = 'COMMISSION_COMPUTED_ZERO';

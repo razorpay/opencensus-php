@@ -162,9 +162,6 @@ class Fee extends Base\Core
                 return $feeDetails;
             }
 
-            // @todo uncomment and remove log statements once logs are verified
-            // return $calculator->getExplicitCommissionFeeSplit();
-
             list($partnerFees, $partnerTax, $feeSplit) = $calculator->getExplicitCommissionFeeSplit();
 
             $this->trace->info(
@@ -174,6 +171,8 @@ class Fee extends Base\Core
                     'partner_tax'  => $partnerTax,
                     'fee_split'    => $feeSplit->toArrayPublic(),
                 ]);
+
+            return [$partnerFees, $partnerTax, $feeSplit];
         }
         catch (\Throwable $ex)
         {
