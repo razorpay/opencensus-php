@@ -75,7 +75,7 @@ export default class CommissionsDailyEntity extends Component {
                       <strong>Transactions</strong>
                     </div>
 
-                    <EntityDetailRow label="Total Volume">
+                    <EntityDetailRow label="Total Transaction Amount">
                       <Amount value={data.transactionVolume} currency={'INR'} />
                     </EntityDetailRow>
 
@@ -129,13 +129,13 @@ function EarningsBreakup(props) {
         <FeeBreakup type={props.feeBreakupType}>
           <>
             <div class="EarningsBreakup--Total">
-              <Amount value={props.value + props.tax} currency={'INR'} />
+              <Amount value={props.value} currency={'INR'} />
             </div>
             <small>Total</small>
           </>
           <>
             <div class="EarningsBreakup--Components">
-              <Amount value={props.value} currency={'INR'} />
+              <Amount value={props.value - props.tax} currency={'INR'} />
             </div>
             <small>{props.label}</small>
           </>
@@ -152,5 +152,5 @@ function EarningsBreakup(props) {
 }
 
 function getTotalEarnings(data) {
-  return data.addonEarnings + data.addonTax + data.baseEarnings + data.baseTax;
+  return data.addonEarnings + data.baseEarnings;
 }

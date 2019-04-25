@@ -10,7 +10,7 @@ import { fetch } from 'merchant/modules/pokedex';
 export default class Commission extends GenericEntity {
   resourceUrl = 'commissions';
 
-  fetchSingleDayAggregateData = ({ from, mode = 'text' }) => {
+  fetchSingleDayAggregateData = ({ from, mode }) => {
     const to = Number(
       moment(from, 'X')
         .endOf('day')
@@ -28,7 +28,7 @@ export default class Commission extends GenericEntity {
       },
     };
 
-    return fetch(query, mode).then(response => {
+    return fetch(query).then(response => {
       if (response.success) {
         return {
           ...response,
@@ -38,7 +38,7 @@ export default class Commission extends GenericEntity {
     });
   };
 
-  fetchAggregateData = ({ from, to, mode = 'test' }) => {
+  fetchAggregateData = ({ from, to }) => {
     const query = {
       filters: {
         ...buildDefaultFilter(from, to),
@@ -49,7 +49,7 @@ export default class Commission extends GenericEntity {
       },
     };
 
-    return fetch(query, mode).then(response => {
+    return fetch(query).then(response => {
       if (response.success) {
         return {
           ...response,
@@ -99,7 +99,7 @@ function buildListAggregations() {
 
 function buildCommonAggregations() {
   return {
-    activeMerchants: buildAggregation('payments_merchant_id', 'count'),
+    activeMerchants: buildAggregation('payments_merchant_id', 'cardinality'),
     transactionVolume: buildAggregation('payments_base_amount', 'sum'),
     transactions: buildAggregation('id', 'count'),
   };
