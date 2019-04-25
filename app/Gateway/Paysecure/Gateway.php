@@ -124,6 +124,12 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * @param array $input
+     * @return array|null
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
     public function callback(array $input)
     {
         parent::callback($input);
@@ -158,7 +164,9 @@ class Gateway extends Base\Gateway
                 $internalErrorCode,
                 $input['gateway'][Fields::ACCU_RESPONSE_CODE],
                 ErrorCodes::getErrorDescription($input['gateway'][Fields::ACCU_RESPONSE_CODE]),
-                $traceData
+                $traceData,
+                null,
+                ($internalErrorCode === ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR ? Action::AUTHENTICATE : null)
             );
         }
 
