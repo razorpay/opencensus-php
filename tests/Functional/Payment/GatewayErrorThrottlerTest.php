@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -91,7 +92,7 @@ class GatewayErrorThrottlerTest extends TestCase
 
         $settings = array_merge($defaultRedisSettings, $settings);
 
-        $this->setRedisKey('downtime:throttle', $settings);
+        $this->setRedisKey(ConfigKey::DOWNTIME_THROTTLE, $settings);
     }
 
     protected function getDefaultRedisSettings()

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
+use RZP\Models\Admin\ConfigKey;
 
 /**
  * Throttle gateway exceptions for downtime creation
@@ -47,7 +48,7 @@ class GatewayErrorThrottler
      */
     protected $settings;
 
-    const SETTINGS_KEY               = 'downtime:throttle';
+    const SETTINGS_KEY               = ConfigKey::DOWNTIME_THROTTLE;
 
     const SKIP                       = 'skip';
     const MAX_BUCKET_SIZE            = 'mbs';
@@ -132,7 +133,7 @@ class GatewayErrorThrottler
         $maxBucketSize    = $this->getThrottleMaxBucketSize();
 
         $limiter = new LeakyBucket\Redis($maxBucketSize, $leakRateValue, $leakRateDuration, $this->redis);
-        $limiter->setPrefix('downtime:throttle:');
+        $limiter->setPrefix(self::SETTINGS_KEY.':key:');
         $response = $limiter->attempt($key);
 
         if ($response->allowed === false)
