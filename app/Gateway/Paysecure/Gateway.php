@@ -84,11 +84,11 @@ class Gateway extends Base\Gateway
         {
             list($gatewayPayment, $response) = $this->initiate2();
 
-            $this->handleFailure($response, 'initiate2');
-
             $content = $this->getGatewayPaymentAttributes($response);
 
             $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
+
+            $this->handleFailure($response, 'initiate2');
 
             $request = $this->getRedirectRequest($response);
 
@@ -104,9 +104,9 @@ class Gateway extends Base\Gateway
         {
             list($gatewayPayment, $response) = $this->initiate();
 
-            $this->handleFailure($response, 'initiate');
-
             $this->updateGatewayPaymentEntity($gatewayPayment, $response);
+
+            $this->handleFailure($response, 'initiate');
 
             $request = [
                 'method' => 'direct',
@@ -166,7 +166,7 @@ class Gateway extends Base\Gateway
                 ErrorCodes::getErrorDescription($input['gateway'][Fields::ACCU_RESPONSE_CODE]),
                 $traceData,
                 null,
-                ($internalErrorCode === ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR ? Action::AUTHENTICATE : null)
+                Action::AUTHENTICATE
             );
         }
 
@@ -181,6 +181,14 @@ class Gateway extends Base\Gateway
         }
 
         $response = $this->authorizeTransaction($gatewayPayment);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $attributes[Entity::RECEIVED] = 1;
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
 
         if ($response[Fields::STATUS] !== StatusCode::SUCCESS)
         {
@@ -199,14 +207,6 @@ class Gateway extends Base\Gateway
                 $traceData
             );
         }
-
-        $attributes = $this->getMappedAttributes($response);
-
-        $attributes[Entity::RECEIVED] = 1;
-
-        $gatewayPayment->fill($attributes);
-
-        $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $this->getCallbackResponseData($input);
     }
@@ -485,6 +485,9 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
 
+            // If the request fails in any of the s2s requests with error code
+            // we should not add these payments in verify cron, since the transaction
+            // status api only works
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $response[Fields::ERROR_CODE],
@@ -493,7 +496,9 @@ class Gateway extends Base\Gateway
                     'gateway'    => $this->gateway,
                     'payment_id' => $this->input['payment']['id'],
                     'command'    => $action,
-                ]
+                ],
+                null,
+                Action::AUTHENTICATE
             );
         }
     }

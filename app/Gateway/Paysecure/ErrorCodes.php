@@ -29,6 +29,7 @@ class ErrorCodes
     const ACCU999 = 'ACCU999';
 
     // Authorize responses
+    const EC_05  = '05';
     const EC_13  = '13';
     const EC_41  = '41';
     const EC_42  = '42';
@@ -73,6 +74,9 @@ class ErrorCodes
         self::ACCU999 => 'Modal popup was opened successfully',
 
         // Authorize error codes
+        // Error code '05' is not available from the integration guide
+        // We got it while testing on prod
+        self::EC_05   => 'Do not honor',
         self::EC_13   => 'Amount Error',
         self::EC_41   => 'DECLINED (lost card)',
         self::EC_42   => 'DECLINED (no account)',
@@ -118,6 +122,7 @@ class ErrorCodes
         self::ACCU800 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
 
         // Authorize error code mappings
+        self::EC_05   => ErrorCode::GATEWAY_ERROR_DO_NOT_HONOUR_REMITTER,
         self::EC_13   => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,
         self::EC_41   => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
         self::EC_42   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
