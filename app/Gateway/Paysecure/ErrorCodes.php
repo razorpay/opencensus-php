@@ -20,6 +20,7 @@ class ErrorCodes
 
     // Callback responses
     const ACCU000 = 'ACCU000';
+    const ACCU100 = 'ACCU100';
     const ACCU200 = 'ACCU200';
     const ACCU400 = 'ACCU400';
     const ACCU600 = 'ACCU600';
@@ -63,6 +64,7 @@ class ErrorCodes
         self::EC_412  => 'Issuer Authentication Failure',
 
         // Callback error codes
+        self::ACCU100 => 'Authentication Failed',
         self::ACCU200 => 'User pressed cancel button',
         self::ACCU400 => 'User was inactive',
         self::ACCU600 => 'Invalid data posted to Paysecure',
@@ -108,6 +110,7 @@ class ErrorCodes
         self::EC_412  => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
 
         // Callback error code mappings
+        self::ACCU100 => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         self::ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::ACCU400 => ErrorCode::GATEWAY_ERROR_USER_INACTIVE,
         self::ACCU600 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
