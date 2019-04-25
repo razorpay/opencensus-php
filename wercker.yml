@@ -1,5 +1,5 @@
 box:
-  id: razorpay/onggi:php-7.1
+  id: razorpay/onggi:php-intlphp-7.2
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
 command-timeout: 15
