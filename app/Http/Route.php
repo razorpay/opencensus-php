@@ -564,6 +564,7 @@ final class Route
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                  => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
         'gateway_downtime_vajra_webhook'           => ['post',     'gateway/downtimes/webhook/vajra',                'GatewayController@postGatewayDowntimeVajraWebhook'                 ],
+        'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
@@ -1411,6 +1412,7 @@ final class Route
         'entity_balance_id_update',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
+        'cps_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
         'update_fts_fund_transfer',
@@ -2687,6 +2689,7 @@ final class Route
 
         'vajra' => [
             'gateway_downtime_vajra_webhook',
+            'cps_downtime_vajra_webhook',
         ],
 
         'fts'  => [
