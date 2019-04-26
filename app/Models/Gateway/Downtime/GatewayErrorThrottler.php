@@ -96,10 +96,10 @@ class GatewayErrorThrottler
     {
         $settings = $this->loadSettingsFromRedis();
 
-        if (empty(array_filter($settings)) === true)
+        if (empty($settings) === true)
         {
             // Alert for manual action if no configuration exists, continues the flow with code defaults.
-            $this->trace->critical(TraceCode::GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING);
+            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING);
         }
 
         $this->settings = $settings;
@@ -133,7 +133,7 @@ class GatewayErrorThrottler
 
         if ($response->allowed === false)
         {
-            $this->trace->notice(TraceCode::GATEWAY_DOWNTIME_THROTTLE_DISALLOWED, [
+            $this->trace->info(TraceCode::GATEWAY_DOWNTIME_THROTTLE_DISALLOWED, [
                 'key'                => $key,
                 'leak_rate_value'    => $leakRateValue,
                 'leak_rate_duration' => $leakRateDuration,

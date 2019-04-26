@@ -189,7 +189,9 @@ class Core extends Base\Core
     {
         $method = $gatewayData['payment']['method'];
 
-        if ((new GatewayErrorThrottler($gateway, $method))->attempt() === false)
+        $allowed = (new GatewayErrorThrottler($gateway, $method))->attempt();
+
+        if ($allowed === false)
         {
             $now = Carbon::now()->getTimestamp();
 
@@ -210,7 +212,7 @@ class Core extends Base\Core
 
     protected function getDuration(): int
     {
-        $redis = Redis::connection()->client();
+        $redis = $this->app['redis']->connection();
 
         $settings = $redis->hgetall(ConfigKey::DOWNTIME_THROTTLE);
 
