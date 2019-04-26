@@ -47,7 +47,6 @@ class TransactionRequestTransformer extends TransactionTransformer
                     Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
                     Fields::AMOUNT                  => $this->getFormattedAmount(),
                     Fields::COLLECT_REQ_EXPIRY_MINS => $this->getCollectExpiryMinutes(),
-                    Fields::CURRENCY                => $this->getCurrency(),
                     Fields::CUSTOMER_VPA            => $this->getPayeeVpa(),
                     Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
                     Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
@@ -127,6 +126,9 @@ class TransactionRequestTransformer extends TransactionTransformer
 
     public function getCollectExpiryMinutes()
     {
-        return '100';
+        $seconds = $this->input[Entity::TRANSACTION][Entity::EXPIRE_AT] -
+                   $this->input[Entity::TRANSACTION][Entity::CREATED_AT];
+
+        return (string) ceil($seconds / 60);
     }
 }

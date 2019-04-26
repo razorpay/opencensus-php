@@ -117,7 +117,8 @@ class Sdk
     {
         $response = $this->initiateResponse();
 
-        $response[Fields::BALANCE] = '2206.90';
+        $response[Fields::GATEWAY_RESPONSE_CODE]    = '00';
+        $response[Fields::BALANCE]                  = '2206.90';
 
         return $response;
     }
