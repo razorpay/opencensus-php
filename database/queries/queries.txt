@@ -4882,6 +4882,9 @@ ALTER TABLE refunds
     CHANGE reference11 balance_id CHAR(14) DEFAULT NULL,
     ADD INDEX refunds_balance_id_index (`balance_id`);
 
+ALTER TABLE mozart
+    DROP INDEX mozart_payment_id_unique;
+
 -- P2P - Beneficiary Handling #11532
 
 /* The Bank Id, Handle and Device Id will be null for Beneficiary  */

@@ -25,8 +25,7 @@ class CreateMozartGateway extends Migration
 
             $table->increments(Mozart::ID);
 
-            $table->char(Mozart::PAYMENT_ID,UniqueIdEntity::ID_LENGTH)
-                ->unique();
+            $table->char(Mozart::PAYMENT_ID,UniqueIdEntity::ID_LENGTH);
 
             $table->char(Mozart::ACTION)
                 ->nullable();
