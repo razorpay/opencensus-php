@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
+use RZP\Models\VirtualAccount\Receiver;
 
 class Core extends Base\Core
 {
@@ -61,10 +62,21 @@ class Core extends Base\Core
         try
         {
             $subscription = $entity->subscription;
-
+            $receiver     = $entity->receiver;      // Example receiver: Qr_code entity
+            
+            //
+            // If the txn has an associated subscription entity, fetch the subscription's entity_origin.
+            // If the txn has an associated receiver entity, it is a VA txn. We extract the VA from the receiver
+            // and set the VA's entity_origin as the entity_origin for this txn.
+            // If the txn does not have either of those, basic auth is used to extract the origin entity's details.
+            //
             if (empty($subscription) === false)
             {
                 $originEntity = $this->getOriginEntityFromSubscription($subscription);
+            }
+            else if (empty($receiver) === false)
+            {
+                $originEntity = $this->getOriginEntityFromReceiver($receiver);
             }
             else
             {
@@ -173,6 +185,25 @@ class Core extends Base\Core
                 ]
             );
         }
+
+        return $originEntity;
+    }
+
+    /**
+     * Extracts the VA from the receiver and returns the VA's origin entity
+     *
+     * @param Base\PublicEntity $receiver
+     *
+     * @return mixed|null
+     */
+    protected function getOriginEntityFromReceiver(Base\PublicEntity $receiver)
+    {
+        // A receiver will always have an associated VA entity
+        $virtualAccount = $receiver->virtualAccount;
+
+        $vaEntityOrigin = $virtualAccount->entityOrigin;
+
+        $originEntity = optional($vaEntityOrigin)->origin;
 
         return $originEntity;
     }
