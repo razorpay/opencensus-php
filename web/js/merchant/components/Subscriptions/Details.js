@@ -104,7 +104,12 @@ export default ({
             <strong>{subscription.id}</strong>
             <ShowWhen additionalCondition={_ => allowUpdateSubscription}>
               <div class="pull-right">
-                <Button.Primary>Update</Button.Primary>
+                <Link
+                  class="btn btn-primary m-r"
+                  to={`/subscriptions/update/${subscription.id}`}
+                >
+                  Update
+                </Link>
               </div>
             </ShowWhen>
           </div>
