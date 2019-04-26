@@ -53,6 +53,10 @@ class ApiRequestFields
     const V1_IPG_TRANSACTION_ID                 = 'v1:IpgTransactionId';
     const V1_TRANSACTION_ORIGIN                 = 'v1:TransactionOrigin';
     const V1_MD                                 = 'v1:MD';
+    const V1_VERIFICATION_RESPONSE              = 'v1:VerificationResponse';
+    const V1_PAYER_AUTHENTICATION_RESPONSE      = 'v1:PayerAuthenticationResponse';
+    const V1_AUTHENTICATION_VALUE               = 'v1:AuthenticationValue';
+    const V1_XID                                = 'v1:XID';
 
     /**
      * Fields used for recurring payments
