@@ -51,13 +51,26 @@ class TransactionTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
-        $helper->initiatePay();
-
-        $transaction = $this->fixtures->getDbLastTransaction();
+        $request = $helper->initiatePay();
 
         $helper->withSchemaValidated();
 
-        $response = $helper->authorizeTransaction($transaction->getPublicId());
+        $response = $helper->authorizeTransaction($request['callback']);
+    }
+
+    public function testInitiateRejectTransaction()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->initiateCollect();
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->fixtures->switchDeviceSet(self::DEVICE_2);
+
+        $helper->withSchemaValidated();
+
+        $helper->initiateReject($transaction->getPublicId());
     }
 
     public function testRejectTransaction()
@@ -66,13 +79,15 @@ class TransactionTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $response = $helper->initiateCollect();
+        $helper->initiateCollect();
 
         $transaction = $this->fixtures->getDbLastTransaction();
 
         $this->fixtures->switchDeviceSet(self::DEVICE_2);
 
-        $response = $helper->rejectTransaction($transaction->getPublicId());
+        $request = $helper->initiateReject($transaction->getPublicId());
+
+        $response = $helper->rejectTransaction($request['callback']);
     }
 
     public function testFetchAll()
