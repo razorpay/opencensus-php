@@ -32,6 +32,7 @@ import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation';
 import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
 import NewSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/New';
+import UpdateSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/Update';
 import CreditSubDetails from 'merchant/components/Credits/CreditSubDetails';
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
@@ -135,6 +136,9 @@ const entityModalsMap = {
   },
   '/subscriptions/new': {
     component: NewSubscriptionLink,
+  },
+  '/subscriptions/update/:id(sub_.+)': {
+    component: UpdateSubscriptionLink,
   },
 };
 
