@@ -69,6 +69,8 @@ export function createPaymentLink(payload) {
 export function editPaymentLink(id, payload) {
   const reqPayload = { ...payload };
 
+  delete reqPayload.currency;
+
   reqPayload.expire_by &&
     (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 

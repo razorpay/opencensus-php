@@ -169,6 +169,8 @@ export class AmountCreator extends React.PureComponent {
       disableSubmit,
     } = this.state;
 
+    const isCurrencyChangeDisabled = !!this.props.field.id;
+
     return (
       <Form
         name="form_creator_amount"
@@ -178,7 +180,10 @@ export class AmountCreator extends React.PureComponent {
         <div class="section section-1">
           <Input.Group class="InputGroup--inline" label="Amount">
             <div class="Input-content">
-              <Input.CurrencySelect name="currency" />
+              <Input.CurrencySelect
+                name="currency"
+                disabled={isCurrencyChangeDisabled}
+              />
 
               <Input
                 name="amount"
