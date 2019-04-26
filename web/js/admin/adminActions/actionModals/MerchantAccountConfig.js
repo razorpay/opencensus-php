@@ -2,8 +2,8 @@ import Form from 'ui/Form';
 import React, { Component } from 'react';
 import AsyncButton from 'ui/AsyncButton';
 import { ModalContent } from 'component/Modal';
-import Field, { TextAreaField, SelectField } from 'ui/Field';
 import { adminPost, adminPut } from 'common/fetch';
+import Field, { TextAreaField, SelectField } from 'ui/Field';
 import { splitAndFilter, snakeToTitleCase } from 'common/util';
 import { notifySuccess, notifyError, openModal, closeModal } from 'common/modal';
 
@@ -12,6 +12,7 @@ const options = {
         'assign_schedule',
         'assign_methods',
         'assign_pricing',
+        'assign_tag',
     ],
 
     putRequests: [
@@ -21,6 +22,7 @@ const options = {
     postRequests: [
         'assign_schedule',
         'assign_pricing',
+        'assign_tag',
     ],
 
     methods: [
@@ -126,6 +128,24 @@ export default class MerchantAccountConfig extends Component {
 
                 break;
             }
+            case 'assign_tag': {
+                url = 'live/merchants/tags/bulk';
+
+                formBody = <div>
+                    <Field required label="Tag Name" type="text" name="name" />
+                    <SelectField
+                        name="action"
+                        label="Action"
+                        defaultValue="insert"
+                    >
+                        <option value="insert">Insert</option>
+                        <option value="delete">Delete</option>
+                    </SelectField>
+
+                </div>;
+
+                break;
+            }
         }
 
         return {body: formBody, url: url};
@@ -194,7 +214,8 @@ export default class MerchantAccountConfig extends Component {
                 delete body.merchant_ids;
                 break;
             }
-            case 'assign_pricing': {
+            case 'assign_pricing':
+            case 'assign_tag': {
                 body.merchant_ids = splitAndFilter(body.merchant_ids, ',');
                 break;
             }
