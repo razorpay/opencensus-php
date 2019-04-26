@@ -2146,7 +2146,7 @@ final class Route
         'geoip_update'                             => '*',
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
         'merchant_get_tags'                        => '*',
-        'merchant_tags_bulk'                       => '*',
+        'merchant_tags_bulk'                       => Permission::MANAGE_BULK_MERCHANT_TAGGING,
         'pricing_get_merchant_plans'               => Permission::MERCHANT_PRICING_PLANS,
         'pricing_supported_networks'               => '*',
         'pricing_add_plan_rule'                    => Permission::UPDATE_PRICING_PLAN,
