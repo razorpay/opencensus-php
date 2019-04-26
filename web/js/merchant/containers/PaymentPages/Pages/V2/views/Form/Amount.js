@@ -2,6 +2,7 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList, getFormattedAmount } from 'common/util';
+import Amount from 'rzp/ui/Amount';
 import EditLayer from '../EditLayer';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
@@ -34,9 +35,10 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
               if (paymentPageEntity.amount) {
                 <React.Fragment>
                   <span>
-                    <b>₹ {amountToDisplay.split('.')[0]}</b>.{
-                      amountToDisplay.split('.')[1]
-                    }
+                    <Amount
+                      currency={paymentPageEntity.currency}
+                      value={Number(amountToDisplay) * 100}
+                    />
                   </span>
                   {paymentPageEntity.settings &&
                     paymentPageEntity.settings.allow_multiple_units && (
@@ -170,6 +172,7 @@ export class AmountCreator extends React.PureComponent {
     } = this.state;
 
     const isCurrencyChangeDisabled = !!this.props.field.id;
+    console.log('...', this.props.field);
 
     return (
       <Form
@@ -183,6 +186,7 @@ export class AmountCreator extends React.PureComponent {
               <Input.CurrencySelect
                 name="currency"
                 disabled={isCurrencyChangeDisabled}
+                defaultValue={this.props.field.currency}
               />
 
               <Input

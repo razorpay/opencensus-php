@@ -17,8 +17,11 @@ export default ({
   ...attrs
 }) => {
   const amount = getFormattedAmount(value);
-  const currencySymbolMapping =
-    (window.currencyLib && window.currencyLib.displayCurrencies) || currencies;
+  let currencySymbol = currencies[currency];
+
+  if (window.currencyList && window.currencyList[currency]) {
+    currencySymbol = window.currencyList[currency].symbol;
+  }
 
   // TODO: pointer-events: allow, but cursor be as per inherit
   return (
@@ -28,9 +31,10 @@ export default ({
     >
       <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
         <span
-          dangerouslySetInnerHTML={{ __html: currencySymbolMapping[currency] }}
-        />
-        {amount.split('.')[0]}
+          class="rzp-currency"
+          dangerouslySetInnerHTML={{ __html: currencySymbol }}
+        />{' '}
+        <span class="rzp-whole">{amount.split('.')[0]}</span>
         <span class="rzp-paise">.{amount.split('.')[1]}</span>
       </span>
     </AmountTooltip>
@@ -44,11 +48,15 @@ export function AmountTooltip({
   customClass,
   parentQuerySelector,
 }) {
-  const currencySymbolMapping =
-    (window.currencyLib && window.currencyLib.displayCurrencies) || currencies;
+  const currencySymbolMapping = currencies;
+  let currencySymbol = currencies[currency];
+
+  if (window.currencyList && window.currencyList[currency]) {
+    currencySymbol = window.currencyList[currency].symbol;
+  }
 
   return (
-    <small className={classList('help-content', customClass)}>
+    <span className={classList('help-content', customClass)}>
       {children || <span>{currencySymbolMapping[currency]}</span>}
       <Popover
         align="top"
@@ -56,9 +64,13 @@ export function AmountTooltip({
         parentQuerySelector={parentQuerySelector}
       >
         <PopoverBody>
-          <div>// TODO: Description base {currency}</div>
+          {/* TODO: Api needs to add support for currency label */}
+          <div style={{ textAlign: 'center' }}>
+            {currencySymbol} - {currency} -{' '}
+            {currencySymbolMapping[currency].name}
+          </div>
         </PopoverBody>
       </Popover>
-    </small>
+    </span>
   );
 }

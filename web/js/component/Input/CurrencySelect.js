@@ -23,7 +23,7 @@ const defaultCurrencies = [
       },
       {
         label: 'Singapore Dollar',
-        name: 'SUSD',
+        name: 'SGD',
         symbol: 'S$',
         flag: 'dummy',
       },
@@ -75,7 +75,10 @@ export default class extends React.Component {
       isDisabled = this.props.disabled;
 
     if (!this.props.user.international) {
-      currencyList = [currencyList[0].options[0]]; // Only inr in the list
+      if (!this.props.defaultValue) {
+        currencyList = [currencyList[0].options[0]]; // Only inr in the list
+      }
+
       isDisabled = true;
     } else {
       const defaultValue = this.props.defaultValue;

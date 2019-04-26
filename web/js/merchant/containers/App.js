@@ -151,7 +151,7 @@ export default class App extends Component {
         }
       }),
       this.fetchSupportedCurrencies().then(({ data }) => {
-        console.log('.....data...', data);
+        window.currencyList = data;
       }),
     ]).then(response => {
       if (response[0].showInstantActivation) {
@@ -204,7 +204,7 @@ export default class App extends Component {
   }
 
   fetchSupportedCurrencies() {
-    return merchantFetch('currency/all?key_id=rzp_test_1DP5mmOlF5G5ag');
+    return merchantFetch('currency/all/proxy');
   }
 
   fetchUser() {
