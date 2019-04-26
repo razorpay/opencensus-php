@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Services;
 use RZP\Exception;
@@ -12,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\ConfigKey;
 
 class Core extends Base\Core
 {
@@ -191,17 +193,28 @@ class Core extends Base\Core
         {
             $now = Carbon::now()->getTimestamp();
 
+            $duration = $this->getDuration();
+
             $this->create([
                 Entity::GATEWAY     => $gateway,
                 Entity::REASON_CODE => ReasonCode::HIGHER_ERRORS,
                 Entity::BEGIN       => $now,
-                Entity::END         => $now + self::DEFAULT_DOWNTIME_DURATION,
+                Entity::END         => $now + $duration,
                 Entity::METHOD      => $gatewayData['payment']['method'],
                 Entity::SOURCE      => Source::INTERNAL,
                 Entity::COMMENT     => 'Downtime created by internal gateway response analysis and throttling',
                 Entity::SCHEDULED   => false,
             ]);
         }
+    }
+
+    protected function getDuration(): int
+    {
+        $redis = Redis::connection()->client();
+
+        $settings = $redis->hgetall(ConfigKey::DOWNTIME_THROTTLE);
+
+        return $settings['duration'] ?? self::DEFAULT_DOWNTIME_DURATION;
     }
 
     /**

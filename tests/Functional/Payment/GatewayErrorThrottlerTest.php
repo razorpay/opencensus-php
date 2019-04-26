@@ -81,6 +81,31 @@ class GatewayErrorThrottlerTest extends TestCase
         $this->assertEquals($downtime1['id'], $downtime2['id']);
     }
 
+    public function testGatewayFailureDowntimeDuration()
+    {
+        $this->setRedisSettings([
+            'duration' => 300,
+        ]);
+
+        $data = $this->getErrorTestData();
+
+        $this->gatewayDown = true;
+
+        // Sharp throws a gateway fatal error
+        // 2 errors should create a downtime
+        $this->runRequestResponseFlow($data, function () {
+            $this->doAuthPayment();
+        });
+
+        $this->runRequestResponseFlow($data, function () {
+            $this->doAuthPayment();
+        });
+
+        $downtime = $this->getLastEntity('gateway_downtime', true);
+        $this->assertEquals('sharp', $downtime['gateway']);
+        $this->assertEquals(300, $downtime['end'] - $downtime['begin']);
+    }
+
     // ------------------------------ Helpers ----------------------------------
 
     protected function getErrorTestData()
