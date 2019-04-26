@@ -827,7 +827,6 @@ class CybersourceGatewayTest extends TestCase
             $content['success'] = false;
             $content['error']['description'] = 'Dummy Route Not Found Error';
             $content['error']['internal_error_code'] = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
-            //SERVER_ERROR_LOGICAL_ERROR
             $content['error']['gateway_error_code'] = '';
             $content['error']['gateway_error_desc'] = '';
             $content['error']['gateway_status_code'] = '0';
