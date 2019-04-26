@@ -29,7 +29,7 @@ export default class AccountsListContainer extends ListContainer {
     let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
       message = `Are you sure you want to ${
         checked ? 'Enable' : 'Disable'
-      } allow refunds for this linked account`,
+      } dashboard access for this linked account`,
       data = {
         dashboard_access: checked,
         accountId: account.id,
