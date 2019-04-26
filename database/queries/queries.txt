@@ -4882,6 +4882,9 @@ ALTER TABLE refunds
     CHANGE reference11 balance_id CHAR(14) DEFAULT NULL,
     ADD INDEX refunds_balance_id_index (`balance_id`);
 
+ALTER TABLE enach
+    ADD COLUMN gateway_reference_id2 VARCHAR(255) DEFAULT NULL AFTER gateway_reference_id;
+
 ALTER TABLE mozart
     DROP INDEX mozart_payment_id_unique;
 
