@@ -37,11 +37,14 @@ const Summary = ({ data }) => {
   );
 };
 
-const changeData = ({ fields, previousSubscription, plans, intervals }) => {
+const changeData = ({ fields, previousSubscription, plans }) => {
   const currSelectedPlan = plans.find(({ id }) => id === fields.plan_id),
     prevSelectedPlan = plans.find(
       ({ id }) => id === previousSubscription.plan_id
-    );
+    ),
+    refund =
+      currSelectedPlan.item.amount * fields.quantity -
+      prevSelectedPlan.item.amount * previousSubscription.quantity;
 
   const changes = [
     {
@@ -75,8 +78,10 @@ const changeData = ({ fields, previousSubscription, plans, intervals }) => {
       heading: 'Start Date',
       changes: [
         {
-          current: moment(previousSubscription.start_at).format('DD MMM, YYYY'),
-          change: moment(fields.start_at).format('DD MMM, YYYY'),
+          current: moment
+            .unix(previousSubscription.start_at)
+            .format('DD MMM, YYYY'),
+          change: moment.unix(fields.start_at).format('DD MMM, YYYY'),
         },
       ],
     },
@@ -88,31 +93,39 @@ const changeData = ({ fields, previousSubscription, plans, intervals }) => {
         value={prevSelectedPlan.item.amount}
         currency={prevSelectedPlan.item.currency}
       />{' '}
-      charged every {previousSubscription.quantity} monthly
+      {previousSubscription.quantity > 1 ? (
+        <>charged every {previousSubscription.quantity} monthly</>
+      ) : (
+        <>changed for month </>
+      )}
       <b>
         <i class="i i-arrow-forward" />
         <Amount
           value={currSelectedPlan.item.amount}
           currency={currSelectedPlan.item.currency}
         />{' '}
-        charged every {fields.quantity} monthly,
+        {fields.quantity > 1 ? (
+          <>charged every {fields.quantity} monthly</>
+        ) : (
+          <>changed for month </>
+        )}
       </b>
     </li>,
-    fields.update_at_cycle_end ? (
+    !Number(fields.update_at_cycle_end) ? (
       <li>
         The changes will take into effect <b>immediately.</b>
       </li>
     ) : (
       <li>
-        The changes will be applied from the next billing cycle i.e 12 May,
-        2017.
+        The changes will be applied from the next billing cycle i.e{' '}
+        {moment.unix(previousSubscription.end_at).format('DD MMM, YYYY')}
       </li>
     ),
-    true ? (
+    refund ? (
       <li>
         {' '}
         Refund of{' '}
-        <Amount value={2000} currency={currSelectedPlan.item.currency} /> has
+        <Amount value={refund} currency={currSelectedPlan.item.currency} /> has
         been initiated.{' '}
       </li>
     ) : (
