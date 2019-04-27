@@ -10,13 +10,17 @@ import {
 } from 'merchant/modules/subscriptions';
 import { showNotification } from 'rzp/modules/notifications';
 
+import Spinner from 'rzp/ui/Spinner';
 import { ModalAsideNav } from 'component/Wizard';
 import { Modal, ModalContent } from 'component/Modal';
 import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 
 import PlanDetails from './PlanDetails';
-import Review from '../New/Review';
+import Review from './Review';
+
+import { stringToObj } from 'common/util';
+
 @withRouter
 @connect(
   state => ({
@@ -36,14 +40,30 @@ export default class UpdateSubscription extends Component {
     super(props);
 
     this.state = {
+      loading: true,
       currentTab: 0,
       validTabs: [false, false],
       fields: {
-        quantity: 1,
-        addons: [],
+        auth_attempts: null,
+        charge_at: null,
+        created_at: null,
+        current_end: null,
+        current_start: null,
+        customer_id: null,
+        customer_notify: null,
+        end_at: null,
+        ended_at: null,
+        expire_by: null,
+        plan_id: null,
+        quantity: null,
+        short_url: null,
+        start_at: null,
+        status: null,
+        total_count: null,
+        type: null,
       },
+      previousSubscription: {},
       internals: {},
-      subscription: {},
     };
   }
 
@@ -58,12 +78,19 @@ export default class UpdateSubscription extends Component {
       .fetchSubscription(id)
       .then(resp => {
         this.setState({
-          subscription: {
+          fields: {
             ...resp,
           },
+          previousSubscription: {
+            ...resp,
+          },
+          loading: false,
         });
       })
       .catch(({ errors }) => {
+        this.setState({
+          loading: false,
+        });
         this.props.showNotification({
           type: 'error',
           message: errors[0],
@@ -151,7 +178,17 @@ export default class UpdateSubscription extends Component {
     this.handleChangeIn({ target });
   };
 
-  renderForm() {
+  handleRadioChange = e => {
+    this.setState({
+      fields: {
+        ...this.state.fields,
+        [e.target.name]: e.target.value,
+      },
+    });
+  };
+
+  renderForm = () => {
+    if (this.state.loading) return <Spinner />;
     switch (this.state.currentTab) {
       case 0:
         return (
@@ -160,32 +197,35 @@ export default class UpdateSubscription extends Component {
             onChangeInPlan={this.handleChangeInPlan}
             onDateChange={this.handleDateChange}
             onTimeChange={this.handleTimeChange}
+            onRadioChange={this.handleRadioChange}
             fields={this.state.fields}
             internals={this.state.internals}
             ref={form => (this.planDetailsForm = form)}
           />
         );
-      case 3:
+      case 1:
         return (
           <Review
             fields={this.state.fields}
             internals={this.state.internals}
             plans={this.props.plans.items}
+            previousSubscription={this.state.previousSubscription}
           />
         );
     }
-  }
+  };
 
   renderWizard() {
     const { currentTab } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
+    const currentTabMeta = tabsMeta[tabs[currentTab]];
     return (
       // need to improve this css styling
-      <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
+      <div class="PaymentLinks--Create SubscriptionLinks--update Wizard">
         {/* create subscription link tabs */}
         <ModalAsideNav
           title="Updates Subscription"
-          description={<p>Provide details to create a subscription link</p>}
+          description={<p>Make changes to your existing subscriptions</p>}
           tabs={tabs}
           tabClickHandler={this.handleTabChange}
           activeTab={currentTab}
@@ -195,7 +235,10 @@ export default class UpdateSubscription extends Component {
           }
         />
         <main class="form-container">
-          <main-title>{tabs[currentTab]}</main-title>
+          <div class="title">
+            <strong>{currentTabMeta.title}</strong>
+          </div>
+          <div class="description large">{currentTabMeta.desc}</div>
           <Form
             class="PaymentLinks--Create--Form"
             layout="tabular"
@@ -224,7 +267,7 @@ export default class UpdateSubscription extends Component {
               type="submit"
               onClick={this.handleCreate}
             >
-              Create Subscription Link
+              Update Subscription Link
             </AsyncBtn.Primary>
           )}
         </footer>
@@ -265,10 +308,6 @@ function isFormValid(
     }
 
     case 1: {
-      return !internals._addOnPresent || fields.addons.every(isPresent);
-    }
-
-    case 2: {
       const notify_info = fields.notify_info || {};
       return (
         (!fields.customer_notify ||
@@ -279,4 +318,14 @@ function isFormValid(
   }
 }
 
-const tabs = ['Subscription Details', 'Review'];
+const tabsMeta = {
+  'Subscription Details': {
+    title: 'SUBSCRIPTION DETAILS',
+  },
+  Review: {
+    title: 'REVIEW CHANGES',
+    desc: 'Please review the changes applied.',
+  },
+};
+
+const tabs = Object.keys(tabsMeta);

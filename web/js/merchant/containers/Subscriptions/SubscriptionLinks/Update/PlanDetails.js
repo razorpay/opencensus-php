@@ -16,9 +16,10 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
         />
         <Input.Radio
           label="Apply Changes"
+          name="update_at_cycle_end"
           options={['Immediately', 'End of Cycle']}
           className="Input--vTop"
-          onChange={this.props.handleApplyChanges}
+          onChange={this.props.onRadioChange}
         />
       </React.Fragment>
     );
