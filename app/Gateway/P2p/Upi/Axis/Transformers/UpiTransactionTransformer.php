@@ -16,6 +16,7 @@ class UpiTransactionTransformer extends TransactionTransformer
             Entity::NETWORK_TRANSACTION_ID      => $this->input[Fields::GATEWAY_TRANSACTION_ID],
             Entity::GATEWAY_TRANSACTION_ID      => $this->input[Fields::GATEWAY_TRANSACTION_ID],
             Entity::GATEWAY_REFERENCE_ID        => $this->input[Fields::MERCHANT_REQUEST_ID],
+            Entity::RRN                         => $this->input[Fields::GATEWAY_REFERENCE_ID],
             Entity::GATEWAY_ERROR_CODE          => $this->input[Fields::GATEWAY_RESPONSE_CODE],
             Entity::GATEWAY_ERROR_DESCRIPTION   => $this->input[Fields::GATEWAY_RESPONSE_MESSAGE],
         ];

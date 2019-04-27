@@ -154,6 +154,36 @@ class Sdk
         return $response;
     }
 
+    public function sdkRequestMoney()
+    {
+        $response = [
+            Fields::AMOUNT                      => $this->input[Fields::AMOUNT],
+            Fields::BANK_ACCOUNT_UNIQUE_ID      => $this->input[Fields::ACCOUNT_REFERENCE_ID],
+            Fields::BANK_CODE                   => '123456',
+            Fields::CUSTOMER_MOBILE_NUMBER      => '919000000001',
+            Fields::CUSTOMER_VPA                => $this->input[Fields::CUSTOMER_VPA],
+            Fields::GATEWAY_REFERENCE_ID        => '123344557', // rrn
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Your transaction was successful',
+            Fields::GATEWAY_TRANSACTION_ID      => $this->input[Fields::UPI_REQUEST_ID],
+            Fields::MASKED_ACCOUNT_NUMBER       => 'XXXX123456',
+            Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIME_STAMP],
+            Fields::UDF_PARAMETERS              => '{}'
+        ];
+
+        $stringToSign = implode($response, '');
+
+        $gateway = new Gateway();
+
+        $sign = $gateway->getMerchantSigner()->sign($stringToSign);
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = bin2hex($sign);
+
+        $response[Fields::STATUS] = 'SUCCESS';
+
+        return $response;
+    }
+
     private function createMockBankAccount()
     {
         $code = $this->input[Fields::BANK_CODE];

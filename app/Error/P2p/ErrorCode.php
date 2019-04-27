@@ -19,5 +19,7 @@ class ErrorCode extends \RZP\Error\ErrorCode
 
     const GATEWAY_ERROR_DEVICE_INVALID_TOKEN                        = 'GATEWAY_ERROR_DEVICE_INVALID_TOKEN';
 
+    const BAD_REQUEST_TRANSACTION_INVALID_STATE                     = 'BAD_REQUEST_TRANSACTION_INVALID_STATE';
+
     // @codingStandardsIgnoreEnd
 }

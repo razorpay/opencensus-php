@@ -405,6 +405,18 @@ class Entity extends Base\Entity
         return $this->setAttribute(self::COMPLETED_AT, $completedAt);
     }
 
+    public function markCompleted()
+    {
+        $this->setInternalStatus(Status::COMPLETED);
+        $this->setAttribute(self::COMPLETED_AT, $this->freshTimestamp());
+    }
+
+    public function markInitiated()
+    {
+        $this->setInternalStatus(Status::INITIATED);
+        $this->setAttribute(self::INITIATED_AT, $this->freshTimestamp());
+    }
+
     /***************** GETTERS *****************/
 
     /**
@@ -614,6 +626,21 @@ class Entity extends Base\Entity
     public function getCompletedAt()
     {
         return $this->getAttribute(self::COMPLETED_AT);
+    }
+
+    public function isCompleted(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::COMPLETED]);
+    }
+
+    public function isProcessing(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::CREATED, Status::INITIATED, Status::PENDING]);
+    }
+
+    public function isFailed(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::FAILED, Status::REJECTED, Status::EXPIRED]);
     }
 
     /***************** RELATIONS *****************/

@@ -106,8 +106,8 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([
             Entity::NETWORK_TRANSACTION_ID  => 'required',
             Entity::GATEWAY_TRANSACTION_ID  => 'required',
-            Entity::GATEWAY_REFERENCE_ID    => 'sometimes',
-            Entity::RRN                     => 'sometimes',
+            Entity::GATEWAY_REFERENCE_ID    => 'required',
+            Entity::RRN                     => 'required',
         ]);
 
         return $rules;

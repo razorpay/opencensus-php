@@ -12,6 +12,24 @@ use RZP\Models\P2p\Base\Libraries\ArrayBag;
  */
 class Core extends Base\Core
 {
+    public function create(Properties $properties, array $input): Entity
+    {
+        $transaction = $this->build($input);
+
+        $properties->attachToTransaction($transaction);
+
+        $this->repo->saveOrFail($transaction);
+
+        return $transaction;
+    }
+
+    public function update(Entity $transaction, array $input): Entity
+    {
+        $this->repo->saveOrFail($transaction);
+
+        return $transaction;
+    }
+
     public function createUpi(Entity $transaction, string $action)
     {
         $input = [
