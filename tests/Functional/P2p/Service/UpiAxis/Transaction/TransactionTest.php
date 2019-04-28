@@ -67,4 +67,19 @@ class TransactionTest extends TestCase
 
         $this->assertTrue($transaction->isProcessing());
     }
+
+    public function testCollectAccept()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $coproto = $helper->initiateCollect();
+
+        $content = $this->handleSdkRequest($coproto);
+
+        $payload = $this->mockSdk()->callback();
+
+        $response = $helper->callback($this->gateway, $payload);
+
+        \mc::dd($response);
+    }
 }

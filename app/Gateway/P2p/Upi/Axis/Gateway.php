@@ -10,6 +10,7 @@ use RZP\Gateway\P2p\Upi;
 use RZP\Models\P2p\Device;
 use RZP\Constants\Timezone;
 use RZP\Gateway\P2p\Upi\Axis\Sdk;
+use RZP\Gateway\P2p\Base\Response;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Exception\P2p\GatewayErrorException;
 

@@ -88,6 +88,9 @@ class Fields
     const GATEWAY_REFERENCE_ID          = 'gatewayReferenceId';
     const MERCHANT_PAYLOAD_SIGNATURE    = 'merchantPayloadSignature';
     const COLLECT_REQ_EXPIRY_MINS       = 'collectRequestExpiryMinutes';
+    const CUSTOME_RESPONSE              = 'customResponse';
+    const IS_VERIFIED_PAYEE             = 'isVerifiedPayee';
+    const IS_MARKED_SPAM                = 'isMarkedSpam';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';

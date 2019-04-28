@@ -127,7 +127,7 @@ class TransactionHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function callbackIncomingCollect(string $gateway, array $content = [])
+    public function callback(string $gateway, array $content = [])
     {
         // This API work on direct auth
         $this->setMerchantInContext(false);

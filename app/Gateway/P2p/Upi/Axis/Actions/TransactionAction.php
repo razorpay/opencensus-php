@@ -6,11 +6,11 @@ use RZP\Gateway\P2p\Upi\Axis\Fields;
 
 class TransactionAction extends Action
 {
-    const SEND_MONEY    = 'SEND_MONEY';
+    const SEND_MONEY                                = 'SEND_MONEY';
 
-    const REQUEST_MONEY = 'REQUEST_MONEY';
+    const REQUEST_MONEY                             = 'REQUEST_MONEY';
 
-    const AUTHORIZE_TRANSACTION = 'authorizeTransaction';
+    const COLLECT_REQUEST_RECEIVED                  = 'COLLECT_REQUEST_RECEIVED';
 
     const MAP = [
         self::SEND_MONEY => [

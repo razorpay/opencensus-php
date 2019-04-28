@@ -233,7 +233,7 @@ final class P2pRoute
             [
                 'post',
                 'callback/{gateway}',
-                'GatewayController@callback'
+                'UpiController@gatewayCallback'
             ],
     ];
 

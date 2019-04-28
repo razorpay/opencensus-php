@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\P2p\Gateway;
+namespace RZP\Models\P2p\Upi;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
@@ -12,5 +12,8 @@ use RZP\Models\P2p\Base;
  */
 class Service extends Base\Service
 {
-
+    public function gatewayCallback(array $input)
+    {
+        return $this->processor->gatewayCallback($input);
+    }
 }

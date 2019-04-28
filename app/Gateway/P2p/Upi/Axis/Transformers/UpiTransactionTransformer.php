@@ -33,4 +33,21 @@ class UpiTransactionTransformer extends TransactionTransformer
     {
         return substr($this->input[Fields::MERCHANT_REQUEST_ID], -14);
     }
+
+    public function transformIncoming(): array
+    {
+        $output = [
+            Entity::ACTION                      => $this->input[Fields::TYPE],
+            Entity::NETWORK_TRANSACTION_ID      => $this->input[Fields::GATEWAY_TRANSACTION_ID],
+            Entity::GATEWAY_TRANSACTION_ID      => $this->input[Fields::GATEWAY_TRANSACTION_ID],
+            Entity::RRN                         => $this->input[Fields::GATEWAY_REFERENCE_ID],
+        ];
+
+        $output[Entity::GATEWAY_DATA] = array_only($this->input, [
+            Fields::TYPE,
+            Fields::TRANSACTION_TIME_STAMP,
+        ]);
+
+        return $output;
+    }
 }

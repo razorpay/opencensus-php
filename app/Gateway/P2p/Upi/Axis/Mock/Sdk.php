@@ -11,6 +11,7 @@ class Sdk
     protected $action;
     protected $input;
     protected $errors = [];
+    protected $callbacks = [];
 
     public function setMockedRequest($request)
     {
@@ -162,12 +163,12 @@ class Sdk
             Fields::BANK_CODE                   => '123456',
             Fields::CUSTOMER_MOBILE_NUMBER      => '919000000001',
             Fields::CUSTOMER_VPA                => $this->input[Fields::CUSTOMER_VPA],
-            Fields::GATEWAY_REFERENCE_ID        => '123344557', // rrn
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085', // rrn
             Fields::GATEWAY_RESPONSE_CODE       => '00',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Your transaction was successful',
             Fields::GATEWAY_TRANSACTION_ID      => $this->input[Fields::UPI_REQUEST_ID],
             Fields::MASKED_ACCOUNT_NUMBER       => 'XXXX123456',
-            Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIME_STAMP],
+            Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIMESTAMP],
             Fields::UDF_PARAMETERS              => '{}'
         ];
 
@@ -181,7 +182,14 @@ class Sdk
 
         $response[Fields::STATUS] = 'SUCCESS';
 
+        $this->setCallback('COLLECT_REQUEST_RECEIVED', $response);
+
         return $response;
+    }
+
+    public function callback()
+    {
+        return array_pop($this->callbacks);
     }
 
     private function createMockBankAccount()
@@ -213,5 +221,28 @@ class Sdk
         ];
 
         return $response;
+    }
+
+    private function setCallback(string $type)
+    {
+        $callback = [
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+            Fields::AMOUNT                      => $this->input[Fields::AMOUNT],
+            Fields::PAYEE_VPA                   => $this->input[Fields::CUSTOMER_VPA],
+            Fields::TYPE                        => $type,
+            Fields::PAYER_VPA                   => $this->input[Fields::PAYER_VPA],
+            Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIMESTAMP],
+            Fields::CUSTOME_RESPONSE            => '{}',
+            Fields::PAYEE_NAME                  => 'Alocal Customer',
+            Fields::GATEWAY_TRANSACTION_ID      => $this->input[Fields::UPI_REQUEST_ID],
+            Fields::MERCHANT_ID                 => 'MERCHANT',
+            Fields::IS_VERIFIED_PAYEE           => 'false',
+            Fields::MERCHANT_CUSTOMER_ID        => 'ALC02DevTok003',
+            Fields::EXPIRY                      => '2019-04-25T16:11:22+05:30',
+            Fields::IS_MARKED_SPAM              => 'false',
+            Fields::REMARKS                     => $this->input[Fields::REMARKS],
+        ];
+
+        $this->callbacks[] = $callback;
     }
 }

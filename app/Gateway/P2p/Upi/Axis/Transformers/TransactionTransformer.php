@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis\Transformers;
 
+use RZP\Models\P2p\Vpa;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\Transaction\Mode;
 use RZP\Models\P2p\Transaction\Type;
@@ -40,6 +41,31 @@ class TransactionTransformer extends Transformer
         $output[Entity::ID] = $this->input[UpiTransaction\Entity::TRANSACTION_ID];
 
         $this->checkForError($output);
+
+        return $output;
+    }
+
+    public function transformIncoming(): array
+    {
+        switch ($this->input[Fields::TYPE])
+        {
+            case TransactionAction::COLLECT_REQUEST_RECEIVED:
+
+                $payer = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+
+                $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+                $payee[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYEE_NAME];
+
+                $output = [
+                    Entity::TYPE            => Type::COLLECT,
+                    Entity::MODE            => $this->getTransactionMode(),
+                    Entity::FLOW            => Flow::DEBIT,
+                    Entity::AMOUNT          => $this->toPaisa($this->input[Fields::AMOUNT]),
+                    Entity::DESCRIPTION     => $this->input[Fields::REMARKS],
+                    Entity::PAYER           => $payer,
+                    Entity::PAYEE           => $payee,
+                ];
+        }
 
         return $output;
     }
