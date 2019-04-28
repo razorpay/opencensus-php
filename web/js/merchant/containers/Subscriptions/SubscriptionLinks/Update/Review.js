@@ -37,11 +37,19 @@ const Summary = ({ data }) => {
   );
 };
 
-export function changeData({ fields, previousSubscription, plans }) {
-  const currSelectedPlan = plans.find(({ id }) => id === fields.plan_id),
-    prevSelectedPlan = plans.find(
-      ({ id }) => id === previousSubscription.plan_id
-    ),
+export function changeData({
+  fields,
+  previousSubscription,
+  plans,
+  updatedPlan,
+  prevPlan,
+}) {
+  const currSelectedPlan = updatedPlan
+      ? updatedPlan
+      : plans.find(({ id }) => id === fields.plan_id),
+    prevSelectedPlan = prevPlan
+      ? prevPlan
+      : plans.find(({ id }) => id === previousSubscription.plan_id),
     refund =
       currSelectedPlan.item.amount * fields.quantity -
       prevSelectedPlan.item.amount * previousSubscription.quantity;

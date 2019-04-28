@@ -7,7 +7,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import ShowWhen from 'merchant/components/ShowWhen';
-import Button from 'component/Button';
+import { AsyncBtn } from 'component/Button';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/Update/Review';
 
@@ -94,7 +94,7 @@ export default ({
   ].indexOf(subscription.status);
 
   return (
-    <div class="content-wrapper content-sm txn-details">
+    <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
       {isLoading ? (
         <div class="page-spinner-container">
           <Spinner />
@@ -234,18 +234,28 @@ export default ({
                 </div>
               )}
               {true && (
-                <div class="alert alert-warning custom-banner">
-                  <div>The subscription will be updated on 23 May, 2019.</div>
+                <div
+                  class="update-subscription-preview alert alert-warning custom-banner"
+                  style={{ width: '100%' }}
+                >
+                  <div>
+                    The subscription will be updated on{' '}
+                    {moment.unix(subscription.start_at).format('DD MMM, YYYY')}
+                    <AsyncBtn.Transparent class="pull-right">
+                      Cancel
+                    </AsyncBtn.Transparent>
+                  </div>
                   <ContentToggler>
                     <span>View Less</span>
-                    <div className="full-width-item sub-entity-list">
+                    <div className="full-width-item">
                       <strong>Update Summary</strong>
                       <UpdatedSubscriptionPreview
                         data={
                           changeData({
                             fields: subscription,
                             previousSubscription: subscription,
-                            plans: plans,
+                            updatedPlan: plan,
+                            prevPlan: plan,
                           }).changes
                         }
                       />
@@ -288,19 +298,20 @@ export default ({
   );
 };
 
-const UpdatedSubscriptionPreview = ({ heading, changes }) => (
-  <div class="changed-values">
-    <div>
-      {changes.map(e => (
-        <div class="current-change" key={e.current}>
-          <strong>{heading}</strong>
-          <span>
-            {e.current}
-            <i class="i i-arrow-forward" />
-            {e.change}
-          </span>
-        </div>
-      ))}
+const UpdatedSubscriptionPreview = ({ data }) =>
+  data.map(({ heading, changes }) => (
+    <div class="changed-values">
+      <div>
+        {changes.map(e => (
+          <div class="current-change" key={e.current}>
+            <b>{heading} :</b>
+            <span>
+              {e.current}
+              <i class="i i-arrow-forward" />
+              {e.change}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  ));
