@@ -8,6 +8,8 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Button from 'component/Button';
+import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/Update/Review';
 
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
@@ -231,6 +233,26 @@ export default ({
                   </div>
                 </div>
               )}
+              {true && (
+                <div class="alert alert-warning custom-banner">
+                  <div>The subscription will be updated on 23 May, 2019.</div>
+                  <ContentToggler>
+                    <span>View Less</span>
+                    <div className="full-width-item sub-entity-list">
+                      <strong>Update Summary</strong>
+                      <UpdatedSubscriptionPreview
+                        data={
+                          changeData({
+                            fields: subscription,
+                            previousSubscription: subscription,
+                            plans: plans,
+                          }).changes
+                        }
+                      />
+                    </div>
+                  </ContentToggler>
+                </div>
+              )}
 
               <EntityDetailList
                 mode={mode}
@@ -265,3 +287,20 @@ export default ({
     </div>
   );
 };
+
+const UpdatedSubscriptionPreview = ({ heading, changes }) => (
+  <div class="changed-values">
+    <div>
+      {changes.map(e => (
+        <div class="current-change" key={e.current}>
+          <strong>{heading}</strong>
+          <span>
+            {e.current}
+            <i class="i i-arrow-forward" />
+            {e.change}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);

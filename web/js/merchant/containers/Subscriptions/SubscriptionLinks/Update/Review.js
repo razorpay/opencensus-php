@@ -37,7 +37,7 @@ const Summary = ({ data }) => {
   );
 };
 
-const changeData = ({ fields, previousSubscription, plans }) => {
+export function changeData({ fields, previousSubscription, plans }) {
   const currSelectedPlan = plans.find(({ id }) => id === fields.plan_id),
     prevSelectedPlan = plans.find(
       ({ id }) => id === previousSubscription.plan_id
@@ -137,4 +137,4 @@ const changeData = ({ fields, previousSubscription, plans }) => {
     changes,
     summary,
   };
-};
+}

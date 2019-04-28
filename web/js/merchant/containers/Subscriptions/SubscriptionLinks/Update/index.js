@@ -44,21 +44,13 @@ export default class UpdateSubscription extends Component {
       currentTab: 0,
       validTabs: [false, false],
       fields: {
-        auth_attempts: null,
         charge_at: null,
-        created_at: null,
         current_end: null,
         current_start: null,
-        customer_id: null,
         customer_notify: null,
-        end_at: null,
-        ended_at: null,
         expire_by: null,
         plan_id: null,
         quantity: null,
-        short_url: null,
-        start_at: null,
-        status: null,
         total_count: null,
         type: null,
       },
@@ -108,9 +100,9 @@ export default class UpdateSubscription extends Component {
   };
 
   isFormValid = () => {
-    const { currentTab, fields, internals } = this.state;
+    const { fields, internals } = this.state;
     const validateTotalCount = (this.planDetailsForm || {}).validateTotalCount;
-    return isFormValid(currentTab, fields, internals, validateTotalCount);
+    return isFormValid(fields, internals, validateTotalCount);
   };
 
   handleChangeIn = ({ target }) => {
@@ -225,8 +217,15 @@ export default class UpdateSubscription extends Component {
       });
   };
 
-  renderForm = () => {
-    if (this.state.loading) return <Spinner />;
+  renderForm = _ => {
+    if (this.state.loading) {
+      return (
+        <div class="page-spinner-container">
+          <Spinner />
+        </div>
+      );
+    }
+
     switch (this.state.currentTab) {
       case 0:
         return (
@@ -260,7 +259,7 @@ export default class UpdateSubscription extends Component {
     return (
       // need to improve this css styling
       <div class="PaymentLinks--Create SubscriptionLinks--update Wizard">
-        {/* create subscription link tabs */}
+        {/* updates subscription link tabs */}
         <ModalAsideNav
           title="Updates Subscription"
           description={<p>Make changes to your existing subscriptions</p>}
@@ -330,30 +329,12 @@ export default class UpdateSubscription extends Component {
   }
 }
 
-function isFormValid(
-  formIndex,
-  fields,
-  internals,
-  validateTotalCount = () => {}
-) {
-  switch (formIndex) {
-    case 0: {
-      return (
-        !!fields.plan_id &&
-        (internals._startsImmediately || !!fields.start_at) &&
-        !validateTotalCount(fields.total_count)
-      );
-    }
-
-    case 1: {
-      const notify_info = fields.notify_info || {};
-      return (
-        (!fields.customer_notify ||
-          (!!notify_info.notify_email || !!notify_info.notify_phone)) &&
-        (internals._isNonExpiringLink || !!fields.expire_by)
-      );
-    }
-  }
+function isFormValid(fields, internals, validateTotalCount = () => {}) {
+  return (
+    !!fields.plan_id &&
+    (internals._startsImmediately || !!fields.start_at) &&
+    !validateTotalCount(fields.total_count)
+  );
 }
 
 const tabsMeta = {
