@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { fetchPlans } from 'merchant/modules/plans';
 import { fetchItems } from 'merchant/modules/items';
 import {
-  saveSubscription,
+  updateSubscription,
   fetchSubscription,
 } from 'merchant/modules/subscriptions';
 import { showNotification } from 'rzp/modules/notifications';
@@ -30,7 +30,7 @@ import { stringToObj } from 'common/util';
   {
     fetchPlans,
     fetchItems,
-    saveSubscription,
+    updateSubscription,
     showNotification,
     fetchSubscription,
   }
@@ -187,6 +187,44 @@ export default class UpdateSubscription extends Component {
     });
   };
 
+  handleCreate = e => {
+    const { fields, previousSubscription } = this.state,
+      data = {
+        id: previousSubscription.id,
+        plan_id: fields.plan_id,
+        total_count: fields.total_count,
+        quantity: fields.quantity,
+        customer_notify: fields.customer_notify,
+        update_at_cycle_end: fields.update_at_cycle_end,
+        description: 'Sample text Description',
+      };
+
+    return this.props
+      .updateSubscription(data)
+      .then(data => {
+        if (data) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Subscription Updates Successfully',
+          });
+
+          if (this.props.onClose) {
+            this.props.onClose();
+          } else {
+            const entityId = data.id;
+            const redirectUrl = '/subscriptions/' + entityId;
+            this.props.history.push(redirectUrl);
+          }
+        }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   renderForm = () => {
     if (this.state.loading) return <Spinner />;
     switch (this.state.currentTab) {
@@ -263,7 +301,7 @@ export default class UpdateSubscription extends Component {
             </Button.Primary>
           ) : (
             <AsyncBtn.Primary
-              pendingState="Creating..."
+              pendingState="Updating..."
               type="submit"
               onClick={this.handleCreate}
             >

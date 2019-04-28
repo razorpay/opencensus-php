@@ -12,6 +12,7 @@ import { CUSTOMER_FETCH } from 'merchant/modules/customers';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';
+const SUBSCRIPTION_UPDATE = 'SUBSCRIPTION_UPDATE';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
@@ -42,6 +43,14 @@ export const saveSubscription = params => {
   const subscription = new Subscription();
   return {
     type: SUBSCRIPTION_CREATE,
+    payload: subscription.save(params),
+  };
+};
+
+export const updateSubscription = params => {
+  const subscription = new Subscription(params);
+  return {
+    type: SUBSCRIPTION_UPDATE,
     payload: subscription.save(params),
   };
 };
