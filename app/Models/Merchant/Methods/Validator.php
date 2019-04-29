@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::AMAZONPAY      => 'sometimes|boolean',
         Entity::OPENWALLET     => 'sometimes|boolean',
         Entity::OLAMONEY       => 'sometimes|boolean',
+        Entity::PHONEPE        => 'sometimes|boolean',
         Entity::MOBIKWIK       => 'sometimes|boolean',
         Entity::FREECHARGE     => 'sometimes|boolean',
         Entity::JIOMONEY       => 'sometimes|boolean',

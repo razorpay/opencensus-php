@@ -119,7 +119,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Gateway\Terminal\Service)->onboardMerchant($id, $input, false)->toArrayPublic();
+        $data = $this->service()->onboardMerchant($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -906,6 +906,13 @@ class MerchantController extends Controller
     public function getAssociatedAccounts(string $merchantId)
     {
         $data = $this->service()->fetchAssociatedAccounts($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAffiliatedPartners(string $merchantId)
+    {
+        $data = $this->service()->fetchAffiliatedPartners($merchantId);
 
         return ApiResponse::json($data);
     }

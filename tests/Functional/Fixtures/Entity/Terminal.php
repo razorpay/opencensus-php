@@ -2389,6 +2389,24 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiAirtelTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_AIRTEL_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_airtel',
+            'gateway_merchant_id'       => 'razorpay upi airtel',
+            'gateway_terminal_password' => 'upipassword',
+            'upi'                       => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [
@@ -2651,6 +2669,26 @@ class Terminal extends Base
             'gateway_access_code'       => 'BajajFinservIv',
             'emi'                       => 1,
             'emi_duration'              => 9,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedPhonepeTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+        $defaultValues = [
+            'id'                        => '1ShrdPhnepeTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'wallet_phonepe',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'RazorpayPhonepe',
+            'gateway_secure_secret'     => 'secure_secret',
+            'gateway_access_code'       => 'access_code',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

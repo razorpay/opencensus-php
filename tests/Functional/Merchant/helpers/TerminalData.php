@@ -892,6 +892,25 @@ return [
         ]
     ],
 
+    'testCreateUpiAirtelTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_airtel',
+                'gateway_merchant_id'       => 'MER0000000001202',
+                'upi'                       => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_merchant_id2'      => 'rzp@apbl'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MER0000000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
@@ -1834,6 +1853,24 @@ return [
                 'gateway_merchant_id2' => '12345678',
                 'enabled'              => true,
                 'tpv'                  => 2
+            ]
+        ]
+    ],
+
+    'testCreateWalletPhonepeTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_phonepe',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'access_code',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
             ]
         ]
     ],

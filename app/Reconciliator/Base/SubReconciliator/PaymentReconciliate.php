@@ -129,6 +129,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         try
         {
+            //
+            // Note : We will proceed with recon process even if there is gateway mismatch.
+            // We trace such gateway mismatch alert in logs and daily report is sent to FinOps.
+            //
+            $this->checkForGatewayMismatch();
+
             $this->processReconciliationRow($row, $rowDetails, $paymentId);
         }
         catch (\Exception $ex)
@@ -151,6 +157,28 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->trace->traceException($ex);
 
             throw $ex;
+        }
+    }
+
+    /**
+     * Adds trace if there is mismatch between the recon gateway
+     * for this recon file upload and the payment entity gateway.
+     */
+    protected function checkForGatewayMismatch()
+    {
+        $paymentGateway = $this->getGatewayNameFromPayment($this->payment);
+
+        if ($this->gateway !== $paymentGateway)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'             => Base\InfoCode::RECON_PAYMENT_GATEWAY_MISMATCH,
+                    'payment_id'            => $this->payment->getId(),
+                    'recon_gateway'         => $this->gateway,
+                    'payment_gateway'       => $paymentGateway,
+                    'payment_terminal_id'   => $this->payment->getTerminalId(),
+                ]);
         }
     }
 

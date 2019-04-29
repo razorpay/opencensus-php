@@ -162,9 +162,6 @@ class Fee extends Base\Core
                 return $feeDetails;
             }
 
-            // @todo uncomment and remove log statements once logs are verified
-            // return $calculator->getExplicitCommissionFeeSplit();
-
             list($partnerFees, $partnerTax, $feeSplit) = $calculator->getExplicitCommissionFeeSplit();
 
             $this->trace->info(
@@ -174,6 +171,8 @@ class Fee extends Base\Core
                     'partner_tax'  => $partnerTax,
                     'fee_split'    => $feeSplit->toArrayPublic(),
                 ]);
+
+            return [$partnerFees, $partnerTax, $feeSplit];
         }
         catch (\Throwable $ex)
         {
@@ -267,14 +266,15 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
-        // Add default pricing rules for each available payout method, only when rule is not already defined.
-        foreach (Payout\Method::getAll() as $method)
+        //
+        // Add default pricing rules, only when no rules are already defined.
+        // If ANY custom pricing rules have been added for banking payouts, we do not attach
+        // default pricing rules
+        //
+        if ($pricingPlan->hasBankingPayoutRule() === false)
         {
-            if ($pricingPlan->hasBankingPayoutRuleForMethod($method) === false)
-            {
-                $rules       = $this->repo->getBankingPricingRulesForMethod(Feature::PAYOUT, $method, $merchant);
-                $pricingPlan = $pricingPlan->merge($rules);
-            }
+            $rules       = $this->repo->getBankingDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
         }
 
         return $pricingPlan;

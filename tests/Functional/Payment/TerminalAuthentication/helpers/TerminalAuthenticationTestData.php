@@ -391,9 +391,9 @@ return [
             'gateway'       => 'hitachi',
             'type'          => 'sorter',
             'filter_type'   => 'select',
-            'load'          => 2,
+            'load'          => 1000,
             'group'         => 'authentication',
-            'auth_type'     => 'headless_otp',
+            'auth_type'     => '3ds',
             'network'       => null,
             'authentication_gateway' => 'mpi_blade',
             'step'          => 'authentication',
@@ -439,6 +439,36 @@ return [
             'authentication_gateway' => 'mpi_blade',
             'step'          => 'authentication',
         ],
+    ],
+
+    'testAuthenticationGatewayHdfcAuthCapabilityFilter' => [
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hdfc',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 1,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'authentication_gateway' => 'mpi_blade',
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hdfc',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 9,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+            'capability'    => 2
+        ],
+
     ],
 ];
 

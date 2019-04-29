@@ -131,19 +131,10 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
-
-        $payout = $this->mutex->acquireAndRelease(
-            $mutexResource,
-            function() use ($input, $merchant, $batch)
-            {
-                return $this->getProcessor('fund_account_payout')
-                            ->setMerchant($merchant)
-                            ->setBatch($batch)
-                            ->createPayout($input);
-            },
-            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($merchant)
+                       ->setBatch($batch)
+                       ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);
 

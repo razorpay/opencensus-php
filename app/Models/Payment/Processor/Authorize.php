@@ -1520,6 +1520,7 @@ trait Authorize
         try
         {
             if (($payment->isMethodCardOrEmi() === true) and
+                ($payment->isMoto() === false) and
                 ($payment->isSecondRecurring() === false) and
                 ($payment->isPushPaymentMethod() === false))
             {
@@ -1527,7 +1528,7 @@ trait Authorize
 
                 if (strtolower($response) === 'on')
                 {
-                   $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
+                    $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
 
                     $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
 
@@ -1543,6 +1544,7 @@ trait Authorize
                 TraceCode::AUTH_SELECTION_FAILURE,
                 [
                     'payment_id'  => $payment->getId(),
+                    'payment_auth_type' => $payment->getAuthType(),
                 ]
             );
         }
@@ -1637,6 +1639,8 @@ trait Authorize
 
     protected function setAuthInPaymentViaGatewayRules(Payment\Entity $payment, array $gatewayInput)
     {
+        $authType = $payment->getAuthType();
+
         $payment->setAuthType(null);
 
         if (empty($gatewayInput['auth_type']) === true)
@@ -1655,6 +1659,14 @@ trait Authorize
         ];
 
         if (in_array($gatewayInput['auth_type'], $otpAuth, true) === true)
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
+            return;
+        }
+
+        if (($authType !== null) and
+            ($authType === Payment\AuthType::OTP) and
+            ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP))
         {
             $payment->setAuthType(Payment\AuthType::OTP);
         }
@@ -4243,7 +4255,8 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) and
+                if (((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+                     ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE)) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)
@@ -4432,16 +4445,6 @@ trait Authorize
         if ($vault === true)
         {
             $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
-        }
-
-        if ($vault === false)
-        {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
-
-            if (strtolower($response) === 'on')
-            {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-            }
         }
 
         $cardCore = new Card\Core;

@@ -711,6 +711,14 @@ $custom_labels                  = $data['custom_labels'];
                 if (merchant.image) {
                     options.image = merchant.image;
                 }
+
+                if (merchant.image_frame === false) {
+                    options.theme.image_frame = false;
+                }
+
+                if (merchant.image_padding === false) {
+                    options.theme.image_padding = false;
+                }
             }
 
             var razorpay;

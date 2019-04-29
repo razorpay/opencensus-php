@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Services;
 use RZP\Exception;
@@ -12,9 +13,13 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\ConfigKey;
 
 class Core extends Base\Core
 {
+    // 10 minutes
+    const DEFAULT_DOWNTIME_DURATION = 600;
+
     /**
      * Prevent duplicate creation of the same error model.
      * Basically, since we pass an empty 'to', it means, this is for an unscheduled
@@ -72,7 +77,8 @@ class Core extends Base\Core
      */
     protected function allowUpdateOfExistingDowntimes()
     {
-        if ($this->app['basicauth']->isDashboardApp() === true)
+        if (($this->app['basicauth']->isAdminAuth() === true) and
+            ($this->app['basicauth']->isDashboardApp() === true))
         {
             return false;
         }
@@ -177,6 +183,40 @@ class Core extends Base\Core
                           ->fetchApplicableDowntimesForPayment($params);
 
         return $downtimes;
+    }
+
+    public function createForGatewayException(string $gateway, array $gatewayData)
+    {
+        $method = $gatewayData['payment']['method'];
+
+        $allowed = (new GatewayErrorThrottler($gateway, $method))->attempt();
+
+        if ($allowed === false)
+        {
+            $now = Carbon::now()->getTimestamp();
+
+            $duration = $this->getDuration();
+
+            $this->create([
+                Entity::GATEWAY     => $gateway,
+                Entity::REASON_CODE => ReasonCode::HIGHER_ERRORS,
+                Entity::BEGIN       => $now,
+                Entity::END         => $now + $duration,
+                Entity::METHOD      => $gatewayData['payment']['method'],
+                Entity::SOURCE      => Source::INTERNAL,
+                Entity::COMMENT     => 'Downtime created by internal gateway response analysis and throttling',
+                Entity::SCHEDULED   => false,
+            ]);
+        }
+    }
+
+    protected function getDuration(): int
+    {
+        $redis = $this->app['redis']->connection();
+
+        $settings = $redis->hgetall(ConfigKey::DOWNTIME_THROTTLE);
+
+        return $settings['duration'] ?? self::DEFAULT_DOWNTIME_DURATION;
     }
 
     /**

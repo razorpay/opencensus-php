@@ -122,6 +122,15 @@ class Repository extends Base\Repository
         $query->where($idColumn, $id);
     }
 
+    protected function addQueryParamPayoutMode(BuilderEx $query, array $params)
+    {
+        $payoutMode = $params[Entity::PAYOUT_MODE];
+
+        $modeColumn = $this->dbColumn(Entity::MODE);
+
+        $query->where($modeColumn, $payoutMode);
+    }
+
     public function addQueryParamDestination(BuilderEx $query, array $params)
     {
         $destinationId = $params[Entity::DESTINATION];

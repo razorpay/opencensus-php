@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis;
 
 use RZP\Error\P2p\ErrorCode;
+use RZP\Gateway\Base\ErrorCodes\Upi;
 
 class ErrorMap
 {
@@ -24,6 +25,11 @@ class ErrorMap
         self::INVALID_DATA                              => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
     ];
 
+    public static $deemedErrors = [
+        'BT',
+
+    ];
+
     public static function map(string $gatewayCode)
     {
         if (isset(self::$errorMap[$gatewayCode]) === true)
@@ -32,5 +38,20 @@ class ErrorMap
         }
 
         return ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE;
+    }
+
+    public static function gatewayMap(string $gatewayCode)
+    {
+        if (isset(Upi\ErrorCodes::$errorCodeMap[$gatewayCode]) === true)
+        {
+            return Upi\ErrorCodes::$errorCodeMap[$gatewayCode];
+        }
+
+        return ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE;
+    }
+
+    public static function isDeemedError(string $gatewayCode)
+    {
+        return in_array($gatewayCode, self::$deemedErrors, true);
     }
 }

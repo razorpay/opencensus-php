@@ -157,14 +157,17 @@ trait SettlementTrait
                     ],
                     1);
 
-                $this->trace->info(
-                    TraceCode::SETTLEMENT_SKIPPED,
-                    [
-                        'merchant_id'       => $txn->getMerchantId(),
-                        'transaction_id'    => $txn->getId(),
-                        'source_id'         => $txn->getEntityId(),
-                        'reason'            => Metric::REFUND_AUTH_PAYMENT
-                    ]);
+                if ($this->isLogEnabled() === true)
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_SKIPPED,
+                        [
+                            'merchant_id'       => $txn->getMerchantId(),
+                            'transaction_id'    => $txn->getId(),
+                            'source_id'         => $txn->getEntityId(),
+                            'reason'            => Metric::REFUND_AUTH_PAYMENT
+                        ]);
+                }
 
                 return true;
             }
@@ -236,14 +239,17 @@ trait SettlementTrait
                 return false;
             }
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SKIPPED,
-                [
-                    'merchant_id'       => $txn->getMerchantId(),
-                    'transaction_id'    => $txn->getId(),
-                    'source_id'         => $txn->getEntityId(),
-                    'reason'            => Metric::BLOCK_OUTSIDE_ES_THREE_PM_WINDOW
-                ]);
+            if ($this->isLogEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_OUTSIDE_ES_THREE_PM_WINDOW
+                    ]);
+            }
 
             return true;
         }
@@ -255,14 +261,17 @@ trait SettlementTrait
             ],
             1);
 
-        $this->trace->info(
-            TraceCode::SETTLEMENT_SKIPPED,
-            [
-                'merchant_id'       => $txn->getMerchantId(),
-                'transaction_id'    => $txn->getId(),
-                'source_id'         => $txn->getEntityId(),
-                'reason'            => Metric::BLOCK_OUTSIDE_ES_WINDOW
-            ]);
+        if ($this->isLogEnabled() === true)
+        {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $txn->getMerchantId(),
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_OUTSIDE_ES_WINDOW
+                ]);
+        }
 
         return true;
     }
@@ -302,14 +311,17 @@ trait SettlementTrait
                 ],
                 1);
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SKIPPED,
-                [
-                    'merchant_id'       => $txn->getMerchantId(),
-                    'transaction_id'    => $txn->getId(),
-                    'source_id'         => $txn->getEntityId(),
-                    'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
-                ]);
+            if ($this->isLogEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ]);
+            }
 
             return true;
 
@@ -374,14 +386,17 @@ trait SettlementTrait
                     ],
                     1);
 
-                $this->trace->info(
-                    TraceCode::SETTLEMENT_SKIPPED,
-                    [
-                        'merchant_id'       => $txn->getMerchantId(),
-                        'transaction_id'    => $txn->getId(),
-                        'source_id'         => $txn->getEntityId(),
-                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
-                    ]);
+                if ($this->isLogEnabled() === true)
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_SKIPPED,
+                        [
+                            'merchant_id'       => $txn->getMerchantId(),
+                            'transaction_id'    => $txn->getId(),
+                            'source_id'         => $txn->getEntityId(),
+                            'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                        ]);
+                }
 
                 return true;
             }
@@ -397,14 +412,17 @@ trait SettlementTrait
                     ],
                     1);
 
-                $this->trace->info(
-                    TraceCode::SETTLEMENT_SKIPPED,
-                    [
-                        'merchant_id'       => $txn->getMerchantId(),
-                        'transaction_id'    => $txn->getId(),
-                        'source_id'         => $txn->getEntityId(),
-                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
-                    ]);
+                if ($this->isLogEnabled() === true)
+                {
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_SKIPPED,
+                        [
+                            'merchant_id'       => $txn->getMerchantId(),
+                            'transaction_id'    => $txn->getId(),
+                            'source_id'         => $txn->getEntityId(),
+                            'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                        ]);
+                }
 
                 return true;
             }
@@ -466,7 +484,10 @@ trait SettlementTrait
 
         $merchant = $this->merchants[$merchantId];
 
-        $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchantId]);
+        if ($this->isLogEnabled() === true)
+        {
+            $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchantId]);
+        }
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
@@ -483,12 +504,15 @@ trait SettlementTrait
                 ],
                 1);
 
-            $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
-                [
-                    'balance'    => $balance,
-                    'merchant'   => $merchant->getId(),
-                    'setlAmount' => $setlAmount,
-                ]);
+            if ($this->isLogEnabled() === true)
+            {
+                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'balance'    => $balance,
+                        'merchant'   => $merchant->getId(),
+                        'setlAmount' => $setlAmount,
+                    ]);
+            }
 
             return [null, null];
         }
@@ -537,7 +561,10 @@ trait SettlementTrait
     {
         $filteredTxnIds = [];
 
-        $startTime = microtime(true);
+        if ($this->isLogEnabled() === true)
+        {
+            $startTime = microtime(true);
+        }
 
         foreach ($txns as $txn)
         {
@@ -553,7 +580,10 @@ trait SettlementTrait
 
         if (empty($filteredTxnIds) === true)
         {
-            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE);
+            if ($this->isLogEnabled() === true)
+            {
+                $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE);
+            }
 
             return;
         }
@@ -580,9 +610,12 @@ trait SettlementTrait
                 $this->repo->saveOrFail($transfer);
             }
 
-            $timeTaken = microtime(true) - $startTime;
+            if ($this->isLogEnabled() === true)
+            {
+                $timeTaken = microtime(true) - $startTime;
 
-            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
+                $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
+            }
         }
         catch (\Throwable $ex)
         {
@@ -617,8 +650,9 @@ trait SettlementTrait
             $mutexResource,
             function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $bankTransferAtpt) {
                 try
-                {   // create settlement and attempt
-                    $merchantSettler = new Merchant($merchant, $channel, $this->repo);
+                {
+                    // create settlement and attempt
+                    $merchantSettler = new Merchant($merchant, $channel, $this->repo, $this->isLogEnabled());
 
                     $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
@@ -656,11 +690,14 @@ trait SettlementTrait
                         $this->repo->saveOrFail($settlement);
                     }
 
-                    $this->trace->traceException(
-                        $ex,
-                        Trace::ERROR,
-                        TraceCode::SETTLEMENT_SKIPPED,
-                        $traceData);
+                    if ($this->isLogEnabled() === true)
+                    {
+                        $this->trace->traceException(
+                            $ex,
+                            Trace::ERROR,
+                            TraceCode::SETTLEMENT_SKIPPED,
+                            $traceData);
+                    }
 
                     (new SlackNotification)->send('setl_skipped', $traceData, $ex);
                 }
@@ -712,14 +749,17 @@ trait SettlementTrait
                 ],
                 1);
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SKIPPED,
-                [
-                    'merchant_id'       => $mid,
-                    'transaction_id'    => $txn->getId(),
-                    'source_id'         => $txn->getEntityId(),
-                    'reason'            => Metric::BLOCK_WEALTHY_ON_SATURDAY
-                ]);
+            if ($this->isLogEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $mid,
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_WEALTHY_ON_SATURDAY
+                    ]);
+            }
 
             return false;
         }
@@ -762,14 +802,18 @@ trait SettlementTrait
                     Metric::SKIP_REASON => Metric::BANK_ACCOUNT_CREATED_YESTERDAY
                 ]);
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SKIPPED,
-                [
-                    'merchant_id'       => $mid,
-                    'transaction_id'    => $txn->getId(),
-                    'source_id'         => $txn->getEntityId(),
-                    'reason'            => Metric::BANK_ACCOUNT_CREATED_YESTERDAY
-                ]);
+            if ($this->isLogEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $mid,
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BANK_ACCOUNT_CREATED_YESTERDAY,
+                        'created_at'        => Carbon::createFromTimestamp($txn->getCreatedAt(), Timezone::IST)->format('Y-m-d H:i:s'),
+                    ]);
+            }
 
             $shouldSettle = false;
         }
@@ -885,14 +929,17 @@ trait SettlementTrait
                 ],
                 1);
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SKIPPED,
-                [
-                    'merchant_id'       => $txn->getMerchantId(),
-                    'transaction_id'    => $txn->getId(),
-                    'source_id'         => $txn->getEntityId(),
-                    'reason'            => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
-                ]);
+            if ($this->isLogEnabled() === true)
+            {
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_KARVY_OUTSIDE_TIME_PERIOD
+                    ]);
+            }
 
             return true;
 
@@ -903,19 +950,22 @@ trait SettlementTrait
 
     protected function traceMemoryUsage(string $traceCode)
     {
-        $memoryAllocated = get_human_readable_size(memory_get_usage(true));
-        $memoryUsed = get_human_readable_size(memory_get_usage());
-        $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
-        $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
+        if ($this->isLogEnabled() === true)
+        {
+            $memoryAllocated = get_human_readable_size(memory_get_usage(true));
+            $memoryUsed = get_human_readable_size(memory_get_usage());
+            $memoryPeakUsage = get_human_readable_size(memory_get_peak_usage());
+            $memoryPeakUsageAllocated = get_human_readable_size(memory_get_peak_usage(true));
 
-        $this->trace->info(
-            $traceCode,
-            [
-               'memory_allocated'               => $memoryAllocated,
-               'memory_used'                    => $memoryUsed,
-               'memory_peak_usage'              => $memoryPeakUsage,
-               'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
-            ]);
+            $this->trace->info(
+                $traceCode,
+                [
+                    'memory_allocated' => $memoryAllocated,
+                    'memory_used' => $memoryUsed,
+                    'memory_peak_usage' => $memoryPeakUsage,
+                    'memory_peak_usage_allocated' => $memoryPeakUsageAllocated,
+                ]);
+        }
     }
 
     /**

@@ -328,6 +328,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const THROTTLE_REQUEST_BLOCKED                              = 'THROTTLE_REQUEST_BLOCKED';
     const THROTTLE_SETTINGS_MISSING                             = 'THROTTLE_SETTINGS_MISSING';
 
+    const GATEWAY_DOWNTIME_ERROR_CODE                           = 'GATEWAY_DOWNTIME_ERROR_CODE';
+    const GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING            = 'GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING';
+    const GATEWAY_DOWNTIME_THROTTLE_DISALLOWED                  = 'GATEWAY_DOWNTIME_THROTTLE_DISALLOWED';
+
     const BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE         = 'BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
 
     const CARD_NETWORK_INVALID                                  = 'CARD_NETWORK_INVALID';
@@ -990,6 +994,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_CONFIG_FETCH_ERROR                           = 'TERMINAL_CONFIG_FETCH_ERROR';
     const PAYMENT_TERMINAL_CREATION_ERROR                       = 'PAYMENT_TERMINAL_CREATION_ERROR';
     const PRICING_RULE_CONFIG_FETCH_ERROR                       = 'PRICING_RULE_CONFIG_FETCH_ERROR';
+    const CURL_INFO_CONFIG_FETCH_ERROR                          = 'CURL_INFO_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                                   = 'MISC_TOSTRING_ERROR';
 
@@ -1029,13 +1034,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
 
-
     // Gateway component error messages
-
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
     const PAYMENT_DOWNTIME_CREATE                               = 'PAYMENT_DOWNTIME_CREATE';
     const PAYMENT_DOWNTIME_EDIT                                 = 'PAYMENT_DOWNTIME_EDIT';
     const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
+    const PAYMENT_DOWNTIMES_TO_ACTIVATE                         = 'PAYMENT_DOWNTIMES_TO_ACTIVATE';
+    const PAYMENT_DOWNTIMES_TO_RESOLVE                          = 'PAYMENT_DOWNTIMES_TO_RESOLVE';
 
     const ADHOC_SETTLEMENT_CREATE_FAILED                        = 'ADHOC_SETTLEMENT_CREATE_FAILED';
     const ADHOC_SETTLEMENT_ENTITIES_CREATED                     = 'ADHOC_SETTLEMENT_ENTITIES_CREATED';
@@ -1230,6 +1235,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_VAJRA_INVALID_STATUS                 = 'GATEWAY_DOWNTIME_VAJRA_INVALID_STATUS';
     const GATEWAY_DOWNTIME_VAJRA_CREATE                         = 'GATEWAY_DOWNTIME_VAJRA_CREATE';
     const GATEWAY_DOWNTIME_VAJRA_INVALID_MESSAGE                = 'GATEWAY_DOWNTIME_VAJRA_INVALID_MESSAGE';
+    const VAJRA_CPS_ROUTING_REQUEST                             = 'VAJRA_CPS_ROUTING_REQUEST';
+    const VAJRA_CPS_START_DISABLE_ROUTING                       = 'VAJRA_CPS_START_DISABLE_ROUTING';
+    const VAJRA_CPS_DISABLE_ROUTING_SUCCESS                     = 'VAJRA_CPS_DISABLE_ROUTING_SUCCESS';
+    const VAJRA_CPS_DISABLE_ROUTING_FAILURE                     = 'VAJRA_CPS_DISABLE_ROUTING_FAILURE';
+    const VAJRA_CPS_START_ENABLE_ROUTING                        = 'VAJRA_CPS_START_ENABLE_ROUTING';
+    const VAJRA_CPS_ENABLE_ROUTING_SUCCESS                      = 'VAJRA_CPS_ENABLE_ROUTING_SUCCESS';
+    const VAJRA_CPS_ENABLE_ROUTING_FAILURE                      = 'VAJRA_CPS_ENABLE_ROUTING_FAILURE';
+    const VAJRA_INVALID_ALERT_STATUS                            = 'VAJRA_INVALID_ALERT_STATUS';
     const NETBANKING_URL_CACHE_MISS                             = 'NETBANKING_URL_CACHE_MISS';
     const STATUSCAKE_RETURNED_FAILURE                           = 'STATUSCAKE_RETURNED_FAILURE';
     const STATUSCAKE_CONNECTION_FAILED                          = 'STATUSCAKE_CONNECTION_FAILED';
@@ -1531,6 +1544,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_FAILED                                      = 'FTA_RECON_FAILED';
     const FTA_STATUS_FAILED                                     = 'FTA_STATUS_FAILED';
     const FTA_STATUS_FAILED_MERCHANT_ERROR                      = 'FTA_STATUS_FAILED_MERCHANT_ERROR';
+    const FTA_BATCH_FUND_TRANSFER_ABSENT                        = 'FTA_BATCH_FUND_TRANSFER_ABSENT';
 
     const APSPDCL_REQUEST                                       = 'APSPDCL_REQUEST';
     const APSPDCL_REQUEST_ERROR                                 = 'APSPDCL_REQUEST_ERROR';
@@ -1648,7 +1662,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Commission trace codes
     const COMMISSION_SAVED                                      = 'COMMISSION_SAVED';
-    const COMMISSION_LOGGED                                     = 'COMMISSION_LOGGED';
     const COMMISSION_NOT_ENABLED                                = 'COMMISSION_NOT_ENABLED';
     const COMMISSION_NOT_DEFINED                                = 'COMMISSION_NOT_DEFINED';
     const COMMISSION_COMPUTED_ZERO                              = 'COMMISSION_COMPUTED_ZERO';
@@ -1676,6 +1689,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_DETOKENIZE_MIGRATION_REQUEST                     = 'CARD_DETOKENIZE_MIGRATION_REQUEST';
     const CARD_DETOKENIZE_MIGRATION_RESPONSE                    = 'CARD_DETOKENIZE_MIGRATION_RESPONSE';
     const CARD_DETOKENIZE_MIGRATION_FAILED                      = 'CARD_DETOKENIZE_MIGRATION_FAILED';
+    const CARD_TOKEN_IS_NOT_AVAILABLE                           = 'CARD_TOKEN_IS_NOT_AVAILABLE';
 
     // vault migration
     const TOKENEX_MIGRATION_REQUEST                             = 'TOKENEX_MIGRATION_REQUEST';
@@ -1753,6 +1767,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION         = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
     const CPS_ROUTE_CONFIG                              = 'CPS_ROUTE_CONFIG';
     const CPS_RAZORX_VARIANT                            = 'CPS_RAZORX_VARIANT';
+    const CPS_SWITCH_ROUTE                              = 'CPS_SWITCH_ROUTE';
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                 = 'GET_BATCHES_BATCH_SERVICE';

@@ -412,11 +412,6 @@ class Entity extends Base\PublicEntity
      */
     public static function getCacheTags(string $entity, string $planId, string $planType = null): string
     {
-        if(empty($planType) === true)
-        {
-            $planType == Type::PRICING;
-        }
-
         $cacheTags = implode('_', [$entity, $planId, $planType]);
 
         return $cacheTags;

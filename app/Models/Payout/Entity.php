@@ -107,6 +107,8 @@ class Entity extends Base\PublicEntity
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
 
+    const PAYOUT_MODE     = 'payout_mode';
+
     // Relations
     const USER          = 'user';
     const CUSTOMER      = 'customer';

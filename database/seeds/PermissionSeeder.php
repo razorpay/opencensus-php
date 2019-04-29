@@ -3,8 +3,6 @@
 use Illuminate\Database\Seeder;
 
 use RZP\Constants\Table;
-use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Models\Admin\Permission\Category as PermissionCategory;
 
 class PermissionSeeder extends Seeder
 {

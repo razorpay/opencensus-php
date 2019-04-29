@@ -31,8 +31,8 @@ class UserRolesScope
 
             // payment routes
             'payment_capture'        => array_merge(Role::WRITER_ROLES, [ROLE::RBL_SUPERVISOR]),
-            'payment_fetch_by_id'    => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
-            'payment_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'payment_fetch_by_id'    => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES, [Role::AGENT]),
+            'payment_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES, [Role::AGENT]),
             'payment_refund'         => Role::WRITER_ROLES,
 
             // refund routes
@@ -55,7 +55,7 @@ class UserRolesScope
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
             // profile routes
-            'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE],
+            'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE, Role::MANAGER],
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
 
             // merchant routes
@@ -92,8 +92,10 @@ class UserRolesScope
             'webhook_edit'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // settlements route
-            'setl_fetch_multiple' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
-            'setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'setl_fetch_multiple' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
+                [Role::RBL_SUPERVISOR, Role::AGENT]),
+            'setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
+                [Role::RBL_SUPERVISOR, Role::AGENT]),
 
             // Invoice routes
             'invoice_create'                    => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, [Role::RBL_SUPERVISOR]),

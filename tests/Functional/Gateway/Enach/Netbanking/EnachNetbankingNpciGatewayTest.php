@@ -72,6 +72,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $enach = $this->getLastEntity('enach', true);
 
         $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertNotNull($enach['gateway_reference_id2']);
 
         $this->assertEquals('true', $enach['status']);
 
@@ -115,6 +116,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $enach = $this->getLastEntity('enach', true);
 
         $this->assertEquals('false', $enach['status']);
+
+        // if we get a non-error but failed registration response, we also get the NPCI reference id
+        $this->assertNotNull($enach['gateway_reference_id']);
 
         $token = $this->getLastEntity('token', true);
 
@@ -260,6 +264,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testPaymentFailedRegisterFileRejected()
     {
+        // Since registration during API failed, the payment will not be picked during register batch file processing
         $payment = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
 
         $payment['bank_account'] = [
@@ -297,15 +302,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('failed', $payment['status']);
 
-        $enach = $this->getDbLastEntityToArray('enach');
-
-        $this->assertEquals('M032', $enach['error_code']);
-        $this->assertEquals('Rejected as per customer confirmation', $enach['error_message']);
-
         $token = $this->getDbLastEntityToArray('token');
 
-        $this->assertEquals('rejected', $token['recurring_status']);
-        $this->assertEquals('E-Mandate registration cancelled by the customer', $token['recurring_failure_reason']);
+        $this->assertEquals(null, $token['recurring_status']);
     }
 
     public function testDebitFileGeneration()
@@ -433,6 +432,10 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testRegisterReconLateAuth()
     {
+        // Late Auth will not work as we are doing recon based on NPCI Ref Id. Force Auth will be disabled.
+        // Depending on NPCI, this may be taken up later based on verify or if they send payment id in response file
+        $this->markTestSkipped();
+
         $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
 
         $payment['bank_account'] = [
@@ -483,6 +486,52 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $transaction = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNotNull($transaction['reconciled_at']);
+    }
+
+    public function testRegisterErrorReconLateAuth()
+    {
+        // Tests a case where there is no match against gateway_reference_id in enach table
+        // Db query will fail and batch gracefully handles this and continues its execution.
+        $payment = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $testData = $this->testData['testPaymentRejectResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Active');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals(null, $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
     }
 
     protected function makeDebitPayment()
@@ -584,6 +633,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     {
         $this->fixtures->stripSign($payment['id']);
 
+        $enach = $this->getDbLastEntity('enach');
+
         $sheets = [
             'sheet1' => [
                 'config' => [
@@ -618,7 +669,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                         'STATUS'          => $status,
                         'STATUS_CODE'     => $errorCode,
                         'REASON'          => $errorDesc,
-                        'MANDATE_REQID'   => $payment['id'],
+                        'MANDATE_REQID'   => $enach['gateway_reference_id'],
                         'MESSAGE_ID'      => $payment['id'],
                     ],
                 ],

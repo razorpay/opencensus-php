@@ -11,6 +11,10 @@ class Entity extends Base\Entity
     const ENTITY_ID    = 'entity_id';
     const NAME         = 'name';
 
+    /***************** Input Keys ****************/
+    const TYPE         = 'type';
+    const VALIDATED    = 'validated';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_beneficiary';

@@ -207,9 +207,21 @@ abstract class ApiProcessor extends NodalAccount
             }
         }
 
+        $response = $this->handleEmptyResponse($response);
+
         $this->traceResponse($response);
 
         return $this->processResponse($response);
+    }
+
+    protected function handleEmptyResponse($response): \Requests_Response
+    {
+        if (empty($response) === true)
+        {
+            return new \Requests_Response();
+        }
+
+        return $response;
     }
 
     protected function makeRequestOnGateway(): array

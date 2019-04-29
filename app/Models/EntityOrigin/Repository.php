@@ -15,4 +15,12 @@ class Repository extends BaseRepository
         Entity::ENTITY_ID   => 'sometimes|string|size:14',
         Entity::ENTITY_TYPE => 'sometimes|string|in:payment',
     ];
+
+    public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->first();
+    }
 }

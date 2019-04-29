@@ -26,7 +26,7 @@ class AmazonpayReconTest extends TestCase
 
     private $sharedTerminal;
 
-    private $mimeType = "text/plain";
+    private $mimeType = "text/csv";
 
     private $wallet = Wallet::AMAZONPAY;
 

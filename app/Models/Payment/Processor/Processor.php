@@ -13,6 +13,7 @@ use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Models\Gateway;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
@@ -845,6 +846,7 @@ class Processor
             'cps_config' => Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false),
         ]);
 
+        // If the config flag is enabled check for razorx variant and enable cps_route
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
@@ -858,7 +860,7 @@ class Processor
 
             if (strtolower($variant) === 'cps')
             {
-                $payment->setCpsRoute();
+                $payment->enableCpsRoute();
             }
         }
     }
@@ -1530,9 +1532,25 @@ class Processor
 
         if ($this->isRoutedThroughCps($action, $gatewayData) === true)
         {
-            $this->persistCardDetails($gateway, $action, $gatewayData);
+            // If CPS service is enabled then route this payment via CPS
+            if ((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true)
+            {
+                $this->persistCardDetails($gateway, $action, $gatewayData);
 
-            $gatewayData['cps_route'] = true;
+                $gatewayData['cps_route'] = true;
+            }
+            // Else if this payment was earlier authorized by CPS then disable the cps_route flag
+            else if ($action !== Action::AUTHORIZE)
+            {
+                $this->payment->disableCpsRoute();
+
+                $this->repo->saveOrFail($payment);
+
+                $this->trace->info(TraceCode::CPS_SWITCH_ROUTE, [
+                    'payment_id'     => $payment->getId(),
+                    'cps_route'      => false,
+                ]);
+            }
         }
 
         $gatewayData['merchant_detail'] = $this->repo->merchant_detail->getByMerchantId($this->payment->merchant['id']);
@@ -1566,6 +1584,23 @@ class Processor
                 $this->disableTerminal($terminal);
             }
 
+            /*
+             * If error indicates gateway downtime, act on it and
+             * check if a downtime entity needs to be created
+             */
+            if ($error->isGatewayDowntimeError() === true)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::INFO,
+                    TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
+                    [
+                        'payment_id' => $this->payment->getId()
+                    ]);
+
+                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
+            }
+
             throw $ex;
         }
     }
@@ -1577,8 +1612,7 @@ class Processor
          * core payment service or not. We are setting this flag(`cps_route`)
          * for new payments based on variant returned by RazorX.
          */
-        if (((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true) and
-            (is_array($input) === true) and
+        if ((is_array($input) === true) and
             (isset($input[E::PAYMENT]) === true) and
             ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === true) and
             (in_array($action, Action::$cpsSupportedActions) === true))
@@ -2472,6 +2506,11 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)
+    {
+        (new Gateway\Downtime\Core)->createForGatewayException($gateway, $gatewayData);
     }
 
     protected function disableTerminal(Terminal\Entity $terminal)

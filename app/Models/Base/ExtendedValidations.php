@@ -508,4 +508,15 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         return ($amount >= $minAmount);
     }
+
+    /**
+     * Validate that the given currency is supported or not
+     * @param $attribute
+     * @param $currency
+     * @return mixed
+     */
+    public function validateCurrency($attribute, $currency)
+    {
+        return Currency::isSupportedCurrency($currency);
+    }
 }

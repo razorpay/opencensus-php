@@ -1612,4 +1612,25 @@ return [
             ],
         ],
     ],
+
+    'testCreateEntityOriginForSubscription' => [
+        'request'  => [
+            'url'     => '/entity_origins',
+            'method'  => 'POST',
+            'content' => [
+                'entity_type' => 'subscription',
+                'entity_id'   => 'subscriptionId',
+                'origin_type' => 'merchant',
+                'origin_id'   => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'subscription',
+                'entity_id'   => 'subscriptionId',
+                'origin_type' => 'merchant',
+                'origin_id'   => '10000000000000',
+            ],
+        ],
+    ],
 ];

@@ -32,4 +32,9 @@ trait HasDevice
     {
         return $this->belongsTo(Device\Entity::class);
     }
+
+    public function withoutDevice()
+    {
+        $this->setAttribute(self::DEVICE_ID, null);
+    }
 }

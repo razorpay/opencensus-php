@@ -1,5 +1,7 @@
 <?php
+
 namespace RZP\Tests\Unit\Models\Payment;
+
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\CustomAssertions;
@@ -21,5 +23,16 @@ class CurrencyTest extends TestCase
         $this->assertArrayKeysExist(Currency::MIN_AUTH_VALUE, $supportedCurrencies);
 
         $this->assertArrayKeysExist(Currency::SYMBOL, $supportedCurrencies);
+    }
+
+    public function testSupportedCurrency()
+    {
+        $inrSupported = Currency::isSupportedCurrency('INR');
+
+        $this->assertTrue($inrSupported);
+
+        $xyzSupported = Currency::isSupportedCurrency('XYZ');
+
+        $this->assertFalse($xyzSupported);
     }
 }

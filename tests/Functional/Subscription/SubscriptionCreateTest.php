@@ -356,6 +356,20 @@ class SubscriptionCreateTest extends TestCase
         $this->assertEquals($subscription['id'], $response['subscription_id']);
     }
 
+    public function testCreateEntityOriginForSubscription()
+    {
+        $subscription = $this->createSubscription(true);
+
+        $this->ba->subscriptionsAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['entity_id']  = $subscription['id'];
+        $testData['response']['content']['entity_id'] = substr($subscription['id'], 4);
+
+        $this->startTest($testData);
+    }
+
     public function testFetchConfigInternalForSubcriptionsService()
     {
         $this->ba->subscriptionsAuth();

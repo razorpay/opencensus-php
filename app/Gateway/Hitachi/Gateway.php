@@ -129,8 +129,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->setCardNumberAndCvv($input);
-
         if ($this->isRupayTransaction($input) === true)
         {
             return $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
@@ -143,6 +141,8 @@ class Gateway extends Base\Gateway
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        $this->setCardNumberAndCvv($input);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 
@@ -820,6 +820,11 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::RETRIEVAL_REF_NUM] = $paysecureEntity['rrn'];
 
+        // Use 6012 in UAT
+        $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
+
+        $content[RequestFields::MCC] = Paysecure\Mcc::getMappedMcc($mcc);
+
         $traceContent = $content;
 
         $content += $this->getCardDataForAuthorizeRequestArray($input);
@@ -1343,6 +1348,18 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type = null)
     {
+        if ($this->isLiveMode() === true)
+        {
+            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
+            {
+                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
+            }
+            else
+            {
+                return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+            }
+        }
+
         return constant(Url::class . '::' . strtoupper($this->mode));
     }
 

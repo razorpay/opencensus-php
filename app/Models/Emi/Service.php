@@ -26,11 +26,13 @@ class Service extends Base\Service
         return $plans;
     }
 
-    public function getEmiOptions($offers = null, $order = null)
+    public function getEmiPlansAndOptions($offers = null, $order = null)
     {
         $emiPlans = $this->fetchEmiPlans();
 
-        $plans = [];
+        $emiPlansFormatted = $this->formatPlan($emiPlans);
+
+        $emiOptions = [];
 
         $emiOfferPlans = $this->getSubventedEmiPlansForOffers($offers);
 
@@ -49,7 +51,7 @@ class Service extends Base\Service
 
                 if ($order->getAmount() >= $minEmiAmount)
                 {
-                    $plans[$issuer][] = [
+                    $emiOptions[$issuer][] = [
                         'duration'   => $duration,
                         'interest'   => 0,
                         'subvention' => Subvention::MERCHANT,
@@ -59,7 +61,7 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    $plans[$issuer][] = [
+                    $emiOptions[$issuer][] = [
                         'duration'   => $duration,
                         'interest'   => $plan->getRate() / 100,
                         'subvention' => Subvention::CUSTOMER,
@@ -70,7 +72,7 @@ class Service extends Base\Service
             // If offer is forced, there's no need to show the other EMI plans
             else if ($this->shouldShowNotOfferEmiOption($offers, $order, $plan) === true)
             {
-                $plans[$issuer][] = [
+                $emiOptions[$issuer][] = [
                     'duration'   => $duration,
                     'interest'   => $plan->getRate() / 100,
                     'subvention' => Subvention::CUSTOMER,
@@ -82,10 +84,15 @@ class Service extends Base\Service
         if ((new Merchant\Service)->isSbiEmiEnabled() === false)
         {
             // SBI EMI is not enabled for the merchant. SBI emi plans will not be returned
-            unset($plans[IFSC::SBIN]);
+            unset($emiOptions[IFSC::SBIN]);
+
+            unset($emiPlansFormatted[IFSC::SBIN]);
         }
 
-        return $plans;
+        return [
+            'plans'     => $emiPlansFormatted,
+            'options'   => $emiOptions
+        ];
     }
 
     protected function shouldShowNotOfferEmiOption($offers, $order, $plan): bool

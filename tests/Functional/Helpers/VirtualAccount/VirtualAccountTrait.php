@@ -3,9 +3,12 @@
 namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
 use RZP\Models\Order;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 
 trait VirtualAccountTrait
 {
+    use OAuthTrait;
+
     private function createVirtualAccount(
         array $input = [],
         $numeric = true,
@@ -42,6 +45,61 @@ trait VirtualAccountTrait
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    private function createVirtualAccountPartnerAuth(array $input = [])
+    {
+        list($subMerchantId, $client) = $this->createPartnerEnv();
+
+        $attributes = $this->getDefaultVirtualAccountRequestArray();
+
+        $attributes = array_merge($attributes, $input);
+
+        $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $attributes,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->ba->deleteAccountAuth();
+
+        return [$response, $subMerchantId, $client];
+    }
+
+    private function createPartnerEnv()
+    {
+        $partner = $this->fixtures->merchant->createWithBalance();
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type'        => 'partner',
+                'id'          => 'AwtIC8XQqM0Wet',
+                'merchant_id' => $partner->getId(),
+            ]);
+
+        $this->fixtures->edit('merchant', $partner->getId(), ['partner_type' => 'aggregator']);
+
+        $subMerchantId = '10000000000000';
+
+        $this->fixtures->feature->create([
+                                             'entity_type' => 'application',
+                                             'entity_id'   => $client->getApplicationId(),
+                                             'name'        => 'virtual_accounts']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $subMerchantId,
+            ]
+        );
+
+        return [$subMerchantId, $client];
     }
 
     private function createVirtualAccountForOrder(Order\Entity $order, array $input = [])

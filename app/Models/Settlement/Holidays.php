@@ -167,7 +167,12 @@ class Holidays
             4 => [
                 1  => 'Annual closing of Banks',
                 6  => 'Ugadi/ Gudi Padwa',
+                17 => 'Mahavir jayanti',
                 19 => 'Good Friday',
+                29 => 'Election Day in Mumbai',
+            ],
+            5 => [
+                1  => 'May Day/ Mazdoor Diwas',
             ],
             6 => [
                 5 => 'Ramzan Id (Id-Ul-Fitr)',

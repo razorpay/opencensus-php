@@ -73,6 +73,7 @@ class Gateway
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
+    const UPI_AIRTEL             = 'upi_airtel';
 
     const CARD_FSS               = 'card_fss';
 
@@ -86,6 +87,7 @@ class Gateway
     const WALLET_OPENWALLET  = 'wallet_openwallet';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_PHONEPE     = 'wallet_phonepe';
 
     const CARDLESS_EMI       = 'cardless_emi';
 
@@ -223,7 +225,6 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
-        self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CORPORATION,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
@@ -272,12 +273,14 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
-    //TODO : Get complete list
+    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates
     const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::YESB,
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
+        IFSC::KKBK,
+        Netbanking::PUNB_R,
         Netbanking::BARB_R
     ];
 
@@ -671,6 +674,7 @@ class Gateway
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
+            self::WALLET_PHONEPE,
         ],
 
         Method::EMI => [
@@ -687,6 +691,7 @@ class Gateway
             self::UPI_SBI,
             self::UPI_HULK,
             self::UPI_YESBANK,
+            self::UPI_AIRTEL,
         ],
 
         Method::AEPS => [
@@ -784,6 +789,7 @@ class Gateway
         self::UPI_AXIS,
         self::UPI_RBL,
         self::UPI_YESBANK,
+        self::UPI_AIRTEL,
     ];
 
     public static $headless = [
@@ -918,6 +924,7 @@ class Gateway
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
+        Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
     ];
 
     public static $upiToGatewayMap = [
@@ -1181,6 +1188,7 @@ class Gateway
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
+        Gateway::UPI_AIRTEL,
     ];
 
     /**
@@ -1354,13 +1362,13 @@ class Gateway
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
         Gateway::CYBERSOURCE,
-        Gateway::AXIS_MIGS,
         Gateway::ENACH_RBL,
     ];
 
     public static $authorizationAuthenticationGatewayMap = [
         Gateway::HITACHI     => Gateway::MPI_BLADE,
         Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
     ];
 

@@ -52,6 +52,7 @@ return [
         'netbanking_sbi',
         'paytm',
         'sharp',
+        'upi_airtel',
         'upi_axis',
         'upi_icici',
         'upi_mindgate',
@@ -71,6 +72,7 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
+        'wallet_phonepe',
         'bt_yesbank',
         'bt_kotak',
         'bajajfinserv',
@@ -142,6 +144,8 @@ return [
     'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
+    'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
+    'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -707,6 +711,10 @@ return [
         'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
         'iv'                => env('NETBANKING_SBI_IV'),
+    ],
+
+    'mozart' => [
+        'upi_airtel_test_hash_secret' => env('UPI_AIRTEL_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [

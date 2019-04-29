@@ -130,6 +130,11 @@ class Entity extends Base\PublicEntity
         return $this->supports(Flow::HEADLESS_OTP);
     }
 
+    public function isIframeApplicable()
+    {
+        return $this->supports(Flow::IFRAME);
+    }
+
     public function isOtp()
     {
         return $this->supports(Flow::OTP);

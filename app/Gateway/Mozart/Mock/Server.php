@@ -5,247 +5,150 @@ namespace RZP\Gateway\Mozart\Mock;
 use Str;
 use RZP\App;
 use RZP\Gateway\Base;
+use RZP\Constants\HashAlgo;
 
 class Server extends Base\Mock\Server
 {
+    public function authorize($input)
+    {
+        parent::authorize($input);
+
+        $content = $input;
+
+        $content['checksum'] = 'randomHash';
+
+        $paymentId = $content['paymentId'];
+
+        $this->content($content);
+
+        $publicId = $this->getSignedPaymentId($paymentId);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+
+        $request = [
+            'url'          => $url,
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
 
     public function payInit($input)
     {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
+        $payInitObj = new PayInitData();
 
-        $response = [
-            'data' =>
-                [
-                    'Errordescription' => 'SUCCESS (OTP First Process Completed Succesfully)',
-                    'Key' => $entities['terminal']['gateway_secure_secret'],
-                    'MobileNo' => '2376',
-                    'RequestID' => 'RZP190219162906767',
-                    'Responsecode' => '0',
-                    'status' => 'OTP_sent',
-                    '_raw' => '',
-                ],
-            'next' => [
-                'redirect' => [
-                    'content' => [
-                        'type' => 'otp',
-                        'bank' => '',
-                        'next' => [
-                            'submit_otp',
-                        ]
-                    ],
-                    'method' => 'post',
-                    'url' => 'www.test.com',
-                ]
-            ],
-            'error'             => null,
-            'success'           => true,
-            'mozart_id'         => '',
-            'external_trace_id' => '',
-        ];
-
-        $this->content($response, 'pay_init');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
+        return $this->processMockResponse($input, $payInitObj, 'pay_init');
     }
 
     public function payVerify($input)
     {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
+        $payVerifyObj = new PayVerifyData();
 
-        $otp = $entities['gateway']['redirect']['otp'];
-
-        switch($otp)
-        {
-            case 111111:
-                $response = [
-                    'data' =>
-                        [
-                            'Errordescription' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                            'Key' => $entities['terminal']['gateway_secure_secret'],
-                            'MobileNo' => '2376',
-                            'RequestID' => 'RZP190219162906768',
-                            'Responsecode' => '0',
-                            'status' => 'created',
-                            'OrderNo' => '104',
-                            'DealID' => 'CS905114097404',
-                            '_raw' => '',
-                        ],
-                    'error'             => null,
-                    'success'           => true,
-                    'mozart_id'         => '',
-                    'external_trace_id' => '',
-                ];
-                break;
-            default:
-                $response = [
-                    'data' =>
-                        [
-                            'Errordescription' => 'Transaction Status : Failed [L3].  Reason : INVALID OR EXPIRED OTP',
-                            'Key' => $entities['terminal']['gateway_secure_secret'],
-                            'MobileNo' => '2376',
-                            'RequestID' => 'RZP190219162906768',
-                            'Responsecode' => 'L3',
-                            'status' => 'creation_failed',
-                            'OrderNo' => '104',
-                            'DealID' => '905909104900',
-                            '_raw' => '',
-                        ],
-                    'error'             => [
-                        'description' => 'Transaction Status : Failed [L3].  Reason : INVALID OR EXPIRED OTP',
-                        'gateway_error_code' => 'L3',
-                        'gateway_error_description' => 'Transaction Status : Failed [L3].  Reason : INVALID OR EXPIRED OTP',
-                        'gateway_status_code' => 200,
-                        'internal_error_code' => 'BAD_REQUEST_PAYMENT_OTP_INCORRECT_OR_EXPIRED',
-
-                    ],
-                    'success'           => false,
-                    'mozart_id'         => '',
-                    'external_trace_id' => '',
-                ];
-        }
-
-        $this->content($response, 'pay_verify');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
+        return $this->processMockResponse($input, $payVerifyObj, 'pay_verify');
     }
 
     public function verify($input)
     {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
+        $verifyObj = new VerifyData();
 
-        $response = [
-            'data' =>
-            [
-                'enqinfo' =>[
-                    '0' => [
-                        'DEALID' => 'CS905114097404',
-                        'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                        'Key' => $entities['terminal']['gateway_secure_secret'],
-                        'ORDERNO' => '104',
-                        'REQUESTID' => '1234',
-                        'RESPONSECODE' => '0'
-                    ]
-                ],
-                'received' => true,
-                'requeryid' => '1234',
-                'reqid' => 'RZP200219195445344',
-                'rescode' => '00',
-                'rqtype' => 'AUTH',
-                'status' => 'verification_successful',
-                'valkey' => $entities['terminal']['gateway_secure_secret'],
-                'errdesc' => 'SUCCESS',
-                'Key' => $entities['terminal']['gateway_secure_secret'],
-                '_raw' => '',
-            ],
-            'error'             => null,
-            'success'           => true,
-            'mozart_id'         => '',
-            'external_trace_id' => '',
-        ];
-
-        $this->content($response, 'verify');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
+        return $this->processMockResponse($input, $verifyObj, 'verify');
     }
 
     public function refund($input)
     {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
+        $refundObj = new RefundData();
 
-        $response = [
-            'data' =>
-                [
-                    'Errordescription' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                    'Key' => $entities['terminal']['gateway_secure_secret'],
-                    'RequestID' => 'RZP190219162906769',
-                    'Responsecode' => '0',
-                    'status' => 'refunded',
-                    'received' => 'true',
-                    '_raw' => '',
-                ],
-            'error'             => null,
-            'success'           => true,
-            'mozart_id'         => '',
-            'external_trace_id' => '',
-        ];
-
-        $this->content($response, 'refund');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
+        return $this->processMockResponse($input, $refundObj, 'refund');
     }
 
     public function verifyRefund($input)
     {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
+        $verifyRefundObj = new VerifyRefundData();
 
-        $response = [
-            'data' =>
-                [
-                    'enqinfo' => [
-                        '0' => [
-                            'DEALID' => 'CS905114097404',
-                            'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                            'Key' => $entities['terminal']['gateway_secure_secret'],
-                            'ORDERNO' => '104',
-                            'REQUESTID' => '1234',
-                            'RESPONSECODE' => '0'
-                        ]
-                    ],
-                    'received' => true,
-                    'requeryid' => '1234',
-                    'reqid' => 'RZP200219195445345',
-                    'rescode' => '00',
-                    'rqtype' => 'CAN',
-                    'status' => 'verification_successful',
-                    'valkey' => $entities['terminal']['gateway_secure_secret'],
-                    'errdesc' => 'SUCCESS',
-                    'Key' => $entities['terminal']['gateway_secure_secret'],
-                    '_raw' => '',
-                ],
-            'error'             => null,
-            'success'           => true,
-            'mozart_id'         => '',
-            'external_trace_id' => '',
-        ];
-
-        $this->content($response, 'verify_refund');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
+        return $this->processMockResponse($input, $verifyRefundObj, 'verify_refund');
     }
 
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
-
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
+    }
+
+    protected function processMockResponse($input, $actionClass, $action)
+    {
+        $input = json_decode($input, true);
+
+        $entities = $input['entities'];
+
+        $gateway = $entities['payment']['gateway'];
+
+        $response = $actionClass->$gateway($entities);
+
+        $response = json_encode($response);
+
+        $response = $this->makeResponseJson($response);
+
+        return $response;
+    }
+
+    public function getAsyncCallbackContent(array $payment)
+    {
+        $response = [
+            'code'      => "0",
+            'errorCode' => "000",
+            'messageText' => 'success',
+            'rrn' => '987654321',
+            'txnStatus' => 'SUCCESS',
+            'amount' => $payment['amount'] / 100,
+            'hdnOrderID' => ltrim($payment['id'], 'pay_'),
+        ];
+
+        $str = implode('#', $response);
+
+        $secret = $this->getUpiAirtelSecret();
+
+        $str .= '#'.$secret;
+
+        $hash = hash(HashAlgo::SHA512, $str);
+
+        $response['hash'] = $hash;
+
+        return [json_encode($response)];
+    }
+
+    public function getFailedAsyncCallbackContent(array $payment)
+    {
+        $response = [
+            'code'      => 0,
+            'errorCode' => 000,
+            'messageText' => 'success',
+            'rrn' => '987654321',
+            'txnStatus' => 'FAILED',
+            'amount' => $payment['amount'] / 100,
+            'hdnOrderID' => ltrim($payment['id'], 'pay_'),
+        ];
+
+        $str = implode('#', $response);
+
+        $secret = $this->getUpiAirtelSecret();
+
+        $str .= '#'.$secret;
+
+        $hash = hash(HashAlgo::SHA512, $str);
+
+        $response['hash'] = $hash;
+
+        return [json_encode($response)];
+
+    }
+
+    protected function getUpiAirtelSecret()
+    {
+        return 'u9FDS3hNIQBPVNfb';
     }
 
 }

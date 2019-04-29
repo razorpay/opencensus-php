@@ -73,4 +73,15 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
             ],
         ]);
     }
+
+    public function validate(Response $response)
+    {
+        $response->setData([
+            'type'              => $this->input->get('type'),
+            'username'          => $this->input->get('username'),
+            'handle'            => $this->input->get('handle'),
+            'beneficiary_name'  => 'Razorpay Customer',
+            'validated'         => true,
+        ]);
+    }
 }

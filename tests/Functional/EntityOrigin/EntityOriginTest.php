@@ -156,4 +156,43 @@ class EntityOriginTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedOrigin, $origin);
     }
+
+    public function testCreateOriginByInternalApp()
+    {
+        $this->ba->subscriptionsAuth();
+
+        $payment = $this->fixtures->create('payment:authorized');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['entity_id']  = $payment->getPublicId();
+        $testData['response']['content']['entity_id'] = $payment->getId();
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateApplicationOriginByInternalApp()
+    {
+        $this->ba->subscriptionsAuth();
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient();
+
+        $payment = $this->fixtures->create('payment:authorized');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['entity_id']  = $payment->getPublicId();
+        $testData['request']['content']['origin_id']  = $client->getApplicationId();
+        $testData['response']['content']['entity_id'] = $payment->getId();
+        $testData['response']['content']['origin_id'] = $client->getApplicationId();
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateOriginInvalidIdByInternalApp()
+    {
+        $this->ba->subscriptionsAuth();
+
+        $this->startTest();
+    }
 }

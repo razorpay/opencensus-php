@@ -19,6 +19,7 @@ class Entity extends Base\Entity
     const SIGNED_XML             = 'signed_xml';
     const UMRN                   = 'umrn';
     const GATEWAY_REFERENCE_ID   = 'gateway_reference_id';
+    const GATEWAY_REFERENCE_ID2  = 'gateway_reference_id2';
     const ACKNOWLEDGE_STATUS     = 'acknowledge_status';
     const REGISTRATION_STATUS    = 'registration_status';
     const REGISTRATION_DATE      = 'registration_date';
@@ -37,6 +38,7 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::STATUS,
         self::GATEWAY_REFERENCE_ID,
+        self::GATEWAY_REFERENCE_ID2,
         self::SIGNED_XML,
         self::UMRN,
         self::ERROR_MESSAGE,
@@ -51,6 +53,7 @@ class Entity extends Base\Entity
         self::STATUS,
         self::ACQUIRER,
         self::GATEWAY_REFERENCE_ID,
+        self::GATEWAY_REFERENCE_ID2,
         self::ACKNOWLEDGE_STATUS,
         self::REGISTRATION_STATUS,
         self::REGISTRATION_DATE,
@@ -63,6 +66,7 @@ class Entity extends Base\Entity
         self::STATUS                => null,
         self::UMRN                  => null,
         self::GATEWAY_REFERENCE_ID  => null,
+        self::GATEWAY_REFERENCE_ID2 => null,
         self::ACKNOWLEDGE_STATUS    => null,
         self::REGISTRATION_STATUS   => null,
         self::REGISTRATION_DATE     => null,

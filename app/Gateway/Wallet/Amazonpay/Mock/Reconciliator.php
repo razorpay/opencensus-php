@@ -15,7 +15,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
     {
         $this->gateway = Payment\Gateway::WALLET_AMAZONPAY;
 
-        $this->fileExtension = FileStore\Format::TXT;
+        $this->fileExtension = FileStore\Format::CSV;
 
         $this->fileToWriteName = '11933305459017751';
 
@@ -34,38 +34,40 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
     protected function getReconciliationData(array $input)
     {
-        $data = $this->getAdditionalRowsToSkip();
-
         $keys = ReconHeaders::COLUMN_HEADERS;
-
-        $data[] = $keys;
 
         foreach ($input as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
-                Timezone::IST)
-                ->format('y-M-dTH:i:s +0000');
+                Timezone::IST);
 
             $col = [
-                "\"{$date}\"",
-                '"55500008822"',
-                '""',
-                "\"{$row['wallet']['gateway_payment_id']}\"",
-                '"Capture"',
-                "\"{$row['wallet']['gateway_payment_id']}\"",
-                "\"{$row['payment']['id']}\"",
-                '"XYZ Store"',
-                "\"{$row['payment']['currency']}\"",
-                '"XYZ Store"',
-                "\"{$this->formatAmount($row['payment']['amount'] / 100)}\"",
-                '"0"',
-                '"0"',
-                '"0"',
-                "\"{$this->formatAmount($row['payment']['amount'] / 100)}\"",
-                '"0"'
+                "A3MJ8VJGR6SLBL",
+                "RAZORPAY",
+                "{$date->format('d/m/Y')}",
+                "{$date->format('H:m:s')}",
+                "{$row['wallet']['gateway_payment_id']}",
+                "{$row['payment']['id']}",
+                "{$row['wallet']['gateway_payment_id']}" . str_random(5),
+                "AuthRef_" . "{$row['wallet']['gateway_payment_id']}",
+                'Capture',
+                'XYZ Store',
+                '',
+                '',
+                "{$date->format('d/m/Y')}",
+                "{$date->format('H:m:s')}",
+                "{$row['payment']['currency']}",
+                'XYZ Store',
+                '123456',
+                "{$this->formatAmount($row['payment']['amount'] / 100)}",
+                '0',
+                '0',
+                "{$this->formatAmount($row['payment']['amount'] / 100)}",
+                "{$this->formatAmount($row['payment']['amount'] / 100)}",
+                '897878',
+                '812980',
             ];
-            
 
             $col = array_combine_pad($keys, $col);
 
@@ -74,7 +76,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $data[] = $col;
         }
 
-        return $this->generateText($data, ',');
+        return $data;
     }
 
     public function getAdditionalRowsToSkip()
