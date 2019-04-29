@@ -324,6 +324,26 @@ class IinTest extends TestCase
 
     }
 
+    public function testBulkFlowsInvalidInput()
+    {
+        $flows = [
+            'pin' => '1',
+            'otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $flows = [
+            'pin' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

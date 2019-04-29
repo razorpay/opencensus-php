@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         self::ACTION           => 'required|string|in:enable,disable',
         self::FlOW             => 'required|string|custom',
         self::IINS             => 'required|array',
+        self::IINS . '.*'      => 'numeric|digits:6',
     ];
 
     protected static $binIssuerValidationRules = [
