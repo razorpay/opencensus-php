@@ -24,9 +24,8 @@ const selector = formValueSelector('refundModal');
   state => {
     let partial = selector(state, 'partial');
     let payable_amount = selector(state, 'amount');
-
     return {
-      payment: state.transfer.entity.__stashed__,
+      payment: state.transfer.entity,
       partial,
       payable_amount,
     };

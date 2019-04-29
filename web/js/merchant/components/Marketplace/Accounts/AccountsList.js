@@ -12,7 +12,7 @@ import SwitchField from 'rzp/ui/Forms/SwitchField';
 
 import { getUser } from 'merchant/store';
 
-export const ToggleField = ({ children, onEdit, isDisabled }) => {
+export const ToggleField = ({ children, onEdit, isDisabled, isDashboard }) => {
   if (isDisabled) {
     return (
       <small class="help-content">
@@ -20,8 +20,9 @@ export const ToggleField = ({ children, onEdit, isDisabled }) => {
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
-              Please add Email id for this linked account to grant dashboard
-              access
+              {isDashboard
+                ? 'Please add Email id for this linked account to grant dashboard access'
+                : 'Please add Email id for this linked account to allow refunds'}
               <br />
               <button className="btn-link pull-right" onClick={onEdit}>
                 Add Email
@@ -112,6 +113,7 @@ const AccountsListItem = ({
             <ToggleField
               onEdit={() => showEditAccountModal(account)}
               isDisabled={noLAEmail}
+              isDashboard={true}
             >
               <SwitchField
                 defaultChecked={!!account.dashboard_access}
