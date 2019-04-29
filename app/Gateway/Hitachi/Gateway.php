@@ -345,7 +345,8 @@ class Gateway extends Base\Gateway
     {
         if ($input[ResponseFields::STATUS_CODE] !== Status::SUCCESS_CODE)
         {
-            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
                 null,
                 null,
                 [
