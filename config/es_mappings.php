@@ -571,4 +571,47 @@ return [
             ],
         ],
     ],
+
+
+    'customer_mapping' => [
+        '_all' => [
+            'enabled' => false,
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'contact' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'email' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'gstin' => [
+                'type'  => 'keyword',
+            ],
+            'active' => [
+                'type'  => 'boolean',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+        ],
+    ],
 ];
