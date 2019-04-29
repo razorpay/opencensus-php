@@ -266,14 +266,15 @@ class Fee extends Base\Core
             return $pricingPlan;
         }
 
-        // Add default pricing rules for each available payout method, only when rule is not already defined.
-        foreach (Payout\Method::getAll() as $method)
+        //
+        // Add default pricing rules, only when no rules are already defined.
+        // If ANY custom pricing rules have been added for banking payouts, we do not attach
+        // default pricing rules
+        //
+        if ($pricingPlan->hasBankingPayoutRule() === false)
         {
-            if ($pricingPlan->hasBankingPayoutRuleForMethod($method) === false)
-            {
-                $rules       = $this->repo->getBankingPricingRulesForMethod(Feature::PAYOUT, $method, $merchant);
-                $pricingPlan = $pricingPlan->merge($rules);
-            }
+            $rules       = $this->repo->getBankingDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $pricingPlan = $pricingPlan->merge($rules);
         }
 
         return $pricingPlan;
