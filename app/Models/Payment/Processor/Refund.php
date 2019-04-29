@@ -2108,6 +2108,7 @@ trait Refund
      * If card_transfer_refund feature is present for the merchant,
      * refund will be made on card. Card should be credit card, should have vault token stored and
      * should belong to supported issuers.
+     * Payment should be gateway captured, if it isn't, it should be reversed, not to be refunded directly via FTA.
      *
      * @param Payment\Entity $payment
      * @return bool
@@ -2116,7 +2117,7 @@ trait Refund
     {
         if (($payment->hasCard() === true) and
             ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
-            ($payment->card->getCardVaultToken() !== null))
+            ($payment->card->getCardVaultToken() !== null) and ($payment->isGatewayCaptured() === true))
         {
             $iin = $payment->card->iinRelation;
 
