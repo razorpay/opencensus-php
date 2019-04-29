@@ -23,6 +23,8 @@ class CurrencyTest extends TestCase
         $this->assertArrayKeysExist(Currency::MIN_AUTH_VALUE, $supportedCurrencies);
 
         $this->assertArrayKeysExist(Currency::SYMBOL, $supportedCurrencies);
+
+        $this->assertArrayKeysExist(Currency::NAME, $supportedCurrencies);
     }
 
     public function testSupportedCurrency()
