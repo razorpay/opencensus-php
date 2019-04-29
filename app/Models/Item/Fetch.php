@@ -13,6 +13,7 @@ class Fetch extends BaseFetch
             Entity::TYPE        => 'filled|custom',
             Entity::MERCHANT_ID => 'filled|alpha_num|size:14',
             self::EXPAND_EACH   => 'filled|string|in:tax',
+            EsRepository::QUERY => 'sometimes|string|min:1|max:100',
         ],
     ];
 
@@ -23,10 +24,21 @@ class Fetch extends BaseFetch
         AuthType::PROXY_AUTH => [
             Entity::TYPE,
             self::EXPAND_EACH,
+            EsRepository::QUERY,
         ],
         AuthType::PRIVATE_AUTH => [
             Entity::ACTIVE,
         ],
+    ];
+
+    const ES_FIELDS = [
+        EsRepository::QUERY,
+    ];
+
+    const COMMON_FIELDS = [
+        Entity::MERCHANT_ID,
+        Entity::ACTIVE,
+        Entity::TYPE,
     ];
 
     protected function validateType($attribute, $value)
