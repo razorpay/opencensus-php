@@ -56,13 +56,13 @@ export default class AddMerchant extends Component {
     return (
       <div>
         <ModalHeader
-          title="Add New Merchant"
+          title="Add New Account"
           onCloseClick={this.props.closeModal}
         />
         <div class="modal-body">
           {/* Merchant Name */}
           <div class="form-group">
-            <label class="label-required">Merchant Name</label>
+            <label class="label-required">Account Name</label>
             <Field
               name="name"
               component={InputField}

@@ -26,12 +26,12 @@ const earnings = {
 };
 
 const volume = {
-  title: 'Transaction Volume',
+  title: 'Transaction Amount',
   value: item => <Amount value={item.transactionVolume} currency={'INR'} />,
 };
 
 const activeMerchants = {
-  title: 'No. of Active Merchants',
+  title: 'No. of Active Accounts',
   value: item => item.activeMerchants,
 };
 
@@ -53,7 +53,7 @@ export default class CommissionsDailyList extends ListContainer {
         (params.from = Number(
           currDate
             .startOf('day')
-            .subtract(7, 'days')
+            .subtract(30, 'days')
             .format('X')
         ));
     }

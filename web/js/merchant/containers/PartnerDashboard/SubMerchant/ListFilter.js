@@ -14,7 +14,7 @@ export default ({ type, showAppIdFilter, ...otherProps }) => (
     </div>
 
     <div class="form-group list-filter-item">
-      <label>Mail ID</label>
+      <label>Email ID</label>
       <Field name="email" component="input" class="form-control input-sm" />
     </div>
 

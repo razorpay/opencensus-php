@@ -22,28 +22,20 @@ export default props => {
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <span>{submerchant.name || 'Default Name'}</span>
-            {/* submerchant.dashboard_access && (
-              <div class="btn-toolbar pull-right">
-                <button
-                  onClick={() => {
-                    // TODO: write code for switching user
-                  }}
-                  class="btn btn-primary btn-sm"
-                >
-                  Switch Merchant
-                </button>
-              </div>
-            ) */}
-            {submerchant.user && (
-              <div class="btn-toolbar pull-right">
-                <AsyncButton
-                  text="Resend Invite"
-                  pendingText="Sending..."
-                  class="btn btn-primary btn-sm"
-                  onClick={onResendInvite}
-                />
-              </div>
-            )}
+            <ShowWhen
+              additionalCondition={user => !user.isPartner('pure_platform')}
+            >
+              {submerchant.user && (
+                <div class="btn-toolbar pull-right">
+                  <AsyncButton
+                    text="Resend Invite"
+                    pendingText="Sending..."
+                    class="btn btn-primary btn-sm"
+                    onClick={onResendInvite}
+                  />
+                </div>
+              )}
+            </ShowWhen>
           </div>
           <Alert type="error" message={error} />
           <div class="SliderPanel__Body">
@@ -98,14 +90,14 @@ export default props => {
                     {submerchant.user ? (
                       <Fragment>
                         <strong>{submerchant.user.email}</strong> is managing
-                        the dashboard for this merchant
+                        the dashboard for this account
                       </Fragment>
                     ) : (
                       <Fragment>
                         <a class="btn-link" onClick={props.onInviteMerchant}>
                           Invite
                         </a>{' '}
-                        the merchant to sign up, and manage the account
+                        the account to sign up, and manage their dashboard
                       </Fragment>
                     )}
                   </div>

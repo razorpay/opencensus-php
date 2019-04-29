@@ -11,6 +11,7 @@ export default props => {
         <DateRangePicker
           presets={getDateRangePresets()}
           onDatesChange={onDatesChange}
+          defaultPreset={1}
         />
       </div>
     </div>

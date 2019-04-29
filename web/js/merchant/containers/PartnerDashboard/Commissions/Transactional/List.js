@@ -17,7 +17,7 @@ const sourceType = {
 };
 
 const totalCommission = {
-  title: 'Total Commission',
+  title: 'Total Earning',
   value: item => (
     <Amount
       currency={item.currency}
@@ -27,7 +27,7 @@ const totalCommission = {
 };
 
 const merchantName = {
-  title: 'Merchant Name',
+  title: 'Account Name',
   value: item => (item.merchant || {}).name,
 };
 
