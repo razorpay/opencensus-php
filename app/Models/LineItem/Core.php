@@ -50,7 +50,8 @@ class Core extends Base\Core
         // TODO: Check why following only works when called after build()?
         $this->setRefAssociationIfApplicable($input, $lineItem);
 
-        $morphEntity->getValidator()->validateMaxAllowedLineItems();
+        $existingLineItemsCount = $morphEntity->lineItems()->count();
+        $morphEntity->getValidator()->validateLineItemsCount($existingLineItemsCount);
 
         (new Tax\Core)->createLineItemTaxes($lineItem, $input, $merchant);
 
