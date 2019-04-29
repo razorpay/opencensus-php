@@ -302,6 +302,8 @@ class Gateway extends Base\Gateway
 
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
+        $this->checkForBharatQrFailure($input);
+
         $maskedPan = $input[ResponseFields::MASKED_CARD_NUMBER];
 
         $formattedAmount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
@@ -337,6 +339,14 @@ class Gateway extends Base\Gateway
         $qrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE] = $merchantReference;
 
         return $qrData;
+    }
+
+    protected function checkForBharatQrFailure($input)
+    {
+        if ($input[ResponseFields::RESPONSE_CODE] !== Status::SUCCESS_CODE)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     protected function getIntegerFormattedAmount(string $amount)

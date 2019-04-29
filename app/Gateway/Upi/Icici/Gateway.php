@@ -927,6 +927,8 @@ class Gateway extends Base\Gateway
 
     protected function getQrData(array $input)
     {
+        $this->checkForBharatQrPaymentFailure($input);
+
         $amount = $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]);
 
         $qrData = [
@@ -942,6 +944,29 @@ class Gateway extends Base\Gateway
             'callback_data' => $input,
             'qr_data'       => $qrData
         ];
+    }
+
+    protected function checkForBharatQrPaymentFailure($input)
+    {
+        if ($input[Fields::TXN_STATUS] !== Status::SUCCESS)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
+    public function getBharatQrResponse(bool $valid, $gatewayInput = null, $exception = null)
+    {
+        // sending OK for time being, till it will be confirmed on how this acknowledgement
+        // is treated at Upi Icici
+        $xml = '<RESPONSE>OK</RESPONSE>';
+
+        $response = \Response::make($xml);
+
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 
     /**
