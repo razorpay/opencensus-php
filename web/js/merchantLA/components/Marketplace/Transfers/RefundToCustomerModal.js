@@ -5,6 +5,7 @@ import Button from 'component/Button';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import { fetchCreditBalance } from 'merchant/modules/credits';
 import { reverseTransfer } from 'merchantLA/modules/marketplace/transfer';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
@@ -36,6 +37,7 @@ const selector = formValueSelector('refundModal');
     reverseTransfer,
     fetchReversals,
     fetchTransfer,
+    fetchCreditBalance,
     ...NotificationsActions,
   }
 )
@@ -128,6 +130,8 @@ export default class RefundToCustomerModal extends React.Component {
               ]);
 
               trackClickCreateRefund(`${partial ? 'partial' : 'full'} | Yes `);
+
+              this.props.fetchCreditBalance();
 
               this.props.closeModal();
             })
