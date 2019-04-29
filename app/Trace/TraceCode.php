@@ -1540,6 +1540,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_FAILED                                      = 'FTA_RECON_FAILED';
     const FTA_STATUS_FAILED                                     = 'FTA_STATUS_FAILED';
     const FTA_STATUS_FAILED_MERCHANT_ERROR                      = 'FTA_STATUS_FAILED_MERCHANT_ERROR';
+    const FTA_BATCH_FUND_TRANSFER_ABSENT                        = 'FTA_BATCH_FUND_TRANSFER_ABSENT';
 
     const APSPDCL_REQUEST                                       = 'APSPDCL_REQUEST';
     const APSPDCL_REQUEST_ERROR                                 = 'APSPDCL_REQUEST_ERROR';
