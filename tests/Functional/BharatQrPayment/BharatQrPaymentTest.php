@@ -109,7 +109,7 @@ class BharatQrPaymentTest extends TestCase
 
         // marking the payment failed
         $input = [
-            ResponseFields::RESPONSE_CODE => '01'
+            ResponseFields::STATUS_CODE => '01'
         ];
 
         $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId, null, $input);

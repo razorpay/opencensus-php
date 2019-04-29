@@ -343,7 +343,7 @@ class Gateway extends Base\Gateway
 
     protected function checkForBharatQrFailure($input)
     {
-        if ($input[ResponseFields::RESPONSE_CODE] !== Status::SUCCESS_CODE)
+        if ($input[ResponseFields::STATUS_CODE] !== Status::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
