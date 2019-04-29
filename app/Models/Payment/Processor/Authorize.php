@@ -1520,6 +1520,7 @@ trait Authorize
         try
         {
             if (($payment->isMethodCardOrEmi() === true) and
+                ($payment->isMoto() === false) and
                 ($payment->isSecondRecurring() === false) and
                 ($payment->isPushPaymentMethod() === false))
             {
@@ -1527,7 +1528,7 @@ trait Authorize
 
                 if (strtolower($response) === 'on')
                 {
-                   $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
+                    $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
 
                     $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
 
@@ -1638,6 +1639,8 @@ trait Authorize
 
     protected function setAuthInPaymentViaGatewayRules(Payment\Entity $payment, array $gatewayInput)
     {
+        $authType = $payment->getAuthType();
+
         $payment->setAuthType(null);
 
         if (empty($gatewayInput['auth_type']) === true)
@@ -1656,6 +1659,14 @@ trait Authorize
         ];
 
         if (in_array($gatewayInput['auth_type'], $otpAuth, true) === true)
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
+            return;
+        }
+
+        if (($authType !== null) and
+            ($authType === Payment\AuthType::OTP) and
+            ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP))
         {
             $payment->setAuthType(Payment\AuthType::OTP);
         }

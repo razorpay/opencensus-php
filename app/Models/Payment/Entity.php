@@ -3073,6 +3073,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function isMoto()
+    {
+        return ($this->getAuthType() === AuthType::SKIP);
+    }
+
     public function isDirectSettlement()
     {
         if (($this->hasTerminal() === true) and
