@@ -213,6 +213,10 @@ return [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
+    'carvault_migration' => [
+        'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
+        'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
+     ],
     'core_payment_service_sync' => [
         'test'       => env('AWS_CPS_SYNC_TEST_QUEUE'),
         'live'       => env('AWS_CPS_SYNC_LIVE_QUEUE'),

@@ -438,6 +438,7 @@ pipeline:
       - api-sqs-settlements-live
       - api-sqs-payouts-test
       - api-sqs-payouts-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -479,8 +480,12 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+<<<<<<< HEAD
       - api-sqs-payouts-test
       - api-sqs-payouts-live
+=======
+      - api-sqs-cardvault
+>>>>>>> master
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -571,8 +576,12 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+<<<<<<< HEAD
       - api-sqs-payouts-test
       - api-sqs-payouts-live
+=======
+      - api-sqs-cardvault
+>>>>>>> master
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -637,8 +646,12 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+<<<<<<< HEAD
       - api-sqs-payouts-test
       - api-sqs-payouts-live
+=======
+      - api-sqs-cardvault
+>>>>>>> master
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -703,8 +716,12 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+<<<<<<< HEAD
       - api-sqs-payouts-test
       - api-sqs-payouts-live
+=======
+      - api-sqs-cardvault
+>>>>>>> master
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -746,10 +763,13 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+<<<<<<< HEAD
       - api-sqs-payouts-test
       - api-sqs-payouts-live
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
+=======
+>>>>>>> master
     repo: razorpay/api
     namespace: api
     tag:
@@ -790,8 +810,12 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+<<<<<<< HEAD
         - api-sqs-payouts-test
         - api-sqs-payouts-live
+=======
+        - api-sqs-cardvault
+>>>>>>> master
       repo: razorpay/api
       namespace: api
       tag:
@@ -832,8 +856,12 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+<<<<<<< HEAD
         - api-sqs-payouts-test
         - api-sqs-payouts-live
+=======
+        - api-sqs-cardvault
+>>>>>>> master
       repo: razorpay/api
       namespace: api
       tag:
@@ -953,8 +981,12 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+<<<<<<< HEAD
       - api-sqs-payouts-test
       - api-sqs-payouts-live
+=======
+      - api-sqs-cardvault
+>>>>>>> master
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api

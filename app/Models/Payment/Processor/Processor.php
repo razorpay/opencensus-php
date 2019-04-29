@@ -1544,10 +1544,10 @@ class Processor
             {
                 $this->payment->disableCpsRoute();
 
-                $this->repo->saveOrFail($payment);
+                $this->repo->saveOrFail($this->payment);
 
                 $this->trace->info(TraceCode::CPS_SWITCH_ROUTE, [
-                    'payment_id'     => $payment->getId(),
+                    'payment_id'     => $this->payment->getId(),
                     'cps_route'      => false,
                 ]);
             }

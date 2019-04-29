@@ -336,6 +336,109 @@ class Core extends Base\Core
         }
     }
 
+    public function updatePaymentToken($payment, $card)
+    {
+        $updated = false;
+
+        if ($payment->getTokenId() !== null)
+        {
+            $existingToken = $this->findAndReturnExistingToken($payment->localToken, $card, $payment, $payment->customer);
+
+            if ($existingToken !== null)
+            {
+                $payment->localToken()->associate($existingToken);
+
+                $updated = true;
+            }
+        }
+
+        if ($payment->getGlobalTokenId() !== null)
+        {
+            $existingToken = $this->findAndReturnExistingToken($payment->globalToken, $card, $payment, $payment->globalCustomer);
+
+            if ($existingToken !== null)
+            {
+                $payment->globalToken()->associate($existingToken);
+
+                $updated = true;
+            }
+        }
+
+        return $updated;
+    }
+
+    protected function getExistingTokens($token, $card, $payment, $customer)
+    {
+        $existingCards = (new Card\Core)->findAllExistingCards($card, $customer->merchant);
+
+        if ($existingCards === null)
+        {
+            return null;
+        }
+
+        $cardIds = $existingCards->pluck(Entity::ID);
+
+        return $this->repo->token->getByMethodAndCustomerIdAndCardIds(
+                                $token->getMethod(), $token->customer, $cardIds);
+    }
+
+    protected function findAndReturnExistingToken($token, $card, $payment, $customer)
+    {
+        $this->trace->info(
+                TraceCode::VAULT_TOKEN_MIGRATION_TOKEN,
+                [
+                    'token' => $token->getId(),
+                ]);
+
+        $existingTokens = $this->getExistingTokens($token, $card, $payment, $customer);
+
+        if (($existingTokens === null) or
+            ((count($existingTokens) === 1) and
+            ($existingTokens[0]->getId() === $token->getId())))
+        {
+            return null;
+        }
+
+        $existingToken = null;
+
+        foreach ($existingTokens as $tempToken)
+        {
+            if ($tempToken->getId() !== $token->getId())
+            {
+                $existingToken = $tempToken;
+
+                break;
+            }
+        }
+
+        if ($existingToken === null)
+        {
+            return null;
+        }
+
+        $token->setExpiredAt(Carbon::now()->getTimestamp());
+
+        $this->repo->saveOrFail($token);
+
+        if ($payment->hasBeenAuthorized() === true)
+        {
+            $existingToken->incrementUsedCount();
+
+            $existingToken->setUsedAt($payment->getAuthorizeTimestamp());
+
+            $this->repo->saveOrFail($existingToken);
+        }
+
+        $this->trace->info(
+                TraceCode::VAULT_TOKEN_MIGRATION_TOKEN,
+                [
+                    'existing_token' => $existingToken->getId(),
+                    'token'          => $token->getId(),
+                ]);
+
+        return $existingToken;
+    }
+
     protected function validateExistingToken($token)
     {
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(
