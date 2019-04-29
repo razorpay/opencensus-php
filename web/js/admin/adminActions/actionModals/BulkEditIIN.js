@@ -38,17 +38,15 @@ export default function BulkEditIIN() {
         type="submit"
         onSubmit={data => {
           data.iins = data.iins
-            .split(",")
+            .split(',')
             .map(p => p.trim())
             .filter(p => p.length === 6);
           return adminPut({
             url: `live/iins/flows/bulk`,
             data
-          }).then(response => {
-            if (response.data && response.data.success) {
-              notifySuccess('IIN Flows updated successfully.');
-              closeModal();
-            }
+          }).then(_ => {
+            notifySuccess("IIN Flows updated successfully.");
+            closeModal();
           });
         }
         }
