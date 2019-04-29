@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
@@ -106,12 +106,12 @@ export default ({
             <strong>{subscription.id}</strong>
             <ShowWhen additionalCondition={_ => allowUpdateSubscription}>
               <div class="pull-right">
-                <Link
+                <NavLink
                   class="btn btn-primary m-r"
                   to={`/subscriptions/update/${subscription.id}`}
                 >
                   Update
-                </Link>
+                </NavLink>
               </div>
             </ShowWhen>
           </div>
