@@ -8,5 +8,4 @@ abstract class Event
     const EVENT_VERSION = 'v1';
 
     abstract function getProperties();
-
 }

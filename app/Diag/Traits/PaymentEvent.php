@@ -8,7 +8,7 @@ trait PaymentEvent
 {
     public function trackOrderEvent(string $code, array $customProperties)
     {
-        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $code, $properties);
+        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $code, $customProperties);
     }
 
     public function trackPaymentEvent(string $code, Payment\Entity $payment = null, array $customProperties)

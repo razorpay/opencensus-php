@@ -318,6 +318,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_create_account',
             'fts_register_account',
             'fts_fund_transfer',
+            'diag',
         ];
     }
 

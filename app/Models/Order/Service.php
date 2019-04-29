@@ -40,7 +40,7 @@ class Service extends Base\Service
             $order = (new Core)->create($input, $merchant);
 
             $data = [
-                'error_code' => 'SUCCESS',
+                'error_code' => ErrorCode::SUCCESS,
                 'order_id'   => $order->getId(),
                 'amount'     => $order->getAmount(),
                 'currency'   => $order->getCurrency()
@@ -50,20 +50,20 @@ class Service extends Base\Service
         {
             $data['error_code'] = $ex->getCode();
 
-            throw $ex
+            throw $ex;
         }
         catch (\Throwable $ex)
         {
-            $data['error_code'] = 'UNHANDLLED_ERROR';
+            $data['error_code'] = ErrorCode::SERVER_ERROR;
 
-            throw $ex
+            throw $ex;
         }
         finally 
         {
             $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $data);
         }
 
-        return $order;
+        return $order->toArrayPublic();
     }
 
     /**

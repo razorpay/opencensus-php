@@ -82,7 +82,7 @@ class EventTrackerClient extends AbstractEventClient
         {
             return $this->fetchAndFilterMetadata();
         }
-        catch (Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_CONTEXT_FETCH_FAILED);
         }
