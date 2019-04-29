@@ -150,7 +150,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
     ];
 
     const POWER_WALLETS = [
@@ -1392,6 +1392,10 @@ class Gateway
         Mode::TEST => [
             '1000SharpTrmnl',
         ],
+    ];
+
+    public static $cardlessEmiRedirectFlowProvider = [
+        CardlessEmi::FLEXMONEY,
     ];
 
     public static function isNonTerminalGateway(string $gateway)

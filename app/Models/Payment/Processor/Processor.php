@@ -437,7 +437,8 @@ class Processor
     {
         $this->verifyCardlessEmiEnabled();
 
-        if (empty($input['ott']) === false)
+        if ((empty($input['ott']) === false) or
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
         {
             return;
         }

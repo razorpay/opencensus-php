@@ -2342,5 +2342,20 @@ class DatabaseSeeder extends Seeder
             'created_at'                 => time(),
             'updated_at'                 => time()
         ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                         => Terminal\Shared::CARDLESS_EMI_FLEXMONEY_TERMINAL,
+            'merchant_id'                => Account::TEST_ACCOUNT,
+            'category'                   => 123,
+            'gateway'                    => Gateway::CARDLESS_EMI,
+            'gateway_merchant_id'        => '35',
+            'gateway_merchant_id2'       => 'NMIMS',
+            'gateway_acquirer'           => 'flexmoney',
+            'gateway_terminal_password'  => 'eyJpdiI6IklpRTBKZXBTYUJVVENNcms4TUVkVEE9PSIsInZhbHVlIjoiWHN4b0lZMlJBKzJvK05vdjk3NEFjMmgrb1Q5UStLODJ1UTQ5NjNndmc1UVQ3VXI4N2N0d2M0eks1SVwvUzFPK0wiLCJtYWMiOiIxNzE0ZTg5NjYwYzc2ZTE5MzViMGIyMGNkZjk1MzU3NTlkZWE5YmNjNTk2NWRkMTM3ZTA5YTgwMDI1YmQ0NzFmIn0=',
+            'cardless_emi'               => 1,
+            'mode'                       => 1,
+            'created_at'                 => time(),
+            'updated_at'                 => time()
+        ]);
     }
 }

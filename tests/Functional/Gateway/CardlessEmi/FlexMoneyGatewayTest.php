@@ -3,28 +3,43 @@
 namespace RZP\Tests\Functional\Gateway\CardlessEmi;
 
 use RZP\Gateway\CardlessEmi;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class CardlessEmiGatewayTest extends TestCase
+class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 {
-    use PaymentTrait;
-
-    protected $provider = 'earlysalary';
-
-    protected $payment;
+    protected $provider = 'flexmoney';
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/CardlessEmiGatewayTestData.php';
-
         parent::setUp();
 
-        $this->gateway = 'cardless_emi';
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_cardless_emi_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:cardlessEmiFlexMoneyTerminal');
 
         $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+    }
+
+    public function testFetchTokenFailed()
+    {
+        // Fetch token is not required for FlexMoney, so overriding the base function.
+        $this->assertEquals('1', '1');
+    }
+
+    public function testPayment()
+    {
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPaymentFlexMoney');
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
     }
 
     public function testCheckAccount()
@@ -35,107 +50,89 @@ class CardlessEmiGatewayTest extends TestCase
 
         $this->checkAccount($data);
 
-        $emiPlans = $this->app['cache']->get(sprintf('gateway:emi_plans_EARLYSALARY_%s',
-            $contact . '_10000000000000'), 0);
+        $emiPlans = $this->app['cache']->get(sprintf('gateway:emi_plans_%s',
+            strtoupper($this->provider) . '_' . $contact . '_10000000000000'), 0);
 
-        $loanUrl = $this->app['cache']->get(sprintf('gateway:loan_url_EARLYSALARY_%s',
-            $contact . '_10000000000000'), 0);
+        $redirectUrl = $this->app['cache']->get(sprintf('gateway:redirect_url_%s',
+            strtoupper($this->provider) . '_' . $contact . '_10000000000000'), 0);
 
         $this->assertTestResponse($emiPlans, 'testEmiPlans');
 
-        $this->assertEquals('link_to_loan_agreement', $loanUrl);
-    }
-
-    public function testCheckAccountUserDne()
-    {
-        $response = $this->testData[__FUNCTION__];
-
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            if ($action === 'check_account')
-            {
-                unset($content['account_exists']);
-                unset($content['emi_plans']);
-                unset($content['loan_agreement']);
-                $content['error_code'] = 'USER_DNE';
-            }
-        });
-
-        $this->runRequestResponseFlow($response,
-            function()
-            {
-                $data = $this->getCheckAccountArray($this->provider);
-
-                $this->checkAccount($data);
-            });
-    }
-
-    public function testFetchTokenFailed()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            if ($action === 'fetch_token')
-            {
-                unset($content['token']);
-                unset($content['expiry']);
-                $content['error_code'] = 'FETCH_TOKEN_FAILED';
-                $content['error_description'] = 'Fetch token failed';
-            }
-        });
-
-        $this->runRequestResponseFlow($data,
-            function()
-            {
-                $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
-                $payment['contact'] = '+91' . $payment['contact'];
-                $this->doAuthPayment($payment);
-            });
-    }
-
-    public function testPayment()
-    {
-        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
-
-        $payment['contact'] = '+91' . $payment['contact'];
-
-        $this->setOtp('123456');
-
-        $response = $this->doAuthPayment($payment);
-
-        $this->assertNotNull($response['razorpay_payment_id']);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertTestResponse($payment);
-
-        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
-
-        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
+        $this->assertEquals('dummy_redirect_url', $redirectUrl);
     }
 
     public function testFailedPayment()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testFlexmoneyFailedPayment'];
 
         $this->mockServerContentFunction(function (& $content, $action)
         {
             if ($action === 'authorize')
             {
                 $content['status'] = 'failed';
+                $content['error_code'] = 'USER_DNES';
+                $content['error_description'] = 'User does not exist';
+
+                unset($content['checksum']);
+
+                $checksum = $this->getMockServer()->generateCheckSum($content);
+
+                $content['checksum'] = $checksum;
             }
         });
 
         $this->runRequestResponseFlow($data,
             function()
             {
-                $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+                $payment = $this->getDefaultCardlessEmiPaymentArray('flexmoney');
 
-                $payment['contact'] = '+91' . $payment['contact'];
+                $this->checkAccount($payment);
 
                 $this->doAuthPayment($payment);
             });
+    }
+
+    public function testForceAuthorizePayment()
+    {
+        $data = $this->testData['testFlexmoneyFailedPayment'];
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                $content['status'] = 'failed';
+                $content['error_code'] = 'USER_DNES';
+                $content['error_description'] = 'User does not exist';
+
+                unset($content['checksum']);
+
+                $checksum = $this->getMockServer()->generateCheckSum($content);
+
+                $content['checksum'] = $checksum;
+            }
+        });
+
+        $this->runRequestResponseFlow($data,
+            function()
+            {
+                $payment = $this->getDefaultCardlessEmiPaymentArray('flexmoney');
+
+                $this->checkAccount($payment);
+
+                $this->doAuthPayment($payment);
+            });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->forceAuthorizeFailedPayment($payment['id'], ['provider_payment_id' => 290]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $gatewayPayment = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertEquals($gatewayPayment['gateway_reference_id'], 290);
     }
 
     public function testPaymentVerify()
@@ -143,6 +140,8 @@ class CardlessEmiGatewayTest extends TestCase
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
 
         $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -171,9 +170,11 @@ class CardlessEmiGatewayTest extends TestCase
             $data,
             function()
             {
-                $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+                $payment = $this->getDefaultCardlessEmiPaymentArray('flexmoney');
 
                 $payment['contact'] = '+91' . $payment['contact'];
+
+                $this->checkAccount($payment);
 
                 $authPayment = $this->doAuthPayment($payment);
 
@@ -189,6 +190,8 @@ class CardlessEmiGatewayTest extends TestCase
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
         $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
 
         $this->doAuthPayment($payment);
 
@@ -232,6 +235,8 @@ class CardlessEmiGatewayTest extends TestCase
                 $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
                 $payment['contact'] = '+91' . $payment['contact'];
 
+                $this->checkAccount($payment);
+
                 $this->doAuthPayment($payment);
 
                 $payment = $this->getLastEntity('payment', true);
@@ -244,6 +249,8 @@ class CardlessEmiGatewayTest extends TestCase
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
         $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
 
         $this->doAuthPayment($payment);
 
@@ -259,8 +266,6 @@ class CardlessEmiGatewayTest extends TestCase
 
         //$this->assertTestResponse($gatewayRefund);
         $this->assertEquals($payment['id'], 'pay_' . $gatewayRefund['payment_id']);
-
-       // $this->assertEquals('rfnd_' . $gatewayRefund['refund_id'], $refund['id']);
     }
 
     public function testRefundFailed()
@@ -280,6 +285,8 @@ class CardlessEmiGatewayTest extends TestCase
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
         $payment['contact'] = '+91' . $payment['contact'];
 
+        $this->checkAccount($payment);
+
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -296,64 +303,5 @@ class CardlessEmiGatewayTest extends TestCase
 
         $this->assertEquals('REFUND_FAILED', $gatewayRefund['error_code']);
         $this->assertEquals('Refund failed', $gatewayRefund['error_description']);
-    }
-
-    public function testForceAuthorizePayment()
-    {
-        $data = $this->testData['testFailedPayment'];
-
-        $this->mockServerContentFunction(function (& $content, $action)
-        {
-            if ($action === 'authorize')
-            {
-                $content['status'] = 'failed';
-            }
-        });
-
-        $this->runRequestResponseFlow($data,
-            function()
-            {
-                $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
-                $payment['contact'] = '+91' . $payment['contact'];
-
-                $this->doAuthPayment($payment);
-            });
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $content = $this->forceAuthorizeFailedPayment($payment['id'], ['provider_payment_id' => 290]);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['status'], 'authorized');
-
-        $gatewayPayment = $this->getLastEntity('cardless_emi', true);
-
-        $this->assertEquals($gatewayPayment['gateway_reference_id'], 290);
-    }
-
-    public function getCheckAccountArray($provider)
-    {
-        $array = [
-            'provider'  => $provider,
-            'amount'    => 100.00
-        ];
-
-        return $array;
-    }
-
-    public function checkAccount($data, $key = null)
-    {
-        $request = [
-            'method'  => 'GET',
-            'url'     => '/customers/status/9918899029',
-            'content' => $data
-        ];
-
-        $this->ba->publicAuth($key);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        return $content;
     }
 }

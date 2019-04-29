@@ -720,6 +720,13 @@ return [
     'sharp' => [
     ],
 
+    'cardless_emi' => [
+        'flexmoney' => [
+            'test_hash_secret' => env('CARDLESS_EMI_TEST_HASH_SECRET'),
+            'live_hash_secret' => env('CARDLESS_EMI_LIVE_HASH_SECRET')
+        ],
+    ],
+
     'mpi_enstage' => [
         'test' => [
             'gateway_merchant_id'           => env('ENSTAGE_TEST_MERCHANT_ID'),

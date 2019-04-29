@@ -225,7 +225,12 @@ class Service extends Base\Service
 
                 $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $this->merchant['id']);
 
-                $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'check_account', $input, $this->mode, $terminal);
+                $retData = $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'check_account', $input, $this->mode, $terminal);
+
+                if ($retData != null)
+                {
+                    return $retData;
+                }
 
                 $this->sendOtp(['contact' => $contact]);
 

@@ -1471,7 +1471,7 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'cardless_emi';
         $payment['provider'] = $provider;
-        $payment['emi_duration'] = 3;
+        $payment['emi_duration'] = 6;
 
         unset($payment['card'], $payment['bank']);
 

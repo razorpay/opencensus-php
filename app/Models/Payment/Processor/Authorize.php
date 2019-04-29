@@ -680,6 +680,11 @@ trait Authorize
             return;
         }
 
+        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        {
+            return;
+        }
+
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);
