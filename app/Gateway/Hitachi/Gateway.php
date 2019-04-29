@@ -129,8 +129,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->setCardNumberAndCvv($input);
-
         if ($this->isRupayTransaction($input) === true)
         {
             return $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
@@ -143,6 +141,8 @@ class Gateway extends Base\Gateway
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        $this->setCardNumberAndCvv($input);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 
