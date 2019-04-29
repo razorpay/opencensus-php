@@ -2,8 +2,10 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
-use RZP\Gateway\Mozart;
+use RZP\Gateway\Base\AESCrypto;
+
 
 class PayInitData extends Base\Mock\Server
 {
@@ -46,6 +48,27 @@ class PayInitData extends Base\Mock\Server
 
     public function netbanking_sib($entities)
     {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_netbanking_payment',
+            ['bank' => 'sib']);
+
+        $secret = $this->getGatewayInstance()->getSecret();
+
+        $request = [
+            'ShoppingMallTranFG.PID'      => $entities['terminal']['gateway_merchant_id'],
+            'ShoppingMallTranFG.PRN'      => $entities['payment']['id'],
+            'ShoppingMallTranFG.TRAN_CRN' => $entities['payment']['currency'],
+            'ShoppingMallTranFG.TXN_AMT'  => $entities['payment']['amount'] / 100,
+            'ShoppingMallTranFG.RU'       => $entities['callbackUrl'],
+        ];
+
+
+        sd($secret);
+
+        $aes = new AESCrypto(AES::MODE_ECB, $secret, '');
+
+        sd($aes->encryptString(http_build_query($request)));
+
         $response = [
             'data' => [],
             'next' => [
@@ -55,7 +78,7 @@ class PayInitData extends Base\Mock\Server
 
                     ],
                     'method' => 'post',
-                    'url' => 'www.test.com',
+                    'url' => $url,
                 ]
             ],
             'error' => null,
