@@ -203,16 +203,15 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getBankingPricingRulesForMethod(string $feature, string $method, Merchant\Entity $merchant)
+    public function getBankingDefaultPricingRules(string $feature, Merchant\Entity $merchant)
     {
-        $orgId = $merchant->org->getId();
+        $orgId = $merchant->getOrgId();
 
         return $this->newQuery()
                     ->product(Product::BANKING)
                     ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
-                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->get();
     }

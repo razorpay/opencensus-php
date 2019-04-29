@@ -3,9 +3,8 @@
 namespace RZP\Gateway\CardlessEmi\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\CardlessEmi\RequestFields;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\CardlessEmi\ResponseFields;
-use RZP\Gateway\CardlessEmi\Repository;
 
 class Server extends Base\Mock\Server
 {
@@ -29,7 +28,9 @@ class Server extends Base\Mock\Server
                     'amount_per_month' => '1000.20'
                 ]
             ],
-            'loan_agreement'   => 'link_to_loan_agreement'
+            'loan_agreement'   => 'link_to_loan_agreement',
+            'redirection_url'  => 'dummy_redirect_url',
+            'extra'            => 'lender_brand',
         ];
 
         $this->content($content, 'check_account');
@@ -59,7 +60,7 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        $array = json_decode($this->input, true);
+        $array = $this->getInputData($input);
 
         $content = [
             'entity'               => ResponseFields::PAYMENT,
@@ -67,8 +68,12 @@ class Server extends Base\Mock\Server
             'provider_payment_id'  => '12345678',
             'status'               => 'authorized',
             'currency'             => $array[ResponseFields::CURRENCY],
-            'amount'               => $array[ResponseFields::AMOUNT],
+            'amount'               => $array[ResponseFields::AMOUNT]
         ];
+
+        $checksum = $this->generateCheckSum($content);
+
+        $content['checksum'] = $checksum;
 
         $this->content($content, 'authorize');
 
@@ -77,6 +82,17 @@ class Server extends Base\Mock\Server
         $content = $this->makeJsonResponse($content);
 
         return $content;
+    }
+
+    public function getInputData($input)
+    {
+        switch (is_array($input))
+        {
+            case true:
+                return $input;
+            default:
+                return json_decode($this->input, true);
+        }
     }
 
     public function verify($input)
@@ -153,5 +169,38 @@ class Server extends Base\Mock\Server
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
 
         return $response;
+    }
+
+    public function getCallbackResponseForPayment($input)
+    {
+        $content = [
+            'entity'                => 'payment',
+            'rzp_payment_id'        => 'rzp_payment_id',
+            'provider_payment_id'   => 'provider_payment_id',
+            'status'                => 'authorized',
+            'currency'              => 'INR',
+            'amount'                => 1800,
+            'checksum'              => 'T+rsyMw/9mdWHhv1QjXU5uZtOSKHBraRoaI4arns3Go='
+        ];
+
+        return $content;
+    }
+
+    public function generateCheckSum($input)
+    {
+        $str = '';
+
+        ksort($input);
+
+        foreach ($input as $key => $value)
+        {
+            $str .= $key . '=' . $value . '|';
+        }
+
+        $str = rtrim($str, '|');
+
+        $secret = '23MTPU209562JTP28T';
+
+        return base64_encode(hash_hmac(HashAlgo::SHA256, $str, $secret, true));
     }
 }

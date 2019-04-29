@@ -41,7 +41,8 @@ class TransactionFilter extends Terminal\Filter
         'bharat_qr',
         'direct_settlement',
         'bank_account_type',
-        'hitachi_shared_terminal'
+        'hitachi_shared_terminal',
+        'capability',
     ];
 
     public function methodFilter($terminal)
@@ -825,8 +826,8 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
-            ($terminal->getCapability() === Terminal\Capability::ALL))
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === false) or
+            ($terminal->getCapability() !== Terminal\Capability::AUTHORIZE))
         {
             return true;
         }

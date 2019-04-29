@@ -20,4 +20,8 @@ class ResponseFields
     const LOAN_URL              = 'loan_agreement';
     const PROVIDER_REFUND_ID    = 'provider_refund_id';
     const REFUND                = 'refund';
+    const CHECKSUM              = 'checksum';
+    const ENTITY                = 'entity';
+    const REDIRECT_URL          = 'redirection_url';
+    const EXTRA                 = 'extra';
 }

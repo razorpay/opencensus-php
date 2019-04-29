@@ -424,5 +424,30 @@ return [
                     ],
             ],
         ],
+    ],
+
+    'testBulkFlowsInvalidInput' => [
+        'request' => [
+            'url'     => '/iins/flows/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'flow'   => 'otp',
+                'iins'   => ['840120', '401201', '2345671'],
+                'action' => 'disable'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The IIN elements must be of 6 digit.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ]
 ];

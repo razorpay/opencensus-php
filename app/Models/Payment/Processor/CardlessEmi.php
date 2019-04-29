@@ -6,10 +6,12 @@ class CardlessEmi
 {
     const EARLYSALARY  = 'earlysalary';
     const ZESTMONEY    = 'zestmoney';
+    const FLEXMONEY    = 'flexmoney';
 
     public static $fullName = [
         self::EARLYSALARY  => 'EarlySalary',
         self::ZESTMONEY    => 'ZestMoney',
+        self::FLEXMONEY    => 'FlexMoney',
     ];
 
     public static function exists($provider)

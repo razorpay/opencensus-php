@@ -88,6 +88,7 @@ class Gateway
     const WALLET_OPENWALLET  = 'wallet_openwallet';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_PHONEPE     = 'wallet_phonepe';
 
     const CARDLESS_EMI       = 'cardless_emi';
 
@@ -150,7 +151,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
     ];
 
     const POWER_WALLETS = [
@@ -225,7 +226,6 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
-        self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CORPORATION,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
@@ -676,6 +676,7 @@ class Gateway
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
+            self::WALLET_PHONEPE,
         ],
 
         Method::EMI => [
@@ -925,6 +926,7 @@ class Gateway
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
+        Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
     ];
 
     public static $upiToGatewayMap = [
@@ -1369,6 +1371,7 @@ class Gateway
     public static $authorizationAuthenticationGatewayMap = [
         Gateway::HITACHI     => Gateway::MPI_BLADE,
         Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
     ];
 
@@ -1392,6 +1395,10 @@ class Gateway
         Mode::TEST => [
             '1000SharpTrmnl',
         ],
+    ];
+
+    public static $cardlessEmiRedirectFlowProvider = [
+        CardlessEmi::FLEXMONEY,
     ];
 
     public static function isNonTerminalGateway(string $gateway)

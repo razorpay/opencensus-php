@@ -108,7 +108,11 @@ class Server extends Base\Mock\Server
 
         $content['status'] = 'failed';
 
-        if ($input['success'] === 'S')
+        if ($input['success'] === 'gateway_down')
+        {
+            $content['status'] = 'gateway_down';
+        }
+        else if ($input['success'] === 'S')
         {
             $content['status'] = 'authorized';
         }

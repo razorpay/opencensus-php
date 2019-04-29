@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
@@ -58,7 +59,6 @@ class PayVerifyData extends Base\Mock\Server
                     'external_trace_id' => '',
                 ];
                 break;
-
             default:
                 $response = [
                     'data' =>
@@ -84,6 +84,52 @@ class PayVerifyData extends Base\Mock\Server
                     'mozart_id'         => '',
                     'external_trace_id' => '',
                 ];
+        }
+
+        return $response;
+    }
+
+    public function wallet_phonepe($entities)
+    {
+        try
+        {
+            $response = [
+                'data' => [
+                    '_raw' => '',
+                    'amount' => intval($entities['gateway']['redirect']['amount']),
+                    'checksum' => $entities['gateway']['redirect']['checksum'],
+                    'code' => $entities['gateway']['redirect']['code'],
+                    'merchantId' => $entities['gateway']['redirect']['merchantId'],
+                    'paymentId' => $entities['gateway']['redirect']['paymentId'],
+                    'providerReferenceId' => $entities['gateway']['redirect']['providerReferenceId'],
+                    'status' => 'callback_successfull'
+                ],
+                'error' => null,
+                'external_trace_id' => '',
+                'mozart_id' => '',
+                'next' => [],
+                'success' => true
+            ];
+        }
+        catch (\Exception $e)
+        {
+            $response = [
+                'data' => [
+                    '_raw' => '',
+                    'status' => 'callback_failed'
+                ],
+                'error' => [
+                    'description' => 'INPUT_VALIDATION_FAILED',
+                    'gateway_error_code' => '',
+                    'gateway_error_description' => 'INPUT_VALIDATION_FAILED',
+                    'gateway_status_code' => 0,
+                    'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+                ],
+                'external_trace_id' => '',
+                'mozart_id' => '',
+                'next' => [],
+                'success' => false
+            ];
         }
 
         return $response;

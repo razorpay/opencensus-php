@@ -65,9 +65,10 @@ class Core extends Base\Core
         {
             $newCard = (new Card\Entity)->build($input);
 
-            if ($newCard->getVaultToken() !== null)
+            if (($newCard->getVaultToken() !== null) and
+                ($newCard->getVault() === Card\Vault::RZP_VAULT))
             {
-                $card = $this->findExistingCards($newCard, $merchant);
+                $card = $this->findOneExistingCards($newCard, $merchant);
 
                 $this->card = $card;
             }
@@ -237,7 +238,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function findExistingCards(Card\Entity $newCard, Merchant\Entity $merchant)
+    public function findAllExistingCards(Card\Entity $newCard, Merchant\Entity $merchant, $limit = 10)
     {
         $params = array(
             Card\Entity::MERCHANT_ID     => $merchant->getId(),
@@ -247,13 +248,27 @@ class Core extends Base\Core
             Card\Entity::VAULT           => $newCard->getVault(),
         );
 
-        $cards = $this->repo->card->getByParams($params);
+        $cards = $this->repo->card->getByParams($params, $limit);
 
         if ($cards->count() > 0)
         {
-            return $cards[0];
+           return $cards;
         }
 
         return null;
+    }
+
+    protected function findOneExistingCards(Card\Entity $newCard, Merchant\Entity $merchant)
+    {
+        $limit = 1;
+
+        $cards = $this->findAllExistingCards($newCard, $merchant, $limit);
+
+        if ($cards === null)
+        {
+            return null;
+        }
+
+        return $cards[0];
     }
 }

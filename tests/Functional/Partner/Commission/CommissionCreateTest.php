@@ -158,11 +158,7 @@ class CommissionCreateTest extends TestCase
 
         $this->assertTrue($feeBreakups->isEmpty());
 
-        // @todo remove if condition once explicit commission starts getting saved
-        if (empty($commission) === false)
-        {
-            $this->assertTrue($commission['record_only']);
-        }
+        $this->assertTrue($commission['record_only']);
     }
 
     /**
@@ -318,14 +314,7 @@ class CommissionCreateTest extends TestCase
 
         $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
 
-        // @todo remove once logs are verified
-
-        if (($type === CommissionType::EXPLICIT))
-        {
-            return [$payment, null];
-        }
-
-        $this->assertCount(1, $commissions);
+        $this->assertCount($totalCount, $commissions);
 
         $commissionByType = null;
 
@@ -351,12 +340,6 @@ class CommissionCreateTest extends TestCase
     protected function assertExplicitCommissionFeeBreakUp($payment, $commission)
     {
         $feeBreakups = $this->getExplicitCommissionFeeBreakup($payment);
-
-        // @todo remove once logs are verified
-
-        $this->assertEmpty($feeBreakups);
-
-        return;
 
         $this->assertNotEmpty($feeBreakups);
 

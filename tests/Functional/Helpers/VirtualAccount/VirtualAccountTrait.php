@@ -47,11 +47,13 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function createVirtualAccountPartnerAuth()
+    private function createVirtualAccountPartnerAuth(array $input = [])
     {
         list($subMerchantId, $client) = $this->createPartnerEnv();
 
         $attributes = $this->getDefaultVirtualAccountRequestArray();
+
+        $attributes = array_merge($attributes, $input);
 
         $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $client->getId(), $client->getSecret());
 
@@ -62,6 +64,8 @@ trait VirtualAccountTrait
         ];
 
         $response = $this->makeRequestAndGetContent($request);
+
+        $this->ba->deleteAccountAuth();
 
         return [$response, $subMerchantId, $client];
     }

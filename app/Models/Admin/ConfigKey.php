@@ -46,6 +46,7 @@ class ConfigKey
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
+    const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
 
     // Gateway level configs
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
@@ -79,6 +80,7 @@ class ConfigKey
         self::CURL_INFO_LOG_VERBOSE,
         self::HITACHI_NEW_URL_ENABLED,
         self::PAYSECURE_BLACKLISTED_MCCS,
+        self::DOWNTIME_THROTTLE,
     ];
 
     public static function isSensitive(string $key)

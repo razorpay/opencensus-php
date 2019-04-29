@@ -8,11 +8,13 @@ class ReasonCode
     const HIGHER_DECLINES       = 'HIGHER_DECLINES';
     const ISSUER_DOWN           = 'ISSUER_DOWN';
     const SCHEDULED_DOWNTIME    = 'SCHEDULED_DOWNTIME';
+    const HIGHER_ERRORS         = 'HIGHER_ERRORS';
     const OTHER                 = 'OTHER';
 
     const SEVERITY_MAP = [
         self::LOW_SUCCESS_RATE   => Severity::MEDIUM,
         self::HIGHER_DECLINES    => Severity::MEDIUM,
+        self::HIGHER_ERRORS      => Severity::HIGH,
         self::ISSUER_DOWN        => Severity::HIGH,
         self::SCHEDULED_DOWNTIME => Severity::HIGH,
         self::OTHER              => Severity::LOW
@@ -23,7 +25,8 @@ class ReasonCode
         self::HIGHER_DECLINES       => 'Noticed Higher Number of Declines',
         self::ISSUER_DOWN           => 'Issuer bank/ network/ wallet is down',
         self::SCHEDULED_DOWNTIME    => 'Scheduled Downtime',
-        self::OTHER                 => 'Un-categorized/other'
+        self::HIGHER_ERRORS         => 'Gateway gave a higher number of error responses',
+        self::OTHER                 => 'Un-categorized/other',
     ];
 
     public static function isValidReasonCode($code)

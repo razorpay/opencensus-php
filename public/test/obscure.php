@@ -150,6 +150,7 @@ function disableEmptyInputs(form) {
             <select name="provider">
                 <option value="zestmoney">Zestmoney</option>
                 <option value="earlysalary">Earlysalary</option>
+                <option value="flexmoney">Flexmoney</option>
             </select>
         </td>
     </tr>

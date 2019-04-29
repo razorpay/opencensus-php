@@ -20,6 +20,7 @@ class Wallet
     const SBIBUDDY    = 'sbibuddy';
     const OPENWALLET  = 'openwallet';
     const MPESA       = 'mpesa';
+    const PHONEPE     = 'phonepe';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -33,7 +34,8 @@ class Wallet
         self::SBIBUDDY      => 'SBI Buddy',
         self::OPENWALLET    => 'RZP Open Wallet',
         self::MPESA         => 'Vodafone mPesa',
-        self::AMAZONPAY     => 'AmazonPay'
+        self::AMAZONPAY     => 'AmazonPay',
+        self::PHONEPE       => 'PhonePe',
     );
 
     public static $emailRequiredWallets = array(

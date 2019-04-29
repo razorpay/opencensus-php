@@ -411,6 +411,7 @@ final class Route
         'mock_generate_reconciliation'             => ['post',     'gateway/mock/reconciliation/{gateway}',          'MockGatewayController@generateGatewayReconciliationFile'           ],
         'mock_upi_payment'                         => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
         'mock_aeps_payment'                        => ['post',     'gateway/mock/aeps/{bank}',                       'MockGatewayController@postAepsPayment'                             ],
+        'mock_cardless_emi_payment'                => ['post',     'gateway/mockcardless_emi/payment',               'MockGatewayController@postCardlessEmiPayment'                      ],
         'admin_fetch_report_types'                 => ['get',      'admin/reports/types',                            'AdminController@getOpsReportTypes'                                 ],
         'admin_fetch_report'                       => ['get',      'admin/reports/{type}',                           'AdminController@getOpsReport'                                      ],
         'admin_fetch_all_entities'                 => ['get',      'admin/entities/all',                             'AdminController@getEntities'                                       ],
@@ -564,6 +565,7 @@ final class Route
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                  => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
         'gateway_downtime_vajra_webhook'           => ['post',     'gateway/downtimes/webhook/vajra',                'GatewayController@postGatewayDowntimeVajraWebhook'                 ],
+        'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
@@ -1041,6 +1043,8 @@ final class Route
 
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
+
+        'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
     ];
 
     public static $public = [
@@ -1081,6 +1085,7 @@ final class Route
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
         'mock_netbanking_payment_get',
+        'mock_cardless_emi_payment',
         'mock_emandate_payment',
         'mock_card_fss_payment',
         'mock_paysecure_payment',
@@ -1409,6 +1414,7 @@ final class Route
         'entity_balance_id_update',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
+        'cps_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
         'update_fts_fund_transfer',
@@ -1416,6 +1422,7 @@ final class Route
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
         'downtime_trigger_cron',
+        'entity_origin_create',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2141,7 +2148,7 @@ final class Route
         'geoip_update'                             => '*',
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
         'merchant_get_tags'                        => '*',
-        'merchant_tags_bulk'                       => '*',
+        'merchant_tags_bulk'                       => Permission::MANAGE_BULK_MERCHANT_TAGGING,
         'pricing_get_merchant_plans'               => Permission::MERCHANT_PRICING_PLANS,
         'pricing_supported_networks'               => '*',
         'pricing_add_plan_rule'                    => Permission::UPDATE_PRICING_PLAN,
@@ -2614,6 +2621,7 @@ final class Route
             'subscription_manual_retry',
             'token_fetch_card',
             'subscription_payment_fetch_by_id',
+            'entity_origin_create',
             'currency_fetch_all_proxy',
         ],
 
@@ -2683,6 +2691,7 @@ final class Route
 
         'vajra' => [
             'gateway_downtime_vajra_webhook',
+            'cps_downtime_vajra_webhook',
         ],
 
         'fts'  => [

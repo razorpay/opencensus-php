@@ -73,6 +73,7 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
+        'wallet_phonepe',
         'bt_yesbank',
         'bt_kotak',
         'bajajfinserv',
@@ -145,6 +146,7 @@ return [
     'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
+    'mock_wallet_phonepe'         => env('PHONEPE_MOCK'),
     'mock_upi_airtel'             => env('UPI_AIRTEL_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
@@ -723,6 +725,13 @@ return [
     ],
 
     'sharp' => [
+    ],
+
+    'cardless_emi' => [
+        'flexmoney' => [
+            'test_hash_secret' => env('CARDLESS_EMI_TEST_HASH_SECRET'),
+            'live_hash_secret' => env('CARDLESS_EMI_LIVE_HASH_SECRET')
+        ],
     ],
 
     'mpi_enstage' => [

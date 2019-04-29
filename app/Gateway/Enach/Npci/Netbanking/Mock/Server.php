@@ -15,6 +15,8 @@ class Server extends Base\Mock\Server
 {
     use Base\Mock\GatewayTrait;
 
+    const ACCEPT_REF_NO = 12345678;
+
     protected $crypto;
 
     public function authorize($input)
@@ -73,6 +75,8 @@ class Server extends Base\Mock\Server
 
     private function getResponseData($requestArray, $respType, $secureData)
     {
+        $npciId = Base\Entity::generateUniqueId();
+
         if($respType === ResponseType::SUCCESS)
         {
             $data = [
@@ -82,7 +86,7 @@ class Server extends Base\Mock\Server
                 ],
                 'OrgnlMsgInf' => [
                     'MndtReqId'      => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
-                    'NPCI_RefMsgId'  => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
+                    'NPCI_RefMsgId'  => $npciId,
                     'CreDtTm'        => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
                 ],
                 'AccptncRslt'  => [
@@ -106,7 +110,7 @@ class Server extends Base\Mock\Server
                 ],
                 'OrigReqInfo'   => [
                     'MndtReqId'      => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
-                    'NPCI_RefMsgId'  => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
+                    'NPCI_RefMsgId'  => $npciId,
                     'CreDtTm'        => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
                 ],
                 'MndtErrorDtls' => [
@@ -227,19 +231,14 @@ class Server extends Base\Mock\Server
         return hash(HashAlgo::SHA256, $string);
     }
 
-    private function encrypt($data)
-    {
-        return $data;
-    }
-
     protected function getSecureData()
     {
         $data = [
-            'Accptd' => 'true',
-            'AccptRefNo' => '22132232',
+            'Accptd'     => 'true',
+            'AccptRefNo' => self::ACCEPT_REF_NO,
             'ReasonCode' => '',
             'ReasonDesc' => '',
-            'RejectBy' => '',
+            'RejectBy'   => '',
         ];
 
         $this->content($data, 'authorize_get_secure_data');

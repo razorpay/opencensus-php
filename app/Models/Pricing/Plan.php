@@ -309,14 +309,13 @@ class Plan extends PublicCollection
         return null;
     }
 
-    public function hasBankingPayoutRuleForMethod(string $method): bool
+    public function hasBankingPayoutRule(): bool
     {
         /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
             if (($rule->isBankingProduct() === true) and
-                ($rule->getFeature() === Feature::PAYOUT) and
-                ($rule->getPaymentMethod() === $method))
+                ($rule->getFeature() === Feature::PAYOUT))
             {
                 return true;
             }

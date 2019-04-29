@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Feature\Constants as Feature;
 
 /**
  * Documentation here :
@@ -58,7 +59,11 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
             $downtimes = $this->repo->useSlave(function () use ($terminals)
             {
-                return (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $this->input);
+                $downtimes = (new Downtime\Core)->getApplicableDowntimesForPayment($terminals, $this->input);
+
+                $downtimes = $this->filterDowntimesByFeature($downtimes);
+
+                return $downtimes;
             });
 
             if ($downtimes->isEmpty() === true)
@@ -86,6 +91,27 @@ class GatewayDowntimeSorter extends Terminal\Sorter
 
             return $terminals;
         }
+    }
+
+    /**
+     * Downtimes fetched will include those created internally, i.e. by gateway
+     * exception throttling. We don't want these to be used for all merchants,
+     * only the ones who have a feature enabled.
+     */
+    protected function filterDowntimesByFeature(Base\PublicCollection $downtimes): Base\PublicCollection
+    {
+        $merchant = $this->input['merchant'];
+
+        if ($merchant->isFeatureEnabled(Feature::DOWNTIME_ROUTING) === true)
+        {
+            return $downtimes;
+        }
+
+        $downtimes = $downtimes->filter(function ($downtime) {
+            return ($downtime->getSource() !== Downtime\Source::INTERNAL);
+        });
+
+        return $downtimes;
     }
 
     /**
