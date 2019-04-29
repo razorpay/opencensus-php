@@ -1254,6 +1254,11 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($this->refund, $payment);
 
+        //
+        // Taking mutex lock of 10 minutes here. In ideal cases, lock of 1 or 2 minutes works but
+        // in cases if any alter query or any other operation is running on refunds table and
+        // refund save takes lot more time that expected. For such cases, keeping mutex lock to 10 minutes.
+        //
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
             $payment->reload();
@@ -1288,7 +1293,7 @@ trait Refund
             // send notification to merchant/customer, this is outside transaction
             // as we don't want to reverse the actions if mail sending fails
             $this->sendRefundNotification($payment);
-        }, 120);
+        }, 600);
 
         $this->trace->info(
             TraceCode::REFUND_PROCESSED,
