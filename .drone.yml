@@ -436,6 +436,7 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -477,6 +478,7 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -567,6 +569,7 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -631,6 +634,7 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -695,6 +699,7 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -736,8 +741,6 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
-      - api-sqs-cps-sync-test
-      - api-sqs-cps-sync-live
     repo: razorpay/api
     namespace: api
     tag:
@@ -778,6 +781,7 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-cardvault
       repo: razorpay/api
       namespace: api
       tag:
@@ -818,6 +822,7 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-cardvault
       repo: razorpay/api
       namespace: api
       tag:
@@ -937,6 +942,7 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api

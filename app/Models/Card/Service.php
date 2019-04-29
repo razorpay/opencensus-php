@@ -55,4 +55,40 @@ class Service extends Base\Service
 
         return [$responseKey => $recurring];
     }
+
+    public function migtateCardVaultToken($cardId)
+    {
+        $card = $this->repo->card->find($cardId);
+
+        $this->updateVaultToken($card);
+
+        if ($card->hasGlobalCard() === true)
+        {
+            $this->updateVaultToken($card->globalCard);
+        }
+    }
+
+    public function updateVaultToken(Entity $card)
+    {
+        $token = $card->getVaultToken();
+
+        if ($token === null)
+        {
+            return;
+        }
+
+        $vaultResponse = (new CardVault)->getVaultTokenFromTempToken($token);
+
+        $vaultToken = $vaultResponse['token'];
+
+        $fingerprint = $vaultResponse['fingerprint'];
+
+        $card->setVaultToken($vaultToken);
+
+        $card->setVault(Vault::RZP_VAULT);
+
+        $card->setGlobalFingerPrint($fingerprint);
+
+        $this->repo->saveOrFail($card);
+    }
 }
