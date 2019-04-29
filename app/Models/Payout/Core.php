@@ -317,22 +317,22 @@ class Core extends Base\Core
 
         $traceData = [];
 
-        foreach ($grouped as $balance => $payouts)
+        foreach ($grouped as $balanceId => $payouts)
         {
             // We get balance via payout since we would have already fetched balance entity
             // when fetching the payouts list. Avoiding an extra DB query here by doing this.
-            $balance = $payouts->first()->balance;
+            $balanceEntity = $payouts->first()->balance;
 
-            $balance = $balance->getBalance();
+            $balanceAmount = $balanceEntity->getBalance();
 
-            $dispatchedData = $this->dispatchApplicablePayouts($balance, $payouts);
+            $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
 
-            $traceData[$balance->getId()] = [
-                'original_balance'          => $balance,
+            $traceData[$balanceId] = [
+                'original_balance'          => $balanceAmount,
                 'balance_remaining'         => $dispatchedData['balance_remaining'],
                 'total_payout_count'        => count($payouts),
                 'dispatched_payout_count'   => $dispatchedData['dispatched_payout_count'],
-                'dispatched_payout_amount'  => ($balance - $dispatchedData['balance_remaining']),
+                'dispatched_payout_amount'  => ($balanceAmount - $dispatchedData['balance_remaining']),
             ];
         }
 

@@ -271,6 +271,8 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON    => null,
         self::REFERENCE_ID      => null,
         self::NARRATION         => null,
+        self::FEES              => 0,
+        self::TAX               => 0,
     ];
 
     protected $amounts = [
