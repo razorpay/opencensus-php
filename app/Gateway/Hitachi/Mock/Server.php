@@ -48,7 +48,7 @@ class Server extends Base\Mock\Server
             'F013'       => '1212',
             'F037'       => 'somethingabc',
             'F038'       => 'random',
-            'F039'       => '0',
+            'F039'       => '00',
             'F041'       => 'abcd_hitachi_bharat',
             'F042'       => 'abcd_hitachi_bharat',
             'F043'       => 'RazorpayBangalore',
