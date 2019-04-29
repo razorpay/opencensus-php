@@ -307,4 +307,8 @@ return [
     'routing' => [
         'url'       => env('ROUTING_URL'),
     ],
+
+    'non_blocking_http' => [
+        'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
+    ],
 ];

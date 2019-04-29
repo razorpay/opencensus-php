@@ -236,6 +236,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRaven();
 
+        $this->registerNonBlockingHttp();
+
         $this->registerBatchService();
 
         $this->registerScrooge();
@@ -312,6 +314,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_create_account',
             'fts_register_account',
             'fts_fund_transfer',
+            'nonBlockingHttp'
         ];
     }
 
@@ -335,6 +338,16 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.raven.mock');
 
             $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerNonBlockingHttp()
+    {
+        $this->app->bind('nonBlockingHttp', function($app)
+        {
+            $implementation = NonBlockingHttp::class;
 
             return new $implementation($app);
         });

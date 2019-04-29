@@ -7,7 +7,22 @@ use RZP\Trace\TraceCode;
 
 class NonBlockingHttp
 {
-    public static function postRequest(string $url, $payload, array $headers = null)
+
+    const DEFAULT_TIMEOUT   = '50';
+
+    protected $trace;
+
+    protected $timeout;
+
+    public function __construct($app)
+    {
+        $this->trace = $app['trace'];
+
+        $this->timeout = $app['config']->get('applications.non_blocking_http.timeout') ?? self::DEFAULT_TIMEOUT;
+
+    }
+
+    public function postRequest(string $url, $payload, array $headers = null)
     {
         try
         {
@@ -21,7 +36,7 @@ class NonBlockingHttp
 
             curl_setopt($curl_handler, CURLOPT_POSTFIELDS, $encodedData);
 
-            curl_setopt($curl_handler, CURLOPT_TIMEOUT_MS, 50);
+            curl_setopt($curl_handler, CURLOPT_TIMEOUT_MS, $this->timeout);
 
             if (empty($headers) === false)
             {
@@ -34,11 +49,7 @@ class NonBlockingHttp
         }
         catch (\Throwable $e)
         {
-            $app = App::getFacadeRoot();
-
-            $trace = $app['trace'];
-
-            $trace->info(
+            $this->trace->info(
                 TraceCode::NON_BLOCKING_HTTP_ERROR,
                 [
                     'error'     => $e->getMessage(),
