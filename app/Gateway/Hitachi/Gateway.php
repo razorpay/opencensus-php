@@ -345,15 +345,13 @@ class Gateway extends Base\Gateway
     {
         if ($input[ResponseFields::STATUS_CODE] !== Status::SUCCESS_CODE)
         {
-            $this->trace->error(
-                TraceCode::HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT,
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                null,
+                null,
                 [
                     'notification_request' => $input,
-                    'gateway' => $this->gateway
-                ]
-            );
-
-            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                    'gateway'              => $this->gateway
+                ]);
         }
     }
 

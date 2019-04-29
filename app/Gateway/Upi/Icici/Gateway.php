@@ -950,7 +950,13 @@ class Gateway extends Base\Gateway
     {
         if ($input[Fields::TXN_STATUS] !== Status::SUCCESS)
         {
-            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                                                     null,
+                                                     null,
+                                                      [
+                                                          'notification_request' => $input,
+                                                          'gateway'              => $this->gateway
+                                                      ]);
         }
     }
 
