@@ -64,7 +64,7 @@ class Service
      * @param array $intervalInfo
      * @param array $mailInfo
      */
-    public function beamPush(array $pushData, array $intervalInfo, array $mailInfo)
+    public function beamPush(array $pushData, array $intervalInfo, array $mailInfo, $synchronous = false)
     {
         $this->trace->info(
             TraceCode::BEAM_METHOD_CALL,
@@ -138,7 +138,17 @@ class Service
             ]
         );
 
-        BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
+        if ($synchronous === true)
+        {
+            $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
+
+            return $beam->handleRequest();
+        }
+        else
+        {
+            BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
+        }
+
     }
 
     /**

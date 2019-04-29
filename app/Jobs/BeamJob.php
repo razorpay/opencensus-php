@@ -116,6 +116,12 @@ class BeamJob extends Job
 
     public function handleRequest()
     {
+        if ($this->mock === true)
+        {
+            return [
+                'failed' => 'null'
+            ];
+        }
         $this->trace->info(
             TraceCode::BEAM_REQUEST,
             [
@@ -150,6 +156,8 @@ class BeamJob extends Job
                 'url'        => $this->request['url'],
             ]
         );
+
+        return json_decode($this->response->body, true);
     }
 
     /**

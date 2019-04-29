@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Encryption;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -372,7 +373,21 @@ class Sbi extends Base
             'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ($beamResponse['failed'] !== 'null')
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->file->id,
+                    'gateway'       => 'sbi_emi',
+                ]
+            );
+        }
 
         $this->sendConfirmationMail();
     }
