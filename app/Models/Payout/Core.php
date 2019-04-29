@@ -315,18 +315,33 @@ class Core extends Base\Core
     {
         $grouped = $queuedPayouts->groupBy(Entity::BALANCE_ID);
 
+        $traceData = [];
+
         foreach ($grouped as $balance => $payouts)
         {
             // We get balance via payout since we would have already fetched balance entity
             // when fetching the payouts list. Avoiding an extra DB query here by doing this.
             $balance = $payouts->first()->balance;
 
-            $remainingBalance = $balance->getBalance();
+            $balance = $balance->getBalance();
 
-            $this->dispatchApplicablePayouts($remainingBalance, $payouts);
+            $dispatchedData = $this->dispatchApplicablePayouts($balance, $payouts);
+
+            $traceData[$balance->getId()] = [
+                'original_balance'          => $balance,
+                'balance_remaining'         => $dispatchedData['balance_remaining'],
+                'total_payout_count'        => count($payouts),
+                'dispatched_payout_count'   => $dispatchedData['dispatched_payout_count'],
+                'dispatched_payout_amount'  => ($balance - $dispatchedData['balance_remaining']),
+            ];
         }
 
-        // TODO: Form a summary and return that back from here
+        $this->trace->info(
+            TraceCode::PAYOUT_DISPATCH_SUMMARY,
+            $traceData
+        );
+
+        return $traceData;
     }
 
     public function processQueuedPayout(string $payoutId): Entity
@@ -386,6 +401,8 @@ class Core extends Base\Core
 
     protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
     {
+        $dispatchedCount = 0;
+
         foreach ($payouts as $payout)
         {
             $payoutAmount = $payout->getAmount();
@@ -404,7 +421,14 @@ class Core extends Base\Core
             $totalBalance -= $totalPayoutAmount;
 
             $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
+
+            $dispatchedCount += 1;
          }
+
+         return [
+             'balance_remaining'        => $totalBalance,
+             'dispatched_payout_count'  => $dispatchedCount,
+         ];
     }
 
     protected function dispatchQueuedPayout(Entity $payout, int $fees, int $currentBalance)
@@ -428,6 +452,9 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            // If the dispatch fails due to any reason, cron will
+            // pick up these payouts again and attempt to dispatch.
+
             $data = $traceInfo + [ 'message' => $e->getMessage() ];
 
             $this->trace->traceException(

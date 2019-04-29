@@ -927,6 +927,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION                    = 'PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION';
     const PAYOUT_QUEUE_SUCCESS                                  = 'PAYOUT_QUEUE_SUCCESS';
     const PAYOUT_NOT_IN_QUEUED_STATUS                           = 'PAYOUT_NOT_IN_QUEUED_STATUS';
+    const PAYOUT_DISPATCH_SUMMARY                               = 'PAYOUT_DISPATCH_SUMMARY';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -1466,14 +1467,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
 
-    const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
-    const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
-    const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
-    const DATABASE_RECONNECT                            = 'DATABASE_RECONNECT';
-    const HEARTBEAT_CHECK_TIME_CONVERSION               = 'HEARTBEAT_CHECK_TIME_CONVERSION';
-    const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
-    const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
-    const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
+    const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
+    const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
+    const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';
+    const DATABASE_RECONNECT                                    = 'DATABASE_RECONNECT';
+    const HEARTBEAT_CHECK_TIME_CONVERSION                       = 'HEARTBEAT_CHECK_TIME_CONVERSION';
+    const DB_DATA_INTEGRITY_ERROR                               = 'DB_DATA_INTEGRITY_ERROR';
+    const DB_PIVOT_TABLE_ASSOCIATION_ERROR                      = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
+    const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
 
@@ -1762,16 +1763,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
 
     // Core Payment Service tracecodes
-    const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS          = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
-    const CPS_GATEWAY_TRANSACTION_SYNC_REQUEST          = 'CPS_GATEWAY_TRANSACTION_SYNC_REQUEST';
-    const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION         = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
-    const CPS_ROUTE_CONFIG                              = 'CPS_ROUTE_CONFIG';
-    const CPS_RAZORX_VARIANT                            = 'CPS_RAZORX_VARIANT';
-    const CPS_SWITCH_ROUTE                              = 'CPS_SWITCH_ROUTE';
+    const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
+    const CPS_GATEWAY_TRANSACTION_SYNC_REQUEST                  = 'CPS_GATEWAY_TRANSACTION_SYNC_REQUEST';
+    const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION                 = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
+    const CPS_ROUTE_CONFIG                                      = 'CPS_ROUTE_CONFIG';
+    const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
+    const CPS_SWITCH_ROUTE                                      = 'CPS_SWITCH_ROUTE';
 
     // Batch Micro Service
-    const GET_BATCHES_BATCH_SERVICE                 = 'GET_BATCHES_BATCH_SERVICE';
-    const GET_BATCHES_IGNORE_COUNT_SKIP             = 'GET_BATCHES_IGNORE_COUNT_SKIP';
+    const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
+    const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
