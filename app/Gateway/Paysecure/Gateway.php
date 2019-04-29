@@ -84,9 +84,7 @@ class Gateway extends Base\Gateway
         {
             list($gatewayPayment, $response) = $this->initiate2();
 
-            $content = $this->getGatewayPaymentAttributes($response);
-
-            $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
+            $this->updateGatewayPaymentFromInitiate2Response($gatewayPayment, $response);
 
             $this->handleFailure($response, 'initiate2');
 
@@ -228,23 +226,25 @@ class Gateway extends Base\Gateway
     }
 
     // ------------ Auth request helpers -----------------
-    protected function getGatewayPaymentAttributes($response, $flow = 'redirect')
+    protected function updateGatewayPaymentFromInitiate2Response($gatewayPayment, $response)
     {
         $redirectUrl = $response[Fields::REDIRECT_URL];
 
         $parsed = parse_url($redirectUrl);
 
-        parse_str($parsed['query'], $parsed);
+        if (isset($parsed['query']) === true)
+        {
+            parse_str($parsed['query'], $parsed);
 
-        $hkey = $parsed[Fields::ACCU_HKEY];
+            $hkey = $parsed[Fields::ACCU_HKEY];
 
-        $content = [
-            Entity::GATEWAY_TRANSACTION_ID => $response[Fields::TRAN_ID ],
-            Entity::HKEY                   => $hkey,
-            Entity::FLOW                   => $flow,
-        ];
+            $content = [
+                Entity::GATEWAY_TRANSACTION_ID => $response[Fields::TRAN_ID ],
+                Entity::HKEY                   => $hkey,
+            ];
 
-        return $content;
+            $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
+        }
     }
 
     protected function getRedirectRequest($response)
