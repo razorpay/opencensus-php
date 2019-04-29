@@ -9,7 +9,6 @@ import {
   closeModal,
   notifyError,
   notifySuccess,
-  confirm,
 } from 'common/modal';
 import * as entityModals from './entityModals';
 import { getDetailsViewMap } from './entity-resources';
@@ -608,12 +607,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
             </div>
           )}
         {merchant.details.partner_type && (
-            <ShowWhen permission="admin_batch_create">
-              <div onClick={actions.UploadSubmerchantBatch}>
-                Upload Submerchant Batch
-                <i class="pull-right i i-upload" />
-              </div>
-            </ShowWhen>
+          <ShowWhen permission="admin_batch_create">
+            <div onClick={actions.UploadSubmerchantBatch}>
+              Upload Submerchant Batch
+              <i class="pull-right i i-upload" />
+            </div>
+          </ShowWhen>
         )}
       </div>
 
