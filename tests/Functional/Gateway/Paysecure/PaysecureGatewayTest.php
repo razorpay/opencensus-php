@@ -145,9 +145,10 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'initiate2')
                 {
-                    $content['status']                = 'failure';
-                    $content['errorcode']             = '406';
-                    $content['errormsg']              = 'Not Authenticated';
+                    $content['status']      = 'failure';
+                    $content['errorcode']   = '406';
+                    $content['errormsg']    = 'Not Authenticated';
+                    $content['RedirectURL'] = '';
                 }
             }
         );
