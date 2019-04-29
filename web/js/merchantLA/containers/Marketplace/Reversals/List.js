@@ -8,7 +8,7 @@ import Credit from './Credit';
 import BatchUploadList from './BatchUpload/List';
 import { fetchBalanceAction } from 'merchantLA/modules/credits';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Amount from 'rzp/ui/Amount';
 @connect(
   state => {
@@ -43,12 +43,14 @@ export default class ReversalsListContainer extends Component {
             <NavLink exact to="/reversals">
               Reversals
             </NavLink>
-            {showRefundToCustomer && (
+            <ShowWhen additionalCondition={_ => showRefundToCustomer}>
               <NavLink exact to="/reversals/batchreversals">
                 Batch
               </NavLink>
-            )}
-            {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
+            </ShowWhen>
+            <ShowWhen additionalCondition={_ => !isBalanceSource}>
+              <NavLink to="/credits">Credits</NavLink>
+            </ShowWhen>
             <HeaderAction>
               <span class="reversal-balance-amount">
                 {loading ? (
@@ -66,13 +68,12 @@ export default class ReversalsListContainer extends Component {
           <content>
             <Switch>
               <Route exact path="/reversals" component={ReversalsTable} />
-              {showRefundToCustomer && (
-                <Route
-                  exact
-                  path="/reversals/batchreversals"
-                  component={BatchUploadList}
-                />
-              )}
+              <ShowWhenRoute
+                exact
+                path="/reversals/batchreversals"
+                component={BatchUploadList}
+                additionalCondition={_ => showRefundToCustomer}
+              />
               <ShowWhenRoute
                 path="/credits"
                 component={Credit}
