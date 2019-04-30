@@ -10,6 +10,7 @@ const options = {
   network: [
     '',
     'American Express',
+    'Bajaj Finserv',
     'Diners Club',
     'Discover',
     'JCB',

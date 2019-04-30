@@ -32,6 +32,7 @@ import {
   virtualAccountReducer,
 } from 'merchant/modules/virtualaccounts';
 import submerchantReducer from 'merchant/modules/submerchant';
+import commissionReducer from 'merchant/modules/commission';
 import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
 import tokenReducer from 'merchant/modules/token';
@@ -57,6 +58,7 @@ import {
   submerchantsReducer,
   authLinksReducer,
   tokensReducer,
+  commissionsReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -121,6 +123,8 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  commisions: commissionsReducer,
+  commission: commissionReducer,
   wysiwyg: wysiwygReducer,
   authLinks: authLinksReducer,
   authLink: authLinkReducer,

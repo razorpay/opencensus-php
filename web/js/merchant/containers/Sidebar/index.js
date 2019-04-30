@@ -2,20 +2,21 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
-import ProgressBar from 'rzp/ui/ProgressBar';
 import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant/AcceptPaymentsModal';
-import { classList } from 'common/util';
 
 import { toggleMobileMenu } from 'merchant/modules/app';
-import MainNavLink from 'merchant/components/MainNavLink';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { areReportsStillDownloading } from 'merchant/modules/reports';
 import {
   showAcceptPaymentsModal,
   hideAcceptPaymentsModal,
 } from 'merchant/modules/home';
 
+import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
+
+import MainNavLinkGroup from './MainNavLinkGroup';
+import MerchantNavLinks from './MerchantNavLinks';
+import PartnerNavLinks from './PartnerNavLinks';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
@@ -24,6 +25,7 @@ const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks)/;
+const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -37,6 +39,7 @@ const BASE_ROUTES = {
   paymentpages: '/paymentpages',
   subscriptions: '/subscriptions',
   chargeAtWill: '/recurring_payments',
+  partnerDashboard: '/submerchants',
 };
 
 @withRouter
@@ -57,7 +60,6 @@ export default class Sidebar extends Component {
       isReportsPending: areReportsStillDownloading(props.currentReportList),
     };
 
-    this.onSidebarBannerClick = this.onSidebarBannerClick.bind(this);
     this.hideSidebar = this.hideSidebar.bind(this);
   }
 
@@ -82,6 +84,11 @@ export default class Sidebar extends Component {
     let routes = this.routes;
     const user = this.props.user;
 
+    // Selecting next route if default route is not available
+    if (!user.isAllowedView('configuration')) {
+      routes.settings = '/webhooks';
+    }
+
     if (location.state && location.state.was404) {
       routes[this.prevRoute] = BASE_ROUTES[this.prevRoute]; // Assumption that these routes are always valid for any given role
     }
@@ -104,6 +111,9 @@ export default class Sidebar extends Component {
     } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
       routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
       this.prevRoute = 'paymentlinks';
+    } else if (PARTNER_DASHBOARD_REGEX.test(pathname)) {
+      routes.partnerDashboard = pathname.match(PARTNER_DASHBOARD_REGEX)[0];
+      this.prevRoute = 'partnerDashboard';
     } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
       routes[
         user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'
@@ -114,7 +124,7 @@ export default class Sidebar extends Component {
     }
   }
 
-  onSidebarBannerClick(e) {
+  onSidebarBannerClick = e => {
     const { user } = this.props,
       { showInstantActivation } = user;
 
@@ -138,7 +148,7 @@ export default class Sidebar extends Component {
           showInstantActivation &&
             (!user.instantActivation.isL1Submitted ? 'L1 Form' : 'KYC Form')
         );
-  }
+  };
 
   hideSidebar() {
     return this.props.showMobileMenu && this.props.toggleMobileMenu();
@@ -148,13 +158,15 @@ export default class Sidebar extends Component {
     const { isReportsPending } = this.state;
     let { user, config, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
-    let isMerchant = !!user.current;
+    const isMerchant = !!user.current;
 
-    const { showInstantActivation } = user,
-      { isL1Submitted, isBlacklistFlow } = user.instantActivation;
-
+    const merchantNavLinkProps = {
+      routes,
+      isReportsPending,
+      isChargeAtWillEnabled: user.isChargeAtWillEnabled,
+    };
     return (
-      <React.Fragment>
+      <>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
           <section class="brand-logo">
             <Link to="/dashboard" onClick={this.hideSidebar}>
@@ -162,234 +174,21 @@ export default class Sidebar extends Component {
             </Link>
           </section>
           <nav>
-            {do {
-              if (!isMerchant) {
-                null;
-              } else {
-                let actionCopy,
-                  actionContent = null;
+            {isMerchant && (
+              <div class="nav">
+                <ActivationProgress
+                  onSidebarBannerClick={this.onSidebarBannerClick}
+                  user={user}
+                  config={config}
+                />
 
-                if (user.activation_progress < 100) {
-                  // If user form is still unfilled
-                  actionCopy = 'Activate your account';
-
-                  if (isL1Submitted) {
-                    actionCopy = user.isActivated
-                      ? 'Accept Payments'
-                      : 'Submit KYC';
-                  }
-                } else if (user.isSubmitted) {
-                  actionCopy = 'Form submitted';
-                } else if (user.activation_progress == 100) {
-                  // Form is unfilled and Not submitted
-                  actionCopy = 'Submit Form';
-                } else if (user.isActivated) {
-                  actionCopy = 'Account Activated';
-                }
-
-                <div class="nav">
-                  {!isBlacklistFlow && (
-                    <ShowWhen
-                      additionalCondition={user =>
-                        user.isAllowedEdit('activation') &&
-                        !user.isPartner() &&
-                        (!user.isSubmitted || !config.hasPersonalised)
-                      }
-                    >
-                      <Link
-                        className="activation-status-link"
-                        to={!user.isSubmitted ? '/activation' : '/config'}
-                        onClick={this.onSidebarBannerClick}
-                      >
-                        <div
-                          className={classList(
-                            'activation-status',
-                            user.isSubmitted && !config.hasPersonalised
-                              ? 'not-personalised'
-                              : ''
-                          )}
-                        >
-                          <div className="clearfix">
-                            <div className="pull-left">{actionCopy}</div>
-                            <div className="pull-right">
-                              <i className="i i-chevron-right" />
-                            </div>
-                          </div>
-                          {do {
-                            if (showInstantActivation && !isL1Submitted) {
-                              actionContent = (
-                                <div className="activation-status-secondary">
-                                  Form not Completed
-                                </div>
-                              );
-                            } else {
-                              actionContent = !user.isSubmitted ? (
-                                <div className="activation-bar-content activation-status-secondary">
-                                  {user.activation_progress < 100 &&
-                                  isL1Submitted &&
-                                  user.isActivated ? (
-                                    <div className="activation-bar-text">
-                                      Click here to know more
-                                    </div>
-                                  ) : (
-                                    <React.Fragment>
-                                      <div className="activation-bar-text">
-                                        {user.activation_progress}% Complete
-                                      </div>
-                                      <div className="activation-bar">
-                                        <ProgressBar
-                                          type="success"
-                                          max={100}
-                                          value={user.activation_progress}
-                                        />
-                                      </div>
-                                    </React.Fragment>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="activation-status-secondary">
-                                  Personalise your Account
-                                </div>
-                              );
-                            }
-                          }}
-                        </div>
-                      </Link>
-                    </ShowWhen>
-                  )}
-
-                  <MainNavLink
-                    label="Partner Dashboard"
-                    icon="i i-partner text-success"
-                    to="/submerchants"
-                    additionalCondition={user => user.isPartner()}
-                    exact
-                  />
-
-                  <div class="divider" />
-
-                  <MainNavLink
-                    label="Home"
-                    icon="i i-chart text-info"
-                    to="/dashboard"
-                    exact
-                    additionalCondition={user => user.isAllowedView('home')}
-                  />
-                  <MainNavLink
-                    label="Transactions"
-                    icon="i i-repeat text-primary"
-                    to={routes.transactions}
-                    additionalCondition={user =>
-                      user.isAllowedMultiple('payments orders refunds')
-                    }
-                  />
-                  <MainNavLink
-                    label="Settlements"
-                    icon="i i-done-all text-success"
-                    to="/settlements"
-                    additionalCondition={user =>
-                      user.isAllowedView('settlements')
-                    }
-                  />
-
-                  <div class="divider" />
-
-                  <MainNavLink
-                    label="Invoices"
-                    icon="i i-notes text-warning"
-                    to={routes.invoices}
-                    additionalCondition={user => user.isAllowedView('invoices')}
-                  />
-                  <MainNavLink
-                    label="Payment Links"
-                    icon="i i-link text-primary"
-                    to={routes.paymentlinks}
-                    additionalCondition={user =>
-                      user.isAllowedView('payment_links')
-                    }
-                  />
-                  <MainNavLink
-                    label="Payment Pages"
-                    icon="i i-payment-pages text-warm temp-icon-style"
-                    to={routes.paymentpages}
-                    additionalCondition={user =>
-                      user.isAllowedView('payment_pages') &&
-                      user.isPaymentPagesV2Enabled
-                    }
-                    isNew
-                  />
-                  <MainNavLink
-                    label="Route"
-                    icon="i i-store text-success"
-                    to={routes.marketplace}
-                    additionalCondition={user =>
-                      user.isAllowedView('marketplace')
-                    }
-                  />
-                  <MainNavLink
-                    label="Subscriptions"
-                    icon="i i-refresh text-info"
-                    additionalCondition={user =>
-                      user.isAllowedView('subscriptions')
-                    }
-                    to={
-                      routes[
-                        user.isChargeAtWillEnabled
-                          ? 'chargeAtWill'
-                          : 'subscriptions'
-                      ]
-                    }
-                  />
-                  <MainNavLink
-                    label="Smart Collect"
-                    icon="i i-account-balance text-danger"
-                    to="/virtualaccounts"
-                    additionalCondition={user =>
-                      user.isAllowedView('virtual_accounts')
-                    }
-                  />
-
-                  <MainNavLink
-                    label="Customers"
-                    icon="i i-people text-warning"
-                    to="/customers"
-                    additionalCondition={user =>
-                      user.isAllowedView('customers')
-                    }
-                  />
-
-                  <div class="divider" />
-
-                  <MainNavLink
-                    label="Reports"
-                    icon="i i-books text-danger"
-                    to="/reports"
-                    additionalCondition={user => user.isAllowedView('reports')}
-                    isPending={isReportsPending}
-                  />
-                  <MainNavLink
-                    label="My Account"
-                    icon="i i-account text-primary"
-                    additionalCondition={user =>
-                      user.isAllowedMultiple(
-                        'profile credits add_funds team referrals'
-                      )
-                    }
-                    to={routes.account}
-                  />
-                  <MainNavLink
-                    label="Settings"
-                    icon="i i-settings text-warning"
-                    to={routes.settings}
-                    additionalCondition={user =>
-                      user.isAllowedMultiple(
-                        'webhooks applications configuration api_keys'
-                      )
-                    }
-                  />
-                </div>;
-              }
-            }}
+                {user.isPartner() ? (
+                  <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} />
+                ) : (
+                  <MerchantNavLinks {...merchantNavLinkProps} />
+                )}
+              </div>
+            )}
           </nav>
         </div>
         {showMobileMenu && (
@@ -401,7 +200,75 @@ export default class Sidebar extends Component {
           shouldShow={this.props.showAcceptPayments}
           onClose={this.props.hideAcceptPaymentsModal}
         />
-      </React.Fragment>
+      </>
+    );
+  }
+}
+
+@withRouter
+class PartnerSidebar extends Component {
+  constructor(props) {
+    super(props);
+    const isPartnerRoute =
+      props.location.pathname === '/' ||
+      props.location.pathname.includes('partners');
+    this.state = {
+      partnerOpen: isPartnerRoute,
+      merchantOpen: !isPartnerRoute,
+    };
+  }
+
+  toggle = type => () => {
+    this.setState(
+      {
+        [type]: !this.state[type],
+        [this.getCounterType(type)]: this.state[type],
+      },
+      () => {
+        setTimeout(() => {
+          this.props.history.push(this.getDefaultRoute(type));
+        }, 600);
+      }
+    );
+  };
+
+  getCounterType = type => {
+    return type === 'partnerOpen' ? 'merchantOpen' : 'partnerOpen';
+  };
+
+  getDefaultRoute = () => {
+    const activeType = this.state.partnerOpen ? 'partnerOpen' : 'merchantOpen';
+    return activeType === 'partnerOpen' ? '/partners' : '/dashboard';
+  };
+
+  render() {
+    const props = this.props;
+    return (
+      <>
+        <MainNavLinkGroup
+          title={
+            <>
+              <i class="i i-partner text-primary" />Partner
+            </>
+          }
+          onToggleClick={this.toggle('partnerOpen')}
+          value={this.state.partnerOpen}
+        >
+          <PartnerNavLinks />
+        </MainNavLinkGroup>
+
+        <MainNavLinkGroup
+          title={
+            <>
+              <i class="i i-products text-success" />Products
+            </>
+          }
+          onToggleClick={this.toggle('merchantOpen')}
+          value={this.state.merchantOpen}
+        >
+          <MerchantNavLinks {...props.merchantNavLinkProps} />
+        </MainNavLinkGroup>
+      </>
     );
   }
 }

@@ -27,22 +27,6 @@ class Constants
             ]
         ],
         [
-            'title'       => 'Prices Slashed',
-            'description' =>
-                'Start transacting with us and enjoy our 1.75% slashed pricing, valid only until 31st of January, 2019',
-            'start_ts'    => 1541565000,
-            'end_ts'      => 1548959399,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/offer.png',
-            'buttons'     => [
-                [
-                    'type'  => 'link',
-                    'label' => 'View T&Cs',
-                    'url'   => 'https://razorpay.com/pricing/',
-                ],
-            ],
-            'filters'     => []
-        ],
-        [
             'title'       => 'RazorpayX',
             'description' => 'With RazorpayX, track, automate and accelerate every aspect of your financial payouts',
             'start_ts'    => 1545625800,
@@ -81,7 +65,7 @@ class Constants
             'description' => 'Create custom-branded Payment Pages in minutes to collect payments securely. No integrations or coding required! Check it out now!',
             'start_ts'    => 1550695523,
             'end_ts'      => 1553199300,
-            'icon'        => 'http://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -98,7 +82,7 @@ class Constants
             'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
             'start_ts'    => 1550695523,
             'end_ts'      => 1553199300,
-            'icon'        => 'http://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -109,6 +93,27 @@ class Constants
             'filters'     => [
                 'not_tags' => ['payment_pages_new'],
             ]
+        ],
+        [
+            'title'       => 'Razorpay Capital',
+            'description' =>
+                'Get loans up to Rs 10 Lakhs for your business and repay from your Razorpay settlements with ease. ',
+            'start_ts'    => 1551673800,
+            'end_ts'      => 1559305800,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/capital.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'I\'m Interested',
+                    'url'   => 'https://razorpay.com/capital/?get-in-touch&utm_source=signup&utm_medium=banner&utm_campaign=businessloans_febs2',
+                ],
+            ],
+            'filters'     => [
+                'experiments' => ['capital_announcement'],
+            ],
+            'ga'          => [
+                'action' => 'Capital - Announcement',
+            ],
         ],
     ];
 

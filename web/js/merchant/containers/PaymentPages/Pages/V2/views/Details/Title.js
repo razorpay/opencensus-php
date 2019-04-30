@@ -11,9 +11,10 @@ export default class extends React.Component {
     const content = target.value;
     const fakeEle = window.document.querySelector('#title .fake-textarea');
 
-    fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + 10 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
-    target.style.height = this.elHeight;
+    fakeEle.value = content;
+    const newHeight = fakeEle.scrollHeight;
+
+    target.style.height = newHeight + 'px';
   }
 
   componentDidMount() {
@@ -50,7 +51,7 @@ export default class extends React.Component {
         id="title"
         class={classList('title title--big', !hasVal && 'Input-highlight')}
       >
-        <div class="fake-textarea" />
+        <textarea class="fake-textarea" readOnly />
         <Input.Textarea
           name="title"
           placeholder="Enter page title here"

@@ -16,6 +16,7 @@ import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Time from 'rzp/ui/Time';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import { populateRPLReduxList } from 'merchant/modules/invoices/list';
 
@@ -264,13 +265,19 @@ export default class PaymentPagesContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link settlement-doc-btn"
-              href="https://razorpay.com/docs/payment-pages/"
-              target="_blank"
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
             >
-              Documentation&nbsp;<span class="icon i-external-link" />
-            </a>
+              <a
+                class="btn btn-link settlement-doc-btn"
+                href="https://razorpay.com/docs/payment-pages/"
+                target="_blank"
+              >
+                Documentation&nbsp;<span class="icon i-external-link" />
+              </a>
+            </ShowWhen>
 
             {isRoleAllowedEdit && (
               <NavLink class="btn btn-primary" to="/paymentpages/new">

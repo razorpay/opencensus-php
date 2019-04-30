@@ -104,6 +104,8 @@ export default class Model extends BaseModel {
       ) {
         this.fetchPartnerSubmerchants();
       }
+
+      this.fetchAffiliatePartners();
     });
   }
 
@@ -269,6 +271,21 @@ export default class Model extends BaseModel {
         this.merchant = {
           ...this.merchant, //to force re-render
           submerchants: [...data.items],
+        };
+      }
+    });
+  };
+
+  @action
+  fetchAffiliatePartners = () => {
+    return this.request(
+      'fetchAffiliatePartners',
+      this.fetchFn(`live/merchants/${this.merchantId}/partners`)
+    ).then(data => {
+      if (data) {
+        this.merchant = {
+          ...this.merchant,
+          partners: [...data.items],
         };
       }
     });

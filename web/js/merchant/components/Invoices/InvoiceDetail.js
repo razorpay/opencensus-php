@@ -135,7 +135,7 @@ export default props => {
             <i class="i i-link text-primary icon--formal" />{' '}
             <strong>{invoice.id}</strong>
             <div class="btn-toolbar pull-right">
-              {isRoleAllowedEdit &&
+              {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
                 invoice.customer_id &&
                 (isDraft || isIssued || isPartiallyPaid) && (
                   <button
@@ -313,6 +313,7 @@ export default props => {
                             entityId={invoice.id}
                             trackerFn={trackDetailViewEdits}
                             isRoleAllowedEdit={isRoleAllowedEdit}
+                            isExpireByRequired={user.isExpireByRequired}
                           />
                         )
                       : () =>

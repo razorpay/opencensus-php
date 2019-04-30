@@ -281,9 +281,7 @@ export default class Profile extends Component {
               <MerchantDetails
                 user={user}
                 changeDisplayName={
-                  Object.keys(user.merchants).length > 1 &&
-                  !!this.isAdminOrOwner() &&
-                  this.openChangeDisplayName
+                  !!this.isAdminOrOwner() && this.openChangeDisplayName
                 }
               />
             ) : null}

@@ -115,7 +115,7 @@ export const options = {
     transfer: 'Transfer',
     emi: 'EMI',
     esautomatic: 'Early Settlement',
-    fund_account_validation: 'Fund Account Validation'
+    fund_account_validation: 'Fund Account Validation',
   },
   payment_method: {
     ...methods,
@@ -141,6 +141,7 @@ export const options = {
     '': 'All',
     HDFC: 'HDFC',
     ICIC: 'ICICI',
+    AXIS: 'UTIB',
     zestmoney: 'ZESTMONEY',
     earlysalary: 'EARLYSALARY',
   },
@@ -179,6 +180,10 @@ export const options = {
   auth_type: {
     '': 'All',
     pin: 'PIN',
+  },
+  type: {
+    pricing: 'Pricing',
+    commission: 'Commission',
   },
   percent_rate: '',
   fixed_rate: '',
@@ -455,7 +460,9 @@ class Rule extends CollectionItem {
   }
 
   paymentMethodTypeField() {
-    var data;
+    var data,
+      fieldLabel = 'Type';
+
     if (this.payment_method === 'card' && this.international == 0) {
       data = options.payment_method_type;
     } else if (this.payment_method === 'emandate') {
@@ -465,12 +472,26 @@ class Rule extends CollectionItem {
         aadhaar_fp: 'Aadhaar Fingerprint',
         netbanking: 'Netbanking',
       };
+    } else if (this.payment_method === 'fund_transfer') {
+      data = {
+        '': 'All',
+        NEFT: 'NEFT',
+        IMPS: 'IMPS',
+        RTGS: 'RTGS',
+        IFT: 'IFT',
+      };
+
+      fieldLabel = 'Mode';
     }
 
     if (data) {
       var field = this.selectField('payment_method_type', data);
       if (field) {
-        return <div>Type {field}</div>;
+        return (
+          <div>
+            {fieldLabel} {field}
+          </div>
+        );
       }
     }
   }

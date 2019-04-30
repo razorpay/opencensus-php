@@ -29,7 +29,7 @@ export default ({ label, value, entity = {} }) => {
       break;
 
     case 'amount_inr':
-      val = () => <Amount value={value} />;
+      val = () => <Amount value={value} currenct={'INR'} />;
       break;
 
     case 'amount':

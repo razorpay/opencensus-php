@@ -78,6 +78,7 @@ function WizardFields(field) {
     _featureEnabled,
     _autoRenderImpure,
     _disabledWhen,
+    required,
     ...rest
   } = field;
 
@@ -106,6 +107,11 @@ function WizardFields(field) {
     isComponentDisabled = true;
   }
 
+  let isRequired = required;
+  if (typeof isRequired === 'function') {
+    isRequired = isRequired(this);
+  }
+
   let component = (
     <Component
       key={key}
@@ -113,6 +119,7 @@ function WizardFields(field) {
       defaultValue={defaultValue}
       autoRender={_autoRenderImpure}
       disabled={isComponentDisabled}
+      required={isRequired}
       {...rest}
     />
   );
@@ -152,7 +159,7 @@ export default class CreateNewContainer extends React.Component {
       dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
-        hasNoExpiry: '1', // 1 => selected
+        hasNoExpiry: props.user.isExpireByRequired ? '0' : '1', // 1 => selected
       },
     };
 
@@ -290,23 +297,6 @@ export default class CreateNewContainer extends React.Component {
     });
   };
 
-  openRPLShareView = (id, shortUrl, title, description) => {
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <RPLShareView
-          handleClose={this.props.closeModal}
-          handleAction={sendLink.bind(null, id)}
-          isNew={true}
-          showNotification={this.props.showNotification}
-          url={shortUrl}
-          title={title}
-          description={description}
-        />
-      ),
-    });
-  };
-
   onCreate = () => {
     const IS_MODAL_VIEW = this.props.onClose;
 
@@ -418,12 +408,28 @@ export default class CreateNewContainer extends React.Component {
         f.hasOwnProperty('inlineFields') &&
         Array.isArray(f.inlineFields)
       ) {
+        let label;
+        if (typeof f.label === 'function') {
+          label = f.label(this);
+        }
+
+        let className;
+        if (typeof f.className === 'function') {
+          className = f.className(this);
+        }
+
+        let isRequired = f.required;
+        if (typeof isRequired === 'function') {
+          isRequired = isRequired(this);
+        }
+
         return (
           <Input.Group
             key={i}
-            class={classList('InputGroup--inline', f.className)}
-            label={f.label}
+            class={classList('InputGroup--inline', className)}
+            label={label}
             disabled={this.state.parentFormLock}
+            required={!!isRequired}
           >
             <div class="Input-content">
               {f.inlineFields.map(WizardFields, this)}

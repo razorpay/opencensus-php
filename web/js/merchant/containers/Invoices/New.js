@@ -1303,10 +1303,10 @@ export default class InvoicesNewContainer extends Component {
 
     // Get the applicable groups and slabs and set them in state.
     const gstSlabs = getGSTSlabs(
-      gst.gst_tax_slabs, // [0, 500, 1200, ...]
+      gst.gst_tax_slabs_v2, // [0, 500, 1200, ...]
       merchantState.code, // "29"
       stateOfSupply.code, // "29"
-      gst.gst_tax_id_map, // {CGST_0: "tax_1234", CGST_250: "tax_3456", ...}
+      gst.gst_tax_id_map_v2, // {CGST_0: "tax_1234", CGST_250: "tax_3456", ...}
       stateOfSupply.is_ut || merchantState.is_ut // Whether or not any of the states is a Union Territory
     );
     this.setState({
@@ -1521,7 +1521,10 @@ export default class InvoicesNewContainer extends Component {
                                     currency={invoice.currency}
                                   />
                                 ) : (
-                                  <span>₹ {invoiceTotal.total}</span>
+                                  <Amount
+                                    value={invoiceTotal.total * 100}
+                                    currency={'INR'}
+                                  />
                                 )}
                               </h3>
                             </div>

@@ -10,6 +10,7 @@ import Transfer from 'merchant/models/Transfer';
 import Dispute from 'merchant/models/Dispute';
 import Submerchant from 'merchant/models/Submerchant';
 import Token from 'merchant/models/Token';
+import Commission from 'merchant/models/Commission';
 
 import AuthLink from 'merchant/models/AuthLink';
 
@@ -161,3 +162,7 @@ export const fetchEmandatePayments = params => {
   params.recurring = 1;
   return fetchAll(params, Payment, 'PAYMENTS');
 };
+
+export const fetchCommissions = params =>
+  fetchAll(params, Commission, 'COMMISSIONS');
+export const commissionsReducer = makeActionCollectionReducer('COMMISSIONS');

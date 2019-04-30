@@ -7,6 +7,7 @@ import BatchUploadList from 'merchant/containers/PaymentLinks/BatchUpload/List';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import Button from 'component/Button';
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import { classList } from 'common/util';
 
@@ -25,18 +26,27 @@ export default class PaymentLinksContainer extends Component {
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          <NavLink exact to="/paymentlinks/batchuploads">
-            Batch Uploads
-          </NavLink>
+          <ShowWhen
+            additionalCondition={user =>
+              user.isAllowedView('payment_links_batch_uploads')
+            }
+          >
+            <NavLink exact to="/paymentlinks/batchuploads">
+              Batch Uploads
+            </NavLink>
+          </ShowWhen>
         </header>
 
         <TestModeBanner />
 
         <content>
           <Switch>
-            <Route
+            <ShowWhenRoute
               path="/paymentlinks/batchuploads"
               component={BatchUploadList}
+              additionalCondition={user =>
+                user.isAllowedView('payment_links_batch_uploads')
+              }
             />
             <Route path="/paymentlinks" component={PaymentLinksList} />
           </Switch>

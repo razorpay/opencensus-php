@@ -7,6 +7,7 @@ import fetch, { adminPost } from 'common/fetch';
 import { notifyError } from 'common/modal';
 import { formatDate } from 'common/util';
 import { statusPill } from 'common/data';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 
 import AsyncButton from 'ui/AsyncButton';
 import { FromField, ToField } from 'ui/Field';
@@ -24,6 +25,9 @@ export default class MerchantAnalyticStats extends Component {
   constructor(props) {
     super();
     this.merchantId = props.match.params.id;
+
+    const searchQuery = getURLQueryParams(props.location.search);
+    this.accountNumber = searchQuery.account_number;
   }
 
   componentWillMount() {
@@ -129,6 +133,16 @@ export default class MerchantAnalyticStats extends Component {
             status: ['captured', 'authorized'],
           },
         ],
+        payouts: [
+          {
+            created_at: {
+              gte: from_timestamp,
+              lte: to_timestamp,
+            },
+            status: 'processed',
+            balance_account_number: this.accountNumber,
+          },
+        ],
       },
       aggregations: {
         total_payments: {
@@ -221,6 +235,22 @@ export default class MerchantAnalyticStats extends Component {
             column: 'base_amount',
             group_by: ['histogram_weekly'],
           },
+        },
+        payouts_count: {
+          agg_type: 'count',
+          details: {
+            column: 'amount',
+            index: 'payouts',
+          },
+          filter_key: 'payouts',
+        },
+        payouts_sum: {
+          agg_type: 'sum',
+          details: {
+            column: 'amount',
+            index: 'payouts',
+          },
+          filter_key: 'payouts',
         },
       },
     };
@@ -365,6 +395,17 @@ export default class MerchantAnalyticStats extends Component {
             />
           )}
         </div>
+
+        {this.accountNumber && (
+          <div class="box">
+            <div class="heading">Payouts</div>
+            {!merchant_analytics ? (
+              <div class="small spinner center" />
+            ) : (
+              <Duplex fields={_getPayoutFields()} model={merchant_analytics} />
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -432,6 +473,31 @@ function _getPaymentDetailsFields() {
       ) : (
         '--'
       ),
+    ],
+  ];
+}
+
+function _getPayoutFields() {
+  return [
+    item => [
+      'Payout Count',
+      item.payouts_count && item.payouts_count.result.length
+        ? item.payouts_count.result[0].value
+        : '--',
+    ],
+    item => [
+      'Payout Volume',
+      item.payouts_sum && item.payouts_sum.result.length ? (
+        <Amount value={item.payouts_sum.result[0].value} />
+      ) : (
+        '--'
+      ),
+    ],
+    item => [
+      'Last Updated At',
+      (item.payouts_count || {}).last_updated_at
+        ? formatDate(item.payouts_count.last_updated_at)
+        : '--',
     ],
   ];
 }

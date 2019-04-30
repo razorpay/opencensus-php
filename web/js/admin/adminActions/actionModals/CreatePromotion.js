@@ -62,6 +62,7 @@ export default class CreatePromotion extends Component {
       credit_type: 'amount',
       credits_expire: body.credits_expire,
       purpose: body.purpose,
+      ...(body.partner_id && { partner_id: body.partner_id }),
       ...(body.pricing_plan_id && { pricing_plan_id: body.pricing_plan_id }),
       ...(body.credit_amount && { credit_amount: body.credit_amount * 100 }),
     };
@@ -196,6 +197,8 @@ export default class CreatePromotion extends Component {
             value: key,
           }))}
         />
+
+        <Field label="Partner Id" name="partner_id" maxLength="14" />
 
         <Field label="Maximum Redemptions" name="max_count" type="number" />
 

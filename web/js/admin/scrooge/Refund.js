@@ -59,33 +59,43 @@ export default class RefundsList extends Component {
               <Table items={this.data.state_machine_logs} fields={logFields} />
             </ToggleEntityRow>
           )}
+          {this.data &&
+            this.data.public_state_machine_logs && (
+              <ToggleEntityRow label="Public status logs">
+                <Table
+                  items={this.data.public_state_machine_logs}
+                  fields={logFields}
+                />
+              </ToggleEntityRow>
+            )}
         </main>
         <aside class="container">
-          {this.data && !this.state.loading && (
-            <div>
-              <div class="header">
-                <b>ACTIONS</b>
-              </div>
-              {this.data.status === 'file_init' && (
-                <AsyncButton
-                  confirm="Perform this action?"
-                  class="btn btn-default"
-                  pendingClass="btn btn-default btn-pending"
-                  onClick={this.retry}
-                >
-                  <span class="spin-btn" style={{ marginRight: -18 }} />
-                  Retry Refund
-                </AsyncButton>
-              )}
-              <ShowWhen permission="edit_refund">
-                {this.data.status !== 'processed' && (
-                  <button class="btn btn-default" onClick={this.statusModal}>
-                    Update Status
-                  </button>
+          {this.data &&
+            !this.state.loading && (
+              <div>
+                <div class="header">
+                  <b>ACTIONS</b>
+                </div>
+                {this.data.status === 'file_init' && (
+                  <AsyncButton
+                    confirm="Perform this action?"
+                    class="btn btn-default"
+                    pendingClass="btn btn-default btn-pending"
+                    onClick={this.retry}
+                  >
+                    <span class="spin-btn" style={{ marginRight: -18 }} />
+                    Retry Refund
+                  </AsyncButton>
                 )}
-              </ShowWhen>
-            </div>
-          )}
+                <ShowWhen permission="edit_refund">
+                  {this.data.status !== 'processed' && (
+                    <button class="btn btn-default" onClick={this.statusModal}>
+                      Update Status
+                    </button>
+                  )}
+                </ShowWhen>
+              </div>
+            )}
         </aside>
       </div>
     );
@@ -116,7 +126,7 @@ export default class RefundsList extends Component {
               </option>
             ))}
           </SelectField>
-          <Field name="arn" label="ARN" />
+          <Field name="reference1" label="Reference1" />
           <button>Update</button>
         </Form>
       </ModalContent>
@@ -129,7 +139,7 @@ export default class RefundsList extends Component {
       data: {
         event: data.event,
         gateway_keys: {
-          arn: data.arn,
+          reference1: data.reference1,
         },
       },
     }).then(data => {
@@ -146,6 +156,7 @@ const fields = [
   item => ['Method', item.method],
   item => ['Amount', item.currency + ' ' + getFormattedAmount(item.amount)],
   item => ['Status', item.status],
+  item => ['Public status', item.public_status],
   item => ['Refund Created At', formatDate(item.created_at)],
   item => ['Refund Updated At', formatDate(item.updated_at)],
   item => ['Payment ID', <b>{item.payment_id}</b>],
@@ -156,7 +167,7 @@ const fields = [
   ],
   item => ['Payment Gateway Captured', item.payment_gateway_captured],
   item => ['Reconciled At', formatDate(item.reconciled_at)],
-  item => ['ARN', item.arn],
+  item => ['Reference1', item.reference1],
   item => ['Last Attempted At', formatDate(item.last_attempted_at)],
   item => ['Next Attempt At', formatDate(item.next_attempt_at)],
   item => [
@@ -170,6 +181,8 @@ const fields = [
     </React.Fragment>,
   ],
   item => ['Bank', item.bank],
+  item => ['Refund Gateway', item.refund_gateway],
+  item => ['Gateway Acquirer', item.gateway_acquirer],
   item => ['On Hold Reason', item.on_hold_reason],
 ];
 

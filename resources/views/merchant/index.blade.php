@@ -1,3 +1,6 @@
+<?php
+    $isOrgHDFC = (json_decode($org, true)['custom_code']) === "hdfc";
+?>
 @include('partials/header')
 
 @if ($isConfirmed and $isPreSignupComplete)
@@ -17,10 +20,6 @@
     window.parent !== window &&
     ~window.parent.location.href.indexOf("{{ config('app.banking_service_url') }}")
   ) {
-
-    document.write(
-      "<link rel='stylesheet' href='{{ config('app.banking_service_url') }}/dist/pgClient.css' type='text/css'/>"
-    );
 
     document.write("<script src='{{ config('app.banking_service_url') }}/dist/pgClient.js'>\<\/script>");
 
@@ -61,25 +60,9 @@
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
   @endif
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
+  <script src="https://cdn.razorpay.com/static/assets/currency.js"></script>
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
-  <script>
-    function addHelpNinja() {
-      var helpNinjaScript = document.createElement('script');
-      helpNinjaScript.setAttribute('src','https://static.helpninja.com/helpninja.js');
-      helpNinjaScript.setAttribute('id', 'oc_script');
-      helpNinjaScript.setAttribute('convid', '-Kvx6dgy972KCFPlQR0s');
-      helpNinjaScript.async = true;
-
-      document.head.appendChild(helpNinjaScript);
-    }
-
-    const screenWidth = window.innerWidth;
-
-    if (screenWidth > 780) {
-        addHelpNinja();
-    }
-  </script>
 @endif
 
 

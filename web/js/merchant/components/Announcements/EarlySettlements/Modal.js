@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import Button from 'component/Button';
 import * as ModalActions from 'rzp/modules/modals';
 import { Field, reduxForm } from 'redux-form';
@@ -7,7 +8,9 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import trackESAnnouncements from '../ga';
 import ajax from 'merchant/utils/ajax';
 import LocalStorageService from 'rzp/utils/localStorage';
+import ShowWhen from 'merchant/components/ShowWhen';
 
+@withRouter
 @connect(state => ({ user: state.session.user }), { ...ModalActions })
 @reduxForm({
   form: 'es-access',
@@ -216,6 +219,12 @@ export default class RequestEarlyAccessForm extends Component {
 
   closeForm() {
     trackESAnnouncements.trackESModalClose(this.props.from);
+
+    //remove hash from URL when modal is closed
+    if (location.hash.indexOf('#requestearlyaccess') > -1) {
+      this.props.history.replace(this.props.location.pathname);
+    }
+
     this.props.closeModal();
   }
 
@@ -389,12 +398,18 @@ export default class RequestEarlyAccessForm extends Component {
             Razorpay is working with <strong>top financing institutions</strong>{' '}
             to help you realise your settlements within a few working hours. No
             more shortfalls in working capital.
-            <p class="m-t">
-              <a target="_blank" href="https://razorpay.com/knowledgebase/">
-                Know more about Early Settlements{' '}
-                <i class="i i-external-link" />
-              </a>
-            </p>
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
+            >
+              <p class="m-t">
+                <a target="_blank" href="https://razorpay.com/knowledgebase/">
+                  Know more about Early Settlements{' '}
+                  <i class="i i-external-link" />
+                </a>
+              </p>
+            </ShowWhen>
           </div>
           <div class="features-list">
             <div class="feature-item">

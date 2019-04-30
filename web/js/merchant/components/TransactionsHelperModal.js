@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Button from 'component/Button';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default class InstantActivationSuccess extends Component {
   constructor(props) {
@@ -48,17 +49,23 @@ export default class InstantActivationSuccess extends Component {
                       Integrate Razorpay onto your website. Want to know how to
                       integrate?
                     </p>
-                    <a
-                      className="Button--secondary Button active"
-                      target="_blank"
-                      href="https://docs.razorpay.com/"
-                      onClick={() => {
-                        track.trackIntegration();
-                        onClose();
-                      }}
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
                     >
-                      Read Integration Docs
-                    </a>
+                      <a
+                        className="Button--secondary Button active"
+                        target="_blank"
+                        href="https://docs.razorpay.com/"
+                        onClick={() => {
+                          track.trackIntegration();
+                          onClose();
+                        }}
+                      >
+                        Read Integration Docs
+                      </a>
+                    </ShowWhen>
                   </GroupItem>
                   <GroupItem className="vertical-splitter">
                     <div />

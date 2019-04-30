@@ -13,6 +13,8 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import PaymentMethod from 'merchant/components/Subscriptions/MandatePaymentMethod';
 import CustomerDetails from 'merchant/components/Subscriptions/MandateCustomerDetails';
+import BankAccountDetails from 'merchant/components/Subscriptions/MandateBankAccountDetails';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
 import { fetchToken, deleteToken } from 'merchant/modules/token';
@@ -106,9 +108,9 @@ export default class TokenEntityContainer extends Component {
             <div class="panel-heading">
               {entity.id}
               <div class="btn-toolbar pull-right">
-                {(entity.method === 'card' ||
-                  (entity.recurring_details &&
-                    entity.recurring_details.status !== 'rejected')) && (
+                {['rejected', 'initiated'].indexOf(
+                  (entity.recurring_details || {}).status
+                ) === -1 && (
                   <button
                     class="btn btn-primary btn-sm"
                     onClick={this.handleChargeNow}
@@ -139,6 +141,17 @@ export default class TokenEntityContainer extends Component {
                     <EntityDetailRow label="Payment Method">
                       <PaymentMethod mandate={entity} />
                     </EntityDetailRow>
+
+                    {entity.method === 'emandate' && (
+                      <ShowWhen featureEnabled="token_bank_details">
+                        <EntityDetailRow label="Bank Account Details">
+                          <BankAccountDetails
+                            bankDetails={entity.bank_details}
+                            bank={entity.bank}
+                          />
+                        </EntityDetailRow>
+                      </ShowWhen>
+                    )}
 
                     <EntityDetailRow label="Customer Details">
                       <CustomerDetails customer={entity.customer} />

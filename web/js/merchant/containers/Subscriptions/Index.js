@@ -13,6 +13,7 @@ import PlansList from 'merchant/containers/Plans/List';
 
 import ActivationBanner from 'merchant/components/ActivationBanner';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import SubscriptionLinkAnnouncement from 'merchant/components/Announcements/SubscriptionLinks';
 
 import HostedEmanadateBatches from './Batch/List';
 import RecurringPayments from './RecurringPayments/List';
@@ -105,13 +106,16 @@ export default class SubscriptionsController extends Component {
       <div>
         {this.props.mode === 'test' &&
           !isChargeAtWillEnabled && (
-            <ActivationBanner
-              productName={`${this.prefix}Subscriptions`}
-              productDocs="https://razorpay.com/docs/subscriptions"
-              feature="subscriptions"
-              symbol="sub"
-              onActivate={this.openActivationModal}
-            />
+            <>
+              <ActivationBanner
+                productName={`${this.prefix}Subscriptions`}
+                productDocs="https://razorpay.com/docs/subscriptions"
+                feature="subscriptions"
+                symbol="sub"
+                onActivate={this.openActivationModal}
+              />
+              <SubscriptionLinkAnnouncement />
+            </>
           )}
         <tabbed-container>
           <header id="subscriptions-header">

@@ -3,13 +3,26 @@ import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 
-export default ({ onClose, onGoToDashboard, title, subtitle, content }) => {
+export default ({
+  onClose,
+  onGoToDashboard,
+  title,
+  subtitle,
+  content,
+  user,
+}) => {
+  let defaultSubtitle = 'Ready to accept domestic payments';
+
+  if (user.international) {
+    defaultSubtitle = 'Ready to accept domestic & international payments';
+  }
+
   return (
     <ModalMask>
       <Modal className="instant-activations-success" onClose={onClose}>
         <modal-header>
           <h1>{title || 'Account Activated'}</h1>
-          <p>{subtitle || 'Ready to accept domestic payments'}</p>
+          <p>{subtitle || defaultSubtitle}</p>
         </modal-header>
         <modal-body>
           {content ? (

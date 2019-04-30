@@ -6,6 +6,7 @@ import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
 import NotificationsDropdown from 'rzp/ui/NotificationsDropdown';
 import { toggleMobileMenu } from 'merchant/modules/app';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import NavFragment from './NavFragment';
 import ModesDropdown from './SwitchMode';
 
@@ -119,13 +120,19 @@ export default class HeaderNav extends Component {
                   />
                 </li>
               )}
-              <li id="notifications-dropdown">
-                <NotificationsDropdown
-                  analytics={analytics}
-                  showMobileNav={showMobileNav}
-                  {...commonProps}
-                />
-              </li>
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <li id="notifications-dropdown">
+                  <NotificationsDropdown
+                    analytics={analytics}
+                    showMobileNav={showMobileNav}
+                    {...commonProps}
+                  />
+                </li>
+              </ShowWhen>
               <li id="profile-dropdown">
                 <ProfileDropdown
                   analytics={analytics}

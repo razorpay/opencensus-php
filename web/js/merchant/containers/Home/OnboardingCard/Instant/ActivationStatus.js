@@ -25,6 +25,7 @@ export default class ActivationCard extends Component {
         isRejected,
         onActive,
         track,
+        international,
       } = nextProps,
       {
         isL1Submitted,
@@ -54,7 +55,10 @@ export default class ActivationCard extends Component {
     } else if (isActivated) {
       title = 'Account Activated';
       status = possibleStatuses.done;
-      content = 'Your account activation is complete.';
+      content =
+        'You can now start accepting domestic ' +
+        (international ? 'and international' : '') +
+        ' payments';
     } else if (isGraylistFlow) {
       if (!isSubmitted) {
         status = possibleStatuses.active;

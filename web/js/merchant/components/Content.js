@@ -1,8 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { classList } from 'common/util';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
@@ -136,13 +135,13 @@ export default class Content extends Component {
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
           <Redirect
-            to={user.isPartner() ? 'submerchants' : '/dashboard'}
+            to={user.isPartner() ? '/partners' : '/dashboard'}
             from="/"
             exact
           />
 
           <ShowWhenRoute
-            path="/submerchants"
+            path="/partners"
             component={PartnerDashboard}
             additionalCondition={user => user.isPartner()}
           />
@@ -201,10 +200,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/paymentpages"
             component={PaymentPages}
-            additionalCondition={user =>
-              user.isAllowedView('payment_pages') &&
-              user.isPaymentPagesV2Enabled
-            }
+            additionalCondition={user => user.isAllowedView('payment_pages')}
           />
 
           <ShowWhenRoute

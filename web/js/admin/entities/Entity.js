@@ -196,6 +196,12 @@ const actions = {
     </button>
   ),
 
+  'batch.file_store': entity => (
+    <button class="btn" onClick={entity::downloadFile}>
+      Download
+    </button>
+  ),
+
   refund: (entity, entityComponent) => (
     <action.RefundActions
       entity={entity}
@@ -281,7 +287,7 @@ function updateEntity(data) {
 }
 
 function deleteEmiPlan() {
-  return adminDelete(`emi/${this.id}`);
+  return adminDelete(`live/emi/${this.id}`);
 }
 
 function downloadFile() {

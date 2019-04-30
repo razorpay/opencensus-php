@@ -105,6 +105,9 @@ export const DataTable = observer(Table);
 
 @observer
 export class PageTable extends Component {
+  static defaultProps = {
+    searchLabel: 'Filters',
+  };
   state = { searchQuery: '' };
   ClotSearch = new ClotSearch(250);
 
@@ -158,7 +161,7 @@ export class PageTable extends Component {
               </span>
               {searchFilters && (
                 <div class="pull-right">
-                  Filter:{' '}
+                  {props.searchLabel}:
                   <input class="m-l" onChange={this.handleSearchQuery} />
                 </div>
               )}

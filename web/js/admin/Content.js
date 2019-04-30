@@ -20,12 +20,13 @@ import GenericEntity from 'admin/entities/Entity';
 import MerchantActivationForm from 'admin/merchants/entity/MerchantActivationForm';
 import MerchantAnalyticStats from 'admin/merchants/entity/MerchantAnalyticStats';
 import MerchantReportConfig from 'admin/merchants/entity/MerchantReportConfig/List';
+import PartnerConfig from 'admin/merchants/entity/PartnerConfig/List';
 
 import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
 
 import RequestEntity from 'admin/requests/Entity';
-import RequestList, { getEntityIdNugget } from 'admin/requests/List';
+import RequestList from 'admin/requests/List';
 
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
@@ -113,6 +114,7 @@ export default ({ location }) => (
       path="/merchants/:id/report_config"
       component={MerchantReportConfig}
     />
+    <Route path="/merchants/:id/partner_config" component={PartnerConfig} />
     <Route path="/merchants/:id" component={MerchantEntity} />
     <Route path="/merchants" component={MerchantList} />
     <Route path="/pricing-plans" component={PlanList} />
@@ -126,7 +128,7 @@ export default ({ location }) => (
     <Route path="/workflows/:id" component={WorkflowEntity} />
     <Route path="/workflows" component={WorkflowList} />
 
-    <Route path="/requests/:id" component={RequestEntity(getEntityIdNugget)} />
+    <Route path="/requests/:id" component={RequestEntity} />
     <Route path="/requests" component={RequestList} />
     <Route path="/groups" component={GroupList} />
     <Route path="/users/:id" component={UserEntity} />

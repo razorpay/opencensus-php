@@ -39,6 +39,8 @@ export default class extends React.Component {
             data: resp,
           });
 
+          this.props.updateEntityData && this.props.updateEntityData(resp);
+
           // Fetch corresponding feature
           rexFetch({ url: 'feature_flags/' + resp.feature_id }).then(resp => {
             if (resp) {
@@ -97,7 +99,12 @@ export default class extends React.Component {
     }
 
     openModal(
-      <ExperimentsModal data={this.state.data} onEdit={this.onEdit} JSONView />
+      <ExperimentsModal
+        data={this.state.data}
+        onEdit={this.onEdit}
+        isReadOnly={this.props.isReadOnly || this.state.data.activated_at}
+        JSONView
+      />
     );
   };
 
@@ -109,7 +116,7 @@ export default class extends React.Component {
 
   render() {
     const { isFetching, data, feature } = this.state;
-    const { id } = this.props;
+    const { id, isReadOnly, isCustomLayout } = this.props;
 
     let content;
 
@@ -136,11 +143,22 @@ export default class extends React.Component {
           terminate={this.terminate}
           showExperimentModal={this.showExperimentModal}
           showJSONModal={this.showJSONModal}
+          isReadOnly={isReadOnly}
+          isCustomLayout={isCustomLayout}
         />
       );
     }
 
-    return <div class="entity-container">{content}</div>;
+    return (
+      <div
+        class={classList(
+          'entity-container',
+          isCustomLayout && 'entity-container--custom'
+        )}
+      >
+        {content}
+      </div>
+    );
   }
 }
 
@@ -151,6 +169,8 @@ const Details = ({
   terminate,
   showExperimentModal,
   showJSONModal,
+  isReadOnly,
+  isCustomLayout,
 }) => {
   const segments = getSegmentsGroupedByVariant(data.segments);
 
@@ -160,19 +180,23 @@ const Details = ({
         <span>
           <b>ID:</b> {data.id}
         </span>
-        {!data.activated_at &&
-          feature && (
-            <span class="to-right">
-              <a class="link text-bold" onClick={showExperimentModal}>
-                Edit Experiment
-              </a>{' '}
-              ({' '}
-              <a class="link text-bold" onClick={showJSONModal}>
-                RAW
-              </a>{' '}
-              )
-            </span>
-          )}
+        {feature && (
+          <span class="to-right">
+            {!data.activated_at &&
+              !isReadOnly && (
+                <>
+                  <a class="link text-bold" onClick={showExperimentModal}>
+                    Edit Experiment
+                  </a>{' '}
+                </>
+              )}
+            ({' '}
+            <a class="link text-bold" onClick={showJSONModal}>
+              RAW
+            </a>{' '}
+            )
+          </span>
+        )}
       </div>
 
       <div class="pad-highlight">
@@ -211,7 +235,8 @@ const Details = ({
       </div>
 
       {/* Experiment is in pending state */}
-      {!data.activated_at &&
+      {!isCustomLayout &&
+        !data.activated_at &&
         !data.terminated_at && (
           <React.Fragment>
             <br />
@@ -246,29 +271,32 @@ const Details = ({
         <Link class="link" to={`/features_flags/${data.feature_id}`}>
           View Feature
         </Link>
-        <Link
-          class="link m-l"
-          to={`/experiments?feature_id=${data.feature_id}`}
-        >
-          View All Experiments
-        </Link>
+        {!isCustomLayout && (
+          <Link
+            class="link m-l"
+            to={`/experiments?feature_id=${data.feature_id}`}
+          >
+            View All Experiments
+          </Link>
+        )}
       </div>
 
       <br />
 
-      <div>
-        <div class="label">Environment</div>
-        <span class="square-pills label-semi-muted">{data.environment}</span>
+      <div class="flex-row">
+        <div class="flex-row-item">
+          <div class="label">Environment</div>
+          <span class="square-pills label-semi-muted">{data.environment}</span>
+        </div>
+
+        <div class="flex-row-item">
+          <div class="label">Mode</div>
+          <span class="square-pills label-semi-muted">{data.mode}</span>
+        </div>
       </div>
 
-      <br />
-
-      <div>
-        <div class="label">Mode</div>
-        <span class="square-pills label-semi-muted">{data.mode}</span>
-      </div>
-
-      {!!data.activated_at &&
+      {!isCustomLayout &&
+        !!data.activated_at &&
         !data.terminated_at && (
           <React.Fragment>
             <br />

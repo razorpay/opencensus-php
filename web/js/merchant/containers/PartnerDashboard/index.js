@@ -1,65 +1,37 @@
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import Applications from 'merchant/containers/Applications';
-import ApplicationEntity from 'merchant/containers/Applications/new';
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
+import Commissions from './Commissions/List';
+import Applications from './Applications';
 
 export default function PartnerDashboard() {
   return (
-    <tabbed-container>
-      <header id="partner-header">
-        <NavLink exact to="/submerchants">
-          Affiliated Accounts
-        </NavLink>
-        <ShowWhen
-          myRole="owner manager admin"
-          additionalCondition={user =>
-            user.isPartner('aggregator', 'fully_managed')
-          }
-        >
-          <NavLink to="/submerchants/settings">Settings</NavLink>
-        </ShowWhen>
-        <ShowWhen
-          myRole="owner manager admin"
-          additionalCondition={user => user.isPartner('pure_platform')}
-        >
-          <NavLink to="/submerchants/applications">Applications</NavLink>
-        </ShowWhen>
-      </header>
-      <content>
-        <Switch>
-          <ShowWhenRoute
-            additionalCondition={user =>
-              user.isPartner('aggregator', 'fully_managed')
-            }
-            path="/submerchants/settings"
-            component={Settings}
-          />
+    <Switch>
+      <Redirect to="/partners/submerchants" from="/partners" exact />
+      <ShowWhenRoute
+        additionalCondition={user =>
+          user.isPartner('aggregator', 'fully_managed')
+        }
+        path="/partners/settings"
+        component={Settings}
+      />
 
-          <ShowWhenRoute
-            additionalCondition={user => user.isPartner('pure_platform')}
-            path="/submerchants/applications/new"
-            component={ApplicationEntity}
-          />
+      <ShowWhenRoute
+        additionalCondition={user => user.isPartner('pure_platform')}
+        path="/partners/applications"
+        component={Applications}
+      />
 
-          <ShowWhenRoute
-            additionalCondition={user => user.isPartner('pure_platform')}
-            path="/submerchants/applications/:id"
-            component={ApplicationEntity}
-          />
+      <ShowWhenRoute
+        additionalCondition={user => !user.isPartner('resller')}
+        path="/partners/earnings"
+        component={Commissions}
+      />
 
-          <ShowWhenRoute
-            additionalCondition={user => user.isPartner('pure_platform')}
-            path="/submerchants/applications"
-            component={Applications}
-          />
-
-          <Route path="/submerchants" component={SubMerchantList} />
-        </Switch>
-      </content>
-    </tabbed-container>
+      <Route path="/partners/submerchants" component={SubMerchantList} />
+    </Switch>
   );
 }

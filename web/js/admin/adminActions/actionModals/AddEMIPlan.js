@@ -29,17 +29,25 @@ export default class AddEMIPlan extends Component {
 
   state = {
     selectedSource: 'bank',
+    selectedNetwork: 'AMEX',
   };
 
-  handleSourceChange = e => {
-    this.setState({
-      selectedSource: e.target.value,
-    });
+  handleChange = (e, type) => {
+    if (type === 'network') {
+      this.setState({
+        selectedNetwork: e.target.value,
+      });
+    } else {
+      this.setState({
+        selectedSource: e.target.value,
+      });
+    }
   };
 
   render() {
     return (
       <Form class="full-span full-elements">
+      <Field label="Merchant ID" name="merchant_id" required />
         <div class="field multi">
           <label>
             {this.state.selectedSource === 'bank' ? 'Banks' : 'Network'}
@@ -53,13 +61,22 @@ export default class AddEMIPlan extends Component {
               ))}
             </select>
           ) : (
-            <select name="network">
+            <select
+              value={this.state.selectedNetwork}
+              onChange={e => {
+                this.handleChange(e, 'network');
+              }}
+              name="network"
+            >
               <option value="AMEX">AMEX</option>
+              <option value="BAJAJ">BAJAJ</option>
             </select>
           )}
           <select
             value={this.state.selectedSource}
-            onChange={this.handleSourceChange}
+            onChange={e => {
+              this.handleChange(e, 'source');
+            }}
           >
             <option value="bank">Banks</option>
             <option value="network">Network</option>
@@ -83,6 +100,7 @@ export default class AddEMIPlan extends Component {
         )}
         <br />
         <Field label="Interest Rate" placeholder="1250" name="rate" />
+
         <SelectField label="Subvention" name="subvention">
           {options.subvention.map((opt, idx) => (
             <option key={idx} value={opt}>
@@ -90,12 +108,14 @@ export default class AddEMIPlan extends Component {
             </option>
           ))}
         </SelectField>
-        <Field
-          label="Merchant Payback"
-          placeholder="1250"
-          type="number"
-          name="merchant_payback"
-        />
+        {this.state.selectedNetwork !== 'BAJAJ' && (
+          <Field
+            label="Merchant Payback"
+            placeholder="1250"
+            type="number"
+            name="merchant_payback"
+          />
+        )}
         <br />
         <Field label="Issuer Plan ID" name="issuer_plan_id" />
         <Field
@@ -104,6 +124,9 @@ export default class AddEMIPlan extends Component {
           type="number"
           name="min_amount"
         />
+        {this.state.selectedNetwork === 'BAJAJ' && (
+          <Field label="Merchant ID" name="merchant_id" />
+        )}
         <br />
         <AsyncButton
           text="OK"

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -25,6 +25,8 @@ import { fetchCurrentBalance } from 'merchant/modules/home';
 import OndemandModal from './OndemandModal';
 import Amount from 'rzp/ui/Amount';
 import Button from 'component/Button';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { trackInstantSettlementsBanner } from '../../components/Announcements/ga';
 
 @withRouter
 @connect(
@@ -133,6 +135,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   showRequestEarySettlementForm = e => {
     trackEarlySettlementRequests();
+
     this.props.openModal({
       component: <RequestEarlyAccessForm />,
       size: 'large',
@@ -180,29 +183,40 @@ export default class SettlementsListContainer extends ListContainer {
               <HeaderAction>
                 <React.Fragment>
                   {this.state.showRequestESButton ? (
-                    <a
+                    <Link
                       class="btn btn-link req-es-btn"
-                      href="#requestearlyaccess"
+                      to="/settlements#requestearlyaccess"
                     >
                       Request Early Settlements{' '}
                       <i class="fa fa-circle interpunct" />
-                    </a>
+                    </Link>
                   ) : (
                     ''
                   )}
 
-                  <a
-                    class="btn btn-link settlement-doc-btn"
-                    href="http://razorpay.com/settlement"
-                    target="_blank"
-                    onClick={trackHowSettlementsWorkClicks}
+                  <ShowWhen
+                    additionalCondition={user =>
+                      user.isOrgAllowedFunctionality('external_links')
+                    }
                   >
-                    How settlements work?&nbsp;
-                    <span class="icon i-external-link" />
-                  </a>
-                  <span class="settlement-balance-amount">
-                    Current Balance: <Amount value={balance} />
-                  </span>
+                    <a
+                      class="btn btn-link settlement-doc-btn"
+                      href="http://razorpay.com/settlement"
+                      target="_blank"
+                      onClick={trackHowSettlementsWorkClicks}
+                    >
+                      How settlements work?&nbsp;
+                      <span class="icon i-external-link" />
+                    </a>
+                  </ShowWhen>
+                  {this.props.user.isOrgAllowedFunctionality(
+                    'current_balance'
+                  ) && (
+                    <span class="settlement-balance-amount">
+                      Current Balance:{' '}
+                      <Amount value={balance} currency={'INR'} />
+                    </span>
+                  )}
 
                   {this.props.user.isOndemandSettlementEnabled && (
                     <Button.Secondary
@@ -245,13 +259,17 @@ export default class SettlementsListContainer extends ListContainer {
                     up here.
                   </div>
                   <div>
-                    <a
-                      class="btn-link"
-                      target="_blank"
-                      href="http://razorpay.com/settlement"
-                    >
-                      See our Settlements Guide
-                    </a>{' '}
+                    {user.isOrgAllowedFunctionality('external_links') ? (
+                      <a
+                        class="btn-link"
+                        target="_blank"
+                        href="http://razorpay.com/settlement"
+                      >
+                        See our Settlements Guide
+                      </a>
+                    ) : (
+                      'See the Settlements Guide'
+                    )}{' '}
                     to understand how it works.
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import InlineField from 'rzp/ui/Forms/InlineField';
 import InputField from 'rzp/ui/Forms/InputField';
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
+import Amount from 'rzp/ui/Amount';
 import * as ModalActions from 'rzp/modules/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'rzp/utils/rzp-utils';
 import Item from 'merchant/models/Item';
@@ -270,7 +271,7 @@ export default class InvoiceLineItem extends React.Component {
       (typeof selectedOption.tax_rate !== 'undefined' ||
         selectedOption.tax_rate !== null)
     ) {
-      gstSlab = gstSlabs[selectedOption.tax_rate];
+      gstSlab = gstSlabs[selectedOption.tax_rate * 100];
 
       // Add to taxIDs array.
       if (gstSlab && gstSlab.mapping) {
@@ -519,7 +520,7 @@ export default class InvoiceLineItem extends React.Component {
                 {gstSlab &&
                   gstSlab.groups.map(group => (
                     <p key={`${selectedOption.item_id}_${group}`}>
-                      {group} @ {gstSlab.perGroup / 100.0}%
+                      {group} @ {gstSlab.perGroup / 10000.0}%
                     </p>
                   ))}
                 {cess && <p>Cess @ {cess / 100.0}%</p>}
@@ -543,29 +544,43 @@ export default class InvoiceLineItem extends React.Component {
         </td>
 
         <td class="text-right lineItem__total">
-          <div class="item-total">₹{lineItemTotal}</div>
+          <div class="item-total">
+            <Amount value={lineItemTotal * 100} currency={'INR'} />
+          </div>
           {selectedOption.item_id &&
             applyTaxes && (
               <div class="tax-details">
                 {gstSlab &&
                   gstSlab.groups.map(group => (
                     <p key={`${selectedOption.item_id}_${group}_rate`}>
-                      {selectedOption.tax_inclusive ? '' : '+ '}₹{(
-                        calculateTax(
-                          lineItemTotalFloat,
-                          selectedOption.tax_rate / 100,
-                          selectedOption.tax_inclusive
-                        ) / gstSlab.groups.length
-                      ).toFixed(2)}
+                      {selectedOption.tax_inclusive ? '' : '+ '}
+                      <Amount
+                        value={
+                          calculateTax(
+                            lineItemTotalFloat,
+                            selectedOption.tax_rate / 100,
+                            selectedOption.tax_inclusive
+                          ) *
+                          100 /
+                          gstSlab.groups.length
+                        }
+                        currency={'INR'}
+                      />
                     </p>
                   ))}
                 {cess && (
                   <p>
-                    {selectedOption.tax_inclusive ? '' : '+ '}₹{calculateTax(
-                      lineItemTotalFloat,
-                      cess / 100,
-                      selectedOption.tax_inclusive
-                    ).toFixed(2)}
+                    {selectedOption.tax_inclusive ? '' : '+ '}
+                    <Amount
+                      value={
+                        calculateTax(
+                          lineItemTotalFloat,
+                          cess / 100,
+                          selectedOption.tax_inclusive
+                        ) * 100
+                      }
+                      currency={'INR'}
+                    />
                   </p>
                 )}
                 {(gstSlab || cess) && (

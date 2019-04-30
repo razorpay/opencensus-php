@@ -3,6 +3,7 @@ import { reduxForm } from 'redux-form';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, lenientUrl } from 'rzp/utils/validators';
 
@@ -17,30 +18,46 @@ export default reduxForm({ form: 'editWebsiteDetails' })(
         <div className="form-group">
           <span class="text-muted">
             Your website/app should contain these pages:{' '}
-            <strong>
-              About Us, Contact Us,{' '}
-              <a
-                class="btn-link"
-                href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-                target="_blank"
-              >
-                Privacy Policy
-              </a>,{' '}
-              <a
-                class="btn-link"
-                href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-                target="_blank"
-              >
-                Terms & Conditions
-              </a>,{' '}
-              <a
-                class="btn-link"
-                href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-                target="_blank"
-              >
-                Cancellation/Refund Policies
-              </a>
-            </strong>.
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
+            >
+              <strong>
+                About Us, Contact Us,{' '}
+                <a
+                  class="btn-link"
+                  href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+                  target="_blank"
+                >
+                  Privacy Policy
+                </a>,{' '}
+                <a
+                  class="btn-link"
+                  href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+                  target="_blank"
+                >
+                  Terms & Conditions
+                </a>,{' '}
+                <a
+                  class="btn-link"
+                  href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+                  target="_blank"
+                >
+                  Cancellation/Refund Policies
+                </a>
+              </strong>.
+            </ShowWhen>
+            <ShowWhen
+              additionalCondition={user =>
+                !user.isOrgAllowedFunctionality('external_links')
+              }
+            >
+              <strong>
+                Privacy Policy, Terms & Conditions, Cancellation/Refund
+                Policies.
+              </strong>
+            </ShowWhen>
           </span>
         </div>
         <div className="form-group">

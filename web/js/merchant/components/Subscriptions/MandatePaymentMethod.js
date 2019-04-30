@@ -15,21 +15,26 @@ export default function MandatePaymentMethod({ mandate }) {
             bank_account.bank_name + ' - '}
           Emandate
         </strong>
-        {/* token expiry of mandate */}
+
+        {/* bank name */}
         {issuer || null}
-        {!!mandate.expire_at && (
+
+        {/* auth type of emandate */}
+        {!!mandate.auth_type && <>Auth Type: {titleCase(mandate.auth_type)} </>}
+
+        {/* token expiry of mandate */}
+        {!!mandate.expired_at && (
           <>
-            Token Expiry: <Time value={mandate.expire_at} />{' '}
+            Token Expiry: <Time value={mandate.expired_at} />{' '}
           </>
         )}
 
         {/* max amount of mandate */}
         {!!mandate.max_amount && (
           <>
-            Max Amount: <Amount value={mandate.max_amount} />{' '}
+            Max Amount: <Amount value={mandate.max_amount} currency={'INR'} />{' '}
           </>
         )}
-        {!!mandate.auth_type && <>Auth Type: {titleCase(mandate.auth_type)} </>}
       </Definition>
     );
   }
@@ -38,7 +43,10 @@ export default function MandatePaymentMethod({ mandate }) {
     return !!card ? (
       <Definition>
         <strong>Card</strong>
-        <>{`${card.issuer}, ${card.network} ending in ${card.last4}`}</>
+        <>
+          {!!card.issuer && card.issuer + ', '}
+          {card.network} ending in {card.last4}}
+        </>
         <>Name on card - {card.name}</>
       </Definition>
     ) : (

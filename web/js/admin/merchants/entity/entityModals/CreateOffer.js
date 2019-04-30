@@ -55,11 +55,17 @@ export default class CreateOffer extends Component {
     }
 
     // 6. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
-    let offsetStart = offer.starts_at_time.split(':');
-    offsetStart = offsetStart[0] * 60 * 60 + offsetStart[1] * 60;
+    let offsetStart;
+    if (offer.starts_at_time) {
+      offsetStart = offer.starts_at_time.split(':');
+      offsetStart = offsetStart[0] * 60 * 60 + offsetStart[1] * 60;
+    }
 
-    let offsetEnd = offer.ends_at_time.split(':');
-    offsetEnd = offsetEnd[0] * 60 * 60 + offsetEnd[1] * 60;
+    let offsetEnd;
+    if (offer.ends_at_time) {
+      offsetEnd = offer.ends_at_time.split(':');
+      offsetEnd = offsetEnd[0] * 60 * 60 + offsetEnd[1] * 60;
+    }
 
     if (offer.starts_at) {
       offer.starts_at = this.starts_at.startOf('day').unix() + offsetStart;
@@ -78,7 +84,7 @@ export default class CreateOffer extends Component {
     }
 
     //8. sanitize emi_duration field
-    if (offer.payment_method === 'emi') {
+    if (offer.payment_method === 'emi' && offer.emi_subvention === 1) {
       offer.emi_durations = Object.keys(offer.emi_durations).reduce(
         (durations, key) => {
           if (offer.emi_durations[key] === '1') {

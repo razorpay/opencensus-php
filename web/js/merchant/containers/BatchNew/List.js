@@ -13,6 +13,7 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 
 import { batchDownload } from 'merchant/modules/batches';
 import Popover, { PopoverBody, PopoverTitle } from 'rzp/ui/Popover';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const batchStatus = {
   ...status,
@@ -85,12 +86,18 @@ export default class BatchList extends ListContainer {
               Download Sample File
             </a>
           )}
-          {docUrl && (
-            <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
-              Documentation &nbsp;
-              <i class="i i-external-link" />
-            </a>
-          )}
+          <ShowWhen
+            additionalCondition={user =>
+              user.isOrgAllowedFunctionality('external_links')
+            }
+          >
+            {docUrl && (
+              <a class="btn btn-link hidden-xs" href={docUrl} target="_blank">
+                Documentation &nbsp;
+                <i class="i i-external-link" />
+              </a>
+            )}
+          </ShowWhen>
 
           {this.props.multiBatch ? (
             <div class="pull-right MultiBatch--action">

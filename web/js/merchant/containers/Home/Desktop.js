@@ -17,7 +17,7 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import Announcement from 'merchant/components/Announcements/Instant';
-import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
+import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import Button from 'component/Button';
 import OndemandModal from 'merchant/containers/Settlements/OndemandModal';
@@ -32,12 +32,9 @@ import {
   trackSettleNow,
 } from './ga';
 
-@connect(
-  state => ({ user: state.session.user, config: state.config }),
-  {
-    openModal,
-  }
-)
+@connect(state => ({ user: state.session.user, config: state.config }), {
+  openModal,
+})
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -112,9 +109,9 @@ class AnalyticsDesktop extends Component {
             <Announcement mode={mode} user={user} payments={payments} />
           )}
 
-          {/* instant settlements banner*/}
-          {user.isISBannerEnabled && (
-            <EarlySettlementsAnnouncement userId={user.current} />
+          {/* capital banner*/}
+          {user.isCapitalBannerEnabled && (
+            <CapitalAnnouncement userId={user.current} />
           )}
 
           <div
@@ -160,14 +157,21 @@ class AnalyticsDesktop extends Component {
               }`}
             >
               <Group>
-                <GroupItem>
-                  <span className="balance-amount">
-                    Current Balance:{' '}
-                    {!current_balance.loading && (
-                      <Amount value={current_balance.data.balance} />
-                    )}
-                  </span>
-                </GroupItem>
+                {this.props.user.isOrgAllowedFunctionality(
+                  'current_balance'
+                ) && (
+                  <GroupItem>
+                    <span className="balance-amount">
+                      Current Balance:{' '}
+                      {!current_balance.loading && (
+                        <Amount
+                          value={current_balance.data.balance}
+                          currency={'INR'}
+                        />
+                      )}
+                    </span>
+                  </GroupItem>
+                )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
                     <Button.Secondary

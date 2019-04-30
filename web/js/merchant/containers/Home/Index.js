@@ -43,6 +43,7 @@ import {
 import Banner from 'rzp/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -65,7 +66,12 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
-const KycFormSuccess = ({ onClose, onGoToDashboard, isWhitelistFlow }) => (
+const KycFormSuccess = ({
+  onClose,
+  onGoToDashboard,
+  isWhitelistFlow,
+  user,
+}) => (
   <InstantActivationSuccess
     title="KYC under review"
     subtitle="Your KYC Form has been submitted"
@@ -82,6 +88,7 @@ const KycFormSuccess = ({ onClose, onGoToDashboard, isWhitelistFlow }) => (
     }
     onClose={onClose}
     onGoToDashboard={onGoToDashboard}
+    user={user}
   />
 );
 
@@ -705,9 +712,15 @@ export default class HomeContainer extends Component {
                       : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
                   </span>
                   <span class="m-l btn-link">
-                    <a href="https://razorpay.com/pricing" target="_blank">
-                      <b>View T&Cs</b>
-                    </a>
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <a href="https://razorpay.com/pricing" target="_blank">
+                        <b>View T&Cs</b>
+                      </a>
+                    </ShowWhen>
                   </span>
                 </Banner>
               </div>
@@ -758,6 +771,7 @@ export default class HomeContainer extends Component {
               iaActivations.trackGoToDashboard();
               this.onInstantActivationSuccess();
             }}
+            user={user}
           />
         )}
         {showKYCActivationSuccess && (
@@ -771,6 +785,7 @@ export default class HomeContainer extends Component {
               this.onInstantActivationSuccess();
             }}
             isWhitelistFlow={user.instantActivation.isWhitelistFlow}
+            user={user}
           />
         )}
         {showKYCDetails && (

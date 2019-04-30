@@ -35,35 +35,52 @@ form
     background: #fcfcfc
     color: inherit
 
+    .header
+      position: absolute
+      left: 0
+      right: 0
+
+      .link
+        font-size: 20px
+        margin: 0 0 0 8px
+
     .box-container
       height: calc(100vh - 62px)
       display: flex
       flex-wrap: wrap
       align-content: flex-start
 
-   main.requests-content
+    .requests-content
       height: 100%
+      display: flex
       width: unset
       vertical-align: unset
-      display: flex
-      flex-direction: column
-      margin: 20px 28px
+      margin: 0 28px 24px
+      padding: 62px 0 0 0
       flex: 1
       align-self: stretch
       overflow-y: auto
 
       .box
+        background: #fff
+        box-shadow: 1px 2px 8px rgba(0,0,0,0.11)
         margin: 0 0 32px 0
 
     aside.requests-actions
-      display: block
-      width: 240px
+      display: unset
+      width: 24%
       padding: 0 28px
+      margin-top: 0
+
+      .container
+        display: flex
+        flex-direction: column
 
       .btn
+        width: 172px
         box-shadow: 0 0 12px rgba(0,0,0,0.08)
-        margin: 12px 0
         transition: 0.08s linear
+        align-self: center
 
         i
           margin-top: -4px
@@ -76,7 +93,7 @@ form
 
       .header
         display: inline-block
-        margin: 16px 0 -1px
+        position: unset
 
   .heading
     padding: 12px

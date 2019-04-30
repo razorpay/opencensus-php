@@ -256,20 +256,27 @@ export default function Reports(store, opts) {
               !!configResp.data.items && configResp.data.items.length > 0;
 
             if (hasConfigs) {
-              configs = configResp.data.items
-                .map(configItem => {
-                  const { type, description } = configItem,
-                    config = {
-                      label: configItem.name,
-                      value: configItem.id,
-                      type,
-                      description,
-                      _item: configItem,
-                    };
+              const resultantConfigs = [];
 
-                  return config;
-                })
-                .concat(configs);
+              configResp.data.items.forEach(configItem => {
+                // Excluding RazorpayX Reports
+                if (configItem.name && configItem.name.indexOf('RX') === 0) {
+                  return;
+                }
+
+                const { type, description } = configItem,
+                  config = {
+                    label: configItem.name,
+                    value: configItem.id,
+                    type,
+                    description,
+                    _item: configItem,
+                  };
+
+                resultantConfigs.push(config);
+              });
+
+              configs = resultantConfigs.concat(configs);
             }
 
             //sort configs

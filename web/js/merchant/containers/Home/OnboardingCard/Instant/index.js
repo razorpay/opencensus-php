@@ -91,6 +91,7 @@ export default class OnboardingCardInstant extends Component {
         isRejected,
         isAccepted,
         needsClarification,
+        international,
       } = user,
       { showTransactionsHelper, isKLA, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
@@ -109,6 +110,7 @@ export default class OnboardingCardInstant extends Component {
         isActivated,
         isRejected,
         setActiveStep: this.setActiveStep,
+        international,
       };
 
     return (

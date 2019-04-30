@@ -7,6 +7,7 @@ import BatchListFilter from 'merchant/components/Batch/ListFilter';
 import { batchId, totalCount, status, createdAt } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const batchName = {
   title: 'Name',
@@ -109,12 +110,18 @@ export default class BatchList extends Component {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            {docUrl && (
-              <a class="btn btn-link" href={docUrl} target="_blank">
-                Documentation &nbsp;
-                <i class="i i-external-link" />
-              </a>
-            )}
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
+            >
+              {docUrl && (
+                <a class="btn btn-link" href={docUrl} target="_blank">
+                  Documentation &nbsp;
+                  <i class="i i-external-link" />
+                </a>
+              )}
+            </ShowWhen>
 
             {(session.mode !== 'live' || !user.isRejected) && (
               <Link class="btn btn-primary pull-right" to={uploadUrl}>

@@ -327,10 +327,10 @@ export default class AddItem extends Component {
     const { gst } = this.state;
 
     // If GST doesn't exist yet, return an empty array.
-    if (!(gst && gst.gst_tax_slabs)) return [];
+    if (!(gst && gst.gst_tax_slabs_v2)) return [];
 
-    return gst.gst_tax_slabs.map(rate => {
-      return `${rate / 100}%`;
+    return gst.gst_tax_slabs_v2.map(rate => {
+      return `${rate / 10000}%`;
     });
   };
 

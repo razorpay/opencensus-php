@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-
+import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchToMode from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 import { showProductsModal } from 'merchant/modules/home';
@@ -83,13 +83,26 @@ export default class TestMode extends Component {
         content = (
           <span>
             Create Test payments now. For details, Read{' '}
-            <a
-              target="_blank"
-              className="btn-link"
-              href="https://docs.razorpay.com/"
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
             >
-              documentation
-            </a>{' '}
+              <a
+                target="_blank"
+                className="btn-link"
+                href="https://docs.razorpay.com/"
+              >
+                documentation
+              </a>{' '}
+            </ShowWhen>
+            <ShowWhen
+              additionalCondition={user =>
+                !user.isOrgAllowedFunctionality('external_links')
+              }
+            >
+              documentation{' '}
+            </ShowWhen>
             or use{' '}
             <TestProducts
               onClick={() => (

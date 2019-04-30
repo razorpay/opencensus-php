@@ -11,13 +11,11 @@ import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import MultiSelectField from 'ui/MultiSelectField';
 
-// TODO: import currency data in a better way
-import CurrencyData from './currency.json';
-
 const gatewayMapping = {
   hdfc: 'HDFC',
   amex: 'Amex',
   atom: 'Atom',
+  bajajfinserv: 'Bajaj Finserv',
   cardless_emi: 'Cardless EMI',
   axis_migs: 'Axis MIGS',
   axis_genius: 'Axis Genius',
@@ -126,12 +124,28 @@ const HDFC_terminalTypesMapping = [
   { value: 'direct_settlement', name: 'Direct Settlement' },
 ];
 
+const gatewayMappingOnAddMessages = {
+  paytm: 'Direct settlement will be enforced on for gateway Paytm',
+};
+
+const gatewayMappingTerminalTypesDefaults = {
+  paytm: {
+    value: 'direct_settlement',
+    name: 'Direct Settlement',
+  },
+};
+
 export default class TerminalForm extends Component {
-  state = { pricingPlans: {} };
+  state = {
+    pricingPlans: {},
+    alertMessageForTerminalType: null,
+  };
 
   // Creates terminal
   handleCreate = body => {
     let file;
+    const gatewayMappingTerminalTypeValue =
+      gatewayMappingTerminalTypesDefaults[body.gateway];
 
     if (
       body['gateway_terminal_password'] &&
@@ -148,7 +162,21 @@ export default class TerminalForm extends Component {
       body.type.split(',').forEach(elem => {
         temp[elem] = '1';
       });
+
+      if (
+        gatewayMappingTerminalTypeValue &&
+        !temp[gatewayMappingTerminalTypeValue.value]
+      ) {
+        temp[gatewayMappingTerminalTypeValue.value] = '1';
+      }
+
       body.type = temp;
+    } else {
+      if (gatewayMappingTerminalTypeValue) {
+        body.type = {
+          [gatewayMappingTerminalTypeValue.value]: '1',
+        };
+      }
     }
 
     if (body.file) {
@@ -200,9 +228,25 @@ export default class TerminalForm extends Component {
       });
   };
 
+  handleAlertMessageForTerminalType = message =>
+    this.setState({ alertMessageForTerminalType: message });
+
+  handleGateway = e => {
+    const value = e.target.value;
+
+    if (gatewayMappingOnAddMessages.hasOwnProperty(value)) {
+      this.handleAlertMessageForTerminalType(
+        gatewayMappingOnAddMessages[value]
+      );
+    } else {
+      if (this.state.alertMessageForTerminalType) {
+        this.handleAlertMessageForTerminalType();
+      }
+    }
+  };
+
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
-
     const gateways = isOrgHDFC() ? HDFC_gatewayMapping : gatewayMapping;
     const gatewayAcquirers = isOrgHDFC()
       ? HDFC_gatewayAcquirerMapping
@@ -252,6 +296,7 @@ export default class TerminalForm extends Component {
             label="Gateway"
             defaultValue={isEditMode ? entity.gateway : ''}
             disabled={isEditMode}
+            onChange={this.handleGateway}
           >
             {Object.keys(gateways).map(key => (
               <option key={key} value={key}>
@@ -378,16 +423,23 @@ export default class TerminalForm extends Component {
             <option value="2">Both</option>
           </SelectField>
 
-          <SelectField name="corporate" label="Corporate" defaultValue="">
+          <SelectField name="corporate" label="Banking Type" defaultValue="">
             <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
+            <option value="0">Retail</option>
+            <option value="1">Corporate</option>
+            <option value="2">Both</option>
           </SelectField>
 
           <SelectField name="currency" label="Currency" defaultValue="">
             <option value="" />
-            {CurrencyData.data.map(({ code }) => (
-              <option value={code}>{code}</option>
+            {Object.keys(
+              (window.currencyLib && window.currencyLib.displayCurrencies) || [
+                'INR',
+              ]
+            ).map(k => (
+              <option key={k} value={k}>
+                {k}
+              </option>
             ))}
           </SelectField>
 
@@ -471,6 +523,11 @@ export default class TerminalForm extends Component {
           </div>
 
           <div class="m-t m-b" />
+          {this.state.alertMessageForTerminalType && (
+            <div class="text-success">
+              {this.state.alertMessageForTerminalType}
+            </div>
+          )}
           <AsyncButton
             text="Cancel"
             class="btn btn-default"

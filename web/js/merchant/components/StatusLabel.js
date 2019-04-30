@@ -46,6 +46,7 @@ export const settlementStatusMap = {
 export const batchUploadStatusMap = {
   created: 'bg-light',
   processing: 'label-info',
+  partially_processed: 'label-info',
   processed: 'label-success',
   failure: 'label-danger',
 };

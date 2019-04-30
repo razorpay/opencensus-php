@@ -12,10 +12,8 @@ import user, { org } from 'admin/user';
 
 import Experiments from './experiments';
 import Features from './features';
-import WorkflowRequestsList, {
-  getEntityIdNugget,
-} from './workflow_requests/List';
-import WorkflowRequestsEntity from 'admin/requests/Entity';
+import WorkflowRequestsList from './workflow_requests/List';
+import WorkflowRequestsEntity from './workflow_requests/Entity';
 import MerchantEvaluation from './merchant_evaluation';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
@@ -77,7 +75,7 @@ export default class RazorXApp extends React.Component {
                     />
                     <Route
                       path="/requests/:id(w_action_.+)"
-                      component={WorkflowRequestsEntity(getEntityIdNugget)}
+                      component={WorkflowRequestsEntity}
                       exact
                     />
 
@@ -109,7 +107,9 @@ const links = [
 
 export const Sidebar = ({ user, handleLogout }) => (
   <aside className={`org-${org.custom_code}`}>
-    <a id="razorx-logo" href="/admin/razorx" />
+    <a id="razorx-logo" href="/admin/razorx">
+      <img src="/img/logo.png" height="28px" />
+    </a>
     <div class="scroll-nav">
       {links.map((l, i) => (
         <div key={i}>

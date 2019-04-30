@@ -48,6 +48,7 @@ class UserController extends Controller
             'isConfirmed'           => false,
             'preSignupData'         => [],
             'isPreSignupComplete'   => false,
+            'org'                   => json_encode($org),
         ];
 
         if (empty($userError) and empty($orgError))

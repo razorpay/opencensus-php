@@ -68,7 +68,7 @@ export default class UserForm extends Component {
 
             {fields.indexOf('username') > -1 && !user.id ? (
               <Field
-                name="name"
+                name="username"
                 label="Username"
                 required
                 defaultValue={user.username}

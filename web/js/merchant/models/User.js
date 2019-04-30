@@ -125,13 +125,14 @@ export default class User {
     let isHoodAllowed = false;
     moduleNames = moduleNames.split(' ');
 
-    moduleNames.forEach(m => {
+    for (let key = 0; key < moduleNames.length; key++) {
+      const m = moduleNames[key];
       isHoodAllowed = this.isAllowedView(m);
 
       if (isHoodAllowed) {
-        return false;
+        break;
       }
-    });
+    }
 
     return isHoodAllowed;
   }
@@ -158,6 +159,24 @@ export default class User {
 
       get isL1Submitted() {
         return !!this.activation_flow;
+      },
+    };
+  }
+
+  get internationalActivationFlow() {
+    return {
+      international_activation_flow: this.international_activation_flow,
+
+      get isWhitelistFlow() {
+        return this.international_activation_flow === 'whitelist';
+      },
+
+      get isBlacklistFlow() {
+        return this.international_activation_flow === 'blacklist';
+      },
+
+      get isGraylistFlow() {
+        return this.international_activation_flow === 'greylist';
       },
     };
   }
@@ -212,6 +231,10 @@ export default class User {
 
   get isInvoiceReceiptMandatory() {
     return this.isFeatureEnabled('invoice_receipt_mandatory');
+  }
+
+  get isRBLRoleEnabled() {
+    return this.findTag('enable_RBL_role');
   }
 
   get enabledFeatures() {
@@ -269,10 +292,6 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
-  get isPaymentPagesV2Enabled() {
-    return getExperiment('paymentpagesv2') === 'on';
-  }
-
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
   }
@@ -285,6 +304,14 @@ export default class User {
   //instant settlements
   get isISBannerEnabled() {
     return this.getExpStatus('is_banner');
+  }
+
+  get isCapitalBannerEnabled() {
+    return this.getExpStatus('capital_banner');
+  }
+
+  get isExpireByRequired() {
+    return this.isFeatureEnabled('invoice_expire_by_reqd');
   }
 }
 

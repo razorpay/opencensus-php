@@ -26,6 +26,9 @@ const options = {
     extraFields: ['gateway'],
     gateways: ['emi_sbi'],
   },
+  terminal: {
+    subTypes: ['hitachi', 'netbanking_icici', 'netbanking_hdfc'],
+  },
 };
 
 export default class BatchUpload extends Component {

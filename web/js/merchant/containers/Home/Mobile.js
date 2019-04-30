@@ -130,7 +130,10 @@ class AnalyticsMobile extends Component {
               <b>
                 {!current_balance.loading &&
                   typeof current_balance.data.balance === 'number' && (
-                    <Amount value={current_balance.data.balance} />
+                    <Amount
+                      value={current_balance.data.balance}
+                      currency={'INR'}
+                    />
                   )}
               </b>
             </div>

@@ -6,6 +6,7 @@ import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import ProceedModal from 'merchant/containers/PaymentLinks/BatchUpload/ProceedModal';
 import * as ModalActions from 'rzp/modules/modals';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(state => state.session, ModalActions)
 export default class BatchUpload extends Component {
@@ -69,10 +70,16 @@ export default class BatchUpload extends Component {
             {titleCase(this.props.title)} File Upload -{' '}
             {this.props.modeFormatted} Mode
             <small class="pull-right">
-              <a href={this.props.docUrl} target="_blank">
-                DOCUMENTATION &nbsp;
-                <i class="i i-new-tab-link" />
-              </a>
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <a href={this.props.docUrl} target="_blank">
+                  DOCUMENTATION &nbsp;
+                  <i class="i i-new-tab-link" />
+                </a>
+              </ShowWhen>
             </small>
           </div>
 

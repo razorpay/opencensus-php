@@ -13,11 +13,11 @@ function fetchFn() {
   return adminFetch(...arguments).then(
     data =>
       data &&
-      data.map(p => ({
-        id: p.plan_id,
-        name: p.plan_name,
-        rules_count: p.rules_count,
-        org_id: `org_${p.org_id}`,
+      data.map(plan => ({
+        id: plan.plan_id,
+        name: plan.plan_name,
+        org_id: `org_${plan.org_id}`,
+        ...plan,
       }))
   );
 }
@@ -103,6 +103,7 @@ export default class PlanList extends Component {
     let fields = [
       ['Plan ID', item => item.id],
       ['Plan Name', item => item.name],
+      ['Type', item => item.type],
       ['Number of Rules', item => item.rules_count || item.count],
     ];
 
@@ -124,23 +125,24 @@ export default class PlanList extends Component {
               Add New
             </div>
           </header>
-          {isOrgRazorpay() && !isBlank(orgs) && (
-            <div class="filters">
-              <SelectField
-                label="Organisation"
-                name="org_id"
-                value={this.state.selectedOrg}
-                onChange={this.handleOrgChange}
-              >
-                <option value="">All</option>
-                {Object.keys(orgs).map(orgId => (
-                  <option key={orgId} value={orgId}>
-                    {orgs[orgId]}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-          )}
+          {isOrgRazorpay() &&
+            !isBlank(orgs) && (
+              <div class="filters">
+                <SelectField
+                  label="Organisation"
+                  name="org_id"
+                  value={this.state.selectedOrg}
+                  onChange={this.handleOrgChange}
+                >
+                  <option value="">All</option>
+                  {Object.keys(orgs).map(orgId => (
+                    <option key={orgId} value={orgId}>
+                      {orgs[orgId]}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
+            )}
         </div>
         <PageTable
           model={this.collection}

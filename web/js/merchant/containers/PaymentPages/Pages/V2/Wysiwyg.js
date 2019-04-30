@@ -27,6 +27,13 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
 
+import {
+  trackWYSIWYGCloseIntent,
+  trackConfirmWYSIWYGCloseIntent,
+  trackPageSettingsClick,
+  trackPageSave,
+} from '../ga';
+
 const ERROR = {
   SCRIPT: 1,
   INVALID_ENTITY: 2,
@@ -165,6 +172,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 
   handleClose = () => {
+    trackWYSIWYGCloseIntent();
+
     this.context.confirm({
       header: this.props.isPageDirty
         ? 'Discard Changes?'
@@ -181,6 +190,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       affirmativeLabel: 'Yes',
       abortLabel: 'Cancel',
       action: () => {
+        trackConfirmWYSIWYGCloseIntent();
         this.props.history.push(`/paymentpages/`);
       },
     });
@@ -215,6 +225,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
                 type="submit"
                 class="Button--Link"
                 onClick={() => {
+                  trackPageSettingsClick();
                   this.props.closeModal();
                   this.setState({ isSettingsOpened: true });
                 }}
@@ -341,7 +352,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         allow_social_share: settings.allow_social_share ? '1' : '0',
         payment_success_message: settings.payment_success_message,
         payment_success_redirect_url: settings.payment_success_redirect_url,
-        udf_schema: JSON.stringify(udf_schema.splice(2)),
+        udf_schema: JSON.stringify(udf_schema.slice(2)),
       },
     };
     // console.log('REQ PAYLOAD...', reqPayload);
@@ -350,6 +361,37 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const requestAPIPromise = isEditExistingId
       ? editPaymentPage(this.props.id, reqPayload)
       : createPaymentPage(reqPayload);
+
+    const trackData = [];
+    if (description) {
+      trackData.push('description');
+    }
+
+    if (settings.allow_social_share) {
+      trackData.push('social_share');
+    }
+
+    if (terms) {
+      trackData.push('terms');
+    }
+
+    if (support_email) {
+      trackData.push('support_email');
+    }
+
+    if (support_contact) {
+      trackData.push('support_contact');
+    }
+
+    if (udf_schema) {
+      trackData.push('form_fields: ' + udf_schema.length); // count of total form fields
+    }
+
+    if (isEditExistingId) {
+      trackPageSave('save', trackData);
+    } else {
+      trackPageSave('create', trackData);
+    }
 
     return requestAPIPromise
       .then(resp => {
@@ -420,7 +462,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     let isAllowedToSubmit, actionBtns, themeColor;
 
     const merchantData = {
-      name: this.props.user.name,
+      name: this.props.user.billing_label || this.props.user.name,
       brand_color: this.props.config.brand_color,
       image: this.props.user.logo_url,
     };

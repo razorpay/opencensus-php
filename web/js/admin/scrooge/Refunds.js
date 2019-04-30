@@ -39,24 +39,31 @@ export default class Refunds extends Component {
       selectedRefunds: [],
     };
 
+    this.gatewayErrorCodes = {};
+
     this.params = this.getQueryParams();
 
-    this.multiSelectInitialValues = {
-      status: statuses,
-    };
+    this.multiSelectInitialValues = {};
 
-    this.defaultValues = {};
-
-    adminFetch(`${this.mode}/admin/entities/all`)
+    adminFetch(`${this.mode}/scrooge/dashboard-init`)
       .then(data => {
         if (!data) {
           return;
         }
 
-        let gatewayValues = data.fields.gateway.values;
-        let methodValues = data.fields.method.values;
+        this.gatewayErrorCodes = data.gateway_error_codes || {};
+
+        let gatewayValues = data.gateways || [];
+        let methodValues = data.methods || [];
+        let gatewayAcquirerValues = data.gateway_acquirers || [];
+        let statusValues = data.statuses || [];
+        let publicStatusValues = data.public_statuses || [];
+
         let gateways = [];
         let methods = [];
+        let gatewayAcquirers = [];
+        let statuses = [];
+        let publicStatuses = [];
 
         gatewayValues.forEach(gateway => {
           gateways.push({
@@ -65,35 +72,85 @@ export default class Refunds extends Component {
           });
         });
 
-        this.multiSelectInitialValues.gateway = gateways;
+        this.multiSelectInitialValues['refunds.gateway'] = gateways;
 
-        for (let methodValue in methodValues) {
+        methodValues.forEach(method => {
           methods.push({
-            name: methodValues[methodValue],
-            value: methodValue,
+            name: method,
+            value: method,
           });
-        }
+        });
 
-        this.multiSelectInitialValues.method = methods;
+        this.multiSelectInitialValues['refunds.method'] = methods;
+
+        gatewayAcquirerValues.forEach(gatewayAcquirer => {
+          gatewayAcquirers.push({
+            name: gatewayAcquirer,
+            value: gatewayAcquirer,
+          });
+        });
+
+        this.multiSelectInitialValues[
+          'refunds.gateway_acquirer'
+        ] = gatewayAcquirers;
+
+        publicStatusValues.forEach(publicStatus => {
+          publicStatuses.push({
+            name: publicStatus,
+            value: publicStatus,
+          });
+        });
+
+        this.multiSelectInitialValues['refunds.public_status'] = publicStatuses;
+
+        statusValues.forEach(status => {
+          statuses.push({
+            name: status,
+            value: status,
+          });
+        });
+
+        this.multiSelectInitialValues['refunds.status'] = statuses;
       })
       .then(d => {
         let params = this.params;
 
         let filterQueryData = {};
 
-        for (let key in params) {
-          if (this.multiSelectInitialValues.hasOwnProperty(key)) {
-            let commonValues = intersect(
-              this.multiSelectInitialValues[key].map(x => x.value),
-              params[key]
-            );
-            this.defaultValues[key] = this.multiSelectInitialValues[key].filter(
-              x => commonValues.indexOf(x.value) > -1
-            );
-            filterQueryData[key] = this.defaultValues[key].map(x => x.value);
-          } else {
-            this.defaultValues[key] = params[key];
-            filterQueryData[key] = this.defaultValues[key];
+        for (let tableName in params) {
+          if (params.hasOwnProperty(tableName)) {
+            let columns = params[tableName];
+
+            for (let columnName in columns) {
+              if (columns.hasOwnProperty(columnName)) {
+                let key = tableName + '.' + columnName;
+
+                let keySplit = key.split('.');
+
+                keySplit.reduce((filterQueryData, i) => {
+                  filterQueryData[i] = filterQueryData[i] || {};
+                  return filterQueryData[i];
+                }, filterQueryData);
+
+                if (this.multiSelectInitialValues.hasOwnProperty(key)) {
+                  let commonValues = intersect(
+                    this.multiSelectInitialValues[key].map(x => x.value),
+                    columns[columnName]
+                  );
+                  this.defaultValues[key] = this.multiSelectInitialValues[
+                    key
+                  ].filter(x => commonValues.indexOf(x.value) > -1);
+                  filterQueryData[tableName][columnName] = this.defaultValues[
+                    key
+                  ].map(x => x.value);
+                } else {
+                  this.defaultValues[key] = columns[columnName];
+                  filterQueryData[tableName][columnName] = this.defaultValues[
+                    key
+                  ];
+                }
+              }
+            }
           }
         }
 
@@ -116,6 +173,8 @@ export default class Refunds extends Component {
             }),
         });
       });
+
+    this.defaultValues = {};
 
     this.onRefundModeChange = this.onRefundModeChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
@@ -143,7 +202,9 @@ export default class Refunds extends Component {
       ['Payment ID', item => paymentLink(item, this.mode)],
       ['Merchant ID', item => item.merchant_id],
       ['Status', item => item.status],
+      ['Public Status', item => item.public_status],
       ['Gateway', item => item.gateway],
+      ['Refund Gateway', item => item.refund_gateway],
       ['Method', item => item.method],
       ['Attempts', item => item.attempts],
       ['Refund Amount', item => showAmount(item.currency, item.amount)],
@@ -151,6 +212,7 @@ export default class Refunds extends Component {
         'Payment Amount',
         item => showAmount(item.currency, item.payment_amount),
       ],
+      ['Gateway Acquirer', item => item.gateway_acquirer],
       ['Refund Created At', item => formatDate(item.created_at)],
       ['Payment Created At', item => formatDate(item.payment_created_at)],
     ];
@@ -195,7 +257,7 @@ export default class Refunds extends Component {
   };
 
   setCollectionData = filters => {
-    filters = parseFilters(filters);
+    filters = this.parseFilters(filters);
 
     if (filters !== null) {
       this.collection.data.url = `${filters.mode}/scrooge/refunds`;
@@ -235,6 +297,24 @@ export default class Refunds extends Component {
     });
   };
 
+  onDownloadGatewayFile = filters => {
+    this.setCollectionData(filters);
+
+    adminPost({
+      url: `${this.collection.extraFields.mode ||
+        'live'}/scrooge/refunds/download-gateway-file`,
+      data: {
+        query: this.collection.extraFields.query,
+      },
+    }).then(d => {
+      if (d.link !== '') {
+        window.open(d.link);
+      } else {
+        notifyError('Unable to download data');
+      }
+    });
+  };
+
   onDownloadSelectedClick = () => {
     const selectedRefunds = [...this.state.selectedRefunds];
 
@@ -242,7 +322,9 @@ export default class Refunds extends Component {
       url: `${this.mode}/scrooge/refunds/download`,
       data: {
         query: {
-          id: selectedRefunds,
+          refunds: {
+            id: selectedRefunds,
+          },
         },
       },
     }).then(d => {
@@ -269,6 +351,66 @@ export default class Refunds extends Component {
       />
     );
   };
+
+  parseFilters = filters =>
+    filters &&
+    Object.keys(filters).reduce((accumulator, currentValue) => {
+      let semiColonSplit = currentValue.split(';');
+
+      let filter = formFilters.find(f => f.formKey === currentValue);
+
+      let queryKey = semiColonSplit[0];
+      let queryKeySplit = queryKey.split('.');
+
+      queryKeySplit.reduce((filters, i) => {
+        filters[i] = filters[i] || {};
+        return filters[i];
+      }, filters);
+
+      let value = getFilterValue(filters, filter, currentValue, semiColonSplit);
+
+      if (queryKeySplit.length === 1) {
+        let gatewayKeys = filters['gateway_keys'] || {};
+
+        switch (queryKey) {
+          case 'internal_error_code':
+            gatewayKeys['name'] = 'internal_error_code';
+            gatewayKeys['value'] = value;
+
+            break;
+
+          case 'gateway_error_code':
+            // TODO: Handle errors when gateway is not selected
+            if (
+              accumulator.hasOwnProperty('refunds') &&
+              accumulator.refunds.hasOwnProperty('gateway') &&
+              accumulator.refunds.gateway.length > 0
+            ) {
+              gatewayKeys['name'] = this.gatewayErrorCodes[
+                accumulator.refunds.gateway[0]
+              ];
+              gatewayKeys['value'] = value;
+            }
+
+            break;
+
+          default:
+            accumulator[queryKey] = value;
+        }
+
+        if (Object.keys(gatewayKeys).length !== 0) {
+          accumulator['gateway_keys'] = gatewayKeys;
+        }
+      } else {
+        if (!accumulator.hasOwnProperty(queryKeySplit[0])) {
+          accumulator[queryKeySplit[0]] = {};
+        }
+
+        accumulator[queryKeySplit[0]][queryKeySplit[1]] = value;
+      }
+
+      return accumulator;
+    }, {});
 
   render() {
     let selectedDisabledClass =
@@ -318,7 +460,9 @@ export default class Refunds extends Component {
                         class={filter.formKey + '-select multi-value'}
                         label={filter.name}
                         name={filter.formKey}
-                        options={this.multiSelectInitialValues[filter.formKey]}
+                        options={
+                          this.multiSelectInitialValues[filter.formKey] || []
+                        }
                         defaultValue={this.defaultValues[filter.formKey]}
                         trackBy="value"
                         keys={['name']}
@@ -329,10 +473,9 @@ export default class Refunds extends Component {
                       <div key={index}>
                         <Field
                           label={filter.name + ' >='}
-                          name={filter.formKey + '.gte'}
+                          name={filter.formKey + ';gte'}
                           component="input"
                           min={0}
-                          max={100}
                           type="number"
                           defaultValue={
                             this.defaultValues[filter.formKey] &&
@@ -344,10 +487,9 @@ export default class Refunds extends Component {
 
                         <Field
                           label={filter.name + ' <='}
-                          name={filter.formKey + '.lte'}
+                          name={filter.formKey + ';lte'}
                           component="input"
                           min={0}
-                          max={100}
                           type="number"
                           defaultValue={
                             this.defaultValues[filter.formKey] &&
@@ -365,7 +507,7 @@ export default class Refunds extends Component {
                           label={filter.name + ' From'}
                           format="X"
                           allowToday={true}
-                          name={filter.formKey + '.gte'}
+                          name={filter.formKey + ';gte'}
                           defaultValue={
                             this.defaultValues[filter.formKey] &&
                             this.defaultValues[filter.formKey].gte
@@ -380,7 +522,7 @@ export default class Refunds extends Component {
                           label={filter.name + ' To'}
                           format="X"
                           allowToday={true}
-                          name={filter.formKey + '.lt'}
+                          name={filter.formKey + ';lt'}
                           defaultValue={
                             this.defaultValues[filter.formKey] &&
                             this.defaultValues[filter.formKey].lt
@@ -426,6 +568,12 @@ export default class Refunds extends Component {
                     class="link"
                     pendingClass="link disabled"
                     onSubmit={this.onDownloadAllClick}
+                  />
+                  <AsyncButton
+                    text="Download Gateway File"
+                    class="link"
+                    pendingClass="link disabled"
+                    onSubmit={this.onDownloadGatewayFile}
                   />
                 </div>
               </Form>
@@ -538,91 +686,106 @@ const paymentLink = (item, mode) =>
 
 const showAmount = (currency, amount) => currency + ' ' + amount;
 
-const parseFilters = filters =>
-  filters &&
-  Object.keys(filters).reduce((prev, next) => {
-    let multiValue = false;
-    let dotSplit = next.split('.');
+const getFilterValue = (filters, filter, currentValue, semiColonSplit) => {
+  let value;
+  let multiValue = false;
 
-    let filter = formFilters.find(f => f.formKey === next);
+  if (
+    filter &&
+    (filter.type === 'multi-entity' || filter.type === 'multi-select')
+  ) {
+    multiValue = true;
+  }
 
-    if (
-      filter &&
-      (filter.type === 'multi-entity' || filter.type === 'multi-select')
-    ) {
-      multiValue = true;
+  if (semiColonSplit.length > 1) {
+    let nestedFilter =
+      (filters[semiColonSplit[0]] && JSON.parse(filters[semiColonSplit[0]])) ||
+      {};
+
+    nestedFilter[semiColonSplit[1]] = filters[currentValue];
+
+    value = Object.assign(filters[semiColonSplit[0]] || {}, nestedFilter);
+  } else {
+    value = filters[currentValue];
+
+    if (multiValue === true) {
+      value = filters[currentValue].split(',').map(e => e.trim());
     }
+  }
 
-    if (dotSplit.length > 1) {
-      let nestedFilter =
-        (filters[dotSplit[0]] && JSON.parse(filters[dotSplit[0]])) || {};
-
-      nestedFilter[dotSplit[1]] = filters[next];
-
-      prev[dotSplit[0]] = Object.assign(prev[dotSplit[0]] || {}, nestedFilter);
-    } else {
-      prev[next] = filters[next];
-      if (multiValue === true) {
-        prev[next] = prev[next].split(',').map(e => e.trim());
-      }
-    }
-
-    return prev;
-  }, {});
-
-const statuses = [
-  { name: 'Init', value: 'init' },
-  { name: 'File Init', value: 'file_init' },
-  { name: 'Attempt Failed', value: 'attempt_failed' },
-  { name: 'Processed', value: 'processed' },
-  { name: 'On Hold', value: 'on_hold' },
-];
+  return value;
+};
 
 // multi-entity, multi-select, select, entity, numeric-range, date-range
 const formFilters = [
   {
     name: 'Refund ID(s)',
-    formKey: 'id',
+    formKey: 'refunds.id',
     type: 'multi-entity',
   },
   {
     name: 'Merchant ID(s)',
-    formKey: 'merchant_id',
+    formKey: 'refunds.merchant_id',
     type: 'multi-entity',
   },
   {
     name: 'Payment ID(s)',
-    formKey: 'payment_id',
+    formKey: 'refunds.payment_id',
     type: 'multi-entity',
   },
   {
     name: 'Gateway(s)',
-    formKey: 'gateway',
+    formKey: 'refunds.gateway',
+    type: 'multi-select',
+  },
+  {
+    name: 'Gateway Acquirer(s)',
+    formKey: 'refunds.gateway_acquirer',
     type: 'multi-select',
   },
   {
     name: 'Method(s)',
-    formKey: 'method',
+    formKey: 'refunds.method',
     type: 'multi-select',
   },
   {
     name: 'Status(es)',
-    formKey: 'status',
+    formKey: 'refunds.status',
     type: 'multi-select',
   },
   {
+    name: 'Public Status(es)',
+    formKey: 'refunds.public_status',
+    type: 'multi-select',
+  },
+  {
+    name: 'Refund Amount',
+    formKey: 'refunds.amount',
+    type: 'numeric-range',
+  },
+  {
     name: 'Attempts',
-    formKey: 'attempts',
+    formKey: 'refunds.attempts',
     type: 'numeric-range',
   },
   {
     name: 'Refund Date',
-    formKey: 'created_at',
+    formKey: 'refunds.created_at',
     type: 'date-range',
   },
   {
     name: 'Payment Date',
-    formKey: 'payment_created_at',
+    formKey: 'refunds.payment_created_at',
     type: 'date-range',
+  },
+  {
+    name: 'Internal Error Code',
+    formKey: 'internal_error_code',
+    type: 'multi-entity',
+  },
+  {
+    name: 'Gateway Error Code',
+    formKey: 'gateway_error_code',
+    type: 'multi-entity',
   },
 ];

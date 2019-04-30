@@ -11,6 +11,7 @@ const baseUrl = {
   disp: '/disputes/',
   acc: '/submerchants/',
   token: '/tokens/',
+  comm: '/commissions/',
   // rvrsl: '/route/reversals/',
 };
 
@@ -58,6 +59,7 @@ export const settlement = makeIdLink('settlement');
 export const order = makeIdLink('order');
 export const dispute = makeIdLink('dispute');
 export const token = makeIdLink('token');
+export const commission = makeIdLink('commission');
 
 export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);

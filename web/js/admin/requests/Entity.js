@@ -9,15 +9,8 @@ import RequestForm from './RequestForm';
 import RequestActions from './RequestActions';
 import { formatDate, titleCase } from 'common/util';
 
-let getEntityIdNugget;
-
-export default function(entityIdNugget) {
-  getEntityIdNugget = entityIdNugget;
-  return RequestEntity;
-}
-
 @observer
-class RequestEntity extends Component {
+export default class RequestEntity extends Component {
   //mobx observables
   comments = observable.array();
   checkers = observable.array();
@@ -109,12 +102,27 @@ class RequestEntity extends Component {
     const shouldShowTick = ['approved', 'executed'].indexOf(data.state) !== -1;
     const { id } = this.props.match.params;
 
+    const mapping = entityMap[data.entity_name];
+    let url;
+
+    if (mapping) {
+      url = mapping.url;
+    } else {
+      url = `entity/${data.entity_name}`;
+    }
+
     return (
       <div class="requests-container">
         <header class="heading">
           {data.permission.description &&
             titleCase(data.permission.description)}{' '}
-          {getEntityIdNugget(data.entity_id, data.entity_name)}
+          <a
+            className="link"
+            href={`/admin/${url}/${data.entity_id}`}
+            target="_blank"
+          >
+            {data.entity_id}
+          </a>
         </header>
         <div class="box-container">
           <main class="container requests-content">
@@ -213,4 +221,29 @@ const RequestState = {
   closed: 'closed-state',
   rejected: 'rejected-state',
   open: 'open-state',
+};
+
+/* entities in this will have redirection to 'merchants/{id}', otherwise to '/entity/{entity_name/{id}' */
+const entityMap = {
+  merchant: {
+    url: 'merchants',
+  },
+  merchant_detail: {
+    url: 'merchants',
+  },
+  credits: {
+    url: 'merchants',
+  },
+  methods: {
+    url: 'merchants',
+  },
+  adjustment: {
+    url: 'merchants',
+  },
+  schedule_task: {
+    url: 'merchants',
+  },
+  feature: {
+    url: 'merchants',
+  },
 };

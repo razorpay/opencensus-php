@@ -6,6 +6,7 @@ import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { lenientUrl } from 'rzp/utils/validators';
 import { DateField } from '../../../PaymentLinks/Edit/EditExpiry';
 import { validateSlug } from 'rzp/utils/validators';
+import { trackPageSettingsData } from '../ga';
 
 import PPEmbedButtonView from '../Modals/EmbedButton';
 
@@ -21,6 +22,7 @@ export default class extends React.Component {
         ? moment(Number(paymentPageEntity.expire_by))
         : undefined,
       theme: settings && settings.theme === 'dark' ? '0' : '1',
+      slug: paymentPageEntity.slug || '',
       slug: paymentPageEntity.slug || '',
       payment_success_message: settings ? settings.payment_success_message : '',
       payment_success_redirect_url: settings
@@ -59,14 +61,51 @@ export default class extends React.Component {
     });
   };
 
+  onSubmit = formData => {
+    this.props.handleAction(formData);
+
+    /*
+    * Preparing Tracking data
+    * */
+    const trackData = [];
+
+    if (formData.expire_by) {
+      trackData.push('expire_by');
+    }
+
+    // Sending slug only in edit mode
+    if (
+      formData.slug &&
+      this.props.paymentPageEntity.id &&
+      formData.slug !== this.props.paymentPageEntity.slug
+    ) {
+      trackData.push('slug');
+    }
+
+    if (typeof formData.theme !== 'undefined') {
+      if (formData.theme === '0') {
+        trackData.push('theme: dark');
+      } else {
+        trackData.push('theme: light');
+      }
+    }
+
+    if (formData.payment_success_message) {
+      trackData.push('payment_success_message');
+    }
+
+    if (formData.payment_success_redirect_url) {
+      trackData.push('payment_success_redirect_url');
+    }
+
+    trackPageSettingsData(
+      this.props.isNew ? 'Save and Publish' : 'Save',
+      trackData
+    );
+  };
+
   render() {
-    const {
-      isNew,
-      handleClose,
-      handleAction,
-      isTestMode,
-      paymentPageEntity,
-    } = this.props;
+    const { isNew, handleClose, isTestMode, paymentPageEntity } = this.props;
 
     const {
       slug,
@@ -102,7 +141,7 @@ export default class extends React.Component {
             <div class="main-title">Page Settings</div>
             <Form
               class="Settings-form"
-              onSubmit={handleAction}
+              onSubmit={this.onSubmit}
               onChange={this.onChange}
             >
               <div class="settings-section">

@@ -140,7 +140,7 @@ export default class extends React.PureComponent {
 
       document.head.appendChild(script);
     } else {
-      this.setStatet({ description: '' });
+      this.setState({ description: '' });
     }
   }
 

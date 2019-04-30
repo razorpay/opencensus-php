@@ -100,13 +100,22 @@ export default class InvoiceLineItemTable extends Component {
                         <tr class="total sub-total">
                           <td />
                           <td class="text-right">Sub Total</td>
-                          <td class="text-right">₹{invoiceTotal.subtotal}</td>
+                          <td class="text-right">
+                            {' '}
+                            <Amount
+                              value={invoiceTotal.subtotal * 100}
+                              currency={'INR'}
+                            />
+                          </td>
                         </tr>
                         <tr class="total sub-total">
                           <td />
                           <td class="text-right">Total Tax</td>
                           <td class="text-right" width="30%">
-                            ₹{invoiceTotal.tax}
+                            <Amount
+                              value={invoiceTotal.tax * 100}
+                              currency={'INR'}
+                            />
                           </td>
                         </tr>
                       </Fragment>
@@ -117,7 +126,12 @@ export default class InvoiceLineItemTable extends Component {
                         <b>Total Amount</b>
                       </td>
                       <td class="text-right" width="30%">
-                        <b>₹{invoiceTotal.total}</b>
+                        <b>
+                          <Amount
+                            value={invoiceTotal.total * 100}
+                            currency={'INR'}
+                          />
+                        </b>
                       </td>
                     </tr>
                     <tr class="total amount-words">

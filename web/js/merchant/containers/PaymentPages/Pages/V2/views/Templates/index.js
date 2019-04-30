@@ -3,18 +3,35 @@ import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Button from 'component/Button';
 import { classList } from 'common/util';
 import META from './meta';
+import {
+  trackGoBackDashboard,
+  trackGoBackToTemplates,
+  trackTemplateSelection,
+  trackStartCreation,
+} from '../../../ga';
+
+const createYourOwn = {
+  card: {
+    title: 'Create your Own',
+    description: 'Got your own idea? Start with a clean slate.',
+    img: '/img/payment_pages/start_from_scratch.jpg',
+  },
+};
 
 export default class extends React.PureComponent {
   state = { isTemplateSelectionOpened: true };
 
-  selectTemplate = (label, quillPrefill) => {
+  selectTemplate = (label, quillPrefill, title) => {
     return () => {
       this.props.selectTemplate(quillPrefill);
 
       this.setState({
         templateLabel: label,
         isTemplateSelectionOpened: false,
+        templateTitle: title,
       });
+
+      trackTemplateSelection(title || createYourOwn.card.title);
     };
   };
 
@@ -22,6 +39,8 @@ export default class extends React.PureComponent {
     this.setState({
       isTemplateSelectionOpened: true,
     });
+
+    trackGoBackToTemplates();
   };
 
   render() {
@@ -30,7 +49,11 @@ export default class extends React.PureComponent {
     if (this.state.isTemplateSelectionOpened) {
       content = (
         <React.Fragment key="view-1">
-          <Link class="back-btn" to="/paymentpages/">
+          <Link
+            class="back-btn"
+            to="/paymentpages/"
+            onClick={trackGoBackDashboard}
+          >
             <i class="i i-chevron-left" />
             Back to Dashboard
           </Link>
@@ -43,9 +66,9 @@ export default class extends React.PureComponent {
 
               <div class="TemplateCard-list">
                 <TemplateCard
-                  title="Create your Own"
-                  description="Got your own idea? Start with a clean slate."
-                  img="/img/payment_pages/start_from_scratch.jpg"
+                  title={createYourOwn.card.title}
+                  description={createYourOwn.card.description}
+                  img={createYourOwn.card.img}
                   selectTemplate={this.selectTemplate(null)}
                 />
                 {Object.keys(META).map((m, k) => {
@@ -58,7 +81,8 @@ export default class extends React.PureComponent {
                         img={META[m].card.img}
                         selectTemplate={this.selectTemplate(
                           META[m].label,
-                          META[m].quillPrefill
+                          META[m].quillPrefill,
+                          META[m].card.title
                         )}
                       />
                     );
@@ -90,7 +114,15 @@ export default class extends React.PureComponent {
                   <br />
                   You can preview and edit the page at the same time!
                 </p>
-                <Button.Primary onClick={this.props.onClose} autoFocus>
+                <Button.Primary
+                  onClick={() => {
+                    this.props.onClose();
+                    trackStartCreation(
+                      this.state.templateTitle || createYourOwn.card.title
+                    );
+                  }}
+                  autoFocus
+                >
                   Let's Go!
                 </Button.Primary>
               </div>

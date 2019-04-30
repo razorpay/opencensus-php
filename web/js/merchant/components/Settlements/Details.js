@@ -27,7 +27,9 @@ export default props => {
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <EntityDetailRow
                 label="Amount"
-                value={() => <Amount value={settlement.amount} />}
+                value={() => (
+                  <Amount value={settlement.amount} currency={'INR'} />
+                )}
               />
 
               <EntityDetailRow
@@ -49,14 +51,16 @@ export default props => {
 
               <EntityDetailRow
                 label="Fees"
-                value={() => <Amount value={settlement.fees} />}
+                value={() => (
+                  <Amount value={settlement.fees} currency={'INR'} />
+                )}
               />
 
               <EntityDetailRow label="UTR" value={settlement.utr} />
 
               <EntityDetailRow
                 label="Tax"
-                value={() => <Amount value={settlement.tax} />}
+                value={() => <Amount value={settlement.tax} currency={'INR'} />}
               />
 
               <ListGroupToggler

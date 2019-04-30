@@ -2,7 +2,7 @@
   <div class="login-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)'}">
     <div class="auth-step">
       <div class="auth-heading">
-        Forgot Password
+          Forgot Password
       </div>
       <div class="auth-text">
         Enter your email and we will send you a password reset link
@@ -38,8 +38,8 @@
               <label ng-if="!lockme" class="form-label auth-subheading" for="email">Email</label>
               <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
               <label class="form-label auth-subheading" for="password">Password</label>
-              <input type="password" placeholder="Razorpay Password" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
-              <div ng-if="!lockme" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
+              <input type="password" placeholder="Password" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
+              <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
               <button override-tab ng-disable="loginInProgress" class="btn btn-primary form-control" type="submit">
@@ -51,6 +51,9 @@
             <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
           </div>
         </div>
+      </div>
+      <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC" class="contact-us-text">
+        Need help? <a class="highlight-clickable-text" href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Us</a>
       </div>
     </div>
 

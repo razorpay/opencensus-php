@@ -38,15 +38,7 @@ export default function Field({
       </label>
       <Tag {...props} />
       {icon && <i class={`post-field-icon ${icon}`} />}
-      {(infoMsg || helpMsg) && (
-        <div class="info-block">
-          {helpMsg && <i class="i i-info-circle" />}
-          {do {
-            var msg = infoMsg || helpMsg;
-            typeof msg === 'function' ? msg() : msg;
-          }}
-        </div>
-      )}
+      <HelpMsg infoMsg={infoMsg} helpMsg={helpMsg} />
     </div>
   );
 }
@@ -132,10 +124,12 @@ export function SwitchField({
   disabledLabel,
   enabledLabel,
   nocaption,
+  infoMsg,
+  helpMsg,
   ...props
 }) {
   return (
-    <div class="field">
+    <div class={classList('field', props.disabled && 'disabled')}>
       {label && <label class={props.required ? 'required' : ''}>{label}</label>}
 
       {disabledLabel && (
@@ -145,6 +139,7 @@ export function SwitchField({
       {enabledLabel && (
         <span class={`${nocaption ? '' : 'caption'} m-l`}>{enabledLabel}</span>
       )}
+      <HelpMsg infoMsg={infoMsg} helpMsg={helpMsg} />
     </div>
   );
 }
@@ -170,6 +165,12 @@ export class Switch extends Component {
     }
     prevent(e);
   };
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.hasOwnProperty('value')) {
+      this.setState({ checked: this.enabledValue == nextProps.value });
+    }
+  }
 
   render() {
     let { knob = true, disabledValue, enabledValue, ...restProps } = this.props;
@@ -312,3 +313,15 @@ class SearchableSelect extends Component {
 export const SearchableSelectField = props => (
   <Field {...props} tag={SearchableSelect} />
 );
+
+export function HelpMsg({ infoMsg, helpMsg }) {
+  return infoMsg || helpMsg ? (
+    <div class="info-block">
+      {helpMsg && <i class="i i-info-circle" />}
+      {do {
+        var msg = infoMsg || helpMsg;
+        typeof msg === 'function' ? msg() : msg;
+      }}
+    </div>
+  ) : null;
+}

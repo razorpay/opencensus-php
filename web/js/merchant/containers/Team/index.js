@@ -8,6 +8,7 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import NewInvitation from './NewInvitation';
 import Invitation from './Invitation';
 import User from './User';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   state => {
@@ -24,9 +25,7 @@ import User from './User';
 )
 export default class TeamContainer extends Component {
   componentWillMount() {
-    if (this.props.merchant.userRole === 'owner') {
-      this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
-    }
+    this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
   }
 
   render() {
@@ -36,18 +35,24 @@ export default class TeamContainer extends Component {
       user => user.email !== this.props.merchant.email
     );
 
-    return this.props.merchant.userRole === 'owner' ? (
+    return (
       <div>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/team-support"
-              target="_blank"
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
             >
-              Documentation &nbsp;
-              <i class="icon icon-external-link" />
-            </a>
+              <a
+                class="btn btn-link"
+                href="https://docs.razorpay.com/v1/page/team-support"
+                target="_blank"
+              >
+                Documentation &nbsp;
+                <i class="icon icon-external-link" />
+              </a>
+            </ShowWhen>
           </div>
         </HeaderAction>
 
@@ -95,8 +100,6 @@ export default class TeamContainer extends Component {
           ) : null}
         </div>
       </div>
-    ) : (
-      <Redirect to="/profile" />
     );
   }
 }

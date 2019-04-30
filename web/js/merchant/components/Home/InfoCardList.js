@@ -75,13 +75,15 @@ export default props => {
           error={entity_totals.error}
           title="Total Volume"
         />
-        <InfoCard
-          amount
-          loading={current_balance.loading}
-          content={<Amount value={current_balance.data.balance || 0} />}
-          error={current_balance.error}
-          title="Current Balance"
-        />
+        {this.props.user.isOrgAllowedFunctionality('current_balance') && (
+          <InfoCard
+            amount
+            loading={current_balance.loading}
+            content={<Amount value={current_balance.data.balance || 0} />}
+            error={current_balance.error}
+            title="Current Balance"
+          />
+        )}
       </div>
     </div>
   );

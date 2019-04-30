@@ -14,13 +14,13 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
         </Link>
       </td>
       <td class="text-right">
-        <Amount value={settlement.amount} />
+        <Amount value={settlement.amount} currency={'INR'} />
       </td>
       <td class="text-right">
-        <Amount value={settlement.fees} />
+        <Amount value={settlement.fees} currency={'INR'} />
       </td>
       <td class="text-right">
-        <Amount value={settlement.tax} />
+        <Amount value={settlement.tax} currency={'INR'} />
       </td>
       <td>
         <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />

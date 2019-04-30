@@ -53,7 +53,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
         {paymentMethod === 'upi' && <span>{payment.vpa}</span>}
       </Definition>
     );
-  } else if (paymentMethod === 'card' || paymentMethod === 'emi') {
+  } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
     if (Object.keys(card) === 0 || card.loading) {
       return <PlaceholderLoader />;
     }
@@ -87,7 +87,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
           <span> {emiPlan.rate / 100}%</span>
           <span>
             {' '}
-            (<Amount value={emi} />)
+            (<Amount value={emi} currency={payment.currency} />)
           </span>
         </span>
       ),

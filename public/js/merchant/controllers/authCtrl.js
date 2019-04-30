@@ -79,6 +79,7 @@ app
         $scope.isOrgCheckDone = true;
         $scope.organization = data;
         $scope.isOrgRZP = $scope.organization.custom_code === 'rzp';
+        $scope.isOrgHDFC = $scope.organization.custom_code === 'hdfc';
       });
       $scope.forms = {};
 
@@ -675,11 +676,11 @@ app
         return $scope.onShowSignin && $scope.onShowSignin();
       };
 
-      $scope.goToSignupLayout = function() {
+      $scope.goToSignupLayout = function(signupData = {}) {
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
         $scope.rightLayout = false;
-        $scope.signup.data.email = $scope.login.data.email;
+        $scope.signup.data.email = signupData.email || $scope.login.data.email;
         $scope.email_not_verified = false;
         $scope.alerts.resetAlerts();
         var toRoute = 'access.signup';
@@ -1087,8 +1088,8 @@ app
               },
               {
                 name: supportedEvents.signup,
-                callback: function() {
-                  $scope.goToSignupLayout();
+                callback: function(userDetails) {
+                  $scope.goToSignupLayout(userDetails);
                 },
               },
               {
@@ -1105,7 +1106,7 @@ app
                 hasReply: true,
                 callback: function(reply) {
                   $scope.onShowSignin = reply;
-                  return $scope.rightLayout && reply();
+                  return $scope.rightLayout && reply($scope.login);
                 },
               },
               {

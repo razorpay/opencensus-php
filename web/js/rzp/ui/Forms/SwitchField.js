@@ -1,3 +1,5 @@
+import { classList } from 'common/util';
+
 /*
   Custom Checkbox as a Switch toggle UI
 
@@ -16,6 +18,7 @@ export default class SwitchField extends React.Component {
 
   state = {
     checked: !!this.props.defaultChecked || false,
+    isActionPending: false,
   };
 
   toggle = e => {
@@ -30,10 +33,24 @@ export default class SwitchField extends React.Component {
         if (onChange) {
           function postActionCB(isSuccess) {
             if (!isSuccess) {
-              setTimeout(() => self.setState({ checked: !isChecked }), 100);
+              setTimeout(
+                () =>
+                  self.setState({
+                    checked: !isChecked,
+                    isActionPending: false,
+                  }),
+                100
+              ); // Revert if false
+            } else {
+              self.setState({ isActionPending: false });
             }
           }
-          const promise = onChange(isChecked, postActionCB);
+
+          const actionCall = onChange(isChecked, postActionCB);
+
+          if (actionCall && actionCall.then) {
+            self.setState({ isActionPending: true });
+          }
         }
       });
     }
@@ -42,7 +59,7 @@ export default class SwitchField extends React.Component {
   };
 
   render() {
-    let { checked } = this.state;
+    let { checked, isActionPending } = this.state;
 
     let buttonClass = this.buttonClass + ' checkbox-knob--' + this.props.type;
     if (checked) {
@@ -52,9 +69,13 @@ export default class SwitchField extends React.Component {
     return (
       <button
         {...this.props}
-        class={buttonClass}
+        class={classList(
+          buttonClass,
+          isActionPending && 'checkbox-knob--pending'
+        )}
         value={checked}
         onClick={this.toggle}
+        disabled={isActionPending}
       />
     );
   }

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
@@ -173,6 +174,7 @@ export default class ActivationWizard extends React.Component {
       activation_status,
       activation_flow,
       submitted,
+      international,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -182,6 +184,7 @@ export default class ActivationWizard extends React.Component {
       activated,
       activation_status,
       activation_flow,
+      international,
       submitted: +submitted,
     }));
 
@@ -357,14 +360,27 @@ export default class ActivationWizard extends React.Component {
                 <p>
                   <small>
                     By submitting this form you agree to our{' '}
-                    <a
-                      className="text-primary"
-                      target="_blank"
-                      href="https://razorpay.com/terms/"
-                      onClick={trackTnCClick}
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <a
+                        className="text-primary"
+                        target="_blank"
+                        href="https://razorpay.com/terms/"
+                        onClick={trackTnCClick}
+                      >
+                        Terms and Conditions
+                      </a>
+                    </ShowWhen>
+                    <ShowWhen
+                      additionalCondition={user =>
+                        !user.isOrgAllowedFunctionality('external_links')
+                      }
                     >
                       Terms and Conditions
-                    </a>
+                    </ShowWhen>
                   </small>
                 </p>
                 <div className="text-right">

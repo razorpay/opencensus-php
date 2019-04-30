@@ -4,13 +4,21 @@
 * */
 export default {
   home: ['owner', 'admin', 'manager', 'operations', 'finance'],
-  payments: ['owner', 'admin', 'manager', 'operations'],
-  orders: ['owner', 'admin', 'manager'],
+  payments: ['owner', 'admin', 'manager', 'operations', 'rbl_supervisor'],
+  orders: ['owner', 'admin', 'manager', 'rbl_supervisor'],
   refunds: ['owner', 'admin', 'manager', 'operations'],
   payments_batch_uploads: ['owner', 'admin', 'manager', 'operations'],
   refunds_batch_uploads: ['owner', 'admin', 'manager', 'operations'],
-  settlements: ['owner', 'admin', 'manager'],
-  invoices: ['owner', 'admin', 'manager', 'operations', 'sellerapp', 'agent'],
+  settlements: ['owner', 'admin', 'manager', 'rbl_supervisor'],
+  invoices: [
+    'owner',
+    'admin',
+    'manager',
+    'operations',
+    'sellerapp',
+    'agent',
+    'rbl_supervisor',
+  ],
   items: ['owner', 'admin', 'manager', 'sellerapp', 'agent'],
   payment_links: [
     'owner',
@@ -19,6 +27,16 @@ export default {
     'operations',
     'sellerapp',
     'agent',
+    'rbl_supervisor',
+  ],
+  payment_links_batch_uploads: [
+    'owner',
+    'admin',
+    'manager',
+    'operations',
+    'sellerapp',
+    'agent',
+    'rbl_supervisor',
   ],
   payment_pages: ['owner', 'admin', 'manager', 'sellerapp'],
   accounts: ['owner', 'admin', 'manager'],
@@ -34,7 +52,7 @@ export default {
   addons: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
   virtual_accounts: ['owner', 'admin', 'manager', 'operations', 'finance'],
   customers: ['owner', 'admin', 'manager'],
-  reports: ['owner', 'admin', 'manager'],
+  reports: ['owner', 'admin', 'manager', 'rbl_supervisor', 'agent'],
   api_keys: ['owner', 'admin'],
   profile: [
     'owner',
@@ -50,8 +68,12 @@ export default {
   credits: ['owner', 'admin', 'manager'],
   activation: ['owner', 'admin', 'manager'],
   referrals: ['owner', 'admin', 'manager'],
-  team: ['owner'],
+  team: ['owner', 'rbl_supervisor'],
   webhooks: ['owner', 'admin', 'manager'],
   configuration: ['owner', 'admin', 'manager'],
   applications: ['owner'],
+
+  // partner dashboard permissions
+  submerchants: ['owner', 'manager', 'admin'],
+  partner_applications: ['owner', 'manager', 'admin'],
 };
