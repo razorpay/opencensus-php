@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BharatQr;
 
+use Config;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -46,13 +48,42 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
+            $this->alertException($ex, $input);
 
             $valid = false;
         }
 
         return $valid;
+    }
+
+    /**
+     * Trace and send an alert to Slack.
+     *
+     * @param  \Throwable $ex
+     * @param  array      $input
+     */
+    protected function alertException(\Throwable $ex, array $input)
+    {
+        // Any exception is critical, as bharatqr payments
+        // are never supposed to fail. Trace accordingly.
+        $this->trace->traceException(
+            $ex, Trace::CRITICAL, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
+
+        // Skip slack alerts in test mode
+        if ($this->isTestMode() === true)
+        {
+            return;
+        }
+
+        $this->app['slack']->queue(
+            TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED,
+            array_merge($input, ['message' => $ex->getMessage()]),
+            [
+                'channel'  => Config::get('slack.channels.bharatqr_logs'),
+                'username' => 'Bharat Mata',
+                'icon'     => ':flag-in:'
+            ]
+        );
     }
 
     protected function getBharatQrInputParams(array $gatewayInputQrData)
