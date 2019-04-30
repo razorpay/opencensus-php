@@ -6,14 +6,12 @@ import ProgressBar from 'rzp/ui/ProgressBar';
 import { classList } from 'common/util';
 
 export default function ActivationProgress(props) {
+  const { user, config } = props;
+
   const {
-    user: {
-      showInstantActivation,
-      instantActivation: { isL1Submitted, isBlacklistFlow },
-      ...user
-    },
-    config,
-  } = props;
+    showInstantActivation,
+    instantActivation: { isL1Submitted, isBlacklistFlow },
+  } = user;
 
   let actionCopy,
     actionContent = null;
