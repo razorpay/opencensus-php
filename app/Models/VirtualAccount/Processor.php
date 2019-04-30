@@ -273,11 +273,13 @@ abstract class Processor extends Base\Core
 
         $method = $entity->getMethod();
 
-        if ($merchantMethods->isMethodEnabled($method) === false);
+        if ($merchantMethods->isMethodEnabled($method) === false)
         {
-           $this->trace->info(
+            $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_METHOD_DISABLED_PAYMENT_REROUTED,
                 $entity->toArray());
+
+            return true;
         }
 
         return false;

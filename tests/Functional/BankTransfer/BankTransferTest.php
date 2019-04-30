@@ -119,6 +119,7 @@ class BankTransferTest extends TestCase
         $this->fixtures->merchant->createAccount('MethodEnbleTst');
         $virtualAccount = $this->fixtures->create('virtual_account', [
             'merchant_id' => 'MethodEnbleTst',
+            'status'      => 'active',
         ]);
         $bankAccount    = $this->fixtures->create('bank_account', [
             'type'           => 'virtual_account',
@@ -126,6 +127,9 @@ class BankTransferTest extends TestCase
             'entity_id'      => $virtualAccount->getId(),
             'account_number' => '11122275867',
             'ifsc_code'      => 'RAZRB000000',
+        ]);
+        $this->fixtures->edit('virtual_account', $virtualAccount->getId(), [
+            'bank_account_id' => $bankAccount->getId(),
         ]);
 
         // Bank transfer now disabled, before payment is created
