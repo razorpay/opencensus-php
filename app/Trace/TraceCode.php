@@ -1084,6 +1084,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_INFO_SUMMARY                                    = 'RECON_INFO_SUMMARY';
     const RECON_FILE_LINK                                       = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                                     = 'IIN_INSERT_FAILED';
+    const IIN_UPDATE_BULK                                       = 'IIN_UPDATE_BULK';
+    const IIN_UPDATE_FAILED                                     = 'IIN_UPDATE_FAILED';
     const IIN_FLOW_DISABLE                                      = 'IIN_FLOW_DISABLE';
     const RECON_BEGIN_FILE_PARSING                              = 'RECON_BEGIN_FILE_PARSING';
     const RECON_END_FILE_PARSING                                = 'RECON_END_FILE_PARSING';
