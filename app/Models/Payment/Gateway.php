@@ -1008,6 +1008,11 @@ class Gateway
         self::BAJAJ,
     ];
 
+    public static $captureVerifyQREnabledGateways = [
+        self::UPI_MINDGATE,
+        self::UPI_ICICI,
+    ];
+
     /**
      * List of gateways that support recurring payments
      *
