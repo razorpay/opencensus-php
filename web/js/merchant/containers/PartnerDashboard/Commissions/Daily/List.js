@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchAggregate } from 'merchant/modules/commission';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 import Amount from 'rzp/ui/Amount';
 import DataTable from 'rzp/ui/Table/DataTable';
 
 import { without } from 'rzp/utils/rzp-utils';
 
+import AddMerchant from '../../SubMerchant/AddMerchant';
 import ListFilter from './ListFilter';
 
 const date = {
@@ -40,7 +42,11 @@ const transactions = {
   value: item => item.transactions,
 };
 
-@connect(state => ({ ...state.commissionsAggregate }), { fetchAggregate })
+@connect(state => ({ ...state.commissionsAggregate }), {
+  fetchAggregate,
+  openModal,
+  closeModal,
+})
 export default class CommissionsDailyList extends ListContainer {
   onDatesChange = (from, to) => {
     this.search({ from, to });
@@ -61,14 +67,39 @@ export default class CommissionsDailyList extends ListContainer {
     return this.props.fetchAggregate(without(params, ['skip', 'count']));
   }
 
+  handleAddMerchant = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <AddMerchant closeModal={this.props.closeModal} />,
+    });
+  };
+
+  renderLessThanRequiredMerchants = () => (
+    <div class="empty-table-message">
+      <h3>Unlock your earnings view</h3>
+      <p class="m-t">
+        Add more accounts (>{this.props.items.limit}) to unlock the details view
+        of processed earnings
+      </p>
+      <p>
+        <button class="btn btn-link" onClick={this.handleAddMerchant}>
+          + Add New Account
+        </button>
+      </p>
+    </div>
+  );
+
   render() {
     return (
-      <div className="content-wrapper CommissionList--Daily">
+      <div class="content-wrapper CommissionList--Daily">
         <ListFilter onDatesChange={this.onDatesChange} />
         <DataTable
           columns={[date, earnings, volume, activeMerchants, transactions]}
-          {...this.props}
           title="Data"
+          EmptyComponent={
+            this.props.items.limit && this.renderLessThanRequiredMerchants
+          }
+          {...this.props}
         />
       </div>
     );

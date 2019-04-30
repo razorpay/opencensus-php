@@ -141,6 +141,10 @@ export const groupCommissionListData = data => {
     groupedData[key] = arrayToObject(data[key].result, formatData);
   });
 
+  if (data.limit) {
+    return data;
+  }
+
   return Object.keys(groupedData.activeMerchants)
     .map(timestamp => ({
       timestamp,

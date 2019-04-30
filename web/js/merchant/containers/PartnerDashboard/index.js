@@ -25,11 +25,7 @@ export default function PartnerDashboard() {
         component={Applications}
       />
 
-      <ShowWhenRoute
-        additionalCondition={user => !user.isPartner('resller')}
-        path="/partners/earnings"
-        component={Earnings}
-      />
+      <ShowWhenRoute path="/partners/earnings" component={Earnings} />
 
       <Route path="/partners/submerchants" component={SubMerchantList} />
     </Switch>
