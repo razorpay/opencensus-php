@@ -71,8 +71,10 @@ class Service extends Base\Service
     public function updateVaultToken(Entity $card)
     {
         $token = $card->getVaultToken();
+        $vault = $card->getVault();
 
-        if ($token === null)
+        if (($token === null) or
+            ($vault !== Vault::RZP_ENCRYPTION))
         {
             return;
         }
