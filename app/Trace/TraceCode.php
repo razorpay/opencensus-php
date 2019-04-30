@@ -238,6 +238,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHECK_ACCOUNT_RESPONSE                                = 'CHECK_ACCOUNT_RESPONSE';
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
+    const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
 
     const GATEWAY_INTERNAL_FORMATTED_RESPONSE                   = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
 
@@ -327,6 +328,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const THROTTLE_REQUEST_THROTTLED                            = 'THROTTLE_REQUEST_THROTTLED';
     const THROTTLE_REQUEST_BLOCKED                              = 'THROTTLE_REQUEST_BLOCKED';
     const THROTTLE_SETTINGS_MISSING                             = 'THROTTLE_SETTINGS_MISSING';
+
+    const GATEWAY_DOWNTIME_ERROR_CODE                           = 'GATEWAY_DOWNTIME_ERROR_CODE';
+    const GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING            = 'GATEWAY_DOWNTIME_THROTTLE_SETTINGS_MISSING';
+    const GATEWAY_DOWNTIME_THROTTLE_DISALLOWED                  = 'GATEWAY_DOWNTIME_THROTTLE_DISALLOWED';
 
     const BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE         = 'BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
 
@@ -923,6 +928,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION                    = 'PAYOUT_QUEUE_JOB_FAILURE_EXCEPTION';
     const PAYOUT_QUEUE_SUCCESS                                  = 'PAYOUT_QUEUE_SUCCESS';
     const PAYOUT_NOT_IN_QUEUED_STATUS                           = 'PAYOUT_NOT_IN_QUEUED_STATUS';
+    const PAYOUT_DISPATCH_SUMMARY                               = 'PAYOUT_DISPATCH_SUMMARY';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -1078,6 +1084,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_INFO_SUMMARY                                    = 'RECON_INFO_SUMMARY';
     const RECON_FILE_LINK                                       = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                                     = 'IIN_INSERT_FAILED';
+    const IIN_UPDATE_BULK                                       = 'IIN_UPDATE_BULK';
+    const IIN_UPDATE_FAILED                                     = 'IIN_UPDATE_FAILED';
     const IIN_FLOW_DISABLE                                      = 'IIN_FLOW_DISABLE';
     const RECON_BEGIN_FILE_PARSING                              = 'RECON_BEGIN_FILE_PARSING';
     const RECON_END_FILE_PARSING                                = 'RECON_END_FILE_PARSING';
@@ -1192,6 +1200,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PRICING_BULK_ALL_FAILED_IDS                  = 'MERCHANT_PRICING_BULK_ALL_FAILED_IDS';
 
     // Trace codes for Heimdall
+
     const HEIMDALL_EVENT_RECORD                                 = 'HEIMDALL_EVENT_RECORD';
     const HEIMDALL_AUDIT_LOG                                    = 'HEIMDALL_AUDIT_LOG';
     const HEIMDALL_AUDIT_LOG_FAIL                               = 'HEIMDALL_AUDIT_LOG_FAIL';
@@ -1199,6 +1208,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HEIMDALL_ACTION_LOG_FAIL                              = 'HEIMDALL_ACTION_LOG_FAIL';
 
     // Trace for Payment/Transfers
+
     const PAYMENT_TRANSFER_REQUEST                              = 'PAYMENT_TRANSFER_REQUEST';
     const PAYMENT_UPDATE_AMOUNT_TRANSFERRED                     = 'PAYMENT_UPDATE_AMOUNT_TRANSFERRED';
     const PAYMENT_TRANSFER_SUCCESS                              = 'PAYMENT_TRANSFER_SUCCESS';
@@ -1215,6 +1225,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REVERSAL_REFUND_AVAILABLE                             = 'REVERSAL_REFUND_AVAILABLE';
 
     // Trace Code for Gateway Absence StatusCake
+
     const GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN             = 'GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN';
     const GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN             = 'GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN';
     const GATEWAY_DOWNTIME_STATUSCAKE_INVALID_ISSUER            = 'GATEWAY_DOWNTIME_STATUSCAKE_INVALID_ISSUER';
@@ -1228,6 +1239,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_VAJRA_INVALID_STATUS                 = 'GATEWAY_DOWNTIME_VAJRA_INVALID_STATUS';
     const GATEWAY_DOWNTIME_VAJRA_CREATE                         = 'GATEWAY_DOWNTIME_VAJRA_CREATE';
     const GATEWAY_DOWNTIME_VAJRA_INVALID_MESSAGE                = 'GATEWAY_DOWNTIME_VAJRA_INVALID_MESSAGE';
+    const VAJRA_CPS_ROUTING_REQUEST                             = 'VAJRA_CPS_ROUTING_REQUEST';
+    const VAJRA_CPS_START_DISABLE_ROUTING                       = 'VAJRA_CPS_START_DISABLE_ROUTING';
+    const VAJRA_CPS_DISABLE_ROUTING_SUCCESS                     = 'VAJRA_CPS_DISABLE_ROUTING_SUCCESS';
+    const VAJRA_CPS_DISABLE_ROUTING_FAILURE                     = 'VAJRA_CPS_DISABLE_ROUTING_FAILURE';
+    const VAJRA_CPS_START_ENABLE_ROUTING                        = 'VAJRA_CPS_START_ENABLE_ROUTING';
+    const VAJRA_CPS_ENABLE_ROUTING_SUCCESS                      = 'VAJRA_CPS_ENABLE_ROUTING_SUCCESS';
+    const VAJRA_CPS_ENABLE_ROUTING_FAILURE                      = 'VAJRA_CPS_ENABLE_ROUTING_FAILURE';
+    const VAJRA_INVALID_ALERT_STATUS                            = 'VAJRA_INVALID_ALERT_STATUS';
     const NETBANKING_URL_CACHE_MISS                             = 'NETBANKING_URL_CACHE_MISS';
     const STATUSCAKE_RETURNED_FAILURE                           = 'STATUSCAKE_RETURNED_FAILURE';
     const STATUSCAKE_CONNECTION_FAILED                          = 'STATUSCAKE_CONNECTION_FAILED';
@@ -1241,6 +1260,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DETAIL_MIGRATE_INFO                          = 'MERCHANT_DETAIL_MIGRATE_INFO';
 
     // Trace codes for offers
+
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';
     const OFFER_DISCOUNT_CREATED                                = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                             = 'OFFER_IIN_DOES_NOT_EXISTS';
@@ -1450,14 +1470,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
 
-    const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
-    const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
-    const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
-    const DATABASE_RECONNECT                            = 'DATABASE_RECONNECT';
-    const HEARTBEAT_CHECK_TIME_CONVERSION               = 'HEARTBEAT_CHECK_TIME_CONVERSION';
-    const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
-    const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
-    const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
+    const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
+    const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
+    const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';
+    const DATABASE_RECONNECT                                    = 'DATABASE_RECONNECT';
+    const HEARTBEAT_CHECK_TIME_CONVERSION                       = 'HEARTBEAT_CHECK_TIME_CONVERSION';
+    const DB_DATA_INTEGRITY_ERROR                               = 'DB_DATA_INTEGRITY_ERROR';
+    const DB_PIVOT_TABLE_ASSOCIATION_ERROR                      = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
+    const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
 
@@ -1528,6 +1548,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECON_FAILED                                      = 'FTA_RECON_FAILED';
     const FTA_STATUS_FAILED                                     = 'FTA_STATUS_FAILED';
     const FTA_STATUS_FAILED_MERCHANT_ERROR                      = 'FTA_STATUS_FAILED_MERCHANT_ERROR';
+    const FTA_BATCH_FUND_TRANSFER_ABSENT                        = 'FTA_BATCH_FUND_TRANSFER_ABSENT';
 
     const APSPDCL_REQUEST                                       = 'APSPDCL_REQUEST';
     const APSPDCL_REQUEST_ERROR                                 = 'APSPDCL_REQUEST_ERROR';
@@ -1712,27 +1733,33 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORIGIN_INVALID_TYPE                                   = 'ORIGIN_INVALID_TYPE';
 
     // auth selector
-    const AUTH_SELECTION                                        = 'AUTH_SELECTION';
-    const AUTH_FILTER_RULES                                     = 'AUTH_FILTER_RULES';
-    const AUTH_SORTER_RULES                                     = 'AUTH_SORTER_RULES';
-    const AUTH_SELECTION_AFTER_FILTER_RULE                      = 'AUTH_SELECTION_AFTER_FILTER_RULE';
-    const AUTH_SELECTION_VIA_GATEWAY_RULES                      = 'AUTH_SELECTION_VIA_GATEWAY_RULES';
-    const AUTH_SELECTION_FAILURE                                = 'AUTH_SELECTION_FAILURE';
-    const AUTH_SELECTION_FINAL_TERMINAL                         = 'AUTH_SELECTION_FINAL_TERMINAL';
-    const AUTH_SELECTION_VALID_AUTHS                            = 'AUTH_SELECTION_VALID_AUTHS';
-    const AUTH_SELECTION_GATEWAY_RULES                          = 'AUTH_SELECTION_GATEWAY_RULES';
-    const AUTH_LOAD_SORTING_BOOSTED_TERMINALS                   = 'AUTH_LOAD_SORTING_BOOSTED_TERMINALS';
-    const AUTH_RULES_SEARCH_CRITERIA                            = 'AUTH_RULES_SEARCH_CRITERIA';
-    const AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP                = 'AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const AUTH_SELECTION                      = 'AUTH_SELECTION';
+    const AUTH_FILTER_RULES                   = 'AUTH_FILTER_RULES';
+    const AUTH_SORTER_RULES                   = 'AUTH_SORTER_RULES';
+    const AUTH_SELECTION_AFTER_FILTER_RULE    = 'AUTH_SELECTION_AFTER_FILTER_RULE';
+    const AUTH_SELECTION_VIA_GATEWAY_RULES    = 'AUTH_SELECTION_VIA_GATEWAY_RULES';
+    const AUTH_SELECTION_FAILURE              = 'AUTH_SELECTION_FAILURE';
+    const AUTH_SELECTION_FINAL_TERMINAL       = 'AUTH_SELECTION_FINAL_TERMINAL';
+    const AUTH_SELECTION_VALID_AUTHS          = 'AUTH_SELECTION_VALID_AUTHS';
+    const AUTH_SELECTION_GATEWAY_RULES        = 'AUTH_SELECTION_GATEWAY_RULES';
+    const AUTH_LOAD_SORTING_BOOSTED_TERMINALS = 'AUTH_LOAD_SORTING_BOOSTED_TERMINALS';
+    const AUTH_RULES_SEARCH_CRITERIA          = 'AUTH_RULES_SEARCH_CRITERIA';
+    const AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP   = 'AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP';
 
-    const VAULT_TOKEN_ERROR                                     = 'VAULT_TOKEN_ERROR';
-    const VAULT_TOKEN_CREATE_INIT                               = 'VAULT_TOKEN_CREATE_INIT';
-    const VAULT_TOKEN_CREATE_COMPLETE                           = 'VAULT_TOKEN_CREATE_COMPLETE';
+    const ORG_MAILER_BLOCKED                  = 'ORG_MAILER_BLOCKED';
+    const NO_MERCHANT_CONTEXT_MAIL            = 'NO_MERCHANT_CONTEXT_MAIL';
 
-    const ORG_MAILER_BLOCKED                                    = 'ORG_MAILER_BLOCKED';
-    const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
+    const VAULT_TOKEN_ERROR                   = 'VAULT_TOKEN_ERROR';
+    const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
+    const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
+    const VAULT_TOKEN_MIGRATION_REQUEST_INIT  = 'VAULT_TOKEN_MIGRATION_REQUEST_INIT';
+    const VAULT_TOKEN_MIGRATION_REQUEST       = 'VAULT_TOKEN_MIGRATION_REQUEST';
+    const VAULT_TOKEN_MIGRATION_SUCCESSFULL   = 'VAULT_TOKEN_MIGRATION_SUCCESSFULL';
+    const VAULT_TOKEN_MIGRATION_TOKEN         = 'VAULT_TOKEN_MIGRATION_TOKEN';
+    const VAULT_TOKEN_MIGRATION_ERROR         = 'VAULT_TOKEN_MIGRATION_ERROR';
+    const VAULT_TOKEN_MIGRATION_DISPATCH_FAILED  = 'VAULT_TOKEN_MIGRATION_DISPATCH_FAILED';
 
-    const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
+    const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC     = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
 
     // P2P Traces
     const P2P_REQUEST                                           = 'P2P_REQUEST';
@@ -1745,16 +1772,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
 
     // Core Payment Service tracecodes
-    const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS          = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
-    const CPS_GATEWAY_TRANSACTION_SYNC_REQUEST          = 'CPS_GATEWAY_TRANSACTION_SYNC_REQUEST';
-    const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION         = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
-    const CPS_ROUTE_CONFIG                              = 'CPS_ROUTE_CONFIG';
-    const CPS_RAZORX_VARIANT                            = 'CPS_RAZORX_VARIANT';
-    const CPS_SWITCH_ROUTE                              = 'CPS_SWITCH_ROUTE';
+    const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
+    const CPS_GATEWAY_TRANSACTION_SYNC_REQUEST                  = 'CPS_GATEWAY_TRANSACTION_SYNC_REQUEST';
+    const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION                 = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
+    const CPS_ROUTE_CONFIG                                      = 'CPS_ROUTE_CONFIG';
+    const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
+    const CPS_SWITCH_ROUTE                                      = 'CPS_SWITCH_ROUTE';
 
     // Batch Micro Service
-    const GET_BATCHES_BATCH_SERVICE                 = 'GET_BATCHES_BATCH_SERVICE';
-    const GET_BATCHES_IGNORE_COUNT_SKIP             = 'GET_BATCHES_IGNORE_COUNT_SKIP';
+    const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
+    const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -621,6 +621,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createCardlessEmiFlexMoneyTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_FLEXMONEY_TERMINAL;
+
+        $attributes = [
+            'id'                   => $termId,
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'cardless_emi',
+            'card'                 => 0,
+            'netbanking'           => 0,
+            'cardless_emi'         => 1,
+            'gateway_merchant_id'  => 'cardless_emi_merchant',
+            'gateway_merchant_id2' => 'cardless_emi_merchant2',
+            'gateway_acquirer'     => 'flexmoney',
+            'mode'                 => 1,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedMpesaTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::MPESA_RAZORPAY_TERMINAL;
@@ -2669,6 +2689,26 @@ class Terminal extends Base
             'gateway_access_code'       => 'BajajFinservIv',
             'emi'                       => 1,
             'emi_duration'              => 9,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedPhonepeTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+        $defaultValues = [
+            'id'                        => '1ShrdPhnepeTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'wallet_phonepe',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'RazorpayPhonepe',
+            'gateway_secure_secret'     => 'secure_secret',
+            'gateway_access_code'       => 'access_code',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

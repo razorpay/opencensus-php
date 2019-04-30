@@ -35,6 +35,25 @@ class OtpPaymentTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/OtpPaymentTestData.php';
 
         parent::setUp();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'save_all_cards')
+                                {
+                                    return 'off';
+                                }
+                                return 'on';
+                            }));
     }
 
     public function testIvrAuthenticationPayment()
@@ -1860,7 +1879,7 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         self::assertEquals('authorized', $payment['status']);
-        self::assertEquals('3ds', $payment['auth_type']);
+        self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
@@ -1906,7 +1925,7 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         self::assertEquals('authorized', $payment['status']);
-        self::assertEquals('3ds', $payment['auth_type']);
+        self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitaDirTmnl', $payment['terminal_id']);
     }
@@ -2097,7 +2116,7 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         self::assertEquals('authorized', $payment['status']);
-        self::assertEquals('3ds', $payment['auth_type']);
+        self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }

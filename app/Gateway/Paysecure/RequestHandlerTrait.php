@@ -51,6 +51,7 @@ trait RequestHandlerTrait
 
         $content = [
             Entity::RRN       => $rrn,
+            Entity::FLOW      => 'iframe',
             Entity::TRAN_DATE => $requestArray[Fields::TRAN_DATE],
             Entity::TRAN_TIME => $requestArray[Fields::TRAN_TIME],
         ];

@@ -357,27 +357,6 @@ class TerminalAuthenticationTest extends TestCase
         self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
-
-        TerminalOptions::setTestChance(200);
-
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '5567630000002004';
-        $payment['preferred_auth'] = ['3ds', 'otp'];
-
-        $response = $this->doAuthPayment($payment);
-
-        self::assertArrayHasKey('razorpay_payment_id', $response);
-
-        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
-
-        self::assertEquals('authorized', $payment['status']);
-        // It will be headless since we are identifying on the basis of the
-        // terminal gateway not the terminal as there is no property of the terminal to
-        // be used here
-        self::assertTrue($this->otpFlow);
-        self::assertEquals('headless_otp', $payment['auth_type']);
-        self::assertEquals('hitachi', $payment['gateway']);
-        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
     // boost cyber source mpi gateway

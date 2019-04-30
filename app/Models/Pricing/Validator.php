@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
 use RZP\Models\FundAccount;
+use RZP\Models\FundTransfer;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Pricing;
@@ -27,7 +28,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY             => 'sometimes',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate|nullable',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|string',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
@@ -62,7 +63,8 @@ class Validator extends Base\Validator
         'addPlanRuleAmountRange',
         'addPlanRuleFeature',
         'addPlanRulePricingMethod',
-        'addPlanRuleMinAndMaxFee'
+        'addPlanRuleMinAndMaxFee',
+        'addPlanRulePayoutFundTransfer',
     ];
 
     protected static $fetchRules = [
@@ -207,6 +209,34 @@ class Validator extends Base\Validator
                         'Payment method type for card should be debit / credit');
                 }
             }
+        }
+    }
+
+    protected function validateAddPlanRulePayoutFundTransfer($input)
+    {
+        if (($input[Entity::FEATURE] === Pricing\Feature::PAYOUT) and
+            ($input[Entity::PAYMENT_METHOD] === Payout\Method::FUND_TRANSFER))
+        {
+            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === false)
+            {
+                return;
+            }
+
+            $mode = $input[Entity::PAYMENT_METHOD_TYPE];
+
+            $validModes = [
+                FundTransfer\Mode::NEFT,
+                FundTransfer\Mode::IMPS,
+                FundTransfer\Mode::RTGS,
+                FundTransfer\Mode::IFT,
+            ];
+
+            if (in_array($mode, $validModes, true) === false)
+            {
+                Exception\BadRequestValidationFailureException(
+                    'Payout mode should be NEFT/IMPS/RTGS/IFT');
+            }
+
         }
     }
 

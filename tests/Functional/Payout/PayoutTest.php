@@ -119,6 +119,60 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateQueuedPayout()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::QUEUED_PAYOUTS]);
+
+        $currentBalance = $this->getDbLastEntity('balance');
+
+        $response = $this->startTest();
+
+        $newBalance = $this->getDbLastEntity('balance');
+
+        $this->assertEquals($currentBalance->getBalance(), $newBalance->getBalance());
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($txn);
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($fta);
+
+        $this->startTest();
+
+        $summary = $this->makePayoutQueueSummaryRequest();
+
+        $this->assertEquals(2, $summary['count']);
+        $this->assertEquals(20000002, $summary['total_amount']);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals(2, $dispatchResponse[$newBalance['id']]['total_payout_count']);
+        $this->assertEquals(10000000, $dispatchResponse[$newBalance['id']]['balance_remaining']);
+        $this->assertEquals(10000000, $dispatchResponse[$newBalance['id']]['original_balance']);
+        $this->assertEquals(0, $dispatchResponse[$newBalance['id']]['dispatched_payout_count']);
+        $this->assertEquals(0, $dispatchResponse[$newBalance['id']]['dispatched_payout_amount']);
+
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        $this->assertEquals(2, $dispatchResponse[$newBalance['id']]['total_payout_count']);
+        $this->assertEquals(998229, $dispatchResponse[$newBalance['id']]['balance_remaining']);
+        $this->assertEquals(11000000, $dispatchResponse[$newBalance['id']]['original_balance']);
+        $this->assertEquals(1, $dispatchResponse[$newBalance['id']]['dispatched_payout_count']);
+        $this->assertEquals(10001771, $dispatchResponse[$newBalance['id']]['dispatched_payout_amount']);
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => substr($response['id'], 5)]);
+
+        $this->assertNotNull($txn);
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
+
+        $this->assertNotNull($fta);
+    }
+
     public function testCreatePayoutToInactiveFundAccount()
     {
         $this->fixtures->create(
@@ -841,5 +895,33 @@ class PayoutTest extends TestCase
             Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'payout']);
             Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'payout']);
         }
+    }
+
+    protected function makePayoutQueueSummaryRequest()
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payouts/queued/amount',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
+    protected function dispatchQueuedPayouts()
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/queued/process',
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
     }
 }

@@ -94,6 +94,23 @@ class CardVault
         return $response[self::VALUE];
     }
 
+    public function getVaultTokenFromTempToken($tempVaultToken)
+    {
+        $input = [
+            self::TOKEN  => $tempVaultToken,
+        ];
+
+        $response = $this->sendRequest('token/migrate', 'post', $input);
+
+        if (empty($response[self::TOKEN]) === true)
+        {
+            throw new Exception\RuntimeException(
+                'Tokenize request failed', ['data' => $response]);
+        }
+
+        return $response;
+    }
+
     public function deleteToken($token)
     {
         // need to implement this

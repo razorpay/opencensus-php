@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\QrPayment;
 
+use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -91,6 +93,47 @@ class BharatQrPaymentTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals('Random Name', $card['name']);
+    }
+
+    public function testQrPaymentProcessForFailedPayment()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
+        // marking the payment failed
+        $input = [
+            ResponseFields::STATUS_CODE => '01'
+        ];
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId, null, $input);
+
+        // This method tests if the request that contains plain text as input is getting handled properly
+        $request = [
+            'url'       => '/payment/callback/bharatqr/hitachi',
+            'raw'       => http_build_query($content),
+            'method'    => 'post',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('NOK', $response[0]);
+
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+        $this->assertNull($bharatQr);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment);
     }
 
     public function testQrPaymentProcessWithoutCardName()
@@ -532,6 +575,41 @@ class BharatQrPaymentTest extends TestCase
         $this->assertNotNull($upi['payment_id']);
 
         $this->assertEquals($bharatQr['expected'], true);
+    }
+
+    public function testUpiQrPaymentProcessForFailedPayment()
+    {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testUpiQrPaymentProcess'];
+
+        $request['content'][Fields::TXN_STATUS] = 'FAILURE';
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request['content']['merchantTranId'] = $qrCodeId;
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        $this->assertNull($bharatQr);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment);
     }
 
     public function testUpiVerifyAndRefundPayment()

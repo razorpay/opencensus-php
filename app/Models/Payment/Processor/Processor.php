@@ -13,6 +13,7 @@ use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Models\Gateway;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
@@ -436,7 +437,8 @@ class Processor
     {
         $this->verifyCardlessEmiEnabled();
 
-        if (empty($input['ott']) === false)
+        if ((empty($input['ott']) === false) or
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
         {
             return;
         }
@@ -1543,10 +1545,10 @@ class Processor
             {
                 $this->payment->disableCpsRoute();
 
-                $this->repo->saveOrFail($payment);
+                $this->repo->saveOrFail($this->payment);
 
                 $this->trace->info(TraceCode::CPS_SWITCH_ROUTE, [
-                    'payment_id'     => $payment->getId(),
+                    'payment_id'     => $this->payment->getId(),
                     'cps_route'      => false,
                 ]);
             }
@@ -1581,6 +1583,23 @@ class Processor
                 ($terminal->isShared() === false))
             {
                 $this->disableTerminal($terminal);
+            }
+
+            /*
+             * If error indicates gateway downtime, act on it and
+             * check if a downtime entity needs to be created
+             */
+            if ($error->isGatewayDowntimeError() === true)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::INFO,
+                    TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
+                    [
+                        'payment_id' => $this->payment->getId()
+                    ]);
+
+                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
             }
 
             throw $ex;
@@ -2488,6 +2507,11 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)
+    {
+        (new Gateway\Downtime\Core)->createForGatewayException($gateway, $gatewayData);
     }
 
     protected function disableTerminal(Terminal\Entity $terminal)

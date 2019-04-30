@@ -2,14 +2,15 @@
 
 namespace RZP\Reconciliator\RequestProcessor;
 
-use DirectoryIterator;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use DirectoryIterator;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
-use RZP\Reconciliator\FileProcessor;
+use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
-use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Reconciliator\FileProcessor;
 
 class Base extends Core
 {
@@ -147,6 +148,81 @@ class Base extends Core
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN                  => ['kajol.nigam@razorpay.com'],
+    ];
+
+    /**
+     * We need this mapping because same gateway is stored in two forms.
+     * i.e. netbanking_hdfc and NetbankingHdfc refer to same gateway.
+     * Few use cases : This conversion needed while making recon request
+     * for individual MPR files in case of VAS and also for pushing 'source'
+     * dimension in recon metric.
+     */
+    const GATEWAY_NAME_MAPPING = [
+        Gateway::ATOM                   => self::ATOM,
+        Gateway::BILLDESK               => self::BILLDESK,
+        Gateway::KOTAK                  => self::KOTAK,
+        Gateway::AXIS_MIGS              => self::AXIS,
+        Gateway::AXIS_GENIUS            => self::AXIS,
+        Gateway::HDFC                   => self::HDFC,
+        Gateway::MOBIKWIK               => self::MOBIKWIK,
+        Gateway::NETBANKING_AIRTEL      => self::AIRTEL,
+        Gateway::NETBANKING_AXIS        => self::NETBANKING_AXIS,
+        Gateway::NETBANKING_IDFC        => self::NETBANKING_IDFC,
+        Gateway::NETBANKING_FEDERAL     => self::NETBANKING_FEDERAL,
+        Gateway::NETBANKING_EQUITAS     => self::NETBANKING_EQUITAS,
+        Gateway::NETBANKING_BOB         => self::NETBANKING_BOB,
+        Gateway::NETBANKING_VIJAYA      => self::NETBANKING_VIJAYA,
+        Gateway::NETBANKING_HDFC        => self::NETBANKING_HDFC,
+        Gateway::NETBANKING_CORPORATION => self::NETBANKING_CORPORATION,
+        Gateway::NETBANKING_ICICI       => self::NETBANKING_ICICI,
+        Gateway::NETBANKING_INDUSIND    => self::NETBANKING_INDUSIND,
+        Gateway::NETBANKING_KOTAK       => self::KOTAK,
+        Gateway::NETBANKING_RBL         => self::NETBANKING_RBL,
+        Gateway::NETBANKING_CSB         => self::NETBANKING_CSB,
+        Gateway::NETBANKING_PNB         => self::NETBANKING_PNB,
+        Gateway::NETBANKING_OBC         => self::NETBANKING_OBC,
+        Gateway::NETBANKING_ALLAHABAD   => self::NETBANKING_ALLAHABAD,
+        Gateway::NETBANKING_CANARA      => self::NETBANKING_CANARA,
+        Gateway::PAYTM                  => self::PAYTM,
+        Gateway::UPI_MINDGATE           => self::UPI_HDFC,
+        Gateway::UPI_SBI                => self::UPI_SBI,
+        Gateway::UPI_AXIS               => self::UPI_AXIS,
+        Gateway::UPI_ICICI              => self::UPI_ICICI,
+        Gateway::UPI_HULK               => self::UPI_HULK,
+        Gateway::ISG                    => self::ISG,
+        Gateway::EBS                    => self::EBS,
+        Gateway::BT_DASHBOARD           => self::VIRTUAL_ACC_YESBANK,
+
+        Gateway::AMEX                   => [
+            Gateway::ACQUIRER_AMEX   => self::AMEX,
+        ],
+
+        Gateway::FIRST_DATA             => [
+            Gateway::ACQUIRER_ICIC   => self::FIRST_DATA,
+        ],
+
+        Gateway::HITACHI                => [
+            Gateway::ACQUIRER_RATN   => self::HITACHI,
+        ],
+
+        Gateway::CYBERSOURCE            => [
+            Gateway::ACQUIRER_AXIS   => self::AXIS,
+            Gateway::ACQUIRER_HDFC   => self::HDFC
+        ],
+
+        Gateway::CARD_FSS               => [
+            Gateway::ACQUIRER_BARB   => self::CARD_FSS_BOB,
+            Gateway::ACQUIRER_HDFC   => self::CARD_FSS_HDFC
+        ],
+
+        Gateway::WALLET_AIRTELMONEY     => self::AIRTEL,
+        Gateway::WALLET_AMAZONPAY       => self::AMAZONPAY,
+        Gateway::WALLET_FREECHARGE      => self::FREECHARGE,
+        Gateway::WALLET_JIOMONEY        => self::JIOMONEY,
+        Gateway::WALLET_MPESA           => self::MPESA,
+        Gateway::WALLET_OLAMONEY        => self::OLAMONEY,
+        Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
+        Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
     ];
 
     /**

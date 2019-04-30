@@ -463,6 +463,26 @@ class ApiEventSubscriber extends Base\Core
         }
     }
 
+    protected function onPayoutQueued(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutInitiated(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
     protected function onPayoutReversed(Payout\Entity $payout)
     {
         // Todo: Uncomment this once payout_reversed.blade.php file is updated with content.

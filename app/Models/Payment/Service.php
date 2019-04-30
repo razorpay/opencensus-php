@@ -25,6 +25,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
+use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
 
@@ -1674,6 +1675,35 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
+    }
+
+    public function migrateCardVaultToken(string $cardId, string $paymentId)
+    {
+        $updated = null;
+
+        (new Card\Service)->migtateCardVaultToken($cardId);
+
+        if ($paymentId !== null)
+        {
+            $payment = $this->repo->payment->find($paymentId);
+
+            $card = $this->repo->card->find($cardId);
+
+            $updated = (new Token\Core)->updatePaymentToken($payment, $card);
+
+            switch ($updated)
+            {
+                case true:
+                    $this->repo->saveOrFail($payment);
+                    break;
+                case false:
+                    $this->getNewProcessor($payment->merchant)->notifyMigratedCard($payment);
+                    break;
+
+            }
+        }
+
+        return $updated;
     }
 
     public function fetchForSubscription(string $paymentId, string $subscriptionId): array

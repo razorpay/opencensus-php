@@ -110,7 +110,7 @@ class ViewDataSerializer extends Base\Core
 
                 $customLabels = [
                     'receipt_number'           => 'CREDIT CARD NUMBER',
-                    'first_payment_min_amount' => 'MINIMUM AMOUNT DUE',
+                    'first_payment_min_amount' => 'MAD', // I.e. Minimum Amount Due.
                     'hide_issued_to'           => true,
                 ];
 
@@ -132,7 +132,7 @@ class ViewDataSerializer extends Base\Core
 
                 $customLabels = [
                     'receipt_number' => 'CREDIT CARD NUMBER',
-                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'amount'         => 'TAD', // I.e. Total Amount Due.
                     'hide_issued_to' => true,
                 ];
 

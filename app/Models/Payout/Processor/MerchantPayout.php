@@ -15,7 +15,7 @@ class MerchantPayout extends Base
         $this->channel = $this->merchant->getChannel();
     }
 
-    public function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
+    protected function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
     {
         $destination = $this->merchant->bankAccount;
 

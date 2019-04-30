@@ -4,8 +4,6 @@ namespace RZP\Jobs;
 
 use App;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;

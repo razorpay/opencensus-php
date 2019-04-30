@@ -9,13 +9,36 @@ use RZP\Constants\HashAlgo;
 
 class Server extends Base\Mock\Server
 {
+    public function authorize($input)
+    {
+        parent::authorize($input);
+
+        $content = $input;
+
+        $content['checksum'] = 'randomHash';
+
+        $paymentId = $content['paymentId'];
+
+        $this->content($content);
+
+        $publicId = $this->getSignedPaymentId($paymentId);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+
+        $request = [
+            'url'          => $url,
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
 
     public function payInit($input)
     {
         $payInitObj = new PayInitData();
 
         return $this->processMockResponse($input, $payInitObj, 'pay_init');
-
     }
 
     public function payVerify($input)
@@ -27,9 +50,9 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
-        $VerifyObj = new VerifyData();
+        $verifyObj = new VerifyData();
 
-        return $this->processMockResponse($input, $VerifyObj, 'verify');
+        return $this->processMockResponse($input, $verifyObj, 'verify');
     }
 
     public function refund($input)
@@ -41,52 +64,14 @@ class Server extends Base\Mock\Server
 
     public function verifyRefund($input)
     {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
+        $verifyRefundObj = new VerifyRefundData();
 
-        $response = [
-            'data' =>
-                [
-                    'enqinfo' => [
-                        '0' => [
-                            'DEALID' => 'CS905114097404',
-                            'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
-                            'Key' => $entities['terminal']['gateway_secure_secret'],
-                            'ORDERNO' => '104',
-                            'REQUESTID' => '1234',
-                            'RESPONSECODE' => '0'
-                        ]
-                    ],
-                    'received' => true,
-                    'requeryid' => '1234',
-                    'reqid' => 'RZP200219195445345',
-                    'rescode' => '00',
-                    'rqtype' => 'CAN',
-                    'status' => 'verification_successful',
-                    'valkey' => $entities['terminal']['gateway_secure_secret'],
-                    'errdesc' => 'SUCCESS',
-                    'Key' => $entities['terminal']['gateway_secure_secret'],
-                    '_raw' => '',
-                ],
-            'error'             => null,
-            'success'           => true,
-            'mozart_id'         => '',
-            'external_trace_id' => '',
-        ];
-
-        $this->content($response, 'verify_refund');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
+        return $this->processMockResponse($input, $verifyRefundObj, 'verify_refund');
     }
 
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
-
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
 
@@ -96,6 +81,7 @@ class Server extends Base\Mock\Server
     protected function processMockResponse($input, $actionClass, $action)
     {
         $input = json_decode($input, true);
+
         $entities = $input['entities'];
 
         $gateway = $entities['payment']['gateway'];
@@ -157,6 +143,7 @@ class Server extends Base\Mock\Server
         $response['hash'] = $hash;
 
         return [json_encode($response)];
+
     }
 
     protected function getUpiAirtelSecret()

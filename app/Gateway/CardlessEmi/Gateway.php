@@ -5,13 +5,16 @@ namespace RZP\Gateway\CardlessEmi;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Refund;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\HashAlgo;
+use RZP\Models\Payment\Refund;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Gateway extends Base\Gateway
 {
@@ -25,6 +28,12 @@ class Gateway extends Base\Gateway
 
     const LOAN_URL_CACHE_KEY = 'gateway:loan_url_%s';
 
+    const REDIRECT_URL_CACHE_KEY = 'gateway:redirect_url_%s';
+
+    const BRANDING_URL_CACHE_KEY = 'gateway:branding_url_%s';
+
+    const SUCCESS_RESPONSE = 'success';
+
     protected $map = [
         ResponseFields::PROVIDER_PAYMENT_ID   => Entity::GATEWAY_REFERENCE_ID,
         RequestFields::PAYMENT_ID             => Entity::PAYMENT_ID,
@@ -34,6 +43,11 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT                 => Entity::AMOUNT,
         ResponseFields::PROVIDER_REFUND_ID    => Entity::GATEWAY_REFERENCE_ID,
         ResponseFields::STATUS                => Entity::STATUS,
+    ];
+
+    protected $tokenRequiredProviders = [
+        CardlessEmi::ZESTMONEY,
+        CardlessEmi::EARLYSALARY
     ];
 
     /**
@@ -83,23 +97,44 @@ class Gateway extends Base\Gateway
 
         $this->checkEmiPlansExists($responseArray);
 
-        $contact = $input['contact'];
+        $this->addCacheData($input['contact'], $responseArray);
 
+        if (in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        {
+            return [
+                'emi_plans'             => $responseArray[ResponseFields::EMI_PLANS],
+                'lender_branding_url'   => $responseArray[ResponseFields::EXTRA],
+                'success'               => 1
+            ];
+        }
+
+        return;
+    }
+
+    protected function addCacheData($contact, $responseArray)
+    {
         $emiPlans = $responseArray[ResponseFields::EMI_PLANS];
-
-        $loanUrl = isset($responseArray[ResponseFields::LOAN_URL]) ? $responseArray[ResponseFields::LOAN_URL] : null;
 
         $cacheKey = $this->provider . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID];
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey);
 
-        $loanUrlKey = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
+        if (in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        {
+            $url = $responseArray[ResponseFields::REDIRECT_URL];
+
+            $key = sprintf(self::REDIRECT_URL_CACHE_KEY, $cacheKey);
+        }
+        else
+        {
+            $url = isset($responseArray[ResponseFields::LOAN_URL]) ? $responseArray[ResponseFields::LOAN_URL] : null;
+
+            $key = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
+        }
 
         $this->app['cache']->put($emiPlanKey, $emiPlans, self::CACHE_TTL);
 
-        $this->app['cache']->put($loanUrlKey, $loanUrl, self::CACHE_TTL);
-
-        return;
+        $this->app['cache']->put($key, $url, self::CACHE_TTL);
     }
 
     /**
@@ -109,20 +144,30 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        //TODO : Handle case when we already have the token for a customer. Will be implementing this in a later version.
+        //TODO: Handle case when we already have the token for a customer. Will be implementing this in a later version.
         $this->provider = strtoupper($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER]);
 
-        $this->action = 'fetch_token';
+        $token = null;
 
-        $token = $this->fetchToken($input);
+        if ($this->isTokenRequired() === true)
+        {
+            $this->action = 'fetch_token';
 
-        $this->action = 'authorize';
+            $token = $this->fetchToken($input);
+
+            $this->action = 'authorize';
+        }
 
         $content = $this->getAuthorizeAttributes($input, $token);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         $request = $this->getStandardRequestArray($content);
+
+        if ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
+        {
+            return $this->getRedirectRequestData($input, $request);
+        }
 
         $traceRequest = $this->stripSensitiveHeader($request);
 
@@ -153,17 +198,53 @@ class Gateway extends Base\Gateway
         $this->checkAuthorizationSuccess($responseArray);
     }
 
+    public function isTokenRequired()
+    {
+        return in_array(strtolower($this->provider), $this->tokenRequiredProviders);
+    }
+
+    public function getRedirectRequestData($input, $request)
+    {
+        $contact = $input['payment']['contact'];
+
+        $cacheKey = $this->provider . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID];
+
+        $redirectUrlKey = sprintf(self::REDIRECT_URL_CACHE_KEY, $cacheKey);
+
+        $url = $this->app['cache']->get($redirectUrlKey);
+
+        $request['url'] = $url;
+
+        $traceRequest = $this->stripSensitiveHeader($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request'     => $traceRequest,
+                'gateway'     => $this->gateway,
+                'provider'    => $this->provider,
+                'terminal_id' => $input[Constants\Entity::TERMINAL][Terminal\Entity::ID],
+            ]);
+
+        return $request;
+    }
+
     public function capture(array $input)
     {
         parent::capture($input);
 
         $this->provider = strtoupper($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER]);
 
-        $this->action = 'fetch_token';
+        $token = null;
 
-        $token = $this->fetchToken($input);
+        if ($this->isTokenRequired() === true)
+        {
+            $this->action = 'fetch_token';
 
-        $this->action = 'capture';
+            $token = $this->fetchToken($input);
+
+            $this->action = 'capture';
+        }
 
         $content = $this->getCaptureRequestContent($input, $token);
 
@@ -253,12 +334,33 @@ class Gateway extends Base\Gateway
     protected function getCheckAccountRequestContent($input)
     {
         $content = [
-            RequestFields::CONTACT                  => $input['contact'],
             RequestFields::AMOUNT                   => $input['amount'],
             RequestFields::MERCHANT_ID              => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID],
-            RequestFields::MERCHANT_CATEGORY_CODE   => $this->terminal[Terminal\Entity::CATEGORY],
-            RequestFields::BILLING_LABEL            => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2]
         ];
+
+        return $this->modifyRequestContent($input, $content);
+    }
+
+    protected function modifyRequestContent($input, $content)
+    {
+        switch (strtolower($this->provider))
+        {
+            case CardlessEmi::EARLYSALARY:
+                $content[RequestFields::CONTACT] = $input['contact'];
+                $content[RequestFields::MERCHANT_CATEGORY_CODE] = $this->terminal[Terminal\Entity::CATEGORY];
+                $content[RequestFields::BILLING_LABEL] = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+                break;
+            case CardlessEmi::ZESTMONEY:
+                $content[RequestFields::CONTACT] = $input['contact'];
+                $content[RequestFields::MERCHANT_CATEGORY_CODE] = $this->terminal[Terminal\Entity::CATEGORY];
+                $content[RequestFields::BILLING_LABEL] = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+                break;
+            case CardlessEmi::FLEXMONEY:
+                $content[RequestFields::CONTACT_NUMBER] = $input['contact'];
+                break;
+            default:
+                break;
+        }
 
         return $content;
     }
@@ -363,34 +465,86 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeAttributes($input, $token)
     {
-        return [
+        $content = [
             RequestFields::AMOUNT         => $input[Constants\Entity::PAYMENT][Payment\Entity::AMOUNT],
-            RequestFields::TOKEN          => $token,
             RequestFields::PAYMENT_ID     => $input[Constants\Entity::PAYMENT][Payment\Entity::ID],
             RequestFields::CURRENCY       => $input[Constants\Entity::PAYMENT][Payment\Entity::CURRENCY],
             RequestFields::EMI_DURATION   => $input['gateway']['emi_duration'],
-            RequestFields::MERCHANT       => [
-                RequestFields::MERCHANT_ID   => $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
-                RequestFields::BILLING_LABEL => $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2]
-            ],
             RequestFields::ACTION         => Base\Action::AUTHORIZE,
-            RequestFields::USER_IP        => $input[Constants\Entity::PAYMENT_ANALYTICS][Payment\Analytics\Entity::IP],
         ];
+
+        return $this->modifyAuthorizeRequestContent($input, $content, $token);
+    }
+
+    protected function modifyAuthorizeRequestContent($input, $content, $token)
+    {
+        switch (strtolower($this->provider))
+        {
+            case CardlessEmi::FLEXMONEY:
+                $content[RequestFields::CALLBACK_URL] = $input['callbackUrl'];
+                $content[RequestFields::CONTACT_NUMBER] = $input[Constants\Entity::PAYMENT][Payment\Entity::CONTACT];
+
+                $content[RequestFields::MERCHANT_ID] =
+                    $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID];
+                $content[RequestFields::BILLING_LABEL] =
+                    $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2];
+
+                $checksum = $this->getCheckSumString($content);
+
+                $content[RequestFields::CHECKSUM] = $checksum;
+
+                break;
+            default:
+                $content[RequestFields::MERCHANT] = [
+                    RequestFields::MERCHANT_ID   =>
+                        $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
+                    RequestFields::BILLING_LABEL =>
+                        $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
+                ];
+
+                $content[RequestFields::TOKEN] = $token;
+                $content[RequestFields::USER_IP] = $input[
+                    Constants\Entity::PAYMENT_ANALYTICS][Payment\Analytics\Entity::IP];
+
+                break;
+        }
+
+        return $content;
     }
 
     protected function getCaptureRequestContent($input, $token)
     {
-        return [
-            RequestFields::TOKEN          => $token,
+        $content = [
             RequestFields::ACTION         => Base\Action::CAPTURE,
             RequestFields::AMOUNT         => $input[Constants\Entity::PAYMENT][Payment\Entity::AMOUNT],
             RequestFields::CURRENCY       => $input[Constants\Entity::PAYMENT][Payment\Entity::CURRENCY],
             RequestFields::PAYMENT_ID     => $input[Constants\Entity::PAYMENT][Payment\Entity::ID],
             RequestFields::MERCHANT       => [
-                RequestFields::MERCHANT_ID   => $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
-                RequestFields::BILLING_LABEL => $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
+                RequestFields::MERCHANT_ID   =>
+                    $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
+                RequestFields::BILLING_LABEL =>
+                    $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2],
             ]
         ];
+
+        return $this->modifyCaptureRequestContent($input, $content, $token);
+    }
+
+    protected function modifyCaptureRequestContent($input, $content, $token)
+    {
+        switch (strtolower($this->provider))
+        {
+            case CardlessEmi::ZESTMONEY:
+                $content[RequestFields::TOKEN] = $token;
+                break;
+            case CardlessEmi::EARLYSALARY:
+                $content[RequestFields::TOKEN] = $token;
+                break;
+            default:
+                break;
+        }
+
+        return $content;
     }
 
     protected function getRefundRequestContent($input)
@@ -467,7 +621,12 @@ class Gateway extends Base\Gateway
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
-        $content = json_encode($content);
+        if ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false) or
+            ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true) and
+                ($this->action !== Action::AUTHORIZE)))
+        {
+            $content = json_encode($content);
+        }
 
         $request = parent::getStandardRequestArray($content, $method, $type);
 
@@ -569,7 +728,8 @@ class Gateway extends Base\Gateway
     protected function checkCaptureSuccess($response)
     {
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) or
-            ((isset($response[ResponseFields::STATUS]) === true) and ($response[ResponseFields::STATUS] !== 'captured')))
+            ((isset($response[ResponseFields::STATUS]) === true) and
+                ($response[ResponseFields::STATUS] !== 'captured')))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED);
@@ -581,7 +741,7 @@ class Gateway extends Base\Gateway
         if (((isset($response[ResponseFields::ERROR_CODE]) === true) and
              ($response[ResponseFields::ERROR_CODE] !== 'OK')) or
             ((isset($response[ResponseFields::STATUS]) === true) and
-             ($response[ResponseFields::STATUS] !== 'success')))
+             ($response[ResponseFields::STATUS] !== self::SUCCESS_RESPONSE)))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
@@ -628,7 +788,11 @@ class Gateway extends Base\Gateway
         {
             $entity->setRefundId($input[Constants\Entity::REFUND]['id']);
             $entity->setAmount($input[Constants\Entity::REFUND]['amount']);
-            $entity->setGatewayReferenceId($attributes[ResponseFields::PROVIDER_REFUND_ID]);
+
+            if (isset($attributes[ResponseFields::PROVIDER_REFUND_ID]) === true)
+            {
+                $entity->setGatewayReferenceId($attributes[ResponseFields::PROVIDER_REFUND_ID]);
+            }
         }
         else
         {
@@ -674,5 +838,215 @@ class Gateway extends Base\Gateway
         $gatewayMetric = new Metric();
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::action($input, Action::VERIFY_REFUND);
+
+        $response = $this->sendVerifyRefundRequest($input);
+
+        return $this->checkRefundResponse($response);
+    }
+
+    protected function sendVerifyRefundRequest($input)
+    {
+        $request = $this->getVerifyRefundRequestContent($input);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'   => $request,
+                'gateway'   => $this->gateway,
+                'provider'  => $this->provider,
+            ]);
+
+        return $this->sendGatewayRequest($request);
+    }
+
+    protected function getVerifyRefundRequestContent($input)
+    {
+        $content = [
+            RequestFields::REFUND_ID => $input['refund']['id'],
+        ];
+
+        return $this->getStandardRequestArray($content);
+    }
+
+    protected function checkRefundResponse($response)
+    {
+        $this->trace->info(TraceCode::REFUND_VERIFY_RESPONSE, [
+            'raw_response'   => $response,
+            'gateway'        => $this->gateway,
+            'provider'       => $this->provider,
+        ]);
+
+        $response = $this->jsonToArray($response);
+
+        if ((isset($response[ResponseFields::ERROR_CODE])) or
+            ((isset($response[ResponseFields::STATUS])) and ($response[ResponseFields::STATUS] !== self::SUCCESS_RESPONSE)))
+        {
+            $errorCode = ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED;
+
+            $responseCode = null;
+
+            $responseDescription = null;
+
+            if (isset($response[ResponseFields::ERROR_CODE]) === true)
+            {
+                $responseCode = $response[ResponseFields::ERROR_CODE];
+
+                $responseDescription = $response[ResponseFields::ERROR_DESCRIPTION];
+
+                $errorCode = ErrorCodes::getInternalErrorCode($responseCode,
+                    ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+
+            }
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $responseCode,
+                $responseDescription,
+                [
+                    'gateway'    => $this->gateway,
+                    'provider'   => $this->provider,
+                ]);
+        }
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $this->provider = strtoupper($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER]);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway_response'  => $input['gateway'],
+                'payment_id'        => $input[Constants\Entity::PAYMENT][Payment\Entity::ID],
+                'gateway'           => $this->gateway,
+                'provider'          => $this->provider,
+            ]);
+
+        $response = $input['gateway'];
+
+        $this->verifyChecksum($response);
+
+        $expectedAmount = number_format($input['payment']['amount'],
+            2, '.', '');
+
+        $actualAmount   = number_format($response[ResponseFields::AMOUNT],
+            2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $this->assertPaymentId($gatewayEntity->getPaymentId(), $response[ResponseFields::PAYMENT_ID]);
+
+        $attrs = $this->getCallbackAttributes($response);
+
+        $gatewayEntity->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayEntity);
+
+        $this->checkCallbackStatus($response);
+
+        return $response;
+    }
+
+    protected function getCallbackAttributes(array $response)
+    {
+        return [
+            Entity::RECEIVED                => true,
+            Entity::STATUS                  => $response[ResponseFields::STATUS],
+            Entity::GATEWAY_REFERENCE_ID    => $response[ResponseFields::PROVIDER_PAYMENT_ID],
+        ];
+    }
+
+    protected function checkCallbackStatus($response)
+    {
+        if ((isset($response[ResponseFields::STATUS]) === true) and
+            ($response[ResponseFields::STATUS] !== 'authorized'))
+        {
+            if (isset($response[ResponseFields::ERROR_CODE]) === true)
+            {
+                $errorCode = ErrorCodes::getInternalErrorCode(
+                    $response[ResponseFields::ERROR_CODE],
+                    ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED);
+
+            }
+            else
+            {
+                $errorCode = ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED;
+            }
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $response[ResponseFields::ERROR_CODE],
+                $response[ResponseFields::ERROR_DESCRIPTION],
+                [
+                    'gateway'   => $this->gateway,
+                    'response'  => $response,
+                    'provider'  => $this->provider,
+                ]);
+        }
+    }
+
+    protected function verifyChecksum($response)
+    {
+        $actualChecksum = $response[ResponseFields::CHECKSUM];
+
+        $generatedChecksum = $this->getCheckSumString($response);
+
+        if (hash_equals($generatedChecksum, $actualChecksum) !== true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
+        }
+
+    }
+
+    protected function getCheckSumString($response)
+    {
+        unset($response[ResponseFields::CHECKSUM]);
+        unset($response['key_id']);
+
+        return $this->getHashOfArray($response);
+    }
+
+    protected function getStringToHash($content, $glue = '|')
+    {
+        $str = '';
+
+        foreach ($content as $key => $value)
+        {
+            $str .= $key . '=' . $value . '|';
+        }
+
+        return rtrim($str, '|');
+    }
+
+    protected function getHashOfString($str)
+    {
+        $secret = $this->getSecret();
+
+        return base64_encode(hash_hmac(HashAlgo::SHA256, $str, $secret, true));
+    }
+
+    protected function getTestSecret()
+    {
+        assert($this->mode === Mode::TEST);
+
+        $secret = $this->config[strtolower($this->provider)]['test_hash_secret'];
+
+        return $secret;
+    }
+
+    protected function getLiveSecret()
+    {
+        $secret = $this->config[strtolower($this->provider)]['live_hash_secret'];
+
+        return $secret;
     }
 }

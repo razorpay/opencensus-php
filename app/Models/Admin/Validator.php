@@ -66,8 +66,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $setRedisKeysRules = [
-        ConfigKey::FTS_CHANNELS     => 'filled|array',
-        ConfigKey::HEARTBEAT_ROUTES => 'filled|array',
+        ConfigKey::FTS_CHANNELS      => 'filled|array',
+        ConfigKey::HEARTBEAT_ROUTES  => 'filled|array',
+        ConfigKey::DOWNTIME_THROTTLE => 'filled|array',
     ];
 
     protected static $updateRedisKeysRules = [

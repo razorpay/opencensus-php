@@ -1,7 +1,7 @@
 <?php
 
-
 namespace RZP\Gateway\Mozart\Mock;
+
 use RZP\Gateway\Base;
 use RZP\Gateway\Mozart;
 
@@ -64,6 +64,37 @@ class VerifyData extends Base\Mock\Server
             'mozart_id'         => '',
             'external_trace_id' => '',
         ];
+
+        return $response;
+    }
+
+    public static function wallet_phonepe($entities)
+    {
+        $response = [
+            'data'=>
+                [
+                    '_raw'=> '',
+                    'code'=> 'PAYMENT_SUCCESS',
+                    'data'=> [
+                        'amount'=> $entities['payment']['amount'],
+                        'merchantId'=> 'abc',
+                        'payResponseCode'=> 'SUCCESS',
+                        'paymentState'=> 'COMPLETED',
+                        'providerReferenceId'=> 'phonepeProviderRefId',
+                        'transactionId'=> $entities['payment']['id'],
+                    ],
+                    'message'=> 'Your payment is successful.',
+                    'received'=> true,
+                    'status'=> 'verification_successful',
+                    'success'=> true
+                ],
+            'error'=> null,
+            'external_trace_id'=> '',
+            'mozart_id'=> '',
+            'next'=> [],
+            'success'=> true,
+        ];
+
         return $response;
     }
 }

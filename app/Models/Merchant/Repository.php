@@ -87,7 +87,8 @@ class Repository extends Base\Repository
       int $limit,
       int $skip,
       int $end,
-      array $merchantIds = []): Base\PublicCollection
+      array $merchantIds = [],
+      array $merchantIdsExcluded = []): Base\PublicCollection
     {
         $query = $this->newQuery()
                     ->where(Entity::ACTIVATED, '=', 1)
@@ -99,6 +100,11 @@ class Repository extends Base\Repository
         if (empty($merchantIds) === false)
         {
             $query = $query->whereIn(Entity::ID, $merchantIds);
+        }
+
+        if (empty($merchantIdsExcluded) === false)
+        {
+            $query = $query->whereNotIn(Entity::ID, $merchantIdsExcluded);
         }
 
         return $query->get();

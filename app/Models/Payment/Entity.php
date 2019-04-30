@@ -2946,6 +2946,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->card->isAmex() === true));
     }
 
+    public function shouldRunShieldChecks()
+    {
+        //
+        // Since the first auth transaction would have already been
+        // done, we don't need to do any MaxMind risk checks for this.
+        //
+        if ($this->isSecondRecurring() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public static function getFilteredDescription(string $description = null)
     {
         $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
@@ -3071,6 +3085,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             default:
                 return 'PG';
         }
+    }
+
+    public function isMoto()
+    {
+        return ($this->getAuthType() === AuthType::SKIP);
     }
 
     public function isDirectSettlement()

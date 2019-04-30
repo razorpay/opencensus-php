@@ -72,6 +72,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $enach = $this->getLastEntity('enach', true);
 
         $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertNotNull($enach['gateway_reference_id2']);
 
         $this->assertEquals('true', $enach['status']);
 

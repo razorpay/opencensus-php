@@ -1,11 +1,14 @@
 <?php
 
 namespace RZP\Gateway\Mozart\Mock;
+
 use RZP\Gateway\Base;
 use RZP\Gateway\Mozart;
 
 class PayInitData extends Base\Mock\Server
 {
+    use Base\Mock\GatewayTrait;
+
     public function bajajfinserv($entities)
     {
         $response = [
@@ -47,7 +50,14 @@ class PayInitData extends Base\Mock\Server
 
         $publicId = $this->getSignedPaymentId($paymentId);
 
-        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+        $this->gateway = $entities['payment']['gateway'];
+
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_wallet_payment_get',
+            [
+                'wallet' => $entities['payment']['wallet'],
+                'paymentId' => $entities['payment']['id']
+            ]);
 
         $output = [
             'code'    => 'PAYMENT_SUCCESS',
@@ -55,27 +65,20 @@ class PayInitData extends Base\Mock\Server
             'transactionId' => $entities['payment']['id'],
             'amount' => $entities['payment']['amount'],
             'providerReferenceId' => 'phonepeProviderRefId',
-            'key' => $entities['terminal']['gateway_secure_secret'],
         ];
-
-        $salt = $entities['terminal']['gateway_access_code'];
-
-        $output['checksum'] = $this->getGatewayInstance()->generatePhonepeHash($output).'###'.$salt;
-
-        $url .= '?' . http_build_query($output);
 
         $response = [
             'data' => [
-                '_raw' => "",
-                'code'=> "PAYMENT_SUCCESS",
-                'message'=> "this is successfull",
+                '_raw' => '',
+                'code'=> '',
+                'message'=> '',
                 'received'=> true,
-                'status'=> "authorization_successfull",
-                'success'=> true
+                'status'=> 'authorization_successfull',
+                'success'=> null
             ],
             'error'=> null,
-            'external_trace_id'=> "",
-            'mozart_id'=> "",
+            'external_trace_id'=> '',
+            'mozart_id'=> '',
             'next'=> [
                 'redirect' => [
                     'content' => $output,
@@ -100,7 +103,7 @@ class PayInitData extends Base\Mock\Server
                     'rrn' => '987654321',
                     'hdnOrderID' => $entities['payment']['id'],
                     'hash' => 'abcd',
-                    '_raw' => "{\"rrn\":\"910501000855\",\"txnStatus\":\"PENDING\",\"hdnOrderID\":\"ablxasabsjahskajkg\",\"hash\":\"abcd\",\"messageText\":\"Success\",\"code\":\"0\",\"errorCode\":\"000\",\"txnId\":\"AIR461D026C5D8A48C8AED25897B9AB1877\"}",
+                    '_raw' => '{"rrn":"910501000855","txnStatus":"PENDING","hdnOrderID":"ablxasabsjahskajkg","hash":"abcd","messageText":"Success","code":"0","errorCode":"000","txnId":"AIR461D026C5D8A48C8AED25897B9AB1877"}',
                     'status' => 'authorization_successful',
                 ],
             'error'             => null,

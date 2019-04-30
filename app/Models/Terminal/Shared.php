@@ -92,6 +92,7 @@ class Shared
     const CSB_TPV_TERMINAL                   = '1000csbtpvTrml';
     const CARDLESS_EMI_RAZORPAY_TERMINAL     = '1CrdlesEmiTrml';
     const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
+    const CARDLESS_EMI_FLEXMONEY_TERMINAL    = '20CrdlesEmiTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
@@ -153,7 +154,7 @@ class Shared
         self::HITACHI_MOTO_TERMINAL,
         self::ENSTAGE_TERMINAL,
         self::CARDLESS_EMI_RAZORPAY_TERMINAL,
-
+        self::CARDLESS_EMI_FLEXMONEY_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -213,6 +214,7 @@ class Shared
         self::HITACHI_MOTO_TERMINAL              => Gateway::HITACHI,
         self::ENSTAGE_TERMINAL                   => Gateway::MPI_ENSTAGE,
         self::CARDLESS_EMI_RAZORPAY_TERMINAL     => Gateway::CARDLESS_EMI,
+        self::CARDLESS_EMI_FLEXMONEY_TERMINAL    => Gateway::CARDLESS_EMI,
     ];
 
     public static function getSharedTerminalMapping()

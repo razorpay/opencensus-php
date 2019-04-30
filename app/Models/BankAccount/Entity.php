@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\VirtualAccount;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -210,6 +211,11 @@ class Entity extends Base\PublicEntity
     public function payouts()
     {
         return $this->morphMany('RZP\Models\Payout\Entity', 'destination');
+    }
+
+    public function virtualAccount()
+    {
+        return $this->hasOne(VirtualAccount\Entity::class);
     }
 
     public function isVirtual()

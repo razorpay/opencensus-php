@@ -32,4 +32,12 @@ class CardVault extends BaseCardVault
     {
         return [];
     }
+
+    public function getVaultTokenFromTempToken($token)
+    {
+        $response['token'] = strrev($token);
+        $response['fingerprint'] = strrev($token);
+
+        return $response;
+    }
 }

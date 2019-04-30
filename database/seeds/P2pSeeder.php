@@ -63,7 +63,7 @@ class P2pSeeder extends Seeder
             [
                 Constants::CUSTOMER_1_DEVICE_1,
                 Constants::CUSTOMER_2_DEVICE_1,
-            ])->delete();
+            ])->forceDelete();
 
         factory(P2p\Device\Entity::class)->create(
             [
@@ -97,7 +97,7 @@ class P2pSeeder extends Seeder
                 Constants::CUSTOMER_1_DEVICE_TOKEN_2_AXIS,
                 Constants::CUSTOMER_2_DEVICE_TOKEN_1_AXIS,
                 Constants::CUSTOMER_2_DEVICE_TOKEN_2_AXIS,
-            ])->delete();
+            ])->forceDelete();
 
         factory(P2p\Device\DeviceToken\Entity::class)->create(
             [
@@ -129,6 +129,9 @@ class P2pSeeder extends Seeder
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_AXIS,
                 'status'                => P2p\Device\Status::VERIFIED,
+                'gateway_data'          => [
+                    'merchantCustomerId'    => Constants::CUSTOMER_1_DEVICE_TOKEN_1_AXIS,
+                ],
             ]);
 
         factory(P2p\Device\DeviceToken\Entity::class)->create(
@@ -145,6 +148,9 @@ class P2pSeeder extends Seeder
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RAZOR_AXIS,
                 'status'                => P2p\Device\Status::VERIFIED,
+                'gateway_data'          => [
+                    'merchantCustomerId'    => Constants::CUSTOMER_2_DEVICE_TOKEN_1_AXIS,
+                ],
             ]);
     }
 
@@ -207,7 +213,7 @@ class P2pSeeder extends Seeder
                 Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
                 Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
                 Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
-            ])->delete();
+            ])->forceDelete();
 
         factory(P2p\BankAccount\Entity::class)->create(
             [
@@ -325,7 +331,7 @@ class P2pSeeder extends Seeder
                 Constants::CUSTOMER_1_VPA_2_AXIS,
                 Constants::CUSTOMER_2_VPA_1_AXIS,
                 Constants::CUSTOMER_2_VPA_2_AXIS,
-            ])->delete();
+            ])->forceDelete();
 
         factory(P2p\Vpa\Entity::class)->create(
             [

@@ -8,6 +8,6 @@ class Vault
     const RZP_VAULT              = 'rzpvault';
     const RZP_ENCRYPTION         = 'rzpencryption';
 
-    const RZP_VAULT_SCHEME       = 0;
-    const RZP_ENCRYPTION_SCHEME  = 1;
+    const RZP_VAULT_SCHEME       = '0';
+    const RZP_ENCRYPTION_SCHEME  = '1';
 }

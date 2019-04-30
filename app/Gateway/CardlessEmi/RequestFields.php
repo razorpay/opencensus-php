@@ -18,4 +18,7 @@ class RequestFields
     const MERCHANT               = 'merchant';
     const USER_IP                = 'user_ip';
     const REFUND_ID              = 'rzp_refund_id';
+    const CALLBACK_URL           = 'callback_url';
+    const CONTACT_NUMBER         = 'contact';
+    const CHECKSUM               = 'checksum';
 }
