@@ -310,6 +310,10 @@ export default class User {
     return this.getExpStatus('capital_banner');
   }
 
+  get isCommissionsEnabled() {
+    return this.getExpStatus('show_commissions');
+  }
+
   get isExpireByRequired() {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
   }
