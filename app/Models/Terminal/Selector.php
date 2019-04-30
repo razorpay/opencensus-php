@@ -433,21 +433,6 @@ class Selector extends Base\Core
                 return;
             }
 
-            $url = $this->app['config']->get('applications.routing.url');
-
-            if ($url === null)
-            {
-                $this->trace->error(
-                    TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
-                    [
-                        'message' => 'Routing service url is missing',
-                    ]);
-
-                return;
-            }
-
-            $headers = ['Content-Type: application/json'];
-
             $payment_data = [
                 'amount'      => $payment->getAmount(),
                 'currency'    => $payment->getCurrency(),
@@ -474,7 +459,6 @@ class Selector extends Base\Core
                 'failedTerminalsIds' => $failedTerminalIds,
             ];
 
-            $this->app->nonBlockingHttp->postRequest($url, $data, $headers);
         }
         catch (\Throwable $e)
         {
