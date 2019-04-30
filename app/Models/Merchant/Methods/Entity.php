@@ -370,7 +370,7 @@ class Entity extends Base\PublicEntity
 
     public function isMpesaEnabled()
     {
-        return $this->getAttribute(self::MPESA);
+        return false;
     }
 
     public function isPayumoneyEnabled()
