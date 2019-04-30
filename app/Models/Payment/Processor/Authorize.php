@@ -661,7 +661,7 @@ trait Authorize
 
         $this->runInternationalChecks($payment);
 
-        $this->runFraudChecks($payment);
+        $this->runFraudChecksIfApplicable($payment);
 
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -1772,9 +1772,10 @@ trait Authorize
         $this->validateInternationalRecurringPaymentsAllowed($payment);
     }
 
-    protected function runFraudChecks(Payment\Entity $payment)
+    protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+            ($payment->shouldRunShieldChecks() === true))
         {
             $this->validateFraudDetectionV2($payment);
         }
