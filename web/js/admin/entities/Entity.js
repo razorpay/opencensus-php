@@ -84,41 +84,46 @@ export default class GenericEntity extends Component {
     return (
       <div class="entity-page">
         <main class="box limited">
-          {data && data.merchant_id && (
-            <Link to={'/merchants/' + data.merchant_id}>
-              <i class="box-icon i-user-circle"> {data.merchant_id}</i>
-            </Link>
-          )}
+          {data &&
+            data.merchant_id && (
+              <Link to={'/merchants/' + data.merchant_id}>
+                <i class="box-icon i-user-circle"> {data.merchant_id}</i>
+              </Link>
+            )}
           <header>
             <span class="capitalize">{this.state.title}</span>
             <code>{id}</code>
           </header>
           <Duplex pending={loading} model={data} fields={this.fields()} />
-          {type === 'payment' && data && (
-            <ShowWhen permission="view_refund_payments">
-              <ToggleEntityRow label="Refunds">
-                <PaymentRefundsList
-                  id={data.id}
-                  merchant_id={data.merchant_id}
-                  mode={data.mode}
-                />
-              </ToggleEntityRow>
-            </ShowWhen>
-          )}
+          {type === 'payment' &&
+            data && (
+              <ShowWhen permission="view_refund_payments">
+                <ToggleEntityRow label="Refunds">
+                  <PaymentRefundsList
+                    id={data.id}
+                    merchant_id={data.merchant_id}
+                    mode={data.mode}
+                  />
+                </ToggleEntityRow>
+              </ShowWhen>
+            )}
 
           <br />
-          {data && !loading && (
-            <ToggleEntityRow label="Raw Data">
-              <div class="code">{JSON.stringify(data, null, 4)}</div>
-            </ToggleEntityRow>
-          )}
+          {data &&
+            !loading && (
+              <ToggleEntityRow label="Raw Data">
+                <div class="code">{JSON.stringify(data, null, 4)}</div>
+              </ToggleEntityRow>
+            )}
         </main>
         <aside class="container">
-          {data && !loading && actions[type] && (
-            <div class="header">
-              <b>ACTIONS</b>
-            </div>
-          )}
+          {data &&
+            !loading &&
+            actions[type] && (
+              <div class="header">
+                <b>ACTIONS</b>
+              </div>
+            )}
           {data && !loading && actions[type] && actions[type](data, this)}
         </aside>
       </div>
@@ -240,14 +245,17 @@ const actions = {
   ),
   batch: (entity, entityComponent) =>
     entity &&
-    entity.status !== 'processed' &&
-    !entity.processing && (
+    ((entity.status !== 'processed' && !entity.processing) ||
+      (entity.type === 'reconciliation' &&
+        entity.status === 'created' &&
+        entity.processing &&
+        entity.updated_at < Math.floor(new Date() / 1000) - 7200)) && (
       <ShowWhen permission="retry_batch">
         <AsyncButton
           class="btn"
           pendingClass="small spinner"
           onClick={retryBatch.bind(entity, entityComponent::updateEntity)}
-          text="Retry batch"
+          text="Retry Batch"
           confirm="Confirm retry batch?"
         />
       </ShowWhen>
