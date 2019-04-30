@@ -63,7 +63,6 @@ class Sbi extends Base
                                            'card.globalCard',
                                            'emiPlan',
                                            'merchant.merchantDetail',
-                                           'merchant.terminals',
                                            'terminal'
                                         ]);
 

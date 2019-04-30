@@ -4,13 +4,13 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Str;
 use Mail;
+
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
-use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Gateway\File\Status;
@@ -205,7 +205,6 @@ class Base extends BaseProcessor
 
         if (empty($authCode) === true)
         {
-            sd($payment->toArray());
             throw new Exception\LogicException(
                 'Authorization Code cannot be empty.', null,
                 [
