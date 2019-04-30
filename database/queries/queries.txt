@@ -4798,6 +4798,12 @@ ALTER TABLE fund_account_validations
     ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
     ADD INDEX `fund_account_validations_fts_transfer_id_index` (`fts_transfer_id`);
 
+ALTER TABLE payouts
+    ADD COLUMN queued_at int(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER `queued_at`,
+    ADD INDEX payouts_queued_at_index (queued_at),
+    ADD INDEX payouts_cancelled_at_index (cancelled_at);
+
 ALTER TABLE cards
     ADD COLUMN global_fingerprint varchar(50) DEFAULT NULL AFTER vault_token;
     ADD INDEX  `cards_global_fingerprint_index` (`global_fingerprint`);
@@ -4877,6 +4883,10 @@ ALTER TABLE fund_transfer_attempts
 
 ALTER TABLE payouts
     MODIFY notes TEXT DEFAULT NULL;
+
+ALTER TABLE payouts
+    ADD COLUMN initiated_at int(11) DEFAULT NULL AFTER `queued_at`,
+    ADD INDEX payouts_initiated_at_index (initiated_at);
 
 ALTER TABLE refunds
     CHANGE reference11 balance_id CHAR(14) DEFAULT NULL,

@@ -109,6 +109,7 @@ class Constants
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
+    const QUEUED_PAYOUTS                  = 'queued_payouts';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
@@ -334,6 +335,7 @@ class Constants
         self::SELF_KYC_DISABLED               => true,
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
+        self::QUEUED_PAYOUTS                  => true,
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
@@ -436,6 +438,11 @@ class Constants
         self::INVOICE_EXPIRE_BY_REQD    => [
             'feature'       => self::INVOICE_EXPIRE_BY_REQD,
             'display_name'  => 'Mandatory invoice expire_by field',
+            'documentation' => '',
+        ],
+        self::QUEUED_PAYOUTS            => [
+            'feature'       => self::QUEUED_PAYOUTS,
+            'display_name'  => 'Queued payouts',
             'documentation' => '',
         ],
     ];
