@@ -99,80 +99,62 @@ class Processor extends VirtualAccount\Processor
         return $bharatQr;
     }
 
-    /**
-     * A receiver is expected if there exists an active VA
-     * to receive it or if the terminal expected is set to
-     * true. If such a VA does not exist, or exists but
-     * has been closed/paid and terminal expected is also set to
-     * false the payment is to be refunded.
-     *
-     * @param Base\PublicEntity $entity This is the receiver entity:
-     *                                  qr_code
-     *
-     * @return bool
-     */
-    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity): bool
+    protected function useSharedVirtualAccount(Base\PublicEntity $bharatQr): bool
     {
-        $this->setVirtualAccount($entity);
-
         if ($this->virtualAccount === null)
         {
-            return $this->handleUnknownBankReference($entity);
-        }
+            if ($this->getTerminal()->isExpected() === true)
+            {
+                // For expected BQR terminals, we create a new VA and set it
+                $this->handleExpectedTerminal();
 
-        return true;
-    }
+                return false;
+            }
 
-    protected function handleUnknownBankReference(Entity $bharatQr)
-    {
-        if ($this->getTerminal()->isExpected() === false)
-        {
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
                 [
                     'entity' => $bharatQr->toArray(),
                 ]);
 
-            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
-
-            return false;
-        }
-        else
-        {
-            $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
-
-            //
-            // In case of sharp gateway merchant is not
-            // taken from terminal but from the auth itself
-            // as the test payments are made on private auth
-            //
-            if ($gateway === Payment\Gateway::SHARP)
-            {
-                $terminalMerchant = $this->merchant;
-            }
-            else
-            {
-                $terminalMerchant = $this->terminal->merchant;
-            }
-
-            if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
-            {
-                throw new Exception\LogicException(
-                    'Bharat Qr terminal merchant with expected true can not be shared',
-                    null,
-                    ['terminal_id' => $this->terminal->getId()]);
-            }
-
-            //
-            // Here if there is no va but we received a payment and terminal
-            // expected is set to true, we need to create a virtual account and
-            // receiver with the reference received from bank.
-            //
-            $this->createAndSetVirtualAccount($terminalMerchant);
-
             return true;
         }
 
+        return parent::useSharedVirtualAccount($bharatQr);
+    }
+
+    protected function handleExpectedTerminal()
+    {
+        $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+
+        //
+        // In case of sharp gateway merchant is not
+        // taken from terminal but from the auth itself
+        // as the test payments are made on private auth
+        //
+        if ($gateway === Payment\Gateway::SHARP)
+        {
+            $terminalMerchant = $this->merchant;
+        }
+        else
+        {
+            $terminalMerchant = $this->terminal->merchant;
+        }
+
+        if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
+        {
+            throw new Exception\LogicException(
+                'Bharat Qr terminal merchant with expected true can not be shared',
+                null,
+                ['terminal_id' => $this->terminal->getId()]);
+        }
+
+        //
+        // Here if there is no va but we received a payment and terminal
+        // expected is set to true, we need to create a virtual account and
+        // receiver with the reference received from bank.
+        //
+        $this->createAndSetVirtualAccount($terminalMerchant);
     }
 
     protected function createAndSetVirtualAccount(Merchant\Entity $merchant)

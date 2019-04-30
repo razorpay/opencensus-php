@@ -20,10 +20,6 @@ abstract class Processor extends Base\Core
 
     protected $paymentProcessor;
 
-    protected $useSharedVirtualAccount;
-
-    const METHOD_NOT_ENABLED_CODE_REGEX = '/BAD_REQUEST_PAYMENT_(%s)_NOT_ENABLED_FOR_MERCHANT/';
-
     public function __construct()
     {
         parent::__construct();
@@ -154,13 +150,6 @@ abstract class Processor extends Base\Core
         $this->getPaymentProcessor()->process($paymentInput, $gatewayData);
     }
 
-    protected function createPaymentToSharedMerchant(array $input, array $gatewayData = [])
-    {
-        $this->useSharedVirtualAccount = true;
-
-        $this->getPaymentProcessor()->process($input, $gatewayData);
-    }
-
     protected function createPayment(array $input, array $gatewayData = [])
     {
         try
@@ -174,65 +163,16 @@ abstract class Processor extends Base\Core
              * In this case we will make the payment without Order and refund
              * it in later flow.
              */
-            if (isset($input[Payment\Entity::ORDER_ID]) === true)
+            if (isset($input[Payment\Entity::ORDER_ID]) === false)
             {
-                $this->trace->traceException($e, Trace::INFO,
-                    TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
-
-                $this->createPaymentWithoutOrder($input, $gatewayData);
-
-                return;
+                throw $e;
             }
 
-            $code = $e->getError()->getInternalErrorCode();
+            $this->trace->traceException($e, Trace::INFO,
+                TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
 
-            /*
-             * It's also possible that the payment failed because of the payment
-             * method not being enabled anymore. This happens when a method is
-             * revoked from a merchant after he's created the VA but before the
-             * payment is made. In this case, we retry the payment towards the
-             * test account, and let it get refunded.
-             */
-            if ($this->isMethodNotEnabledError($code) === true)
-            {
-                $this->trace->traceException($e, Trace::INFO,
-                    TraceCode::VIRTUAL_ACCOUNT_METHOD_DISABLED_PAYMENT_REROUTED, [
-                        'input' => $input
-                    ]);
-
-                $this->createPaymentToSharedMerchant($input, $gatewayData);
-
-                return;
-            }
-
-            throw $e;
+            $this->createPaymentWithoutOrder($input, $gatewayData);
         }
-    }
-
-    /**
-     * A receiver is expected if there exists an active VA
-     * to receive it. If such a VA does not exist, or exists but
-     * has been closed/paid, the payment is to be refunded.
-     *
-     * @param Base\PublicEntity $entity This is the receiver entity:
-     *                                  bank_transfer, qr_code
-     *
-     * @return bool
-     */
-    abstract protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity);
-
-    protected function isMethodNotEnabledError(string $code)
-    {
-        $methods = strtoupper(implode('|', Receiver::METHODS));
-
-        $regex = sprintf(self::METHOD_NOT_ENABLED_CODE_REGEX, $methods);
-
-        if (preg_match($regex, $code) != 1)
-        {
-            return false;
-        }
-
-        return true;
     }
 
     protected function getDefaultPaymentArray(): array
@@ -293,5 +233,53 @@ abstract class Processor extends Base\Core
     protected function setMerchant()
     {
         $this->merchant = $this->virtualAccount->merchant;
+    }
+
+    /**
+     * A receiver is expected if there exists an active VA
+     * to receive it. If such a VA does not exist, or exists but
+     * has been closed/paid, the payment is to be refunded.
+     *
+     * @param Base\PublicEntity $entity This is the receiver entity:
+     *                                  bank_transfer, qr_code
+     *
+     * @return bool
+     */
+    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity): bool
+    {
+        $this->setVirtualAccount($entity);
+
+        if ($this->useSharedVirtualAccount($entity) === true)
+        {
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function useSharedVirtualAccount(Base\PublicEntity $entity): bool
+    {
+        $merchant = $this->virtualAccount->merchant;
+
+        if (($merchant->isLive() === false) and
+            ($this->isLiveMode() === true))
+        {
+           return true;
+        }
+
+        $merchantMethods = $merchant->getMethods();
+
+        $method = $entity->getMethod();
+
+        if ($merchantMethods->isMethodEnabled($method) === false);
+        {
+           $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_METHOD_DISABLED_PAYMENT_REROUTED,
+                $entity->toArray());
+        }
+
+        return false;
     }
 }
