@@ -19,4 +19,5 @@ class RequestFields
     const CONFIRMATION    = 'CG';
     const BANK_PAYMENT_ID = 'BID';
     const RETURN_URL      = 'RU';
+    const HASH            = 'HASH';
 }

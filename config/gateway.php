@@ -661,6 +661,7 @@ return [
 
     'netbanking_federal' => [
         'test_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_HASH_SECRET'),
         'live_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_LIVE_MERCHANT_ID'),
     ],
 

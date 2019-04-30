@@ -22,6 +22,7 @@ class Validator extends Base\Validator
         RequestFields::APP_TYPE     => 'required|string|in:corporate',
         RequestFields::CONFIRMATION => 'required|in:Y',
         RequestFields::RETURN_URL   => 'required|url',
+        RequestFields::HASH         => 'required|string',
     ];
 
     protected static $verifyRules = [
