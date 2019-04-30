@@ -14,12 +14,20 @@ import { luminateRow } from 'merchant/modules/app';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 
-@connect(state => state.accounts, {
-  ...AccountActions,
-  ...ModalActions,
-  showNotification,
-  luminateRow,
-})
+@connect(
+  state => {
+    return {
+      ...state.accounts,
+      user: state.session.user,
+    };
+  },
+  {
+    ...AccountActions,
+    ...ModalActions,
+    showNotification,
+    luminateRow,
+  }
+)
 export default class AccountsListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -316,7 +324,8 @@ export default class AccountsListContainer extends ListContainer {
           }
           onToggleAllowRefunds={
             showWhenUtil({
-              additionalCondition: user => user.isAllowedEdit('accounts'),
+              additionalCondition: user =>
+                user.isAllowedEdit('accounts') && user.isAllowedLARefunds,
             })
               ? this.onToggleAllowRefunds
               : undefined

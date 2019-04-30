@@ -247,21 +247,23 @@ export default class AddAccount extends Component {
                         />
                       </div>
                     </div>
-                    <div class="rzpCheckbox">
-                      <label for="allow_reversals">
-                        <span>Allow customer Refunds</span>
-                      </label>
-                      <div class="pull-right">
-                        <SwitchField
-                          name="allow_reversals"
-                          id="allow_reversals"
-                          onChange={this.confirmAllowRefunds}
-                          checked={allow_reversals}
-                          type="prime"
-                          disabled={noLAEmail}
-                        />
+                    {user.isAllowedLARefunds && (
+                      <div class="rzpCheckbox">
+                        <label for="allow_reversals">
+                          <span>Allow customer Refunds</span>
+                        </label>
+                        <div class="pull-right">
+                          <SwitchField
+                            name="allow_reversals"
+                            id="allow_reversals"
+                            onChange={this.confirmAllowRefunds}
+                            checked={allow_reversals}
+                            type="prime"
+                            disabled={noLAEmail}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </EnableDashboardField>
                 </div>
               </ShowWhen>

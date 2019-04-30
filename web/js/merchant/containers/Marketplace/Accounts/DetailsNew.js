@@ -377,17 +377,19 @@ export default class Details extends Component {
                       </span>
                     }
                   >
-                    <ToggleField
-                      onEdit={this.showEditAccountModal(account)}
-                      isDisabled={noLAEmail}
-                    >
-                      <SwitchField
-                        defaultChecked={!!account.allow_reversals}
-                        onChange={this.onToggleAllowRefunds}
-                        disabled={noLAEmail}
-                        type="prime"
-                      />
-                    </ToggleField>
+                    {user.isAllowedLARefunds && (
+                      <ToggleField
+                        onEdit={this.showEditAccountModal(account)}
+                        isDisabled={noLAEmail}
+                      >
+                        <SwitchField
+                          defaultChecked={!!account.allow_reversals}
+                          onChange={this.onToggleAllowRefunds}
+                          disabled={noLAEmail}
+                          type="prime"
+                        />
+                      </ToggleField>
+                    )}
                   </EntityDetailRow>
                 )}
               </div>

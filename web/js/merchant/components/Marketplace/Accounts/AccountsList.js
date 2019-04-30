@@ -203,7 +203,7 @@ export default ({
                   : undefined
               }
               onToggleAllowRefunds={
-                onToggleDashboardAccess
+                onToggleAllowRefunds
                   ? (isChecked, cb) =>
                       onToggleAllowRefunds(account, isChecked, cb)
                   : undefined
