@@ -15,7 +15,7 @@ export default makeEntityReducer(COMMISSION_FETCH);
 
 export const fetchAggregate = params => ({
   type: COMMISSION_AGGREGATE_FETCH,
-  payload: new Commission().fetchAggregateData(params),
+  payload: new Commission().fetchDailyAggregateData(params),
 });
 
 export const commAggSingleDayReducer = makeEntityReducer(
