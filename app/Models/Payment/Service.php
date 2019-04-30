@@ -1691,15 +1691,9 @@ class Service extends Base\Service
 
             $updated = (new Token\Core)->updatePaymentToken($payment, $card);
 
-            switch ($updated)
+            if ($updated === true)
             {
-                case true:
-                    $this->repo->saveOrFail($payment);
-                    break;
-                case false:
-                    $this->getNewProcessor($payment->merchant)->notifyMigratedCard($payment);
-                    break;
-
+                $this->repo->saveOrFail($payment);
             }
         }
 
