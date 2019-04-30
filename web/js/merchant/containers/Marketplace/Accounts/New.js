@@ -127,7 +127,7 @@ export default class AddAccount extends Component {
           },
         })
         .catch(e => {
-          fromChange('dashboard_access', true);
+          fromChange('dashboard_access', checked);
         });
     }
   };
@@ -158,7 +158,8 @@ export default class AddAccount extends Component {
           },
         })
         .catch(e => {
-          fromChange('allow_reversals', true);
+          fromChange('dashboard_access', false);
+          fromChange('allow_reversals', false);
         });
     }
   };
