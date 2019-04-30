@@ -161,6 +161,12 @@ class Base extends BaseModel\Core
         // gets associated with this batch
         list($ufhFile, $entries) = $this->saveInputFileAndValidateEntries($input);
 
+        // if type is payment_link just return the ufhFile and do not save batches and files entity.
+        if ($this->shouldSendToBatchService())
+        {
+            return $ufhFile;
+        }
+
         $this->updateBatchPostValidation($entries, $input);
 
         $ufhFile->entity()->associate($this->batch);
@@ -173,6 +179,8 @@ class Base extends BaseModel\Core
 
             $this->saveSettings($input);
         });
+
+        return $ufhFile;
     }
 
     /**
@@ -1331,5 +1339,16 @@ class Base extends BaseModel\Core
         }
 
         return $caseSensitiveString;
+    }
+
+    public function shouldSendToBatchService(): bool
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
+            $this->mode
+        );
+
+        return (($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true) && (strtolower($variant) === 'on'));
     }
 }

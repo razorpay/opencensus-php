@@ -56,7 +56,7 @@ class HealthCheckClient
 
             $output[self::ERROR_MESSAGE] = $e->getMessage();
 
-            $output[self::HTTP_STATUS] = 400;
+            $output[self::HTTP_STATUS] = 504;
         }
 
         return $output;

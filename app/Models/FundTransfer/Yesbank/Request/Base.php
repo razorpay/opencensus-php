@@ -240,6 +240,8 @@ abstract class Base extends ApiProcessor
     {
         $this->entity = $entity;
 
+        $this->ftaId = $entity->getId();
+
         return $this;
     }
 

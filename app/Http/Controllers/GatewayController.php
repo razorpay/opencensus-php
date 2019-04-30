@@ -15,17 +15,37 @@ use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Admin;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
 class GatewayController extends Controller
 {
 
     /**
-     * This is a health Check API for third party url
+     * This is a health Check API for third party url.
+     * It basically hits external services (like payment gateway) through api.
+     * This helps in tracking downtime of services which can be accessed only from inside
+     * api ( like the ones which require VPN connectivity, whitelisted IPs, or custom
+     * client certs etc)
+     *
+     * Returns the http status code it gets from the gateway as-it-is to the client.
+     * In case of time out, it returns status code 504 with curl error message in
+     * `error_message` field
+     *
+     * Request Params:
+     * request params are same as the Requests lib(https://requests.ryanmccue.info/)'s params:
+     * Except url, everything is optional
+     *
+     * url:
+     * headers:                  (defaults to [])
+     * content:                  (defaults to [])
+     * method:                   (defaults to HEAD)
+     * options:                  (defaults to 'timeout' => 60, 'verify' => false)
      */
     public function getExternalApiHealth(Downtime\Service $service)
     {
@@ -41,6 +61,11 @@ class GatewayController extends Controller
         $this->callbackGateway('axis');
     }
 
+    public function callbackUpiAirtel()
+    {
+        $this->callbackGateway('upi_airtel');
+    }
+
     protected function processServerCallback($input, $gatewayDriver)
     {
         $gateway = $this->app['gateway']->gateway($gatewayDriver);
@@ -50,11 +75,11 @@ class GatewayController extends Controller
         //
         // Eg: gateway request needs to be decrypted, this shouldn't be direct method call
         // TODO: change this to utilize callGatewayFunction
-        $input = $gateway->preProcessServerCallback($input);
+        $input = $gateway->preProcessServerCallback($input, $gatewayDriver);
 
         // TODO: this should also utilize callGatewayFunction, although we should have
         // used preProcessServerCallback itself to return it in some way
-        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);
 
         $paymentRepo = $this->app['repo']->payment;
 
@@ -169,6 +194,7 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
+            case Gateway::UPI_AIRTEL:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
@@ -261,8 +287,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -323,9 +348,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -335,6 +358,7 @@ class GatewayController extends Controller
 
         return Redirect::to($url);
     }
+
     public function callbackCanara()
     {
         $input = Request::all();
@@ -372,9 +396,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -480,8 +502,7 @@ class GatewayController extends Controller
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
         $publicPaymentId = $payment->getPublicId();
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         switch ($responseFormat)
         {
@@ -576,6 +597,104 @@ class GatewayController extends Controller
     public function postGatewayDowntimeVajraWebhook(Downtime\Service $service)
     {
         return $this->postGatewayDowntimeWebhook($service, Downtime\Source::VAJRA);
+    }
+
+    /**
+     * Method to handle cps downtime from vajra
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function postCpsDowntimeVajraWebhook(Admin\Service $service)
+    {
+        $input = Request::all();
+
+        $result = $this->setCpsRoutingFlag($service, $input);
+
+        return ApiResponse::json($result);
+    }
+
+    protected function setCpsRoutingFlag(Admin\Service $service, array $input)
+    {
+        $alertStatus = $input[VajraConstants::STATUS_KEY];
+
+        $cpsRoutingStatus = ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false));
+
+        $trace = $this->app['trace'];
+
+        $trace->info(
+            TraceCode::VAJRA_CPS_ROUTING_REQUEST,
+            ['data' => ['cpsRoutingStatus' => $cpsRoutingStatus, 'alertStatus' => $alertStatus]]
+        );
+
+        $result = [];
+
+        switch ($alertStatus)
+        {
+            case VajraConstants::STATUS_ALERTING:
+                $trace->info(
+                    TraceCode::VAJRA_CPS_START_DISABLE_ROUTING,
+                    []
+                );
+
+                if ($cpsRoutingStatus === true)
+                {
+                    $result = $service->setConfigKeys(
+                        [Admin\ConfigKey::CPS_SERVICE_ENABLED => '0']
+                    );
+
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_DISABLE_ROUTING_SUCCESS,
+                        ['data' => 'Successfully stopped traffic to CPS']
+                    );
+
+                }
+                else
+                {
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_DISABLE_ROUTING_FAILURE,
+                        ['data' => 'Couldnt stop traffic to CPS due to internal status mismatch']
+                    );
+                }
+
+                break;
+
+            case VajraConstants::STATUS_OK:
+                $trace->info(
+                    TraceCode::VAJRA_CPS_START_ENABLE_ROUTING,
+                    []
+                );
+
+                if ($cpsRoutingStatus !== true)
+                {
+                    $result = $service->setConfigKeys(
+                        [Admin\ConfigKey::CPS_SERVICE_ENABLED => '1']
+                    );
+
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_ENABLE_ROUTING_SUCCESS,
+                        ['data' => 'Successfully enabled traffic to CPS']
+                    );
+                }
+                else
+                {
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_ENABLE_ROUTING_FAILURE,
+                        ['data' => 'Couldnt enable traffic to CPS due to internal status mismatch']
+                    );
+                }
+
+                break;
+
+            default:
+                    $trace->info(
+                        TraceCode::VAJRA_INVALID_ALERT_STATUS,
+                        ['data' => 'Vajra alert status should be one of (alerting or ok)']
+                    );
+
+                break;
+        }
+
+        return $result;
     }
 
     /**
@@ -756,5 +875,26 @@ class GatewayController extends Controller
                 'exception' => $exc->getMessage(),
             ]);
         }
+    }
+
+    protected function getMerchantKeyForPayment(Payment\Entity $payment, string $mode)
+    {
+        $key = $this->repo->key->getFirstActiveKeyForMerchant($payment->getMerchantId());
+
+        if (empty($key) === false)
+        {
+            return $key->getPublicKey($mode);
+        }
+
+        // TODO: We can remove the log after successful validation
+        $this->app['trace']->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, [
+            'message'       => 'Key not found',
+            'merchant_id'   => $payment->getMerchantId(),
+            'gateway'       => $payment->getGateway(),
+            'payment_id'    => $payment->getId(),
+        ]);
+
+        // Route class check on empty string
+        return '';
     }
 }

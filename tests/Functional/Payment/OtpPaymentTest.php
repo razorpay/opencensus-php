@@ -17,6 +17,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Terminal\Options as TerminalOptions;
 use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -34,6 +35,25 @@ class OtpPaymentTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/OtpPaymentTestData.php';
 
         parent::setUp();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'save_all_cards')
+                                {
+                                    return 'off';
+                                }
+                                return 'on';
+                            }));
     }
 
     public function testIvrAuthenticationPayment()
@@ -519,9 +539,28 @@ class OtpPaymentTest extends TestCase
 
     public function testHeadlessOtpAuthenticationPaymentS2SRedirectFlow()
     {
-        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'first_data',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'load'          => 100,
+            'group'         => null,
+            'currency'      => 'INR',
+            'step'          => 'authorization',
+        ]);
+
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
             'type' => [
-                'non_recurring' => '1'
+                'non_recurring' => '1',
+            ]
+        ]);
+
+       $this->fixtures->create('terminal:direct_first_data_recurring_terminal', [
+            'type' => [
+                'non_recurring' => '1',
             ]
         ]);
 
@@ -532,7 +571,9 @@ class OtpPaymentTest extends TestCase
 
         $this->app->instance('razorx', $razorxMock);
 
-         $this->app->razorx->method('getTreatment')
+        TerminalOptions::setTestChance(500);
+
+        $this->app->razorx->method('getTreatment')
                         ->will($this->returnCallback(
                             function ($mid, $feature, $mode) {
                                 if ($feature === 'redirect_terminal_cache')
@@ -595,8 +636,8 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
 
         self::assertEquals('headless_otp', $payment['auth_type']);
-        self::assertEquals('hitachi', $payment['gateway']);
-        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        self::assertEquals('first_data', $payment['gateway']);
+        self::assertEquals('FDRcrDTrmnl3DS', $payment['terminal_id']);
         self::assertEquals('authorized', $payment['status']);
         assertTrue($this->otpFlow);
     }
@@ -864,6 +905,14 @@ class OtpPaymentTest extends TestCase
         // Mocking mutex since we are mocking redis and partial mock
         // is difficult to mock (read as doesn't work) in laravel
         config(['services.mutex.mock' => true]);
+
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function() use($conn)
+             {
+                return $conn;
+             });
 
         Redis::shouldReceive('zrevrange')
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
@@ -1570,7 +1619,6 @@ class OtpPaymentTest extends TestCase
 
     public function testHeadlessOtpDefaultAuthType3ds()
     {
-
         $this->fixtures->create('gateway_rule', [
             'method'        => 'card',
             'merchant_id'   => '100000Razorpay',
@@ -1831,9 +1879,55 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         self::assertEquals('authorized', $payment['status']);
-        self::assertEquals('3ds', $payment['auth_type']);
+        self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    public function testHeadlessRedirectSharedTerminalFilter()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                    'non_recurring' => '1',
+            ]]);
+
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]]);
+
+        $this->fixtures->merchant->addFeatures(['headless', 'otp_auth_default']);
+        $this->mockCardVault();
+        $this->mockOtpElf();
+        $this->setRedirectTo3ds(true);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertNull($payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitaDirTmnl', $payment['terminal_id']);
     }
 
     public function testHeadlessRedirectInvalidAuthType()
@@ -2022,7 +2116,7 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
         self::assertEquals('authorized', $payment['status']);
-        self::assertEquals('3ds', $payment['auth_type']);
+        self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
@@ -2145,6 +2239,7 @@ class OtpPaymentTest extends TestCase
         ]);
 
         $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -2181,17 +2276,11 @@ class OtpPaymentTest extends TestCase
         self::assertArrayHasKey('razorpay_payment_id', $content);
         self::assertNotNull($content['razorpay_payment_id']);
 
+        $response = $this->doS2SOtpSubmitCallback($content, '123456');
+
         $route = $this->app['api.route'];
 
         $url = $route->getPublicCallbackUrlWithHash($content['razorpay_payment_id'], 'rzp_test_TheTestAuthKey', 'payment_callback_post');
-
-        Redis::shouldReceive('get')
-                ->twice()
-                ->andReturnUsing(function()
-                {
-                   throw new \RZP\Exception\BadRequestException(
-                    \RZP\Error\ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING);
-                });
 
 
         $request = [
@@ -2199,8 +2288,11 @@ class OtpPaymentTest extends TestCase
             'url'     => $url,
             'content' => [],
         ];
+
         $this->app['env'] = 'dev';
+
         $this->app['config']->set('app.debug', false);
+
         $response = $this->makeRequestParent($request);
 
         $request = $this->getFormRequestFromResponse($response->getContent(), $url);

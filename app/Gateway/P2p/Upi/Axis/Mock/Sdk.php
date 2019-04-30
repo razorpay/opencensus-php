@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis\Mock;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Gateway\P2p\Upi\Axis\Gateway;
 use RZP\Gateway\P2p\Upi\Axis\Actions\BankAccountAction;
 
 class Sdk
@@ -42,6 +43,8 @@ class Sdk
 
         $content = $this->{$action}();
 
+        $this->content($content, $this->action);
+
         return $content;
     }
 
@@ -69,10 +72,6 @@ class Sdk
     public function sdkVpaAvailability()
     {
         $response = $this->initiateResponse();
-
-        $response[Fields::VPA_SUGGESTIONS] = [
-            'suggestion@razoraxis'
-        ];
 
         $response[Fields::AVAILABLE] = 'true';
 
@@ -118,7 +117,39 @@ class Sdk
     {
         $response = $this->initiateResponse();
 
-        $response[Fields::BALANCE] = '2206.90';
+        $response[Fields::GATEWAY_RESPONSE_CODE]    = '00';
+        $response[Fields::BALANCE]                  = '2206.90';
+
+        return $response;
+    }
+
+    public function sdkSendMoney()
+    {
+        $response = [
+            Fields::AMOUNT                      => $this->input[Fields::AMOUNT],
+            Fields::BANK_ACCOUNT_UNIQUE_ID      => $this->input[Fields::ACCOUNT_REFERENCE_ID],
+            Fields::BANK_CODE                   => '123456',
+            Fields::CUSTOMER_MOBILE_NUMBER      => '919000000001',
+            Fields::CUSTOMER_VPA                => $this->input[Fields::CUSTOMER_VPA],
+            Fields::GATEWAY_REFERENCE_ID        => '123344557', // rrn
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Your transaction was successful',
+            Fields::GATEWAY_TRANSACTION_ID      => $this->input[Fields::UPI_REQUEST_ID],
+            Fields::MASKED_ACCOUNT_NUMBER       => 'XXXX123456',
+            Fields::PAY_TYPE                    => $this->input[Fields::PAY_TYPE],
+            Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIME_STAMP],
+            Fields::UDF_PARAMETERS              => '{}'
+        ];
+
+        $stringToSign = implode($response, '');
+
+        $gateway = new Gateway();
+
+        $sign = $gateway->getMerchantSigner()->sign($stringToSign);
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = bin2hex($sign);
+
+        $response[Fields::STATUS] = 'SUCCESS';
 
         return $response;
     }

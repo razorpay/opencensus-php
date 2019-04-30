@@ -1146,7 +1146,6 @@ class DatabaseSeeder extends Seeder
 
         $this->createAmexTerminals();
         $this->createCybersourceTerminals();
-        $this->createPaysecureTerminals();
         $this->createHitachiGatewayTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingBobTerminals();
@@ -1391,20 +1390,6 @@ class DatabaseSeeder extends Seeder
             'gateway_terminal_id'       => 'demo_terminal_cybersource',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
             'recurring'                 => 1,
-            'created_at'                => time(),
-            'updated_at'                => time(),
-        ]);
-    }
-
-    protected function createPaysecureTerminals()
-    {
-        DB::table(Table::TERMINAL)->insert([
-            'id'                        => '1VwJebUIU7hI2d',
-            'merchant_id'               => Account::TEST_ACCOUNT,
-            'gateway'                   => Gateway::PAYSECURE,
-            'card'                      => '1',
-            'shared'                    => '1',
-            'gateway_merchant_id'       => 'test_merchant_paysecure',
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
@@ -2352,6 +2337,21 @@ class DatabaseSeeder extends Seeder
             'gateway_merchant_id2'       => 'NMIMS',
             'gateway_acquirer'           => 'earlysalary',
             'gateway_terminal_password'  => 'aabbccdd',
+            'cardless_emi'               => 1,
+            'mode'                       => 1,
+            'created_at'                 => time(),
+            'updated_at'                 => time()
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                         => Terminal\Shared::CARDLESS_EMI_FLEXMONEY_TERMINAL,
+            'merchant_id'                => Account::TEST_ACCOUNT,
+            'category'                   => 123,
+            'gateway'                    => Gateway::CARDLESS_EMI,
+            'gateway_merchant_id'        => '35',
+            'gateway_merchant_id2'       => 'NMIMS',
+            'gateway_acquirer'           => 'flexmoney',
+            'gateway_terminal_password'  => 'eyJpdiI6IklpRTBKZXBTYUJVVENNcms4TUVkVEE9PSIsInZhbHVlIjoiWHN4b0lZMlJBKzJvK05vdjk3NEFjMmgrb1Q5UStLODJ1UTQ5NjNndmc1UVQ3VXI4N2N0d2M0eks1SVwvUzFPK0wiLCJtYWMiOiIxNzE0ZTg5NjYwYzc2ZTE5MzViMGIyMGNkZjk1MzU3NTlkZWE5YmNjNTk2NWRkMTM3ZTA5YTgwMDI1YmQ0NzFmIn0=',
             'cardless_emi'               => 1,
             'mode'                       => 1,
             'created_at'                 => time(),

@@ -32,6 +32,33 @@ return [
         'otp_attempts'      => null
     ],
 
+    'testPaymentFlexMoney'  => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'cardless_emi',
+        'status'            => 'authorized',
+        'two_factor_auth'   => null,
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'cardless_emi',
+        'terminal_id'       => '20CrdlesEmiTml',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+        'otp_attempts'      => null
+    ],
+
     'testEmiPlans' => [
         [
             'entity'           => 'emi_plan',
@@ -111,6 +138,22 @@ return [
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        ],
+    ],
+
+    'testFlexmoneyFailedPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED
         ],
     ],
 

@@ -90,7 +90,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
     {
         $sdk = $this->handleInputSdk();
 
-        $this->handleGatewayResponse($sdk);
+        $this->handleGatewayResponseCode($sdk);
 
         $bankAccount = $this->input->get(Entity::BANK_ACCOUNT);
 
@@ -116,6 +116,8 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
     public function fetchBalance(Response $response)
     {
         $sdk = $this->handleInputSdk();
+
+        $this->handleGatewayResponseCode($sdk);
 
         $bankAccount = $this->input->get('bank_account');
 

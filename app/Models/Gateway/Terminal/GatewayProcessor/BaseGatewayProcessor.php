@@ -22,7 +22,7 @@ abstract class BaseGatewayProcessor
     {
         $this->app = App::getFacadeRoot();
 
-        $this->redis = Redis::Connection('redis_labs');
+        $this->redis = Redis::Connection();
 
         $this->repo = $this->app['repo'];
 

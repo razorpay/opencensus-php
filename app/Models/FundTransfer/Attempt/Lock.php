@@ -58,6 +58,20 @@ class Lock extends Base\Core
         // Lock all attempts by its ids
         $lockedAttempts = $attempts->whereIn(Entity::ID, $lockedAttemptIds['locked']);
 
+        if(empty($lockedAttemptIds['locked']) === true)
+        {
+            $response = array();
+            
+            $response[0] = [
+                "success" => 0,
+                "failed"  => 0,
+            ];
+
+            $response[1] = $lockedAttempts;
+
+            return $response;
+        }
+
         try
         {
             $response = $handle($lockedAttempts);

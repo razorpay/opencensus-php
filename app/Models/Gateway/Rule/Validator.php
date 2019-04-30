@@ -46,6 +46,7 @@ class Validator extends Base\Validator
         Entity::STEP                    => 'sometimes|in:authorization,authentication',
         Entity::AUTH_TYPE               => 'sometimes',
         Entity::AUTHENTICATION_GATEWAY  => 'sometimes',
+        Entity::CAPABILITY              => 'filled|in:0,1,2',
     ];
 
     protected static $editRules = [

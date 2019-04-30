@@ -31,4 +31,5 @@ class RequestFields
     const CURRENCY_CODE             = 'pCurrencyCode';
     const DYNAMIC_MERCHANT_NAME     = 'pDBAName';
     const AUTH_ID                   = 'pAuthID';
+    const MCC                       = 'pMCC';
 }

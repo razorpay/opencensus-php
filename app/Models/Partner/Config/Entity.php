@@ -162,4 +162,11 @@ class Entity extends PublicEntity
 
         $this->attributes[self::IMPLICIT_EXPIRY_AT] = $value;
     }
+
+    // --------------------- END -----------------------------
+
+    public function isExplicitRecordOnly(): bool
+    {
+        return ($this->getAttribute(self::EXPLICIT_SHOULD_CHARGE) === false);
+    }
 }

@@ -2155,7 +2155,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 13,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2231,6 +2231,13 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
+                            'issuer' => 'AUBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
                             'issuer' => 'BARB_C',
                         ],
                     ],
@@ -2261,7 +2268,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 15,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2338,6 +2345,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'TNSC',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'AUBL',
                         ],
                     ],
                     [
@@ -2572,6 +2586,7 @@ return [
                                 'SVCB',
                                 'SYNB',
                                 'TNSC',
+                                'AUBL',
                                 'BARB_C',
                                 'PUNB_C',
                                 'LAVB_C'
@@ -4119,4 +4134,16 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testMerchantCacheSyncInBothMode' => [
+        'request'  => [
+            'url'    => '/merchant/activation',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
 ];

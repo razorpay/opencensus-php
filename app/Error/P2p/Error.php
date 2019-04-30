@@ -22,9 +22,10 @@ class Error extends \RZP\Error\Error
     protected function getDescriptionFromErrorCode($code)
     {
         $code = strtoupper($code);
-        if (isset(PublicErrorDescription::MAP[$code]))
+
+        if (defined(PublicErrorDescription::class . '::' . $code))
         {
-            return PublicErrorDescription::MAP[$code];
+            return constant(PublicErrorDescription::class.'::'.$code);
         }
     }
 
@@ -44,7 +45,6 @@ class Error extends \RZP\Error\Error
 
         switch($code)
         {
-            case ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET:
             case ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE:
             case ErrorCode::BAD_REQUEST_INVALID_MERCHANT_IN_CONTEXT:
                 $this->setHttpStatusCode(401);

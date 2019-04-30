@@ -3,17 +3,23 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Services;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\ConfigKey;
 
 class Core extends Base\Core
 {
+    // 10 minutes
+    const DEFAULT_DOWNTIME_DURATION = 600;
+
     /**
      * Prevent duplicate creation of the same error model.
      * Basically, since we pass an empty 'to', it means, this is for an unscheduled
@@ -71,7 +77,8 @@ class Core extends Base\Core
      */
     protected function allowUpdateOfExistingDowntimes()
     {
-        if ($this->app['basicauth']->isDashboardApp() === true)
+        if (($this->app['basicauth']->isAdminAuth() === true) and
+            ($this->app['basicauth']->isDashboardApp() === true))
         {
             return false;
         }
@@ -176,6 +183,40 @@ class Core extends Base\Core
                           ->fetchApplicableDowntimesForPayment($params);
 
         return $downtimes;
+    }
+
+    public function createForGatewayException(string $gateway, array $gatewayData)
+    {
+        $method = $gatewayData['payment']['method'];
+
+        $allowed = (new GatewayErrorThrottler($gateway, $method))->attempt();
+
+        if ($allowed === false)
+        {
+            $now = Carbon::now()->getTimestamp();
+
+            $duration = $this->getDuration();
+
+            $this->create([
+                Entity::GATEWAY     => $gateway,
+                Entity::REASON_CODE => ReasonCode::HIGHER_ERRORS,
+                Entity::BEGIN       => $now,
+                Entity::END         => $now + $duration,
+                Entity::METHOD      => $gatewayData['payment']['method'],
+                Entity::SOURCE      => Source::INTERNAL,
+                Entity::COMMENT     => 'Downtime created by internal gateway response analysis and throttling',
+                Entity::SCHEDULED   => false,
+            ]);
+        }
+    }
+
+    protected function getDuration(): int
+    {
+        $redis = $this->app['redis']->connection();
+
+        $settings = $redis->hgetall(ConfigKey::DOWNTIME_THROTTLE);
+
+        return $settings['duration'] ?? self::DEFAULT_DOWNTIME_DURATION;
     }
 
     /**
@@ -291,5 +332,39 @@ class Core extends Base\Core
         $gateways = array_values(array_unique($gateways));
 
         return $gateways;
+    }
+
+    public static function getMode()
+    {
+        $app = \App::getFacadeRoot();
+
+        // We use the more restricted option as default
+        $mode = Mode::LIVE;
+
+        // This blocks writing tests in live mode, but that's
+        // acceptable till we have a better way to set mode in tests
+        if ($app->runningUnitTests() === true)
+        {
+            $mode = Mode::TEST;
+        }
+
+        // If explicitly sent in the request, use it. This allows for using
+        // test mode on production if ever needed for direct auth routes.
+        $modeHeader = $app['request']->headers->get('Razorpay-Mode');
+
+        if (empty($modeHeader) === false)
+        {
+            $mode = $modeHeader;
+        }
+
+        // In almost all flows except unit tests and direct auth requests,
+        // rzp.mode should be used as source of truth for mode. If this is
+        // already set, then it should get highest precedence.
+        if (isset($app['rzp.mode']) === true)
+        {
+            $mode = $app['rzp.mode'];
+        }
+
+        return $mode;
     }
 }

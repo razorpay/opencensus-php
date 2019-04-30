@@ -107,6 +107,19 @@ class Gateway extends Base\Gateway
         return $attr;
     }
 
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
+    }
 
     protected function mapInReverseWay($gatewayPayment)
     {
@@ -631,7 +644,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
 
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+            $this->createGatewayRefundEntity($gatewayAttributes, $input, $this->action);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -700,7 +713,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
 
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+            $this->createGatewayRefundEntity($gatewayAttributes, $input, $this->action);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -761,10 +774,12 @@ class Gateway extends Base\Gateway
                 if ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal')
                 {
                     $status = Status::REVERSED;
+                    $action = Action::REVERSE;
                 }
                 else if ($refundReply[0]['@attributes'][F::NAME] === 'ics_credit')
                 {
                     $status = Status::REFUNDED;
+                    $action = Action::REFUND;
                 }
                 else
                 {
@@ -798,7 +813,7 @@ class Gateway extends Base\Gateway
                     $attributes = $this->getRefundAttributesFromVerify($responseRequest);
                     $attributes[E::STATUS] = $status;
 
-                    $this->createGatewayRefundEntity($attributes, $input);
+                    $this->createGatewayRefundEntity($attributes, $input, $action);
                 }
 
                 return $scroogeResponse->setSuccess(true)
@@ -1069,7 +1084,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes, $input)
+    protected function createGatewayRefundEntity($attributes, $input, $action)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
@@ -1087,7 +1102,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setCurrency($currency);
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
 
         $gatewayPayment->setAcquirer($acquirer);
 

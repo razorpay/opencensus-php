@@ -298,13 +298,13 @@ class Verify extends Base\Core
 
     public function verifyAllPayments($timestamps, $gateway, $count)
     {
-        $verifyFetchStartTime = time();
+        $verifyFetchStartTime = Carbon::now()->getTimestamp();
 
         $disabledGateways = $this->getBlockedGateways();
 
         $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count, $disabledGateways);
 
-        $verifyFetchEndTime = time();
+        $verifyFetchEndTime = Carbon::now()->getTimestamp();
 
         $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
 

@@ -130,6 +130,9 @@ return [
             Permission::MANAGE_BULK_FEATURE_MAPPING         => [
                 'assignable' => true,
             ],
+            Permission::MANAGE_BULK_MERCHANT_TAGGING        => [
+                'assignable' => true,
+            ],
             Permission::MERCHANT_BENEFICIARY_UPLOAD         => [
                 'assignable' => true,
             ],
@@ -173,6 +176,14 @@ return [
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL              => '',
+            Permission::TOGGLE_TERMINAL                     => [
+                'description' => 'Ability to enable or disable a terminal',
+                'assignable' => true,
+            ],
+            Permission::TERMINAL_MANAGE_MERCHANT            => [
+                'description' => 'Ability to add or remove sub merchants to a terminal',
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_PRICING               => '',
             Permission::EDIT_MERCHANT_COMMENTS              => '',
             Permission::VIEW_MERCHANT_COMPANY_INFO          => [
@@ -208,6 +219,10 @@ return [
             Permission::RETRY_REFUND_FAILED                 => '',
             Permission::EDIT_REFUND                         => [
                 'description' => 'edit_refund_permission',
+                'assignable'  => true,
+            ],
+            Permission::UPDATE_SCROOGE_REFUND_REFERENCE1    => [
+                'description' => 'update_scrooge_refund_reference1_permission',
                 'assignable'  => true,
             ],
             Permission::RETRY_REFUND                        => [
@@ -326,6 +341,10 @@ return [
             ],
             Permission::CREATE_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create VAs for a merchant',
+            ],
+            Permission::BANK_TRANSFER_INSERT => [
+                'description' => 'Insert bank transfers for failed payments',
+                'assignable'  => true,
             ],
             Permission::USER_PASSWORD_RESET => [
                 'description' => 'Reset user password on associated merchant page',

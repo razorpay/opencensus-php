@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Paysecure;
 
 use View;
-use Carbon\Carbon;
+use Cache;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -84,11 +84,9 @@ class Gateway extends Base\Gateway
         {
             list($gatewayPayment, $response) = $this->initiate2();
 
+            $this->updateGatewayPaymentFromInitiate2Response($gatewayPayment, $response);
+
             $this->handleFailure($response, 'initiate2');
-
-            $content = $this->getGatewayPaymentAttributes($response);
-
-            $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
 
             $request = $this->getRedirectRequest($response);
 
@@ -104,9 +102,9 @@ class Gateway extends Base\Gateway
         {
             list($gatewayPayment, $response) = $this->initiate();
 
-            $this->handleFailure($response, 'initiate');
-
             $this->updateGatewayPaymentEntity($gatewayPayment, $response);
+
+            $this->handleFailure($response, 'initiate');
 
             $request = [
                 'method' => 'direct',
@@ -124,6 +122,12 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * @param array $input
+     * @return array|null
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
     public function callback(array $input)
     {
         parent::callback($input);
@@ -158,7 +162,9 @@ class Gateway extends Base\Gateway
                 $internalErrorCode,
                 $input['gateway'][Fields::ACCU_RESPONSE_CODE],
                 ErrorCodes::getErrorDescription($input['gateway'][Fields::ACCU_RESPONSE_CODE]),
-                $traceData
+                $traceData,
+                null,
+                Action::AUTHENTICATE
             );
         }
 
@@ -173,6 +179,14 @@ class Gateway extends Base\Gateway
         }
 
         $response = $this->authorizeTransaction($gatewayPayment);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $attributes[Entity::RECEIVED] = 1;
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
 
         if ($response[Fields::STATUS] !== StatusCode::SUCCESS)
         {
@@ -192,14 +206,6 @@ class Gateway extends Base\Gateway
             );
         }
 
-        $attributes = $this->getMappedAttributes($response);
-
-        $attributes[Entity::RECEIVED] = 1;
-
-        $gatewayPayment->fill($attributes);
-
-        $this->getRepository()->saveOrFail($gatewayPayment);
-
         return $this->getCallbackResponseData($input);
     }
 
@@ -212,28 +218,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function capture(array $input)
-    {
-        parent::capture($input);
-
-         $this->setCardNumberAndCvv($input);
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $input['paysecure'] = $gatewayPayment->toArray();
-
-        $this->callAdviceGateway($input);
-
-        $gatewayPayment->fill(
-            [
-                Entity::SETTLED => 1,
-            ]
-        );
-
-        $this->getRepository()->saveOrFail($gatewayPayment);
-    }
-
     public function refund(array $input)
     {
         parent::refund($input);
@@ -242,23 +226,25 @@ class Gateway extends Base\Gateway
     }
 
     // ------------ Auth request helpers -----------------
-    protected function getGatewayPaymentAttributes($response, $flow = 'redirect')
+    protected function updateGatewayPaymentFromInitiate2Response($gatewayPayment, $response)
     {
         $redirectUrl = $response[Fields::REDIRECT_URL];
 
         $parsed = parse_url($redirectUrl);
 
-        parse_str($parsed['query'], $parsed);
+        if (isset($parsed['query']) === true)
+        {
+            parse_str($parsed['query'], $parsed);
 
-        $hkey = $parsed[Fields::ACCU_HKEY];
+            $hkey = $parsed[Fields::ACCU_HKEY];
 
-        $content = [
-            Entity::GATEWAY_TRANSACTION_ID => $response[Fields::TRAN_ID ],
-            Entity::HKEY                   => $hkey,
-            Entity::FLOW                   => $flow,
-        ];
+            $content = [
+                Entity::GATEWAY_TRANSACTION_ID => $response[Fields::TRAN_ID ],
+                Entity::HKEY                   => $hkey,
+            ];
 
-        return $content;
+            $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
+        }
     }
 
     protected function getRedirectRequest($response)
@@ -384,6 +370,7 @@ class Gateway extends Base\Gateway
             $input,
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
     }
+
     protected function verifyPayment(Base\Verify $verify)
     {
         $verify->status = $this->getVerifyMatchStatus($verify);
@@ -392,6 +379,7 @@ class Gateway extends Base\Gateway
 
         $verify->payment = $this->saveVerifyContentIfNeeded($verify);
     }
+
     protected function getVerifyMatchStatus(Base\Verify $verify)
     {
         $status = VerifyResult::STATUS_MATCH;
@@ -497,6 +485,9 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
 
+            // If the request fails in any of the s2s requests with error code
+            // we should not add these payments in verify cron, since the transaction
+            // status api only works
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $response[Fields::ERROR_CODE],
@@ -505,7 +496,9 @@ class Gateway extends Base\Gateway
                     'gateway'    => $this->gateway,
                     'payment_id' => $this->input['payment']['id'],
                     'command'    => $action,
-                ]
+                ],
+                null,
+                Action::AUTHENTICATE
             );
         }
     }

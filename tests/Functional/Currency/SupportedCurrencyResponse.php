@@ -7,6 +7,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'د.إ',
+        'name'           => 'Emirati Dirham',
     ],
     'ALL' => [
         'code'           => '008',
@@ -14,6 +15,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Lek',
+        'name'           => 'Albanian Lek',
     ],
     'AMD' => [
         'code'           => '051',
@@ -21,6 +23,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '֏',
+        'name'           => 'Armenian Dram',
     ],
     'ARS' => [
         'code'           => '032',
@@ -28,6 +31,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Argentine Peso',
     ],
     'AUD' => [
         'code'           => '036',
@@ -35,6 +39,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Australian Dollar',
     ],
     'AWG' => [
         'code'           => '533',
@@ -42,6 +47,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'ƒ',
+        'name'           => 'Aruban or Dutch Guilder',
     ],
     'BBD' => [
         'code'           => '052',
@@ -49,6 +55,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Barbadian or Bajan Dollar',
     ],
     'BDT' => [
         'code'           => '050',
@@ -56,6 +63,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '৳',
+        'name'           => 'Bangladeshi Taka',
     ],
     'BMD' => [
         'code'           => '060',
@@ -63,6 +71,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Bermudian Dollar',
     ],
     'BND' => [
         'code'           => '096',
@@ -70,6 +79,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'B$',
+        'name'           => 'Bruneian Dollar',
     ],
     'BOB' => [
         'code'           => '068',
@@ -77,6 +87,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Bs',
+        'name'           => 'Bolivian Bolíviano',
     ],
     'BSD' => [
         'code'           => '044',
@@ -84,6 +95,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'B$',
+        'name'           => 'Bahamian Dollar',
     ],
     'BWP' => [
         'code'           => '072',
@@ -91,6 +103,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'P',
+        'name'           => 'Botswana Pula',
     ],
     'BZD' => [
         'code'           => '084',
@@ -98,6 +111,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'BZ$',
+        'name'           => 'Belizean Dollar',
     ],
     'CAD' => [
         'code'           => '124',
@@ -105,6 +119,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'C$',
+        'name'           => 'Canadian Dollar',
     ],
     'CHF' => [
         'code'           => '756',
@@ -112,6 +127,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₣',
+        'name'           => 'Swiss Franc',
     ],
     'CNY' => [
         'code'           => '156',
@@ -119,6 +135,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '¥',
+        'name'           => 'Chinese Yuan Renminbi',
     ],
     'COP' => [
         'code'           => '170',
@@ -126,6 +143,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Colombian Peso',
     ],
     'CRC' => [
         'code'           => '188',
@@ -133,6 +151,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₡',
+        'name'           => 'Costa Rican Colon',
     ],
     'CUP' => [
         'code'           => '192',
@@ -140,6 +159,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Cuban Peso',
     ],
     'CZK' => [
         'code'           => '203',
@@ -147,6 +167,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Kč',
+        'name'           => 'Czech Koruna',
     ],
     'DKK' => [
         'code'           => '208',
@@ -154,6 +175,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'kr',
+        'name'           => 'Danish Krone',
     ],
     'DOP' => [
         'code'           => '214',
@@ -161,6 +183,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Dominican Peso',
     ],
     'DZD' => [
         'code'           => '012',
@@ -168,6 +191,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'د.ج',
+        'name'           => 'Algerian Dinar',
     ],
     'EGP' => [
         'code'           => '818',
@@ -175,6 +199,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '£',
+        'name'           => 'Egyptian Pound',
     ],
     'ETB' => [
         'code'           => '230',
@@ -182,6 +207,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'ብር',
+        'name'           => 'Ethiopian Birr',
     ],
     'EUR' => [
         'code'           => '978',
@@ -189,6 +215,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '€',
+        'name'           => 'Euro',
     ],
     'FJD' => [
         'code'           => '242',
@@ -196,6 +223,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'FJ$',
+        'name'           => 'Fijian Dollar',
     ],
     'GBP' => [
         'code'           => '826',
@@ -203,6 +231,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '£',
+        'name'           => 'British Pound',
     ],
     'GIP' => [
         'code'           => '292',
@@ -210,6 +239,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '£',
+        'name'           => 'Gibraltar Pound',
     ],
     'GMD' => [
         'code'           => '270',
@@ -217,6 +247,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'D',
+        'name'           => 'Gambian Dalasi',
     ],
     'GTQ' => [
         'code'           => '320',
@@ -224,6 +255,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Q',
+        'name'           => 'Guatemalan Quetzal',
     ],
     'GYD' => [
         'code'           => '328',
@@ -231,6 +263,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'G$',
+        'name'           => 'Guyanese Dollar',
     ],
     'HKD' => [
         'code'           => '344',
@@ -238,6 +271,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'HK$',
+        'name'           => 'Hong Kong Dollar',
     ],
     'HNL' => [
         'code'           => '340',
@@ -245,6 +279,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'L',
+        'name'           => 'Honduran Lempira',
     ],
     'HRK' => [
         'code'           => '191',
@@ -252,6 +287,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'kn',
+        'name'           => 'Croatian Kuna',
     ],
     'HTG' => [
         'code'           => '332',
@@ -259,6 +295,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'G',
+        'name'           => 'Haitian Gourde',
     ],
     'HUF' => [
         'code'           => '348',
@@ -266,6 +303,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Ft',
+        'name'           => 'Hungarian Forint',
     ],
     'IDR' => [
         'code'           => '360',
@@ -273,6 +311,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Rp',
+        'name'           => 'Indonesian Rupiah',
     ],
     'ILS' => [
         'code'           => '376',
@@ -280,6 +319,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₪',
+        'name'           => 'Israeli Shekel',
     ],
     'INR' => [
         'code'           => '356',
@@ -287,6 +327,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₹',
+        'name'           => 'Indian Rupee',
     ],
     'JMD' => [
         'code'           => '388',
@@ -294,6 +335,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Jamaican Dollar',
     ],
     'KES' => [
         'code'           => '404',
@@ -301,6 +343,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Ksh',
+        'name'           => 'Kenyan Shilling',
     ],
     'KGS' => [
         'code'           => '417',
@@ -308,6 +351,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Лв',
+        'name'           => 'Kyrgyzstani Som',
     ],
     'KHR' => [
         'code'           => '116',
@@ -315,6 +359,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '៛',
+        'name'           => 'Cambodian Riel',
     ],
     'KYD' => [
         'code'           => '136',
@@ -322,6 +367,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Caymanian Dollar',
     ],
     'KZT' => [
         'code'           => '398',
@@ -329,6 +375,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₸',
+        'name'           => 'Kazakhstani Tenge',
     ],
     'LAK' => [
         'code'           => '418',
@@ -336,6 +383,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₭',
+        'name'           => 'Lao Kip',
     ],
     'LBP' => [
         'code'           => '422',
@@ -343,6 +391,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'ل.ل.‎',
+        'name'           => 'Lebanese Pound',
     ],
     'LKR' => [
         'code'           => '144',
@@ -350,6 +399,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'රු',
+        'name'           => 'Sri Lankan Rupee',
     ],
     'LRD' => [
         'code'           => '430',
@@ -357,6 +407,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'L$',
+        'name'           => 'Liberian Dollar',
     ],
     'LSL' => [
         'code'           => '426',
@@ -364,6 +415,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'L',
+        'name'           => 'Basotho Loti',
     ],
     'MAD' => [
         'code'           => '504',
@@ -371,6 +423,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'د.م.',
+        'name'           => 'Moroccan Dirham',
     ],
     'MDL' => [
         'code'           => '498',
@@ -378,6 +431,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'L',
+        'name'           => 'Moldovan Leu',
     ],
     'MKD' => [
         'code'           => '807',
@@ -385,6 +439,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'ден',
+        'name'           => 'Macedonian Denar',
     ],
     'MMK' => [
         'code'           => '104',
@@ -392,6 +447,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'K',
+        'name'           => 'Burmese Kyat',
     ],
     'MNT' => [
         'code'           => '496',
@@ -399,6 +455,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₮',
+        'name'           => 'Mongolian Tughrik',
     ],
     'MOP' => [
         'code'           => '446',
@@ -406,6 +463,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'P',
+        'name'           => 'Macau Pataca',
     ],
     'MUR' => [
         'code'           => '480',
@@ -413,6 +471,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Rs',
+        'name'           => 'Mauritian Rupee',
     ],
     'MVR' => [
         'code'           => '462',
@@ -420,6 +479,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Rf',
+        'name'           => 'Maldivian Rufiyaa',
     ],
     'MWK' => [
         'code'           => '454',
@@ -427,6 +487,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'MK',
+        'name'           => 'Malawian Kwacha',
     ],
     'MXN' => [
         'code'           => '484',
@@ -434,6 +495,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Mex$',
+        'name'           => 'Mexican Peso',
     ],
     'MYR' => [
         'code'           => '458',
@@ -441,6 +503,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'RM',
+        'name'           => 'Malaysian Ringgit',
     ],
     'NAD' => [
         'code'           => '516',
@@ -448,6 +511,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'N$',
+        'name'           => 'Namibian Dollar',
     ],
     'NGN' => [
         'code'           => '566',
@@ -455,6 +519,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₦',
+        'name'           => 'Nigerian Naira',
     ],
     'NIO' => [
         'code'           => '558',
@@ -462,6 +527,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'C$',
+        'name'           => 'Nicaraguan Cordoba',
     ],
     'NOK' => [
         'code'           => '578',
@@ -469,6 +535,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'kr',
+        'name'           => 'Norwegian Krone',
     ],
     'NPR' => [
         'code'           => '524',
@@ -476,6 +543,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'रू',
+        'name'           => 'Nepalese Rupee',
     ],
     'NZD' => [
         'code'           => '554',
@@ -483,6 +551,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'New Zealand Dollar',
     ],
     'PEN' => [
         'code'           => '604',
@@ -490,6 +559,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'S/',
+        'name'           => 'Peruvian Sol',
     ],
     'PGK' => [
         'code'           => '598',
@@ -497,6 +567,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'K',
+        'name'           => 'Papua New Guinean Kina',
     ],
     'PHP' => [
         'code'           => '608',
@@ -504,6 +575,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₱',
+        'name'           => 'Philippine Peso',
     ],
     'PKR' => [
         'code'           => '586',
@@ -511,6 +583,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Rs',
+        'name'           => 'Pakistani Rupee',
     ],
     'QAR' => [
         'code'           => '634',
@@ -518,6 +591,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'QR',
+        'name'           => 'Qatari Riyal',
     ],
     'RUB' => [
         'code'           => '643',
@@ -525,6 +599,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '₽',
+        'name'           => 'Russian Ruble',
     ],
     'SAR' => [
         'code'           => '682',
@@ -532,6 +607,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'SR',
+        'name'           => 'Saudi Arabian Riyal',
     ],
     'SCR' => [
         'code'           => '690',
@@ -539,6 +615,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'SRe',
+        'name'           => 'Seychellois Rupee',
     ],
     'SEK' => [
         'code'           => '752',
@@ -546,6 +623,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'kr',
+        'name'           => 'Swedish Krona',
     ],
     'SGD' => [
         'code'           => '702',
@@ -553,6 +631,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'S$',
+        'name'           => 'Singapore Dollar',
     ],
     'SLL' => [
         'code'           => '694',
@@ -560,6 +639,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Le',
+        'name'           => 'Sierra Leonean Leone',
     ],
     'SOS' => [
         'code'           => '706',
@@ -567,6 +647,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Sh.so.',
+        'name'           => 'Somali Shilling',
     ],
     'SSP' => [
         'code'           => '728',
@@ -574,6 +655,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '£',
+        'name'           => 'South Sudanese Pound',
     ],
     'SVC' => [
         'code'           => '222',
@@ -581,6 +663,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Salvadoran Colon',
     ],
     'SZL' => [
         'code'           => '748',
@@ -588,6 +671,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'L',
+        'name'           => 'Swazi Lilangeni',
     ],
     'THB' => [
         'code'           => '764',
@@ -595,6 +679,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '฿',
+        'name'           => 'Thai Baht',
     ],
     'TTD' => [
         'code'           => '780',
@@ -602,6 +687,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Trinidadian Dollar',
     ],
     'TZS' => [
         'code'           => '834',
@@ -609,6 +695,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'Sh',
+        'name'           => 'Tanzanian Shilling',
     ],
     'USD' => [
         'code'           => '840',
@@ -616,6 +703,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'US Dollar',
     ],
     'UYU' => [
         'code'           => '858',
@@ -623,6 +711,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '$',
+        'name'           => 'Uruguayan Peso',
     ],
     'UZS' => [
         'code'           => '860',
@@ -630,6 +719,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'so\'m',
+        'name'           => 'Uzbekistani Som',
     ],
     'YER' => [
         'code'           => '886',
@@ -637,6 +727,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => '﷼',
+        'name'           => 'Yemeni Rial',
     ],
     'ZAR' => [
         'code'           => '710',
@@ -644,6 +735,7 @@ $responseContent = [
         'min_auth_value' => 100,
         'denomination'   => 100,
         'symbol'         => 'R',
+        'name'           => 'South African Rand',
     ],
 ];
 

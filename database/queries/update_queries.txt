@@ -3013,3 +3013,33 @@ update payments set `vpa` = '7879765279@ybl' where `id` = 'B18mxMNOhL9PqP';
 
 # Backfill query for making transaction column in reversals as ploymorphic
 update reversals set transaction_type = 'transaction',updated_at = UNIX_TIMESTAMP() where transaction_type is null and customer_id is null limit 10000;
+
+# Deletes orphan entries from the test database. Corresponding entries from the live database have already been deleted
+update `api-test`.`merchant_access_map` set deleted_at = 1555927152, updated_at = 1555927152 where id in ("CHUiN6Gd9lCpiN","CDV7PODsu37QIo","CDV7X6v2fu1jdC","AtYO6lU2QUye43","AtYO6pHP0YVyST","AtYO6tWHezgyhY","BCZPpmbPm9Rfve","CCPqHW5P1r717g","CCPqP1C0DOHGSx","CCPqVtiS5pyInC","CCPqioB7i2uTHh","BCZQOWh7p0z1ts","BCZQOaT84QYZtw","BCZMPi6AsrLX6m","Bfw3c6DArSzHR0","Bii3CsxTRcGsM6","Bnlj7rWaopl1N9","C775PqILGCWF7W","ApI50L3oRknaQ1","ApI50Q6g9DRE0X","ApI50YCWTjDA0n","ApI50cD3EhLQRS","ApI50fIpIGY30R","ApI50igig9Kx8d","ApI50nHojJn1rs","ApI50rB7QA8R2d","ApI50uxdsbO2oZ","ApI51044NaZmcv","ApI513fk9Q49B0","ApI517EkznfFuC","ApI51BWALTKUtW","ApI51F97HutKXF","ApI51IYn2SEa6O","CAQjmSm8PeE7ey","CD8Oh6nE6RODNC","BCZNt02PiVhtj4","BCZNt3kI9FAcBt","BCZNt75fYMIGcp","BCZNtAf5mWjadN","BCZNtE4c1kJMKu","BCZNtJMctotuXU","CKimqzH64awYiF","CKimfEPPQL7Cbf","CKimQLHscGdHRa");
+
+# insert row which got deleted when a partner adds himself as a submerchant
+insert into `api`.`merchant_users` values('8zMnO894hABq5t','8zMnO1N4INZtxZ','primary','owner',1510230119,1510230119);
+
+# Deletes orphan entries from the test database. Corresponding entries from the live database have already been deleted
+delete from `api_test`.`merchant_users` where merchant_id = '6qP09SouJNApkJ' and user_id = '6pVvzjjhVz7h0R' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '6qP43g7FjT4d8J' and user_id = '6pVvzjjhVz7h0R' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '71xUVrIsCE1jWj' and user_id = '6pVvzjjhVz7h0R' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '71xWcmjtilIwFK' and user_id = '6pVvzjjhVz7h0R' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '7A6p0lbuMp2tF9' and user_id = '6pVvzjjhVz7h0R' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '7f1bGRPKDRFAY6' and user_id = '6pVvzjjhVz7h0R' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '7f1bGRPKDRFAY6' and user_id = '6pVvzjjhVz7h0R' and product = 'primary' and role='admin';
+delete from `api_test`.`merchant_users` where merchant_id = '8ziwvTifL6A3J4' and user_id = '8zMnO1N4INZtxZ' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '9GIHTWc8NMBfH2' and user_id = '8zMnO1N4INZtxZ' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'AaHx4XsNSTivy5' and user_id = '8zMnO1N4INZtxZ' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'AktqOkTG7sFbbd' and user_id = '8zMnO1N4INZtxZ' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'A3PFna0cdz5oF0' and user_id = '9zrxLxPAWrG8yX' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'A3PGVmrstV8KV6' and user_id = '9zrxLxPAWrG8yX' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'Bfw3brhcfkRwb3' and user_id = '5ROQIvDvq9DdMV' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'Bii3CWPa7QzFzq' and user_id = '5ROQIvDvq9DdMV' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'Bnlj7ZoF7r7FLh' and user_id = '5ROQIvDvq9DdMV' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'C775PbmLqyufd0' and user_id = '5ROQIvDvq9DdMV' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = '73ORMlkCscBFlx' and user_id = '5ROQIvDvq9DdMV' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'CHUiMuqkZAgpiI' and user_id = 'AgwBVLamAMhBpv' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'CHrDxlagXGuFNa' and user_id = 'C8ncZIM2VgAH7d' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'CHssVhl5ADmDVc' and user_id = 'C8ncZIM2VgAH7d' and product = 'primary' and role='owner';
+delete from `api_test`.`merchant_users` where merchant_id = 'CIe68TYBYeCndd' and user_id = 'C8ncZIM2VgAH7d' and product = 'primary' and role='owner';

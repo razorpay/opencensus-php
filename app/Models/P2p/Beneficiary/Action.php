@@ -7,9 +7,10 @@ use RZP\Models\P2p\Base;
 
 class Action extends Base\Action
 {
-    const ADD          = 'add';
+    const ADD                   = 'add';
 
-    const VALIDATE     = 'validate';
+    const VALIDATE              = 'validate';
+    const VALIDATE_SUCCESS      = 'validateSuccess';
 
-    const FETCH_ALL    = 'fetchAll';
+    const FETCH_ALL             = 'fetchAll';
 }

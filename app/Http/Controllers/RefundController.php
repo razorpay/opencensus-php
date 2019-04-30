@@ -294,4 +294,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function scroogeTaggingBackfill()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->isScroogeBackFill($input);
+
+        return ApiResponse::json($data);
+    }
 }

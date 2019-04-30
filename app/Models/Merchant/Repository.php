@@ -58,6 +58,7 @@ class Repository extends Base\Repository
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
         Entity::ORG_ID                  => 'sometimes|string|size:14',
         Entity::ACCOUNT_STATUS          => 'filled|custom',
+        Entity::PARTNER_TYPE            => 'sometimes|string|custom',
         Detail\Entity::REVIEWER_ID      => 'sometimes|string|max:14',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
@@ -77,11 +78,17 @@ class Repository extends Base\Repository
             Entity::verifyIdAndStripSign($value);
     }
 
+    protected function validatePartnerType($attribute, $value)
+    {
+        (new Validator)->validatePartnerType($value);
+    }
+
     public function fetchActivatedMerchantsBeforeTimestamp(
       int $limit,
       int $skip,
       int $end,
-      array $merchantIds = []): Base\PublicCollection
+      array $merchantIds = [],
+      array $merchantIdsExcluded = []): Base\PublicCollection
     {
         $query = $this->newQuery()
                     ->where(Entity::ACTIVATED, '=', 1)
@@ -93,6 +100,11 @@ class Repository extends Base\Repository
         if (empty($merchantIds) === false)
         {
             $query = $query->whereIn(Entity::ID, $merchantIds);
+        }
+
+        if (empty($merchantIdsExcluded) === false)
+        {
+            $query = $query->whereNotIn(Entity::ID, $merchantIdsExcluded);
         }
 
         return $query->get();

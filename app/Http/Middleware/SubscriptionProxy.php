@@ -118,9 +118,12 @@ class SubscriptionProxy
             $headers['X-Razorpay-MerchantId'] = $this->ba->getMerchantId();
         }
 
-        $headers['X-Razorpay-Mode'] = $this->ba->getMode();
-        $headers['X-Razorpay-Auth'] = $this->ba->getAuthType();
-        $headers['X-Razorpay-Proxy'] = $this->ba->isProxyAuth();
+        $headers['X-Razorpay-Mode']          = $this->ba->getMode();
+        $headers['X-Razorpay-Auth']          = $this->ba->getAuthType();
+        $headers['X-Razorpay-Proxy']         = $this->ba->isProxyAuth();
+
+        // send appId in case request is via partner auth
+        $headers['X-Razorpay-ApplicationId'] = $this->ba->getOAuthApplicationId();
 
         return $headers;
     }

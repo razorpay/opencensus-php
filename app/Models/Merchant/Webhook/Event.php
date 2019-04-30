@@ -46,6 +46,10 @@ class Event
     const PAYOUT_PROCESSED                  = 'payout.processed';
     const PAYOUT_REVERSED                   = 'payout.reversed';
     const FUND_ACCOUNT_VALIDATION_COMPLETED = 'fund_account.validation.completed';
+    const PAYMENT_DOWNTIME_STARTED          = 'payment.downtime.started';
+    const PAYMENT_DOWNTIME_RESOLVED         = 'payment.downtime.resolved';
+    const PAYOUT_QUEUED                     = 'payout.queued';
+    const PAYOUT_INITIATED                  = 'payout.initiated';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -79,6 +83,10 @@ class Event
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
+        self::PAYMENT_DOWNTIME_STARTED,
+        self::PAYMENT_DOWNTIME_RESOLVED,
+        self::PAYOUT_QUEUED,
+        self::PAYOUT_INITIATED,
     ];
 
     /**
@@ -118,6 +126,10 @@ class Event
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
+        self::PAYMENT_DOWNTIME_STARTED,
+        self::PAYMENT_DOWNTIME_RESOLVED,
+        self::PAYOUT_QUEUED,
+        self::PAYOUT_INITIATED,
     ];
 
     protected static $bitPosition = [
@@ -153,6 +165,10 @@ class Event
         self::PAYOUT_PROCESSED                  => 30,
         self::PAYOUT_REVERSED                   => 31,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => 32,
+        self::PAYMENT_DOWNTIME_STARTED          => 33,
+        self::PAYMENT_DOWNTIME_RESOLVED         => 34,
+        self::PAYOUT_QUEUED                     => 35,
+        self::PAYOUT_INITIATED                  => 36,
     ];
 
     /**
@@ -188,6 +204,10 @@ class Event
         self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
+        self::PAYMENT_DOWNTIME_STARTED          => [Product::PRIMARY],
+        self::PAYMENT_DOWNTIME_RESOLVED         => [Product::PRIMARY],
+        self::PAYOUT_QUEUED                     => [Product::BANKING],
+        self::PAYOUT_INITIATED                  => [Product::PRIMARY, Product::BANKING],
     ];
 
     /**
@@ -224,6 +244,10 @@ class Event
         self::PAYOUT_PROCESSED                  => Entity::PAYOUT,
         self::PAYOUT_REVERSED                   => Entity::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => FundAccount\Validation\Entity::PUBLIC_ENTITY_NAME,
+        self::PAYMENT_DOWNTIME_STARTED          => Entity::PAYMENT_DOWNTIME,
+        self::PAYMENT_DOWNTIME_RESOLVED         => Entity::PAYMENT_DOWNTIME,
+        self::PAYOUT_QUEUED                     => Entity::PAYOUT,
+        self::PAYOUT_INITIATED                  => Entity::PAYOUT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -242,6 +266,8 @@ class Event
         self::PAYOUT_PROCESSED                  => Feature\Constants::PAYOUT,
         self::PAYOUT_REVERSED                   => Feature\Constants::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
+        self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
+        self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
     ];
 
     /**

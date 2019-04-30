@@ -23,6 +23,69 @@ return [
         ],
     ],
 
+    'testSuccessCreatePaymentForMultipleCurrencies' => [
+        [
+            'currency' => 'AED',
+            'amount' => '10'
+        ],
+        [
+            'currency' => 'DZD',
+            'amount' => '240'
+        ],
+        [
+            'currency' => 'MVR',
+            'amount' => '40'
+        ],
+        [
+            'currency' => 'USD',
+            'amount' => '50'
+        ],
+        [
+            'currency' => 'SOS',
+            'amount' => '1000'
+        ],
+    ],
+
+    'testFailedCreatePaymentForMultipleCurrencies' => [
+        'requestData' => [
+            [
+                'currency' => 'AED',
+                'amount' => '9'
+            ],
+            [
+                'currency' => 'DZD',
+                'amount' => '210'
+            ],
+            [
+                'currency' => 'GYD',
+                'amount' => '400'
+            ],
+            [
+                'currency' => 'USD',
+                'amount' => '1'
+            ],
+            [
+                'currency' => 'SOS',
+                'amount' => '980'
+            ],
+        ],
+        'responseData' => [
+            'response'  => [
+                'content'     => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'The amount must be atleast 14',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            ],
+        ]
+    ],
+
     'testCreatePaymentWithInvalidMethod' => [
         'response' => [
             'content' => [

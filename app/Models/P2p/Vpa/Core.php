@@ -37,7 +37,7 @@ class Core extends Base\Core
 
     public function checkLocalAvailability(string $username): bool
     {
-        $vpa = $this->repo->fetchByUsername($username, true);
+        $vpa = $this->repo->fetchByUsernameHandle($username, $this->context()->handleCode(), true);
 
         return ($vpa instanceof Entity);
     }
@@ -49,6 +49,57 @@ class Core extends Base\Core
         $vpa->build($input);
 
         $this->handleDefaultVpa($vpa);
+
+        $this->repo->saveOrFail($vpa);
+
+        return $vpa;
+    }
+
+    public function handleBeneficiary(array $input)
+    {
+        $vpa = $this->repo->fetchByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE], true);
+
+        if ($vpa instanceof Entity)
+        {
+            // Beneficiary should never be trashed
+            if ($vpa->isBeneficiary() === true)
+            {
+                return $vpa;
+            }
+
+            // It's onus VPA and not trashed
+            if ($vpa->trashed() === false)
+            {
+                return $vpa;
+            }
+
+            // Very rare scenario where onus VPA is validated, but it is trashed
+            throw $this->logicException('Deleted VPA should not be validated', $vpa->only([
+                Entity::USERNAME,
+                Entity::HANDLE,
+                Entity::ID,
+            ]));
+        }
+        else
+        {
+            return $this->createBeneficiary($input);
+        }
+    }
+
+    /**
+     * @param array $input
+     * @return Entity
+     */
+    public function createBeneficiary(array $input): Entity
+    {
+        $vpa = $this->repo->getEntityObject();
+
+        $vpa->buildBeneficiary($input);
+
+        $vpa->setHandle($input[BankAccount\Entity::HANDLE]);
+        $vpa->setActive(false);
+        $vpa->setDefault(false);
+        $vpa->setPermissions(Permissions::getDefaultBitmask(Permissions::BENEFICIARY));
 
         $this->repo->saveOrFail($vpa);
 

@@ -21,6 +21,7 @@ use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Models\Card\Issuer;
 use RZP\Jobs\ScroogeRefundRetry;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
@@ -1233,6 +1234,8 @@ trait Refund
 
         $refund->setBaseAmount();
 
+        $refund->balance()->associate($refund->merchant->primaryBalance);
+
         if ($this->payment->isCaptured() === true)
         {
             $this->validateMerchantBalance($refund, 'refund');
@@ -1251,6 +1254,11 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($this->refund, $payment);
 
+        //
+        // Taking mutex lock of 10 minutes here. In ideal cases, lock of 1 or 2 minutes works but
+        // in cases if any alter query or any other operation is running on refunds table and
+        // refund save takes lot more time that expected. For such cases, keeping mutex lock to 10 minutes.
+        //
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
             $payment->reload();
@@ -1285,7 +1293,7 @@ trait Refund
             // send notification to merchant/customer, this is outside transaction
             // as we don't want to reverse the actions if mail sending fails
             $this->sendRefundNotification($payment);
-        }, 120);
+        }, 600);
 
         $this->trace->info(
             TraceCode::REFUND_PROCESSED,
@@ -1591,7 +1599,7 @@ trait Refund
     {
         $merchant = $refund->merchant;
 
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        $balance = $refund->balance;
 
         $traceData = [
             'type'              => $type,
@@ -2105,6 +2113,7 @@ trait Refund
      * If card_transfer_refund feature is present for the merchant,
      * refund will be made on card. Card should be credit card, should have vault token stored and
      * should belong to supported issuers.
+     * Payment should be gateway captured, if it isn't, it should be reversed, not to be refunded directly via FTA.
      *
      * @param Payment\Entity $payment
      * @return bool
@@ -2113,7 +2122,7 @@ trait Refund
     {
         if (($payment->hasCard() === true) and
             ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
-            ($payment->card->getVaultToken() !== null))
+            ($payment->card->getCardVaultToken() !== null) and ($payment->isGatewayCaptured() === true))
         {
             $iin = $payment->card->iinRelation;
 

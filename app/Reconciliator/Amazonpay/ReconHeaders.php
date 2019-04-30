@@ -4,37 +4,56 @@ namespace RZP\Reconciliator\Amazonpay;
 
 class ReconHeaders
 {
-    const TRANSACTION_POSTED_DATE       = 'TransactionPostedDate';
     const SETTLEMENT_ID                 = 'SettlementId';
-    const AMAZON_TRANSACTION_ID         = 'AmazonTransactionId';
-    const SELLER_REFERENCE_ID           = 'SellerReferenceId';
+    const MERCHANT_ORDER_ID             = 'MerchantOrderId';
     const TRANSACTION_TYPE              = 'TransactionType';
     const AMAZON_ORDER_REFERENCE_ID     = 'AmazonOrderReferenceId';
-    const SELLER_ORDER_ID               = 'SellerOrderId';
+    const MERCHANT_ORDER_REFERENCE_ID   = 'MerchantOrderReferenceId';
     const STORE_NAME                    = 'StoreName';
     const CURRENCY_CODE                 = 'CurrencyCode';
     const TRANSACTION_DESCRIPTION       = 'TransactionDescription';
-    const TRANSACTION_AMOUNT            = 'TransactionAmount';
-    const TRANSACTION_PERCENTAGE_FEE    = 'TransactionPercentageFee';
-    const TRANSACTION_FIXED_FEE         = 'TransactionFixedFee';
-    const TOTAL_TRANSACTION_FEE         = 'TotalTransactionFee';
+    const ORDER_AMOUNT                  = 'OrderAmount';
+    const ORDER_COMMISSION              = 'OrderCommission';
     const NET_TRANSACTION_AMOUNT        = 'NetTransactionAmount';
+    const GST                           = 'GST';
+    const MERCHANT_ID                   = 'MerchantId';
+    const MERCHANT_NAME                 = 'MerchantName';
+    const ORDER_DATE                    = 'OrderDate';
+    const ORDER_TIME                    = 'OrderTime';
+    const ORDER_ID                      = 'OrderId';
+    const ARN                           = 'ARN';
+    const UTR                           = 'UTR';
+    const REFUND_DATE                   = 'RefundDate';
+    const REFUND_TIME                   = 'RefundTime';
+    const STORE_ID                      = 'StoreId';
+    const TOTAL_COMMISSION              = 'TotalCommission';
+    const NET_SETTLEMENT_AMOUNT         = 'NetSettlementAmount';
+    const MERCHANT_STORE_ID             = 'MerchantStoreId';
 
     const COLUMN_HEADERS = [
-        self::TRANSACTION_POSTED_DATE,
-        self::SETTLEMENT_ID,
-        self::AMAZON_TRANSACTION_ID,
-        self::SELLER_REFERENCE_ID,
-        self::TRANSACTION_TYPE,
+        self::MERCHANT_ID,
+        self::MERCHANT_NAME,
+        self::ORDER_DATE,
+        self::ORDER_TIME,
+        self::ORDER_ID,
+        self::MERCHANT_ORDER_ID,
         self::AMAZON_ORDER_REFERENCE_ID,
-        self::SELLER_ORDER_ID,
-        self::STORE_NAME,
-        self::CURRENCY_CODE,
+        self::MERCHANT_ORDER_REFERENCE_ID,
+        self::TRANSACTION_TYPE,
         self::TRANSACTION_DESCRIPTION,
-        self::TRANSACTION_AMOUNT,
-        self::TRANSACTION_PERCENTAGE_FEE,
-        self::TRANSACTION_FIXED_FEE,
-        self::TOTAL_TRANSACTION_FEE,
-        self::NET_TRANSACTION_AMOUNT
+        self::ARN,
+        self::UTR,
+        self::REFUND_DATE,
+        self::REFUND_TIME,
+        self::CURRENCY_CODE,
+        self::STORE_NAME,
+        self::STORE_ID,
+        self::ORDER_AMOUNT,
+        self::ORDER_COMMISSION,
+        self::GST,
+        self::TOTAL_COMMISSION,
+        self::NET_SETTLEMENT_AMOUNT,
+        self::SETTLEMENT_ID,
+        self::MERCHANT_STORE_ID,
     ];
 }

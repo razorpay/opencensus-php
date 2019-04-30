@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 use RZP\Gateway\Netbanking\Corporation;
@@ -18,6 +19,7 @@ use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 class NetbankingCorporationGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use PartnerTrait;
 
     // Hardcoding these to add the reconciliation behaviour
     const CUSTOMER_ACCOUNT_BR_CODE  = '4321';
@@ -57,6 +59,21 @@ class NetbankingCorporationGatewayTest extends TestCase
         );
 
         $this->assertArrayHasKey('bank_payment_id', $payment);
+    }
+
+    public function testPartnerPayment()
+    {
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'CORP';
+
+        $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('authorized', $payment['status']);
     }
 
     /**

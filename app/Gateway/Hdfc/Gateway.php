@@ -551,8 +551,6 @@ class Gateway extends Base\Gateway
         }
         else if ($input['terminal']->getCapability() === TerminalCapability::AUTHORIZE)
         {
-            $this->setCardNumberAndCvv($input);
-
             $mpiEntity = $this->app['repo']
                               ->mpi
                               ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
@@ -560,6 +558,8 @@ class Gateway extends Base\Gateway
             $authenticationGateway = $mpiEntity->getGateway() ?: \RZP\Models\Payment\Gateway::MPI_BLADE;
 
             $input['authentication'] = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+            $this->setCardNumberAndCvv($input);
 
             $this->postPreAuthRequest($input);
         }

@@ -71,6 +71,8 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->route->defineStatusApiRoute();
 
+        $this->route->defineStatusFTSRoute();
+
         /**
          * Following params are as explained:
          * - prefix: v1 - All the routes defined have prefix v1
@@ -84,11 +86,9 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
             'middleware'    => [
-                'throttle',
                 'auth',
                 'admin_access',
                 'user_access',
-                'subscription_proxy',
                 'workflow',
                 'merchant_ip_filter',
                 'event_tracker',
@@ -145,8 +145,11 @@ class RouteServiceProvider extends ServiceProvider
         $router->group(
             [],
             function($router) {
-                $this->p2pRoute->addRouteGroups(['public',
-                                                 'device']);
+                $this->p2pRoute->addRouteGroups([
+                    'public',
+                    'device',
+                    'direct',
+                ]);
             }
         );
     }

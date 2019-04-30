@@ -95,6 +95,8 @@ return array(
     'int_percentage'       => 'The :attribute must be a valid integer between 0 and 10000',
     'pan'                  => 'The :attribute field is invalid',
     'alpha_dash_space'     => 'The :attribute may only contain alphabets, digits, hyphens, underscores, and spaces.',
+    'min_amount'           => 'The :attribute must be atleast :min_amount',
+    'currency'             => 'The :input is not a supported currency.',
 
     /*
     |--------------------------------------------------------------------------
@@ -125,7 +127,10 @@ return array(
         ],
         'captcha'  => [
             'required_without' => 'The :attribute field is required'
-        ]
+        ],
+        'iins.*' => [
+            'digits' => 'The IIN elements must be of :digits digit.'
+        ],
     ],
 
     /*

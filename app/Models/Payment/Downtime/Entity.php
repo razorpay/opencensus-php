@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Downtime;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Payment\Method;
 use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
@@ -34,6 +35,8 @@ class Entity extends Base\PublicEntity
     const ALL        = 'ALL';
 
     const INSTRUMENT = 'instrument';
+    const BANK       = 'bank';
+    const WALLET     = 'wallet';
 
     protected $fillable = [
         self::BEGIN,
@@ -111,13 +114,59 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    // ================= Public setters ================
+
     public function setPublicInstrumentAttribute(array & $array)
     {
-        $array[self::INSTRUMENT] = [];
+         $instrument = [];
+
+        switch ($this->getMethod())
+        {
+            case Method::CARD:
+                $instrument[self::NETWORK] = $this->getNetwork();
+                break;
+
+            case Method::NETBANKING:
+                $instrument[self::BANK] = $this->getIssuer();
+                break;
+
+            case Method::WALLET:
+                $instrument[self::WALLET] = $this->getIssuer();
+                break;
+
+            default:
+                break;
+        }
+
+        $array[self::INSTRUMENT] = array_filter($instrument);
     }
+
+    // ================= Setters ================
 
     public function setEndNow()
     {
         $this->setAttribute(self::END, Carbon::now()->getTimestamp());
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    // ================= Getters ================
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
+    }
+
+    public function getIssuer()
+    {
+        return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::NETWORK);
     }
 }

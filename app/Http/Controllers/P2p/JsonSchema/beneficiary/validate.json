@@ -5,22 +5,30 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
-        "address",
-        "beneficiary_name",
+        "type",
         "validated"
     ],
     "properties": {
+        "validated": {
+            "type": "boolean",
+            "description" : "Whether the beneficiary is validated or not. For bank account, we will only validate IFSC"
+        },
+        "type" : {
+            "type" : "string",
+            "description": "Type of beneficiary passed"
+        },
         "address": {
             "type": "string",
-            "default": null,
+            "description": "NPCI format for the beneficiary",
             "pattern": "^(.*)@(.*)$"
         },
         "beneficiary_name": {
-            "type": "string",
-            "pattern": "^(.*)$"
+            "type": ["string", "null"],
+            "description": "Name for the beneficiary"
         },
-        "validated": {
-            "type": "boolean"
+        "id": {
+            "type" : ["string", "null"],
+            "description": "If validated, it can be used in transactions"
         }
     }
 }

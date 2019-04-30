@@ -52,6 +52,9 @@ class CreateEnachTable extends Migration
             $table->string(Enach::GATEWAY_REFERENCE_ID)
                   ->nullable();
 
+            $table->string(Enach::GATEWAY_REFERENCE_ID2)
+                  ->nullable();
+
             $table->string(Enach::ACKNOWLEDGE_STATUS)
                   ->nullable();
 

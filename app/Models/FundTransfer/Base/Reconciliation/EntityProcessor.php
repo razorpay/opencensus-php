@@ -173,7 +173,7 @@ abstract class EntityProcessor extends Base\Core
 
         $statusClass = new $statusNamespace;
 
-        $isInternalError = $statusClass::isCriticalError($this->fta);
+        $isInternalError = $statusClass::isInternalError($this->fta);
 
         $bankStatusCode = $this->fta->getBankStatusCode();
 

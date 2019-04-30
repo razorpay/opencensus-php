@@ -26,12 +26,18 @@ class Entity extends Base\PublicEntity
     const LOCKED        = 'locked';
     const NUMBER        = 'number';
 
-    const INTERNATIONAL  = 'international';
-    const MESSAGE_TYPE   = 'message_type';
-    const RECURRING      = 'recurring';
+    const INTERNATIONAL = 'international';
+    const MESSAGE_TYPE  = 'message_type';
+    const RECURRING     = 'recurring';
 
+    // Used in card_issuer_validate route
+    const FlOW          = 'flow';
 
-    const ID_LENGTH = 6;
+    // Used in bulk edit route
+    const IINS          = 'iins';
+    const PAYLOAD       = 'payload';
+
+    const ID_LENGTH      = 6;
     const COUNTRY_LENGTH = 2;
 
     protected $entity = 'iin';
@@ -92,7 +98,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::EMI            => false,
         self::FLOWS          => [
-                       '3ds' => '1'
+            '3ds' => '1'
         ],
         self::ENABLED        => true,
         self::LOCKED         => false,
@@ -128,6 +134,11 @@ class Entity extends Base\PublicEntity
     public function isHeadLessOtp()
     {
         return $this->supports(Flow::HEADLESS_OTP);
+    }
+
+    public function isIframeApplicable()
+    {
+        return $this->supports(Flow::IFRAME);
     }
 
     public function isOtp()

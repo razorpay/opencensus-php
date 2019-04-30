@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const IINS             = 'iins';
     const RECURRING        = 'recurring';
     const RECURRING_TYPE   = 'recurring_type';
+    const CAPABILITY       = 'capability';
 
     // Terminal and payment properties both
     const EMI_DURATION     = 'emi_duration';
@@ -92,11 +93,12 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::CURRENCY,
         self::RECURRING_TYPE,
+        self::CAPABILITY,
     ];
 
     const AUTHENTICATION_COMPARISION_ATTRIBUTES = [
         self::AUTHENTICATION_GATEWAY,
-        self::AUTH_TYPE,
+        self::AUTH_TYPE
     ];
 
     /**
@@ -123,6 +125,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
+        self::CAPABILITY,
     ];
 
     /**
@@ -165,6 +168,21 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CATEGORY,
         self::GATEWAY_ACQUIRER,
         self::CATEGORY2,
+    ];
+
+    const AUTHENTICATION_SORTER_SEARCH_ATTRIBUTES = [
+        self::GATEWAY,
+        self::STEP,
+        self::AUTHENTICATION_GATEWAY,
+        self::CAPABILITY,
+    ];
+
+    const AUTHENTICATION_FILTER_SEARCH_ATTRIBUTES = [
+        self::GATEWAY,
+        self::STEP,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
+        self::CAPABILITY,
     ];
 
     /**
@@ -211,6 +229,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION    => 'int',
         self::IINS            => 'array',
         self::RECURRING       => 'boolean',
+        self::CAPABILITY      => 'int',
     ];
 
     protected $fillable = [
@@ -236,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECURRING,
         self::RECURRING_TYPE,
+        self::CAPABILITY,
         self::COMMENTS,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
@@ -269,6 +289,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
+        self::CAPABILITY,
         self::COMMENTS,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
@@ -294,6 +315,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::MIN_AMOUNT => 0,
         self::STEP       => self::AUTHORIZATION,
+        self::CAPABILITY => null,
     ];
 
     public function merchant()
@@ -350,6 +372,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING_TYPE);
     }
 
+    public function getCapability()
+    {
+        return $this->getAttribute(self::CAPABILITY);
+    }
+
     public function getMethodType()
     {
         return $this->getAttribute(self::METHOD_TYPE);
@@ -378,6 +405,11 @@ class Entity extends Base\PublicEntity
     public function getStep()
     {
         return $this->getAttribute(self::STEP);
+    }
+
+    public function isAuthentication()
+    {
+        return ($this->getAttribute(self::STEP) === self::AUTHENTICATION);
     }
 
     public function isInternational()
@@ -557,6 +589,11 @@ class Entity extends Base\PublicEntity
     {
         $key = __CLASS__ . '::' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
 
+        if ($this->isAuthentication() === true)
+        {
+            $key = __CLASS__ . '::' . strtoupper(self::AUTHENTICATION) . '_' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
+        }
+
         $searchAttributesForType = [];
 
         if (defined($key) === true)
@@ -618,8 +655,11 @@ class Entity extends Base\PublicEntity
      * Evaluates if a rule's terminal related attributes match those of
      * given terminal
      *
-     * @param  Terminal\Entity $terminal Terminal entity to compare against
-     * @param  Merchant\Entity $merchant
+     * @param  Terminal\Entity           $terminal Terminal entity to compare against
+     *
+     * @param Merchant\Entity            $merchant
+     * @param Payment\Entity|null        $payment
+     * @param Base\PublicCollection|null $gatewayTokens
      *
      * @return bool whether rule matches terminal
      *
@@ -660,7 +700,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->comapreAuthTerminal($key, $terminal, $payment) === false)
+            if ($this->compareAuthTerminal($key, $terminal, $payment) === false)
             {
                 return false;
             }
@@ -669,7 +709,7 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function comapreAuthTerminal($key, $terminal, $payment)
+    protected function compareAuthTerminal($key, $terminal, $payment)
     {
         return ($this->getAttribute($key) === $terminal[$key]);
     }
@@ -846,14 +886,15 @@ class Entity extends Base\PublicEntity
      * - Terminal assigned to some other merchant with given merchant as a submerchant
      *
      * @param  Terminal\Entity $terminal Terminal to check against
-     * @param  Merchant\Entity $merchant Merchant making the payment
+     * @param Merchant\Entity  $merchant
+     *
      * @return bool                      Comparison result
      */
     protected function compareSharedTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
     {
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
-        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
+        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant()) ? true : false;
     }
 
     /**

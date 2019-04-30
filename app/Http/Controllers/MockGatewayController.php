@@ -241,6 +241,19 @@ class MockGatewayController extends Controller
         return $data;
     }
 
+    public function postCardlessEmiPayment()
+    {
+        $input = Request::all();
+
+        $driver = 'cardless_emi';
+
+        $server = $this->gateway->server($driver);
+
+        $data = $server->authorize($input);
+
+        return $data;
+    }
+
     public function postMobikwikPayment()
     {
         $input = Request::all();

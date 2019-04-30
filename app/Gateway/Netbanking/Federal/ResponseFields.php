@@ -13,4 +13,5 @@ class ResponseFields
     const PAYEE_ID        = 'PID';
     const STATUS          = 'status';
     const VERIFY_BODY     = 'BODY';
+    const HASH            = 'RESP_HASH';
 }

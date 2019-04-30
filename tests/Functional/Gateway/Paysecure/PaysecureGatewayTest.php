@@ -12,6 +12,8 @@ class PaysecureGatewayTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
+    protected $paymentEntityGateway = 'hitachi';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
@@ -20,7 +22,16 @@ class PaysecureGatewayTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
-        $this->fixtures->create('terminal:shared_paysecure_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ],
+            'gateway_merchant_id' => 'sample_hitachi_mid',
+            'gateway_terminal_id' => 'sample_hitachi_tid',
+        ]);
 
         $merchantDetailArray = [
             'contact_name'                => 'rzp',
@@ -66,6 +77,24 @@ class PaysecureGatewayTest extends TestCase
         return $authResponse;
     }
 
+    public function testPaymentAuthViaRedirectForBlacklistedMcc()
+    {
+        $this->addBlacklistConfig(['6012' => '7994']);
+
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+    }
+
+    public function testS2SPaymentAuthViaRedirect()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $authResponse = $this->doS2SPrivateAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+    }
+
     /**
      * Error response from CheckBin request.
      * Verify the same and make sure verify responds with action finish
@@ -99,7 +128,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'  => 'failed',
                 'amount'  => 50000,
                 'method'  => 'card',
-                'gateway' => $this->gateway
+                'gateway' => $this->paymentEntityGateway,
             ],
             $payment
         );
@@ -116,9 +145,10 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'initiate2')
                 {
-                    $content['status']                = 'failure';
-                    $content['errorcode']             = '406';
-                    $content['errormsg']              = 'Not Authenticated';
+                    $content['status']      = 'failure';
+                    $content['errorcode']   = '406';
+                    $content['errormsg']    = 'Not Authenticated';
+                    $content['RedirectURL'] = '';
                 }
             }
         );
@@ -137,7 +167,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'  => 'failed',
                 'amount'  => 50000,
                 'method'  => 'card',
-                'gateway' => $this->gateway
+                'gateway' => $this->paymentEntityGateway,
             ],
             $payment
         );
@@ -154,7 +184,7 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'auth_response')
                 {
-                    $content['AccuResponseCode'] = 'ACCU600';
+                    $content['AccuResponseCode'] = 'ACCU100';
                 }
             }
         );
@@ -170,10 +200,12 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status'  => 'failed',
-                'amount'  => 50000,
-                'method'  => 'card',
-                'gateway' => $this->gateway
+                'status'        => 'failed',
+                'amount'        => 50000,
+                'method'        => 'card',
+                'gateway'       => $this->paymentEntityGateway,
+                'verify_bucket' => null,
+                'verify_at'     => null,
             ],
             $payment
         );
@@ -211,7 +243,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'  => 'failed',
                 'amount'  => 50000,
                 'method'  => 'card',
-                'gateway' => $this->gateway
+                'gateway' => $this->paymentEntityGateway,
             ],
             $payment
         );
@@ -249,7 +281,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'  => 'failed',
                 'amount'  => 50000,
                 'method'  => 'card',
-                'gateway' => $this->gateway
+                'gateway' => $this->paymentEntityGateway,
             ],
             $payment
         );
@@ -286,19 +318,11 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'action' => 'authorize',
-                'pRespCode' => '00',
+                'action'     => 'authorize',
+                'pRespCode'  => '00',
                 'payment_id' => substr($authResponse['razorpay_payment_id'],4),
             ],
             $hitachi
-        );
-
-        $paysecure = $this->getDbLastEntityToArray('paysecure');
-        $this->assertArraySelectiveEquals(
-            [
-                'settled' => 1,
-            ],
-            $paysecure
         );
     }
 
@@ -310,21 +334,16 @@ class PaysecureGatewayTest extends TestCase
 
         $this->refundPayment('pay_' . $payment['id'], 1000);
 
-        $hitachi = $this->getDbLastEntityToArray('hitachi');
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        // Hitachi refunds goes via Scrooge
+        // So, we can only check the refund entity, since the other things are handled at Scrooge
         $this->assertArraySelectiveEquals(
             [
                 'amount'     => 1000,
                 'payment_id' => $payment['id'],
-                'action'     => 'refund',
-            ],
-            $hitachi
-        );
-
-        $refund = $this->getDbLastEntityToArray('refund');
-        $this->assertArraySelectiveEquals(
-            [
-                'amount' => 1000,
-                'payment_id' => $payment['id'],
+                'gateway'    => 'hitachi',
+                'is_scrooge' => true,
             ],
             $refund
         );
@@ -356,7 +375,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'  => 'failed',
                 'amount'  => 50000,
                 'method'  => 'card',
-                'gateway' => $this->gateway
+                'gateway' => $this->paymentEntityGateway,
             ],
             $payment
         );
@@ -377,8 +396,8 @@ class PaysecureGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             [
                 'payment' => [
-                    'gateway' => $this->gateway,
-                    'verified' => 1
+                    'gateway'  => $this->paymentEntityGateway,
+                    'verified' => 1,
                 ]
             ],
             $verify
@@ -418,7 +437,7 @@ class PaysecureGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             [
                 'method' => 'card',
-                'gateway' => $this->gateway,
+                'gateway' => $this->paymentEntityGateway,
                 'amount' => 50000,
                 // Verify mismatch
                 'verified' => 0,
@@ -441,7 +460,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'  => 'authorized',
                 'amount'  => 50000,
                 'method'  => 'card',
-                'gateway' => $this->gateway
+                'gateway' => $this->paymentEntityGateway,
             ],
             $payment
         );
@@ -471,12 +490,27 @@ class PaysecureGatewayTest extends TestCase
 
         $payment['card'] = array(
             'number'            => '6073849700004947',
-            'name'              => 'Praveen',
+            'name'              => 'Test user',
             'expiry_month'      => '12',
             'expiry_year'       => '2024',
             'cvv'               => '566',
         );
 
         return $payment;
+    }
+
+    protected function addBlacklistConfig(array $mapping)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:paysecure_blacklisted_mccs' => $mapping
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }

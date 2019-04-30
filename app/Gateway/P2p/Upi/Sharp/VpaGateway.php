@@ -50,14 +50,17 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         ]);
     }
 
+    public function initiateCheckAvailability(Response $response)
+    {
+        $this->initiateAdd($response);
+    }
+
     public function checkAvailability(Response $response)
     {
         $response->setData([
-            'success'   => true,
-            'vpa'       => [
-                'username'      => $this->input->get('username'),
-                'handle'        => $this->context->handleCode(),
-            ]
+            'available'     => true,
+            'username'      => $this->input->get('username'),
+            'handle'        => $this->context->handleCode(),
         ]);
     }
 
@@ -68,6 +71,17 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
             'vpa'   => [
                 'id'    => $this->input->get('vpa')->get('id'),
             ],
+        ]);
+    }
+
+    public function validate(Response $response)
+    {
+        $response->setData([
+            'type'              => $this->input->get('type'),
+            'username'          => $this->input->get('username'),
+            'handle'            => $this->input->get('handle'),
+            'beneficiary_name'  => 'Razorpay Customer',
+            'validated'         => true,
         ]);
     }
 }

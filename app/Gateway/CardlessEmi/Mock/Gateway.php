@@ -15,4 +15,9 @@ class Gateway extends CardlessEmi\Gateway
 
         $this->mock = true;
     }
+
+    public function authorize(array $input)
+    {
+        return $this->authorizeMock($input);
+    }
 }

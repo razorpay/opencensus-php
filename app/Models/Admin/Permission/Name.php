@@ -74,6 +74,8 @@ class Name
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
+    const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
+    const TOGGLE_TERMINAL                     = 'toggle_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
     const RETRY_SETTLEMENT                    = 'retry_settlement';
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
@@ -184,6 +186,7 @@ class Name
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
     const MANAGE_BULK_FEATURE_MAPPING         = 'manage_bulk_feature_mapping';
+    const MANAGE_BULK_MERCHANT_TAGGING        = 'manage_bulk_merchant_tagging';
     const MANAGE_IINS                         = 'manage_iins';
     const MANAGE_EMI_PLANS                    = 'manage_emi_plans';
     const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
@@ -210,9 +213,11 @@ class Name
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const EDIT_REFUND                         = 'edit_refund';
+    const UPDATE_SCROOGE_REFUND_REFERENCE1    = 'update_scrooge_refund_reference1';
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
+    const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
     const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';

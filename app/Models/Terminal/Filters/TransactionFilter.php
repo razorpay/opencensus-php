@@ -41,6 +41,8 @@ class TransactionFilter extends Terminal\Filter
         'bharat_qr',
         'direct_settlement',
         'bank_account_type',
+        'hitachi_shared_terminal',
+        'capability',
     ];
 
     public function methodFilter($terminal)
@@ -205,7 +207,7 @@ class TransactionFilter extends Terminal\Filter
                     ($payment->isRecurring() === false) and
                     ($payment->isInternational() === false) and
                     ($iin !== self::PREPAID_IIN) and
-                    ($terminal->isDirectForMerchant($merchant) === false))
+                    ($terminal->isDirectForMerchant() === false))
                 {
                     return false;
                 }
@@ -545,7 +547,7 @@ class TransactionFilter extends Terminal\Filter
             //
             // If terminal is direct for the merchant, we always select it.
             //
-            if ($terminal->isDirectForMerchant($merchant) === true)
+            if ($terminal->isDirectForMerchant() === true)
             {
                 return true;
             }
@@ -755,6 +757,38 @@ class TransactionFilter extends Terminal\Filter
         return false;
     }
 
+    public function hitachiSharedTerminalFilter($terminal, $applicableTerminals)
+    {
+        $payment  = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        if (($terminal->getGateway() !== Gateway::HITACHI) or
+            ($terminal->isDirectForMerchant() === true))
+        {
+            return true;
+        }
+
+        $directTerminals = array_filter(
+                                    $applicableTerminals,
+                                    function ($terminal)
+                                    {
+                                        return (($terminal->getGateway() === Gateway::HITACHI) and
+                                                ($terminal->isDirectForMerchant() === true));
+                                    });
+
+        // if there is a direct hitachi terminal we reject shared hitachi terminal
+        if (empty($directTerminals) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function bankAccountTypeFilter(Terminal\Entity $terminal)
     {
         $payment = $this->input['payment'];
@@ -792,8 +826,8 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
-            ($terminal->getCapability() === Terminal\Capability::ALL))
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === false) or
+            ($terminal->getCapability() !== Terminal\Capability::AUTHORIZE))
         {
             return true;
         }

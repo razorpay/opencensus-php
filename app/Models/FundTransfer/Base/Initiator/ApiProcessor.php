@@ -79,6 +79,8 @@ abstract class ApiProcessor extends NodalAccount
 
     public $requestTrace;
 
+    public $ftaId = null;
+
     public function method(string $method): self
     {
         $this->method = $method;
@@ -205,9 +207,21 @@ abstract class ApiProcessor extends NodalAccount
             }
         }
 
+        $response = $this->handleEmptyResponse($response);
+
         $this->traceResponse($response);
 
         return $this->processResponse($response);
+    }
+
+    protected function handleEmptyResponse($response): \Requests_Response
+    {
+        if (empty($response) === true)
+        {
+            return new \Requests_Response();
+        }
+
+        return $response;
     }
 
     protected function makeRequestOnGateway(): array
@@ -277,6 +291,7 @@ abstract class ApiProcessor extends NodalAccount
         $this->trace->info(
             $this->responseTraceCode,
             [
+                'fta_id'        => $this->ftaId,
                 'channel'       => $this->channel,
                 'response_body' => $response->body,
             ]);

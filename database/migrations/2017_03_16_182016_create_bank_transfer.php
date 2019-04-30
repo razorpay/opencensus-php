@@ -39,7 +39,7 @@ class CreateBankTransfer extends Migration
             $table->char(BankTransfer::PAYER_BANK_ACCOUNT_ID, BankTransfer::ID_LENGTH)
                   ->nullable();
 
-            $table->string(BankTransfer::PAYEE_ACCOUNT, 20);
+            $table->string(BankTransfer::PAYEE_ACCOUNT, 255);
 
             $table->string(BankTransfer::PAYEE_IFSC, 11);
 

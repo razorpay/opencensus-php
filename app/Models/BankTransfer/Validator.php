@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::PAYER_IFSC         => 'nullable|string',
         Entity::PAYER_ADDRESS      => 'nullable|string',
         Entity::PAYEE_NAME         => 'nullable|string|max:100',
-        Entity::PAYEE_ACCOUNT      => 'required|string|max:20',
+        Entity::PAYEE_ACCOUNT      => 'required|string|max:40',
         Entity::PAYEE_IFSC         => 'required|string|size:'.self::IFSC_LENGTH,
         Entity::MODE               => 'required|custom',
         Entity::REQ_UTR            => 'required|string|max:30',

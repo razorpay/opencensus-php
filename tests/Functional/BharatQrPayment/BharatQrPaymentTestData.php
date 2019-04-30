@@ -30,7 +30,7 @@ return [
             'F013'       => '1212',
             'F037'       => 'somethingrandom',
             'F038'       => 'randomauthorization',
-            'F039'       => '0',
+            'F039'       => '00',
             'F041'       => 'abc',
             'F042'       => 'random',
             'F043'       => 'RazorpayBangalore',
@@ -55,6 +55,7 @@ return [
             Fields::PAYER_NAME       => 'Ria Garg',
             Fields::PAYER_VA         => 'random@icici',
             Fields::PAYER_AMOUNT     => '100.00',
+            Fields::TXN_STATUS       => 'SUCCESS',
         ],
     ],
 

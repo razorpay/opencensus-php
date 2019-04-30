@@ -18,31 +18,22 @@ class PaymentDowntimeTest extends TestCase
 
         parent::setUp();
 
+        $this->enablePaymentDowntimes();
+
         $this->ba->privateAuth();
-
-        $this->markTestSkipped('no code, lol');
     }
 
-    public function testGetCardDowntimeForRupayGateways()
+    protected function enablePaymentDowntimes()
     {
-        $this->createCardNetworkDowntime('RUPAY');
+        $this->ba->adminAuth();
 
-        $this->startTest();
-    }
-
-    public function testGetNoCardDowntimeForSingleRupayGateway()
-    {
-        // Only one gateway down, network should still be up
-        $this->fixtures->create('gateway_downtime:card', [
-            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-            'end'       => null,
-            'gateway'   => 'hdfc',
-            'network'   => 'RUPAY',
-            'method'    => 'card',
-            'card_type' => 'ALL',
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_payment_downtimes' => '1',
+            ],
         ]);
-
-        $this->startTest();
     }
 
     public function testGetUpiDowntimeForAllGateways()
@@ -60,12 +51,10 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         $this->ba->appAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
-
-        $response = $this->startTest();
+        $this->startTest();
     }
 
     public function testGetUpiDowntimeWithEndtime()
@@ -81,13 +70,16 @@ class PaymentDowntimeTest extends TestCase
             'method' => 'PUT',
             'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
         ];
-
         $this->ba->adminAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $downtime = $this->getLastEntity('payment.downtime', true);
         $this->assertNotNull($downtime['end']);
+
+        $this->activateDowntimes();
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertEquals('resolved', $downtime['status']);
     }
 
     public function testGetUpiDowntimeForIndividualGateways()
@@ -114,6 +106,111 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         $this->ba->appAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testGetNetbankingDowntimeForSingleBankBilldeskGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'issuer'      => 'SVCB',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testActivateDowntimes()
+    {
+        $this->testGetUpiDowntimeForAllGateways();
+
+        $this->activateDowntimes();
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $this->assertEquals('started', $paymentDowntime['status']);
+    }
+
+    public function testGetNetbankingDowntimeWithEndTime()
+    {
+        $this->testGetNetbankingDowntimeForSingleBankBilldeskGateway();
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $request = [
+            'content' => [
+                'end' => Carbon::now()->subMinutes(30)->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $this->ba->adminAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertNotNull($downtime['end']);
+    }
+
+    public function testGetNetbankingDowntimeForIndividualGateways()
+    {
+        $this->createNetbankingAllGatewayDowntime();
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testGetNoNetbankingDowntimeForSingleGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'method'      => 'netbanking',
+                'issuer'      => 'ANDB',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testGetCardDowntimeForSingleNetworkHdfcGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'hdfc',
+                'network'     => 'DICL',
+                'method'      => 'card',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
 
         $this->makeRequestAndGetContent($request);
 
@@ -122,34 +219,104 @@ class PaymentDowntimeTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetWalletDowntime()
+    public function testGetCardDowntimeWithEndTime()
     {
-        $this->fixtures->create('gateway_downtime:wallet', [
-            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-            'end'       => null,
-            'gateway'   => 'wallet_airtelmoney',
-            'scheduled' => false,
-        ]);
+        $this->testGetCardDowntimeForSingleNetworkHdfcGateway();
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $request = [
+            'content' => [
+                'end' => Carbon::now()->subMinutes(30)->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertNotNull($downtime['end']);
+    }
+
+    public function testGetCardDowntimeForIndividualGateways()
+    {
+        $this->createCardAllGatewayDowntime();
+
+        $this->ba->privateAuth();
 
         $this->startTest();
     }
 
-    protected function createCardNetworkDowntime(string $network)
+    public function testGetNoCardDowntimeForSingleGateway()
     {
-        foreach (Gateway::$cardNetworkMap as $gateway => $networks)
-        {
-            if (in_array($network, $networks, true) === true)
-            {
-                $this->fixtures->create('gateway_downtime:card', [
-                    'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-                    'end'       => null,
-                    'gateway'   => $gateway,
-                    'network'   => $network,
-                    'method'    => 'card',
-                    'card_type' => 'ALL',
-                ]);
-            }
-        }
+        $request = [
+            'content' => [
+                'gateway'     => 'card_fss',
+                'method'      => 'card',
+                'network'     => 'RUPAY',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetWalletDowntimeForSingleGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'wallet_olamoney',
+                'method'      => 'wallet',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetWalletDowntimeWithEndTime()
+    {
+        $this->testGetWalletDowntimeForSingleGateway();
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $request = [
+            'content' => [
+                'end' => Carbon::now()->subMinutes(30)->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertNotNull($downtime['end']);
     }
 
     protected function createUpiAllGatewayDowntime()
@@ -172,5 +339,61 @@ class PaymentDowntimeTest extends TestCase
 
             $this->makeRequestAndGetContent($request);
         }
+    }
+
+    protected function createNetbankingAllGatewayDowntime()
+    {
+        foreach (['billdesk', 'atom', 'ebs'] as $gateway)
+        {
+            $request = [
+                'content' => [
+                    'gateway'     => $gateway,
+                    'method'      => 'netbanking',
+                    'issuer'      => 'ANDB',
+                    'source'      => 'dummy',
+                    'reason_code' => 'OTHER',
+                    'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                ],
+                'method' => 'POST',
+                'url' => '/gateway/downtimes/dummy/webhook'
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }
+    }
+
+    protected function createCardAllGatewayDowntime()
+    {
+        foreach (['hdfc', 'first_data', 'card_fss', 'hitachi'] as $gateway)
+        {
+            $request = [
+                'content' => [
+                    'gateway'     => $gateway,
+                    'method'      => 'card',
+                    'network'     => 'RUPAY',
+                    'source'      => 'dummy',
+                    'reason_code' => 'OTHER',
+                    'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                ],
+                'method' => 'POST',
+                'url' => '/gateway/downtimes/dummy/webhook'
+            ];
+
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+        }
+    }
+
+    protected function activateDowntimes()
+    {
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent([
+            'url'     => '/methods/downtimes/trigger',
+            'method'  => 'POST',
+            'content' => [],
+        ]);
     }
 }

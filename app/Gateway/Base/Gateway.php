@@ -804,15 +804,21 @@ class Gateway
 
     public function traceCurlInfo($headers, $info)
     {
-        $this->trace->info(TraceCode::GATEWAY_REQUEST_CURL_INFO,
-            [
-                'total_time'         => $info['total_time'],
-                'connect_time'       => $info['connect_time'],
-                'redirect_time'      => $info['redirect_time'],
-                'namelookup_time'    => $info['namelookup_time'],
-                'pretransfer_time'   => $info['pretransfer_time'],
-                'starttransfer_time' => $info['starttransfer_time'],
-            ]);
+        $verbose = $this->isCurlInfoVerboseLogEnabled();
+
+        if ($verbose === true)
+        {
+            $this->trace->info(TraceCode::GATEWAY_REQUEST_CURL_INFO,
+                [
+                    'total_time' => $info['total_time'],
+                    'connect_time' => $info['connect_time'],
+                    'redirect_time' => $info['redirect_time'],
+                    'namelookup_time' => $info['namelookup_time'],
+                    'pretransfer_time' => $info['pretransfer_time'],
+                    'starttransfer_time' => $info['starttransfer_time'],
+                    'primary_ip' => $info['primary_ip'] ?? 'nil',
+                ]);
+        }
 
         try
         {
@@ -839,6 +845,22 @@ class Gateway
                     'action'  => $this->action ?? 'none',
                 ]);
         }
+    }
+
+    protected function isCurlInfoVerboseLogEnabled(): bool
+    {
+        $verbose = false;
+
+        try
+        {
+            $verbose = (bool) Cache::get(ConfigKey::CURL_INFO_LOG_VERBOSE, false);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::CURL_INFO_CONFIG_FETCH_ERROR);
+        }
+
+        return $verbose;
     }
 
     /**
@@ -1505,7 +1527,7 @@ class Gateway
 
             $cacheKey = self::getNetbankingUrlCacheKey($bank);
 
-            $cache = $this->app['redis']->connection('redis_labs');
+            $cache = $this->app['redis']->connection();
 
             $cacheValue = $cache->get($cacheKey);
 

@@ -7,6 +7,7 @@ use RZP\Models\P2p\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $beneficiaryRules;
     protected static $initiateAddRules;
     protected static $addRules;
     protected static $addSuccessRules;
@@ -16,20 +17,21 @@ class Validator extends Base\Validator
     protected static $checkAvailabilitySuccessRules;
     protected static $deleteRules;
     protected static $deleteSuccessRules;
+    protected static $initiateCheckAvailabilityRules;
 
     public function rules()
     {
         $rules = [
             Entity::DEVICE_ID            => 'string',
-            Entity::HANDLE               => 'string',
+            Entity::HANDLE               => 'string|regex:/^[a-z0-9]{3,50}$/',
             Entity::GATEWAY_DATA         => 'array',
-            Entity::USERNAME             => 'string|regex:/^[A-Za-z0-9\.\-]{6,}$/',
+            Entity::USERNAME             => 'string|regex:/^[A-Za-z0-9\.\-]{3,200}$/',
             Entity::BANK_ACCOUNT_ID      => 'string',
             Entity::BENEFICIARY_NAME     => 'string',
             Entity::PERMISSIONS          => 'string',
             Entity::FREQUENCY            => 'string',
             Entity::ACTIVE               => 'string',
-            Entity::VALIDATED            => 'string',
+            Entity::VALIDATED            => 'boolean',
             Entity::VERIFIED             => 'string',
             Entity::DEFAULT              => 'string',
         ];
@@ -57,12 +59,23 @@ class Validator extends Base\Validator
         return $rules;
     }
 
+    public function makeBeneficiaryRules()
+    {
+        $rules = $this->makeRules([
+            Entity::HANDLE               => 'required',
+            Entity::USERNAME             => 'required',
+            Entity::BENEFICIARY_NAME     => 'required',
+            Entity::GATEWAY_DATA         => 'sometimes',
+        ]);
+
+        return $rules;
+    }
+
     public function makeVpaSuccessRules()
     {
         return $this->makeRules([
             Entity::USERNAME        => 'required',
             Entity::HANDLE          => 'required',
-            Entity::GATEWAY_DATA    => 'sometimes',
         ]);
     }
 
@@ -128,10 +141,11 @@ class Validator extends Base\Validator
     public function makeCheckAvailabilitySuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::SUCCESS     => 'required|boolean|in:1'
+            Entity::USERNAME        => 'required',
+            Entity::HANDLE          => 'required',
+            Entity::AVAILABLE       => 'required',
+            Entity::SUGGESTIONS     => 'sometimes',
         ]);
-
-        $rules->arrayRules(Entity::VPA, $this->makeVpaSuccessRules()->toArray());
 
         return $rules;
     }
@@ -153,4 +167,14 @@ class Validator extends Base\Validator
 
         return $rules;
     }
+
+    public function makeInitiateCheckAvailabilityRules()
+    {
+        $rules = $this->makeRules([
+            Entity::USERNAME    => 'required',
+        ]);
+
+        return $rules;
+    }
+
 }

@@ -665,7 +665,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $refund = $this->getLastEntity('hdfc', true);//sd($refund);
+        $refund = $this->getLastEntity('hdfc', true);
         $this->assertTestResponse($refund);
     }
 

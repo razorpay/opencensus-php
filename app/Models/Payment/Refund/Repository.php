@@ -17,6 +17,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Gateway\Wallet\Freecharge;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Repository extends Base\Repository
 {
@@ -915,8 +916,8 @@ class Repository extends Base\Repository
     public function updateRefundReference1(array $refund)
     {
         return $this->newQueryWithoutTimestamps()
-                    ->where(Table::REFUND . '.' . Refund\Entity::ID, $refund[Refund\Entity::ID])
-                    ->where(Table::REFUND . '.' . Refund\Entity::STATUS, Refund\Status::PROCESSED)
+                    ->where(Refund\Entity::ID, $refund[Refund\Entity::ID])
+                    ->where(Refund\Entity::STATUS, Refund\Status::PROCESSED)
                     ->update([
                         Refund\Entity::REFERENCE1 => $refund[Refund\Entity::REFERENCE1],
                     ]);
@@ -942,5 +943,34 @@ class Repository extends Base\Repository
         }
 
         return $dbColumns;
+    }
+
+    public function backfillIsScrooge(array $data, bool $isScrooge, bool $withTimestamps)
+    {
+        $count = 0;
+
+        if ($withTimestamps === true)
+        {
+            $count += $this->newQuery()
+                           ->where(RefundEntity::GATEWAY, $data[RefundEntity::GATEWAY])
+                           ->where(RefundEntity::CREATED_AT, '>=', $data['from'])
+                           ->where(RefundEntity::CREATED_AT, '<=', $data['to'])
+                           ->where(RefundEntity::IS_SCROOGE, '!=', $isScrooge)
+                           ->orderBy(RefundEntity::CREATED_AT)
+                           ->limit($data['limit'])
+                           ->update([
+                               RefundEntity::IS_SCROOGE => $isScrooge
+                           ]);
+        }
+        else
+        {
+            $count += $this->newQuery()
+                           ->whereIn(RefundEntity::ID, $data)
+                           ->update([
+                               RefundEntity::IS_SCROOGE => $isScrooge
+                           ]);
+        }
+
+        return $count;
     }
 }

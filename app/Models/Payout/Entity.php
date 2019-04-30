@@ -8,6 +8,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Batch;
+use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
@@ -65,6 +66,8 @@ class Entity extends Base\PublicEntity
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
     const REVERSED_AT            = 'reversed_at';
+    const QUEUED_AT              = 'queued_at';
+    const CANCELLED_AT           = 'cancelled_at';
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
     const MODE                   = 'mode';
@@ -72,6 +75,7 @@ class Entity extends Base\PublicEntity
     const NARRATION              = 'narration';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const BATCH_ID               = 'batch_id';
+    const INITIATED_AT           = 'initiated_at';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -90,17 +94,20 @@ class Entity extends Base\PublicEntity
     const ON_DEMAND = 'on_demand';
 
     // Additional input/output attributes
-    const CONTACT_NAME    = 'contact_name';
-    const CONTACT_PHONE   = 'contact_phone';
-    const CONTACT_ID      = 'contact_id';
-    const CONTACT_EMAIL   = 'contact_email';
-    const CONTACT_TYPE    = 'contact_type';
+    const CONTACT_NAME  = 'contact_name';
+    const CONTACT_PHONE = 'contact_phone';
+    const CONTACT_ID    = 'contact_id';
+    const CONTACT_EMAIL = 'contact_email';
+    const CONTACT_TYPE  = 'contact_type';
 
     // Input keys
-    const ACCOUNT_NUMBER = 'account_number';
+    const ACCOUNT_NUMBER       = 'account_number';
+    const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
+
+    const PAYOUT_MODE     = 'payout_mode';
 
     // Relations
     const USER          = 'user';
@@ -108,6 +115,8 @@ class Entity extends Base\PublicEntity
     const FUND_ACCOUNT  = 'fund_account';
     const TRANSACTION   = 'transaction';
     const REVERSAL      = 'reversal';
+
+    protected $queueFlag = false;
 
     protected $entity = 'payout';
 
@@ -131,6 +140,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
@@ -166,6 +177,8 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
@@ -173,6 +186,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::BATCH_ID,
         self::INTERNAL_STATUS,
+        self::INITIATED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -200,6 +214,11 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::BATCH_ID,
         self::REVERSAL,
+        self::CANCELLED_AT,
+        self::QUEUED_AT,
+        self::INITIATED_AT,
+        self::PROCESSED_AT,
+        self::REVERSED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
     ];
@@ -228,6 +247,11 @@ class Entity extends Base\PublicEntity
         // This might cause confusions and hence we show UTR only when either
         // the payout is in processed or reversed state.
         self::UTR,
+        self::INITIATED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
+        self::PROCESSED_AT,
+        self::REVERSED_AT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::TRANSACTION,
@@ -247,6 +271,8 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON    => null,
         self::REFERENCE_ID      => null,
         self::NARRATION         => null,
+        self::FEES              => 0,
+        self::TAX               => 0,
     ];
 
     protected $amounts = [
@@ -266,6 +292,9 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
+        self::INITIATED_AT,
         self::SETTLED_ON,
     ];
 
@@ -422,6 +451,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::CUSTOMER_TRANSACTION);
     }
 
+    public function toBeQueued(): bool
+    {
+        return ($this->queueFlag === true);
+    }
+
     /**
      * FeeCalculator calls `$entity->getFee()` for all the pricing entity
      *
@@ -482,6 +516,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REVERSED_AT);
     }
 
+    public function getQueuedAt()
+    {
+        return $this->getAttribute(self::QUEUED_AT);
+    }
+
+    public function getCancelledAt()
+    {
+        return $this->getAttribute(self::CANCELLED_AT);
+    }
+
+    public function hasBeenQueued()
+    {
+        return ($this->isAttributeNotNull(self::QUEUED_AT) === true);
+    }
+
     public function isStatusCreated(): bool
     {
         return ($this->getStatus() === Status::CREATED);
@@ -495,6 +544,16 @@ class Entity extends Base\PublicEntity
     public function isStatusReversed()
     {
         return ($this->getStatus() === Status::REVERSED);
+    }
+
+    public function isStatusQueued()
+    {
+        return ($this->getStatus() === Status::QUEUED);
+    }
+
+    public function isStatusCancelled()
+    {
+        return ($this->getStatus() === Status::CANCELLED);
     }
 
     /**
@@ -564,6 +623,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    public function setQueueFlag($flag)
+    {
+        $this->queueFlag = $flag;
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
@@ -616,10 +680,28 @@ class Entity extends Base\PublicEntity
         {
             $timestampKey = $status . '_at';
 
+            //
+            // In case of queued, the payout moves from queued -> created.
+            // created_at is set when payout entity is created.
+            // But we want to know when payout moves to `created` state.
+            // We keep a track of this using `initiated_at`.
+            //
+            if ($status === Status::CREATED)
+            {
+                $timestampKey = self::INITIATED_AT;
+            }
+
             $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }
+    }
+
+    public function setInitiatedAt()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::INITIATED_AT, $currentTime);
     }
 
     /**
@@ -659,6 +741,16 @@ class Entity extends Base\PublicEntity
     public function setReversedAt($date)
     {
         $this->setAttribute(self::REVERSED_AT, $date);
+    }
+
+    public function setQueuedAt($date)
+    {
+        $this->setAttribute(self::QUEUED_AT, $date);
+    }
+
+    public function setCancelledAt($date)
+    {
+        $this->setAttribute(self::CANCELLED_AT, $date);
     }
 
     public function setPurpose(string $purpose)
@@ -839,7 +931,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($attributes[self::TRANSACTION_ID]);
+        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedIdOrNull($attributes[self::TRANSACTION_ID]);
     }
 
     public function setPublicTransactionAttribute(array & $attributes)
@@ -868,6 +960,86 @@ class Entity extends Base\PublicEntity
             (($this->transaction instanceof Transaction\Entity)))
         {
             $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
+        }
+    }
+
+    public function setPublicInitiatedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::INITIATED_AT]);
+        }
+    }
+
+    public function setPublicQueuedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::QUEUED_AT]);
+        }
+    }
+
+    public function setPublicCancelledAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::CANCELLED_AT]);
+        }
+    }
+
+    public function setPublicProcessedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::PROCESSED_AT]);
+        }
+    }
+
+    public function setPublicReversedAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::REVERSED_AT]);
         }
     }
 
@@ -972,6 +1144,11 @@ class Entity extends Base\PublicEntity
         $this->removeRecursiveRelation();
 
         return parent::toArray();
+    }
+
+    public function scopeStatus(BuilderEx $query, string $status)
+    {
+        $query->where(Entity::STATUS, $status);
     }
 
     /**

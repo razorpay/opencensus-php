@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
+use RZP\Gateway\Paysecure;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
@@ -128,7 +129,10 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->setCardNumberAndCvv($input);
+        if ($this->isRupayTransaction($input) === true)
+        {
+            return $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
+        }
 
         $mpiEntity = $this->app['repo']
                           ->mpi
@@ -137,6 +141,8 @@ class Gateway extends Base\Gateway
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        $this->setCardNumberAndCvv($input);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 
@@ -149,6 +155,13 @@ class Gateway extends Base\Gateway
     public function capture(array $input)
     {
         parent::capture($input);
+
+        if ($this->isRupayTransaction($input) === true)
+        {
+            $this->advicePaysecure($input);
+
+            return;
+        }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['payment']['id'], Base\Action::AUTHORIZE);
@@ -233,16 +246,19 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        // For RuPay transactions, route it to PaySecure
+        if ($this->isRupayTransaction($input) === true)
+        {
+            return $this->app['gateway']->call(
+                Payment\Gateway::PAYSECURE,
+                $this->action,
+                $input,
+                $this->mode);
+        }
+
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    public function advice(array $input)
-    {
-        parent::advice($input);
-
-        return $this->advicePaysecure($input);
     }
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
@@ -286,6 +302,8 @@ class Gateway extends Base\Gateway
 
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
+        $this->checkForBharatQrFailure($input);
+
         $maskedPan = $input[ResponseFields::MASKED_CARD_NUMBER];
 
         $formattedAmount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
@@ -321,6 +339,21 @@ class Gateway extends Base\Gateway
         $qrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE] = $merchantReference;
 
         return $qrData;
+    }
+
+    protected function checkForBharatQrFailure($input)
+    {
+        if ($input[ResponseFields::STATUS_CODE] !== Status::SUCCESS_CODE)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'notification_request' => $input,
+                    'gateway'              => $this->gateway
+                ]);
+        }
     }
 
     protected function getIntegerFormattedAmount(string $amount)
@@ -364,7 +397,11 @@ class Gateway extends Base\Gateway
 
     protected function decideAuthenticationGateway($input)
     {
-        if ((isset($input['authenticate']['gateway']) === true) and
+        if ($this->isRupayTransaction($input) === true)
+        {
+            $authenticationGateway = Payment\Gateway::PAYSECURE;
+        }
+        else if ((isset($input['authenticate']['gateway']) === true) and
             ($input['authenticate']['gateway'] === Payment\Gateway::MPI_ENSTAGE))
         {
             $authenticationGateway = Payment\Gateway::MPI_ENSTAGE;
@@ -375,6 +412,11 @@ class Gateway extends Base\Gateway
         }
 
         return $authenticationGateway;
+    }
+
+    protected function isRupayTransaction($input): bool
+    {
+        return ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY);
     }
 
     protected function authorizeMoto(array $input)
@@ -779,15 +821,26 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
+        $content[RequestFields::TERMINAL_ID] = $this->getTerminalId();
+
         $content[RequestFields::TRANSACTION_TYPE] = TransactionType::RUPAY;
 
         $content[RequestFields::ECI] = '07';
 
-        $content[RequestFields::TRANSACTION_DATE] = $input['paysecure']['tran_date'];
+        $paysecureEntity = $this->app['repo']->paysecure->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
-        $content[RequestFields::TRANSACTION_TIME] = $input['paysecure']['tran_time'];
+        $content[RequestFields::TRANSACTION_DATE] = $paysecureEntity['tran_date'];
 
-        $content[RequestFields::AUTH_ID] = $input['paysecure']['apprcode'];
+        $content[RequestFields::TRANSACTION_TIME] = $paysecureEntity['tran_time'];
+
+        $content[RequestFields::AUTH_ID] = $paysecureEntity['apprcode'];
+
+        $content[RequestFields::RETRIEVAL_REF_NUM] = $paysecureEntity['rrn'];
+
+        // Use 6012 in UAT
+        $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
+
+        $content[RequestFields::MCC] = Paysecure\Mcc::getMappedMcc($mcc);
 
         $traceContent = $content;
 
@@ -909,34 +962,32 @@ class Gateway extends Base\Gateway
 
         $expiry = substr($card['expiry_year'], 2) . str_pad($card['expiry_month'], 2, '0', STR_PAD_LEFT);
 
-        $data = [
-            RequestFields::CARD_NUMBER         => $input['card']['number'],
-            RequestFields::EXPIRY_DATE         => $expiry,
-        ];
-
-        if ($this->isPaysecureTransactionRequest($input) === true)
+        if ($this->isRupayTransaction($input) === true)
         {
-            $data[RequestFields::CVV2] = self::DEFAULT_CVV_VALUE;
+            $this->setCardNumberAndCvv($input);
+
+            $data = [
+                RequestFields::CARD_NUMBER         => $input['card']['number'],
+                RequestFields::EXPIRY_DATE         => $expiry,
+                RequestFields::CVV2                => self::DEFAULT_CVV_VALUE,
+            ];
+        }
+        else
+        {
+            $data = [
+                RequestFields::CARD_NUMBER         => $input['card']['number'],
+                RequestFields::EXPIRY_DATE         => $expiry,
+            ];
         }
 
         if (($this->isSecondRecurringPaymentRequest($input) === false) and
             ($this->isMotoTransactionRequest($input) === false) and
-            ($this->isPaysecureTransactionRequest($input) === false))
+            ($this->isRupayTransaction($input) === false))
         {
             $data[RequestFields::CVV2] = $input['card']['cvv'];
         }
 
         return $data;
-    }
-
-    protected function isPaysecureTransactionRequest($input)
-    {
-        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
@@ -1314,6 +1365,18 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type = null)
     {
+        if ($this->isLiveMode() === true)
+        {
+            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
+            {
+                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
+            }
+            else
+            {
+                return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+            }
+        }
+
         return constant(Url::class . '::' . strtoupper($this->mode));
     }
 
@@ -1322,7 +1385,7 @@ class Gateway extends Base\Gateway
         $merchantId = $this->getLiveMerchantId();
 
         // For all Paysecure requests, use hitachi's shared mid on live mode
-        if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        if ($this->isRupayTransaction($this->input) === true)
         {
             // todo: Change later as required.
             // For PVT, we would be using shared Hitachi merchant
@@ -1342,7 +1405,7 @@ class Gateway extends Base\Gateway
         $terminalId = $this->terminal['gateway_terminal_id'];
 
         // For all Paysecure requests, use hitachi's shared tid on live mode
-        if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        if ($this->isRupayTransaction($this->input) === true)
         {
             // todo: Change later as required.
             // For PVT, we would be using shared Hitachi terminal
@@ -1413,5 +1476,18 @@ class Gateway extends Base\Gateway
             ResponseFields::TRANSACTION_TYPE  => $refundFields[ResponseFields::TRANSACTION_TYPE] ?? null,
             ResponseFields::RETRIEVAL_REF_NUM => $refundFields[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
         ];
+    }
+
+    // Overriding this, because for only rupay payments, we need to fetch this data from Paysecure gateway
+    protected function getCacheKey($paymentId)
+    {
+        $key = sprintf(static::CACHE_KEY, $paymentId);
+
+        if ($this->isRupayTransaction($this->input) === true)
+        {
+            $key = sprintf(Paysecure\Gateway::CACHE_KEY, $paymentId);
+        }
+
+        return $key;
     }
 }

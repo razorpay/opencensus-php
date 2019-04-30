@@ -202,6 +202,14 @@ class UpiAxisGatewayTest extends TestCase
     {
         $payment = $this->testPayment();
 
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content[Fields::CODE] = '111';
+            }
+        }, $this->gateway);
+
         // Attempt a partial refund
         $this->refundPayment($payment->getPublicId(), 100);
 
@@ -390,6 +398,14 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertSame(1, $payment['verified']);
 
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content[Fields::CODE] = '111';
+            }
+        }, $this->gateway);
+
         $this->refundPayment($payment->getPublicId(), 100);
 
         $upi1 = $this->getDbLastEntity('upi');
@@ -571,7 +587,7 @@ class UpiAxisGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
     }
 
     public function testVerifyRefund()
@@ -587,15 +603,17 @@ class UpiAxisGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
-        $this->assertEquals('failed', $response['status']);
+        $this->assertEquals('created', $response['status']);
 
         $this->resetMockServer();
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
-        $this->assertEquals('processed', $response['status']);
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testVerifyRefundFailed()
@@ -604,9 +622,9 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'refund')
+            if (($action === 'refund') or ($action === 'verify_refund'))
             {
-                $content['code'] = '111';
+                $content[Fields::CODE] = '111';
             }
         }, $this->gateway);
 
@@ -614,11 +632,11 @@ class UpiAxisGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $this->resetMockServer();
 
-        $this->assertEquals('processed', $response['status']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getLastEntity('refund', true);
 
@@ -637,6 +655,14 @@ class UpiAxisGatewayTest extends TestCase
                 $this->assertEquals('RAZORPPROD4264718195', $requestArray['merchId']);
                 $this->assertEquals('RAZORPPRODAPP4264718195', $requestArray['merchChanId']);
             });
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content[Fields::CODE] = '111';
+            }
+        }, $this->gateway);
 
         $this->refundPayment('pay_' . $payment['id']);
 

@@ -53,4 +53,26 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function fetchFutureScheduledDowntimesToActivate(int $now)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::BEGIN, '<=', $now)
+                      ->where(Entity::STATUS, '=', Status::SCHEDULED);
+
+        return $query->get();
+    }
+
+    public function fetchPastScheduledDowntimesToResolve(int $now)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::STATUS, '=', Status::STARTED)
+                      ->where(function ($query) use ($now)
+                      {
+                        $query->whereNotNull(Entity::END)
+                              ->where(Entity::END, '<=', $now);
+                      });
+
+        return $query->get();
+    }
 }

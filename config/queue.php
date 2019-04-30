@@ -135,6 +135,10 @@ return [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
+    'queued_payouts' => [
+        'test'       => env('AWS_PAYOUTS_TEST_QUEUE'),
+        'live'       => env('AWS_PAYOUTS_LIVE_QUEUE'),
+    ],
     'es_sync' => [
         'test'       => env('AWS_ES_SYNC_QUEUE'),
         'live'       => env('AWS_ES_SYNC_QUEUE'),
@@ -208,6 +212,14 @@ return [
     'fts_fund_transfer' => [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
+    'carvault_migration' => [
+        'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
+        'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
+     ],
+    'core_payment_service_sync' => [
+        'test'       => env('AWS_CPS_SYNC_TEST_QUEUE'),
+        'live'       => env('AWS_CPS_SYNC_LIVE_QUEUE'),
     ],
     'subscriptions_payment_notify' => [
         'test'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),

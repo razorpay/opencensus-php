@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Mockery;
 use Closure;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
@@ -64,6 +66,33 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->on('test');
 
         $this->setupMockDns();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+    }
+
+    /**
+     * Asserts that the entity origin for a VA created through the partner auth is set to application.
+     * Also asserts that the payment created for such a VA (irrespective of the receiver type) has the entity origin
+     * set to the same application.
+     */
+    public function testCreateVirtualAccountPartnerAuth()
+    {
+        list($virtualAccount, $submerchantId, $client) = $this->createVirtualAccountPartnerAuth();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $virtualAccount);
+
+        // Assert that the entity origin for the VA is set to application
+        $this->verifyEntityOrigin($virtualAccount['id'], 'application', $client->getApplicationId());
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        // Assert that entity origin for the last payment created (through a bank transfer) is set to application.
+        $payment = $this->getLastEntity('payment', true);
+        $this->verifyEntityOrigin($payment['id'], 'application', $client->getApplicationId());
     }
 
     public function testCreateVirtualAccount()
@@ -73,6 +102,19 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    private function verifyEntityOrigin($entityId, $originType, $originId)
+    {
+        $this->fixtures->stripSign($entityId);
+
+        $entityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $entityId]);
+
+        $this->assertEquals($originType, $entityOrigin['origin_type']);
+
+        $this->assertEquals($originId, $entityOrigin['origin_id']);
     }
 
     public function testCreateVirtualAccountForOrder()
@@ -660,6 +702,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(5000, $virtualAccount['amount_paid']);
         $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
+
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(10000, $virtualAccount['amount_paid']);
@@ -667,6 +710,13 @@ class VirtualAccountTest extends TestCase
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        // Assert that the entity origin for the VA is set to merchant
+        $this->verifyEntityOrigin($virtualAccount['id'], 'merchant', '10000000000000');
+
+        // Assert that the entity origin for the VA payment is also set to merchant
+        $payment = $this->getLastEntity('payment', true);
+        $this->verifyEntityOrigin($payment['id'], 'merchant', '10000000000000');
     }
 
     public function testVirtualAccountForOrderPay()

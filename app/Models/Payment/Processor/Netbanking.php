@@ -154,6 +154,7 @@ class Netbanking
                 IFSC::UTBI,
                 IFSC::VIJB,
                 IFSC::YESB,
+                IFSC::AUBL,
                 // self::BARB_R,
                 self::PUNB_R,
                 self::LAVB_R,

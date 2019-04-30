@@ -9,7 +9,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
-use RZP\Models\Merchant\Checkout;
 
 class ViewSerializer extends Base\Core
 {
@@ -100,7 +99,7 @@ class ViewSerializer extends Base\Core
         return [
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
-            'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'image'            => $this->merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
         ];

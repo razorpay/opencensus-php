@@ -329,6 +329,7 @@ class MySqlConnectionTest extends TestCase
                 'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+                'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ]
         ];
 

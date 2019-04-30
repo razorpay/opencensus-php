@@ -86,11 +86,40 @@ abstract class Base extends BaseCore
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);
 
-            // Create a fund transfer entity where the fund transfers will be processed.
-            $this->createFundTransferAttemptEntity($payout);
+            try
+            {
+                // Create merchant/customer transactions and link it to payout.
+                $this->createTxns($payout);
 
-            // Create merchant/customer transactions and link it to payout.
-            $this->createTxns($payout);
+                // Create a fund transfer entity where the fund transfers will be processed.
+                // NOTE: Ensure that this is created after transaction creation, so that if
+                // the transaction creation fails because of insufficient funds and we want
+                // to queue the payout instead of failing the complete DB transaction, this
+                // FTA does not get created.
+                $this->createFundTransferAttemptEntity($payout);
+            }
+            catch (Exception\BadRequestException $ex)
+            {
+                //
+                // This needs to be done since while creating a transaction we also associate
+                // the source (payout) with the transaction and then we fail the transaction
+                // creation due to insufficient balance and then later attempt to save the payout.
+                // Payout save fails because we associated the failed transaction with the payout
+                // but we had not actually saved the transaction in the DB.
+                //
+                $payout->transaction()->dissociate();
+
+                $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
+
+                if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
+                {
+                    $this->handleInsufficientFunds($ex, $payout);
+                }
+                else
+                {
+                    throw $ex;
+                }
+            }
 
             $this->repo->saveOrFail($payout);
 
@@ -106,7 +135,61 @@ abstract class Base extends BaseCore
             return $payout;
         });
 
-        $this->app->events->fire('api.payout.created', [$payout]);
+        if ($payout->isStatusQueued() === true)
+        {
+            $this->app->events->fire('api.payout.queued', [$payout]);
+        }
+        else
+        {
+            // api.payout.created to be removed after merchants have migrated.
+            $this->app->events->fire('api.payout.created', [$payout]);
+            $this->app->events->fire('api.payout.initiated', [$payout]);
+        }
+
+        return $payout;
+    }
+
+    public function processQueuedPayout(Payout\Entity $payout): Payout\Entity
+    {
+        $payout = $this->repo->transaction(
+                    function () use ($payout)
+                    {
+                        // Create merchant/customer transactions and link it to payout.
+                        $this->createTxns($payout);
+
+                        // TODO: Later, we will have to handle active / inactive stuff also here.
+                        // Refer the function `fetchAndAssociatePayoutAccount`
+                        // Also, this will have to be fixed for MerchantPayout since there the fundTransferDestination
+                        // is merchant's bank account.
+                        $this->fundTransferDestination = $payout->fundAccount->account;
+
+                        // Create a fund transfer entity where the fund transfers will be processed.
+                        $this->createFundTransferAttemptEntity($payout);
+
+                        $payout->setStatus(Payout\Status::CREATED);
+
+                        $this->repo->saveOrFail($payout);
+
+                        $this->trace->info(
+                            TraceCode::QUEUED_PAYOUT_CREATED,
+                            [
+                                'payout_id'      => $payout->getId(),
+                                'transaction_id' => $payout->getTransactionId(),
+                                'payout_status'  => $payout->getStatus(),
+                            ]);
+
+                        return $payout;
+                    });
+
+        $this->app->events->fire('api.payout.initiated', [$payout]);
+
+        //
+        // This needs to be done only for fund_account type and not for others.
+        // We need to figure out at this stage what type of payout are we processing in queue.
+        // Since, currently, we only do fund_account, we are not handling it. Once we start
+        // processing queued payouts for other types also, this needs to be changed.
+        //
+        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
 
         return $payout;
     }
@@ -148,7 +231,7 @@ abstract class Base extends BaseCore
         return $this;
     }
 
-    public function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
+    protected function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
     {
         $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
 
@@ -201,8 +284,8 @@ abstract class Base extends BaseCore
 
         //
         // Doing this after all the associations since
-        // the modifiers require payout account and
-        // merchant to be associated.
+        // the modifiers and validators require payout
+        // account and merchant to be associated.
         //
         $payout = $payout->build($input);
 
@@ -222,6 +305,12 @@ abstract class Base extends BaseCore
         // some validations run on the relations' data
         //
         $this->runInputValidations($payout, $input);
+
+        if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
+            (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
+        {
+            $payout->setQueueFlag(true);
+        }
 
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
@@ -362,6 +451,11 @@ abstract class Base extends BaseCore
         $method = Payout\Method::$destinationMethodMap[$destinationType];
 
         $payout->setMethod($method);
+    }
+
+    protected function handleInsufficientFunds(Exception\BadRequestException $ex, Payout\Entity $payout)
+    {
+        throw $ex;
     }
 
     abstract protected function setChannel($input = []);

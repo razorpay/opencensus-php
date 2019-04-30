@@ -17,6 +17,8 @@ class Validator extends Base\Validator
         RequestFields::EXPIRY_DATE              => 'required|numeric',
         RequestFields::CVV2                     => 'required_if:transaction_type,00|numeric',
         RequestFields::MERCHANT_ID              => 'required|string',
+        RequestFields::TERMINAL_ID              => 'required_if:transaction_type,RU|string',
+        RequestFields::RETRIEVAL_REF_NUM        => 'required_if:transaction_type,RU|string|size:12',
         RequestFields::MERCHANT_REF_NUMBER      => 'required|alpha_num|size:14',
         RequestFields::AUTH_STATUS              => 'sometimes|string',
         RequestFields::ECI                      => 'sometimes|numeric',
@@ -27,6 +29,7 @@ class Validator extends Base\Validator
         RequestFields::CURRENCY_CODE            => 'sometimes|string',
         RequestFields::DYNAMIC_MERCHANT_NAME    => 'sometimes|string|max:23',
         RequestFields::AUTH_ID                  => 'required_if:transaction_type,RU|numeric',
+        RequestFields::MCC                      => 'required_if:transaction_type,RU|numeric',
     ];
 
     protected static $verifyRules = [

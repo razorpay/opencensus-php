@@ -26,6 +26,8 @@ class VpaTransformer extends Transformer
             Fields::REFERENCE_ID,
             Fields::ACCOUNT_REFERENCE_ID,
             Fields::BANK_ACCOUNT_UNIQUE_ID,
+            Fields::CUSTOMER_NAME,
+            Fields::CUSTOMER_VPA,
         ]);
 
         return $gatewayData;
@@ -43,5 +45,10 @@ class VpaTransformer extends Transformer
         $address = $this->input[Fields::CUSTOMER_VPA];
 
         return explode('@', $address)[1];
+    }
+
+    public function transformBeneficiaryName()
+    {
+        return $this->input[Fields::CUSTOMER_NAME];
     }
 }

@@ -145,6 +145,12 @@ final class P2pRoute
                 'customer/vpa/available',
                 'VpaController@checkAvailability'
             ],
+        Requests::P2P_CUSTOMER_VPA_INITIATE_CHECK_AVAILABILITY =>
+            [
+                'post',
+                'customer/vpa/available/initiate',
+                'VpaController@initiateCheckAvailability'
+            ],
         Requests::P2P_CUSTOMER_VPA_DELETE =>
             [
                 'delete',
@@ -199,7 +205,7 @@ final class P2pRoute
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE =>
             [
-                'get',
+                'post',
                 'customer/transactions/{transaction_id}/authorize/initiate',
                 'TransactionController@initiateAuthorize'
             ],
@@ -209,11 +215,25 @@ final class P2pRoute
                 'customer/transactions/{transaction_id}/authorize',
                 'TransactionController@authorizeTransaction'
             ],
-        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT =>
+        Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT =>
+            [
+                'post',
+                'customer/transactions/{transaction_id}/reject/initiate',
+                'TransactionController@initiateReject'
+            ],
+        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT =>
             [
                 'post',
                 'customer/transactions/{transaction_id}/reject',
                 'TransactionController@reject'
+            ],
+
+        /*************** Callbacks **************/
+        Requests::P2P_GATEWAY_CALLBACK =>
+            [
+                'post',
+                'callback/{gateway}',
+                'GatewayController@callback'
             ],
     ];
 
@@ -244,6 +264,7 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_VPA_FETCH,
         Requests::P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT,
         Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY,
+        Requests::P2P_CUSTOMER_VPA_INITIATE_CHECK_AVAILABILITY,
         Requests::P2P_CUSTOMER_VPA_DELETE,
 
         Requests::P2P_CUSTOMER_BENEFICIARIES,
@@ -256,7 +277,12 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_TRANSACTIONS_FETCH,
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE,
         Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
-        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT,
+        Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT,
+        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT,
+    ];
+
+    public static $direct = [
+        Requests::P2P_GATEWAY_CALLBACK,
     ];
 
     public static $routePermission = [];

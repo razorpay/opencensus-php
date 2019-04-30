@@ -42,7 +42,9 @@ class DeviceTest extends TestCase
 
     public function testInitiateVerification()
     {
-        $registerToken = $this->fixtures->createRegisterToken([]);
+        $registerToken = $this->fixtures->createRegisterToken([
+            'sdk' => ['simId' => '0']
+        ]);
 
         $this->gatewayInput->put('sdk', new ArrayBag(['simId' => '0']));
 
@@ -57,7 +59,9 @@ class DeviceTest extends TestCase
 
     public function testVerification()
     {
-        $registerToken = $this->fixtures->createRegisterToken([]);
+        $registerToken = $this->fixtures->createRegisterToken([
+            'sdk' => ['simId' => '0']
+        ]);
 
         $this->gatewayInput->put('register_token', $registerToken->toArrayBag());
 
@@ -84,7 +88,9 @@ class DeviceTest extends TestCase
 
     public function testVerificationAfterDeviceBinding()
     {
-        $registerToken = $this->fixtures->createRegisterToken([]);
+        $registerToken = $this->fixtures->createRegisterToken([
+            'sdk' => ['simId' => '0']
+        ]);
 
         $this->gatewayInput->put('register_token', $registerToken->toArrayBag());
 
@@ -154,6 +160,8 @@ class DeviceTest extends TestCase
         $context->setDevice($this->fixtures->device(self::DEVICE_1));
 
         $context->setDeviceToken($this->fixtures->deviceToken(self::DEVICE_1));
+
+        $context->registerServices();
 
         $this->context = $context;
     }

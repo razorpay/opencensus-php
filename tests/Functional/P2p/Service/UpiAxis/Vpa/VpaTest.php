@@ -64,4 +64,55 @@ class VpaTest extends TestCase
 
         $helper->fetchAllVpa();
     }
+
+    public function testInitiateVpaAvailability()
+    {
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->initiateCheckVpaAvailable();
+    }
+
+    public function testCheckVpaAvailability()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->initiateCheckVpaAvailable();
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->checkAvailability($request['callback'], $content);
+    }
+
+    public function testCheckVpaAvailabilityWithSuggestions()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->initiateCheckVpaAvailable();
+
+        $suggestions = [
+            'sample1@razoraxis',
+            'sample2@razoraxis',
+            'sample3@razoraxis'
+        ];
+
+        $this->mockSdkContentFunction(function(& $content) use ($suggestions)
+        {
+            $content['available'] = false;
+
+            $content['vpaSuggestions'] = $suggestions;
+        });
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->checkAvailability($request['callback'], $content);
+
+        $this->assertArrayHasKey(Entity::SUGGESTIONS, $response);
+        $this->assertSame($response[Entity::SUGGESTIONS], $suggestions);
+    }
 }

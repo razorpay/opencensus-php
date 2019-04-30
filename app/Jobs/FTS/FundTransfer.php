@@ -22,11 +22,6 @@ class FundTransfer extends Job
     protected $ftaId;
 
     /**
-     * @var string
-     */
-    protected $accountType;
-
-    /**
      * @var bool
      */
     protected $isRegistered;
@@ -36,13 +31,11 @@ class FundTransfer extends Job
      */
     protected $queueConfigKey = 'fts_fund_transfer';
 
-    public function __construct(string $mode, string $id, string $type, bool $isRegistered)
+    public function __construct(string $mode, string $id, bool $isRegistered)
     {
         parent::__construct($mode);
 
         $this->ftaId  = $id;
-
-        $this->accountType = $type;
 
         $this->isRegistered = $isRegistered;
     }
@@ -58,13 +51,11 @@ class FundTransfer extends Job
 
             $this->trace->info(TraceCode::FTS_FUND_TRANSFER_INIT,
                 [
-                    'fta_id'       => $this->ftaId ,
-                    'account_type' => $this->accountType,
+                    'fta_id' => $this->ftaId,
                 ]);
 
             $ftsResponse = App::getFacadeRoot()['fts_fund_transfer']->requestFundTransfer(
                 $this->ftaId,
-                $this->accountType,
                 $this->isRegistered);
 
             $this->trace->info(
@@ -78,8 +69,7 @@ class FundTransfer extends Job
         catch (\Throwable $e)
         {
             $data = [
-                'fta_id'       => $this->ftaId ,
-                'account_type' => $this->accountType,
+                'fta_id' => $this->ftaId,
             ];
 
             $this->trace->traceException($e,

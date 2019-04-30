@@ -427,7 +427,8 @@ class Core extends Base\Core
                 return;
             }
 
-            switch ($sourceType)
+            //TODO:: Enable it once fts is live
+            /*switch ($sourceType)
             {
                 case Constants\Entity::MERCHANT:
                     CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::PAYOUT);
@@ -448,6 +449,7 @@ class Core extends Base\Core
                     'source_type'     => $sourceType,
                     'bank_account_id' => $id,
                 ]);
+            */
         }
         catch(\Throwable $e)
         {
