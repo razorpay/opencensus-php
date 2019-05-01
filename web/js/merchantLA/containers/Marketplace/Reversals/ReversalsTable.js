@@ -46,9 +46,7 @@ export default class ReversalsTable extends ListContainer {
   };
 
   render() {
-    const isRefundsAllowed = this.props.user.features.includes(
-      'allow_reversals_from_la'
-    );
+    const isRefundsAllowed = this.props.user.isAllowedLARefunds;
     return (
       <div class="revsersals-list-container content-wrapper">
         <ReversalsListFilter
