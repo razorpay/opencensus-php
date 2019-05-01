@@ -88,6 +88,9 @@ export default class Content extends Component {
           <Route path="/reports" component={Reports} />
 
           <Route path="/profile" component={MyAccount} />
+
+          <Route path="/credits" component={Reversals} />
+
           <ShowWhenRoute
             path="/team"
             component={MyAccount}

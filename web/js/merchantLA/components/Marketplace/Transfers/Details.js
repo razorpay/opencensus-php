@@ -84,6 +84,7 @@ export default class TransferDetails extends Component {
       reversals,
       onClose,
       parentAccountName,
+      showRefundToCustomer,
     } = this.props;
 
     const nextWorkingDate = nextWorkingDay(
@@ -130,22 +131,26 @@ export default class TransferDetails extends Component {
                   />
                 </EntityDetailRow>
 
+                <EntityDetailRow label="Reversal">
+                  <TransferReversal
+                    transfer={transfer}
+                    reversals={reversals}
+                    showRefundToCustomer={showRefundToCustomer}
+                  />
+                </EntityDetailRow>
+
                 <EntityDetailRow
-                  label="Created At"
-                  value={() => (
+                  label="Amount"
+                  value={_ => (
                     <Time
                       value={transfer.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
+                      format="Do MMM YYYY, hh:mm:ss a"
                     />
                   )}
                 />
 
                 <EntityDetailRow label="Settlement">
                   <SettlementText data={this.state} transfer={transfer} />
-                </EntityDetailRow>
-
-                <EntityDetailRow label="Reversal">
-                  <TransferReversal transfer={transfer} reversals={reversals} />
                 </EntityDetailRow>
 
                 {/* Notes */}

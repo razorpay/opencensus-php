@@ -47,7 +47,7 @@ const TransfersList = ({ transfers, payment }) => {
   var paymentTransferId = {
     ...transferId,
     value: item => (
-      <Link to={`/payments/${payment.id}/` + `${item.id}`}>
+      <Link to={`/route/transfers/${item.id}`}>
         <code>{item.id}</code>
       </Link>
     ),

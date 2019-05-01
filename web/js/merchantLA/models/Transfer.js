@@ -19,7 +19,7 @@ export default class Transfer extends GenericEntity {
     let params = { '{id}': this.id };
 
     return this.makeGenericAjaxCall({
-      url: `${this.resourceUrl}/${this.id}/reversals`,
+      url: `${this.resourceUrl}/${this.id}/reversal`, // TODO: updated accroding to Backend
       method: 'post',
       data,
     });

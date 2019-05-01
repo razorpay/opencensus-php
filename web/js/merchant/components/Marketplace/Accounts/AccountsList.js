@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { prefixEntityValue } from 'common/data';
 
 import Time from 'rzp/ui/Time';
@@ -10,7 +12,7 @@ import SwitchField from 'rzp/ui/Forms/SwitchField';
 
 import { getUser } from 'merchant/store';
 
-const ToggleField = ({ children, onEdit, isDisabled }) => {
+export const ToggleField = ({ children, onEdit, isDisabled, isDashboard }) => {
   if (isDisabled) {
     return (
       <small class="help-content">
@@ -18,8 +20,9 @@ const ToggleField = ({ children, onEdit, isDisabled }) => {
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
-              Please add Email id for this linked account to grant dashboard
-              access
+              {isDashboard
+                ? 'Please add Email id for this linked account to grant dashboard access'
+                : 'Please add Email id for this linked account to allow refunds'}
               <br />
               <button className="btn-link pull-right" onClick={onEdit}>
                 Add Email
@@ -39,6 +42,7 @@ const AccountsListItem = ({
   showEditAccountModal,
   onEdit,
   onToggleDashboardAccess,
+  onToggleAllowRefunds,
 }) => {
   let status = account.activation_details
     ? account.activation_details.status
@@ -53,9 +57,9 @@ const AccountsListItem = ({
   return (
     <EntityItemRow id={account.id}>
       <td>
-        <a onClick={onEdit}>
+        <Link to={`/route/accounts/${account.id}`}>
           <code>{prefixEntityValue('account', account.id)}</code>
-        </a>
+        </Link>
       </td>
       <td>
         {showEditAccountModal && noLAEmail ? (
@@ -66,18 +70,7 @@ const AccountsListItem = ({
             Add Email
           </button>
         ) : (
-          <span>
-            {showEditAccountModal && (
-              <a
-                class="p-r"
-                onClick={() => showEditAccountModal(account)}
-                title="Edit Email"
-              >
-                <i class="i i-edit" />
-              </a>
-            )}
-            {account.email}
-          </span>
+          <span>{account.email}</span>
         )}
       </td>
       <td>{account.name}</td>
@@ -120,10 +113,28 @@ const AccountsListItem = ({
             <ToggleField
               onEdit={() => showEditAccountModal(account)}
               isDisabled={noLAEmail}
+              isDashboard={true}
             >
               <SwitchField
                 defaultChecked={!!account.dashboard_access}
                 onChange={onToggleDashboardAccess}
+                disabled={noLAEmail}
+                type="prime"
+              />
+            </ToggleField>
+          }
+        </td>
+      )}
+      {onToggleAllowRefunds && (
+        <td style={{ textAlign: 'center' }}>
+          {
+            <ToggleField
+              onEdit={() => showEditAccountModal(account)}
+              isDisabled={noLAEmail}
+            >
+              <SwitchField
+                defaultChecked={!!account.allow_reversals}
+                onChange={onToggleAllowRefunds}
                 disabled={noLAEmail}
                 type="prime"
               />
@@ -141,6 +152,7 @@ export default ({
   showEditAccountModal,
   onEdit,
   onToggleDashboardAccess,
+  onToggleAllowRefunds,
 }) => {
   return (
     <div class="table-responsive">
@@ -153,6 +165,22 @@ export default ({
             <th>Account Status</th>
             {onToggleDashboardAccess && (
               <th style={{ textAlign: 'center' }}>Dashboard Access</th>
+            )}
+            {onToggleAllowRefunds && (
+              <th style={{ textAlign: 'center' }}>
+                Allow Refunds
+                <small className="help-content" style={{ paddingLeft: '4px' }}>
+                  <i class="i i-help" />
+                  <Popover align="right" theme="dark">
+                    <PopoverBody>
+                      <div style={{ textAlign: 'left' }}>
+                        This allows Linked account to refund to the customer for
+                        a transfer.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </th>
             )}
           </tr>
         </thead>
@@ -172,6 +200,12 @@ export default ({
                 onToggleDashboardAccess
                   ? (isChecked, cb) =>
                       onToggleDashboardAccess(account, isChecked, cb)
+                  : undefined
+              }
+              onToggleAllowRefunds={
+                onToggleAllowRefunds
+                  ? (isChecked, cb) =>
+                      onToggleAllowRefunds(account, isChecked, cb)
                   : undefined
               }
             />

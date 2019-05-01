@@ -1,0 +1,28 @@
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
+import { setTrackData } from 'rzp/utils/googleAnalytics';
+
+const track = setTrackData({ eventCategory: 'LA Dashboard - Transfers' });
+
+export const trackClickReverseDetails = eventLabel =>
+  track({
+    eventAction: 'Click - Reverse details',
+    eventLabel: eventLabel,
+  });
+
+export const trackClickReversalID = eventLabel =>
+  track({
+    eventAction: 'Click - Reversal ID',
+    eventLabel: eventLabel,
+  });
+
+export const trackClickRefundToCustomer = _ =>
+  track({
+    eventAction: 'Click - Refund to Customer',
+  });
+
+export const trackClickCreateRefund = eventLabel =>
+  track({
+    eventAction: 'Click - Refund to Customer',
+    eventLabel: eventLabel,
+  });
