@@ -26,7 +26,8 @@ import { trackClickCreateRefund } from './ga';
     return {
       payment: {
         ...state.transfer.entity,
-        amount_refunded: state.transfer.entity.amount_refunded || 0,
+        amount_reversed: state.transfer.entity.amount_reversed || 0,
+        amount_refunded: state.transfer.entity.amount_reversed || 0,
       },
     };
   },
