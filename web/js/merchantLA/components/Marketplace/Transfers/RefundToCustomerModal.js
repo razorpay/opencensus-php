@@ -2,15 +2,18 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Button from 'component/Button';
+import Input from 'component/Input';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { fetchCreditBalance } from 'merchant/modules/credits';
 import { reverseTransfer } from 'merchantLA/modules/marketplace/transfer';
-import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
-import InputField from 'rzp/ui/Forms/InputField';
-import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import { rupeesToPaise, paiseToRupees, titleCase } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import {
+  amountValidation,
+  isPartialPayment,
+  RefundType,
+} from 'merchant/containers/Payments/RefundModal';
 import {
   fetchTransfer,
   fetchReversals,
@@ -18,16 +21,13 @@ import {
 
 import { trackClickCreateRefund } from './ga';
 
-const selector = formValueSelector('refundModal');
-
 @connect(
   state => {
-    let partial = selector(state, 'partial');
-    let payable_amount = selector(state, 'amount');
     return {
-      payment: state.transfer.entity,
-      partial,
-      payable_amount,
+      payment: {
+        ...state.transfer.entity,
+        amount_refunded: state.transfer.entity.amount_refunded || 0,
+      },
     };
   },
   {
@@ -40,32 +40,23 @@ const selector = formValueSelector('refundModal');
     ...NotificationsActions,
   }
 )
-@reduxForm({
-  form: 'refundModal',
-})
 export default class RefundToCustomerModal extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
-  constructor() {
-    super(...arguments);
+  constructor(props) {
+    super(props);
     this.state = {
       isLoading: false,
+      partial: false,
+      payable_amount:
+        (props.payment.amount - props.payment.amount_reversed) / 100 + '',
+      notes: [{}],
     };
   }
 
-  componentWillMount() {
-    const payment = this.props.payment;
-
-    this.props.initialize({
-      partial: false,
-      amount: (payment.amount - payment.amount_reversed) / 100 + '',
-      notes: [{}],
-    });
-  }
-
-  save = props => {
+  save = _ => {
     this.context
       .confirm({
         header: 'Are you sure you want to refund?',
@@ -74,17 +65,21 @@ export default class RefundToCustomerModal extends React.Component {
         affirmativePendingLabel: 'Refunding...',
         abortLabel: "No, don't!",
         action: () => {
-          const hasAmountErrors = amountValidation(this.props);
+          const hasAmountErrors = amountValidation({
+            ...this.state,
+            ...this.props,
+          });
 
           if (hasAmountErrors) {
             return;
           }
 
-          const { payment, transfer: { id }, reverseTransfer } = this.props,
-            partial = isPartialPayment(this.props);
-          let transformedNotes = props.notes,
+          const { payment, reverseTransfer } = this.props,
+            partial = isPartialPayment({ ...this.state, ...this.props }),
+            id = payment.id;
+          let transformedNotes = this.state.notes,
             data = {
-              amount: rupeesToPaise(props.amount),
+              amount: rupeesToPaise(this.state.payable_amount),
             };
 
           if (!partial) {
@@ -104,7 +99,7 @@ export default class RefundToCustomerModal extends React.Component {
           if (transformedNotes) {
             data = {
               ...(data || {}),
-              notes: transformedNotes,
+              notes: transformedNotes, // Change it to linked_account_notes
             };
           }
 
@@ -149,16 +144,30 @@ export default class RefundToCustomerModal extends React.Component {
       })
       .catch(() => {
         trackClickCreateRefund(
-          `${isPartialPayment(this.props) ? 'partial' : 'full'} | No `
+          `${
+            isPartialPayment({ ...this.state, ...this.props })
+              ? 'partial'
+              : 'full'
+          } | No `
         );
       });
   };
 
+  handleAmout = e => {
+    this.setState({
+      payable_amount: Number(e.target.value),
+    });
+  };
+
+  handleNotesChange = notes => {
+    this.setState({ notes });
+  };
+
   render() {
-    const { handleSubmit, payment } = this.props,
-      { isLoading } = this.state,
-      amountError = amountValidation(this.props),
-      partial = isPartialPayment(this.props);
+    const { payment } = this.props,
+      { isLoading, payable_amount } = this.state,
+      amountError = amountValidation({ ...this.state, ...this.props }),
+      partial = isPartialPayment({ ...this.state, ...this.props });
 
     return (
       <div className="refund-to-customer-modal">
@@ -167,18 +176,21 @@ export default class RefundToCustomerModal extends React.Component {
           onCloseClick={this.props.closeModal}
         />
         <div className="modal-body">
-          <form class="entity-container" onSubmit={handleSubmit(this.save)}>
+          <form class="entity-container" onSubmit={this.save}>
             <div class="form-group">
               <label class="label-required">Amount</label>
               <div class="input-group">
                 <div class="input-group-addon">{payment.currency}</div>
-                <Field
-                  name="amount"
-                  component={InputField}
-                  class="form-control"
-                  type="number"
-                  placeholder="Enter the refund amount"
-                />
+                <div class="InputField">
+                  <input
+                    name="amount"
+                    type="number"
+                    class="form-control"
+                    value={payable_amount}
+                    onChange={this.handleAmout}
+                    placeholder="Enter the refund amount"
+                  />
+                </div>
               </div>
               {!!amountError ? (
                 <div class="InputField__ErrorText text-danger">
@@ -194,15 +206,12 @@ export default class RefundToCustomerModal extends React.Component {
                 </small>
               )}
             </div>
-            <div className="form-group">
-              <label>Internal Notes</label>
-              <FieldArray
-                name="notes"
-                component={NotesFieldArray}
-                showLinkedAccountOpt={false}
-                customAddMsg="+ Add New"
-              />
-            </div>
+            <Input.PairList
+              name="notes"
+              label="Internal Notes"
+              class="Input--vTop"
+              onChange={this.handleNotesChange}
+            />
             <Button.Primary class="form-control">
               {isLoading ? (
                 <span class="btn-pending">
@@ -220,44 +229,3 @@ export default class RefundToCustomerModal extends React.Component {
     );
   }
 }
-
-const isPartialPayment = props => {
-  const refundableAmount = props.payment.amount - props.payment.amount_reversed,
-    amountEntered = rupeesToPaise(props.payable_amount);
-
-  return amountEntered < refundableAmount;
-};
-
-const amountValidation = props => {
-  const value = props.payable_amount || '';
-
-  if (!value) {
-    return 'Amount is required';
-  }
-
-  if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
-    return 'Amount can only be a Number with atmost 2 decimal places.';
-  }
-  if (value < 0) {
-    return `Amount can't be negative.`;
-  }
-
-  const refundableAmount = props.payment.amount - props.payment.amount_reversed;
-
-  if (rupeesToPaise(value) > refundableAmount) {
-    return (
-      `Amount can't be greater than the total Refundable` +
-      ` Amount (${paiseToRupees(refundableAmount)}).`
-    );
-  }
-};
-
-const RefundType = ({ partial, isTitleCase = false }) => {
-  let text = partial ? 'partial' : 'full';
-
-  if (isTitleCase) {
-    text = titleCase(text);
-  }
-
-  return <span>{text}</span>;
-};
