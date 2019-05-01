@@ -112,13 +112,6 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
 
     }
 
-    public function incomingCollect(Response $response)
-    {
-        $response->setData([
-            'success' => true
-        ]);
-    }
-
     protected function getTransactionRequestId()
     {
         // the request id needs to be of 35 length

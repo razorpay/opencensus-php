@@ -15,12 +15,22 @@ class Service extends Base\Service
 {
     public function gatewayCallback(array $input)
     {
-        $parsed = $this->processor->initiateGatewayCallback($input);
+        $gatewayData = $this->processor->initiateGatewayCallback($input);
 
-        $input['parsed'] = $parsed;
+        $input[Base\Entity::GATEWAY_DATA] = $gatewayData;
 
         $callback  = $this->processor->gatewayCallback($input);
 
+        $response = $callback[Base\Entity::RESPONSE];
+        unset($callback[Base\Entity::RESPONSE]);
+
+        $this->processCallback($callback);
+
+        return $response;
+    }
+
+    protected function processCallback($callback)
+    {
         $context = $callback[Base\Entity::CONTEXT];
         unset($callback[Base\Entity::CONTEXT]);
 
@@ -35,6 +45,10 @@ class Service extends Base\Service
                     case Transaction\Action::INCOMING_COLLECT:
 
                         return $processor->incomingCollect($callback);
+
+                    case Transaction\Action::INCOMING_PAY:
+
+                        return $processor->incomingPay($callback);
                 }
         }
     }

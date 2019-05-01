@@ -119,6 +119,22 @@ class Properties
                 $payer          = $this->getTransactionPayer(true);
                 $payee          = $this->getTransactionPayee(false);
                 $bankAccount    = $this->getTransactionBankAccount($payer);
+                break;
+
+            case Action::INCOMING_PAY :
+
+                $this->input->putMany([
+                    Entity::TYPE                => Type::PAY,
+                    Entity::FLOW                => Flow::CREDIT,
+                    Entity::MODE                => Mode::DEFAULT,
+                    Entity::STATUS              => Status::CREATED,
+                    Entity::INTERNAL_STATUS     => Status::CREATED,
+                ]);
+
+                $payer          = $this->getTransactionPayer(false);
+                $payee          = $this->getTransactionPayee(true);
+                $bankAccount    = $this->getTransactionBankAccount($payee);
+                break;
         }
 
         $this->relations->putMany([

@@ -14,8 +14,6 @@ class TransactionAction extends Action
 
     const DECLINE_COLLECT                           = 'DECLINE_COLLECT';
 
-    const COLLECT_REQUEST_RECEIVED                  = 'COLLECT_REQUEST_RECEIVED';
-
     const MAP = [
         self::SEND_MONEY => [
             self::VALIDATOR => [

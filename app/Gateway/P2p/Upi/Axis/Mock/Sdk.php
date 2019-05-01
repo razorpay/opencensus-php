@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Gateway\P2p\Upi\Axis\Gateway;
+use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\BankAccountAction;
 
 class Sdk
@@ -223,23 +224,49 @@ class Sdk
 
     public function setCallback(string $type, array $input)
     {
-        $callback = [
-            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
-            Fields::AMOUNT                      => $input[Fields::AMOUNT],
-            Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
-            Fields::TYPE                        => $type,
-            Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA],
-            Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
-            Fields::CUSTOME_RESPONSE            => '{}',
-            Fields::PAYEE_NAME                  => 'Alocal Customer',
-            Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
-            Fields::MERCHANT_ID                 => 'MERCHANT',
-            Fields::IS_VERIFIED_PAYEE           => 'false',
-            Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
-            Fields::EXPIRY                      => '2019-04-25T16:11:22+05:30',
-            Fields::IS_MARKED_SPAM              => 'false',
-            Fields::REMARKS                     => $input[Fields::REMARKS],
-        ];
+        switch ($type)
+        {
+            case UpiAction::COLLECT_REQUEST_RECEIVED:
+                $callback = [
+                    Fields::AMOUNT                      => $input[Fields::AMOUNT],
+                    Fields::CUSTOME_RESPONSE            => '{}',
+                    Fields::EXPIRY                      => '2019-04-25T16:11:22+05:30',
+                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
+                    Fields::IS_VERIFIED_PAYEE           => 'false',
+                    Fields::IS_MARKED_SPAM              => 'false',
+                    Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::MERCHANT_ID                 => 'MERCHANT',
+                    Fields::PAYEE_NAME                  => 'Alocal Customer',
+                    Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
+                    Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA],
+                    Fields::REMARKS                     => $input[Fields::REMARKS],
+                    Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
+                    Fields::TYPE                        => $type,
+                ];
+                break;
+
+            case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
+                $callback = [
+                    Fields::AMOUNT                      => $input[Fields::AMOUNT],
+                    Fields::BANK_ACCOUNT_UNIQUE_ID      => str_random(16),
+                    Fields::BANK_CODE                   => random_integer(6),
+                    Fields::CUSTOME_RESPONSE            => '{}',
+                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::GATEWAY_RESPONSE_CODE       => '00',
+                    Fields::GATEWAY_RESPONSE_MESSAGE    => 'Transaction is approved',
+                    Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
+                    Fields::MASKED_ACCOUNT_NUMBER       => 'xxxxx0123456',
+                    Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::MERCHANT_ID                 => 'MERCHANT',
+                    Fields::PAYEE_MOBILE_NUMBER         => '919000000001',
+                    Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
+                    Fields::PAYER_NAME                  => $input[Fields::PAYER_NAME] ?? 'Beneficiary Name',
+                    Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA],
+                    Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
+                    Fields::TYPE                        => $type,
+                ];
+        }
 
         $this->callbacks[] = $callback;
     }

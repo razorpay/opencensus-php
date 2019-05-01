@@ -2,11 +2,10 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
-use RZP\Gateway\Ebs\Entity;
 use RZP\Models\P2p\Transaction;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
-use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
+use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionTransformer;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\UpiTransactionTransformer;
 
@@ -16,7 +15,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
     {
         switch ($this->input->get(Fields::CONTENT)[Fields::TYPE])
         {
-            case TransactionAction::COLLECT_REQUEST_RECEIVED:
+            case UpiAction::COLLECT_REQUEST_RECEIVED:
 
                 $transformer = new UpiTransactionTransformer($this->input->get(Fields::CONTENT));
                 $upi = $transformer->transformIncoming();
@@ -27,6 +26,21 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
                 $context = [
                     Transaction\Entity::ENTITY      => Transaction\Entity::TRANSACTION,
                     Transaction\Entity::ACTION      => Transaction\Action::INCOMING_COLLECT,
+                ];
+
+                break;
+
+            case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
+
+                $transformer = new UpiTransactionTransformer($this->input->get(Fields::CONTENT));
+                $upi = $transformer->transformIncoming();
+
+                $transformer = new TransactionTransformer($this->input->get(Fields::CONTENT));
+                $transaction = $transformer->transformIncoming();
+
+                $context = [
+                    Transaction\Entity::ENTITY      => Transaction\Entity::TRANSACTION,
+                    Transaction\Entity::ACTION      => Transaction\Action::INCOMING_PAY,
                 ];
 
                 break;
@@ -43,7 +57,8 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
     {
         switch ($this->input->get(Fields::CONTENT)[Fields::TYPE])
         {
-            case TransactionAction::COLLECT_REQUEST_RECEIVED:
+            case UpiAction::COLLECT_REQUEST_RECEIVED:
+            case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
 
                 $signature = $this->getpayloadSignature();
                 $payload   = $this->input->get(Fields::PAYLOAD);
@@ -66,7 +81,13 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
         }
 
-        $response->setData($this->input->get('parsed'));
+        $gatewayData = $this->input->get(Transaction\Entity::GATEWAY_DATA);
+
+        $gatewayData[Transaction\Entity::RESPONSE] = [
+            Transaction\Entity::SUCCESS => true,
+        ];
+
+        $response->setData($gatewayData);
     }
 
     protected function getpayloadSignature()

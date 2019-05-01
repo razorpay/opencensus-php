@@ -104,4 +104,5 @@ class Fields
     // ------------------- CALLBACK FIELDS ------------- //
     const HEADERS                       = 'headers';
     const X_MERCHANT_PAYLOAD_SIGNATURE  = 'x-merchant-payload-signature';
+    const PAYEE_MOBILE_NUMBER           = 'payeeMobileNumber';
 }

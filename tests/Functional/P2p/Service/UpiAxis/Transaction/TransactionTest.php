@@ -88,7 +88,6 @@ class TransactionTest extends TestCase
         ]);
 
         $request = $this->mockSdk()->callback();
-
         $response = $helper->callback($this->gateway, $request);
         $this->assertTrue($response['success']);
 
@@ -115,6 +114,37 @@ class TransactionTest extends TestCase
             Entity::STATUS            => Status::COMPLETED,
             Entity::INTERNAL_STATUS   => Status::COMPLETED,
             Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
+            Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
+        ], $transaction->reload()->toArray());
+    }
+
+    public function testPayAccept()
+    {
+        $this->forceTestMode();
+
+        $helper = $this->getTransactionHelper();
+
+        $this->mockSdk()->setCallback('CUSTOMER_CREDITED_VIA_PAY', [
+            Fields::AMOUNT                  => '1.00',
+            Fields::PAYER_VPA               => 'random@mypsp',
+            Fields::PAYEE_VPA               => $this->fixtures->vpa->getAddress(),
+            Fields::UPI_REQUEST_ID          => 'RZP' . str_random(32),
+            Fields::REMARKS                 => 'SomeTransaction',
+            Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_1)
+                                                   ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID]
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction = $this->getDbLastTransaction();
+
+        $this->assertArraySubset([
+            Entity::CUSTOMER_ID       => $this->fixtures->device->getCustomerId(),
+            Entity::STATUS            => Status::COMPLETED,
+            Entity::INTERNAL_STATUS   => Status::COMPLETED,
+            Entity::PAYEE_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
         ], $transaction->reload()->toArray());
     }

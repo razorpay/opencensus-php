@@ -11,6 +11,7 @@ use RZP\Gateway\P2p\Upi\Axis\ErrorMap;
 use RZP\Models\P2p\Transaction\Status;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\UpiTransaction;
+use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
 
 class TransactionTransformer extends Transformer
@@ -58,7 +59,7 @@ class TransactionTransformer extends Transformer
     {
         switch ($this->input[Fields::TYPE])
         {
-            case TransactionAction::COLLECT_REQUEST_RECEIVED:
+            case UpiAction::COLLECT_REQUEST_RECEIVED:
 
                 $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
 
@@ -74,7 +75,31 @@ class TransactionTransformer extends Transformer
                     Entity::DESCRIPTION     => $this->input[Fields::REMARKS],
                     Entity::PAYER           => $payer,
                     Entity::PAYEE           => $payee,
+                    Entity::INTERNAL_STATUS => Status::CREATED,
                 ];
+
+                break;
+
+            case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
+
+                $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+
+                $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
+                $payer[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYER_NAME];
+
+                $output = [
+                    Entity::TYPE            => Type::PAY,
+                    Entity::MODE            => $this->getTransactionMode(),
+                    Entity::FLOW            => Flow::CREDIT,
+                    Entity::AMOUNT          => $this->toPaisa($this->input[Fields::AMOUNT]),
+                    Entity::CURRENCY        => 'INR',
+                    Entity::DESCRIPTION     => 'Money recieved',
+                    Entity::PAYER           => $payer,
+                    Entity::PAYEE           => $payee,
+                    Entity::INTERNAL_STATUS => Status::COMPLETED,
+                ];
+
+                break;
         }
 
         return $output;

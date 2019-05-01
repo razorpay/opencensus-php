@@ -123,6 +123,11 @@ class Validator extends Base\Validator
 
     public function makeIncomingCollectRules()
     {
-        return $this->makeInitiateCollectSuccessRules();
+        return $this->makeAuthorizeTransactionSuccessRules();
+    }
+
+    public function makeIncomingPayRules()
+    {
+        return $this->makeAuthorizeTransactionSuccessRules();
     }
 }

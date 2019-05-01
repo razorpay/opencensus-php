@@ -21,6 +21,7 @@ class Validator extends Base\Validator
     protected static $rejectRules;
     protected static $rejectSuccessRules;
     protected static $incomingCollectRules;
+    protected static $incomingPayRules;
 
     public function rules()
     {
@@ -201,6 +202,15 @@ class Validator extends Base\Validator
     public function makeIncomingCollectRules()
     {
         $rules = $this->makeInitiateCollectRules()->wrapRules(Entity::TRANSACTION);
+
+        $rules->merge($this->makeUpiRules());
+
+        return $rules;
+    }
+
+    public function makeIncomingPayRules()
+    {
+        $rules = $this->makeInitiatePayRules()->wrapRules(Entity::TRANSACTION);
 
         $rules->merge($this->makeUpiRules());
 

@@ -71,6 +71,18 @@ class Processor extends Base\Processor
                 $this->context()->setHandleAndMode($payer[Vpa\Entity::HANDLE]);
 
                 $device = $this->resolveDeviceFromVpa($payer);
+
+                break;
+
+            case Transaction\Action::INCOMING_PAY:
+
+                $payee = $this->input->get(Transaction\Entity::TRANSACTION)[Transaction\Entity::PAYEE];
+
+                $this->context()->setHandleAndMode($payee[Vpa\Entity::HANDLE]);
+
+                $device = $this->resolveDeviceFromVpa($payee);
+
+                break;
         }
 
         $this->context()->setMerchant($device->merchant);
