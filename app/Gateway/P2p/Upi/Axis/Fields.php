@@ -100,4 +100,8 @@ class Fields
     const P2P_PAY                       = 'P2P_PAY';
     const SCAN_PAY                      = 'SCAN_PAY';
     const INTENT_PAY                    = 'INTENT_PAY';
+
+    // ------------------- CALLBACK FIELDS ------------- //
+    const HEADERS                       = 'headers';
+    const X_MERCHANT_PAYLOAD_SIGNATURE  = 'x-merchant-payload-signature';
 }

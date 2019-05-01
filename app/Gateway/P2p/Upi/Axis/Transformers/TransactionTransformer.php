@@ -36,6 +36,15 @@ class TransactionTransformer extends Transformer
                     Entity::INTERNAL_STATUS => Status::INITIATED,
                 ];
                 break;
+
+            case TransactionAction::PAY_COLLECT:
+                $output = [
+                    Entity::TYPE            => Type::COLLECT,
+                    Entity::MODE            => $this->getTransactionMode(),
+                    Entity::FLOW            => Flow::DEBIT,
+                    Entity::INTERNAL_STATUS => Status::COMPLETED,
+                ];
+                break;
         }
 
         $output[Entity::ID] = $this->input[UpiTransaction\Entity::TRANSACTION_ID];
@@ -51,7 +60,7 @@ class TransactionTransformer extends Transformer
         {
             case TransactionAction::COLLECT_REQUEST_RECEIVED:
 
-                $payer = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+                $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
 
                 $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
                 $payee[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYEE_NAME];
@@ -61,6 +70,7 @@ class TransactionTransformer extends Transformer
                     Entity::MODE            => $this->getTransactionMode(),
                     Entity::FLOW            => Flow::DEBIT,
                     Entity::AMOUNT          => $this->toPaisa($this->input[Fields::AMOUNT]),
+                    Entity::CURRENCY        => 'INR',
                     Entity::DESCRIPTION     => $this->input[Fields::REMARKS],
                     Entity::PAYER           => $payer,
                     Entity::PAYEE           => $payee,

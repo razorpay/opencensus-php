@@ -7,5 +7,5 @@ use RZP\Gateway\P2p\Base\GatewayInterface;
 
 interface UpiGateway extends GatewayInterface
 {
-    public function gatewayCallback(Response $response);
+    public function initiateGatewayCallback(Response $response);
 }

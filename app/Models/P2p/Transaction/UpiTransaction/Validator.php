@@ -15,6 +15,7 @@ class Validator extends Base\Validator
     protected static $initiateAuthorizeRules;
     protected static $authorizeRules;
     protected static $rejectRules;
+    protected static $incomingCollectRules;
 
     public function rules()
     {
@@ -118,5 +119,10 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([]);
 
         return $rules;
+    }
+
+    public function makeIncomingCollectRules()
+    {
+        return $this->makeInitiateCollectSuccessRules();
     }
 }

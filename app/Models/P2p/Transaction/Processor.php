@@ -130,6 +130,28 @@ class Processor extends Base\Processor
         return $transaction->toArrayPublic();
     }
 
+    public function incomingCollect(array $input): array
+    {
+        $this->initialize(Action::INCOMING_COLLECT, $input, true);
+
+        $transactionInput = $this->arrayBag($this->input->get(Entity::TRANSACTION));
+
+        $properties = new Properties($this->context(), $this->action, $transactionInput);
+
+        $transaction = $this->core->create($properties, $transactionInput->toArray());
+
+        $this->core->createUpi($transaction, $this->action, $this->input->get(Entity::UPI));
+
+        $this->initiateCallGateway($transaction);
+
+        return $this->callGateway();
+    }
+
+    public function incomingCollectSuccess(array $input): array
+    {
+        return $input;
+    }
+
     protected function initiateCallGateway(Entity $transaction)
     {
         $this->gatewayInput->putMany([

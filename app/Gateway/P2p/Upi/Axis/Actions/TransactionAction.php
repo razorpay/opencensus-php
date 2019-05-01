@@ -10,6 +10,10 @@ class TransactionAction extends Action
 
     const REQUEST_MONEY                             = 'REQUEST_MONEY';
 
+    const PAY_COLLECT                               = 'PAY_COLLECT';
+
+    const DECLINE_COLLECT                           = 'DECLINE_COLLECT';
+
     const COLLECT_REQUEST_RECEIVED                  = 'COLLECT_REQUEST_RECEIVED';
 
     const MAP = [
@@ -72,6 +76,30 @@ class TransactionAction extends Action
                 Fields::PAYER_NAME,
                 Fields::PAYER_VPA,
                 Fields::REMARKS,
+                Fields::TIME_STAMP,
+                Fields::UDF_PARAMETERS,
+                Fields::UPI_REQUEST_ID,
+            ],
+        ],
+        self::PAY_COLLECT => [
+            self::VALIDATOR => [
+                Fields::MERCHANT_REQUEST_ID     => 'required',
+                Fields::MERCHANT_CUSTOMER_ID    => 'required',
+                Fields::CUSTOMER_VPA            => 'required',
+                Fields::PAYEE_VPA               => 'required',
+                Fields::AMOUNT                  => 'required',
+                Fields::ACCOUNT_REFERENCE_ID    => 'required',
+                Fields::REMARKS                 => 'sometimes',
+                Fields::UPI_REQUEST_ID          => 'required',
+                Fields::TIME_STAMP              => 'required',
+            ],
+            self::SIGNATURE => [
+                Fields::ACCOUNT_REFERENCE_ID,
+                Fields::AMOUNT,
+                Fields::CUSTOMER_VPA,
+                Fields::MERCHANT_CUSTOMER_ID,
+                Fields::MERCHANT_REQUEST_ID,
+                Fields::PAYEE_VPA,
                 Fields::TIME_STAMP,
                 Fields::UDF_PARAMETERS,
                 Fields::UPI_REQUEST_ID,

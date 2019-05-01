@@ -39,7 +39,13 @@ class Gateway extends Upi\Gateway
     {
         $rsa = new RSA();
 
-        $rsa->loadKey($this->config['bank_public_key']);
+        $rsa->loadKey($this->config['bank_public_key'], RSA::PUBLIC_FORMAT_PKCS1);
+
+        $rsa->setHash('sha256');
+
+        $rsa->setMGFHash('sha256');
+
+        $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
 
         return $rsa;
     }

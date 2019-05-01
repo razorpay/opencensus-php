@@ -49,7 +49,7 @@ class DeviceFailureTest extends TestCase
         {
             $this->assertArraySubset([
                 'code'          => 'BAD_REQUEST_ERROR',
-                'description'   => 'The id provided does not exist'
+                'description'   => 'Invalid handle is passed in the request'
             ], $error);
         });
 

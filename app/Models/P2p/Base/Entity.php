@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const UPI           = 'upi';
     const ACTION        = 'action';
     const DATA          = 'data';
+    const CONTEXT       = 'context';
 
     /**
      * Generator for refreshed at

@@ -30,14 +30,14 @@ class Core extends Base\Core
         return $transaction;
     }
 
-    public function createUpi(Entity $transaction, string $action)
+    public function createUpi(Entity $transaction, string $action, array $input = [])
     {
-        $input = [
+        $defined = [
             UpiTransaction\Entity::STATUS   => $transaction->getStatus(),
             UpiTransaction\Entity::ACTION   => $action,
         ];
 
-        $upi = (new UpiTransaction\Core)->create($transaction, $input);
+        $upi = (new UpiTransaction\Core)->create($transaction, array_merge($input, $defined));
 
         return $upi;
     }

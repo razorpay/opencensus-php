@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis\Mock;
 
+use Carbon\Carbon;
+use phpseclib\Crypt\RSA;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Gateway\P2p\Upi\Axis\Gateway;
 use RZP\Gateway\P2p\Upi\Axis\Actions\BankAccountAction;
@@ -172,24 +174,74 @@ class Sdk
             Fields::UDF_PARAMETERS              => '{}'
         ];
 
-        $stringToSign = implode($response, '');
-
-        $gateway = new Gateway();
-
-        $sign = $gateway->getMerchantSigner()->sign($stringToSign);
+        $sign = $this->signContent(implode($response, ''));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = bin2hex($sign);
 
         $response[Fields::STATUS] = 'SUCCESS';
 
-        $this->setCallback('COLLECT_REQUEST_RECEIVED', $response);
+        return $response;
+    }
+
+    public function sdkPayCollect()
+    {
+        $response = [
+            Fields::AMOUNT                      => $this->input[Fields::AMOUNT],
+            Fields::BANK_ACCOUNT_UNIQUE_ID      => $this->input[Fields::ACCOUNT_REFERENCE_ID],
+            Fields::BANK_CODE                   => '123456',
+            Fields::CUSTOMER_MOBILE_NUMBER      => '919000000001',
+            Fields::CUSTOMER_VPA                => $this->input[Fields::CUSTOMER_VPA],
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085', // rrn
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Your transaction was successful',
+            Fields::GATEWAY_TRANSACTION_ID      => $this->input[Fields::UPI_REQUEST_ID],
+            Fields::MASKED_ACCOUNT_NUMBER       => 'XXXX123456',
+            Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIMESTAMP],
+            Fields::UDF_PARAMETERS              => '{}'
+        ];
+
+        $sign = $this->signContent(implode($response, ''));
+
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
+
+        $response[Fields::STATUS] = 'SUCCESS';
 
         return $response;
     }
 
     public function callback()
     {
-        return array_pop($this->callbacks);
+        $content = json_encode(array_pop($this->callbacks));
+
+        return [
+            'server' => [
+                'HTTP_X-Merchant-Payload-Signature' => $this->signContent($content),
+            ],
+            'content' => $content,
+        ];
+    }
+
+    public function setCallback(string $type, array $input)
+    {
+        $callback = [
+            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+            Fields::AMOUNT                      => $input[Fields::AMOUNT],
+            Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
+            Fields::TYPE                        => $type,
+            Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA],
+            Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
+            Fields::CUSTOME_RESPONSE            => '{}',
+            Fields::PAYEE_NAME                  => 'Alocal Customer',
+            Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
+            Fields::MERCHANT_ID                 => 'MERCHANT',
+            Fields::IS_VERIFIED_PAYEE           => 'false',
+            Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
+            Fields::EXPIRY                      => '2019-04-25T16:11:22+05:30',
+            Fields::IS_MARKED_SPAM              => 'false',
+            Fields::REMARKS                     => $input[Fields::REMARKS],
+        ];
+
+        $this->callbacks[] = $callback;
     }
 
     private function createMockBankAccount()
@@ -223,26 +275,20 @@ class Sdk
         return $response;
     }
 
-    private function setCallback(string $type)
+    private function signContent(string $string)
     {
-        $callback = [
-            Fields::GATEWAY_REFERENCE_ID        => '911416196085',
-            Fields::AMOUNT                      => $this->input[Fields::AMOUNT],
-            Fields::PAYEE_VPA                   => $this->input[Fields::CUSTOMER_VPA],
-            Fields::TYPE                        => $type,
-            Fields::PAYER_VPA                   => $this->input[Fields::PAYER_VPA],
-            Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIMESTAMP],
-            Fields::CUSTOME_RESPONSE            => '{}',
-            Fields::PAYEE_NAME                  => 'Alocal Customer',
-            Fields::GATEWAY_TRANSACTION_ID      => $this->input[Fields::UPI_REQUEST_ID],
-            Fields::MERCHANT_ID                 => 'MERCHANT',
-            Fields::IS_VERIFIED_PAYEE           => 'false',
-            Fields::MERCHANT_CUSTOMER_ID        => 'ALC02DevTok003',
-            Fields::EXPIRY                      => '2019-04-25T16:11:22+05:30',
-            Fields::IS_MARKED_SPAM              => 'false',
-            Fields::REMARKS                     => $this->input[Fields::REMARKS],
-        ];
+        $rsa = new RSA();
 
-        $this->callbacks[] = $callback;
+        $rsa->loadKey(env('P2P_UPI_AXIS_BANK_PRIVATE_KEY'), RSA::PRIVATE_FORMAT_PKCS1);
+
+        $rsa->setHash('sha256');
+
+        $rsa->setMGFHash('sha256');
+
+        $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
+
+        $sign = $rsa->sign($string);
+
+        return bin2hex($sign);
     }
 }

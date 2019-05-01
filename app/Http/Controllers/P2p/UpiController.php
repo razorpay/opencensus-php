@@ -12,7 +12,9 @@ class UpiController extends Controller
 {
     public function gatewayCallback()
     {
+        $input['payload'] = $this->request()->getContent();
         $input['content'] = $this->request()->input();
+        $input['headers'] = $this->request()->header();
         $input['gateway'] = $this->request()->route('gateway');
 
         $response = $this->service->gatewayCallback($input);

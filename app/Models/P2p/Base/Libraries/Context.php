@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base\Libraries;
 
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
@@ -19,6 +20,8 @@ class Context extends ArrayObject
     use Traits\ExceptionTrait;
 
     const APPLICATION               = 'application';
+
+    const MODE                      = 'mode';
 
     const MERCHANT                  = 'merchant';
 
@@ -43,6 +46,11 @@ class Context extends ArrayObject
         self::DEVICE . '.' . Device\Entity::IP      => 'nullable|ipv4',
         self::DEVICE . '.' . Device\Entity::GEOCODE => 'nullable|string|max:20',
     ];
+
+    /**
+     * @var string
+     */
+    protected $mode;
 
     /**
      * @var Merchant\Entity
@@ -91,7 +99,7 @@ class Context extends ArrayObject
             $this->setOptions(ContextMap::resolveRequestHeaders($request));
 
             // Handle is set in context from the options, each HTTP request will have handle specified
-            $this->setHandle(app('repo')->p2p_handle->findOrFailPublic($this->options[self::HANDLE]));
+            $this->setHandleAndMode($this->options[self::HANDLE], $basicAuth->getMode());
 
             // As the context is loaded from HTTP request, we are using the basic auth
             // for merchant and device, later we will have to change this if we change the auth.
@@ -113,19 +121,6 @@ class Context extends ArrayObject
             if ($basicAuth->getDevice() instanceof Device\Entity)
             {
                 $this->setDevice($basicAuth->getDevice());
-
-                $deviceToken = $this->device->deviceTokens()
-                                            ->handle($this->handle)
-                                            ->verified()->latest()->first();
-
-                // If there is no device token found, the context will fail
-                if (($deviceToken instanceof Device\DeviceToken\Entity) === false)
-                {
-                    throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE);
-                }
-
-                // Setting the device token with the device
-                $this->setDeviceToken($deviceToken);
             }
             else
             {
@@ -170,12 +165,28 @@ class Context extends ArrayObject
     /**
      * @param Device\Entity $device
      */
-    public function setDevice(Device\Entity $device)
+    public function setDevice(Device\Entity $device, bool $skipToken = false)
     {
         // Basic auth already takes care of device owner, here we are only enforcing it.
         if ($this->merchant->getId() !== $device->getMerchantId())
         {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_DOES_NOT_BELONG_TO_MERCHANT);
+        }
+
+        if ($skipToken === false)
+        {
+            $deviceToken = $device->deviceTokens()
+                ->handle($this->handle)
+                ->verified()->latest()->first();
+
+            // If there is no device token found, the context will fail
+            if (($deviceToken instanceof Device\DeviceToken\Entity) === false)
+            {
+                throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE);
+            }
+
+            // Setting the device token with the device
+            $this->setDeviceToken($deviceToken);
         }
 
         $this->device = $device;
@@ -195,6 +206,24 @@ class Context extends ArrayObject
     public function setHandle(Handle\Entity $handle)
     {
         $this->handle = $handle;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * @param string $mode
+     */
+    public function setMode(string $mode)
+    {
+        \Database\DefaultConnection::set($mode);
+
+        $this->mode = $mode;
     }
 
     /**
@@ -365,5 +394,37 @@ class Context extends ArrayObject
 
         // We only want to register the P2P Trace Processor within P2P requests
         app('trace')->pushProcessor(new P2pTraceProcessor($this));
+    }
+
+    /**
+     * @param string $handleCode
+     * @param string|null $mode
+     * @throws \RZP\Exception\P2p\BadRequestException
+     */
+    public function setHandleAndMode(string $handleCode, string $mode = null)
+    {
+        $modes = [Mode::LIVE,  Mode::TEST];
+
+        // If mode is passed, we will only look for that mode
+        if (is_null($mode) === false)
+        {
+            $modes = [$mode];
+        }
+
+        foreach ($modes as $mode)
+        {
+            $handle = app('repo')->p2p_handle->connection($mode)->find($handleCode);
+
+            if ($handle instanceof Handle\Entity)
+            {
+                $this->setMode($mode);
+
+                $this->setHandle($handle);
+
+                return;
+            }
+        }
+
+        throw $this->badRequestException(ErrorCode::BAD_REQUEST_INVALID_HANDLE);
     }
 }

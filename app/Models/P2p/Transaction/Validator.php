@@ -20,6 +20,7 @@ class Validator extends Base\Validator
     protected static $initiateRejectRules;
     protected static $rejectRules;
     protected static $rejectSuccessRules;
+    protected static $incomingCollectRules;
 
     public function rules()
     {
@@ -193,6 +194,15 @@ class Validator extends Base\Validator
         $rules->merge($this->makeRules([
             Entity::SUCCESS => 'required|in:1',
         ]));
+
+        return $rules;
+    }
+
+    public function makeIncomingCollectRules()
+    {
+        $rules = $this->makeInitiateCollectRules()->wrapRules(Entity::TRANSACTION);
+
+        $rules->merge($this->makeUpiRules());
 
         return $rules;
     }

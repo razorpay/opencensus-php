@@ -60,7 +60,7 @@ trait ApplicationTrait
 
     protected function mode()
     {
-        return $this->app['rzp.mode'];
+        return $this->context()->getMode();
     }
 
     protected function environment()
