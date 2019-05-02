@@ -26,7 +26,7 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($rule);
 
-        $endpoint  = 'gateway/rule/' . $id;
+        $endpoint  = '/rule/' . $id;
 
         $this->app->smartRouting->sendRequest($endpoint, 'delete');
 

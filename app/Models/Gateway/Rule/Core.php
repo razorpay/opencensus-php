@@ -29,7 +29,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $endpoint  = 'gateway/rule';
+        $endpoint  = '/rule';
 
         $this->app->smartRouting->sendRequest($endpoint, 'post', $rule->toArray());
 
@@ -57,7 +57,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $endpoint  = 'gateway/rule/' . $id;
+        $endpoint  = '/rule/' . $id;
 
         $this->app->smartRouting->sendRequest($endpoint, 'put', $rule->toArray());
 

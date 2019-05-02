@@ -1788,7 +1788,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
 
     // Smart Routing
-    const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
+    const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
+    const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

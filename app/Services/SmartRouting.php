@@ -62,34 +62,46 @@ class SmartRouting
 
     public function sendRequest($url, $method, $data = null)
     {
-        $url = $this->baseUrl . $url;
+        try
+        {
+            $url = $this->baseUrl . $url;
 
-        if ($data === null)
-            $data = '';
+            if ($data === null)
+                $data = '';
 
-        $headers['Content-Type'] = 'application/json';
+            $headers['Content-Type'] = 'application/json';
 
-        $headers['Accept'] = 'application/json';
+            $headers['Accept'] = 'application/json';
 
-        $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
+            $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
 
-        $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
-        ];
+            $options = [
+                'timeout' => self::REQUEST_TIMEOUT,
+            ];
 
-        $request = [
-            'url' => $url,
-            'method' => $method,
-            'headers' => $headers,
-            'options' => $options,
-            'content' => $data
-        ];
+            $request = [
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'options' => $options,
+                'content' => $data
+            ];
 
-        $response = $this->sendSmartRoutingRequest($request);
+            $response = $this->sendSmartRoutingRequest($request);
 
-        $this->checkErrors(json_decode($response->body, true));
+            $this->checkErrors(json_decode($response->body, true));
 
-        return json_decode($response->body, true);
+            return json_decode($response->body, true);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SMART_ROUTING_SERVICE_ERROR,
+                [
+                    'response' => $e->getMessage()
+                ]);
+            return null;
+        }
     }
 
     protected function sendSmartRoutingRequest($request)
@@ -128,7 +140,7 @@ class SmartRouting
                     (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
                 {
                     $this->trace->info(
-                        TraceCode::CARD_VAULT_RETRY,
+                        TraceCode::SMART_ROUTING_RETRY,
                         [
                             'message' => $e->getMessage(),
                             'type'    => $e->getType(),
@@ -150,12 +162,6 @@ class SmartRouting
     protected function checkErrors($response)
     {
         $success = $response[self::SUCCESS];
-
-        $this->trace->info(
-            TraceCode::SMART_ROUTING_RESPONSE,
-            [
-                'response' => $response
-            ]);
 
         if ($success === false)
         {

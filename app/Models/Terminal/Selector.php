@@ -460,7 +460,7 @@ class Selector extends Base\Core
                 'failedTerminalsIds' => $failedTerminalIds,
             ];
 
-            $endpoint = '/payments';
+            $endpoint = '/route';
 
             $this->app->smartRouting->sendNonBlockingRequest($endpoint, $data);
 
