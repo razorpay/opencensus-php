@@ -8,7 +8,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { fetchCreditBalance } from 'merchant/modules/credits';
 import { reverseTransfer } from 'merchantLA/modules/marketplace/transfer';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise, paiseToRupees } from 'rzp/utils/rzp-utils';
 import {
   amountValidation,
   isPartialPayment,
@@ -51,8 +51,9 @@ export default class RefundToCustomerModal extends React.Component {
     this.state = {
       isLoading: false,
       partial: false,
-      payable_amount:
-        (props.payment.amount - props.payment.amount_reversed) / 100 + '',
+      payable_amount: paiseToRupees(
+        props.payment.amount - props.payment.amount_reversed
+      ),
       notes: [{}],
     };
   }
