@@ -2,8 +2,14 @@ import React from 'react';
 import Form from 'ui/Form';
 import { SelectField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
-import { adminPut } from 'common/fetch';
+import { adminPatch } from 'common/fetch';
 import { closeModal, notifySuccess } from 'common/modal';
+
+function sanitizeIINs(commaSeparatedIINs) {
+  return commaSeparatedIINs.split(",")
+    .map(p => p.trim())
+    .filter(p => p.length === 6);
+}
 
 BulkEditIIN.title = 'Bulk Edit IIN';
 export default function BulkEditIIN() {
@@ -36,17 +42,26 @@ export default function BulkEditIIN() {
         class="btn"
         pendingClass="small spinner"
         type="submit"
-        onSubmit={data => {
-          data.iins = data.iins
-            .split(',')
-            .map(p => p.trim())
-            .filter(p => p.length === 6);
-          return adminPut({
-            url: `live/iins/flows/bulk`,
+        onSubmit={formData => {
+
+          const data = {
+            iins: sanitizeIINs(formData.iins),
+            payload: {
+              flows: {
+                [formData.flow]: Number(formData.action === 'enable')
+              }
+            }
+          };
+
+          return adminPatch({
+            url: `live/iins/bulk`,
             data
-          }).then(_ => {
-            notifySuccess("IIN Flows updated successfully.");
-            closeModal();
+          }).then(data => {
+            if (data) {
+              const count = Object.keys(data).length;
+              notifySuccess(`${count} IINs updated successfully.`);
+              closeModal();
+            }
           });
         }
         }
