@@ -14,4 +14,8 @@ final class Metric
 
     // Histograms
     const WEBHOOK_REQUEST_DURATION_MILLISECONDS = 'webhook_request_duration_milliseconds.histogram';
+
+    // Histogram captures time taken from queuing a webhook event to having it
+    // dispatched(attempted/delivered) with attempts range.
+    const WEBHOOK_QUEUED_TO_DISPATCH_MILLISECONDS = 'webhook_queued_to_dispatch_milliseconds.histogram';
 }

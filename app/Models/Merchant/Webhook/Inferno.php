@@ -37,6 +37,16 @@ class Inferno
 
     protected $eventName;
 
+    /**
+     * Unix timestamp in milliseconds to capture when even payload was queued.
+     * It is used to capture queued to actual dispatch latency.
+     * Laravel's queue layer doesn't provide abstract method to get this value
+     * although it is available in underlying queue systems e.g. sqs etc.
+     *
+     * @var int
+     */
+    protected $eventQueuedAt;
+
     protected $client = null;
 
     const HASH_ALGO = 'sha256';
@@ -77,8 +87,10 @@ class Inferno
 
         $this->event = $data['event'];
 
-        // Handling backward compitablity because older messages in the queue will not have this attribute.
+        // TODO: Remove backward compatible code in few days having guaranteed
+        // no old formatted job payload exists in queue.
         $this->eventName = $data['event_name'] ?? null;
+        $this->eventQueuedAt = $data['queued_at'] ?? null;
 
         $this->trace->count(Metric::WEBHOOK_EVENTS_CONSUMED_TOTAL, ['event' => $this->eventName]);
 
@@ -350,16 +362,7 @@ class Inferno
             $clientError = true;
         }
 
-        $metricDimensions = [
-            'status_code'            => $statusCode,
-            'event'                  => $this->eventName,
-            // To check about attempts
-            // 'attempts'               => $this->job->attempts(),
-            'is_successs_tatus_code' => $isSuccessStatusCode,
-        ];
-
-        $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $metricDimensions);
-        $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration, $metricDimensions);
+        $this->pushRequestAttemptMetrics($statusCode);
 
         return $clientError;
     }
@@ -368,6 +371,36 @@ class Inferno
     {
         return (($statusCode >= StatusCode::SUCCESS) and
                 ($statusCode < StatusCode::REDIRECTION));
+    }
+
+    protected function pushRequestAttemptMetrics(int $statusCode)
+    {
+        $dimensions = [
+            'status_code'            => $statusCode,
+            'event'                  => $this->eventName,
+            'is_successs_tatus_code' => $this->isSuccesssfulStatusCode($statusCode),
+        ];
+
+        $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $dimensions);
+        $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration, $dimensions);
+
+        $attempts = $this->job->attempts();
+        // For reasons job could be attempted multiple times. For usability and
+        // metric's layer supporting it we limit string value used for attempts
+        // in dimension. It would be "1", "2", "3" & ">4".
+        $attemptsDimensionValue = $attempts < 4 ? strval($attempts) : ">4";
+
+        // TODO: Remove condition for backward compatibility.
+        if ($this->eventQueuedAt !== null)
+        {
+            $this->trace->histogram(
+                Metric::WEBHOOK_QUEUED_TO_DISPATCH_MILLISECONDS,
+                millitime() - $this->eventQueuedAt,
+                [
+                    'status_code' => $statusCode,
+                    'attempts'    => $attemptsDimensionValue,
+                ]);
+        }
     }
 
     /**
