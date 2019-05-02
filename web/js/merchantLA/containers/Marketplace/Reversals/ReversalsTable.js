@@ -13,6 +13,8 @@ import {
   createdAt,
 } from 'merchantLA/utils/item/pair';
 
+import setGaTrack from './ga';
+
 const gaEvents = setGaTrack('LA Dashboard - Reversals');
 
 @connect(
