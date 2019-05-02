@@ -29,6 +29,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
+        $endpoint  = 'gateway/rule';
+
+        $this->app->smartRouting->sendRequest($endpoint, 'post', $rule->toArray());
+
         return $rule;
     }
 
@@ -52,6 +56,10 @@ class Core extends Base\Core
         $this->$validatorMethod($rule, $matchingRules);
 
         $this->repo->saveOrFail($rule);
+
+        $endpoint  = 'gateway/rule/' . $id;
+
+        $this->app->smartRouting->sendRequest($endpoint, 'put', $rule->toArray());
 
         return $rule;
     }

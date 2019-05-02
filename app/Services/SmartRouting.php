@@ -13,9 +13,13 @@ class SmartRouting
 
     const X_RAZORPAY_TASKID  = 'X-Razorpay-TaskId';
 
-    const REQUEST_TIMEOUT = 20;
+    const REQUEST_TIMEOUT    = 20;
 
-    const MAX_RETRY_COUNT = 1;
+    const MAX_RETRY_COUNT    = 1;
+
+    const SUCCESS            = 'success';
+
+    const ERROR              = 'error';
 
     protected $config;
 
@@ -98,11 +102,21 @@ class SmartRouting
         {
             try
             {
-                $response = Requests::$method(
-                    $request['url'],
-                    $request['headers'],
-                    json_encode($request['content']),
-                    $request['options']);
+                if ($method === 'post' or $method === 'put')
+                {
+                    $response = Requests::$method(
+                        $request['url'],
+                        $request['headers'],
+                        json_encode($request['content']),
+                        $request['options']);
+                }
+                else
+                {
+                    $response = Requests::$method(
+                        $request['url'],
+                        $request['headers'],
+                        $request['options']);
+                }
 
                 break;
             }
@@ -151,7 +165,7 @@ class SmartRouting
                 'error' => $error,
             ];
 
-            throw new Exception\RuntimeException('card vault request failed', $data);
+            throw new Exception\RuntimeException('smart routing request failed', $data);
         }
     }
 }
