@@ -1397,9 +1397,7 @@ trait Refund
             // Marking refund as processed here for all other gateways and also if refund is of the date before that gateway
             // moved to scrooge.
             //
-            $gateway = $data['payment'][Payment\Entity::GATEWAY];
-
-            if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($gateway, $this->refund->getCreatedAt()) === false)
+            if ($this->refund->isScrooge() === false)
             {
                 $this->refund->setStatusProcessed();
             }

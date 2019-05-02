@@ -42,8 +42,7 @@ class Core extends Base\Core
         switch ($ftaData[Attempt\Constants::FTA_STATUS])
         {
             case Attempt\Status::PROCESSED:
-                if (Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
-                        $refund->getCreatedAt()) === true)
+                if ($refund->isScrooge() === true)
                 {
                     $data = [
                         Entity::STATUS      => Status::PROCESSED,
@@ -61,8 +60,7 @@ class Core extends Base\Core
                 break;
 
             case Attempt\Status::FAILED:
-                if (Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
-                        $refund->getCreatedAt()) === true)
+                if ($refund->isScrooge() === true)
                 {
                     $data = [
                         Entity::STATUS      => Status::FAILED,
