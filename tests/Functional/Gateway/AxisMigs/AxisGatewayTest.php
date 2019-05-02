@@ -108,6 +108,10 @@ class AxisGatewayTest extends TestCase
             ]
         ];
 
+        $this->fixtures->create('terminal:shared_axis_terminal', ['id' => '1001AxisMigsTl', 'capability' => 2]);
+
+        $this->fixtures->terminal->disableTerminal('1000AxisMigsTl');
+
         $this->mockCardVault();
         $payment = $this->defaultAuthPayment($payment);
 

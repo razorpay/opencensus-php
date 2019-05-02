@@ -12,7 +12,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_PAYMENT_ID         = 'merchantorderid';
     const COLUMN_FEE                = ['ordercommission'];
     const COLUMN_AMOUNT             = 'orderamount';
-    const COLUMN_GATEWAY_PAYMENT_ID = 'amazonorderreferenceid';
+    const COLUMN_GATEWAY_PAYMENT_ID = 'orderid';
     const COLUMN_GST                = 'gst';
 
 

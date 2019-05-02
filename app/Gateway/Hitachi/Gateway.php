@@ -129,8 +129,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->setCardNumberAndCvv($input);
-
         if ($this->isRupayTransaction($input) === true)
         {
             return $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
@@ -143,6 +141,8 @@ class Gateway extends Base\Gateway
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        $this->setCardNumberAndCvv($input);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 
@@ -302,6 +302,8 @@ class Gateway extends Base\Gateway
 
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
+        $this->checkForBharatQrFailure($input);
+
         $maskedPan = $input[ResponseFields::MASKED_CARD_NUMBER];
 
         $formattedAmount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
@@ -337,6 +339,21 @@ class Gateway extends Base\Gateway
         $qrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE] = $merchantReference;
 
         return $qrData;
+    }
+
+    protected function checkForBharatQrFailure($input)
+    {
+        if ($input[ResponseFields::STATUS_CODE] !== Status::SUCCESS_CODE)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'notification_request' => $input,
+                    'gateway'              => $this->gateway
+                ]);
+        }
     }
 
     protected function getIntegerFormattedAmount(string $amount)
@@ -819,6 +836,11 @@ class Gateway extends Base\Gateway
         $content[RequestFields::AUTH_ID] = $paysecureEntity['apprcode'];
 
         $content[RequestFields::RETRIEVAL_REF_NUM] = $paysecureEntity['rrn'];
+
+        // Use 6012 in UAT
+        $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
+
+        $content[RequestFields::MCC] = Paysecure\Mcc::getMappedMcc($mcc);
 
         $traceContent = $content;
 
@@ -1343,6 +1365,18 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type = null)
     {
+        if ($this->isLiveMode() === true)
+        {
+            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
+            {
+                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
+            }
+            else
+            {
+                return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+            }
+        }
+
         return constant(Url::class . '::' . strtoupper($this->mode));
     }
 

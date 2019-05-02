@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     const EMANDATE          = 'emandate';
     const CARDLESS_EMI      = 'cardless_emi';
     const CARD_NETWORKS     = 'card_networks';
+    const PHONEPE           = 'phonepe';
 
     const METHODS           = 'methods';
 
@@ -75,6 +76,7 @@ class Entity extends Base\PublicEntity
         self::AMAZONPAY,
         self::CARDLESS_EMI,
         self::CARD_NETWORKS,
+        self::PHONEPE,
     ];
 
     protected $visible = [
@@ -104,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::AMAZONPAY,
         self::CARDLESS_EMI,
         self::CARD_NETWORKS,
+        self::PHONEPE,
     ];
 
     protected $public = [
@@ -134,6 +137,7 @@ class Entity extends Base\PublicEntity
         self::AMAZONPAY,
         self::CARDLESS_EMI,
         self::CARD_NETWORKS,
+        self::PHONEPE,
     ];
 
     protected $defaults = array(
@@ -162,6 +166,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER  => true,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
+        self::PHONEPE        => false,
     );
 
     protected $wallets = array(
@@ -177,6 +182,7 @@ class Entity extends Base\PublicEntity
         self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
+        self::PHONEPE,
     );
 
     protected static $methods = [
@@ -198,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MPESA,
         self::CARDLESS_EMI,
+        self::PHONEPE,
     ];
 
     // Casts the attributes to native types
@@ -224,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::AEPS          => 'bool',
         self::EMANDATE      => 'bool',
         self::CARDLESS_EMI  => 'bool',
+        self::PHONEPE       => 'bool',
     ];
 
     public function merchant()
@@ -345,6 +353,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OLAMONEY);
     }
 
+    public function isPhonepeEnabled()
+    {
+        return $this->getAttribute(self::PHONEPE);
+    }
+
     public function isAirtelmoneyEnabled()
     {
         return $this->getAttribute(self::AIRTELMONEY);
@@ -357,7 +370,7 @@ class Entity extends Base\PublicEntity
 
     public function isMpesaEnabled()
     {
-        return $this->getAttribute(self::MPESA);
+        return false;
     }
 
     public function isPayumoneyEnabled()

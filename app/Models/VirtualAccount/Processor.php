@@ -175,18 +175,6 @@ abstract class Processor extends Base\Core
         }
     }
 
-    /**
-     * A receiver is expected if there exists an active VA
-     * to receive it. If such a VA does not exist, or exists but
-     * has been closed/paid, the payment is to be refunded.
-     *
-     * @param Base\PublicEntity $entity This is the receiver entity:
-     *                                  bank_transfer, qr_code
-     *
-     * @return bool
-     */
-    abstract protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity);
-
     protected function getDefaultPaymentArray(): array
     {
         $paymentArray = $this->getReceiverPaymentArray();
@@ -245,5 +233,55 @@ abstract class Processor extends Base\Core
     protected function setMerchant()
     {
         $this->merchant = $this->virtualAccount->merchant;
+    }
+
+    /**
+     * A receiver is expected if there exists an active VA
+     * to receive it. If such a VA does not exist, or exists but
+     * has been closed/paid, the payment is to be refunded.
+     *
+     * @param Base\PublicEntity $entity This is the receiver entity:
+     *                                  bank_transfer, qr_code
+     *
+     * @return bool
+     */
+    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity): bool
+    {
+        $this->setVirtualAccount($entity);
+
+        if ($this->useSharedVirtualAccount($entity) === true)
+        {
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function useSharedVirtualAccount(Base\PublicEntity $entity): bool
+    {
+        $merchant = $this->virtualAccount->merchant;
+
+        if (($merchant->isLive() === false) and
+            ($this->isLiveMode() === true))
+        {
+           return true;
+        }
+
+        $merchantMethods = $merchant->getMethods();
+
+        $method = $entity->getMethod();
+
+        if ($merchantMethods->isMethodEnabled($method) === false)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_METHOD_DISABLED_PAYMENT_REROUTED,
+                $entity->toArray());
+
+            return true;
+        }
+
+        return false;
     }
 }

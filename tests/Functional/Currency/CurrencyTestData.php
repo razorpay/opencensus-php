@@ -45,4 +45,16 @@ return [
             'content' => $supportedCurrencyData
         ],
     ],
+
+    'testGetPaymentCurrenciesProxy' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'GET',
+            'url' => '/currency/all/proxy',
+        ],
+        'response' => [
+            'content' => $supportedCurrencyData
+        ],
+    ],
 ];

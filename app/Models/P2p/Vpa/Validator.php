@@ -7,6 +7,7 @@ use RZP\Models\P2p\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $beneficiaryRules;
     protected static $initiateAddRules;
     protected static $addRules;
     protected static $addSuccessRules;
@@ -22,15 +23,15 @@ class Validator extends Base\Validator
     {
         $rules = [
             Entity::DEVICE_ID            => 'string',
-            Entity::HANDLE               => 'string',
+            Entity::HANDLE               => 'string|regex:/^[a-z0-9]{3,50}$/',
             Entity::GATEWAY_DATA         => 'array',
-            Entity::USERNAME             => 'string|regex:/^[A-Za-z0-9\.\-]{6,}$/',
+            Entity::USERNAME             => 'string|regex:/^[A-Za-z0-9\.\-]{3,200}$/',
             Entity::BANK_ACCOUNT_ID      => 'string',
             Entity::BENEFICIARY_NAME     => 'string',
             Entity::PERMISSIONS          => 'string',
             Entity::FREQUENCY            => 'string',
             Entity::ACTIVE               => 'string',
-            Entity::VALIDATED            => 'string',
+            Entity::VALIDATED            => 'boolean',
             Entity::VERIFIED             => 'string',
             Entity::DEFAULT              => 'string',
         ];
@@ -53,6 +54,18 @@ class Validator extends Base\Validator
             Entity::VALIDATED            => 'sometimes',
             Entity::VERIFIED             => 'sometimes',
             Entity::DEFAULT              => 'sometimes',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeBeneficiaryRules()
+    {
+        $rules = $this->makeRules([
+            Entity::HANDLE               => 'required',
+            Entity::USERNAME             => 'required',
+            Entity::BENEFICIARY_NAME     => 'required',
+            Entity::GATEWAY_DATA         => 'sometimes',
         ]);
 
         return $rules;

@@ -958,9 +958,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'http_status' => 400,
+                'http_status' => 504,
             ],
-            'status_code' => 400,
+            'status_code' => 504,
         ],
     ],
 

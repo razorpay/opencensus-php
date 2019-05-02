@@ -2,13 +2,18 @@
 
 namespace RZP\Gateway\Mozart;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\Entity as BaseEntity;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\Entity as BaseEntity;
+use RZP\Gateway\Mozart\Entity as MozartEntity;
+
 
 class Gateway extends Base\Gateway
 {
@@ -41,7 +46,16 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getMappedAttributes($response);
 
-        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
+
+        if ($input['payment']['method'] === 'upi')
+        {
+            return [
+                'data'   => [
+                    Payment\Entity::VPA => $input['terminal']['gateway_merchant_id2']
+                ]
+            ];
+        }
 
         return $response['next']['redirect'] ?? null;
     }
@@ -63,6 +77,8 @@ class Gateway extends Base\Gateway
         parent::action($input, Action::PAY_VERIFY);
 
         $gateway = $input['gateway'];
+
+        $gatewayName = $input['payment']['gateway'];
 
         $traceRes = $this->getRedactedData($gateway);
 
@@ -88,22 +104,66 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], 'pay_init');
+            $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $response, true);
+        $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction($gatewayPayment, $response, true, Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
-        if ($input['payment']['gateway'] === Payment\Gateway::BAJAJFINSERV)
-        {
-            $input['gateway']['pay_verify']['RequestID'] = $response['data']['RequestID'];
+        $this->runCallbackValidationsIfApplicable($input, $response);
 
+        if ($this->immediateVerifyApplicable($gatewayName) === true)
+        {
             $verifyResponse = $this->verify($input);
 
             return $verifyResponse;
         }
 
+        if ($input['payment']['method'] === Payment\Method::UPI)
+        {
+            return [
+                'acquirer' => [
+                    Payment\Entity::VPA => $response['responseBody']['data']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
+                    Payment\Entity::REFERENCE16 => $response['responseBody']['data']['rrn'] ?? null,
+                ]
+            ];
+        }
+
         return $response;
+    }
+
+    public function immediateVerifyApplicable($gatewayName)
+    {
+        $immediateVerificationGateways = [
+            Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::BAJAJFINSERV
+        ];
+
+        return in_array($gatewayName, $immediateVerificationGateways);
+    }
+
+    public function preProcessServerCallback($input, $gateway = null): array
+    {
+        switch ($gateway)
+        {
+            case 'upi_airtel':
+                return json_decode($input[0], true);
+            default :
+                throw new Exception\LogicException(
+                    'Invalid gateway passed for prcessing S2S callback');
+        }
+    }
+
+    public function getPaymentIdFromServerCallback(array $response, $gateway)
+    {
+        switch ($gateway)
+        {
+            case 'upi_airtel':
+                return $response[UpiAirtelResponseFields::PAYMENT_ID];
+            default :
+                throw new Exception\LogicException(
+                    'Invalid gateway passed for getting payment id from S2S callback');
+        }
     }
 
     public function refund(array $input)
@@ -127,7 +187,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getMappedAttributes($response);
 
-        $this->gatewayPayment = $this->createGatewayRefundEntity($attributes, $input);
+        $this->gatewayPayment = $this->createGatewayRefundEntity($attributes, $input, $this->action);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
@@ -171,7 +231,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -221,7 +280,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $this->updateGatewayPaymentEntity($verify->payment, $content);
+        $this->updateGatewayPaymentEntityWithAction($verify->payment, $content, true, Action::AUTHORIZE);
 
         return $verify->status;
     }
@@ -270,11 +329,13 @@ class Gateway extends Base\Gateway
     {
         $input['terminal'] = $input['terminal']->toArrayWithPassword();
 
-        $prevStep = $this->getPreviousStep($input['payment']['gateway']);
+        $prevStepName = $this->getPreviousStepName($input['payment']['gateway']);
 
-        if ($prevStep != null)
+        $prevStepDB = $this->getPreviousStepForDB($input['payment']['gateway']);
+
+        if ($prevStepName != null)
         {
-            $input['gateway'][$prevStep] = $this->getPreviousData($input, $prevStep);
+            $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
         }
 
         $content['entities'] = $input;
@@ -302,9 +363,9 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getPreviousStep($gateway)
+    protected function getPreviousStepName($gateway)
     {
-        $previousActionForData = [
+        $previousActionForStep = [
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -312,6 +373,55 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+
+            Payment\Gateway::WALLET_PHONEPE => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => null,
+                Action::REFUND => null,
+                Action::VERIFY_REFUND => null,
+            ],
+
+            Payment\Gateway::UPI_AIRTEL => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => Action::PAY_VERIFY,
+                Action::REFUND => Action::PAY_VERIFY,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
+
+        ];
+
+        return $previousActionForStep[$gateway][$this->action];
+    }
+
+    protected function getPreviousStepForDB($gateway)
+    {
+        $previousActionForData = [
+            Payment\Gateway::BAJAJFINSERV => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY => Action::AUTHORIZE,
+                Action::REFUND => Action::AUTHORIZE,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
+
+            Payment\Gateway::WALLET_PHONEPE => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => null,
+                Action::REFUND => null,
+                Action::VERIFY_REFUND => null,
+            ],
+
+            Payment\Gateway::UPI_AIRTEL => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => Action::AUTHORIZE,
+                Action::REFUND => Action::AUTHORIZE,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
+
         ];
 
         return $previousActionForData[$gateway][$this->action];
@@ -323,6 +433,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], $prevActionForData);
 
         $jsonRaw = json_decode($gatewayPayment['raw']);
+
         return $jsonRaw;
     }
 
@@ -352,7 +463,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function createGatewayPaymentEntity($attributes, $input)
+    protected function createGatewayPaymentEntity($attributes, $input, $action)
     {
         $redactedRaw = $this->getRedactedData($attributes['raw']);
         $attributes['raw'] = json_encode($redactedRaw);
@@ -363,7 +474,7 @@ class Gateway extends Base\Gateway
         $amount    = $input['payment']['amount'];
         $gateway   = $input['payment']['gateway'];
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
         $gatewayPayment->setAmount($amount);
         $gatewayPayment->setPaymentId($paymentId);
         $gatewayPayment->setGateway($gateway);
@@ -377,7 +488,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes, $input)
+    protected function createGatewayRefundEntity($attributes, $input, $action)
     {
         $redactedRaw = $this->getRedactedData($attributes['raw']);
         $attributes['raw'] = json_encode($redactedRaw);
@@ -389,7 +500,7 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund']['amount'];
         $gateway      = $input['payment']['gateway'];
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
         $gatewayPayment->setRefundId($refundId);
         $gatewayPayment->setAmount($refundAmount);
         $gatewayPayment->setPaymentId($paymentId);
@@ -404,20 +515,24 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function updateGatewayPaymentEntity(
-        BaseEntity $gatewayPayment,
+    protected function updateGatewayPaymentEntityWithAction(
+        MozartEntity $gatewayPayment,
         array $attributes,
-        bool $mapped = true)
+        bool $mapped = true,
+        $action = null)
     {
         if ($mapped === true)
         {
             $attributes = $this->getMappedAttributes($attributes);
         }
 
+        $action = $action ?: $this->action;
+
         $redactedRaw = $this->getRedactedData($attributes['raw']);
+
         $attributes['raw'] = json_encode($redactedRaw);
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
 
         $gatewayPayment->fill($attributes);
 
@@ -429,10 +544,46 @@ class Gateway extends Base\Gateway
     protected function getPaymentToVerify(Verify $verify)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-            $verify->input['payment']['id'], Action::PAY_VERIFY);
+            $verify->input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $gatewayPayment;
 
         return $gatewayPayment;
+    }
+
+    protected function runCallbackValidationsIfApplicable($input, $response)
+    {
+        if ($this->shouldRunCallbackValidations($input) === true)
+        {
+            if (isset ($response['data']['paymentId']))
+            {
+                $this->assertPaymentId($response['data']['paymentId'], $input['payment']['id']);
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Payment Id should have been passed for validation');
+            }
+
+            if (isset ($response['data']['amount']))
+            {
+                $this->assertAmount($response['data']['amount'], $input['payment']['amount']);
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Amount should have been passed for validation');
+            }
+        }
+    }
+
+    protected function shouldRunCallbackValidations($input)
+    {
+        $validationGateways = [
+            Payment\Gateway::UPI_AIRTEL,
+            Payment\Gateway::WALLET_PHONEPE,
+        ];
+
+        return in_array($input['payment']['gateway'], $validationGateways, true);
     }
 }

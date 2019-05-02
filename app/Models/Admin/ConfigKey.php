@@ -16,6 +16,7 @@ class ConfigKey
     const PRICING_RULE_SELECTION_LOG_VERBOSE    = self::PREFIX . 'pricing_rule_selection_log_verbose';
     const HEARTBEAT_LOG_VERBOSE                 = self::PREFIX . 'heartbeat_log_verbose';
     const THROTTLE_MOCK_LOG_VERBOSE             = self::PREFIX . 'throttle_mock_log_verbose';
+    const CURL_INFO_LOG_VERBOSE                 = self::PREFIX . 'curl_info_log_verbose';
 
     const GATEWAY_PROCESSED_REFUNDS             = self::PREFIX . 'GATEWAY_PROCESSED_REFUNDS';
     const GATEWAY_UNPROCESSED_REFUNDS           = self::PREFIX . 'GATEWAY_UNPROCESSED_REFUNDS';
@@ -38,12 +39,17 @@ class ConfigKey
     const BLOCK_YESBANK                         = self::PREFIX . 'block_yesbank';
     const BLOCK_AADHAAR_REG                     = self::PREFIX . 'block_aadhaar_reg';
     const HITACHI_DYNAMIC_DESCR_ENABLED         = self::PREFIX . 'hitachi_dynamic_descr_enabled';
+    const HITACHI_NEW_URL_ENABLED               = self::PREFIX . 'hitachi_new_url_enabled';
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
     const FTS_TEST_MERCHANT                     = self::PREFIX . 'fts_test_merchant';
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
+    const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
+
+    // Gateway level configs
+    const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -71,6 +77,10 @@ class ConfigKey
         self::SETTLEMENT_TRANSACTION_LIMIT,
         self::ENABLE_PAYMENT_DOWNTIMES,
         self::FTS_TEST_MERCHANT,
+        self::CURL_INFO_LOG_VERBOSE,
+        self::HITACHI_NEW_URL_ENABLED,
+        self::PAYSECURE_BLACKLISTED_MCCS,
+        self::DOWNTIME_THROTTLE,
     ];
 
     public static function isSensitive(string $key)

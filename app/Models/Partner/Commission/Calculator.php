@@ -650,14 +650,6 @@ class Calculator extends Base\Core
             unset($commissionData['merchant']);
             unset($commissionData['source']);
 
-            // @todo remove once logs are verified
-            if ($commission->getType() === Type::EXPLICIT)
-            {
-                $this->traceContext(TraceCode::COMMISSION_LOGGED,['commissions' => $commissionData]);
-
-                continue;
-            }
-
             $this->repo->saveOrFail($commission);
 
             $this->traceContext(TraceCode::COMMISSION_SAVED, ['commission_id' => $commission->getId()]);

@@ -306,6 +306,11 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters --------------------------------------
 
+    public function getMethod()
+    {
+        return Payment\Method::BANK_TRANSFER;
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);

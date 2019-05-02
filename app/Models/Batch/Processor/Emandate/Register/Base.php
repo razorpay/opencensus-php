@@ -47,7 +47,7 @@ abstract class Base extends BaseProcessor
         //
         $parsedData = $this->getDataFromRow($entry);
 
-        $payment = $this->repo->payment->findOrFailPublic($parsedData[self::PAYMENT_ID]);
+        $payment = $this->fetchPaymentEntity($parsedData);
 
         list($payment, $authorizeSuccess) = $this->forceAuthorizeIfApplicable($payment, $parsedData);
 
@@ -254,5 +254,10 @@ abstract class Base extends BaseProcessor
     protected function sendProcessedMail()
     {
         return;
+    }
+
+    protected function fetchPaymentEntity($data): Payment\Entity
+    {
+        return $this->repo->payment->findOrFailPublic($data[self::PAYMENT_ID]);
     }
 }

@@ -16,6 +16,7 @@ class Entity extends Base\Entity
     use Base\Traits\HasHandle;
     use Base\Traits\HasDevice;
     use Base\Traits\SoftDeletes;
+    use Base\Traits\BeneficiaryTrait;
 
     const DEVICE_ID                = 'device_id';
     const HANDLE                   = 'handle';
@@ -36,6 +37,7 @@ class Entity extends Base\Entity
     const BALANCE                  = 'balance';
     const CURRENCY                 = 'currency';
     const CARD                     = 'card';
+    const ADDRESS                  = 'address';
 
     /************** Entity Properties ************/
 
@@ -102,7 +104,7 @@ class Entity extends Base\Entity
     protected $defaults = [
         Entity::GATEWAY_DATA             => [],
         Entity::ACCOUNT_NUMBER           => null,
-        Entity::BENEFICIARY_NAME         => null,
+        Entity::MASKED_ACCOUNT_NUMBER    => '',
         Entity::CREDS                    => [],
     ];
 
@@ -152,9 +154,9 @@ class Entity extends Base\Entity
     /**
      * @return $this
      */
-    public function setBank(string $bank)
+    public function setBankId(string $bankId)
     {
-        return $this->setAttribute(self::BANK_ID, $bank);
+        return $this->setAttribute(self::BANK_ID, $bankId);
     }
 
     /**
@@ -259,6 +261,14 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @return string self::ADDRESS
+     */
+    public function getAddress()
+    {
+        return $this->getAttribute(self::ADDRESS);
+    }
+
+    /**
      * @return string self::MASKED_ACCOUNT_NUMBER
      */
     public function getMaskedAccountNumber()
@@ -289,6 +299,16 @@ class Entity extends Base\Entity
         $creds = new Credentials(json_decode($json, true));
 
         return $creds->toArray();
+    }
+
+    public function getAddressAttribute()
+    {
+        if ($this->getAccountNumber() === null)
+        {
+            return null;
+        }
+
+        return sprintf('%s@%s.ifsc.npci', $this->getAccountNumber(), $this->getIfsc());
     }
 
     public function setPublicCredsAttribute(& $array)

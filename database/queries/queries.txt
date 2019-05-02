@@ -4722,6 +4722,9 @@ ALTER TABLE gateway_rules
     ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway,
     ADD COLUMN step varchar(255) NOT NULL DEFAULT 'authorization' AFTER auth_type;
 
+ALTER TABLE gateway_rules
+    ADD COLUMN capability TINYINT(1) DEFAULT 0 AFTER recurring;
+
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
 
@@ -4794,6 +4797,12 @@ ALTER TABLE refunds
 ALTER TABLE fund_account_validations
     ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
     ADD INDEX `fund_account_validations_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE payouts
+    ADD COLUMN queued_at int(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER `queued_at`,
+    ADD INDEX payouts_queued_at_index (queued_at),
+    ADD INDEX payouts_cancelled_at_index (cancelled_at);
 
 ALTER TABLE cards
     ADD COLUMN global_fingerprint varchar(50) DEFAULT NULL AFTER vault_token;
@@ -4875,6 +4884,35 @@ ALTER TABLE fund_transfer_attempts
 ALTER TABLE payouts
     MODIFY notes TEXT DEFAULT NULL;
 
+ALTER TABLE payouts
+    ADD COLUMN initiated_at int(11) DEFAULT NULL AFTER `queued_at`,
+    ADD INDEX payouts_initiated_at_index (initiated_at);
+
 ALTER TABLE refunds
     CHANGE reference11 balance_id CHAR(14) DEFAULT NULL,
     ADD INDEX refunds_balance_id_index (`balance_id`);
+
+ALTER TABLE enach
+    ADD COLUMN gateway_reference_id2 VARCHAR(255) DEFAULT NULL AFTER gateway_reference_id;
+
+ALTER TABLE mozart
+    DROP INDEX mozart_payment_id_unique;
+
+-- P2P - Beneficiary Handling #11532
+
+/* The Bank Id, Handle and Device Id will be null for Beneficiary  */
+ALTER TABLE `p2p_bank_accounts` MODIFY `device_id` VARCHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NULL,
+                                MODIFY `handle` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_bin NULL,
+                                MODIFY `bank_id` VARCHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NULL;
+
+/*  Device Id will be null for Beneficiary
+    Username has to be case insensitive, why mb4?
+    https://stackoverflow.com/questions/901066/mysql-case-sensitive-search-for-utf8-bin-field */
+ALTER TABLE `p2p_vpa` MODIFY `device_id` VARCHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NULL,
+                      MODIFY `username` VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+-- P2P - Beneficiary Handling #11532
+
+ALTER TABLE merchant_banks
+    ADD COLUMN phonepe TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
+    ADD INDEX merchant_banks_phonepe_index (phonepe);

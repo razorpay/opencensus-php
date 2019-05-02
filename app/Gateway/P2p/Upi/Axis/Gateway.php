@@ -7,6 +7,7 @@ use phpseclib\Crypt\RSA;
 
 use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
+use RZP\Models\P2p\Device;
 use RZP\Constants\Timezone;
 use RZP\Gateway\P2p\Upi\Axis\Sdk;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
@@ -29,6 +30,15 @@ class Gateway extends Upi\Gateway
         $rsa->setMGFHash('sha256');
 
         $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
+
+        return $rsa;
+    }
+
+    public function getMerchantVerifier()
+    {
+        $rsa = new RSA();
+
+        $rsa->loadKey($this->config['bank_public_key']);
 
         return $rsa;
     }
@@ -64,6 +74,23 @@ class Gateway extends Upi\Gateway
         return $this->inputSdk();
     }
 
+    protected function handleGatewayResponseCode()
+    {
+        if ($this->isGatewayResponseFailure() === true)
+        {
+            $gatewayCode = $this->inputSdk()->get(Fields::GATEWAY_RESPONSE_CODE, ErrorMap::NOT_AVAILABLE);
+            $gatewayDesc = $this->inputSdk()->get(Fields::GATEWAY_RESPONSE_MESSAGE,
+                                            ErrorMap::NOT_AVAILABLE);
+
+            throw $this->p2pGatewayException(
+                $gatewayCode,
+                [
+                    Fields::SDK => $this->inputSdk()
+                ],
+                $gatewayDesc);
+        }
+    }
+
     protected function inputSdk(): ArrayBag
     {
         return $this->input->get(Fields::SDK);
@@ -74,12 +101,9 @@ class Gateway extends Upi\Gateway
         return $this->input->get(Fields::SDK)->get(Fields::STATUS) != 'SUCCESS';
     }
 
-    protected function handleGatewayResponse(ArrayBag $sdk)
+    protected function isGatewayResponseFailure(): bool
     {
-        if ($sdk->get(Fields::GATEWAY_RESPONSE_CODE) !== '00')
-        {
-            $this->throwP2pGatewayException();
-        }
+        return $this->input->get(Fields::SDK)->get(Fields::GATEWAY_RESPONSE_CODE) != '00';
     }
 
     protected function getTimeStamp()
@@ -117,6 +141,16 @@ class Gateway extends Upi\Gateway
     protected function formatMerchantCustomerId($customerId)
     {
         return str_replace('_', '.', $customerId);
+    }
+
+    protected function getMerchantCustomerId()
+    {
+        $deviceToken = $this->getContextDeviceToken();
+
+        // Merchant Customer Id needs to be picked from Gateway Data
+        $merchantCustomerId = $deviceToken->get(Device\Entity::GATEWAY_DATA)[Fields::MERCHANT_CUSTOMER_ID];
+
+        return $merchantCustomerId;
     }
 
     protected function throwP2pGatewayException()
@@ -179,6 +213,7 @@ class Gateway extends Upi\Gateway
         $this->trace->info(TraceCode::P2P_GATEWAY_REQUEST, [
             'request'   => $request,
             'source'    => $s2sRequest->source(),
+            'mock'      => $this->mock,
         ]);
 
         switch ($s2sRequest->source())
@@ -243,6 +278,30 @@ class Gateway extends Upi\Gateway
     protected function getSignatureString($content)
     {
         $str = implode($content, '');
+
+        return $str;
+    }
+
+    protected function verifySignature(string $signature, array $content)
+    {
+        $signer = $this->getMerchantSigner();
+
+        $message = implode($content, '');
+
+        return $signer->verify($message, $signature);
+    }
+
+    protected function getContentToVerify($content, $map)
+    {
+        $str = '';
+
+        foreach ($map as $key)
+        {
+            if (isset ($content[$key]) === true)
+            {
+                $str .= $content[$key];
+            }
+        }
 
         return $str;
     }

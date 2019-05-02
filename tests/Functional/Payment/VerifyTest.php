@@ -152,6 +152,93 @@ class VerifyTest extends TestCase
         $this->startTest();
     }
 
+    public function testIciciUpiVerify()
+    {
+        $createdAt = time() - 180;
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_icici',
+                'gateway_merchant_id' => '250000002',
+                'gateway_merchant_id2' => 'abc@icici',
+                'enabled' => 1,
+            ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'method'        => 'upi',
+            'gateway'       => 'upi_icici',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'created_at'    => $createdAt,
+            'authorized_at' => $createdAt,
+            'verify_at'     => $createdAt,
+            'captured_at'   => $createdAt,
+            'amount'        => 100,
+            'status'        => 'authorized',
+            'receiver_type' => 'qr_code',
+        ]);
+
+        $this->fixtures->create('upi',
+            [
+                'id'                => 1,
+                'payment_id'        => $payment->getId(),
+                'amount'            => 100,
+                'gateway'           => 'upi_icici',
+                'action'            => 'authorize',
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testHitachiUpiVerifyShdFail()
+    {
+        $createdAt = time() - 180;
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'upi_icici',
+                'gateway_merchant_id' => '250000002',
+                'gateway_merchant_id2' => 'abc@icici',
+                'enabled' => 1,
+            ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'method'        => 'upi',
+            'gateway'       => 'hitachi',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'created_at'    => $createdAt,
+            'authorized_at' => $createdAt,
+            'verify_at'     => $createdAt,
+            'captured_at'   => $createdAt,
+            'amount'        => 100,
+            'status'        => 'authorized',
+            'receiver_type' => 'qr_code',
+
+        ]);
+
+        $this->fixtures->create('upi',
+            [
+                'id'                => 1,
+                'payment_id'        => $payment->getId(),
+                'amount'            => 100,
+                'gateway'           => 'hitachi',
+                'action'            => 'authorize',
+            ]);
+
+        $this->startTest();
+    }
+
     public function testVerifyMultipleFailedPayments()
     {
         $this->setupRedisMock();
@@ -937,7 +1024,7 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex'])
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client'])
                           ->getMock();
 
         Redis::shouldReceive('connection')

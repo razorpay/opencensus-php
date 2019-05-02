@@ -119,7 +119,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Gateway\Terminal\Service)->onboardMerchant($id, $input, false)->toArrayPublic();
+        $data = $this->service()->onboardMerchant($id, $input);
 
         return ApiResponse::json($data);
     }

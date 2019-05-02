@@ -11,7 +11,7 @@ class Fields
     const CALLBACK                  = 'callback';
     const CONTENT                   = 'content';
     const VALIDATE                  = 'validate';
-    const API_ACTION                = 'api_action';
+    const RID                       = 'rid';
     const TOKEN                     = 'token';
     const UPI_REQUEST_ID            = 'upiRequestId';
 
@@ -70,4 +70,31 @@ class Fields
     // --------------------- VPA -------------------- //
     const CUSTOMER_VPA                  = 'customerVpa';
     const AVAILABLE                     = 'available';
+    const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
+    const CUSTOMER_NAME                 = 'customerName';
+
+    // ------------------- TRANSACTION ------------- //
+    const MERCHANT_REQUEST_ID           = 'merchantRequestId';
+    const PAYEE_VPA                     = 'payeeVpa';
+    const PAYER_VPA                     = 'payerVpa';
+    const PAYER_NAME                    = 'payerName';
+    const PAYEE_NAME                    = 'payeeName';
+    const REMARKS                       = 'remarks';
+    const PAY_TYPE                      = 'payType';
+    const AMOUNT                        = 'amount';
+    const MERCHANT_CATEGORY_CODE        = 'mcc';
+    const TRANSACTION_TIME_STAMP        = 'transactionTimestamp';
+    const GATEWAY_TRANSACTION_ID        = 'gatewayTransactionId';
+    const GATEWAY_REFERENCE_ID          = 'gatewayReferenceId';
+    const MERCHANT_PAYLOAD_SIGNATURE    = 'merchantPayloadSignature';
+    const COLLECT_REQ_EXPIRY_MINS       = 'collectRequestExpiryMinutes';
+
+    // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
+    const REF_URL                       = 'refUrl';
+    const TRANSACTION_REFERENCE         = 'transactionReference';
+
+    // ------------------- TRANSACTION TYPES ------------- //
+    const P2P_PAY                       = 'P2P_PAY';
+    const SCAN_PAY                      = 'SCAN_PAY';
+    const INTENT_PAY                    = 'INTENT_PAY';
 }

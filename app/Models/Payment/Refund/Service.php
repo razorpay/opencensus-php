@@ -33,10 +33,11 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
-    const ENTITIES       = 'entities';
-    const REFUND_IDS     = 'refund_ids';
-    const DB_FETCH_LIMIT = 'limit';
-    const GATEWAY_ENTITY = 'gateway_entity';
+    const ENTITIES          = 'entities';
+    const REFUND_IDS        = 'refund_ids';
+    const DB_FETCH_LIMIT    = 'limit';
+    const GATEWAY_ENTITY    = 'gateway_entity';
+    const REFUND_REFERENCE1 = 'refund_reference1';
 
     const MAX_REFUND_VERIFY_REQUESTS     = 20;
     const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
@@ -1468,6 +1469,7 @@ class Service extends Base\Service
     protected function updateRefund($refund, $input)
     {
         if ((empty($input[RefundEntity::BANK_REFERENCE_NO]) === false) and
+            ($input[RefundEntity::BANK_REFERENCE_NO] !== 'NA') and
             (empty($refund->getReference1()) === true))
         {
             $refund->setReference1($input[RefundEntity::BANK_REFERENCE_NO]);
@@ -1527,48 +1529,60 @@ class Service extends Base\Service
 
     public function bulkUpdateRefundsReference1(array $input)
     {
-        if (empty($input['refunds']) === true)
+        $updateFailures = [];
+
+        if (empty($input[self::REFUND_REFERENCE1]) === true)
         {
             return [
-                'success_count' => 0
+                'success_count'       => 0,
+                'time_taken'          => 0,
+                'api_failed_count'    => 0,
+                'api_failures'        => $updateFailures,
             ];
         }
 
         $start = microtime(true);
 
-        $successCount = $failedCount = $validationErrorCount = 0;
-
-        $failedRefundIds = [];
-
-        foreach ($input['refunds'] as $refund)
+        foreach ($input[self::REFUND_REFERENCE1] as $refund)
         {
             if ((empty($refund[Refund\Entity::ID]) === true) or (empty($refund[Refund\Entity::REFERENCE1]) === true))
             {
-                $validationErrorCount += 1;
+                // Format error cases, Adding to failed entities
+                $updateFailures[] = $refund;
 
                 continue;
             }
 
-            $refundEntity = $this->repo->refund->findOrFail($refund[Refund\Entity::ID]);
-
-            $this->trace->info(
-                TraceCode::REFUND_UPDATE_REFERENCE1,
-                [
-                    'refund_id'      => $refund[Refund\Entity::ID],
-                    'old_reference1' => $refundEntity->getReference1(),
-                    'new_reference1' => $refund[Refund\Entity::REFERENCE1],
-                ]
-            );
-
-            if ($this->repo->refund->updateRefundReference1($refund) === 1)
+            try
             {
-                $successCount += 1;
+                $refundEntity = $this->repo->refund->findOrFail($refund[Refund\Entity::ID]);
+
+                if ($refund[Refund\Entity::REFERENCE1] === 'NA')
+                {
+                    $refund[Refund\Entity::REFERENCE1] = null;
+                }
+
+                $this->trace->info(
+                    TraceCode::REFUND_UPDATE_REFERENCE1,
+                    [
+                        'refund_id'      => $refund[Refund\Entity::ID],
+                        'old_reference1' => $refundEntity->getReference1(),
+                        'new_reference1' => $refund[Refund\Entity::REFERENCE1],
+                    ]
+                );
+
+                // Adding to failed entities if reference1 is not as expected and failed to update
+                if (($refundEntity->getReference1() !== $refund[Refund\Entity::REFERENCE1]) and
+                    ($this->repo->refund->updateRefundReference1($refund) !== 1))
+                {
+                    $updateFailures[] = $refund;
+                }
             }
-            else
+            catch (\Exception $exception)
             {
-                $failedCount += 1;
+                $this->trace->traceException($exception);
 
-                $failedRefundIds[] = $refund[Refund\Entity::ID];
+                $updateFailures[] = $refund;
             }
         }
 
@@ -1576,12 +1590,16 @@ class Service extends Base\Service
 
         $processingTime = $end - $start;
 
+        $failedCount = count($updateFailures);
+
+        // Should be modified here if any new entities are created in future.
+        $successCount = count($input[self::REFUND_REFERENCE1]) - $failedCount;
+
         $response = [
-            'success_count'          => $successCount,
-            'failed_count'           => $failedCount,
-            'validation_error_count' => $validationErrorCount,
-            'time_taken'             => $processingTime,
-            'failed_refund_ids'      => $failedRefundIds,
+            'success_count'    => $successCount,
+            'api_failed_count' => $failedCount,
+            'time_taken'       => $processingTime,
+            'api_failures'     => $updateFailures,
         ];
 
         $this->trace->info(

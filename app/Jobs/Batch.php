@@ -65,6 +65,16 @@ class Batch extends Job
                     BatchModel\Entity::ID   => $this->id,
                     'time_taken'            => $timeTaken,
                 ]);
+
+            $metricDimensions = $batch->getMetricDimensions(['status' => $batch->getStatus()]);
+
+            $timeTakenMilliSeconds = (int)$timeTaken*1000;
+
+            $this->trace->histogram(BatchModel\Metric::BATCH_REQUEST_PROCESS_TIME_MS, $timeTakenMilliSeconds, $metricDimensions);
+
+            $totalTimeTaken = millitime() - (int)$batch->getCreatedAt()*1000 ;
+
+            $this->trace->histogram(BatchModel\Metric::BATCH_CREATE_TOTAL_PROCESS_TIME_MS, $totalTimeTaken, $metricDimensions);
         }
         catch (\Throwable $e)
         {

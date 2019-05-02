@@ -13,10 +13,10 @@ class Repository extends Base\Repository
      * @param string $username
      * @return Entity
      */
-    public function fetchByUsername(string $username, bool $trashed = false)
+    public function fetchByUsernameHandle(string $username, string $handle, bool $trashed = false)
     {
         $query = $this->newQuery()
-                      ->where(Entity::HANDLE, $this->context()->handleCode())
+                      ->where(Entity::HANDLE, $handle)
                       ->where(Entity::USERNAME, $username);
 
         if ($trashed)

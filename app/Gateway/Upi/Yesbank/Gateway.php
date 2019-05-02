@@ -178,7 +178,10 @@ class Gateway extends Mindgate\Gateway
         {
             $this->trace->traceException($ee);
 
-            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment, 'RZP_PAYOUT_REQUEST_FAILURE', $input);
+            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                 'RZP_PAYOUT_REQUEST_FAILURE',
+                                                                           $input,
+                                                                Status::PENDING);
         }
         catch (\Throwable $ex)
         {
@@ -202,12 +205,16 @@ class Gateway extends Mindgate\Gateway
 
                 case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
                     $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_REQUEST_DECRYPTION_FAILED', $input);
+                                                                                   'RZP_REQUEST_DECRYPTION_FAILED',
+                                                                                    $input,
+                                                                                    Status::PENDING);
                     break;
 
                 default:
                     $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_PAYOUT_UNKNOWN_ERROR', $input);
+                                                                                   'RZP_PAYOUT_UNKNOWN_ERROR',
+                                                                                    $input,
+                                                                                    Status::PENDING);
             }
         }
 
@@ -329,13 +336,15 @@ class Gateway extends Mindgate\Gateway
                 case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
                     $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
                                                                                    'RZP_REQUEST_DECRYPTION_FAILED',
-                                                                                   $input);
+                                                                                   $input,
+                                                                                   Status::PENDING);
                     break;
 
                 default:
                     $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
                                                                                    'RZP_PAYOUT_UNKNOWN_ERROR',
-                                                                                   $input);
+                                                                                   $input,
+                                                                                   Status::PENDING);
             }
         }
 

@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use RZP\Models\VirtualAccount;
-use RZP\Models\Customer as Customer;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Customer as Customer;
 use RZP\Models\Batch\Helpers\VirtualBankAccount as Helper;
 
 class VirtualBankAccount extends Base
@@ -82,5 +83,14 @@ class VirtualBankAccount extends Base
     {
         // Don't send an email
         return;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(900);
+
+        RuntimeManager::setMaxExecTime(900);
     }
 }

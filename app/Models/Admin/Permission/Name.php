@@ -186,6 +186,7 @@ class Name
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
     const MANAGE_BULK_FEATURE_MAPPING         = 'manage_bulk_feature_mapping';
+    const MANAGE_BULK_MERCHANT_TAGGING        = 'manage_bulk_merchant_tagging';
     const MANAGE_IINS                         = 'manage_iins';
     const MANAGE_EMI_PLANS                    = 'manage_emi_plans';
     const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
@@ -212,6 +213,7 @@ class Name
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const EDIT_REFUND                         = 'edit_refund';
+    const UPDATE_SCROOGE_REFUND_REFERENCE1    = 'update_scrooge_refund_reference1';
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';

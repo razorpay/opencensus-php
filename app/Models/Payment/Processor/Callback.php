@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Mail;
 
+use RZP\Jobs;
 use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -420,6 +421,8 @@ trait Callback
         // gateway request and we need to refresh it to take into
         // account race conditions.
         $this->lockForUpdateAndReload($this->payment);
+
+        $this->migrateCardDataIfApplicable($this->payment);
 
         $payment = $this->payment;
 

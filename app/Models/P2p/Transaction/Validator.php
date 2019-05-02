@@ -17,6 +17,7 @@ class Validator extends Base\Validator
     protected static $initiateAuthorizeSuccessRules;
     protected static $authorizeTransactionRules;
     protected static $authorizeTransactionSuccessRules;
+    protected static $initiateRejectRules;
     protected static $rejectRules;
     protected static $rejectSuccessRules;
 
@@ -97,10 +98,10 @@ class Validator extends Base\Validator
     public function makeInitiatePayRules()
     {
         $rules = $this->makeRules([
-            Entity::PAYER_ID             => 'required',
-            Entity::PAYEE_ID             => 'required',
+            Entity::PAYER                => 'required',
+            Entity::PAYEE                => 'required',
             Entity::AMOUNT               => 'required',
-            Entity::CURRENCY             => 'required',
+            Entity::CURRENCY             => 'sometimes',
             Entity::DESCRIPTION          => 'required',
         ]);
 
@@ -119,8 +120,8 @@ class Validator extends Base\Validator
     public function makeInitiateCollectRules()
     {
         $rules = $this->makeRules([
-            Entity::PAYER_ID             => 'required',
-            Entity::PAYEE_ID             => 'required',
+            Entity::PAYER                => 'required',
+            Entity::PAYEE                => 'required',
             Entity::AMOUNT               => 'required',
             Entity::CURRENCY             => 'required',
             Entity::DESCRIPTION          => 'required',
@@ -167,6 +168,13 @@ class Validator extends Base\Validator
         $rules = $this->makeEntityIdRules()->wrapRules(Entity::TRANSACTION);
 
         $rules->merge($this->makeUpiRules());
+
+        return $rules;
+    }
+
+    public function makeInitiateRejectRules()
+    {
+        $rules = $this->makePublicIdRules();
 
         return $rules;
     }

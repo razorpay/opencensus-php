@@ -25,6 +25,7 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
@@ -1088,9 +1089,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::REFERENCE16, $reference16);
     }
 
-    public function setCpsRoute()
+    public function enableCpsRoute()
     {
         $this->setAttribute(self::CPS_ROUTE, 1);
+    }
+
+    public function disableCpsRoute()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 0);
     }
 
     public function setMethod(string $method)
@@ -1271,7 +1277,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             case Method::WALLET:
 
-                $acquirerData = [];
+                $acquirerData = [
+                    'transaction_id' => $this->getAttribute(self::REFERENCE1)
+                ];
                 break;
 
             case Method::UPI:
@@ -1661,6 +1669,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     }
 
 // ----------------------- Getters ---------------------------------------------
+
+    public function getHiddenInReport()
+    {
+        $gateway = $this->getGateway();
+
+        if ((empty($gateway) === false) and
+            ($gateway === E::PAYTM))
+        {
+            unset($this->hiddenInReport[self::ACQUIRER_DATA]);
+        }
+
+        return $this->hiddenInReport;
+    }
 
     public function getPspFromVpa()
     {
@@ -2925,6 +2946,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->card->isAmex() === true));
     }
 
+    public function shouldRunShieldChecks()
+    {
+        //
+        // Since the first auth transaction would have already been
+        // done, we don't need to do any MaxMind risk checks for this.
+        //
+        if ($this->isSecondRecurring() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public static function getFilteredDescription(string $description = null)
     {
         $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
@@ -3050,6 +3085,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             default:
                 return 'PG';
         }
+    }
+
+    public function isMoto()
+    {
+        return ($this->getAuthType() === AuthType::SKIP);
     }
 
     public function isDirectSettlement()

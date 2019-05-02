@@ -55,14 +55,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
                 ],
             ],
             'status_code' => 502,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         ],
     ],
     'testAuthorizeFailure' => [

@@ -130,6 +130,9 @@ return [
             Permission::MANAGE_BULK_FEATURE_MAPPING         => [
                 'assignable' => true,
             ],
+            Permission::MANAGE_BULK_MERCHANT_TAGGING        => [
+                'assignable' => true,
+            ],
             Permission::MERCHANT_BENEFICIARY_UPLOAD         => [
                 'assignable' => true,
             ],
@@ -216,6 +219,10 @@ return [
             Permission::RETRY_REFUND_FAILED                 => '',
             Permission::EDIT_REFUND                         => [
                 'description' => 'edit_refund_permission',
+                'assignable'  => true,
+            ],
+            Permission::UPDATE_SCROOGE_REFUND_REFERENCE1    => [
+                'description' => 'update_scrooge_refund_reference1_permission',
                 'assignable'  => true,
             ],
             Permission::RETRY_REFUND                        => [

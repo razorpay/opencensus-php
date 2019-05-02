@@ -48,6 +48,7 @@ class PublicErrorDescription
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';
     const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                 = 'Invalid bank passed for E-mandate payment';
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
+    const BAD_REQUEST_BQR_PAYMENT_FAILED                                        = 'Payment failed';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                 = 'Payment processing cancelled by user';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID             = 'Payment processing cancelled by pressing back button on android';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN                         = 'Payment processing cancelled by customer at login screen';
@@ -698,6 +699,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
+    const BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF                             = 'Partner cannot add himself as a submerchant';
     const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                           = 'Reseller partner is not allowed the requested access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
@@ -706,11 +708,13 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
     const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
     const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Another payout operation is in progress. Please try again later.';
+    const BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED                            = 'The payout is already being processed.';
     const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
     const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
+    const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
 
     // Scrooge
     const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';

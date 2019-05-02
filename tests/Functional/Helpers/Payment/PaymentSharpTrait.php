@@ -34,6 +34,11 @@ trait PaymentSharpTrait
             $request['content']['success'] = 'F';
         }
 
+        if ($this->gatewayDown === true)
+        {
+            $request['content']['success'] = 'gateway_down';
+        }
+
         $response = $this->makeRequestParent($request);
 
         $this->assertEquals(302, $response->getStatusCode());

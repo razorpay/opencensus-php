@@ -8,7 +8,7 @@ class TransactionHelper extends P2pHelper
 {
     public function initiatePay(array $content = [])
     {
-        $this->validationJsonSchemaPath = 'transaction/initiate_pay';
+        $this->validationJsonSchemaPath = 'transaction/initiate_authorize';
 
         $request = $this->request('transactions/pay/initiate');
 
@@ -16,9 +16,15 @@ class TransactionHelper extends P2pHelper
             'amount'        => 100,
             'currency'      => 'INR',
             'description'   => 'Initiate Pay Test',
-            'payer_id'      => $this->fixtures->vpa(Fixtures::DEVICE_1)->getPublicId(),
-            'payee_id'      => $this->fixtures->vpa(Fixtures::DEVICE_2)->getPublicId(),
-        ];
+            'payer'         => [
+                'id'    => $this->fixtures->vpa(Fixtures::DEVICE_1)->getPublicId(),
+                'type'  => 'vpa'
+            ],
+            'payee'         => [
+                'id'    => $this->fixtures->vpa(Fixtures::DEVICE_2)->getPublicId(),
+                'type'  => 'vpa'
+            ],
+         ];
 
         $this->content($request, $default, $content);
 
@@ -27,17 +33,23 @@ class TransactionHelper extends P2pHelper
 
     public function initiateCollect(array $content = [])
     {
-        $this->validationJsonSchemaPath = 'transaction/initiate_collect';
+        $this->validationJsonSchemaPath = 'transaction/initiate_authorize';
 
         $request = $this->request('transactions/collect/initiate');
 
         $default = [
             'amount'        => 100,
             'currency'      => 'INR',
-            'description'   => 'Initiate Pay Test',
+            'description'   => 'Initiate Collect Test',
             'expire_at'     => time() + 1000,
-            'payer_id'      => $this->fixtures->vpa(Fixtures::DEVICE_2)->getPublicId(),
-            'payee_id'      => $this->fixtures->vpa(Fixtures::DEVICE_1)->getPublicId(),
+            'payer'         => [
+                'id'    => $this->fixtures->vpa(Fixtures::DEVICE_2)->getPublicId(),
+                'type'  => 'vpa'
+            ],
+            'payee'         => [
+                'id'    => $this->fixtures->vpa(Fixtures::DEVICE_1)->getPublicId(),
+                'type'  => 'vpa'
+            ],
         ];
 
         $this->content($request, $default, $content);
@@ -47,31 +59,21 @@ class TransactionHelper extends P2pHelper
 
     public function initiateAuthorize(string $id)
     {
-        $this->validationJsonSchemaPath = 'transaction/initiate_pay';
+        $this->validationJsonSchemaPath = 'transaction/initiate_authorize';
 
         $request = $this->request('transactions/%s/authorize/initiate', [$id]);
 
-        return $this->get($request);
+        return $this->post($request);
     }
 
-    public function authorizeTransaction(string $id, array $content = [])
+    public function authorizeTransaction(string $callback, array $content = [])
     {
-        $this->validationJsonSchemaPath = 'transaction/initiate_collect';
+        $this->validationJsonSchemaPath = 'transaction/fetch';
 
-        $request = $this->request('transactions/%s/authorize', [$id]);
+        $request = $this->request($callback);
 
         $default = [
-            'cl' => [
-                'creds' => [
-                    [
-                        'code'     => 'NPCI',
-                        'ki'       => '20150806',
-                        'string'   => 'SomeVerySercetString',
-                        'sub_type' => 'UPIPIN',
-                        'type'     => 'PIN',
-                    ]
-                ],
-            ],
+            'sdk'   => []
         ];
 
         $this->content($request, $default, $content);
@@ -79,13 +81,28 @@ class TransactionHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function rejectTransaction(string $id, array $content = [])
+    public function initiateReject(string $id, array $content = [])
     {
-        $this->validationJsonSchemaPath = 'transaction/initiate_collect';
+        $this->validationJsonSchemaPath = 'transaction/initiate_authorize';
 
-        $request = $this->request('transactions/%s/reject', [$id]);
+        $request = $this->request('transactions/%s/reject/initiate', [$id]);
 
         $default = [];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
+    public function rejectTransaction(string $callback, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'transaction/fetch';
+
+        $request = $this->request($callback);
+
+        $default = [
+            'sdk'   => []
+        ];
 
         $this->content($request, $default, $content);
 
@@ -108,5 +125,23 @@ class TransactionHelper extends P2pHelper
         $request = $this->request('transactions/%s', [$id]);
 
         return $this->get($request);
+    }
+
+    public function callbackIncomingCollect(string $gateway, array $content = [])
+    {
+        // This API work on direct auth
+        $this->setMerchantInContext(false);
+        $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
+
+        $request = $this->request('callback/%s', [$gateway]);
+
+        $this->resetContexts();
+
+        $default = [];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
     }
 }

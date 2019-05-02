@@ -51,5 +51,30 @@ class CurrencyTest extends TestCase
         $this->assertArrayHasKey('denomination', $res['INR']);
 
         $this->assertArrayHasKey('symbol', $res['INR']);
+
+        $this->assertArrayHasKey('name', $res['INR']);
+
+    }
+
+    public function testGetPaymentCurrenciesProxy()
+    {
+        $this->ba->subscriptionsAuth();
+
+        $res = $this->startTest();
+
+        $this->assertArrayHasKey('INR', $res);
+
+        $this->assertArrayHasKey('code', $res['INR']);
+
+        $this->assertArrayHasKey('min_value', $res['INR']);
+
+        $this->assertArrayHasKey('min_auth_value', $res['INR']);
+
+        $this->assertArrayHasKey('denomination', $res['INR']);
+
+        $this->assertArrayHasKey('symbol', $res['INR']);
+
+        $this->assertArrayHasKey('name', $res['INR']);
+
     }
 }

@@ -85,8 +85,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Function to get all rzp supported_currency and the min supported
-     * amount for transaction, code, symbol, exponent
+     * Function to get all rzp supported_currency, min supported
+     * amount, code, symbol and exponent
      * @return array|null
      */
     public function getSupportedCurrenciesDetails()

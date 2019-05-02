@@ -11,13 +11,16 @@ class Status
     // FTA module to update the source status. Things will
     // get wrecked if these are removed. Wrecked.
 
-    const PROCESSED  = 'processed';
-    const INITIATED  = Attempt\Status::INITIATED;
-    const FAILED     = 'reversed';
+    const PROCESSED     = 'processed';
+    const INITIATED     = Attempt\Status::INITIATED;
+    const FAILED        = 'reversed';
 
 
-    const CREATED    = 'created';
-    const REVERSED   = 'reversed';
+    const CREATED       = 'created';
+    const REVERSED      = 'reversed';
+
+    const QUEUED        = 'queued';
+    const CANCELLED     = 'cancelled';
 
     /**
      * Used only to expose publicly.
@@ -30,6 +33,8 @@ class Status
         self::INITIATED => self::PROCESSING,
         self::PROCESSED => self::PROCESSED,
         self::REVERSED  => self::REVERSED,
+        self::QUEUED    => self::QUEUED,
+        self::CANCELLED => self::CANCELLED,
     ];
 
     /**
@@ -38,8 +43,12 @@ class Status
      * @var array
      */
     public static $timestampedStatuses = [
+        // We have a special logic for `created` in entity status setter
+        self::CREATED,
         self::PROCESSED,
         self::REVERSED,
+        self::QUEUED,
+        self::CANCELLED,
     ];
 
     public static function getPublicStatusFromInternalStatus($internalStatus)

@@ -11,6 +11,7 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
@@ -660,7 +661,7 @@ trait Authorize
 
         $this->runInternationalChecks($payment);
 
-        $this->runFraudChecks($payment);
+        $this->runFraudChecksIfApplicable($payment);
 
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -675,6 +676,11 @@ trait Authorize
     protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)
     {
         if ($payment->isCardlessEmi() === false)
+        {
+            return;
+        }
+
+        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
         {
             return;
         }
@@ -1520,6 +1526,7 @@ trait Authorize
         try
         {
             if (($payment->isMethodCardOrEmi() === true) and
+                ($payment->isMoto() === false) and
                 ($payment->isSecondRecurring() === false) and
                 ($payment->isPushPaymentMethod() === false))
             {
@@ -1527,7 +1534,7 @@ trait Authorize
 
                 if (strtolower($response) === 'on')
                 {
-                   $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
+                    $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
 
                     $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
 
@@ -1543,6 +1550,7 @@ trait Authorize
                 TraceCode::AUTH_SELECTION_FAILURE,
                 [
                     'payment_id'  => $payment->getId(),
+                    'payment_auth_type' => $payment->getAuthType(),
                 ]
             );
         }
@@ -1637,6 +1645,8 @@ trait Authorize
 
     protected function setAuthInPaymentViaGatewayRules(Payment\Entity $payment, array $gatewayInput)
     {
+        $authType = $payment->getAuthType();
+
         $payment->setAuthType(null);
 
         if (empty($gatewayInput['auth_type']) === true)
@@ -1655,6 +1665,14 @@ trait Authorize
         ];
 
         if (in_array($gatewayInput['auth_type'], $otpAuth, true) === true)
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
+            return;
+        }
+
+        if (($authType !== null) and
+            ($authType === Payment\AuthType::OTP) and
+            ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP))
         {
             $payment->setAuthType(Payment\AuthType::OTP);
         }
@@ -1754,9 +1772,10 @@ trait Authorize
         $this->validateInternationalRecurringPaymentsAllowed($payment);
     }
 
-    protected function runFraudChecks(Payment\Entity $payment)
+    protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+            ($payment->shouldRunShieldChecks() === true))
         {
             $this->validateFraudDetectionV2($payment);
         }
@@ -2532,7 +2551,7 @@ trait Authorize
 
             $vault = $payment->shouldSaveCard();
 
-            $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant, $input);
         }
     }
 
@@ -2732,7 +2751,7 @@ trait Authorize
         // create local saved card and link to payment
         if ($payment->isMethodCardOrEmi() === true)
         {
-            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant, $input);
 
             $savedLocalCard = $payment->card;
 
@@ -2761,12 +2780,12 @@ trait Authorize
         if ($payment->isMethodCardOrEmi() === true)
         {
             // create global saved card and link to payment
-            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant, $input);
 
             $savedGlobalCard = $payment->card;
 
             // create merchant local card entity and link to payment
-            $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant, $input);
 
             // link local card to global card entity
             $payment->card->globalCard()->associate($savedGlobalCard);
@@ -3307,10 +3326,51 @@ trait Authorize
         }
     }
 
+    protected function migrateCardDataIfApplicable($payment)
+    {
+
+        try
+        {
+            if (($payment->isMethodCardOrEmi() === false) or
+                ($payment->card->getVault() !== Card\Vault::RZP_ENCRYPTION))
+            {
+                return;
+            }
+
+            $input = [
+                'payment_id' => $payment->getId(),
+                'card_id'    => $payment->card->getId(),
+                'token'      => $payment->card->getVaultToken(),
+                'mode'       => $this->mode,
+            ];
+
+            $this->trace->info(
+                TraceCode::VAULT_TOKEN_MIGRATION_REQUEST_INIT,
+                [
+                    'input' => $input,
+                ]);
+
+            Jobs\CardVaultMigrationJob::dispatch($input, $this->mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VAULT_TOKEN_MIGRATION_DISPATCH_FAILED,
+                ['payment_id' => $payment->getId()]
+            );
+
+            throw $e;
+        }
+    }
+
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
         $updated = $this->updatePaymentAuthorized($data, $wasFailed);
+
+        $this->migrateCardDataIfApplicable($this->payment);
 
         //
         // If payment has not been updated to authorized, we don't fire the webhook
@@ -4064,13 +4124,21 @@ trait Authorize
         (new Notify($this->payment))->trigger($event);
     }
 
+    public function notifyMigratedCard($payment)
+    {
+        $this->payment = $payment;
+
+        $this->notifyIfCardSaved();
+    }
+
     protected function notifyIfCardSaved()
     {
         $payment = $this->payment;
 
         if (($payment->isMethod(Payment\Method::CARD)) and
             ($payment->getSave() === true) and
-            ($payment->getGlobalTokenId() !== null))
+            ($payment->getGlobalTokenId() !== null) and
+            ($payment->card->getVault() !== Card\Vault::RZP_ENCRYPTION))
         {
             $notifier = new Notify($this->payment);
 
@@ -4243,7 +4311,8 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) and
+                if (((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+                     ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE)) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)
@@ -4413,7 +4482,7 @@ trait Authorize
      * @return array
      * @throws Exception\BadRequestException
      */
-    protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
+    protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant, array $input = [])
     {
         // temp change.
         $merchantIds = [
@@ -4432,6 +4501,17 @@ trait Authorize
         if ($vault === true)
         {
             $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
+        }
+
+        if (($this->payment->isRecurring() === false) and
+            ($this->isPreferredRecurring($input) === false))
+        {
+            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
+
+            if (strtolower($response) === 'on')
+            {
+              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
+            }
         }
 
         $cardCore = new Card\Core;

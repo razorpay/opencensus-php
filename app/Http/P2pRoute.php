@@ -205,7 +205,7 @@ final class P2pRoute
             ],
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE =>
             [
-                'get',
+                'post',
                 'customer/transactions/{transaction_id}/authorize/initiate',
                 'TransactionController@initiateAuthorize'
             ],
@@ -215,11 +215,25 @@ final class P2pRoute
                 'customer/transactions/{transaction_id}/authorize',
                 'TransactionController@authorizeTransaction'
             ],
-        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT =>
+        Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT =>
+            [
+                'post',
+                'customer/transactions/{transaction_id}/reject/initiate',
+                'TransactionController@initiateReject'
+            ],
+        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT =>
             [
                 'post',
                 'customer/transactions/{transaction_id}/reject',
                 'TransactionController@reject'
+            ],
+
+        /*************** Callbacks **************/
+        Requests::P2P_GATEWAY_CALLBACK =>
+            [
+                'post',
+                'callback/{gateway}',
+                'GatewayController@callback'
             ],
     ];
 
@@ -263,7 +277,12 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_TRANSACTIONS_FETCH,
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_AUTHORIZE,
         Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
-        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT_COLLECT,
+        Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT,
+        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT,
+    ];
+
+    public static $direct = [
+        Requests::P2P_GATEWAY_CALLBACK,
     ];
 
     public static $routePermission = [];

@@ -65,4 +65,23 @@ class CardVault extends Base\Core
             throw $e;
         }
     }
+
+    public function getVaultTokenFromTempToken($tempVaultToken)
+    {
+        try
+        {
+            return $this->cardVault->getVaultTokenFromTempToken($tempVaultToken);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'message' => 'Failed to get hashicorp vault token data'
+                ]
+            );
+
+            throw $e;
+        }
+    }
 }

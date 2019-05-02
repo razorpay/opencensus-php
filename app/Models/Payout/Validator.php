@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
@@ -23,19 +24,20 @@ class Validator extends Base\Validator
     // validation for the actual operation.
     //
     protected static $createRules = [
-        Entity::DESTINATION     => 'required|public_id',
-        Entity::PURPOSE         => 'sometimes|string',
-        Entity::AMOUNT          => 'sometimes|integer',
-        Entity::CURRENCY        => 'sometimes|size:3',
-        Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'sometimes|public_id',
-        Entity::DESTINATION     => 'sometimes|public_id',
-        Entity::TYPE            => 'sometimes|string',
-        Entity::BALANCE_ID      => 'sometimes|string|size:14',
-        Entity::FUND_ACCOUNT_ID => 'sometimes|public_id',
-        Entity::MODE            => 'sometimes|nullable|string',
-        Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION       => 'sometimes|nullable|string|max:30',
+        Entity::DESTINATION          => 'required|public_id',
+        Entity::PURPOSE              => 'sometimes|string',
+        Entity::AMOUNT               => 'sometimes|integer',
+        Entity::CURRENCY             => 'sometimes|size:3',
+        Entity::NOTES                => 'sometimes|notes',
+        Entity::CUSTOMER_ID          => 'sometimes|public_id',
+        Entity::DESTINATION          => 'sometimes|public_id',
+        Entity::TYPE                 => 'sometimes|string',
+        Entity::BALANCE_ID           => 'sometimes|string|size:14',
+        Entity::FUND_ACCOUNT_ID      => 'sometimes|public_id',
+        Entity::MODE                 => 'sometimes|nullable|string',
+        Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION            => 'sometimes|nullable|string|max:30',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     /**
@@ -43,15 +45,16 @@ class Validator extends Base\Validator
      * @var array
      */
     protected static $fundAccountPayoutRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
-        Entity::CURRENCY        => 'required|size:3|in:INR',
-        Entity::NOTES           => 'sometimes|notes',
-        Entity::BALANCE_ID      => 'sometimes|filled|size:14',
-        Entity::FUND_ACCOUNT_ID => 'required|public_id',
-        Entity::MODE            => 'sometimes|nullable|string|custom',
-        Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
+        Entity::AMOUNT               => 'required|integer|min:100|max:500000000',
+        Entity::CURRENCY             => 'required|size:3|in:INR',
+        Entity::NOTES                => 'sometimes|notes',
+        Entity::BALANCE_ID           => 'sometimes|filled|size:14',
+        Entity::FUND_ACCOUNT_ID      => 'required|public_id',
+        Entity::MODE                 => 'sometimes|nullable|string|custom',
+        Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean|custom',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -139,8 +142,27 @@ class Validator extends Base\Validator
                     'account_type'    => $accountType,
                 ]);
         }
+    }
 
-        // TODO: Need to do similar stuff for refund also
+    protected function validateQueueIfLowBalance($attribute, $value)
+    {
+        if (boolval($value) === false)
+        {
+            return;
+        }
+
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::QUEUED_PAYOUTS) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Queued payouts not available for the merchant',
+                null,
+                [
+                    'value' => $value
+                ]);
+        }
     }
 
     public function validatePayoutAmount($input, $payment)
@@ -208,8 +230,11 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateRetryPayout(Entity $payout)
+    public function validateRetryPayout()
     {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
         if ($payout->hasPayment() === true)
         {
             throw new Exception\BadRequestException(
@@ -231,6 +256,57 @@ class Validator extends Base\Validator
                 [
                     'payout_id'     => $payout->getId(),
                     'payout_status' => $payoutStatus,
+                ]);
+        }
+    }
+
+    public function validateProcessingQueuedPayout()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        // Already processed by another queue job due to overlap of cron runs.
+        if ($payout->isStatusQueued() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+
+        // Currently, we support queued concept only for Fund Account type.
+        // If we are supporting for others, the processor call needs to be fixed in Core.
+        if (($payout->hasFundAccount() === false) or
+            ($payout->hasCustomer() === true))
+        {
+            throw new Exception\LogicException(
+                'Payout is not of RX or not a proper fund_account type',
+                null,
+                [
+                    'payout_id'         => $payout->getId(),
+                    'balance_type'      => $payout->balance->getType(),
+                    'fund_account_id'   => $payout->getFundAccountId(),
+                    'customer_id'       => $payout->getCustomerId(),
+                ]);
+        }
+    }
+
+    public function validateCancel()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusQueued() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
                 ]);
         }
     }

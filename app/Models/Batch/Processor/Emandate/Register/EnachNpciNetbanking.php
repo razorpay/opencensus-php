@@ -6,19 +6,17 @@ use Config;
 
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
-use RZP\Error\PublicErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
-use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Enach\Npci\Netbanking;
 
 class EnachNpciNetbanking extends Base
 {
     const GATEWAY = Gateway::ENACH_NPCI_NETBANKING;
 
-    const UMRN = 'umrn';
+    const UMRN        = 'umrn';
+    const NPCI_REF_ID = 'npci_reference_id';
 
     protected $gatewayPaymentMapping = [
         self::GATEWAY_REGISTRATION_STATUS => Entity::REGISTRATION_STATUS,
@@ -40,6 +38,7 @@ class EnachNpciNetbanking extends Base
             self::TOKEN_STATUS                => $status,
             self::TOKEN_ERROR_CODE            => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
             self::PAYMENT_ID                  => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID],
+            self::NPCI_REF_ID                 => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID],
             self::GATEWAY_REGISTRATION_STATUS => $gatewayTokenStatus,
             self::GATEWAY_ERROR_CODE          => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE],
             self::GATEWAY_ERROR_DESCRIPTION   => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_REASON],
@@ -75,7 +74,9 @@ class EnachNpciNetbanking extends Base
                     ->findAuthorizedPaymentByPaymentId($payment->getId());
     }
 
-    protected function forceAuthorizeIfApplicable(Payment\Entity $payment, array $data)
+    // commenting out the below function as NPCI has requested to do recon based on their ref id.
+    // keeping this change as NPCI is planning to change this to based on our payment id in the future
+    /*protected function forceAuthorizeIfApplicable(Payment\Entity $payment, array $data)
     {
         $authorizeSuccess = true;
 
@@ -109,5 +110,15 @@ class EnachNpciNetbanking extends Base
         }
 
         return [$payment, $authorizeSuccess];
+    }*/
+
+    protected function fetchPaymentEntity($data): Payment\Entity
+    {
+        $enach = $this->repo->enach->findByGatewayReferenceIdAndStatus(
+                                               $data[self::NPCI_REF_ID],
+                                               Netbanking\RegistrationStatus::SUCCESS
+                                        );
+
+        return $enach['payment'];
     }
 }

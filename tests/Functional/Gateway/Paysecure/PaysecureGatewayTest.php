@@ -77,6 +77,15 @@ class PaysecureGatewayTest extends TestCase
         return $authResponse;
     }
 
+    public function testPaymentAuthViaRedirectForBlacklistedMcc()
+    {
+        $this->addBlacklistConfig(['6012' => '7994']);
+
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+    }
+
     public function testS2SPaymentAuthViaRedirect()
     {
         $this->fixtures->merchant->addFeatures(['s2s']);
@@ -136,9 +145,10 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'initiate2')
                 {
-                    $content['status']                = 'failure';
-                    $content['errorcode']             = '406';
-                    $content['errormsg']              = 'Not Authenticated';
+                    $content['status']      = 'failure';
+                    $content['errorcode']   = '406';
+                    $content['errormsg']    = 'Not Authenticated';
+                    $content['RedirectURL'] = '';
                 }
             }
         );
@@ -174,7 +184,7 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'auth_response')
                 {
-                    $content['AccuResponseCode'] = 'ACCU600';
+                    $content['AccuResponseCode'] = 'ACCU100';
                 }
             }
         );
@@ -190,10 +200,12 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status'  => 'failed',
-                'amount'  => 50000,
-                'method'  => 'card',
-                'gateway' => $this->paymentEntityGateway,
+                'status'        => 'failed',
+                'amount'        => 50000,
+                'method'        => 'card',
+                'gateway'       => $this->paymentEntityGateway,
+                'verify_bucket' => null,
+                'verify_at'     => null,
             ],
             $payment
         );
@@ -485,5 +497,20 @@ class PaysecureGatewayTest extends TestCase
         );
 
         return $payment;
+    }
+
+    protected function addBlacklistConfig(array $mapping)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:paysecure_blacklisted_mccs' => $mapping
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }

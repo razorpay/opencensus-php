@@ -382,47 +382,131 @@ return [
 
     'testBulkFlowsUpdateEnable' => [
         'request' => [
-            'url'     => '/iins/flows/bulk',
-            'method'  => 'PUT',
+            'url'     => '/iins/bulk',
+            'method'  => 'PATCH',
             'content' => [
-                'flow'   => 'otp',
                 'iins'   => ['401200', '401201', '234567'],
-                'action' => 'enable'
+                'payload' => [
+                    'flows'   => [
+                        'otp' => '1',
+                    ],
+                ],
             ],
         ],
         'response' => [
             'content' => [
                 '401200' => [
-                                "pin",
-                                "otp",
-                            ],
+                    'flows'   => [
+                        'pin',
+                        'otp',
+                    ],
+                ],
                 '401201' => [
-                                "pin",
-                                "otp",
-                            ],
+                    'flows'   => [
+                        'pin',
+                        'otp',
+                    ],
+                ],
             ],
         ],
     ],
 
     'testBulkFlowsUpdateDisable' => [
         'request' => [
-            'url'     => '/iins/flows/bulk',
-            'method'  => 'PUT',
+            'url'     => '/iins/bulk',
+            'method'  => 'PATCH',
             'content' => [
-                'flow'   => 'otp',
                 'iins'   => ['401200', '401201', '234567'],
-                'action' => 'disable'
+                'payload' => [
+                    'flows'   => [
+                        'pin' => '0',
+                    ],
+                ]
             ],
         ],
         'response' => [
             'content' => [
-                    '401200' => [
-                                    "pin",
+                '401200' => [
+                    'flows'   => [
+                        'otp',
                     ],
-                    '401201' => [
-                                    "pin",
+                ],
+                '401201' => [
+                    'flows'   => [
                     ],
+                ],
             ],
         ],
-    ]
+    ],
+
+    'testBulkFlowsInvalidInput' => [
+        'request' => [
+            'url'     => '/iins/bulk',
+            'method'  => 'PATCH',
+            'content' => [
+                'iins'   => ['840120', '401201', '2345671'],
+                'payload' => [
+                    'flows'   => [
+                        'otp' => '0',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The IIN elements must be of 6 digit.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testIinsBulkUpdate' => [
+        'request' => [
+            'url'     => '/iins/bulk',
+            'method'  => 'PATCH',
+            'content' => [
+                'iins'   => ['401200', '401201'],
+                'payload' => [
+                    'flows'   => [
+                        'magic' => '1',
+                    ],
+                    'country'        => 'IN',
+                    'emi'            => 1,
+                    'network'        => 'Visa',
+                    'type'           => 'credit',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '401200' => [
+                    'flows'   => [
+                        '3ds',
+                        'magic',
+                    ],
+                    'country'        => 'IN',
+                    'emi'            => true,
+                    'network'        => 'Visa',
+                    'type'           => 'credit',
+                ],
+                '401201' => [
+                    'flows'   => [
+                        '3ds',
+                        'magic',
+                    ],
+                    'country'        => 'IN',
+                    'emi'            => true,
+                    'network'        => 'Visa',
+                    'type'           => 'credit',
+                ],
+            ],
+        ],
+    ],
 ];

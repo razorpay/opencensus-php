@@ -51,6 +51,7 @@ trait RequestHandlerTrait
 
         $content = [
             Entity::RRN       => $rrn,
+            Entity::FLOW      => 'iframe',
             Entity::TRAN_DATE => $requestArray[Fields::TRAN_DATE],
             Entity::TRAN_TIME => $requestArray[Fields::TRAN_TIME],
         ];
@@ -102,7 +103,6 @@ trait RequestHandlerTrait
 
     /**
      * @return array
-     * @throws Exception\GatewayErrorException
      */
     protected function getInitiateRequestArray(): array
     {
@@ -119,6 +119,8 @@ trait RequestHandlerTrait
 
         // In UAT they want us to pass 6012
         $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
+
+        $mcc = Mcc::getMappedMcc($mcc);
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
