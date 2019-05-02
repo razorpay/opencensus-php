@@ -27,7 +27,7 @@ export default class Pager extends Component {
     let { length, onClick } = this.props;
     let count = +this.props.count;
     let skip = +this.props.skip;
-    let nextDisabled = length < Number(count);
+    let nextDisabled = length < count;
     let prevDisabled = !skip;
     let total = skip + length;
     let current = skip + 1;

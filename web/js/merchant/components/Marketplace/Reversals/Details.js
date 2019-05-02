@@ -11,8 +11,7 @@ export default class ReversalDetails extends Component {
   render() {
     const { reversal, transfer, isLoading, onClose, merchant } = this.props,
       isLAInitiator =
-        reversal.initiator_id &&
-        reversal.initiator_id.replace('acc_', '') !== merchant.id;
+        (reversal.initiator_id || '').replace('acc_', '') !== merchant.id;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -64,18 +63,13 @@ export default class ReversalDetails extends Component {
                   }
                 />
 
-                {isLAInitiator && (
-                  <EntityDetailRow
-                    label="Customer Refund ID"
-                    value={_ => {
-                      return reversal.customer_refund_id;
-                    }}
-                  />
-                )}
-
-                {/* {isLAInitiator && ( // TODO: add this when backend is ready
-                  <EntityDetailRow label="Refund ARN" value={() => 'Number'} />
-                )} */}
+                {isLAInitiator &&
+                  reversal.customer_refund_id && (
+                    <EntityDetailRow
+                      label="Customer Refund ID"
+                      value={() => reversal.customer_refund_id}
+                    />
+                  )}
 
                 <EntityDetailRow
                   label="Created At"

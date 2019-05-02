@@ -19,7 +19,7 @@ import Button from 'component/Button';
 
 import Amount from 'ui/Amount';
 
-@connect(_ => ({}), {
+@connect(_ => null, {
   showNotification,
   ...AccountActions,
   ...ModalActions,
@@ -255,7 +255,7 @@ export default class Details extends Component {
     });
   };
 
-  showActivationForm = _ =>
+  showActivationForm = () =>
     this.setState({ showActivationForm: !this.state.showActivationForm });
 
   render() {

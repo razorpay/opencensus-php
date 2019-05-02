@@ -13,6 +13,8 @@ import {
   createdAt,
 } from 'merchantLA/utils/item/pair';
 
+const gaEvents = setGaTrack('LA Dashboard - Reversals');
+
 @connect(
   state => ({
     ...state.reversals,
@@ -26,11 +28,7 @@ export default class ReversalsTable extends ListContainer {
     if (pathname && pathname.indexOf('route') < 0) {
       const label = getKeysSeparatedByPipe(params);
       if (label && label.length > 0) {
-        window.rzpAnalytics({
-          eventCategory: 'LA Dashboard - Reversals',
-          eventAction: 'Search - Refunds',
-          eventLabel: label,
-        });
+        ga.trackSearchAnalytics(label);
       }
     }
   };
@@ -38,10 +36,7 @@ export default class ReversalsTable extends ListContainer {
   onClearAnalytics = () => {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
-      window.rzpAnalytics({
-        eventCategory: 'LA Dashboard - Reversals',
-        eventAction: 'Clear Search Params - Search params',
-      });
+      ga.trackClearAnalytics();
     }
   };
 

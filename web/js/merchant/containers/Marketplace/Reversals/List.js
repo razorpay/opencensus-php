@@ -24,7 +24,6 @@ export default class ReversalsListContainer extends ListContainer {
           form="reversalsListFilter"
           count={this.state.count}
           onSubmit={this.search}
-          user={user}
         />
 
         <DataTable

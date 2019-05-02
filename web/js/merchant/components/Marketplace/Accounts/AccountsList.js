@@ -113,7 +113,7 @@ const AccountsListItem = ({
             <ToggleField
               onEdit={() => showEditAccountModal(account)}
               isDisabled={noLAEmail}
-              isDashboard={true}
+              isDashboard
             >
               <SwitchField
                 defaultChecked={!!account.dashboard_access}

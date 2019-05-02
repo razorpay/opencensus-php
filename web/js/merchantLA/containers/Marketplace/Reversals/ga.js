@@ -19,5 +19,16 @@ export default eventCategory => {
         eventAction: 'Close details - Refunds',
       });
     },
+    trackSearchAnalytics: eventLabel => {
+      track({
+        eventAction: 'Search - Refunds',
+        eventLabel,
+      });
+    },
+    trackClearAnalytics: _ => {
+      track({
+        eventAction: 'Clear Search Params - Search params',
+      });
+    },
   };
 };
