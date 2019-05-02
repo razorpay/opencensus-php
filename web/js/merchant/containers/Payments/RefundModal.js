@@ -24,14 +24,14 @@ import {
 } from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
 
-const isPartialPayment = props => {
+export const isPartialPayment = props => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded,
     amountEntered = rupeesToPaise(props.payable_amount);
 
   return amountEntered < refundableAmount;
 };
 
-const amountValidation = props => {
+export const amountValidation = props => {
   const value = props.payable_amount || '';
 
   if (!value) {
@@ -55,7 +55,7 @@ const amountValidation = props => {
   }
 };
 
-const RefundType = ({ partial, isTitleCase = false }) => {
+export const RefundType = ({ partial, isTitleCase = false }) => {
   let text = partial ? 'partial' : 'full';
 
   if (isTitleCase) {

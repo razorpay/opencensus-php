@@ -47,6 +47,7 @@ export default class AddEMIPlan extends Component {
   render() {
     return (
       <Form class="full-span full-elements">
+      <Field label="Merchant ID" name="merchant_id" required />
         <div class="field multi">
           <label>
             {this.state.selectedSource === 'bank' ? 'Banks' : 'Network'}

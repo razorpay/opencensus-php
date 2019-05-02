@@ -34,7 +34,7 @@ export default class ReversalsListContainer extends Component {
         ? balanceData.balance
         : balanceData.refund_credits,
       balanceTitle = isBalanceSource ? 'Current Balance:' : 'Refund Credits:',
-      showRefundToCustomer = user.features.includes('allow_reversals_from_la');
+      showRefundToCustomer = user.isAllowedLARefunds;
 
     return (
       <div>

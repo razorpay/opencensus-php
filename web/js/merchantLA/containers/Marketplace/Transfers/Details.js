@@ -79,6 +79,7 @@ export default class TransferDetailsContainer extends Component {
 
     compactSlider();
 
+    // Going back to initial detail view mode
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 
@@ -126,9 +127,7 @@ export default class TransferDetailsContainer extends Component {
           onReverse={onReverse}
           showNotification={showNotification}
           parentAccountName={user.marketplace_merchant_name}
-          showRefundToCustomer={user.features.includes(
-            'allow_reversals_from_la'
-          )}
+          showRefundToCustomer={user.isAllowedLARefunds}
         />
         {reversal_id && (
           <ReversalDetails

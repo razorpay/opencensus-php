@@ -94,6 +94,7 @@ export default class TransferDetailsContainer extends Component {
 
     compactSlider();
 
+    // Going back to initial detail view mode
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 

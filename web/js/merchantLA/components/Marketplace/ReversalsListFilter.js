@@ -3,9 +3,7 @@ import { Field } from 'redux-form';
 
 export default props => {
   const merchant = props.user.merchants[props.user.current];
-  const isRefundsAllowed = props.user.features.includes(
-    'allow_reversals_from_la'
-  );
+  const isRefundsAllowed = props.user.isAllowedLARefunds;
 
   return (
     <ListFilter {...props}>
