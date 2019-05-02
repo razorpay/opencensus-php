@@ -13,6 +13,8 @@ import {
   createdAt,
 } from 'merchantLA/utils/item/pair';
 
+import setGaTrack from './ga';
+
 const gaEvents = setGaTrack('LA Dashboard - Reversals');
 
 @connect(
@@ -28,7 +30,7 @@ export default class ReversalsTable extends ListContainer {
     if (pathname && pathname.indexOf('route') < 0) {
       const label = getKeysSeparatedByPipe(params);
       if (label && label.length > 0) {
-        ga.trackSearchAnalytics(label);
+        gaEvents.trackSearchAnalytics(label);
       }
     }
   };
@@ -36,7 +38,7 @@ export default class ReversalsTable extends ListContainer {
   onClearAnalytics = () => {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
-      ga.trackClearAnalytics();
+      gaEvents.trackClearAnalytics();
     }
   };
 
