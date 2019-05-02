@@ -2,38 +2,14 @@ import { connect } from 'react-redux';
 import { PowerSelect } from 'react-power-select';
 import { setNativeValue } from 'rzp/utils/rzp-utils';
 import { AmountTooltip } from 'rzp/ui/Amount';
+import { classList } from 'common/util';
 
 // TODO: Move to common var utils list
 // NOTE: CSS is effected with index no. change
-const defaultCurrencies = [
+const currencyArray = [
   {
     label: 'Frequently Used',
-    options: [
-      {
-        label: 'Indian Rupee',
-        name: 'INR',
-        symbol: '₹',
-        flag: 'dummy',
-      },
-      {
-        label: 'US Dollar',
-        name: 'USD',
-        symbol: 'US$',
-        flag: 'dummy',
-      },
-      {
-        label: 'Singapore Dollar',
-        name: 'SGD',
-        symbol: 'S$',
-        flag: 'dummy',
-      },
-      {
-        label: 'Euro',
-        name: 'EUR',
-        symbol: '€',
-        flag: 'dummy',
-      },
-    ],
+    options: [],
   },
   {
     label: 'All others',
@@ -41,16 +17,15 @@ const defaultCurrencies = [
   },
 ];
 
+const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
+
 function CurrencyOption({ option }) {
   return (
     <div>
-      {option.flag && (
-        <span class="round-flag">
-          <img src="" />
-        </span>
-      )}
       <span>
-        {option.name} - {option.label}
+        <span class="currency-symbol">{option.sym}</span> - {option.label} ({
+          option.name
+        })
       </span>
       <i className="i-check text-success" />
     </div>
@@ -60,7 +35,7 @@ function CurrencyOption({ option }) {
 function SelectedCurrencyOption(option) {
   return (
     <div>
-      <span>{option.symbol}</span>
+      <span>{option.sym}</span>
     </div>
   );
 }
@@ -70,34 +45,46 @@ export default class extends React.Component {
   state = this.initState();
 
   initState() {
-    let currencyList = [...defaultCurrencies],
-      currency = currencyList[0].options[0], // Selecting first currency in 'Frequently used' group;
+    let currencyList = [...currencyArray],
+      currency,
       isDisabled = this.props.disabled;
 
-    if (!this.props.user.international) {
-      if (!this.props.defaultValue) {
-        currencyList = [currencyList[0].options[0]]; // Only inr in the list
-      }
+    let INR_option;
 
-      isDisabled = true;
-    } else {
+    if (this.props.user.international) {
       const defaultValue = this.props.defaultValue;
 
-      if (defaultValue) {
-        let option = currencyList[0].options.filter(
-          cur => cur.name === defaultValue
-        ); // Check in "Frequently Used"
+      Object.keys(window.currencyList).forEach(c => {
+        const fullName = window.currencyList[c].name,
+          ISO = c,
+          symbol = window.currencyList[c].symbol;
 
-        if (!option) {
-          option = currencyList[1].options.filter(
-            cur => cur.name === defaultValue
-          ); // Check in "All others"
+        const currencyObj = {
+          label: fullName,
+          name: ISO,
+          sym: symbol,
+        };
+
+        if (defaultValue && ISO === defaultValue) {
+          currency = currencyObj;
         }
 
-        if (option.length) {
-          currency = option[0];
+        if (frequentlyUsedCurrencies.indexOf(c) > -1) {
+          currencyList[0].options.push(currencyObj);
+        } else {
+          currencyList[1].options.push(currencyObj);
         }
-      }
+      });
+    }
+
+    this.INR_option = {
+      label: window.currencyList['INR'].full_name,
+      name: 'INR',
+      sym: window.currencyList['INR'].symbol,
+    };
+
+    if (!currency) {
+      currency = this.INR_option; // default option if no defaultValue set by parent
     }
 
     return {
@@ -105,20 +92,6 @@ export default class extends React.Component {
       currency,
       disabled: isDisabled,
     };
-  }
-
-  componentWillMount() {
-    // Make API call to get the currencies list if doesn't exist
-    const moreCurrenciesList = this.props.user.getCurrencyList || [];
-
-    if (this.state.disabled && this.props.user.international) {
-      this.state.currencyList[1].options = this.state.currencyList[1].options.concat(
-        moreCurrenciesList
-      );
-      const newCurrencyList = this.state.currencyList;
-
-      this.setState({ currencyList: newCurrencyList });
-    }
   }
 
   onSelectCurrency = ({ option }) => {
@@ -151,41 +124,52 @@ export default class extends React.Component {
   render() {
     const props = this.props;
 
+    const isInternationalEnabled = this.props.user.international;
+
     return (
-      <div class="Input Input--Currency">
-        <div class="Input-content">
-          <div class="Input-elWrapper">
-            <div class="Input-el">
-              <input
-                name={props.name || 'currency'}
-                value={this.state.currency.name}
-                hidden
-                readOnly
-                ref={inp => (this.ele = inp)}
-              />
-              <PowerSelect
-                name="currency"
-                class="Input--Currency-dropdown ps-in-modal"
-                options={this.state.currencyList}
-                searchIndices={['name', 'label']}
-                placeholder="Select currency"
-                optionComponent={CurrencyOption}
-                selectedOptionLabelPath="name"
-                selectedOptionComponent={this.getSelectedCurrencyOption}
-                onChange={this.onSelectCurrency}
-                selected={this.state.currency}
-                afterOptionsComponent={
-                  !props.user.getCurrencyList
-                    ? _ => <div>Loading currencies...</div>
-                    : undefined
-                }
-                showClear={false}
-                searchEnabled
-                disabled={this.state.disabled}
-              />
+      <div
+        class={classList(
+          'Input Input--Currency',
+          !isInternationalEnabled && 'Input--noMargin'
+        )}
+      >
+        {isInternationalEnabled ? (
+          <div class="Input-content">
+            <div class="Input-elWrapper">
+              <div class="Input-el">
+                <input
+                  name={props.name || 'currency'}
+                  value={this.state.currency.name}
+                  hidden
+                  readOnly
+                  ref={inp => (this.ele = inp)}
+                />
+                <PowerSelect
+                  name="currency"
+                  class="Input--Currency-dropdown ps-in-modal"
+                  options={this.state.currencyList}
+                  searchIndices={['name', 'label']}
+                  placeholder="Select currency"
+                  optionComponent={CurrencyOption}
+                  selectedOptionLabelPath="name"
+                  selectedOptionComponent={this.getSelectedCurrencyOption}
+                  onChange={this.onSelectCurrency}
+                  selected={this.state.currency}
+                  afterOptionsComponent={
+                    !props.user.getCurrencyList
+                      ? _ => <div>Loading currencies...</div>
+                      : undefined
+                  }
+                  showClear={false}
+                  searchEnabled
+                  disabled={this.state.disabled}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div class="value">{this.INR_option.sym}</div>
+        )}
       </div>
     );
   }

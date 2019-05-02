@@ -66,8 +66,7 @@ export function AmountTooltip({
         <PopoverBody>
           {/* TODO: Api needs to add support for currency label */}
           <div style={{ textAlign: 'center' }}>
-            {currencySymbol} - {currency} -{' '}
-            {currencySymbolMapping[currency].name}
+            {currencySymbol} - {window.currencyList[currency].name} ({currency})
           </div>
         </PopoverBody>
       </Popover>

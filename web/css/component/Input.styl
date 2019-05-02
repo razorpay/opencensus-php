@@ -131,6 +131,23 @@
   width: 60px
   vertical-align: top
 
+  &.Input--noMargin
+    width: 36px
+    text-align: center
+
+    .value
+      padding: 0
+      background-color: #f0f3f4
+      color: #57666d
+      width: 36px
+      line-height: 34px
+      display: inline-block
+      margin-right: -4px
+      border: 1px solid #e2e2e2
+      border-top-left-radius: 2px
+      border-bottom-left-radius: 2px
+      border-right: transparent
+
   .Input-el
     padding: 0
     background: transparent
@@ -205,14 +222,10 @@
   .PowerSelect__Option
     padding: 4px 8px
 
-    .round-flag
+    .currency-symbol
       display: inline-block
-      border-radius: 50%
-      width: 14px
-      height: 14px
-      vertical-align: sub
-      margin-right: 8px
-      background: #eee
+      min-width: 16px
+      text-align: center
 
     .i-check
       display: none
@@ -603,8 +616,13 @@ textarea.Input-el
       margin-left: 0
       margin-right: 20px
 
-    .Input-content .Input--Currency .Input-content
-      margin-right: 8px
+    .Input-content .Input--Currency
+      .Input-content
+        margin-right: 8px
+
+      &.Input--noMargin
+        .Input-content
+          margin-right: 0
 
 /* Placeholder states for Input element */
 .Input-el
