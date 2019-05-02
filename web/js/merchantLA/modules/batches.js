@@ -114,9 +114,7 @@ export const fetchLAReversalsBatchesDetails = params => {
 export const fetchLAReversalsBatches = params => {
   return {
     type: getFetchActionName(BATCH),
-    payload: params.id
-      ? fetchBatchAjax(params.id)
-      : fetchBatchesAjax(params, 'linked_account_reversal'),
+    payload: fetchBatchesAjax(params, 'linked_account_reversal'),
   };
 };
 

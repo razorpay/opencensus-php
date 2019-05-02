@@ -8,6 +8,7 @@ import {
   fetchLAReversalsBatches as fetchAll,
   createLinkedAccountReversalsBatch as createBatch,
   validateLinkedAccountReversalsBatch as validateBatch,
+  batchDownload,
 } from 'merchantLA/modules/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
@@ -18,6 +19,7 @@ const gaEvents = setGaTrack('LA Dashboard - Reversals BU');
   createBatch,
   validateBatch,
   openModal,
+  batchDownload,
 })
 export default class BatchListContainer extends Component {
   renderUploadModal = () => {
@@ -45,6 +47,7 @@ export default class BatchListContainer extends Component {
           batchType="linked_account_reversal"
           renderUploadModal={this.renderUploadModal}
           gaEvents={gaEvents}
+          extraPropBatchDownload={this.props.batchDownload}
           {...this.props}
         />
       </div>
