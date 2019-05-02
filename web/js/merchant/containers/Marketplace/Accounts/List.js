@@ -45,13 +45,13 @@ export default class AccountsListContainer extends ListContainer {
 
     if (account.allow_reversals && !checked) {
       header = 'Also Disable Customer Refunds?';
-      (message =
-        'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.'),
-        (data = {
-          accountId: account.id,
-          dashboard_access: checked,
-          allow_reversals: checked,
-        });
+      message =
+        'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.';
+      data = {
+        accountId: account.id,
+        dashboard_access: checked,
+        allow_reversals: checked,
+      };
     }
 
     return this.context
@@ -123,13 +123,13 @@ export default class AccountsListContainer extends ListContainer {
 
     if (!account.dashboard_access && checked) {
       header = 'Also enable Dashboard Access?';
-      (message =
-        'Enabling Refund to customer will also enable Dashboard access to the Linked Account.'),
-        (data = {
-          allow_reversals: checked,
-          accountId: account.id,
-          dashboard_access: checked,
-        });
+      message =
+        'Enabling Refund to customer will also enable Dashboard access to the Linked Account.';
+      data = {
+        allow_reversals: checked,
+        accountId: account.id,
+        dashboard_access: checked,
+      };
     }
 
     return this.context
