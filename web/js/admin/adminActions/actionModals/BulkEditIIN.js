@@ -3,6 +3,7 @@ import Form from 'ui/Form';
 import { SelectField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { adminPut } from 'common/fetch';
+import { closeModal, notifySuccess } from 'common/modal';
 
 BulkEditIIN.title = 'Bulk Edit IIN';
 export default function BulkEditIIN() {
@@ -43,6 +44,9 @@ export default function BulkEditIIN() {
           return adminPut({
             url: `live/iins/flows/bulk`,
             data
+          }).then(_ => {
+            notifySuccess("IIN Flows updated successfully.");
+            closeModal();
           });
         }
         }
