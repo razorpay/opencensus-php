@@ -58,13 +58,13 @@ return [
     ],
 
     'testFileCreationPayoutApi' => [
-        'amount'            => 1000,
-        'fees'              => 602,
-        'tax'               => 92,
+        'amount'            => 2000,
+        'fees'              => 1204,
+        'tax'               => 184,
         'processed_amount'  => 1000,
         'processed_count'   => 1,
-        'total_count'       => 1,
-        'transaction_count' => 1,
+        'total_count'       => 2,
+        'transaction_count' => 2,
         'type'              => 'payout',
     ],
 
