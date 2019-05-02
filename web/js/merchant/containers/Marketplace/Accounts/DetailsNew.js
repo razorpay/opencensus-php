@@ -49,7 +49,11 @@ export default class Details extends Component {
         accountId: account.id,
       };
 
-    if (account.allow_reversals && !checked) {
+    if (
+      account.allow_reversals &&
+      !checked &&
+      this.props.user.isAllowedLARefunds
+    ) {
       header = 'Also Disable Customer Refunds?';
       (message =
         'Disabling Dashboard Access will also disable the refund to customer to the Linked Account'),
@@ -355,29 +359,29 @@ export default class Details extends Component {
                     </ToggleField>
                   </EntityDetailRow>
                 )}
-                {isAllowToEdit && (
-                  <EntityDetailRow
-                    label={
-                      <span>
-                        Allow Customer Refund
-                        <small
-                          className="help-content"
-                          style={{ paddingLeft: '4px' }}
-                        >
-                          <i class="i i-help" />
-                          <Popover align="right" theme="dark">
-                            <PopoverBody>
-                              <div style={{ textAlign: 'left' }}>
-                                This allows Linked account to refund to the
-                                customer for a transfer.
-                              </div>
-                            </PopoverBody>
-                          </Popover>
-                        </small>
-                      </span>
-                    }
-                  >
-                    {user.isAllowedLARefunds && (
+                {isAllowToEdit &&
+                  user.isAllowedLARefunds && (
+                    <EntityDetailRow
+                      label={
+                        <span>
+                          Allow Customer Refund
+                          <small
+                            className="help-content"
+                            style={{ paddingLeft: '4px' }}
+                          >
+                            <i class="i i-help" />
+                            <Popover align="right" theme="dark">
+                              <PopoverBody>
+                                <div style={{ textAlign: 'left' }}>
+                                  This allows Linked account to refund to the
+                                  customer for a transfer.
+                                </div>
+                              </PopoverBody>
+                            </Popover>
+                          </small>
+                        </span>
+                      }
+                    >
                       <ToggleField
                         onEdit={this.showEditAccountModal(account)}
                         isDisabled={noLAEmail}
@@ -389,9 +393,8 @@ export default class Details extends Component {
                           type="prime"
                         />
                       </ToggleField>
-                    )}
-                  </EntityDetailRow>
-                )}
+                    </EntityDetailRow>
+                  )}
               </div>
             </div>
           </div>

@@ -315,7 +315,7 @@ export default class User {
   }
 
   get isAllowedLARefunds() {
-    return this.getExpStatus('la_refunds');
+    return true; // this.getExpStatus('la_refunds');
   }
 }
 
