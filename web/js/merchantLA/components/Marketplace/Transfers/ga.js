@@ -7,13 +7,13 @@ const track = setTrackData({ eventCategory: 'LA Dashboard - Transfers' });
 export const trackClickReverseDetails = eventLabel =>
   track({
     eventAction: 'Click - Reverse details',
-    eventLabel: eventLabel,
+    eventLabel,
   });
 
 export const trackClickReversalID = eventLabel =>
   track({
     eventAction: 'Click - Reversal ID',
-    eventLabel: eventLabel,
+    eventLabel,
   });
 
 export const trackClickRefundToCustomer = _ =>
@@ -24,5 +24,5 @@ export const trackClickRefundToCustomer = _ =>
 export const trackClickCreateRefund = eventLabel =>
   track({
     eventAction: 'Click - Refund to Customer',
-    eventLabel: eventLabel,
+    eventLabel,
   });

@@ -66,9 +66,7 @@ export default class ReversalDetails extends Component {
                 {isLAInitiator && (
                   <EntityDetailRow
                     label="Customer Refund ID"
-                    value={_ => {
-                      return reversal.customer_refund_id;
-                    }}
+                    value={_ => reversal.customer_refund_id}
                   />
                 )}
 
