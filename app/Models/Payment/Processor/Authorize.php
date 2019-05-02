@@ -4510,7 +4510,7 @@ trait Authorize
 
             if (strtolower($response) === 'on')
             {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
+                $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
             }
         }
 
