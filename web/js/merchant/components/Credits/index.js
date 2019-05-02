@@ -8,7 +8,13 @@ import CreditDetailsNew from './CreditDetailsNew';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 export default props => {
-  let { creditsData, balanceData, loading, currentUser } = props;
+  let {
+    creditsData,
+    balanceData,
+    loading,
+    currentUser,
+    showDocumentation = true,
+  } = props;
 
   if (!currentUser) {
     error =
@@ -18,25 +24,26 @@ export default props => {
 
   return (
     <div class="credits content-wrapper content-sm">
-      <HeaderAction>
-        <div class="btn-toolbar pull-right">
-          <ShowWhen
-            additionalCondition={user =>
-              user.isOrgAllowedFunctionality('external_links')
-            }
-          >
-            <a
-              class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/credits"
-              target="_blank"
+      {showDocumentation && (
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
             >
-              Documentation &nbsp;
-              <i class="i i-external-link" />
-            </a>
-          </ShowWhen>
-        </div>
-      </HeaderAction>
-
+              <a
+                class="btn btn-link"
+                href="https://docs.razorpay.com/v1/page/credits"
+                target="_blank"
+              >
+                Documentation &nbsp;
+                <i class="i i-external-link" />
+              </a>
+            </ShowWhen>
+          </div>
+        </HeaderAction>
+      )}
       {loading ? (
         <div class="page-spinner-container">
           <Spinner />

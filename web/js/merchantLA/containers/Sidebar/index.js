@@ -85,7 +85,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Reversals"
-                    icon="i i-reversal text-warm"
+                    icon="i i-undo text-warm"
                     to={routes.reversals}
                   />
                   <MainNavLink

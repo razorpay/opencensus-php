@@ -14,28 +14,56 @@ import { luminateRow } from 'merchant/modules/app';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 
-@connect(state => state.accounts, {
-  ...AccountActions,
-  ...ModalActions,
-  showNotification,
-  luminateRow,
-})
+@connect(
+  state => {
+    return {
+      ...state.accounts,
+      user: state.session.user,
+    };
+  },
+  {
+    ...AccountActions,
+    ...ModalActions,
+    showNotification,
+    luminateRow,
+  }
+)
 export default class AccountsListContainer extends ListContainer {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
   onToggleDashboardAccess = (account, checked, cb) => {
+    let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+      message = `Are you sure you want to ${
+        checked ? 'Enable' : 'Disable'
+      } dashboard access for this linked account`,
+      data = {
+        dashboard_access: checked,
+        accountId: account.id,
+      };
+
+    if (
+      account.allow_reversals &&
+      !checked &&
+      this.props.user.isAllowedLARefunds
+    ) {
+      header = 'Also Disable Customer Refunds?';
+      message =
+        'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.';
+      data = {
+        accountId: account.id,
+        dashboard_access: checked,
+        allow_reversals: checked,
+      };
+    }
+
     return this.context
       .confirm({
-        header: `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+        header: header,
         message: () => (
           <div class="text-semi-muted">
-            <p>
-              {`Are you sure you want to ${
-                checked ? 'Enable' : 'Disable'
-              } dashboard access for this linked account`}
-            </p>
+            <p>{message}</p>
           </div>
         ),
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
@@ -43,10 +71,7 @@ export default class AccountsListContainer extends ListContainer {
         abortLabel: 'Cancel',
         action: () => {
           return this.props
-            .toggleDashboardAccess({
-              dashboard_access: checked,
-              accountId: account.id,
-            })
+            .toggleDashboardAccess(data)
             .then(resp => {
               cb(true);
 
@@ -57,6 +82,86 @@ export default class AccountsListContainer extends ListContainer {
                     checked ? 'Enabled' : 'Disabled'
                   } for merchant "${account.name}"`,
                 });
+
+                this.resetPagination();
+
+                return resp;
+              } else {
+                throw 'Some network error has occurred';
+              }
+            })
+            .catch(({ errors }) => {
+              if (
+                !errors ||
+                (errors instanceof Array === true &&
+                  (!errors.length || !errors[0]))
+              ) {
+                errors = 'Some network error has occurred';
+              }
+
+              this.props.showNotification({
+                type: 'error',
+                message: errors,
+              });
+
+              cb(false);
+
+              throw errors;
+            });
+        },
+      })
+      .catch(() => {
+        cb(false);
+      }); // dummy catch to handle confirm abort rejection
+  };
+
+  onToggleAllowRefunds = (account, checked, cb) => {
+    let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
+      message = `Are you sure you want to ${
+        checked ? 'Enable' : 'Disable'
+      } allow refunds for this linked account`,
+      data = {
+        allow_reversals: checked,
+        accountId: account.id,
+      };
+
+    if (!account.dashboard_access && checked) {
+      header = 'Also enable Dashboard Access?';
+      message =
+        'Enabling Refund to customer will also enable Dashboard access to the Linked Account.';
+      data = {
+        allow_reversals: checked,
+        accountId: account.id,
+        dashboard_access: checked,
+      };
+    }
+
+    return this.context
+      .confirm({
+        header: header,
+        message: () => (
+          <div class="text-semi-muted">
+            <p>{message}</p>
+          </div>
+        ),
+        affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
+        affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
+        abortLabel: 'Cancel',
+        action: () => {
+          return this.props
+            .toggleAllowRefunds(data)
+            .then(resp => {
+              cb(true);
+
+              if (resp) {
+                this.props.showNotification({
+                  type: 'success',
+                  message: `Dashboard access ${
+                    checked ? 'Enabled' : 'Disabled'
+                  } for merchant "${account.name}"`,
+                });
+
+                this.resetPagination();
 
                 return resp;
               } else {
@@ -100,11 +205,11 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onAccountCreation = account => {
-    this.onAccountEdit(account);
+    this.resetPagination();
     this.showAccountDetailsModal(account); // Open activation modal
   };
 
-  onAccountEdit = account => {
+  resetPagination = account => {
     // Reset pagination and fetch results of updated pagination
     const paginationSkip = 0;
     this.setState({ skip: paginationSkip });
@@ -122,7 +227,7 @@ export default class AccountsListContainer extends ListContainer {
     this.props.openModal({
       size: 'small',
       component: (
-        <AccountCreation onSave={this.onAccountEdit} accountData={account} />
+        <AccountCreation onSave={this.resetPagination} accountData={account} />
       ),
     });
   };
@@ -219,6 +324,14 @@ export default class AccountsListContainer extends ListContainer {
               additionalCondition: user => user.isAllowedEdit('accounts'),
             })
               ? this.onToggleDashboardAccess
+              : undefined
+          }
+          onToggleAllowRefunds={
+            showWhenUtil({
+              additionalCondition: user =>
+                user.isAllowedEdit('accounts') && user.isAllowedLARefunds,
+            })
+              ? this.onToggleAllowRefunds
               : undefined
           }
         />

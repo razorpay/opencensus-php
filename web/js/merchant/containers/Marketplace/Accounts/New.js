@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm } from 'redux-form';
+import { Field, reduxForm, formValueSelector, change } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
@@ -9,18 +9,28 @@ import { required } from 'rzp/utils/validators';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import CheckboxField from 'rzp/ui/Forms/CheckboxField';
+import SwitchField from 'rzp/ui/Forms/SwitchField';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
+// Decorate with connect to read form values
+const selector = formValueSelector('newAccount');
+
 @connect(
-  state => ({
-    user: state.session.user,
-  }),
+  state => {
+    const dashboard_access = selector(state, 'dashboard_access');
+    const allow_reversals = selector(state, 'allow_reversals');
+    return {
+      user: state.session.user,
+      dashboard_access,
+      allow_reversals,
+    };
+  },
   {
     ...AccountActions,
     ...ModalActions,
     ...NotificationsActions,
+    fromChange: (...args) => change('newAccount', ...args),
   }
 )
 @reduxForm({
@@ -30,6 +40,10 @@ import Popover, { PopoverBody } from 'rzp/ui/Popover';
   },
 })
 export default class AddAccount extends Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   state = {
     errors: null,
   };
@@ -65,6 +79,10 @@ export default class AddAccount extends Component {
       requestData.dashboard_access = !!requestData.dashboard_access;
     }
 
+    if (typeof requestData.allow_reversals !== 'undefined') {
+      requestData.allow_reversals = !!requestData.allow_reversals;
+    }
+
     return reqFunc(requestData)
       .then(account => {
         this.props.onSave(account);
@@ -83,8 +101,77 @@ export default class AddAccount extends Component {
       });
   };
 
+  confirmDashboardAccess = checked => {
+    const { fromChange, allow_reversals } = this.props;
+
+    fromChange('dashboard_access', checked);
+
+    if (!checked && allow_reversals) {
+      this.context
+        .confirm({
+          header: 'Also Disable Customer Refunds?',
+          message: () => (
+            <div class="text-semi-muted">
+              <p>
+                Disabling Dashboard Access will also disable the refund to
+                customer to the Linked Account.
+              </p>
+            </div>
+          ),
+          affirmativeLabel: 'Disable',
+          affirmativePendingLabel: 'Disabling',
+          abortLabel: 'Cancel',
+          action: () => {
+            fromChange('dashboard_access', false);
+            fromChange('allow_reversals', false);
+          },
+        })
+        .catch(e => {
+          fromChange('dashboard_access', checked);
+        });
+    }
+  };
+
+  confirmAllowRefunds = checked => {
+    const { dashboard_access, fromChange } = this.props;
+
+    fromChange('allow_reversals', checked);
+
+    if (checked && !dashboard_access) {
+      this.context
+        .confirm({
+          header: 'Also enable Dashboard Access?',
+          message: () => (
+            <div class="text-semi-muted">
+              <p>
+                Enabling Refund to customer will also enable Dashboard access to
+                the Linked Account.
+              </p>
+            </div>
+          ),
+          affirmativeLabel: 'Enable',
+          affirmativePendingLabel: 'Enabling',
+          abortLabel: 'Cancel',
+          action: () => {
+            fromChange('dashboard_access', true);
+            fromChange('allow_reversals', true);
+          },
+        })
+        .catch(e => {
+          fromChange('dashboard_access', false);
+          fromChange('allow_reversals', false);
+        });
+    }
+  };
+
   render() {
-    const { handleSubmit, user, accountData } = this.props;
+    const {
+      handleSubmit,
+      user,
+      accountData,
+      allow_reversals,
+      dashboard_access,
+    } = this.props;
     let noLAEmail;
 
     if (!accountData) {
@@ -146,17 +233,37 @@ export default class AddAccount extends Component {
                 <div class="form-group">
                   <EnableDashboardField isDisabled={noLAEmail}>
                     <div class="rzpCheckbox">
-                      <Field
-                        name="dashboard_access"
-                        id="dashboard_access"
-                        component={CheckboxField}
-                        type="checkbox"
-                        disabled={noLAEmail}
-                      />
-                      <label for="dashboard_access" class="icon i-check">
-                        <span>Enable Dashboard access to this account</span>
+                      <label for="dashboard_access">
+                        <span>Dashboard Access</span>
                       </label>
+                      <div class="pull-right">
+                        <SwitchField
+                          name="dashboard_access"
+                          id="dashboard_access"
+                          type="prime"
+                          onChange={this.confirmDashboardAccess}
+                          checked={dashboard_access}
+                          disabled={noLAEmail}
+                        />
+                      </div>
                     </div>
+                    {user.isAllowedLARefunds && (
+                      <div class="rzpCheckbox">
+                        <label for="allow_reversals">
+                          <span>Allow customer Refunds</span>
+                        </label>
+                        <div class="pull-right">
+                          <SwitchField
+                            name="allow_reversals"
+                            id="allow_reversals"
+                            onChange={this.confirmAllowRefunds}
+                            checked={allow_reversals}
+                            type="prime"
+                            disabled={noLAEmail}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </EnableDashboardField>
                 </div>
               </ShowWhen>
@@ -193,8 +300,8 @@ const EnableDashboardField = ({ children, isDisabled }) => {
         >
           <PopoverBody>
             <div>
-              Please add Email id to enable dashboard access for this linked
-              account
+              Please add Email id to enable dashboard access and customer
+              refunds for this linked account
             </div>
           </PopoverBody>
         </Popover>

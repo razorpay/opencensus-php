@@ -277,9 +277,14 @@ export default class SubscriptionDetailsContainer extends Component {
 
   secClose = () => {
     let { compactSlider, history, location } = this.props;
-    findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+
+    if (this.invoiceView) {
+      findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+    }
 
     compactSlider();
+
+    // Going back to initial detail view mode. Remove the chunk in url after the last /.
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 
