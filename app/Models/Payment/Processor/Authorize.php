@@ -5334,6 +5334,12 @@ trait Authorize
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
 
+                if ($payment->hasTerminal() === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                }
+
                 $this->repo->saveOrFail($payment);
 
                 $gatewayInput = $inputDetails['gateway_input'];
