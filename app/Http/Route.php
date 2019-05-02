@@ -187,7 +187,7 @@ final class Route
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
-        'merchant_dashboard_access_la'             => ['post',     'la-merchants/dashboard-access',                  'MerchantController@updateLinkedAccountDashboardAccess'             ],
+        'merchant_edit_config_la'                  => ['post',     'la-merchants/config',                            'MerchantController@updateLinkedAccountConfig'                      ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
         'merchant_fetch_webhooks'                  => ['get',      'merchants/{id}/webhooks',                        'MerchantController@getMerchantWebhooks'                            ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
@@ -753,6 +753,7 @@ final class Route
         'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLinkedAccountReversal'                       ],
         'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                      ],
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
+        'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
@@ -1458,7 +1459,7 @@ final class Route
 
     public static $proxy = [
         'get_es_pricing_merchant',
-        'merchant_dashboard_access_la',
+        'merchant_edit_config_la',
         'merchant_fetch_users',
         'setl_fetch_transactions',
         'setl_get_details',
@@ -1476,6 +1477,7 @@ final class Route
         'reversal_fetch_multiple_la',
         'reversal_fetch_la',
         'transfer_fetch_la',
+        'la_transfer_create_reversal',
         'transfer_fetch_multiple_la',
         'transfer_fetch_reversals_la',
         'bank_account_fetch',
@@ -2757,6 +2759,7 @@ final class Route
         'transfer_fetch_multiple'              => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_fetch'                       => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_create_reversal'             => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'la_transfer_create_reversal'          => [Feature::ALLOW_REVERSALS_FROM_LA],
         'plan_create'                          => [Feature::SUBSCRIPTIONS],
         'plan_fetch'                           => [Feature::SUBSCRIPTIONS],
         'plan_fetch_multiple'                  => [Feature::SUBSCRIPTIONS],

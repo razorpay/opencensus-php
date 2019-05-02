@@ -108,6 +108,31 @@ class Batch extends Base
         return $batch;
     }
 
+    public function createLinkedAccountReversal(array $attributes = array())
+    {
+        $params = [
+            'type'        => Type::LINKED_ACCOUNT_REVERSAL,
+            'total_count' => count($attributes),
+            'amount'      => $this->getTotalAmount($attributes),
+            'merchant_id' => '10000000000002',
+        ];
+
+        $batch = $this->fixtures->create('batch', $params);
+
+        $this->writeToExcelFile($attributes, $batch->getId(), self::INPUT_FILE_DIR);
+
+        $this->fixtures->create(
+                            'file_store',
+                            [
+                                'entity_id'     => $batch->getId(),
+                                'name'          => 'batch/upload/' . $batch->getFileKey(),
+                                'location'      => 'batch/upload/' . $batch->getFileKeyWithExt(),
+                                'merchant_id'   => '10000000000002',
+                            ]);
+
+        return $batch;
+    }
+
     protected function createBatchEntityWithStatus($attributes, $status, $attempts, $successCount, $failureCount)
     {
         $batch = $this->fixtures->create('batch:refund', $attributes);
@@ -176,10 +201,13 @@ class Batch extends Base
     {
         $totalAmount = 0;
 
-        foreach ($attributes as $attribute)
-        {
-            $totalAmount += $attribute[Header::AMOUNT];
-        }
+        $amountCol = array_column($attributes, Header::AMOUNT);
+
+        $amountInPaisaCol = array_column($attributes, Header::AMOUNT_IN_PAISE);
+
+        $amountCol = count($amountCol) > 0 ? $amountCol : $amountInPaisaCol;
+
+        $totalAmount = array_sum($amountCol);
 
         return $totalAmount;
     }

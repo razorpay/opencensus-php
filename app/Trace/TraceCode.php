@@ -1221,6 +1221,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_EDIT_SUCCESS                                 = 'TRANSFER_EDIT_SUCCESS';
     const TRANSFER_REVERSAL_REQUEST                             = 'TRANSFER_REVERSAL_REQUEST';
     const TRANSFER_REVERSAL_SUCCESS                             = 'TRANSFER_REVERSAL_SUCCESS';
+    const TRANSFER_REVERSAL_REQUEST_BY_LINKED_ACCOUNT           = 'TRANSFER_REVERSAL_REQUEST_BY_LINKED_ACCOUNT';
     const TRANSFER_UPDATE_SETTLEMENT_ID_FAILED                  = 'TRANSFER_UPDATE_SETTLEMENT_ID_FAILED';
     const REVERSAL_REFUND_NOT_AVAILABLE                         = 'REVERSAL_REFUND_NOT_AVAILABLE';
     const REVERSAL_REFUND_AVAILABLE                             = 'REVERSAL_REFUND_AVAILABLE';

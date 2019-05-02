@@ -830,7 +830,13 @@ class Base extends BaseModel\Core
      */
     protected function updateBatchPostValidation(array $entries, array $input)
     {
-        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
+        // Since amouunt can be in amount header or amount (in paise) header
+        // use whichever is available
+        $amountCol = array_column($entries, Batch\Header::AMOUNT);
+        $amountInPaisaCol = array_column($entries, Batch\Header::AMOUNT_IN_PAISE);
+        $amountCol = count($amountCol) > 0 ? $amountCol : $amountInPaisaCol;
+
+        $totalAmount = array_sum($amountCol);
         $totalCount  = count($entries);
 
         $this->batch->setAmount($totalAmount);

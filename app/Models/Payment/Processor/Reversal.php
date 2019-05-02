@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
@@ -22,15 +23,18 @@ trait Reversal
      *
      * @param Transfer\Entity  $transfer
      * @param array            $input
+     * @param Merchant\Entity  $initiator Route Merchant / Linked Account initiating the reversal
      *
      * @return ReversalEntity
      */
-    public function refundPaymentAndReverseTransfer(Transfer\Entity $transfer, array $input)
+    public function refundPaymentAndReverseTransfer(
+        Transfer\Entity $transfer,
+        array $input,
+        Merchant\Entity $initiator = null)
     {
         $transferPayment = $this->repo
                                 ->payment
-                                ->findByTransferIdAndMerchant(
-                                    $transfer->getId(), $transfer->getToId());
+                                ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
         //
         // If amount is not sent in input,
@@ -50,12 +54,21 @@ trait Reversal
             $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
         }
 
+        $refundNotes = (new Transfer\Core)->getLinkedAccountNotes($input);
+
+        // If reversal initiated by linked account then store the same notes in
+        // reversal.notes and (transfer payment's) refund.notes
+        if ((empty($initiator) === false) and ($initiator->isLinkedAccount() === true))
+        {
+            $refundNotes = $input[ReversalEntity::NOTES] ?? [];
+        }
+
         // Refund the transfer payment - this debits the account balance
-        $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
+        $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment, $refundNotes)
         {
             $refundInput = [
                 Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
-                Refund\Entity::NOTES  => (new Transfer\Core)->getLinkedAccountNotes($input),
+                Refund\Entity::NOTES  => $refundNotes,
             ];
 
             return (new Processor($transferPayment->merchant))
@@ -64,7 +77,7 @@ trait Reversal
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
-                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input);
+                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input, $initiator);
     }
 
     /**

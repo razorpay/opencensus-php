@@ -553,6 +553,27 @@ return [
         ],
     ],
 
+    'testCreateMarketplaceLinkedAccountWithRefundAllowed' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'                 => '7gcKngYfqyDMjN',
+                'name'               => 'Linked Account 2',
+                'email'              => 'linkedaccount@razorpay.com',
+                'account'            => true,
+                'allow_reversals'    => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account 2',
+                'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
+
     'testCreateMarketplaceLinkedAccountWithAlreadyExistingUser' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -750,7 +771,7 @@ return [
 
     'testCreateLinkedAccountDashboardAccess' => [
         'request' => [
-            'url' => '/la-merchants/dashboard-access',
+            'url' => '/la-merchants/config',
             'method' => 'post',
             'content' => [
                 'dashboard_access' => true,
@@ -765,7 +786,7 @@ return [
 
     'testCreateLinkedAccountDashboardAccessNoEmail' => [
         'request' => [
-            'url' => '/la-merchants/dashboard-access',
+            'url' => '/la-merchants/config',
             'method' => 'post',
             'content' => [
                 'dashboard_access' => true,
@@ -788,7 +809,7 @@ return [
 
     'testCreateLinkedAccountDashboardAccessRevoke' => [
         'request' => [
-            'url' => '/la-merchants/dashboard-access',
+            'url' => '/la-merchants/config',
             'method' => 'post',
             'content' => [
                 'dashboard_access' => false,
@@ -803,7 +824,7 @@ return [
 
     'testLinkedAccountDashboardAccessRevokeNoUsers' => [
         'request' => [
-            'url' => '/la-merchants/dashboard-access',
+            'url' => '/la-merchants/config',
             'method' => 'post',
             'content' => [
                 'dashboard_access' => false,
@@ -826,7 +847,7 @@ return [
 
     'testLinkedAccountDashboardAccessAlreadyGiven' => [
         'request' => [
-            'url' => '/la-merchants/dashboard-access',
+            'url' => '/la-merchants/config',
             'method' => 'post',
             'content' => [
                 'dashboard_access' => true,
@@ -861,4 +882,138 @@ return [
             ],
         ],
     ],
+
+    'testLinkedAccountReversalFeature' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'allow_reversals' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testLinkedAccountReversalFeatureRevoke' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'allow_reversals' => false,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testLinkedAccountReversalFeatureAlreadyGiven' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'allow_reversals' => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_GIVEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_GIVEN,
+        ],
+    ],
+
+    'testLinkedAccountReversalFeatureAlreadyRemoved' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'allow_reversals' => false,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_REMOVED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_REMOVED,
+        ],
+    ],
+
+    'testLinkedAccountReversalFeatureNoUsers' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'allow_reversals' => false,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS,
+        ],
+    ],
+
+    'testLinkedAccountDisbaleReversalFeatureAndDashboardAccess' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => false,
+                'allow_reversals'  => false,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testLinkedAccountEnableReversalFeatureAndDashboardAccess' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => true,
+                'allow_reversals'  => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];

@@ -49,7 +49,7 @@ trait Refund
      *
      * @throws Exception\BadRequestException
      */
-    protected function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
         if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
         {

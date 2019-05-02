@@ -415,5 +415,138 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT,
         ],
-    ]
+    ],
+
+    'testRouteMerchantReversalAndCustomerRefund' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/transfers/%s/reversals',
+            'content' => [
+                'amount'          => 100,
+                'customer_refund' => 1
+            ],
+        ],
+        'response'  => [
+            'content' => []
+        ],
+    ],
+
+    'testLinkedAccountReversal' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/la-transfers/%s/reversal',
+            'content' => [
+                'amount'          => 100,
+            ],
+        ],
+        'response'  => [
+            'content' => []
+        ],
+    ],
+
+    'testLinkedAccountReversalAndCustomerRefund' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/la-transfers/%s/reversal',
+            'content' => [
+                'amount'          => 100,
+                'customer_refund' => 1
+            ],
+        ],
+        'response'  => [
+            'content' => []
+        ],
+    ],
+
+    'testLinkedAccountReversalWithoutPermission' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/la-transfers/%s/reversal',
+            'content' => [
+                'amount'          => 100,
+                'customer_refund' => 1
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testLinkedAccountReversalInsufficientBalance' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/la-transfers/%s/reversal',
+            'content' => [
+                'amount'          => 100,
+                'customer_refund' => 1
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_INSUFFICIENT_BALANCE,
+        ],
+    ],
+
+    'testLinkedAccountReversalInsufficientRefundCredits' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/la-transfers/%s/reversal',
+            'content' => [
+                'amount'          => 100,
+                'customer_refund' => 1
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
+        ],
+    ],
+
+    'testLinkedAccountReversalInvalidTransfer' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/la-transfers/%s/reversal',
+            'content' => [
+                'amount'          => 100,
+                'customer_refund' => 1
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
 ];

@@ -6,45 +6,47 @@ use RZP\Exception;
 
 class Type
 {
-    const REFUND                = 'refund';
-    const PAYMENT_LINK          = 'payment_link';
+    const REFUND                    = 'refund';
+    const PAYMENT_LINK              = 'payment_link';
 
     // Merchant Onboarding
-    const MERCHANT_ONBOARDING   = 'merchant_onboarding';
+    const MERCHANT_ONBOARDING       = 'merchant_onboarding';
 
     // IRCTC Batch Types
-    const IRCTC_REFUND          = 'irctc_refund';
-    const IRCTC_SETTLEMENT      = 'irctc_settlement';
+    const IRCTC_REFUND              = 'irctc_refund';
+    const IRCTC_SETTLEMENT          = 'irctc_settlement';
 
     // Marketplace Batch
-    const LINKED_ACCOUNT        = 'linked_account';
+    const LINKED_ACCOUNT            = 'linked_account';
 
     // Virtual Account Bulk Creation
-    const VIRTUAL_BANK_ACCOUNT  = 'virtual_bank_account';
+    const VIRTUAL_BANK_ACCOUNT      = 'virtual_bank_account';
 
     // Bank Transfer Bulk Insert
-    const BANK_TRANSFER         = 'bank_transfer';
+    const BANK_TRANSFER             = 'bank_transfer';
 
-    const RECURRING_CHARGE      = 'recurring_charge';
+    const RECURRING_CHARGE          = 'recurring_charge';
 
-    const RECONCILIATION        = 'reconciliation';
+    const RECONCILIATION            = 'reconciliation';
 
-    const EMANDATE              = 'emandate';
+    const EMANDATE                  = 'emandate';
 
-    const PAYOUT                = 'payout';
+    const PAYOUT                    = 'payout';
 
-    const SUB_MERCHANT          = 'sub_merchant';
+    const SUB_MERCHANT              = 'sub_merchant';
 
-    const DIRECT_DEBIT          = 'direct_debit';
+    const DIRECT_DEBIT              = 'direct_debit';
 
-    const ENTITY_MAPPING        = 'entity_mapping';
+    const ENTITY_MAPPING            = 'entity_mapping';
 
-    const AUTH_LINK             = 'auth_link';
+    const AUTH_LINK                 = 'auth_link';
 
-    const INSTANT_ACTIVATION    = 'instant_activation';
+    const INSTANT_ACTIVATION        = 'instant_activation';
 
     // Batch Terminal Creation
-    const TERMINAL              = 'terminal';
+    const TERMINAL                  = 'terminal';
+
+    const LINKED_ACCOUNT_REVERSAL   = 'linked_account_reversal';
 
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
@@ -120,6 +122,7 @@ class Type
         self::CONTACT,
         self::FUND_ACCOUNT,
         self::MERCHANT_ONBOARDING,
+        self::LINKED_ACCOUNT_REVERSAL
     ];
 
     /**

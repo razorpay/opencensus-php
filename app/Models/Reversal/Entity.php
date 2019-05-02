@@ -7,11 +7,12 @@ use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Models\Customer;
-use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
+use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
 {
@@ -32,9 +33,12 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_TYPE      = 'transaction_type';
     const TRANSFER              = 'transfer';
     const CHANNEL               = 'channel';
+    const INITIATOR_ID          = 'initiator_id';
+    const CUSTOMER_REFUND_ID    = 'customer_refund_id';
 
     // Input attribute const
     const LINKED_ACCOUNT_NOTES  = 'linked_account_notes';
+    const REFUND_TO_CUSTOMER    = 'customer_refund';
 
     // Response attribute const
     const TRANSFER_ID           = 'transfer_id';
@@ -68,6 +72,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::TRANSFER_ID,
         self::PAYOUT_ID,
+        self::INITIATOR_ID,
+        self::CUSTOMER_REFUND_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -82,6 +88,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::LINKED_ACCOUNT_NOTES,
+        self::INITIATOR_ID,
+        self::CUSTOMER_REFUND_ID,
         self::CREATED_AT,
     ];
 
@@ -101,6 +109,8 @@ class Entity extends Base\PublicEntity
         self::TRANSFER_ID,
         self::LINKED_ACCOUNT_NOTES,
         self::NOTES,
+        self::INITIATOR_ID,
+        self::CUSTOMER_REFUND_ID,
     ];
 
     protected $appends = [
@@ -132,6 +142,16 @@ class Entity extends Base\PublicEntity
     public function entity()
     {
         return $this->morphTo();
+    }
+
+    public function initiator()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function customerRefund()
+    {
+        return $this->belongsTo(Refund\Entity::class);
     }
 
     // -------------------- End Relations -----------------------
@@ -166,6 +186,16 @@ class Entity extends Base\PublicEntity
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function getCustomerRefundId()
+    {
+        return $this->getAttribute(self::CUSTOMER_REFUND_ID);
+    }
+
+    public function getInitiatorId()
+    {
+        return $this->getAttribute(self::INITIATOR_ID);
     }
 
     // -------------------- End Getters --------------------------
@@ -219,6 +249,35 @@ class Entity extends Base\PublicEntity
         if ($this->getEntityType() !== E::TRANSFER)
         {
             unset($array[self::NOTES]);
+        }
+    }
+
+    public function setPublicInitiatorIdAttribute(array & $array)
+    {
+        $initiatorId = $this->getAttribute(self::INITIATOR_ID);
+
+        if (empty($this->initiator) === false and ($this->initiator->isLinkedAccount() === true))
+        {
+            $initiatorId = Account\Entity::getSignedIdOrNull($initiatorId);
+        }
+
+        $array[self::INITIATOR_ID] = $initiatorId;
+
+        if ($this->getEntityType() !== E::TRANSFER)
+        {
+            unset($array[self::INITIATOR_ID]);
+        }
+    }
+
+    public function setPublicCustomerRefundIdAttribute(array & $array)
+    {
+        $customerRefundId = $this->getAttribute(self::CUSTOMER_REFUND_ID);
+
+        $array[self::CUSTOMER_REFUND_ID] = Refund\Entity::getSignedIdOrNull($customerRefundId);
+
+        if ($this->getEntityType() !== E::TRANSFER)
+        {
+            unset($array[self::CUSTOMER_REFUND_ID]);
         }
     }
 

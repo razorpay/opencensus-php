@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
 {
@@ -41,6 +42,27 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE_ID, $paymentId)
                     ->merchantId($merchant->getId())
                     ->get();
+    }
+
+    /**
+     * Fetch transfer using id and linked account merchant id
+     *
+     * @param string          $transferId
+     * @param string          $paymentId
+     * @param Merchant\Entity $merchant
+     */
+    public function fetchByPublicIdAndLinkedAccountMerchant(string $id, Merchant\Entity $merchant)
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSign($id);
+
+        return $this->newQuery()
+                    ->where(Entity::TO_ID, $merchant->getId())
+                    ->where(Entity::TO_TYPE, E::MERCHANT)
+                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
+                    ->merchantId($merchant->parent->getId())
+                    ->findOrFailPublic($id);
     }
 
     protected function addQueryParamSource($query, $params)
