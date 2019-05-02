@@ -428,8 +428,8 @@ class Selector extends Base\Core
     {
         try
         {
-            if ($this->shouldHitRoutingService($merchant->getId()) === false) {
-
+            if ($this->shouldHitRoutingService($merchant->getId()) === false)
+            {
                 return;
             }
 
@@ -444,7 +444,8 @@ class Selector extends Base\Core
                 'email'       => $payment->getEmail()
             ];
 
-            $downtimes = $this->repo->useSlave(function () use ($filteredTerminals) {
+            $downtimes = $this->repo->useSlave(function () use ($filteredTerminals)
+            {
                 return (new Downtime\Core)->getApplicableDowntimesForPayment($filteredTerminals, $this->input);
             });
 
@@ -459,6 +460,10 @@ class Selector extends Base\Core
                 'failedTerminalsIds' => $failedTerminalIds,
             ];
 
+            $endpoint = '/payments';
+
+            $this->app->smartRouting->sendNonBlockingRequest($endpoint, $data);
+
         }
         catch (\Throwable $e)
         {
@@ -468,6 +473,7 @@ class Selector extends Base\Core
                     'error'     => $e->getMessage(),
                 ]);
         }
+
     }
 
     protected function shouldHitRoutingService(string $merchantId)

@@ -238,6 +238,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerNonBlockingHttp();
 
+        $this->registerSmartRouting();
+
         $this->registerBatchService();
 
         $this->registerScrooge();
@@ -314,7 +316,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_create_account',
             'fts_register_account',
             'fts_fund_transfer',
-            'nonBlockingHttp'
+            'nonBlockingHttp',
+            'smartRouting',
         ];
     }
 
@@ -350,6 +353,21 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = NonBlockingHttp::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerSmartRouting()
+    {
+        $this->app->bind('smartRouting', function($app)
+        {
+            $smartRoutingtMock = $app['config']->get('applications.smart_routing.mock');
+
+            if ($smartRoutingtMock === true)
+            {
+                return new Mock\SmartRouting($app);
+            }
+
+            return new SmartRouting($app);
         });
     }
 

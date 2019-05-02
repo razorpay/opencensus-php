@@ -19,7 +19,6 @@ class NonBlockingHttp
         $this->trace = $app['trace'];
 
         $this->timeout = $app['config']->get('applications.non_blocking_http.timeout') ?? self::DEFAULT_TIMEOUT;
-
     }
 
     public function postRequest(string $url, $payload, array $headers = null)
@@ -49,6 +48,7 @@ class NonBlockingHttp
         }
         catch (\Throwable $e)
         {
+            s($e);
             $this->trace->info(
                 TraceCode::NON_BLOCKING_HTTP_ERROR,
                 [

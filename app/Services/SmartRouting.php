@@ -33,14 +33,14 @@ class SmartRouting
 
         $this->trace = $app['trace'];
 
-        $this->config = $app['config']->get('applications.routing');
+        $this->config = $app['config']->get('applications.smart_routing');
 
         $this->baseUrl = $this->config['url'];
 
         $this->request = $app['request'];
     }
 
-    public function sendNonBlockingRequest($url, $method, $data = null)
+    public function sendNonBlockingRequest($url, $data = null)
     {
         $url = $this->baseUrl . $url;
 

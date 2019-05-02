@@ -304,8 +304,9 @@ return [
         'password'          => env('BATCH_PASSWORD'),
     ],
 
-    'routing' => [
-        'url'       => env('ROUTING_URL'),
+    'smart_routing' => [
+        'url'       => env('SMART_ROUTING_URL'),
+        'mock'      => env('SMART_ROUTING_MOCK',false)
     ],
 
     'non_blocking_http' => [
