@@ -77,10 +77,6 @@ export default class ReversalDetails extends Component {
                     />
                   )}
 
-                {/* {isRefundsAllowed && isLAInitiator && ( // TODO: add this when backend is ready
-                  <EntityDetailRow label="Refund ARN" value={() => 'Number'} />
-                )} */}
-
                 <EntityDetailRow
                   label="Created At"
                   value={() => (
