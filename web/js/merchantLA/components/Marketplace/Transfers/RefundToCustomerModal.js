@@ -57,7 +57,9 @@ export default class RefundToCustomerModal extends React.Component {
     };
   }
 
-  save = _ => {
+  save = e => {
+    e.preventDefault();
+
     this.context
       .confirm({
         header: 'Are you sure you want to refund?',
@@ -211,6 +213,7 @@ export default class RefundToCustomerModal extends React.Component {
               name="notes"
               label="Internal Notes"
               class="Input--vTop"
+              defaultValue={[{}]}
               onChange={this.handleNotesChange}
             />
             <Button.Primary class="form-control">

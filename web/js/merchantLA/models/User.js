@@ -58,7 +58,7 @@ export default class User {
   }
 
   get isAllowedLARefunds() {
-    return this.isFeatureEnabled('allow_reversals_from_la');
+    return this.features.indexOf('allow_reversals_from_la') >= 0;
   }
 
   /* Check if the tag exists */
