@@ -283,6 +283,8 @@ export default class SubscriptionDetailsContainer extends Component {
     }
 
     compactSlider();
+
+    // Going back to initial detail view mode. Remove the chunk in url after the last /.
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 

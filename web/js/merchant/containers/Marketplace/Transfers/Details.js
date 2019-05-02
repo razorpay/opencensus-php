@@ -94,7 +94,7 @@ export default class TransferDetailsContainer extends Component {
 
     compactSlider();
 
-    // Going back to initial detail view mode
+    // Going back to initial detail view mode. Remove the chunk in url after the last /.
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 
