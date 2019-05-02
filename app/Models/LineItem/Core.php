@@ -51,7 +51,7 @@ class Core extends Base\Core
         $this->setRefAssociationIfApplicable($input, $lineItem);
 
         $existingLineItemsCount = $morphEntity->lineItems()->count();
-        $morphEntity->getValidator()->validateLineItemsCount($existingLineItemsCount);
+        $morphEntity->getValidator()->validateLineItemsCount(++$existingLineItemsCount);
 
         (new Tax\Core)->createLineItemTaxes($lineItem, $input, $merchant);
 
