@@ -67,7 +67,7 @@ class EventTracker
         {
             $this->app['diag']->buildRequestAndSend();
 
-            $this->app['segment']->buildRequestAndSend();
+//            $this->app['segment']->buildRequestAndSend();
         }
         catch (\Throwable $e)
         {

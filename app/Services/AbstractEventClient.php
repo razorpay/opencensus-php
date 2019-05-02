@@ -53,13 +53,15 @@ abstract class AbstractEventClient extends Base\Core
     {
         try
         {
-            if (($this->mock === true) or
+            if (($this->mock === true) and
                 ($this->mode === Mode::TEST))
             {
                 return false;
             }
 
             $eventData = $this->getEventTrackerData();
+
+            s($eventData);
 
             if (empty($eventData) === true)
             {
@@ -76,6 +78,7 @@ abstract class AbstractEventClient extends Base\Core
 
                 $url = $this->config['url'] . $this->urlPattern;
 
+                return;
                 $this->sendEventRequest($headers, $url, $eventDataChunk);
             }
         }
