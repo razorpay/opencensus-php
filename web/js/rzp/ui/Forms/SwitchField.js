@@ -22,10 +22,7 @@ export default class SwitchField extends React.Component {
   };
 
   get isControlled() {
-    return (
-      typeof this.props.checked !== 'undefined' &&
-      typeof this.props.onChange === 'function'
-    );
+    return typeof this.props.checked !== 'undefined';
   }
 
   toggle = e => {
