@@ -53,7 +53,7 @@ export const toggleDashboardAccess = data => {
   return {
     type: ACCOUNT_DASHBOARD_ACCESS,
     payload: merchantFetch({
-      url: 'la-merchants/dashboard-access',
+      url: 'la-merchants/config',
       method: 'post',
       appendModeInURL: true,
       accountId: data.accountId,
@@ -61,19 +61,6 @@ export const toggleDashboardAccess = data => {
     }).then(response => response.data),
   };
 };
-
-// export const toggleDashboardAccess = data => {
-//   return {
-//     type: ACCOUNT_DASHBOARD_ACCESS,
-//     payload: merchantFetch({
-//       url: 'la-merchants/config',
-//       method: 'post',
-//       appendModeInURL: true,
-//       accountId: data.accountId,
-//       data: { ...data, dashboard_access: data.dashboard_access },
-//     }).then(response => response.data),
-//   };
-// };
 
 export const toggleAllowRefunds = data => {
   return {
