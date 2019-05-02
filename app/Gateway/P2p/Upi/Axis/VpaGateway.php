@@ -120,7 +120,6 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
         $request->merge([
             Fields::CUSTOMER_VPA => $customerVpa,
-            Fields::UDF_PARAMETERS => '{}'
         ]);
 
         $s2s = $this->sendS2sRequest($request);

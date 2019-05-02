@@ -194,6 +194,10 @@ class Processor extends Base\Processor
                 $actions = $this->setTransactionProcessing($transaction, $input);
                 break;
 
+            case Status::CREATED:
+                $actions = $this->setTransactionCreated($transaction, $input);
+                break;
+
             default:
                 throw $this->logicException('Invalid internal status for transaction', [
                     Entity::TRANSACTION     => $input,
@@ -210,16 +214,15 @@ class Processor extends Base\Processor
     {
         $actions = new Actions();
 
-        if ($transaction->isProcessing() === false)
+        if ($transaction->isFailed() === true)
         {
-            if ($transaction->isFailed() === true)
-            {
-                throw $this->logicException('Transaction can not be marked completed', [
-                    Entity::TRANSACTION     => $input,
-                    Entity::ID              => $transaction->getId(),
-                ]);
-            }
-
+            throw $this->logicException('Transaction can not be marked completed', [
+                Entity::TRANSACTION     => $input,
+                Entity::ID              => $transaction->getId(),
+            ]);
+        }
+        else if ($transaction->isCompleted() === true)
+        {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE, [
                 Entity::TRANSACTION     => $input,
                 Entity::ID              => $transaction->getId(),
@@ -235,16 +238,15 @@ class Processor extends Base\Processor
     {
         $actions = new Actions();
 
-        if ($transaction->isProcessing() === false)
+        if ($transaction->isCompleted() === true)
         {
-            if ($transaction->isCompleted() === true)
-            {
-                throw $this->logicException('Transaction can not be marked failed', [
-                    Entity::TRANSACTION     => $input,
-                    Entity::ID              => $transaction->getId(),
-                ]);
-            }
-
+            throw $this->logicException('Transaction can not be marked failed', [
+                Entity::TRANSACTION     => $input,
+                Entity::ID              => $transaction->getId(),
+            ]);
+        }
+        else if ($transaction->isFailed() === true)
+        {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE, [
                 Entity::TRANSACTION     => $input,
                 Entity::ID              => $transaction->getId(),
@@ -260,15 +262,12 @@ class Processor extends Base\Processor
     {
         $actions = new Actions();
 
-        if ($transaction->isProcessing() === false)
+        if (($transaction->isCompleted() === true) or ($transaction->isFailed() === true))
         {
-            if (($transaction->isCompleted() === true) or ($transaction->isFailed() === true))
-            {
-                throw $this->logicException('Transaction can not be marked processing', [
-                    Entity::TRANSACTION     => $input,
-                    Entity::ID              => $transaction->getId(),
-                ]);
-            }
+            throw $this->logicException('Transaction can not be marked processing', [
+                Entity::TRANSACTION     => $input,
+                Entity::ID              => $transaction->getId(),
+            ]);
         }
 
         if ($input[Entity::INTERNAL_STATUS] === Status::INITIATED)
@@ -279,6 +278,25 @@ class Processor extends Base\Processor
         {
             $transaction->setInternalStatus(Status::PENDING);
         }
+
+        return $actions;
+    }
+
+    public function setTransactionCreated(Entity $transaction, array $input): Actions
+    {
+        $actions = new Actions();
+
+        if (($transaction->isProcessing() === true) or
+            ($transaction->isCompleted() === true) or
+            ($transaction->isFailed() === true))
+        {
+            throw $this->logicException('Transaction can not be marked created', [
+                Entity::TRANSACTION     => $input,
+                Entity::ID              => $transaction->getId(),
+            ]);
+        }
+
+        $transaction->setInternalStatus(Status::CREATED);
 
         return $actions;
     }

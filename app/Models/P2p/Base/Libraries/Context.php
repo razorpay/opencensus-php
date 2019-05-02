@@ -292,11 +292,6 @@ class Context extends ArrayObject
      */
     public function getContextType()
     {
-        // If handle is empty, we can have some internal task run like cron
-        if (empty($this->getHandle()) === true)
-        {
-            return self::APPLICATION;
-        }
 
         // If handle is there with device, it will be considered device context
         if (empty($this->getDevice()) === false)
@@ -310,7 +305,7 @@ class Context extends ArrayObject
             return self::MERCHANT;
         }
 
-        throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED);
+        return self::APPLICATION;
     }
 
     /**
@@ -403,7 +398,8 @@ class Context extends ArrayObject
      */
     public function setHandleAndMode(string $handleCode, string $mode = null)
     {
-        $modes = [Mode::LIVE,  Mode::TEST];
+        // TODO: PRE PROD CHECK
+        $modes = [Mode::TEST, Mode::LIVE];
 
         // If mode is passed, we will only look for that mode
         if (is_null($mode) === false)

@@ -206,7 +206,7 @@ class Gateway extends Upi\Gateway
                 ]);
         }
 
-        $request->setActionMap($action, $this->actionMap[$action]);
+        $request->setActionMap($action, $this->actionMap[$action], $this->getRequestId());
 
         $request->setConfig($this->config);
 
@@ -217,7 +217,12 @@ class Gateway extends Upi\Gateway
     {
         $request = $s2sRequest->finish();
 
+        $entity = $this->getEntity();
+
         $this->trace->info(TraceCode::P2P_GATEWAY_REQUEST, [
+            'action'    => $this->action,
+            'entity'    => $entity,
+            'gateway'   => $this->gateway,
             'request'   => $request,
             'source'    => $s2sRequest->source(),
             'mock'      => $this->mock,
@@ -232,8 +237,12 @@ class Gateway extends Upi\Gateway
         $response = $s2sRequest->response($response);
 
         $this->trace->info(TraceCode::P2P_GATEWAY_RESPONSE, [
+            'action'    => $this->action,
+            'entity'    => $entity,
+            'gateway'   => $this->gateway,
             'response'  => $response,
             'source'    => $s2sRequest->source(),
+            'mock'      => $this->mock,
         ]);
 
         if ($this->isS2sFailure($response))
@@ -311,5 +320,12 @@ class Gateway extends Upi\Gateway
         }
 
         return $str;
+    }
+
+    protected function getEntity()
+    {
+        $action = strtr(static::class, ['RZP\Gateway\P2p\Upi\Axis\\' => '', 'Gateway' => '']);
+
+        return snake_case($action);
     }
 }

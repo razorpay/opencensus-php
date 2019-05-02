@@ -151,8 +151,8 @@ class TransactionTest extends TestCase
 
     protected function forceTestMode()
     {
-        $handle = clone $this->fixtures->handle;
+        //$handle = clone $this->fixtures->handle;
         // Temporary work around, could not find better way
-        $handle->setConnection('live')->setCode('000')->saveOrFail();
+        //$handle->setConnection('live')->setCode('000')->saveOrFail();
     }
 }

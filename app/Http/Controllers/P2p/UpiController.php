@@ -17,6 +17,10 @@ class UpiController extends Controller
         $input['headers'] = $this->request()->header();
         $input['gateway'] = $this->request()->route('gateway');
 
+        $this->app['trace']->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+            $input['gateway'] => $input,
+        ]);
+
         $response = $this->service->gatewayCallback($input);
 
         return $this->response($response);

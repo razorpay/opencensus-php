@@ -635,12 +635,17 @@ class Entity extends Base\Entity
 
     public function isProcessing(): bool
     {
-        return in_array($this->getInternalStatus(), [Status::CREATED, Status::INITIATED, Status::PENDING]);
+        return in_array($this->getInternalStatus(), [Status::INITIATED, Status::PENDING]);
     }
 
     public function isFailed(): bool
     {
         return in_array($this->getInternalStatus(), [Status::FAILED, Status::REJECTED, Status::EXPIRED]);
+    }
+
+    public function isCreated(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::CREATED]);
     }
 
     /***************** RELATIONS *****************/

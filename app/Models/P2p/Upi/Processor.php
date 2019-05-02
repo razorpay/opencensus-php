@@ -2,8 +2,6 @@
 
 namespace RZP\Models\P2p\Upi;
 
-use RZP\Exception;
-use RZP\Models\P2p\Entity;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Transaction;
