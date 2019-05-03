@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 
 class Action
 {
+    const ENROLL                        = 'enroll';
     const AUTHORIZE                     = 'authorize';
     const CALLBACK                      = 'callback';
     const CAPTURE                       = 'capture';
