@@ -16,28 +16,31 @@
         _rzpAQ = []; // queue for ga
         _rzpAQ_fbq = []; // queue for facebook pixel
 
-        function emptyRzpAQ () {
-            if (typeof ga !== 'undefined' && _rzpAQ.length) {
-                var q = [].concat(_rzpAQ);
-                _rzpAQ = [];
-                if (q.length > 0) {
-                    for (var i = 0; i < q.length; i++) {
-                        window.rzpAnalytics(q[i]);
-                    }
-                }
-            }
-            if (typeof analytics !== 'undefined' && _rzpAQ_fbq.length) {
-                var q_fbq = [].concat(_rzpAQ_fbq);
-                _rzpAQ_fbq = [];
-                if (q_fbq.length > 0) {
-                    for (var i = 0; i < q_fbq.length; i++) {
-                        window.rzpAnalytics(q_fbq[i]);
-                    }
-                }
-            }
+        function clearQueue(queue) {
+            queue.forEach(function(i) {
+                window.rzpAnalytics(queue[i]);
+            });
         }
 
-        var _qChckr = setInterval(emptyRzpAQ, 500);
+        function emptyRzpAQ () {
+            if (typeof ga === 'undefined' ||  _rzpAQ.length) return;
+           
+            clearQueue(_rzpAQ);
+
+            _rzpAQ = [];
+        }
+
+        function emptyRzpAQ_fbq () {
+            if (typeof analytics === 'undefined' || _rzpAQ.length) return;
+
+            clearQueue(_rzpAQ_fbq);
+
+            _rzpAQ_fbq = [];
+        }
+
+
+        var _qChckr = setInterval(emptyRzpAQ, 500),
+            _fbqChckr = setInterval(emptyRzpAQ_fbq, 500);
 
         /**
          * Method to track Google Analytics
@@ -49,6 +52,9 @@
 
             clearInterval(_qChckr);
             emptyRzpAQ();
+
+            clearInterval(_fbqChckr);
+            emptyRzpAQ_fbq();
 
             switch (data.name) {
                 case 'set_dimensions': { // Set the dimensions
