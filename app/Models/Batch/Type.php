@@ -126,7 +126,7 @@ class Type
     ];
 
     /**
-     * Following batch types get processed via Keubernetes Job, this is used for long
+     * Following batch types get processed via Kubernetes Job, this is used for long
      * running batches.
      *
      * @var array
@@ -134,6 +134,10 @@ class Type
     public static $kubernetesJobGroup = [
         // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
         self::PAYMENT_LINK,
+    ];
+
+    public static $batchTypeMigrated = [
+        self::PAYMENT_LINK
     ];
 
     public static function exists(string $type)
