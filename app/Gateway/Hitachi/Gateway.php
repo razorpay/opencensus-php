@@ -116,8 +116,10 @@ class Gateway extends Base\Gateway
             {
                 $this->persistCardDetailsTemporarily($input, false);
             }
-
-            $this->persistCardDetailsTemporarily($input);
+            else
+            {
+                $this->persistCardDetailsTemporarily($input);
+            }
 
             return $authResponse;
         }
