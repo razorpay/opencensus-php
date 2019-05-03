@@ -25,7 +25,17 @@ export default function PartnerDashboard() {
         component={Applications}
       />
 
-      <ShowWhenRoute path="/partners/earnings" component={Earnings} />
+      <ShowWhenRoute
+        path="/partners/earnings"
+        component={Earnings}
+        additionalCondition={user =>
+          // these complex conditions are very temporary
+          user.isAllowedView('earnings') &&
+          user.isHavingPartnerConfigs &&
+          (user.isDailyCommissionsEnabled ||
+            user.isTransactionalCommissionsEnabled)
+        }
+      />
 
       <Route path="/partners/submerchants" component={SubMerchantList} />
     </Switch>

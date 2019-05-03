@@ -272,6 +272,10 @@ export default class User {
       : !!this.partner_type;
   }
 
+  isHavingPartnerConfigs() {
+    return user.partner_has_configs;
+  }
+
   getExpStatus(name) {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }
@@ -310,8 +314,12 @@ export default class User {
     return this.getExpStatus('capital_banner');
   }
 
-  get isCommissionsEnabled() {
-    return this.getExpStatus('show_commissions');
+  get isDailyCommissionsEnabled() {
+    return this.getExpStatus('daily_commissions');
+  }
+
+  get isTransactionalCommissionsEnabled() {
+    return this.getExpStatus('transactional_commissions');
   }
 
   get isExpireByRequired() {

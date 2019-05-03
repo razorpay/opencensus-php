@@ -15,10 +15,14 @@ export default function PartnerNavLinks() {
         label="Earnings"
         icon="i i-earnings text-primary"
         to="/partners/earnings/daily"
-        additionalCondition={user =>
-          user.isCommissionsEnabled && user.isAllowedView('earnings')
-        }
         exact
+        additionalCondition={user =>
+          // these complex conditions are very temporary
+          user.isAllowedView('earnings') &&
+          user.isHavingPartnerConfigs &&
+          (user.isDailyCommissionsEnabled ||
+            user.isTransactionalCommissionsEnabled)
+        }
       />
 
       <MainNavLink

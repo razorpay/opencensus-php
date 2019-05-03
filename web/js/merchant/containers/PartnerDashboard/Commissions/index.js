@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import { Switch, Route, NavLink, Redirect } from 'react-router-dom';
 
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+
 import Transactional from './Transactional/List';
 import Daily from './Daily/List';
 
@@ -9,12 +11,20 @@ export default class EarningsContainer extends Component {
     return (
       <tabbed-container>
         <header>
-          <NavLink exact to="/partners/earnings/daily">
-            Daily Earnings
-          </NavLink>
-          <NavLink exact to="/partners/earnings/transactional">
-            Transactional Details
-          </NavLink>
+          <ShowWhen
+            additionalCondition={user => user.isDailyCommissionsEnabled}
+          >
+            <NavLink exact to="/partners/earnings/daily">
+              Daily Earnings
+            </NavLink>
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={user => user.isTransactionalCommissionsEnabled}
+          >
+            <NavLink exact to="/partners/earnings/transactional">
+              Transactional Details
+            </NavLink>
+          </ShowWhen>
         </header>
         <content>
           <Switch>
@@ -23,11 +33,19 @@ export default class EarningsContainer extends Component {
               from="/partners/earnings"
               exact
             />
-            <Route
+            <ShowWhenRoute
               path="/partners/earnings/transactional"
               component={Transactional}
+              additionalCondition={user =>
+                !user.isPartner('reseller') &&
+                user.isTransactionalCommissionsEnabled
+              }
             />
-            <Route path="/partners/earnings/daily" component={Daily} />
+            <ShowWhenRoute
+              path="/partners/earnings/daily"
+              component={Daily}
+              additionalCondition={user => user.isDailyCommissionsEnabled}
+            />
           </Switch>
         </content>
       </tabbed-container>
