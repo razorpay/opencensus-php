@@ -101,7 +101,12 @@ class GroupTest extends TestCase
 
         // create parent groups
         $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
-        $l1GroupIds = array_map(create_function('$g', 'return $g->getId();'), $l1Groups);
+
+        $func = function($g) {
+            return $g->getId();
+        };
+
+        $l1GroupIds = array_map($func, $l1Groups);
 
         $l0Group->parents()->sync($l1GroupIds);
 
@@ -123,7 +128,12 @@ class GroupTest extends TestCase
 
         // create parent groups
         $l1Groups = $this->fixtures->times(3)->create('group', ['org_id' => $this->org->getId()]);
-        $l1GroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $l1Groups);
+
+        $func = function($g) {
+            return $g->getPublicId();
+        };
+
+        $l1GroupIds = array_map($func, $l1Groups);
 
         // modify request
         $request = $this->testData[__FUNCTION__]['request'];
@@ -138,7 +148,12 @@ class GroupTest extends TestCase
 
         // check parents
         $createdParents = $l0Group->parents->all();
-        $createdParentIds = array_map(create_function('$g', 'return $g->getPublicId();'), $createdParents);
+
+        $func = function($g) {
+            return $g->getPublicId();
+        };
+
+        $createdParentIds = array_map($func, $createdParents);
 
         $this->assertEquals(count(array_intersect($l1GroupIds, $createdParentIds)),
                             count(array_intersect($createdParentIds, $l1GroupIds)));
@@ -146,7 +161,8 @@ class GroupTest extends TestCase
         // check sub groups
         foreach ($createdParents as $createdParent) {
             $subGroups = $createdParent->subgroups->all();
-            $subGroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $subGroups);
+
+            $subGroupIds = array_map($func, $subGroups);
 
             $this->assertEquals(1, count($subGroupIds));
 
@@ -163,7 +179,11 @@ class GroupTest extends TestCase
         // create another hierarchy of groups
         $loneGroups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
 
-        $loneGroupIds = array_map(create_function('$g', 'return $g->getId();'), $loneGroups);
+        $func = function($g) {
+            return $g->getId();
+        };
+
+        $loneGroupIds = array_map($func, $loneGroups);
 
         // modify request
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -180,7 +200,7 @@ class GroupTest extends TestCase
 
         $filteredParentIds = array_column($content, 'id');
 
-        $expectedParentIds = array_map(create_function('$g', 'return $g->getId();'), $loneGroups);
+        $expectedParentIds = array_map($func, $loneGroups);
 
         $this->assertEquals(count(array_intersect($filteredParentIds, $expectedParentIds)),
                             count(array_intersect($expectedParentIds, $filteredParentIds)));
@@ -223,7 +243,11 @@ class GroupTest extends TestCase
                                             $l0Group->getPublicId()
                                         ];
 
-        $allGroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $allGroups);
+        $func = function($g) {
+            return $g->getPublicId();
+        };
+
+        $allGroupIds = array_map($func, $allGroups);
 
         // get allowed parent-groups' ids
         $expectedParentIds = array_diff($allGroupIds,
@@ -256,10 +280,14 @@ class GroupTest extends TestCase
 
         $filteredParentIds = array_column($content, 'id');
 
+        $func = function($g) {
+            return $g->getId();
+        };
+
         // Fetching children of siblings of $selectedGroup
         $expectedParents = $allGroups[2]->subGroups->all();
         $expectedParents = array_merge($expectedParents, $allGroups[3]->subGroups->all());
-        $expectedParentIds = array_map(create_function('$g', 'return $g->getId();'), $expectedParents);
+        $expectedParentIds = array_map($func, $expectedParents);
 
         $this->assertEquals(count(array_intersect($filteredParentIds, $expectedParentIds)),
                             count(array_intersect($expectedParentIds, $filteredParentIds)));
@@ -310,6 +338,10 @@ class GroupTest extends TestCase
 
         $childGroups = $allGroups = [$l0Group];
 
+        $func = function($g) {
+            return $g->getId();
+        };
+
         // create parent groups
         for ($i=0; $i < $level; $i++)
         {
@@ -326,13 +358,13 @@ class GroupTest extends TestCase
                     $parentsGroups = [$parentsGroups];
                 }
 
-                $parentGroupIds = array_map(create_function('$g', 'return $g->getId();'), $parentsGroups);
+                $parentGroupIds = array_map($func, $parentsGroups);
 
                 $childGroup->parents()->sync($parentGroupIds);
 
                 // use below to check data creation
                 // s($childGroup['id'],
-                //   array_map(create_function('$g', 'return $g->getId();'), $childGroup->parents->all()));
+                //   array_map($func, $childGroup->parents->all()));
 
                 $newChildGroups = array_merge($newChildGroups, $parentsGroups);
             }
