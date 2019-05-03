@@ -1072,20 +1072,22 @@ class Entity extends Base\PublicEntity
         {
             $input[self::MODE] = Mode::UPI;
         }
-        else if ($accountType === FundAccount\Type::BANK_ACCOUNT)
-        {
-            /** @var BankAccount\Entity $ba */
-            $ba = $fundAccount->account;
-
-            $ifsc = $ba->getIfscCode();
-
-            $ifscFirstFour = substr($ifsc, 0, 4);
-
-            if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
-            {
-                $input[self::MODE] = Mode::IFT;
-            }
-        }
+        // For now, we will not modify the mode to "IFT" in Payout. Whatever the merchant
+        // sends, we use that mode only. FTS would send IFT to the bank still though.
+        // else if ($accountType === FundAccount\Type::BANK_ACCOUNT)
+        // {
+        //     /** @var BankAccount\Entity $ba */
+        //     $ba = $fundAccount->account;
+        //
+        //     $ifsc = $ba->getIfscCode();
+        //
+        //     $ifscFirstFour = substr($ifsc, 0, 4);
+        //
+        //     if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
+        //     {
+        //         $input[self::MODE] = Mode::IFT;
+        //     }
+        // }
     }
 
     protected function modifyNarration(& $input)
