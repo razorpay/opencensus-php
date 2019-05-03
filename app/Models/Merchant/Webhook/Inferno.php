@@ -39,7 +39,7 @@ class Inferno
 
     /**
      * Unix timestamp in milliseconds to capture when even payload was queued.
-     * It is used to capture queued to actual dispatch latency.
+     * It is used to capture latency between queuing to actual firing.
      * Laravel's queue layer doesn't provide abstract method to get this value
      * although it is available in underlying queue systems e.g. sqs etc.
      *
@@ -264,6 +264,8 @@ class Inferno
                 'attempt'     => $this->job->attempts(),
             ]);
 
+        $this->pushQueuedToFiredLatencyMetrics();
+
         $clientError = $this->validateWebhookRequest($request, $webhook);
 
         if ($clientError === true)
@@ -383,22 +385,24 @@ class Inferno
 
         $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $dimensions);
         $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration, $dimensions);
+    }
 
+    protected function pushQueuedToFiredLatencyMetrics()
+    {
         $attempts = $this->job->attempts();
         // For reasons job could be attempted multiple times. For usability and
         // metric's layer supporting it we limit string value used for attempts
-        // in dimension. It would be "1", "2", "3" & ">4".
-        $attemptsDimensionValue = $attempts < 4 ? strval($attempts) : ">4";
+        // in dimension. It would be "1", "2", "3" & ">3".
+        $attemptsDimensionValue = $attempts < 4 ? strval($attempts) : ">3";
 
         // TODO: Remove condition for backward compatibility.
         if ($this->eventQueuedAt !== null)
         {
             $this->trace->histogram(
-                Metric::WEBHOOK_QUEUED_TO_DISPATCH_MILLISECONDS,
+                Metric::WEBHOOK_QUEUED_TO_FIRED_MILLISECONDS,
                 millitime() - $this->eventQueuedAt,
                 [
-                    'status_code' => $statusCode,
-                    'attempts'    => $attemptsDimensionValue,
+                    'attempts' => $attemptsDimensionValue,
                 ]);
         }
     }
