@@ -12,7 +12,7 @@ const baseUrl = {
   acc: '/submerchants/',
   token: '/tokens/',
   comm: '/partners/earnings/transactional/',
-  // rvrsl: '/route/reversals/',
+  rvrsl: '/route/reversals/',
 };
 
 const sources = {
@@ -26,6 +26,7 @@ const batchBaseUrls = {
   payment_link: 'paymentlinks',
   auth_link: 'subscriptions',
   recurring_charge: 'subscriptions',
+  linked_account_reversal: 'reversals',
 };
 
 export const idItem = id => <code>{id}</code>;

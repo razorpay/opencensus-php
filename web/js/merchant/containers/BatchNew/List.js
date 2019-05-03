@@ -44,8 +44,11 @@ export default class BatchList extends ListContainer {
 
   handleDownloadClick = id => {
     this.props.gaEvents.trackDownloadProcessedBatchReport();
-    this.props
-      .batchDownload(id)
+
+    const batchDownload =
+      this.props.extraPropBatchDownload || this.props.batchDownload;
+
+    batchDownload(id)
       .then(response => {
         window.location = response.data.url;
       })

@@ -325,6 +325,10 @@ export default class User {
   get isExpireByRequired() {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
   }
+
+  get isAllowedLARefunds() {
+    return this.getExpStatus('la_refunds');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

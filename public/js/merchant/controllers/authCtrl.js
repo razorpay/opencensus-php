@@ -1106,7 +1106,7 @@ app
                 hasReply: true,
                 callback: function(reply) {
                   $scope.onShowSignin = reply;
-                  return $scope.rightLayout && reply();
+                  return $scope.rightLayout && reply($scope.login);
                 },
               },
               {

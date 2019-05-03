@@ -57,6 +57,10 @@ export default class User {
     });
   }
 
+  get isAllowedLARefunds() {
+    return this.features.indexOf('allow_reversals_from_la') >= 0;
+  }
+
   /* Check if the tag exists */
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());

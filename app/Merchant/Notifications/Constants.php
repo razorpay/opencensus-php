@@ -78,23 +78,6 @@ class Constants
             ]
         ],
         [
-            'title'       => 'SSL Certificate Update for Razorpay',
-            'description' => 'We\'re updating the SSL certificate for api.razorpay.com from the of 10th April 2019. To understand if this update affects you, click on the link below.',
-            'start_ts'    => 1554352238,
-            'end_ts'      => 1554748200,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/alert.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => 'https://mailchi.mp/razorpay/ssl-update',
-                ],
-            ],
-            'ga'          => [
-                'action' => 'SSL Certificate Announcement Notification',
-            ],
-        ],
-        [
             'title'       => 'All new Payment Pages!',
             'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
             'start_ts'    => 1550695523,
@@ -130,66 +113,6 @@ class Constants
             ],
             'ga'          => [
                 'action' => 'Capital - Announcement',
-            ],
-        ],
-        [
-            'title'       => 'Say hello to Subscription Links!',
-            'description' => 'Onboard Subscribers via unique links, created from the dashboard.',
-            'start_ts'    => 1553491800,
-            'end_ts'      => 1554874200,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Start Today',
-                    'url'   => '/subscriptions/',
-                ],
-            ],
-            'filters'     => [
-                'experiments' => ['subscriptions_live'],
-            ],
-            'ga'          => [
-                'action' => 'Subscription Links - Announcement',
-            ],
-        ],
-        [
-            'title'       => 'Say hello to Subscription Links!',
-            'description' => 'Onboard Subscribers via unique links, created from the dashboard. Start now, integrate with API later.',
-            'start_ts'    => 1553491800,
-            'end_ts'      => 1554874200,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Get Started',
-                    'url'   => '/subscriptions/',
-                ],
-            ],
-            'filters'     => [
-                'experiments' => ['subscriptions_approved_notlive'],
-            ],
-            'ga'          => [
-                'action' => 'Subscription Links - Announcement - Not Live',
-            ],
-        ],
-        [
-            'title'       => 'Introducing Subscription Links!',
-            'description' => 'Say hello to Subscription Links! Onboard Subscribers via unique links, created from the dashboard. Start now, integrate with API later.',
-            'start_ts'    => 1553664600,
-            'end_ts'      => 1554874200,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Get Started',
-                    'url'   => '/subscriptions/',
-                ],
-            ],
-            'filters'     => [
-                'experiments' => ['non_subscriptions'],
-            ],
-            'ga'          => [
-                'action' => 'Subscription Links - Announcement - Not Live',
             ],
         ],
     ];
