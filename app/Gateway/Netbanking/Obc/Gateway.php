@@ -56,6 +56,11 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($input['gateway']);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'content' => $content,
+            ]);
+
         $this->assertPaymentId($input['payment']['id'], $content[RequestFields::PAY_REF_NUM]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);

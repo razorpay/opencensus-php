@@ -53,7 +53,7 @@ class Gateway extends Base\Gateway
 
     /**
      * @param  array $input
-     * @return void
+     * @return array
      */
     public function authorize(array $input)
     {
@@ -93,11 +93,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']['msg']);
 
-        $this->validateCallbackChecksum($content);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
+
+        $this->validateCallbackChecksum($content);
+
 
         // Unset date because format of date returned
         // is different than what we sent
