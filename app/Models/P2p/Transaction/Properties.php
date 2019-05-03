@@ -186,7 +186,7 @@ class Properties
 
         if ($onus === false)
         {
-            $core = $this->input->get(Entity::TYPE) === Entity::BANK_ACCOUNT ?
+            $core = ($input[Entity::TYPE] ?? null) === Entity::BANK_ACCOUNT ?
                                                         new BankAccount\Core :
                                                         new Vpa\Core;
 

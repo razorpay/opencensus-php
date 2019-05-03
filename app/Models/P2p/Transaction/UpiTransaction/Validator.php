@@ -69,7 +69,24 @@ class Validator extends Base\Validator
 
     public function makeEditRules()
     {
-        return $this->makeCreateRules();
+        $rules = $this->makeRules([
+            Entity::GATEWAY_DATA                 => 'sometimes',
+            Entity::STATUS                       => 'sometimes',
+            Entity::NETWORK_TRANSACTION_ID       => 'sometimes',
+            Entity::GATEWAY_TRANSACTION_ID       => 'sometimes',
+            Entity::GATEWAY_REFERENCE_ID         => 'sometimes',
+            Entity::RRN                          => 'sometimes',
+            Entity::REF_ID                       => 'sometimes',
+            Entity::GATEWAY_ERROR_CODE           => 'sometimes',
+            Entity::GATEWAY_ERROR_DESCRIPTION    => 'sometimes',
+            Entity::RISK_SCORES                  => 'sometimes',
+            Entity::PAYER_ACCOUNT_NUMBER         => 'sometimes',
+            Entity::PAYER_IFSC_CODE              => 'sometimes',
+            Entity::PAYEE_ACCOUNT_NUMBER         => 'sometimes',
+            Entity::PAYEE_IFSC_CODE              => 'sometimes',
+        ]);
+
+        return $rules;
     }
 
     public function makeInitiatePaySuccessRules()

@@ -22,5 +22,6 @@ class PublicErrorDescription extends \RZP\Error\PublicErrorDescription
     const GATEWAY_ERROR_DEVICE_INVALID_TOKEN                    = 'Token is invalid or expired';
 
     const BAD_REQUEST_TRANSACTION_INVALID_STATE                 = 'Transaction is not in valid state for update';
+    const BAD_REQUEST_DUPLICATE_TRANSACTION                     = 'Duplicate transaction request received';
     // @codingStandardsIgnoreEnd
 }

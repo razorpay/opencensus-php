@@ -84,6 +84,7 @@ class Entity extends Base\Entity
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
         Entity::BANK,
+        Entity::ADDRESS,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -123,6 +124,10 @@ class Entity extends Base\Entity
         Entity::DELETED_AT            => 'int',
         Entity::CREATED_AT            => 'int',
         Entity::UPDATED_AT            => 'int',
+    ];
+
+    protected $appends = [
+        Entity::ADDRESS,
     ];
 
     /***************** SETTERS *****************/

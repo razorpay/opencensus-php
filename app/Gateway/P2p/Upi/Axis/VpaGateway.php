@@ -93,7 +93,11 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         // vpa given by the user not free(already assigned to someone)
         // so returning a list of vpa suggestions
 
-        $vpaSuggestions = $sdk->get(Fields::VPA_SUGGESTIONS);
+        $vpaSuggestions = array_map(
+            function($item)
+            {
+                return explode(Entity::AEROBASE, $item)[0];
+            }, $sdk->get(Fields::VPA_SUGGESTIONS));
 
         $response->setData([
             Entity::AVAILABLE         => false,

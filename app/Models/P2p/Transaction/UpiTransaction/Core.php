@@ -28,10 +28,17 @@ class Core extends Base\Core
 
     public function update(Transaction\Entity $transaction, array $input): Entity
     {
+        unset($input[Entity::TRANSACTION_ID], $input[Entity::ACTION]);
+
         $transaction->upi->edit($input);
 
         $this->repo->save($transaction->upi);
 
         return $transaction->upi;
+    }
+
+    public function findAll(array $input)
+    {
+        return $this->repo->findAll($input);
     }
 }

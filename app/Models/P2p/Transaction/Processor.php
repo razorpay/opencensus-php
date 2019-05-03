@@ -134,6 +134,8 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::INCOMING_COLLECT, $input, true);
 
+        $this->checkForDuplicate($this->input->get(Entity::UPI));
+
         $transactionInput = $this->arrayBag($this->input->get(Entity::TRANSACTION));
 
         $properties = new Properties($this->context(), $this->action, $transactionInput);
@@ -150,6 +152,8 @@ class Processor extends Base\Processor
     public function incomingPay(array $input): array
     {
         $this->initialize(Action::INCOMING_PAY, $input, true);
+
+        $this->checkForDuplicate($this->input->get(Entity::UPI));
 
         $transactionInput = $this->arrayBag($this->input->get(Entity::TRANSACTION));
 
@@ -306,6 +310,18 @@ class Processor extends Base\Processor
         if ($actions->hasEvent() === true)
         {
             event($actions->getEvent());
+        }
+    }
+
+    protected function checkForDuplicate(array $upi)
+    {
+        $existing = $this->core->findAllUpi($this->action, $upi);
+
+        if ($existing->count() > 0)
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_TRANSACTION, [
+                Entity::UPI => $upi,
+            ]);
         }
     }
 }
