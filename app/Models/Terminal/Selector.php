@@ -458,6 +458,7 @@ class Selector extends Base\Core
                 'sortedTerminals'    => $sortedTerminals,
                 'downtimes'          => $downtimes,
                 'failedTerminalsIds' => $failedTerminalIds,
+                'chance'             => $this->options->getChance(),
             ];
 
             $endpoint = '/route';
