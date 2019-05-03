@@ -25,9 +25,7 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, $input);
-
-        $order = null;
+        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $input);
 
         try
         {
@@ -39,28 +37,13 @@ class Service extends Base\Service
 
             $order = (new Core)->create($input, $merchant);
 
-            $data = [
-                'error_code' => ErrorCode::SUCCESS,
-                'order_id'   => $order->getId(),
-                'amount'     => $order->getAmount(),
-                'currency'   => $order->getCurrency()
-            ];
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $data['error_code'] = $ex->getCode();
-
-            throw $ex;
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $order);
         }
         catch (\Throwable $ex)
         {
-            $data['error_code'] = ErrorCode::SERVER_ERROR;
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex);
 
             throw $ex;
-        }
-        finally 
-        {
-            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $data);
         }
 
         return $order->toArrayPublic();

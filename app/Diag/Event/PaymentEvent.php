@@ -2,11 +2,6 @@
 
 namespace RZP\Diag\Event;
 
-use App;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Models\Payment;
-
 class PaymentEvent extends Event
 {
     const EVENT_TYPE = 'payment-events';
@@ -66,6 +61,17 @@ class PaymentEvent extends Event
                 'card_type'     => $card->getType(),
                 'card_country'  => $card->getCountry(),
                 'international' => $payment->isInternational(),
+            ];
+        }
+
+        if ($payment->hasOrder() === true)
+        {
+            $order = $payment->order;
+
+            $properties['order'] = [
+                'id'       => $order->getPublicId(),
+                'amount'   => $order->getAmount(),
+                'currency' => $order->getCurrency()
             ];
         }
     }

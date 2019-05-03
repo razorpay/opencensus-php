@@ -2,7 +2,8 @@
 
 namespace RZP\Diag\Event;
 
-use RZP\Diag\ErrorCode;
+use App;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Models\Base;
 
@@ -25,7 +26,7 @@ abstract class Event
     {
         $this->app = App::getFacadeRoot();
 
-        $this->entity = $payment;
+        $this->entity = $entity;
 
         $this->customProperties = $customProperties;
 
@@ -34,24 +35,24 @@ abstract class Event
 
     public function getProperties()
     {
-        $properties = $this->properties;
-
         $this->addEventDetails();
 
-        $this->addErrorDetails($properties);
+        $this->addErrorDetails();
 
         $this->removeSenstiveFields();
 
-        $properties['properties'] = $this->customProperties;
+        $this->properties['properties'] = $this->customProperties;
 
-        return $properties;
+        return $this->properties;
     }
 
     protected function addEventDetails()
     {
+        $properties = [];
+
         if ($this->entity !== null)
         {
-            $properties = $this->getEventProperties()
+            $properties = $this->getEventProperties();
         }
 
         $this->properties += $properties;

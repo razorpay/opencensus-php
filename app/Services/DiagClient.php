@@ -5,11 +5,12 @@ namespace RZP\Services;
 use App;
 use Exception;
 use Carbon\Carbon;
-use RZP\Diag\Traits\PaymentEvent;
+use RZP\Diag\Traits;
 
 class DiagClient extends EventTrackerClient
 {
-    use PaymentEvent;
+    use Traits\OrderEvent;
+    use Traits\PaymentEvent;
 
     public function trackEvent(string $eventType, string $eventVersion, string $eventName, array $properties)
     {
