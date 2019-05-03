@@ -34,6 +34,12 @@ class Provider
     // Qr Code Providers
     const BHARAT_QR = 'bharat_qr';
 
+    // Qr Code Tag Values constants
+    const MERCHANT_CATEGORY = 'merchant_category';
+    const MERCHANT_NAME     = 'merchant_name';
+    const MERCHANT_CITY     = 'merchant_city';
+    const MERCHANT_PINCODE  = 'merchant_pincode';
+
     const IFSC = [
         self::YESBANK   => 'YESB0CMSNOC',
         self::KOTAK     => 'KKBK0000958',
@@ -156,22 +162,24 @@ class Provider
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
+        $merchantDetails = $this->getMerchantDetailsToPopulate($qrCode);
+
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
             Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
-            $this->getMerchantAccountIdentifier(Tags::MERCHANT_ACCOUNT, $merchantIdentifiers),
+            $this->getMerchantAccountIdentifier(),
             $this->getBharatQrUpiTlv($qrCode, $merchantIdentifiers),
             $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
-            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
+            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue($merchantDetails[self::MERCHANT_CATEGORY]),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
             Tags::COUNTRY_CODE . $this->getLengthAndValue(Constants::COUNTRY_CODE),
-            Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
-            Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
-            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
+            Tags::MERCHANT_NAME . $this->getLengthAndValue($merchantDetails[self::MERCHANT_NAME]),
+            Tags::MERCHANT_CITY . $this->getLengthAndValue($merchantDetails[self::MERCHANT_CITY]),
+            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue($merchantDetails[self::MERCHANT_PINCODE]),
             $this->getBharatQrAdditionalDetailTlv($qrCode, $merchantIdentifiers),
         ];
 
@@ -187,6 +195,44 @@ class Provider
         return $qrString;
     }
 
+    protected function getMerchantDetailsToPopulate($qrCode): array
+    {
+        $defaultAttributes = $this->getDefaultMerchantDetails();
+
+        $merchant = $qrCode->merchant;
+
+        $merchantAttributes = [
+            self::MERCHANT_CATEGORY => $merchant->getCategory(),
+            self::MERCHANT_NAME     => $merchant->getDbaName(),
+        ];
+
+        $attributes = array_merge($defaultAttributes, array_filter($merchantAttributes));
+
+        if ($merchant->merchantDetail !== null)
+        {
+            $merchantDetail = $merchant->merchantDetail;
+
+            $merchantDetailAttributes = [
+                self::MERCHANT_CITY    => $merchantDetail->getBusinessRegisteredCity(),
+                self::MERCHANT_PINCODE => $merchantDetail->getBusinessRegisteredPin(),
+            ];
+
+            $attributes = array_merge($attributes, array_filter($merchantDetailAttributes));
+        }
+
+        return $attributes;
+    }
+
+    protected function getDefaultMerchantDetails(): array
+    {
+        return [
+            self::MERCHANT_CATEGORY => Constants::MERCHANT_CATEGORY,
+            self::MERCHANT_NAME     => Constants::MERCHANT_NAME,
+            self::MERCHANT_CITY     => Constants::MERCHANT_CITY,
+            self::MERCHANT_PINCODE  => Constants::MERCHANT_PINCODE,
+        ];
+    }
+
     protected function getIdentifierTlv(string $tag, string $networkMpan, array $merchantIdentifiers)
     {
         if (empty($merchantIdentifiers[$networkMpan]) === false)
@@ -197,20 +243,11 @@ class Provider
         return null;
     }
 
-    protected function getMerchantAccountIdentifier(string $tag, array $merchantIdentifiers)
+    protected function getMerchantAccountIdentifier()
     {
-        if ((isset($merchantIdentifiers['account_number']) === true) and
-            (isset($merchantIdentifiers['ifsc_code']) === true))
-        {
-            $value = $merchantIdentifiers['ifsc_code'] . $merchantIdentifiers['account_number'];
+        $value = Constants::IFSC_CODE . Constants::ACCOUNT_NUMBER;
 
-            if (empty($value) === false)
-            {
-                return $tag . $this->getLengthAndValue($value);
-            }
-        }
-
-        return null;
+        return Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue($value);
     }
 
     protected function getPointOfInitiation(QrCode\Entity $qrCode)
@@ -373,10 +410,6 @@ class Provider
             if ($bharatQrNetwork === Network::RUPAY)
             {
                 $identifiers['rupay_tid'] = $terminal->getGatewayTerminalId();
-
-                $identifiers['account_number'] = $terminal->getAccountNumber();
-
-                $identifiers['ifsc_code'] = $terminal->getIfscCode();
             }
 
             $terminal = $terminal->toArray();

@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Federal\Mock;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Bank\IFSC;
 use RZP\Gateway\Netbanking\Federal\Status;
@@ -24,9 +25,13 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        $this->validateChecksum($input);
+
         $response = $this->getCallbackResponseData($input);
 
         $this->content($response, 'authorize');
+
+        $response = $this->generateHash($response);
 
         $request = [
             'url' => $input[RequestFields::RETURN_URL],
@@ -90,5 +95,42 @@ class Server extends Base\Mock\Server
     protected function getStringFromContent($content, $glue = '')
     {
         return implode($glue, $content);
+    }
+
+    protected function validateChecksum($input)
+    {
+        $actual = $input[RequestFields::HASH];
+
+        unset($input[ResponseFields::HASH]);
+
+        $hashParams = [
+            $input[RequestFields::PAYEE_ID],
+            $input[RequestFields::PAYMENT_ID],
+            $input[RequestFields::ITEM_CODE],
+            $input[RequestFields::AMOUNT],
+        ];
+
+        $expected = $this->getGatewayInstance()->generateHash($hashParams);
+
+        if (hash_equals($actual, $expected) === false)
+        {
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
+
+    protected function generateHash($content)
+    {
+        $hashParams = [
+            $content[ResponseFields::PAYEE_ID],
+            $content[ResponseFields::PAYMENT_ID],
+            $content[ResponseFields::ITEM_CODE],
+            $content[ResponseFields::AMOUNT],
+            $content[ResponseFields::BANK_PAYMENT_ID],
+            $content[ResponseFields::PAID],
+        ];
+
+        $content[ResponseFields::HASH] = parent::generateHash($hashParams);
+
+        return $content;
     }
 }

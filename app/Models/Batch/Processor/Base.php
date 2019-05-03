@@ -420,6 +420,12 @@ class Base extends BaseModel\Core
         // Creation/validation step must ensure in general that there are entries to be processed
         assertTrue(count($entries) > 0, 'Error in processing batch, no entries read to process');
 
+        $dimensions = $this->batch->getMetricDimensions();
+
+        $this->trace->histogram(Batch\Metric::BATCH_PROCESSED_ROWS_TOTAL,
+                                $this->batch->getTotalCount(),
+                                $dimensions);
+
         foreach ($entries as $index => & $entry)
         {
             $entryTracePayload = $entry;
@@ -435,6 +441,8 @@ class Base extends BaseModel\Core
 
             try
             {
+                $timeStarted = millitime();
+
                 $this->trace->debug(TraceCode::BATCH_PROCESSING_ENTRY, $tracePayload);
 
                 $this->processEntry($entry);
@@ -443,6 +451,17 @@ class Base extends BaseModel\Core
 
                 $entry[Batch\Header::ERROR_CODE]        = null;
                 $entry[Batch\Header::ERROR_DESCRIPTION] = null;
+
+                $timeTaken = millitime() - $timeStarted;
+
+                //  status will be the previous status as
+                //  status is setting in the succeeding function
+                //  setStatusAfterSuccessfulProcessing.
+
+                $metricDimensions = $this->batch->getMetricDimensions(['status' => $this->batch->getStatus()]);
+
+                $this->trace->histogram(Batch\Metric::BATCH_ROW_PROCESS_TIME_MS, $timeTaken, $metricDimensions);
+
             }
             catch (BaseException $e)
             {
@@ -518,6 +537,25 @@ class Base extends BaseModel\Core
 
         $this->batch->setSuccessCount($successCount);
         $this->batch->setFailureCount($failureCount);
+
+        $this->pushBatchMetrics();
+    }
+
+    /**
+     * pushes Batch Metrics such as Success Count,Failed Count
+     * and its histogram
+     */
+    protected function pushBatchMetrics()
+    {
+        $dimensions = $this->batch->getMetricDimensions();
+
+        $this->trace->histogram(Batch\Metric::BATCH_SUCCESS_ROWS_TOTAL,
+                                $this->batch->getSuccessCount(),
+                                $dimensions);
+
+        $this->trace->histogram(Batch\Metric::BATCH_FAILED_ROWS_TOTAL,
+                                $this->batch->getFailureCount(),
+                                $dimensions);
     }
 
     /**
@@ -792,7 +830,13 @@ class Base extends BaseModel\Core
      */
     protected function updateBatchPostValidation(array $entries, array $input)
     {
-        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
+        // Since amouunt can be in amount header or amount (in paise) header
+        // use whichever is available
+        $amountCol = array_column($entries, Batch\Header::AMOUNT);
+        $amountInPaisaCol = array_column($entries, Batch\Header::AMOUNT_IN_PAISE);
+        $amountCol = count($amountCol) > 0 ? $amountCol : $amountInPaisaCol;
+
+        $totalAmount = array_sum($amountCol);
         $totalCount  = count($entries);
 
         $this->batch->setAmount($totalAmount);

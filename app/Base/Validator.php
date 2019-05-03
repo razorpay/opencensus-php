@@ -31,16 +31,17 @@ class Validator extends \Razorpay\Spine\Validation\Validator
 
     protected function isTestMode(): bool
     {
-        $app = App::getFacadeRoot();
-
-        return ($app['rzp.mode'] === Mode::TEST);
+        return ($this->getMode() === Mode::TEST);
     }
 
     protected function isLiveMode(): bool
     {
-        $app = App::getFacadeRoot();
+        return ($this->getMode() === Mode::LIVE);
+    }
 
-        return ($app['rzp.mode'] === Mode::LIVE);
+    protected function getMode(): string
+    {
+        return App::getFacadeRoot()['rzp.mode'];
     }
 
     public function setStrictFalse()

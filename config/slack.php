@@ -155,6 +155,8 @@ return array(
         // virtual_accounts
         'virtual_accounts'     => 'C44FHBKC1',
         'virtual_accounts_log' => 'C809AQYUC',
+        // BharatQR
+        'bharatqr_logs'        => 'CHYL0H2DR',
         // tech_logs_mail
         'tech_logs_mail'       => 'C50JZ3S5T',
         // risk

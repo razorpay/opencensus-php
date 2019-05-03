@@ -22,10 +22,11 @@ use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
-    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s_%s_%s';
-    const MUTEX_LOCK_TIMEOUT    = 900;
+    const MUTEX_RESOURCE                    = 'FUND_TRANSFER_PROCESSING_%s_%s_%s';
+    const DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT   = 500;
+    const REQUEST_TIMEOUT                   = 30;
 
-    const FTA_PURPOSE = 'settlement';
+    const FTA_PURPOSE                       = 'settlement';
 
     protected $mutex;
 
@@ -76,6 +77,10 @@ class Initiator extends Base\Core
             }
         }
 
+        $limit = $this->getLimitForChannel($channel) ?? self::DEFAULT_LIMIT_FOR_MUTEX_TIMEOUT;
+
+        $mutexTimeout = $limit * self::REQUEST_TIMEOUT;
+
         return $this->mutex->acquireAndRelease(
             $mutexResource,
             function() use ($input, $channel)
@@ -84,7 +89,7 @@ class Initiator extends Base\Core
 
                 return $this->processBankTransfers($input, $channel);
             },
-            self::MUTEX_LOCK_TIMEOUT,
+            $mutexTimeout,
             ErrorCode::BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS);
     }
 

@@ -6,8 +6,10 @@ use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TransferTest extends TestCase
@@ -661,7 +663,480 @@ class TransferTest extends TestCase
         $this->startTest();
     }
 
+    // RM.refund_source=balance & LA.refund_source=balance
+    public function testLinkedAccountReversalCase1()
+    {
+        $testName = 'testLinkedAccountReversal';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::BALANCE, RefundSource::BALANCE);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $accOldBalance = $this->getBalance($this->linkedAccountId);
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertNull($reversal['customer_refund_id']);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldBalance - $amountReversed, $this->getBalance($this->linkedAccountId));
+
+        $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
+    }
+
+    // RM.refund_source=balance & LA.refund_source=credits
+    public function testLinkedAccountReversalCase2()
+    {
+        $testName = 'testLinkedAccountReversal';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::BALANCE, RefundSource::CREDITS);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertNull($reversal['customer_refund_id']);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldCredits - $amountReversed, $accNewCredits);
+
+        $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
+    }
+
+    // RM.refund_source=balance & LA.refund_source=balance
+    public function testLinkedAccountReversalAndCustomerRefundCase1()
+    {
+        $testName = 'testLinkedAccountReversalAndCustomerRefund';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::BALANCE, RefundSource::BALANCE);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accOldBalance = $this->getBalance($this->linkedAccountId);
+
+        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldBalance - $amountReversed, $this->getBalance($this->linkedAccountId));
+
+        $this->assertEquals($marketplaceOldBalance, $this->getBalance('10000000000000'));
+
+        $this->assertEquals($marketplaceOldCredits, $marketplaceNewCredits);
+
+        $this->assertEquals($accOldCredits, $accNewCredits);
+    }
+
+    // RM.refund_source=balance & LA.refund_source=credits
+    public function testLinkedAccountReversalAndCustomerRefundCase2()
+    {
+        $testName = 'testLinkedAccountReversalAndCustomerRefund';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::BALANCE, RefundSource::CREDITS);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accOldBalance = $this->getBalance($this->linkedAccountId);
+
+        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldBalance, $this->getBalance($this->linkedAccountId));
+
+        $this->assertEquals($accOldCredits - $amountReversed, $accNewCredits);
+
+        $this->assertEquals($marketplaceOldBalance, $this->getBalance('10000000000000'));
+
+        $this->assertEquals($marketplaceOldCredits, $marketplaceNewCredits);
+    }
+
+    // RM.refund_source=credits & LA.refund_source=balance
+    public function testLinkedAccountReversalAndCustomerRefundCase3()
+    {
+        $testName = 'testLinkedAccountReversalAndCustomerRefund';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::CREDITS, RefundSource::BALANCE);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accOldBalance = $this->getBalance($this->linkedAccountId);
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldBalance - $amountReversed, $this->getBalance($this->linkedAccountId));
+
+        $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
+
+        $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
+    }
+
+    // RM.refund_source=credits & LA.refund_source=credits
+    public function testLinkedAccountReversalAndCustomerRefundCase4()
+    {
+        $testName = 'testLinkedAccountReversalAndCustomerRefund';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::CREDITS, RefundSource::CREDITS);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldCredits - $amountReversed, $accNewCredits);
+
+        $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
+
+        $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
+    }
+
+    // Reveral + Customer Refund initiated by Route Merchant
+    public function testRouteMerchantReversalAndCustomerRefund()
+    {
+        $data = $this->setUpForReversalsTests(__FUNCTION__, RefundSource::CREDITS, RefundSource::CREDITS);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accOldBalance = $this->getBalance($this->linkedAccountId);
+
+        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($data);
+
+        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['initiator_id'], '10000000000000');
+
+        $this->assertEquals($accOldBalance, $this->getBalance($this->linkedAccountId));
+
+        $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
+
+        $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
+
+        $this->assertEquals($accOldCredits- $amountReversed, $accNewCredits);
+    }
+
+    public function testLinkedAccountReversalWithoutPermission()
+    {
+        $data = $this->setTransferIdInRequest(__FUNCTION__);
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+    }
+
+    // Insufficient Balance on LA
+    public function testLinkedAccountReversalInsufficientBalance()
+    {
+        $data = $this->setTransferIdInRequest(__FUNCTION__);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $this->linkedAccountId);
+
+        $this->fixtures->merchant->editBalance(10, $this->linkedAccountId);
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+    }
+
+    public function testLinkedAccountReversalInsufficientRefundCredits()
+    {
+        $data = $this->setTransferIdInRequest(__FUNCTION__);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $this->linkedAccountId);
+
+        $this->setRefundSourceForMarketplaceAnddAccount(RefundSource::BALANCE, RefundSource::CREDITS);
+
+        $this->setRefundCreditsForMarketplaceAnddAccount(10, 10);
+
+        $lastOldReversal =  $this->getLastEntity('reversal', true);
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $lastNewReversal =  $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($lastOldReversal['id'], $lastNewReversal['id']);
+    }
+
+    public function testLinkedAccountCustomerRefundInsufficientMarketplaceCredits()
+    {
+        $testName = 'testLinkedAccountReversalInsufficientRefundCredits';
+
+        $data = $this->setTransferIdInRequest($testName);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $this->linkedAccountId);
+
+        $this->setRefundSourceForMarketplaceAnddAccount(RefundSource::CREDITS, RefundSource::BALANCE);
+
+        $this->setRefundCreditsForMarketplaceAnddAccount(10, 10000);
+
+        $lastOldReversal =  $this->getLastEntity('reversal', true);
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $lastNewReversal =  $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($lastOldReversal['id'], $lastNewReversal['id']);
+    }
+
+    public function testLinkedAccountReversalInvalidTransfer()
+    {
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $this->linkedAccountId);
+
+        $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $transfers[0] = [
+            'account' => 'acc_' . $account->getId(),
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+
+        $transfers = $this->transferPayment($payment['id'], $transfers);
+
+        $transferId = $transfers['items'][0]['id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = sprintf($data['request']['url'], $transferId);
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest();
+    }
+
     // ---- Helpers -----
+
+    protected function createPaymentAndTransfer()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $transfers[0] = [
+            'account' => 'acc_' . $this->linkedAccountId,
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+
+        $transfers = $this->transferPayment($payment['id'], $transfers);
+
+        $transferId = $transfers['items'][0]['id'];
+
+        return $transferId;
+    }
+
+    protected function setTransferIdInRequest(string $testName)
+    {
+        $transferId = $this->createPaymentAndTransfer();
+
+        $data = $this->testData[$testName];
+
+        $data['request']['url'] = sprintf($data['request']['url'], $transferId);
+
+        return $data;
+    }
+
+    protected function setUpDataForLAReveralTests(string $testName): array
+    {
+        $data = $this->setTransferIdInRequest($testName);
+
+        $transfer =  $this->getLastEntity('transfer', true);
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $data['response']['content'] = [
+            'entity'        => 'reversal',
+            'transfer_id'   => $transfer['id'],
+            'amount'        => $amountReversed,
+            'currency'      => 'INR'
+        ];
+
+        return $data;
+    }
+
+    protected function setUpForReversalsTests(
+        string $testName,
+        string $marketplaceRefunsSource = RefundSource::BALANCE,
+        string $accRefunsSource = RefundSource::BALANCE,
+        bool $allowLAReversals = true)
+    {
+        $data = $this->setUpDataForLAReveralTests($testName);
+
+        $this->setRefundCreditsForMarketplaceAnddAccount();
+
+        $this->setRefundSourceForMarketplaceAnddAccount($marketplaceRefunsSource, $accRefunsSource);
+
+        if ($allowLAReversals === true)
+        {
+            $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $this->linkedAccountId);
+        }
+
+        return $data;
+    }
+
+    protected function setRefundSourceForMarketplaceAnddAccount(
+        string $marketplaceRefunsSource = RefundSource::BALANCE,
+        string $accRefunsSource = RefundSource::BALANCE)
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => $marketplaceRefunsSource]);
+
+        $this->fixtures->merchant->edit($this->linkedAccountId, ['refund_source' => $accRefunsSource]);
+    }
+
+    protected function setRefundCreditsForMarketplaceAnddAccount(int $marketplaceCredits = 100000, int $accCredits = 100000)
+    {
+        $this->fixtures->merchant->editRefundCredits($marketplaceCredits, '10000000000000');
+
+        $this->fixtures->merchant->editRefundCredits($accCredits, $this->linkedAccountId);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => $marketplaceCredits, 'type' => 'refund']);
+
+        $this->fixtures->create('credits', ['merchant_id' => $this->linkedAccountId, 'value' => $accCredits, 'type' => 'refund']);
+    }
+
+    protected function setAuthForLinkedAccount($mid = null)
+    {
+        $mid = $mid ?? $this->linkedAccountId;
+
+        $user = $this->fixtures->user->createUserForMerchant($mid, [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_' . $mid , $user->getId());
+    }
 
     protected function createTransfer($type, $data = [], $mode = 'test')
     {
@@ -786,6 +1261,11 @@ class TransferTest extends TestCase
     protected function getBalance(string $accountId)
     {
         return $this->getEntityById('balance', $accountId, true)['balance'];
+    }
+
+    protected function getBalanceForType(string $accountId, $type)
+    {
+        return $this->getEntityById('balance', $accountId, true)[$type];
     }
 
     protected function getTransferPayment(string $transferId) : array

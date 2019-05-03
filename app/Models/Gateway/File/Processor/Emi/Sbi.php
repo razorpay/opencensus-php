@@ -63,7 +63,7 @@ class Sbi extends Base
                                            'card.globalCard',
                                            'emiPlan',
                                            'merchant.merchantDetail',
-                                           'merchant.terminals'
+                                           'terminal'
                                         ]);
 
         return $emiPaymentsForBank;
@@ -170,46 +170,16 @@ class Sbi extends Base
         {
             try
             {
-                $mid = null;
-
-                $tid = null;
-
                 $emiPlan = $emiPayment->emiPlan;
 
                 $merchantDetail = $emiPayment->merchant->merchantDetail;
 
-                $terminals = $emiPayment->merchant->terminals;
+                $terminal = $this->repo->terminal->getByMerchantIdAndGateway(
+                    $emiPayment->getMerchantId(),
+                    Payment\Gateway::EMI_SBI
+                );
 
-                /**
-                 * @var $terminal Terminal\Entity
-                 */
-                foreach ($terminals as $terminal)
-                {
-                    if (($terminal[Terminal\Entity::GATEWAY] === Payment\Gateway::EMI_SBI) and
-                        ($terminal->isEnabled() === true))
-                    {
-                        if (empty($mid) === true)
-                        {
-                            $mid = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-
-                            $tid = $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
-                        }
-                        else
-                        {
-                            throw new LogicException(
-                                'Multiple SBI MIDs found for merchant',
-                                null,
-                                [
-                                    'gateway'       => 'emi_sbi',
-                                    'payment_id'    => $emiPayment['id'],
-                                    'merchant_id'   => $merchantDetail[Detail\Entity::MERCHANT_ID],
-                                    'terminal'      => $terminal['id'],
-                                ]);
-                        }
-                    }
-                }
-
-                if (empty($mid) === true)
+                if ($terminal === null)
                 {
                     throw new LogicException(
                         'No SBI MID found for merchant',
@@ -218,6 +188,24 @@ class Sbi extends Base
                             'gateway'       => 'emi_sbi',
                             'payment_id'    => $emiPayment['id'],
                             'merchant_id'   => $merchantDetail[Detail\Entity::MERCHANT_ID],
+                        ]);
+                }
+
+                $mid = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+                $tid = $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
+
+                if ($mid === null or
+                    $tid === null)
+                {
+                    throw new LogicException(
+                        'MID and TID can not be null',
+                        null,
+                        [
+                            'gateway'     => 'emi_sbi',
+                            'payment_id'  => $emiPayment['id'],
+                            'merchant_id' => $merchantDetail[ Detail\Entity::MERCHANT_ID ],
+                            'terminal_id' => $terminal->getId(),
                         ]);
                 }
 

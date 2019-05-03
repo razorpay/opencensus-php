@@ -187,9 +187,7 @@ class HeartbeatLagChecker implements LagChecker
         }
 
         // If should skip slave, return null so master connection is used, else resolve $readPdo and return
-        return $useSlave === true ?
-            ($readPdo instanceof Closure ? call_user_func($readPdo) : $readPdo) :
-            null;
+        return $useSlave === true ? $readPdo : null;
     }
 
     /**

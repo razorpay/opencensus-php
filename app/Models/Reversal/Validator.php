@@ -6,6 +6,9 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Transfer;
+use RZP\Models\Merchant;
+use RZP\Constants\Entity as E;
+use RZP\Models\Feature\Constants as Feature;
 
 class Validator extends Base\Validator
 {
@@ -15,6 +18,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY             => 'required|string|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',
+        ENTITY::REFUND_TO_CUSTOMER   => 'sometimes|boolean',
     ];
 
     public function validateReversalAmount(Transfer\Entity $transfer, array $input)
@@ -57,6 +61,34 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_UNREVERSED,
                 'amount',
                 ['transfer_id' => $transfer->getId()]);
+        }
+    }
+
+    public function validateInitiatorForReversal(Transfer\Entity $transfer, Merchant\Entity $initiator)
+    {
+        if ($initiator->isLinkedAccount() === true)
+        {
+            if ($transfer->getSourceType() !== E::PAYMENT)
+            {
+                throw new Exception\LogicException(
+                    'Refund to customer attempted by Linked Account ' . $initiator->getId() . ' on invalid transfer source_type - ' . $transfer->getSourceType(),
+                    null,
+                    $transfer
+                );
+            }
+
+            // check if LA has the required feature to perform reversals + customer refunds
+            $allowReversals = $initiator->isFeatureEnabled(Feature::ALLOW_REVERSALS_FROM_LA);
+
+            if ($allowReversals === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_LA_TRANSFER_REVERSAL_PERMISSION_MISSING,
+                    null,
+                    [
+                        'transfer_id' => $transfer->getId()
+                    ]);
+            }
         }
     }
 }

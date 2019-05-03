@@ -126,6 +126,15 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::REVERSED_AT)
                   ->nullable();
 
+            $table->integer(Payout::QUEUED_AT)
+                  ->nullable();
+
+            $table->integer(Payout::CANCELLED_AT)
+                  ->nullable();
+
+            $table->integer(Payout::INITIATED_AT)
+                  ->nullable();
+
             $table->integer(Payout::SETTLED_ON)
                   ->nullable();
 
@@ -142,6 +151,12 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::PROCESSED_AT);
 
             $table->index(Payout::REVERSED_AT);
+
+            $table->index(Payout::INITIATED_AT);
+
+            $table->index(Payout::QUEUED_AT);
+
+            $table->index(Payout::CANCELLED_AT);
 
             $table->index(Payout::CREATED_AT);
 

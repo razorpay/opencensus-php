@@ -35,10 +35,6 @@ class BatchMicroService
 
     protected $client;
 
-    public static $batchTypeMigrated = [
-        Batch\Type::PAYMENT_LINK
-    ];
-
     const BATCH_URLS = [
         'download'  => 'download',
         'batch'     => 'batch',
@@ -413,7 +409,7 @@ class BatchMicroService
 
     public function isMigratedBatchType(string $type): bool
     {
-        return in_array($type, self::$batchTypeMigrated, true);
+        return in_array($type, Batch\Type::$batchTypeMigrated, true);
     }
 
     /**

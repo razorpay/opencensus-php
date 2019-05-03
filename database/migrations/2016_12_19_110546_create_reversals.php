@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Reversal\Entity;
 use RZP\Models\Base\PublicEntity;
 
@@ -53,6 +54,12 @@ class CreateReversals extends Migration
             $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
 
             $table->string(Entity::TRANSACTION_TYPE, 255)
+                  ->nullable();
+
+            $table->string(Entity::INITIATOR_ID, Merchant\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Entity::CUSTOMER_REFUND_ID, Refund\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

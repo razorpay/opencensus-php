@@ -7,6 +7,8 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
+use RZP\Models\Reversal;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -33,6 +35,7 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      * @param  Refund\Entity   $refund
      * @param array            $input
+     * @param Merchant\Entity  $initiator Route Merchant / Linked Account initiating the reversal
      *
      * @return Entity
      */
@@ -40,7 +43,8 @@ class Core extends Base\Core
         Transfer\Entity $transfer,
         Merchant\Entity $merchant,
         Refund\Entity $refund,
-        array $input) : Entity
+        array $input,
+        Merchant\Entity $initiator = null): Entity
     {
         $this->trace->info(
             TraceCode::TRANSFER_REVERSAL_REQUEST,
@@ -61,6 +65,8 @@ class Core extends Base\Core
 
         $reversal->entity()->associate($transfer);
 
+        $reversal->initiator()->associate($initiator);
+
         $txn = (new Transaction\Core)->createFromTransferReversal($reversal);
 
         $this->repo->saveOrFail($txn);
@@ -80,15 +86,21 @@ class Core extends Base\Core
 
     /**
      * Create and process a reversal on a transfer
+     * Also process refund to the customer if cutomer_refund flag is present in input
      *
      * @param  Transfer\Entity $transfer
      * @param  array           $input
      * @param  Merchant\Entity $merchant
+     * @param  Merchant\Entity $initiator Route Merchant / Linked Account initiating the reversal
      *
      * @return Entity
      * @throws Exception\LogicException
      */
-    public function reverseForTransfer(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
+    public function reverseForTransferAndCustomerRefund(
+        Transfer\Entity $transfer,
+        array $input,
+        Merchant\Entity $merchant,
+        Merchant\Entity $initiator = null): Entity
     {
         // Reversals not handled yet for customer wallet - transfer refunds
         // @todo: Change flow to create reversals for both customer/account transfers
@@ -99,24 +111,63 @@ class Core extends Base\Core
             );
         }
 
+        $initiator = $initiator ?? $merchant;
+
+        (new Validator)->validateInitiatorForReversal($transfer, $initiator);
+
         return $this->mutex->acquireAndRelease(
             $transfer->getId(),
-            function() use ($transfer, $input, $merchant)
+            function() use ($transfer, $input, $merchant, $initiator)
             {
                 $this->repo->reload($transfer);
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
-                return $this->repo->transaction(function () use ($transfer, $input, $merchant)
+                return $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
                 {
                     $reversal = (new Payment\Processor\Processor($merchant))
-                                    ->refundPaymentAndReverseTransfer($transfer, $input);
+                                    ->refundPaymentAndReverseTransfer($transfer, $input, $initiator);
 
                     $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
+
+                    $this->customerRefundIfApplicable($transfer, $input, $reversal);
 
                     return $reversal;
                 });
             });
+    }
+
+    /**
+     * Create and process a reversal on a transfer initiated by a Linked Account
+     * Also process refund to the customer if cutomer_refund flag is present in input
+     *
+     * @param  Transfer\Entity $transfer
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function linkedAccountReverseForTransfer(
+        Transfer\Entity $transfer,
+        array $input,
+        Merchant\Entity $merchant): Entity
+    {
+        if (($transfer->getToId() !== $merchant->getId()) or
+            ($transfer->getToType() !== E::MERCHANT) or
+            ($transfer->getSourceType() !== E::PAYMENT) or
+            ($transfer->getMerchantId() !== $merchant->parent->getId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_FOR_LA_REVERSAL_INVALID,
+                null,
+                [
+                    'transfer_id' => $transfer->getId(),
+                    'input'       => $input
+                ]);
+        }
+
+        return $this->reverseForTransferAndCustomerRefund($transfer, $input, $merchant->parent, $merchant);
     }
 
     /**
@@ -287,10 +338,45 @@ class Core extends Base\Core
                 'refund_id'   => $refund->getId(),
                 'reversal_id' => $reversal->getId(),
                 'payment_id'  => $refund->getPaymentId(),
-                'balance_id'  =>  $reversal->balance->getId(),
+                'balance_id'  => $reversal->balance->getId(),
              ]);
 
         return $reversal;
+    }
+
+    /**
+     * Process Customer Refund if applicable
+     *
+     * @param  Transfer\Entity $transfer
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws Exception\LogicException|null
+     */
+    protected function customerRefundIfApplicable(Transfer\Entity $transfer, array $input, Reversal\Entity $reversal)
+    {
+        $customerRefund = (bool) ($input[Entity::REFUND_TO_CUSTOMER] ?? false);
+
+        if ($customerRefund === false)
+        {
+            return;
+        }
+
+        unset($input[Entity::REFUND_TO_CUSTOMER]);
+
+        unset($input[Entity::LINKED_ACCOUNT_NOTES]);
+
+        $payment = $transfer->source;
+
+        $merchant = $payment->merchant;
+
+        $refund = (new Payment\Processor\Processor($merchant))
+                                    ->refund($payment, $input);
+
+        $reversal->customerRefund()->associate($refund);
+
+        $this->repo->saveOrFail($reversal);
     }
 
     protected function create(array $input) : Entity

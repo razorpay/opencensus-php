@@ -979,7 +979,7 @@ class Validator extends Base\Validator
 
     public function validateLinkedAccountDashboardAccess(bool $dashboardAccess, Entity $merchant)
     {
-        $merchantUsersCount = $merchant->users->count();
+        $merchantUsersCount = $merchant->users()->count();
 
         if ($dashboardAccess === true and $merchantUsersCount > 0)
         {
@@ -991,6 +991,31 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
+        }
+    }
+
+    public function validateLinkedAccountReversals(bool $allowReversals, Entity $merchant)
+    {
+        $merchantUsersCount = $merchant->users()->count();
+
+        $canReverse = $merchant->isFeatureEnabled(Feature\Constants::ALLOW_REVERSALS_FROM_LA);
+
+        if ($merchantUsersCount === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
+        }
+
+        if (($allowReversals === true) and ($canReverse === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_GIVEN);
+        }
+
+        if (($allowReversals === false) and ($canReverse === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_REMOVED);
         }
     }
 

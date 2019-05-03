@@ -83,6 +83,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
+        Payment\Gateway::NETBANKING_FEDERAL,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
@@ -566,6 +567,12 @@ class Validator extends Base\Validator
 
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
+    ];
+
+    protected static $netbankingFederalEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_federal',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
     ];
 
     protected static $netbankingRblTerminalRules = [

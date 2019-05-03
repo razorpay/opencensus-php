@@ -455,6 +455,23 @@ class Netbanking
 
    protected static $defaultDisabled = [];
 
+   const DEFAULT_DISABLED_BANKS = [
+        IFSC::ABPB,
+        IFSC::AUBL,
+        IFSC::BKDN,
+        IFSC::BBKM,
+        IFSC::COSB,
+        IFSC::DBSS,
+        IFSC::JSBP,
+        IFSC::NKGS,
+        IFSC::SVCB,
+        IFSC::SYNB,
+        IFSC::TNSC,
+        IFSC::HDFC,
+        IFSC::ICIC,
+        self::LAVB_C,
+    ];
+
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::getAllBanks(), true));
@@ -476,6 +493,7 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
+
         return array_values(array_unique(array_merge(
                                             self::$gatewaySupportedBanks[Gateway::PAYTM]['retail'],
                                             self::$gatewaySupportedBanks[Gateway::BILLDESK]['retail'],

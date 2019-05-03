@@ -255,10 +255,10 @@ class BankAccount extends Base
             'validation_status' => $this->validation->getStatus(),
         ];
 
-        $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR, $traceArray);
+        $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR, $traceArray);
 
         $this->slack->queue(
-            TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR,
+            TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR,
             $traceArray,
             Constants::slackSettings()
         );

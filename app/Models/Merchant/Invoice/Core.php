@@ -17,6 +17,14 @@ use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
 class Core extends Base\Core
 {
+    /**
+     * Array of merchant ids for which invoice should not be generated.
+     * Disabled for Airtel Payments Bank currently.
+     */
+    const INVOICE_EXCLUDED_MERCHANTS = [
+        "AqUQQH9neAMkUG"
+    ];
+
     public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $invoiceEntity = new Entity;
@@ -142,6 +150,13 @@ class Core extends Base\Core
             $merchantIds = $input['merchant_ids'];
         }
 
+        //
+        // merchant_ids_excluded is an array of merchant ids coming from input, for which invoice shouldn't be generated.
+        //
+        $merchantIdsExcluded = (isset($input['merchant_ids_excluded']) === true) ?
+                               (array_merge($input['merchant_ids_excluded'], self::INVOICE_EXCLUDED_MERCHANTS)) :
+                               self::INVOICE_EXCLUDED_MERCHANTS;
+
         $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
 
         $batch = 100;
@@ -155,7 +170,7 @@ class Core extends Base\Core
         {
             $merchants = $this->repo
                               ->merchant
-                              ->fetchActivatedMerchantsBeforeTimestamp($batch, $skip, $endTimestamp, $merchantIds);
+                              ->fetchActivatedMerchantsBeforeTimestamp($batch, $skip, $endTimestamp, $merchantIds, $merchantIdsExcluded);
 
             $count = $merchants->count();
 

@@ -1280,9 +1280,11 @@ class Gateway extends Base\Gateway
         {
             $respCode = $response[ResponseFields::RESPONSE_CODE];
         }
-        else if (isset($response['response_code']) === true)
+        else if (isset($response[ResponseFields::FAILED_RESPONSE_CODE]) === true)
         {
-            $respCode = $response['response_code'];
+            $respCode = $response[ResponseFields::FAILED_RESPONSE_CODE];
+            
+            $response[ResponseFields::RESPONSE_CODE] = $respCode;
         }
 
         $responseKey = ($this->action === Base\Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;

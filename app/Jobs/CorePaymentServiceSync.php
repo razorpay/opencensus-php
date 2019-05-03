@@ -10,8 +10,12 @@ use RZP\Gateway\Base\Entity as E;
 class CorePaymentServiceSync extends Job
 {
     const REDIS_KEY_PREFIX = 'cps_sync_timestamp';
+    const REDIS_KEY_TTL    = 30; // Minutes
     const MUTEX_KEY_PREFIX = 'cps_sync:';
     const MUTEX_TIMEOUT    = 30;
+    const RETRY_COUNT      = 10;
+    const MIN_RETRY_DELAY  = 200;
+    const MAX_RETRY_DELAY  = 400;
     const INPUT            = 'input';
 
     /**
@@ -114,7 +118,10 @@ class CorePaymentServiceSync extends Job
                 }
             },
             self::MUTEX_TIMEOUT,
-            ErrorCode::BAD_REQUEST_CPS_ANOTHER_SYNC_IN_PROGRESS
+            ErrorCode::BAD_REQUEST_CPS_ANOTHER_SYNC_IN_PROGRESS,
+            self::RETRY_COUNT,
+            self::MIN_RETRY_DELAY,
+            self::MAX_RETRY_DELAY
         );
     }
 
@@ -133,6 +140,6 @@ class CorePaymentServiceSync extends Job
 
         $syncTimestampKey =  implode('_', [self::REDIS_KEY_PREFIX, $gateway, $paymentId, $action]);
 
-        $app['cache']->set($syncTimestampKey, $timestamp);
+        $app['cache']->put($syncTimestampKey, $timestamp, self::REDIS_KEY_TTL);
     }
 }

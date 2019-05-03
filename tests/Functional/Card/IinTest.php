@@ -289,16 +289,15 @@ class IinTest extends TestCase
 
         $flows = [
             'pin' => '1',
+            'otp' => '0',
         ];
 
         $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
 
         $this->ba->adminAuth();
 
-        $response = $this->startTest();
-
-        $this->assertArrayHasKey('234567', $response);
-
+        // Enable otp flow for both and assert that it appears in response
+        $this->startTest();
     }
 
     public function testBulkFlowsUpdateDisable()
@@ -312,16 +311,19 @@ class IinTest extends TestCase
 
         $flows = [
             'pin' => '1',
+            'otp' => '0',
         ];
 
         $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
 
         $this->ba->adminAuth();
 
+        // Disable pin flow for both
         $response = $this->startTest();
 
-        $this->assertArrayHasKey('234567', $response);
-
+        // Neither IIN now supports pin flow
+        $this->assertNotContains('pin', $response['401200']['flows']);
+        $this->assertNotContains('pin', $response['401201']['flows']);
     }
 
     public function testBulkFlowsInvalidInput()
@@ -341,6 +343,11 @@ class IinTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->startTest();
+    }
+
+    public function testIinsBulkUpdate()
+    {
         $this->startTest();
     }
 

@@ -2093,11 +2093,16 @@ class Processor
 
     protected function unsetSensitiveCardDetails(array & $input)
     {
-        if ((isset($input['card'])) and
-            (is_array($input['card'])))
+        if ((isset($input[Payment\Entity::CARD]) === true) and
+            (is_array($input[Payment\Entity::CARD]) === true))
         {
-            unset($input['card'][Card\Entity::CVV]);
-            unset($input['card'][Card\Entity::NUMBER]);
+            if (empty($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
+            {
+                $input[Payment\Entity::CARD][Card\Entity::IIN] = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+            }
+
+            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Payment\Entity::CARD][Card\Entity::NUMBER]);
         }
     }
 

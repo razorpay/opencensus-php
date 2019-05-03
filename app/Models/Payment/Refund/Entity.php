@@ -829,26 +829,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    /**
-     * Overriding this function to add is_scrooge attribute for admin array.
-     * is_scrooge will be true for the refunds which are of scrooge gateways.
-     *
-     * @return array
-     */
-    public function toArrayAdmin()
-    {
-        $array = parent::toArrayAdmin();
-
-        $gateway = $array[self::GATEWAY];
-
-        $array[self::IS_SCROOGE] = Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp(
-            $gateway,
-            $array[self::CREATED_AT]
-        );
-
-        return $array;
-    }
-
     protected function getPublicStatus($response)
     {
         $refundStatus = $this->getStatus();

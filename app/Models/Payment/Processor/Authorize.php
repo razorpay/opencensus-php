@@ -661,7 +661,7 @@ trait Authorize
 
         $this->runInternationalChecks($payment);
 
-        $this->runFraudChecks($payment);
+        $this->runFraudChecksIfApplicable($payment);
 
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -1772,9 +1772,10 @@ trait Authorize
         $this->validateInternationalRecurringPaymentsAllowed($payment);
     }
 
-    protected function runFraudChecks(Payment\Entity $payment)
+    protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+            ($payment->shouldRunShieldChecks() === true))
         {
             $this->validateFraudDetectionV2($payment);
         }
@@ -4509,7 +4510,7 @@ trait Authorize
 
             if (strtolower($response) === 'on')
             {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
+                $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
             }
         }
 
@@ -5331,6 +5332,12 @@ trait Authorize
                 if ($payment->hasBeenAuthorized() === true)
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
+                }
+
+                if ($payment->hasTerminal() === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
                 }
 
                 $this->repo->saveOrFail($payment);
