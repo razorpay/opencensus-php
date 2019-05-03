@@ -112,6 +112,11 @@ class Gateway extends Base\Gateway
 
         if ($authResponse !== null)
         {
+            if ($this->isRupayTransaction($input) === true)
+            {
+                $this->persistCardDetailsTemporarily($input, false);
+            }
+
             $this->persistCardDetailsTemporarily($input);
 
             return $authResponse;
@@ -1504,6 +1509,8 @@ class Gateway extends Base\Gateway
         return $key;
     }
 
+    // Overriding this from CardCacheTrait, since for Paysecure, we want to set the cache_ttl
+    // to the one mentioned in Paysecure gateway implementation
     protected function getCacheTtl()
     {
         if ($this->isRupayTransaction($this->input) === true)

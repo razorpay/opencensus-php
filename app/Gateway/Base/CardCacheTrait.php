@@ -17,8 +17,10 @@ trait CardCacheTrait
     /**
      * Stores card details in the cache.
      * @param array $input
+     * @param bool $storeCvv
+     * @throws \Exception
      */
-    protected function persistCardDetailsTemporarily(array $input)
+    protected function persistCardDetailsTemporarily(array $input, $storeCvv = true)
     {
         $cvv = $input['card']['cvv'];
 
@@ -38,9 +40,13 @@ trait CardCacheTrait
         $key = $this->getCacheKey($input['payment']['id']);
 
         $data = [
-            'cvv'         => $this->app['encrypter']->encrypt($cvv),
             'vault_token' => $vaultToken
         ];
+
+        if ($storeCvv === true)
+        {
+            $data['cvv'] = $this->app['encrypter']->encrypt($cvv);
+        }
 
         $cacheTtl = $this->getCacheTtl();
 
