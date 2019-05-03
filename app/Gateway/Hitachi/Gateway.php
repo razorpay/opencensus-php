@@ -215,8 +215,16 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                            $input['payment']['id'], Base\Action::AUTHORIZE);
+        if ($this->isRupayTransaction($input) === true)
+        {
+            $gatewayPayment = $this->app['repo']->paysecure->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Base\Action::AUTHORIZE);
+        }
+        else
+        {
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Base\Action::AUTHORIZE);
+        }
 
         $reverseEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::REVERSE);
 
@@ -1064,7 +1072,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getReverseRequestArray(array $input, Entity $gatewayPayment)
+    protected function getReverseRequestArray(array $input, Base\Entity $gatewayPayment)
     {
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
