@@ -72,7 +72,10 @@ trait CardCacheTrait
 
         $input['card']['number'] = (new Card\CardVault)->getCardNumber($data['vault_token']);
 
-        $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
+        if (isset($data['cvv']) === true)
+        {
+            $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
+        }
     }
 
     /**
