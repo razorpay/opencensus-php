@@ -782,6 +782,63 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals($cybersource['status'], 'authenticated');
     }
 
+    public function testCpsGatewayEntitySyncReverseOrder()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+
+        $gatewayData = [
+            'mode'       => 'test',
+            'timestamp'  => 1556616468,
+            'payment_id' => $payment->getId(),
+            'gateway'    => 'cybersource',
+            'input'      => [
+                'payment'       => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                ],
+                'terminal'      => [
+                    'gateway_acquirer' => 'hdfc',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction'       => [
+                'payment_id'    => $payment->getId(),
+                'acquirer'      => 'hdfc',
+                'action'        => 'authorize',
+                'received'      => false,
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'status'        => 'authenticated',
+                'xid'           => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
+                'veresEnrolled' => 'Y',
+                'ref'           => '466146845543214129700',
+                'reason_code'   => 475,
+            ],
+        ];
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($cybersource['status'], 'authenticated');
+
+        // This message entity shouldn't get updated 'cause
+        // timestamp is less than previous one
+        $gatewayData['gateway_transaction']['status'] = 'created';
+        $gatewayData['timestamp'] = 1556616460;
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($cybersource['status'], 'authenticated');
+    }
+
     public function testGatewayVerifyAuthResponseFailure()
     {$this->markTestSkipped();
         $payment = $this->getDefaultPaymentArray();
