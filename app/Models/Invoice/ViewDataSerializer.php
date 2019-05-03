@@ -15,7 +15,6 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
-use RZP\Models\Merchant\Checkout;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
 
@@ -197,10 +196,10 @@ class ViewDataSerializer extends Base\Core
 
         if ($overrideConfig === true)
         {
-            $image = $partner->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE);
+            $image = $partner->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE);
         }
 
-        return $image ?: $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE);
+        return $image ?: $this->merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE);
     }
 
     protected function getMerchantBrandColor(Merchant\Entity $partner = null): string
