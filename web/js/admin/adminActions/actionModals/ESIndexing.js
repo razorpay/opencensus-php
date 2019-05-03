@@ -44,9 +44,14 @@ export default class ESIndexing extends Component {
       body['--end_at'] = moment(body['--end_at'], 'DD/MM/YYYY').format('X');
     }
 
+    if (body['--reindex']) {
+      body['--reindex'] = Boolean(Number(body['--reindex']));
+    }
+
     return adminPost({
       url: body.mode + url,
       data: body,
+      headers: { 'Content-Type': 'application/json' },
     }).then(response => {
       if (response) {
         notifySuccess('Your request was successfull');
