@@ -1503,4 +1503,14 @@ class Gateway extends Base\Gateway
 
         return $key;
     }
+
+    protected function getCacheTtl()
+    {
+        if ($this->isRupayTransaction($this->input) === true)
+        {
+            return Paysecure\Gateway::CACHE_TTL;
+        }
+
+        return static::CACHE_TTL;
+    }
 }

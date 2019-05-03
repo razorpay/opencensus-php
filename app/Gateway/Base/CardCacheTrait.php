@@ -42,14 +42,16 @@ trait CardCacheTrait
             'vault_token' => $vaultToken
         ];
 
+        $cacheTtl = $this->getCacheTtl();
+
         // If this is set to 0, set the cache forever
-        if (static::CACHE_TTL === 0)
+        if ($cacheTtl === 0)
         {
             $this->app['cache']->store($this->secureCacheDriver)->forever($key, $data);
         }
         else
         {
-            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, $cacheTtl);
         }
     }
 
@@ -93,5 +95,13 @@ trait CardCacheTrait
     protected function getDriver()
     {
         return $this->app['config']->get('cache.secure_default');
+    }
+
+    // Fetches the cache ttl
+    // Added this in a function because, some gateways' would have
+    // multiple cache TTLs based on the payment network
+    protected function getCacheTtl()
+    {
+        return static::CACHE_TTL;
     }
 }
