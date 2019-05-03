@@ -1011,7 +1011,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray(array $input)
     {
-        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        if ($this->isRupayTransaction($input) === true)
         {
             return $this->getPaysecureRefundRequestArray($input);
         }
@@ -1041,6 +1041,9 @@ class Gateway extends Base\Gateway
 
     protected function getPaysecureRefundRequestArray(array $input)
     {
+        $gatewayPayment = $this->app['repo']->paysecure->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Base\Action::AUTHORIZE);
+
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
         $time = $createdAt->format(self::TIME_FORMAT);
@@ -1051,7 +1054,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['refund']['amount']),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
-            RequestFields::RETRIEVAL_REF_NUM   => $input['paysecure']['rrn'],
+            RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment['rrn'],
             RequestFields::MERCHANT_ID         => $input['merchant']['id'],
             RequestFields::TERMINAL_ID         => $input['terminal']['id'],
             RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
