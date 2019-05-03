@@ -53,15 +53,13 @@ abstract class AbstractEventClient extends Base\Core
     {
         try
         {
-            if (($this->mock === true) and
+            if (($this->mock === true) or
                 ($this->mode === Mode::TEST))
             {
                 return false;
             }
 
             $eventData = $this->getEventTrackerData();
-
-            s($eventData);
 
             if (empty($eventData) === true)
             {
