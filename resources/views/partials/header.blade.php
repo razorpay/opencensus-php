@@ -13,18 +13,32 @@
   <script src="https://wchat.freshchat.com/js/widget.js" async defer></script>
   <script src="https://cdn.razorpay.com/static/ticket-system/bundle.js" async defer></script>
   <script type="text/javascript">
-        _rzpAQ = [];
+        _rzpAQ = []; // queue for ga
+        _rzpAQ_fbq = []; // queue for facebook pixel
+
         function emptyRzpAQ () {
-            if (typeof ga === 'undefined' || (_rzpAQ && _rzpAQ.length === 0)) return;
-            var q = [].concat(_rzpAQ);
-            _rzpAQ = [];
-            if (q.length > 0) {
-                for (var i = 0; i < q.length; i++) {
-                    window.rzpAnalytics(q[i]);
+            if (typeof ga !== 'undefined' && _rzpAQ.length) {
+                var q = [].concat(_rzpAQ);
+                _rzpAQ = [];
+                if (q.length > 0) {
+                    for (var i = 0; i < q.length; i++) {
+                        window.rzpAnalytics(q[i]);
+                    }
+                }
+            }
+            if (typeof analytics !== 'undefined' && _rzpAQ_fbq.length) {
+                var q_fbq = [].concat(_rzpAQ_fbq);
+                _rzpAQ_fbq = [];
+                if (q_fbq.length > 0) {
+                    for (var i = 0; i < q_fbq.length; i++) {
+                        window.rzpAnalytics(q_fbq[i]);
+                    }
                 }
             }
         }
+
         var _qChckr = setInterval(emptyRzpAQ, 500);
+
         /**
          * Method to track Google Analytics
          * @param {Object} eventData Data of the event
@@ -33,22 +47,40 @@
             // If there's no data, don't track anything
             if (!data) return;
 
-            // If ga is undefined, push to queue
-            if (typeof ga === 'undefined') {
-                _rzpAQ.push(data);
-                return;
-            };
-
-            // `ga` exists now, empty the queue.
             clearInterval(_qChckr);
             emptyRzpAQ();
 
             switch (data.name) {
-                case 'set_dimensions': // Set the dimensions
+                case 'set_dimensions': { // Set the dimensions
+                    // If ga is undefined, push to queue
+                    if (typeof ga === 'undefined') {
+                        _rzpAQ.push(data);
+                        return;
+                    };
+
                     ga('old.set', data.dimensions);
                     ga('set', data.dimensions);
+
                     break;
+                }
+                case 'facebook': {
+                    // If analytics is undefined, push to queue
+                    if (typeof analytics === 'undefined') {
+                        _rzpAQ_fbq.push(data);
+                        return;
+                    };
+
+                    analytics.track('fb', data.event);
+
+                    break;
+                }
                 default:
+                    // If ga is undefined, push to queue
+                    if (typeof ga === 'undefined') {
+                        _rzpAQ.push(data);
+                        return;
+                    };
+
                     ga('old.send',
                         'event',
                         data.eventCategory || undefined,

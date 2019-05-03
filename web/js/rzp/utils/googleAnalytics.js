@@ -24,3 +24,10 @@ const setTrackData = (fixedData = {}) => {
 
 export { setTrackData };
 export default track;
+
+export const trackFb = event => {
+  window.rzpAnalytics({
+    name: 'facebook',
+    event,
+  });
+};

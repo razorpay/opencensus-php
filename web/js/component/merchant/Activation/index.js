@@ -13,6 +13,7 @@ import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
+import { trackFb } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -197,6 +198,10 @@ export default class ActivationWizard extends React.Component {
 
   componentDidMount() {
     addDropShield('.Activation--wizard');
+
+    if ((this.props.data.activated = 0)) {
+      trackFb('KYC_start');
+    }
   }
 
   componentWillUnmount() {
@@ -589,6 +594,8 @@ export default class ActivationWizard extends React.Component {
         if (!this.isLinkedAccountForm && typeof window.hj === 'function') {
           window.hj('tagRecording', ['activation_form_save_error']);
         }
+
+        trackFb(`KYC_complete_${data.data.activation_flow}`);
 
         onAction &&
           onAction.trackSubmit({
@@ -1290,7 +1297,6 @@ class SubmitForm extends React.Component {
     if (!this.state.allowSubmit) {
       return;
     }
-
     return this.props.submitActvationForm();
   };
 
