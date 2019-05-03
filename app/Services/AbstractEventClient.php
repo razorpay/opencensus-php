@@ -75,8 +75,7 @@ abstract class AbstractEventClient extends Base\Core
                 ];
 
                 $url = $this->config['url'] . $this->urlPattern;
-
-                return;
+                
                 $this->sendEventRequest($headers, $url, $eventDataChunk);
             }
         }
