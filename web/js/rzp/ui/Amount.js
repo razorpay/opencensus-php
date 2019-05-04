@@ -56,7 +56,9 @@ export function AmountTooltip({
   }
 
   return (
-    <span className={classList('help-content', customClass)}>
+    <span
+      className={classList('help-content help-content--currency', customClass)}
+    >
       {children || <span>{currencySymbolMapping[currency]}</span>}
       <Popover
         align="top"
@@ -64,7 +66,6 @@ export function AmountTooltip({
         parentQuerySelector={parentQuerySelector}
       >
         <PopoverBody>
-          {/* TODO: Api needs to add support for currency label */}
           <div style={{ textAlign: 'center' }}>
             {currencySymbol} - {window.currencyList[currency].name} ({currency})
           </div>

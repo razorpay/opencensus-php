@@ -426,12 +426,28 @@ a.breadcrumb__backNav--link {
   white-space: nowrap;
   font-size: 100%;
 
-  .rzp-paise {
-    font-size: 85.71%;
+  .rzp-currency, .rzp-paise {
+    font-weight: normal;
     color: inherit;
     opacity: 0.7;
   }
+
+  .rzp-whole {
+    font-weight: normal
+  }
+
+  .rzp-paise {
+    font-size: 85.71%;
+  }
 }
+
+.help-content--currency {
+  .rzp-popover.rzp-tooltip, .rzp-tooltip-inner {
+    width: unset
+    min-width: 200px
+  }
+}
+
 /* End Component: rzp/ui/Amount.js */
 
 /* Component: merchant/containers/TestModeBanner.js */
