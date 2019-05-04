@@ -31,7 +31,7 @@
         }
 
         function emptyRzpAQ_fbq () {
-            if (typeof analytics === 'undefined' || _rzpAQ.length) return;
+            if (typeof analytics === 'undefined' || _rzpAQ_fbq.length) return;
 
             clearQueue(_rzpAQ_fbq);
 
@@ -75,10 +75,10 @@
                         _rzpAQ_fbq.push(data);
                         return;
                     };
+                    
+                    analytics.track('fb', data.event, data.value);
 
-                    analytics.track('fb', data.event);
-
-                    break;
+                   break;
                 }
                 default:
                     // If ga is undefined, push to queue

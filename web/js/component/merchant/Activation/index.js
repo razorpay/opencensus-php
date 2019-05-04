@@ -199,7 +199,7 @@ export default class ActivationWizard extends React.Component {
   componentDidMount() {
     addDropShield('.Activation--wizard');
 
-    if ((this.props.data.activated = 0)) {
+    if (this.props.data.activated == 0) {
       trackFb('KYC_start');
     }
   }
