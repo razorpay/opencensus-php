@@ -54,7 +54,7 @@ abstract class AbstractEventClient extends Base\Core
         try
         {
             if (($this->mock === true) or
-                ($this->mode === Mode::TEST))
+                ($this->app->runningUnitTests() === true))
             {
                 return false;
             }
@@ -75,7 +75,7 @@ abstract class AbstractEventClient extends Base\Core
                 ];
 
                 $url = $this->config['url'] . $this->urlPattern;
-                
+
                 $this->sendEventRequest($headers, $url, $eventDataChunk);
             }
         }
