@@ -83,7 +83,10 @@ export default class AccountsListContainer extends ListContainer {
                   } for merchant "${account.name}"`,
                 });
 
-                this.resetPagination();
+                this.props.updateAccount({
+                  ...account,
+                  ...data,
+                });
 
                 return resp;
               } else {
@@ -161,7 +164,10 @@ export default class AccountsListContainer extends ListContainer {
                   } for merchant "${account.name}"`,
                 });
 
-                this.resetPagination();
+                this.props.updateAccount({
+                  ...account,
+                  ...data,
+                });
 
                 return resp;
               } else {
