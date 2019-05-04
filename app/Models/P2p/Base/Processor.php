@@ -101,7 +101,7 @@ class Processor
 
     public function fetchAll(array $input): array
     {
-        $this->initialize(Action::FETCH_ALL, $input, true);
+        $this->initialize(Action::FETCH_ALL, $input);
 
         $entities = $this->core->fetchAll($input);
 
@@ -110,7 +110,7 @@ class Processor
 
     public function fetch(array $input): array
     {
-        $this->initialize(Action::FETCH, $input, true);
+        $this->initialize(Action::FETCH, $input);
 
         $entity = $this->core->fetch($this->input->get(Entity::ID));
 

@@ -50,6 +50,11 @@ class Context extends ArrayObject
     /**
      * @var string
      */
+    protected $type;
+
+    /**
+     * @var string
+     */
     protected $mode;
 
     /**
@@ -128,6 +133,12 @@ class Context extends ArrayObject
             }
         }
 
+        // For Direct auth application needs to set
+        if ($basicAuth->getAuthType() === Type::DIRECT_AUTH)
+        {
+            $this->type = self::APPLICATION;
+        }
+
         // Note:: We are not putting application as instance variable
         // to ensure that context is independent of application container.
         $this->registerServices();
@@ -150,6 +161,8 @@ class Context extends ArrayObject
         {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE);
         }
+
+        $this->type = self::MERCHANT;
 
         $this->merchant = $merchant;
     }
@@ -188,6 +201,8 @@ class Context extends ArrayObject
             // Setting the device token with the device
             $this->setDeviceToken($deviceToken);
         }
+
+        $this->type = self::DEVICE;
 
         $this->device = $device;
     }
@@ -292,20 +307,7 @@ class Context extends ArrayObject
      */
     public function getContextType()
     {
-
-        // If handle is there with device, it will be considered device context
-        if (empty($this->getDevice()) === false)
-        {
-            return self::DEVICE;
-        }
-
-        // If device is not there but handle is, it is merchant context
-        if (empty($this->getMerchant()) === false)
-        {
-            return self::MERCHANT;
-        }
-
-        return self::APPLICATION;
+        return $this->type;
     }
 
     /**

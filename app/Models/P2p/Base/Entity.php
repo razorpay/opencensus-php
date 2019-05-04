@@ -55,6 +55,11 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function hasCustomer(): bool
+    {
+        return false;
+    }
+
     public function toArrayBag()
     {
         return (new ArrayBag($this->attributesToArray()));

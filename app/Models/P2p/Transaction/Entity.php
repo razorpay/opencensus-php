@@ -143,6 +143,10 @@ class Entity extends Base\Entity
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
         Entity::CREATED_AT,
+        Entity::PAYER,
+        Entity::PAYEE,
+        Entity::BANK_ACCOUNT,
+        Entity::UPI,
     ];
 
     protected $defaults = [
