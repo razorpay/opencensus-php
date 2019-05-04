@@ -2008,7 +2008,11 @@ class AdminFetch
                 'entity_type' => [
                     Fetch::LABEL  => 'Entity Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => ['payment'],
+                    Fetch::VALUES => [
+                        'payment',
+                        'subscription',
+                        'virtual_account',
+                    ],
                 ],
             ],
 

@@ -76,4 +76,26 @@ class Core extends Base\Core
 
         return $commissions;
     }
+
+    /**
+     * @param Merchant\Entity $partner
+     *
+     * @return bool
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\LogicException
+     */
+    public function shouldShowAggregateCommissionReportForPartner(Merchant\Entity $partner): bool
+    {
+        if ($partner->isResellerPartner() === true)
+        {
+            $activatedSubMerchants = (new Merchant\Core)->fetchActivatedSubMerchantsForPartner($partner);
+
+            if ($activatedSubMerchants->count() < Constants::RESELLER_SUBMERCHANT_LIMIT)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
