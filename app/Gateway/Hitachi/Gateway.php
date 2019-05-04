@@ -112,7 +112,7 @@ class Gateway extends Base\Gateway
 
         if ($authResponse !== null)
         {
-            $storeCvv = ($this->isRupayTransaction($input) === true);
+            $storeCvv = ($this->isRupayTransaction($input) === false);
 
             $this->persistCardDetailsTemporarily($input, $storeCvv);
 
@@ -425,7 +425,10 @@ class Gateway extends Base\Gateway
 
     protected function isRupayTransaction($input): bool
     {
-        return ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY);
+        return (
+            ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY) and
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD)
+        );
     }
 
     protected function authorizeMoto(array $input)
