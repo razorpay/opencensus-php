@@ -15,17 +15,37 @@ use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Admin;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
 class GatewayController extends Controller
 {
 
     /**
-     * This is a health Check API for third party url
+     * This is a health Check API for third party url.
+     * It basically hits external services (like payment gateway) through api.
+     * This helps in tracking downtime of services which can be accessed only from inside
+     * api ( like the ones which require VPN connectivity, whitelisted IPs, or custom
+     * client certs etc)
+     *
+     * Returns the http status code it gets from the gateway as-it-is to the client.
+     * In case of time out, it returns status code 504 with curl error message in
+     * `error_message` field
+     *
+     * Request Params:
+     * request params are same as the Requests lib(https://requests.ryanmccue.info/)'s params:
+     * Except url, everything is optional
+     *
+     * url:
+     * headers:                  (defaults to [])
+     * content:                  (defaults to [])
+     * method:                   (defaults to HEAD)
+     * options:                  (defaults to 'timeout' => 60, 'verify' => false)
      */
     public function getExternalApiHealth(Downtime\Service $service)
     {
@@ -577,6 +597,104 @@ class GatewayController extends Controller
     public function postGatewayDowntimeVajraWebhook(Downtime\Service $service)
     {
         return $this->postGatewayDowntimeWebhook($service, Downtime\Source::VAJRA);
+    }
+
+    /**
+     * Method to handle cps downtime from vajra
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function postCpsDowntimeVajraWebhook(Admin\Service $service)
+    {
+        $input = Request::all();
+
+        $result = $this->setCpsRoutingFlag($service, $input);
+
+        return ApiResponse::json($result);
+    }
+
+    protected function setCpsRoutingFlag(Admin\Service $service, array $input)
+    {
+        $alertStatus = $input[VajraConstants::STATUS_KEY];
+
+        $cpsRoutingStatus = ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false));
+
+        $trace = $this->app['trace'];
+
+        $trace->info(
+            TraceCode::VAJRA_CPS_ROUTING_REQUEST,
+            ['data' => ['cpsRoutingStatus' => $cpsRoutingStatus, 'alertStatus' => $alertStatus]]
+        );
+
+        $result = [];
+
+        switch ($alertStatus)
+        {
+            case VajraConstants::STATUS_ALERTING:
+                $trace->info(
+                    TraceCode::VAJRA_CPS_START_DISABLE_ROUTING,
+                    []
+                );
+
+                if ($cpsRoutingStatus === true)
+                {
+                    $result = $service->setConfigKeys(
+                        [Admin\ConfigKey::CPS_SERVICE_ENABLED => '0']
+                    );
+
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_DISABLE_ROUTING_SUCCESS,
+                        ['data' => 'Successfully stopped traffic to CPS']
+                    );
+
+                }
+                else
+                {
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_DISABLE_ROUTING_FAILURE,
+                        ['data' => 'Couldnt stop traffic to CPS due to internal status mismatch']
+                    );
+                }
+
+                break;
+
+            case VajraConstants::STATUS_OK:
+                $trace->info(
+                    TraceCode::VAJRA_CPS_START_ENABLE_ROUTING,
+                    []
+                );
+
+                if ($cpsRoutingStatus !== true)
+                {
+                    $result = $service->setConfigKeys(
+                        [Admin\ConfigKey::CPS_SERVICE_ENABLED => '1']
+                    );
+
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_ENABLE_ROUTING_SUCCESS,
+                        ['data' => 'Successfully enabled traffic to CPS']
+                    );
+                }
+                else
+                {
+                    $trace->info(
+                        TraceCode::VAJRA_CPS_ENABLE_ROUTING_FAILURE,
+                        ['data' => 'Couldnt enable traffic to CPS due to internal status mismatch']
+                    );
+                }
+
+                break;
+
+            default:
+                    $trace->info(
+                        TraceCode::VAJRA_INVALID_ALERT_STATUS,
+                        ['data' => 'Vajra alert status should be one of (alerting or ok)']
+                    );
+
+                break;
+        }
+
+        return $result;
     }
 
     /**

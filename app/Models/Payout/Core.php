@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Services\Mutex;
 use RZP\Models\Customer;
 use RZP\Models\Reversal;
@@ -15,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
+use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
@@ -30,8 +32,6 @@ use RZP\Models\FundTransfer\Attempt;
  */
 class Core extends Base\Core
 {
-    const PAYOUT_RETRY                      = 'payout_retry_%s';
-
     const MUTEX_RESOURCE                    = 'PAYOUT_PROCESSING_%s_%s';
 
     const CUSTOMER_WALLET_MUTEX_RESOURCE    = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
@@ -230,7 +230,7 @@ class Core extends Base\Core
                 'payout' => $payout->toArray(),
             ]);
 
-        (new Validator)->validateRetryPayout($payout);
+        $payout->getValidator()->validateRetryPayout();
 
         if ($payout->hasFundAccount() === true)
         {
@@ -299,9 +299,14 @@ class Core extends Base\Core
 
         $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
 
+        //
         // For VPA type, we always set it to UPI only
         // at build and we don't take the mode from FTA.
-        if (empty($ftaData[Attempt\Constants::VPA_ID]) === true)
+        //
+        // Also, we don't want to override the payout's mode if it's already set.
+        //
+        if ((empty($ftaData[Attempt\Constants::VPA_ID]) === true) and
+            ($payout->getMode() === null))
         {
             $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }
@@ -309,6 +314,160 @@ class Core extends Base\Core
         $payout->setFailureReason($failureReason);
 
         $this->repo->saveOrFail($payout);
+    }
+
+    public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)
+    {
+        $grouped = $queuedPayouts->groupBy(Entity::BALANCE_ID);
+
+        $traceData = [];
+
+        foreach ($grouped as $balanceId => $payouts)
+        {
+            // We get balance via payout since we would have already fetched balance entity
+            // when fetching the payouts list. Avoiding an extra DB query here by doing this.
+            $balanceEntity = $payouts->first()->balance;
+
+            $balanceAmount = $balanceEntity->getBalance();
+
+            $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
+
+            $traceData[$balanceId] = [
+                'original_balance'          => $balanceAmount,
+                'balance_remaining'         => $dispatchedData['balance_remaining'],
+                'total_payout_count'        => count($payouts),
+                'dispatched_payout_count'   => $dispatchedData['dispatched_payout_count'],
+                'dispatched_payout_amount'  => ($balanceAmount - $dispatchedData['balance_remaining']),
+            ];
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_DISPATCH_SUMMARY,
+            $traceData
+        );
+
+        return $traceData;
+    }
+
+    public function processQueuedPayout(string $payoutId): Entity
+    {
+        return $this->mutex->acquireAndRelease(
+                $payoutId,
+                function() use ($payoutId)
+                {
+                    /** @var Entity $payout */
+                    $payout = $this->repo->payout->findOrFail($payoutId);
+
+                    $payout->getValidator()->validateProcessingQueuedPayout();
+
+                    //
+                    // Currently, we support queued concept only for Fund Account type.
+                    // If we are supporting for others, the processor call needs to be fixed here.
+                    // Also, need to fix transaction.created event in the processor since
+                    // we do that only for fund_account and not for others.
+                    //
+                    // Apart from this, we also have to handle dispatching FTA for queued payouts.
+                    //
+                    // We also have to handle the fund transfer destination while processing the queued payout.
+                    //
+                    $payout = $this->getProcessor('fund_account_payout')
+                                   ->setMerchant($payout->merchant)
+                                   ->processQueuedPayout($payout);
+
+                    //
+                    // There might be some type of payouts where we don't want to dispatch FTA.
+                    // Should handle that before adding any other type of payouts as queued.
+                    //
+                    $this->dispatchFtaInitiate($payout);
+
+                    return $payout;
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    public function cancelPayout(Entity $payout): Entity
+    {
+        return $this->mutex->acquireAndRelease(
+                $payout->getId(),
+                function() use ($payout)
+                {
+                    $payout->getValidator()->validateCancel();
+
+                    $payout->setStatus(Status::CANCELLED);
+
+                    $this->repo->saveOrFail($payout);
+
+                    return $payout;
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
+    {
+        $dispatchedCount = 0;
+
+        foreach ($payouts as $payout)
+        {
+            $payoutAmount = $payout->getAmount();
+
+            // We have to explicitly calculate fees here since if it's queued, transaction wouldn't
+            // have been created and hence the fees also wouldn't have been calculated.
+            list($payoutFees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+            $totalPayoutAmount = $payoutAmount + $payoutFees;
+
+            if ($totalBalance < $totalPayoutAmount)
+            {
+                continue;
+            }
+
+            $totalBalance -= $totalPayoutAmount;
+
+            $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
+
+            $dispatchedCount += 1;
+         }
+
+         return [
+             'balance_remaining'        => $totalBalance,
+             'dispatched_payout_count'  => $dispatchedCount,
+         ];
+    }
+
+    protected function dispatchQueuedPayout(Entity $payout, int $fees, int $currentBalance)
+    {
+        $payoutId = $payout->getId();
+
+        $traceInfo = [
+            'payout_id'         => $payoutId,
+            'amount'            => $payout->getAmount(),
+            'fees'              => $fees,
+            'current_balance'   => $currentBalance,
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYOUT_QUEUE_DISPATCH_INIT, $traceInfo);
+
+            QueuedPayouts::dispatch($this->mode, $payoutId);
+
+            $this->trace->info(TraceCode::PAYOUT_QUEUE_DISPATCH_COMPLETE, $traceInfo);
+        }
+        catch (\Throwable $e)
+        {
+            // If the dispatch fails due to any reason, cron will
+            // pick up these payouts again and attempt to dispatch.
+
+            $data = $traceInfo + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_QUEUE_DISPATCH_FAILED,
+                $data);
+        }
     }
 
     protected function getRetryPayoutInputForMerchant(Entity $payout): array
@@ -505,6 +664,15 @@ class Core extends Base\Core
 
     protected function dispatchFtaInitiate(Entity $payout)
     {
+        //
+        // When we queue a payout, we don't create any transaction or FTA.
+        // We do it later when we actually process that queued payout.
+        //
+        if ($payout->isStatusQueued() === true)
+        {
+            return;
+        }
+
         $ftaId = $payout->fundTransferAttempts->first()->getId();
 
         $info = [

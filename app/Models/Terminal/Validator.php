@@ -83,6 +83,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
+        Payment\Gateway::NETBANKING_FEDERAL,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
@@ -397,6 +398,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|in:v2',
     ];
 
+    protected static $walletPhonepeTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_phonepe',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+    ];
+
     protected static $walletOlamoneyEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_olamoney',
         Entity::TYPE                       => 'sometimes|array',
@@ -552,6 +560,12 @@ class Validator extends Base\Validator
 
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
+    ];
+
+    protected static $netbankingFederalEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_federal',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
     ];
 
     protected static $netbankingRblTerminalRules = [

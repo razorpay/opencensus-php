@@ -768,6 +768,101 @@ class Currency
         self::ZAR => 'R',
     ];
 
+    const NAME = [
+        self::AED => 'Emirati Dirham',
+        self::ALL => 'Albanian Lek',
+        self::AMD => 'Armenian Dram',
+        self::ARS => 'Argentine Peso',
+        self::AUD => 'Australian Dollar',
+        self::AWG => 'Aruban or Dutch Guilder',
+        self::BBD => 'Barbadian or Bajan Dollar',
+        self::BDT => 'Bangladeshi Taka',
+        self::BMD => 'Bermudian Dollar',
+        self::BND => 'Bruneian Dollar',
+        self::BOB => 'Bolivian Bolíviano',
+        self::BSD => 'Bahamian Dollar',
+        self::BWP => 'Botswana Pula',
+        self::BZD => 'Belizean Dollar',
+        self::CAD => 'Canadian Dollar',
+        self::CHF => 'Swiss Franc',
+        self::CNY => 'Chinese Yuan Renminbi',
+        self::COP => 'Colombian Peso',
+        self::CRC => 'Costa Rican Colon',
+        self::CUP => 'Cuban Peso',
+        self::CZK => 'Czech Koruna',
+        self::DKK => 'Danish Krone',
+        self::DOP => 'Dominican Peso',
+        self::DZD => 'Algerian Dinar',
+        self::EGP => 'Egyptian Pound',
+        self::ETB => 'Ethiopian Birr',
+        self::EUR => 'Euro',
+        self::FJD => 'Fijian Dollar',
+        self::GBP => 'British Pound',
+        self::GIP => 'Gibraltar Pound',
+        self::GMD => 'Gambian Dalasi',
+        self::GTQ => 'Guatemalan Quetzal',
+        self::GYD => 'Guyanese Dollar',
+        self::HKD => 'Hong Kong Dollar',
+        self::HNL => 'Honduran Lempira',
+        self::HRK => 'Croatian Kuna',
+        self::HTG => 'Haitian Gourde',
+        self::HUF => 'Hungarian Forint',
+        self::IDR => 'Indonesian Rupiah',
+        self::ILS => 'Israeli Shekel',
+        self::INR => 'Indian Rupee',
+        self::JMD => 'Jamaican Dollar',
+        self::KES => 'Kenyan Shilling',
+        self::KGS => 'Kyrgyzstani Som',
+        self::KHR => 'Cambodian Riel',
+        self::KYD => 'Caymanian Dollar',
+        self::KZT => 'Kazakhstani Tenge',
+        self::LAK => 'Lao Kip',
+        self::LBP => 'Lebanese Pound',
+        self::LKR => 'Sri Lankan Rupee',
+        self::LRD => 'Liberian Dollar',
+        self::LSL => 'Basotho Loti',
+        self::MAD => 'Moroccan Dirham',
+        self::MDL => 'Moldovan Leu',
+        self::MKD => 'Macedonian Denar',
+        self::MMK => 'Burmese Kyat',
+        self::MNT => 'Mongolian Tughrik',
+        self::MOP => 'Macau Pataca',
+        self::MUR => 'Mauritian Rupee',
+        self::MVR => 'Maldivian Rufiyaa',
+        self::MWK => 'Malawian Kwacha',
+        self::MXN => 'Mexican Peso',
+        self::MYR => 'Malaysian Ringgit',
+        self::NAD => 'Namibian Dollar',
+        self::NGN => 'Nigerian Naira',
+        self::NIO => 'Nicaraguan Cordoba',
+        self::NOK => 'Norwegian Krone',
+        self::NPR => 'Nepalese Rupee',
+        self::NZD => 'New Zealand Dollar',
+        self::PEN => 'Peruvian Sol',
+        self::PGK => 'Papua New Guinean Kina',
+        self::PHP => 'Philippine Peso',
+        self::PKR => 'Pakistani Rupee',
+        self::QAR => 'Qatari Riyal',
+        self::RUB => 'Russian Ruble',
+        self::SAR => 'Saudi Arabian Riyal',
+        self::SCR => 'Seychellois Rupee',
+        self::SEK => 'Swedish Krona',
+        self::SGD => 'Singapore Dollar',
+        self::SLL => 'Sierra Leonean Leone',
+        self::SOS => 'Somali Shilling',
+        self::SSP => 'South Sudanese Pound',
+        self::SVC => 'Salvadoran Colon',
+        self::SZL => 'Swazi Lilangeni',
+        self::THB => 'Thai Baht',
+        self::TTD => 'Trinidadian Dollar',
+        self::TZS => 'Tanzanian Shilling',
+        self::USD => 'US Dollar',
+        self::UYU => 'Uruguayan Peso',
+        self::UZS => 'Uzbekistani Som',
+        self::YER => 'Yemeni Rial',
+        self::ZAR => 'South African Rand',
+    ];
+
     public static function getIsoCode(string $currency)
     {
         return self::ISO_NUMERIC_CODES[$currency] ?? null;
@@ -783,19 +878,24 @@ class Currency
         return self::EXPONENT[$currency] ?? 2;
     }
 
-    public static function getDenomination($currency)
+    public static function getDenomination(string $currency)
     {
         return self::DENOMINATION_FACTOR[$currency] ?? 100;
     }
 
-    public static function getMinAmount($currency)
+    public static function getMinAmount(string $currency)
     {
         return self::MIN_VALUE[$currency] ?? 100;
     }
 
-    public static function getMinAuthValue($currency)
+    public static function getMinAuthValue(string $currency)
     {
         return self::MIN_AUTH_VALUE[$currency] ?? 100;
+    }
+
+    public static function getName(string $currency)
+    {
+        return self::NAME[$currency] ?? '';
     }
 
     public static function getDetails()
@@ -809,7 +909,8 @@ class Currency
                 'denomination'    => self::getDenomination($currency),
                 'min_value'       => self::getMinAmount($currency),
                 'min_auth_value'  => self::getMinAuthValue($currency),
-                'symbol'          => self::getSymbol($currency)
+                'symbol'          => self::getSymbol($currency),
+                'name'            => self::getName($currency),
             ];
         }
 

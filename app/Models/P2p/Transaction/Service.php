@@ -54,6 +54,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function initiateReject(array $input): array
+    {
+        $response = $this->processor->initiateReject($input);
+
+        return $response;
+    }
+
     public function reject(array $input): array
     {
         $response = $this->processor->reject($input);

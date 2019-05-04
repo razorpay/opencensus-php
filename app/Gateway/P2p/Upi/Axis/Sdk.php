@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Gateway\P2p\Base;
 use RZP\Base\JitValidator;
 use RZP\Gateway\P2p\Upi\Axis\Gateway;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Gateway\P2p\Upi\Axis\Actions\Action;
 use RZP\Gateway\P2p\Upi\Axis\Actions\DeviceAction;
 
@@ -23,6 +24,9 @@ class Sdk extends Base\Request
 
     protected $actionMap;
 
+    /**
+     * @var ArrayBag
+     */
     protected $content;
 
     protected $signer;
@@ -44,6 +48,9 @@ class Sdk extends Base\Request
         {
             $this->validateInput($this->actionMap[Action::VALIDATOR]);
         }
+
+        // Setting Request Id as RID in UDF
+        $this->udf[Fields::RID] = $this->toArrayBag()->get(Fields::ID);
 
         $this->content->put(Fields::UDF_PARAMETERS, json_encode($this->udf));
 
@@ -125,7 +132,10 @@ class Sdk extends Base\Request
 
         foreach ($actionMap as $key)
         {
-            $str = $str . $this->content[$key];
+            if (isset($this->content[$key]) === true)
+            {
+                $str = $str . $this->content[$key];
+            }
         }
 
         return $str;

@@ -11,6 +11,7 @@ use RZP\Error;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Gateway\Mpi;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -103,9 +104,36 @@ class Gateway extends Base\Gateway
         // we will remove this check.
         if ($this->isS2sFlowSupported($input) === true)
         {
-            $response = $this->enroll($input);
+            $authenticationGateway = $this->decideAuthenticationGateway($input);
 
-            return $this->decideStepAfterEnroll($response, $input);
+            switch ($authenticationGateway)
+            {
+                case Payment\Gateway::MPI_BLADE:
+                case Payment\Gateway::MPI_ENSTAGE:
+                    $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+                    $authorizeFields = $this->getFirstDataFieldsForBladeAuthentication($input);
+                    $firstDataEntity = $this->createGatewayPaymentEntity($authorizeFields, $input);
+
+                    if ($authResponse !== null)
+                    {
+                        $this->persistCardDetailsTemporarily($input);
+
+                        return $authResponse;
+                    }
+
+                    // We send request for not enrolled cards same as second recurring request.
+                    $authorizeRequest = $this->prepareNotEnrolledAuthorizeRequest($input);
+
+                    return $this->authorizeNotEnrolled($input, $authorizeRequest);
+
+                default:
+                    $response = $this->enroll($input);
+
+                    return $this->decideStepAfterEnroll($response, $input);
+
+                    break;
+            }
         }
 
         $requestContent = $this->getPreAuthRequestContentArray($input);
@@ -119,6 +147,29 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
+    {
+        return $this->app['gateway']->call(
+            $authenticationGateway,
+            $this->action,
+            $input,
+            $this->mode);
+    }
+
+    protected function decideAuthenticationGateway($input)
+    {
+        if (empty($input['authenticate']['gateway']) === false)
+        {
+            $authenticationGateway = $input['authenticate']['gateway'];
+        }
+        else
+        {
+            $authenticationGateway = Payment\Gateway::FIRST_DATA;
+        }
+
+        return $authenticationGateway;
     }
 
     protected function secondRecurring(array $input)
@@ -169,15 +220,46 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA);
         }
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
         if ($this->isS2sFlow($input['gateway']) === true)
         {
-            $this->authorizeEnrolled($input, $gatewayPayment);
+            $mpiEntity = $this->app['repo']
+                              ->mpi
+                              ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
+
+            $authenticationGateway = Payment\Gateway::FIRST_DATA;
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Action::AUTHORIZE);
+
+            if ($mpiEntity !== null)
+            {
+                $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
+            }
+
+            switch ($authenticationGateway)
+            {
+                case Payment\Gateway::MPI_BLADE:
+                case Payment\Gateway::MPI_ENSTAGE:
+                    $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+                    $authorizeRequest = $this->prepareAuthorizeRequestFromBladeResp($input, $authResponse, $mpiEntity);
+
+                    $this->authorizeEnrolled($input, $gatewayPayment, $authorizeRequest);
+
+                    break;
+                default:
+                    $authorizeRequest = $this->getAuthorizeRequest($input, $gatewayPayment);
+
+                    $this->authorizeEnrolled($input, $gatewayPayment, $authorizeRequest);
+
+                    break;
+            }
         }
         else
         {
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Action::AUTHORIZE);
+
             $this->verifySecureHash($input['gateway']);
 
             $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
@@ -208,6 +290,96 @@ class Gateway extends Base\Gateway
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function prepareAuthorizeRequestFromBladeResp($input, $authResponse, $mpiEntity)
+    {
+        $txnType = $this->getTransactionType($input);
+
+        $this->setCardNumberAndCvv($input);
+
+        $gatewayInput = $input['gateway'];
+
+        $cardMonth = str_pad($input[Constants\Entity::CARD][Card\Entity::EXPIRY_MONTH],
+            2, '0', STR_PAD_LEFT);
+
+        $currency = $input['payment'][Payment\Entity::CURRENCY];
+
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
+        $amount = $input[Constants\Entity::PAYMENT][Payment\Entity::AMOUNT] / 100;
+        $amount = number_format($amount, 2, '.', '');
+
+        $requestArray = [
+            ApiRequestFields::V1_TRANSACTION => [
+                ApiRequestFields::V1_CREDIT_CARD_TX_TYPE => [
+                    ApiRequestFields::V1_STORE_ID => $this->getStoreId(),
+                    ApiRequestFields::V1_TYPE     => $txnType,
+                ],
+                ApiRequestFields::V1_CREDIT_CARD_DATA => [
+                    ApiRequestFields::V1_CARD_NUMBER    => $input['card']['number'],
+                    ApiRequestFields::V1_EXPIRY_MONTH   => $cardMonth,
+                    ApiRequestFields::V1_EXPIRY_YEAR    => substr($input['card']['expiry_year'],-2),
+                    ApiRequestFields::V1_CARD_CODE_VALUE => $input[Constants\Entity::CARD][Card\Entity::CVV]
+                ],
+                ApiRequestFields::V1_CREDIT_CARD_3D_SECURE => [
+                    ApiRequestFields::V1_VERIFICATION_RESPONSE => $authResponse['enrolled'],
+                    ApiRequestFields::V1_PAYER_AUTHENTICATION_RESPONSE => $authResponse['status'],
+                    ApiRequestFields::V1_AUTHENTICATION_VALUE => $authResponse['cavv'],
+                    ApiRequestFields::V1_XID => $authResponse['xid'],
+                ],
+                ApiRequestFields::V1_PAYMENT => [
+                    ApiRequestFields::V1_CHARGE_TOTAL => $amount,
+                    ApiRequestFields::V1_CURRENCY => $currencyCode,
+                ],
+                ApiRequestFields::V1_TRANSACTION_DETAILS => [
+                    ApiRequestFields::V1_ORDER_ID => $input['payment']['id'],
+                ],
+            ]
+        ];
+
+        return $requestArray;
+    }
+
+    public function otpGenerate(array $input)
+    {
+        if ((isset($input['otp_resend']) === true) and
+            ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
+        return $this->authorize($input);
+    }
+
+    public function otpResend(array $input)
+    {
+        parent::action($input, Base\Action::OTP_RESEND);
+
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        if ($mpiEntity->getGateway() !== Payment\Gateway::MPI_ENSTAGE)
+        {
+            //
+            // This error is consistent with error thrown in otpResend trait
+            throw new Exception\LogicException(
+                'Gateway does not support OTP resend',
+                null,
+                ['payment_id' => $input['payment']['id']]);
+        }
+
+        $authenticationGateway = $mpiEntity->getGateway();
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        return $authResponse;
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
     }
 
     protected function runCallbackVerify(array $input, Entity $gatewayPayment)
@@ -697,6 +869,14 @@ class Gateway extends Base\Gateway
             Entity::AMOUNT             => $authRequest[ConnectRequestFields::CHARGE_TOTAL] * 100,
             Entity::CURRENCY           => $authRequest[ConnectRequestFields::CURRENCY],
             Entity::GATEWAY_PAYMENT_ID => $authRequest[ConnectRequestFields::ORDER_ID],
+        ];
+
+        return $attributes;
+    }
+    protected function getFirstDataFieldsForBladeAuthentication(array $input)
+    {
+        $attributes = [
+            Entity::AMOUNT             => $input['payment']['amount'],
         ];
 
         return $attributes;
@@ -1540,6 +1720,50 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function prepareNotEnrolledAuthorizeRequest(array $input)
+    {
+        $txnType = $this->getTransactionType($input);
+
+        $cardMonth = str_pad($input[Constants\Entity::CARD][Card\Entity::EXPIRY_MONTH],
+            2, '0', STR_PAD_LEFT);
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE] = [
+            ApiRequestFields::V1_STORE_ID   => $this->getStoreId(),
+            ApiRequestFields::V1_TYPE       => $txnType,
+        ];
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_DATA] = [
+            ApiRequestFields::V1_CARD_NUMBER    => $input['card']['number'],
+            ApiRequestFields::V1_EXPIRY_MONTH   => $cardMonth,
+            ApiRequestFields::V1_EXPIRY_YEAR    => substr($input['card']['expiry_year'], -2),
+            ApiRequestFields::V1_CARD_CODE_VALUE => $input[Constants\Entity::CARD][Card\Entity::CVV],
+        ];
+
+        $currency = $input['payment'][Payment\Entity::CURRENCY];
+
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
+        $amount = $input[Constants\Entity::PAYMENT][Payment\Entity::AMOUNT] / 100;
+        $amount = number_format($amount, 2, '.', '');
+
+        $body[ApiRequestFields::V1_PAYMENT] = [
+            ApiRequestFields::V1_CHARGE_TOTAL => $amount,
+            ApiRequestFields::V1_CURRENCY     => $currencyCode,
+        ];
+
+        // Sending merchant_txn_id is not strictly necessary. We use the order id
+        // for refund and verification of purchase/sale payments, so a separate
+        // reference id here is not required. However, keeping it here for future use.
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID              => $input['payment']['id'],
+            ApiRequestFields::V1_TRANSACTION_ORIGIN    => 'ECI',
+        ];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
     protected function getPurchaseRequestArrayWithCard(array $input)
     {
         $cardMonth = str_pad($input[Constants\Entity::CARD][Card\Entity::EXPIRY_MONTH],
@@ -2011,10 +2235,21 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function authorizeEnrolled(array $input, $gatewayPayment)
+    protected function authorizeNotEnrolled(array $input, $authorizeRequest)
     {
-        $authorizeRequest = $this->getAuthorizeRequest($input, $gatewayPayment);
+        $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
+        $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
+
+        $responseArray = $this->parseOrderResponse($response);
+
+        $this->traceGatewayPaymentResponse($responseArray, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+
+        $this->processAuthorizeResponse($responseArray);
+    }
+
+    protected function authorizeEnrolled(array $input, $gatewayPayment, $authorizeRequest)
+    {
         $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
         $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
@@ -2118,6 +2353,10 @@ class Gateway extends Base\Gateway
         {
             $content = $response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::IPGAPI_ORDER_RESPONSE];
         }
+        else if (isset($response[ApiResponseFields::APPROVAL_CODE]) === true)
+        {
+            $content = $response;
+        }
         else
         {
             // in this case firstdata has returned a failed xml, but the structure is totally different,
@@ -2135,9 +2374,16 @@ class Gateway extends Base\Gateway
             throw $e;
         }
 
-        $this->mockApprovalCodeForS2s($content);
+        if (isset($response[ApiResponseFields::APPROVAL_CODE]) === false)
+        {
+            $this->mockApprovalCodeForS2s($content);
 
-        $this->setApproval($content[ApiResponseFields::IPGAPI_APPROVAL_CODE]);
+            $this->setApproval($content[ApiResponseFields::IPGAPI_APPROVAL_CODE]);
+        }
+        else
+        {
+            $this->setApproval($content[ApiResponseFields::APPROVAL_CODE]);
+        }
 
         $attributes = $this->getS2sCallbackFields($content);
 

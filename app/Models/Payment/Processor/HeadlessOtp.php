@@ -183,10 +183,14 @@ trait HeadlessOtp
         {
             $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
 
-            throw new Exception\GatewayRequestException(
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE,
+                $response['error']['reason'] ?? $traceCode ?? null,
                 'Failed to open Headless Browser',
+                $traceInput,
                 null,
-                false);
+                Payment\Action::ENROLL,
+                true);
         }
 
         /*

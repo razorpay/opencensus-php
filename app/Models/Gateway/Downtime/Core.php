@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Services;
 use RZP\Exception;
@@ -12,9 +13,22 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\ConfigKey;
 
 class Core extends Base\Core
 {
+    // 10 minutes
+    const DEFAULT_DOWNTIME_DURATION = 600;
+
+    const GATEWAY_EXCEPTION_DOWNTIME = 'gateway_exception_downtime_';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     /**
      * Prevent duplicate creation of the same error model.
      * Basically, since we pass an empty 'to', it means, this is for an unscheduled
@@ -72,7 +86,8 @@ class Core extends Base\Core
      */
     protected function allowUpdateOfExistingDowntimes()
     {
-        if ($this->app['basicauth']->isDashboardApp() === true)
+        if (($this->app['basicauth']->isAdminAuth() === true) and
+            ($this->app['basicauth']->isDashboardApp() === true))
         {
             return false;
         }
@@ -177,6 +192,61 @@ class Core extends Base\Core
                           ->fetchApplicableDowntimesForPayment($params);
 
         return $downtimes;
+    }
+
+    public function createForGatewayException(string $gateway, array $gatewayData)
+    {
+        $method = $gatewayData['payment']['method'];
+
+        $allowed = (new GatewayErrorThrottler($gateway, $method))->attempt();
+
+        if ($allowed === false)
+        {
+            $this->attemptCreation($gateway, $gatewayData);
+        }
+    }
+
+    protected function attemptCreation(string $gateway, array $gatewayData)
+    {
+        $resource = self::GATEWAY_EXCEPTION_DOWNTIME . $gateway;
+
+        //
+        // It's possible that multiple failures at the same time will get past
+        // the uniqueness check in create (since we do the DB query before the
+        // creation). For this reason, we're adding a mutex lock around creation.
+        // If aquisition fails, that's fine, we don't need to retry since the
+        // parallel process will end up creating the same gateway downtime anyway.
+        //
+        if ($this->mutex->acquire($resource) === false)
+        {
+            return;
+        }
+
+        $now = Carbon::now()->getTimestamp();
+
+        $duration = $this->getDuration();
+
+        $this->create([
+            Entity::GATEWAY     => $gateway,
+            Entity::REASON_CODE => ReasonCode::HIGHER_ERRORS,
+            Entity::BEGIN       => $now,
+            Entity::END         => $now + $duration,
+            Entity::METHOD      => $gatewayData['payment']['method'],
+            Entity::SOURCE      => Source::INTERNAL,
+            Entity::COMMENT     => 'Downtime created by internal gateway response analysis and throttling',
+            Entity::SCHEDULED   => false,
+        ]);
+
+        $this->mutex->release($resource);
+    }
+
+    protected function getDuration(): int
+    {
+        $redis = $this->app['redis']->connection();
+
+        $settings = $redis->hgetall(ConfigKey::DOWNTIME_THROTTLE);
+
+        return $settings['duration'] ?? self::DEFAULT_DOWNTIME_DURATION;
     }
 
     /**

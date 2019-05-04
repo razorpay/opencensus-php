@@ -129,8 +129,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->setCardNumberAndCvv($input);
-
         if ($this->isRupayTransaction($input) === true)
         {
             return $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
@@ -143,6 +141,8 @@ class Gateway extends Base\Gateway
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        $this->setCardNumberAndCvv($input);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 
@@ -302,6 +302,8 @@ class Gateway extends Base\Gateway
 
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
+        $this->checkForBharatQrFailure($input);
+
         $maskedPan = $input[ResponseFields::MASKED_CARD_NUMBER];
 
         $formattedAmount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
@@ -337,6 +339,21 @@ class Gateway extends Base\Gateway
         $qrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE] = $merchantReference;
 
         return $qrData;
+    }
+
+    protected function checkForBharatQrFailure($input)
+    {
+        if ($input[ResponseFields::STATUS_CODE] !== Status::SUCCESS_CODE)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'notification_request' => $input,
+                    'gateway'              => $this->gateway
+                ]);
+        }
     }
 
     protected function getIntegerFormattedAmount(string $amount)
@@ -1263,9 +1280,11 @@ class Gateway extends Base\Gateway
         {
             $respCode = $response[ResponseFields::RESPONSE_CODE];
         }
-        else if (isset($response['response_code']) === true)
+        else if (isset($response[ResponseFields::FAILED_RESPONSE_CODE]) === true)
         {
-            $respCode = $response['response_code'];
+            $respCode = $response[ResponseFields::FAILED_RESPONSE_CODE];
+            
+            $response[ResponseFields::RESPONSE_CODE] = $respCode;
         }
 
         $responseKey = ($this->action === Base\Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;

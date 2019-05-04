@@ -112,6 +112,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getByMethodAndCustomerIdAndCardIds($method, $customer, $cardIds)
+    {
+        return $this->newQuery()
+                    ->where(Entity::METHOD, '=', $method)
+                    ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
+                    ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+                    ->whereIn(Entity::CARD_ID, $cardIds)
+                    ->where(function($query)
+                    {
+                        $query->whereNull(Token\Entity::EXPIRED_AT)
+                              ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
+                    })
+                    ->orderBy(Token\Entity::CREATED_AT)
+                    ->orderBy(Token\Entity::ID)
+                    ->get();
+    }
+
     public function getTokenByIdAndAccountNumber(string $tokenId, string $accountNumber)
     {
         return $this->newQuery()

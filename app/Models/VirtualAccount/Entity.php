@@ -140,6 +140,14 @@ class Entity extends Base\PublicEntity
         return $this->morphTo();
     }
 
+    /**
+     * Points to the pivot table entity `entityOrigin` for the payment
+     */
+    public function entityOrigin()
+    {
+        return $this->morphOne(\RZP\Models\EntityOrigin\Entity::class, 'entity');
+    }
+
     // ----------------------- Modifiers ---------------------------------------
 
     public function modifyName(& $input)

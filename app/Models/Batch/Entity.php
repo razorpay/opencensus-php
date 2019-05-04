@@ -482,6 +482,19 @@ class Entity extends Base\PublicEntity
         return $this->attributesToArray();
     }
 
+    /**
+     * Gets dimensions for metrics around batch module
+     * @param  array $extra Additional key, value pair of dimensions
+     * @return array
+     */
+    public function getMetricDimensions(array $extra = []): array
+    {
+        return $extra + [
+                'type'            =>  $this->getType(),
+                'sub_type'        =>  $this->getSubType(),
+                'gateway'         =>  $this->getGateway(),
+            ];
+    }
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------

@@ -141,17 +141,27 @@ abstract class RowProcessor extends Base\Core
     protected function updateUtrMetric()
     {
         // Batch created_at is the tentative time at which an attempt was initiated
-        $batchCreatedAt = $this->reconEntity->batchFundTransfer->getCreatedAt();
+        $batchCreatedAt = optional($this->reconEntity->batchFundTransfer)->getCreatedAt();
 
-        $timeTaken = intval((Carbon::now(Timezone::IST)->getTimestamp() - $batchCreatedAt) / 60);
+        if (empty($batchCreatedAt) === false)
+        {
+            $timeTaken = intval((Carbon::now(Timezone::IST)->getTimestamp() - $batchCreatedAt) / 60);
 
-        $this->trace->histogram(
-            Metric::ATTEMPTS_TIME_FOR_UTR_MINUTES,
-            $timeTaken,
-            [
-                Metric::CHANNEL => $this->reconEntity->getChannel(),
-                Metric::SOURCE_TYPE => $this->reconEntity->getSourceType()
-            ]);
+            $this->trace->histogram(
+                Metric::ATTEMPTS_TIME_FOR_UTR_MINUTES,
+                $timeTaken,
+                [
+                    Metric::CHANNEL => $this->reconEntity->getChannel(),
+                    Metric::SOURCE_TYPE => $this->reconEntity->getSourceType()
+                ]);
+        }
+        else
+        {
+            $this->trace->error(TraceCode::FTA_BATCH_FUND_TRANSFER_ABSENT,
+                [
+                    'recon_entity_id' => $this->reconEntity->getId(),
+                ]);
+        }
     }
 
     protected function updateSourceEntity()

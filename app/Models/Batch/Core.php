@@ -51,6 +51,10 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
+        $dimensions = $batch->getMetricDimensions();
+
+        $this->trace->count(Metric::BATCH_REQUESTS_TOTAL, $dimensions);
+
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
         return $batch;

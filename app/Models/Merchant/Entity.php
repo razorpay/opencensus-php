@@ -1858,6 +1858,7 @@ class Entity extends Base\PublicEntity
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
             self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
+            self::REFUND_SOURCE  => $this->getAttribute(self::REFUND_SOURCE),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),

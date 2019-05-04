@@ -486,6 +486,11 @@ class Header
     const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
     const PAYOUT_ID                = 'Payout Id';
 
+    // Linked Account Reversal Headers
+    const TRANSFER_ID              = 'Transfer Id';
+    const REVERSAL_ID              = 'Reversal Id';
+    const INITIATOR_ID             = 'Initiator Id';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -1522,6 +1527,23 @@ class Header
                 // Payout's notes.
                 self::NOTES,
                 self::PAYOUT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::LINKED_ACCOUNT_REVERSAL => [
+            self::INPUT => [
+                self::TRANSFER_ID,
+                self::AMOUNT_IN_PAISE,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::REVERSAL_ID,
+                self::TRANSFER_ID,
+                self::AMOUNT_IN_PAISE,
+                self::INITIATOR_ID,
+                self::REFUND_ID,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

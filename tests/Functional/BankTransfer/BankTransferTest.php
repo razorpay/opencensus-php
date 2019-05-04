@@ -34,7 +34,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
-        $this->fixtures->merchant->createAccount("BankAccountMer");
+        $this->fixtures->merchant->createAccount('BankAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => true, 'live' => true]);
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
@@ -111,6 +111,49 @@ class BankTransferTest extends TestCase
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
+    }
+
+    public function testBankTransferProcessForDisabledMethod()
+    {
+        // New merchant account, VA created
+        $this->fixtures->merchant->createAccount('MethodEnbleTst');
+        $virtualAccount = $this->fixtures->create('virtual_account', [
+            'merchant_id' => 'MethodEnbleTst',
+            'status'      => 'active',
+        ]);
+        $bankAccount    = $this->fixtures->create('bank_account', [
+            'type'           => 'virtual_account',
+            'merchant_id'    => 'MethodEnbleTst',
+            'entity_id'      => $virtualAccount->getId(),
+            'account_number' => '11122275867',
+            'ifsc_code'      => 'RAZRB000000',
+        ]);
+        $this->fixtures->edit('virtual_account', $virtualAccount->getId(), [
+            'bank_account_id' => $bankAccount->getId(),
+        ]);
+
+        // Bank transfer now disabled, before payment is created
+        $this->fixtures->merchant->disableMethod('MethodEnbleTst', 'bank_transfer');
+
+        // Process API always returns true
+        $response = $this->processBankTransfer('11122275867', 'RAZRB000000');
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $payment =  $this->getLastEntity('payment', true);
+        // Created bank transfer is an unexpected one
+        $this->assertEquals('11122275867', $bankTransfer['payee_account']);
+        $this->assertEquals('RAZRB000000', $bankTransfer['payee_ifsc']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Payment is made to test merchant and left authorized
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('10000000000000', $payment['merchant_id']);
     }
 
     public function testBankTransferWithInActiveAccount()
@@ -1180,9 +1223,9 @@ class BankTransferTest extends TestCase
                 'ifsc'           => 'HDFC0000001',
             ],
             'virtual_account'    => [
-                'name' => "Test Merchant",
-                'entity' => "virtual_account",
-                'status' => "active",
+                'name'      => 'Test Merchant',
+                'entity'    => 'virtual_account',
+                'status'    => 'active',
                 'receivers' => [
                     [
                         'entity'         => 'bank_account',
@@ -1855,7 +1898,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
     }
-
 
     protected function createTpvRefund()
     {

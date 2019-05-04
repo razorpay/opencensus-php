@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Redis;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra;
 
 class PaymentMiscTest extends TestCase
 {
@@ -109,5 +111,57 @@ class PaymentMiscTest extends TestCase
         $response = $this->runRequestResponseFlow($flowsData);
 
         $this->assertEquals($response['offers'], [$offer2->getPublicId()]);
+    }
+
+    protected function setupRedisMock($getValue)
+    {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+             ->andReturn($redisMock);
+
+        $redisMock->method('set')
+                  ->will($this->returnValue(true));
+
+        $redisMock->method('get')
+                  ->will($this->returnValue($getValue));
+    }
+
+    public function testVajraCpsDowntime()
+    {
+        // Vajra status OK
+        $this->setupRedisMock('0');
+
+        $request = [
+            'content' => [
+                Vajra::STATUS_KEY => Vajra::STATUS_OK,
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/cps/webhook/vajra'
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue((bool) $response[0]['new_value']);
+
+        // Vajra status ALERTING
+        $this->setupRedisMock('1');
+
+        $request = [
+            'content' => [
+                Vajra::STATUS_KEY => Vajra::STATUS_ALERTING,
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/cps/webhook/vajra'
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertFalse((bool) $response[0]['new_value']);
     }
 }

@@ -436,6 +436,9 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-payouts-test
+      - api-sqs-payouts-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -477,6 +480,9 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-payouts-test
+      - api-sqs-payouts-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -567,6 +573,9 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-payouts-test
+      - api-sqs-payouts-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -631,6 +640,9 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-payouts-test
+      - api-sqs-payouts-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -695,6 +707,9 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-payouts-test
+      - api-sqs-payouts-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api
@@ -703,48 +718,6 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: stage-charlie
-      event:
-        exclude: [push]
-        include: [deployment]
-  deploy-deployments-prod-api:
-    group: PROD_DEPLOY
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_klusterapi
-      - client_key_klusterapi
-      - server_cert_klusterapi
-      - client_cert_klusterapi
-    user: drone
-    cluster: kluster-api
-    auth_mode: client-cert
-    deployment:
-      - api-web
-      - api-sqs-es-sync
-      - api-sqs-gen-test
-      - api-sqs-invoice-email
-      - api-sqs-invoice-reports
-      - api-sqs-batch
-      - api-sqs-emails
-      - api-sqs-gen-live
-      - api-sqs-shield
-      - api-sqs-main
-      - api-sqs-webhooks-failure
-      - api-sqs-webhooks-live
-      - api-sqs-webhooks-test
-      - api-sqs-settlements-test
-      - api-sqs-settlements-live
-      - api-sqs-cps-sync-test
-      - api-sqs-cps-sync-live
-    repo: razorpay/api
-    namespace: api
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: prod-api
-      branch: master
       event:
         exclude: [push]
         include: [deployment]
@@ -778,6 +751,9 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-payouts-test
+        - api-sqs-payouts-live
+        - api-sqs-cardvault
       repo: razorpay/api
       namespace: api
       tag:
@@ -818,6 +794,9 @@ pipeline:
         - api-sqs-webhooks-test
         - api-sqs-settlements-test
         - api-sqs-settlements-live
+        - api-sqs-payouts-test
+        - api-sqs-payouts-live
+        - api-sqs-cardvault
       repo: razorpay/api
       namespace: api
       tag:
@@ -937,6 +916,9 @@ pipeline:
       - api-sqs-webhooks-test
       - api-sqs-settlements-test
       - api-sqs-settlements-live
+      - api-sqs-payouts-test
+      - api-sqs-payouts-live
+      - api-sqs-cardvault
       - api-sqs-cps-sync-test
       - api-sqs-cps-sync-live
     repo: razorpay/api

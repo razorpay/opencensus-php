@@ -97,6 +97,7 @@ class Entity extends Base\Entity
         Entity::ACTIVE,
         Entity::VALIDATED,
         Entity::VERIFIED,
+        Entity::DEFAULT,
         Entity::CREATED_AT,
     ];
 
@@ -123,6 +124,7 @@ class Entity extends Base\Entity
         Entity::ACTIVE           => 'bool',
         Entity::VALIDATED        => 'bool',
         Entity::VERIFIED         => 'bool',
+        Entity::DEFAULT          => 'bool',
         Entity::DELETED_AT       => 'int',
         Entity::CREATED_AT       => 'int',
         Entity::UPDATED_AT       => 'int',

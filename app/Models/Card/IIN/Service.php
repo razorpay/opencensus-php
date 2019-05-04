@@ -36,6 +36,8 @@ class Service extends Base\Service
     {
         $iin = $this->repo->iin->findOrFail($id);
 
+        $this->formatEditInput($iin, $input);
+
         $iin->edit($input);
 
         $this->repo->saveOrFail($iin);
@@ -43,43 +45,37 @@ class Service extends Base\Service
         return $iin->toArrayPublic();
     }
 
-    public function editIinFlowsBulk($input)
+    public function editIinBulk($input)
     {
-        (new Validator())->validateInput('update_iin_flow_bulk', $input);
+        $this->trace->info(TraceCode::IIN_UPDATE_BULK, [
+            'input' => $input,
+        ]);
+
+        (new Validator())->validateInput('edit_bulk', $input);
 
         $returnData = [];
 
-        $action = $input['action'];
+        $editPayload = $input['payload'];
 
-        $bins = $input['iins'];
+        $iins = $input['iins'];
 
-        $flow = $input['flow'];
-
-        foreach ($bins as $bin)
+        foreach ($iins as $iin)
         {
             try
             {
-                if ($action == 'enable')
-                {
-                    $iin = $this->enableIinFlow($bin, $flow);
-                }
-                else
-                {
-                    $iin = $this->disableIinFlow($bin, $flow);
-                }
+                $iinEditResponse = $this->editIin($iin, $editPayload);
 
-                $returnData[$bin] = $iin['flows'];
+                $returnData[$iin] = $iinEditResponse;
             }
             catch (\Exception $e)
             {
-                $returnData[$bin] = $e->getMessage();
+                $returnData[$iin] = $e->getMessage();
 
                 $this->trace->error(
-                    TraceCode::BANK_TRANSFER_PROVIDER_VALIDATION_FAILED,
+                    TraceCode::IIN_UPDATE_FAILED,
                     [
-                        'iin'    => $bin,
+                        'iin'    => $iin,
                         'error'  => $e->getMessage(),
-                        'mode'   => $this->mode,
                     ]
                 );
             }
@@ -190,5 +186,24 @@ class Service extends Base\Service
         $response['iins'] = $iins;
 
         return $response;
+    }
+
+    protected function formatEditInput(Entity $iin, array & $input)
+    {
+        if (isset($input[Entity::FLOWS]) === false)
+        {
+            return;
+        }
+
+        $existingFlows = [];
+
+        foreach (Flow::getEnabledFlows($iin->getFlows()) as $flow)
+        {
+            $existingFlows[$flow] = '1';
+        }
+
+        $mergedValues = array_merge($existingFlows, $input[Entity::FLOWS]);
+
+        $input[Entity::FLOWS] = $mergedValues;
     }
 }

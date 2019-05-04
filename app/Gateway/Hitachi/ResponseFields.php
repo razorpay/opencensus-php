@@ -4,31 +4,32 @@ namespace RZP\Gateway\Hitachi;
 
 class ResponseFields
 {
-    const TRANSACTION_TYPE    = 'pTranType';
-    const MERCHANT_ID         = 'pMercID';
-    const MERCHANT_REF_NUMBER = 'pMerchantRefNr';
-    const MERCHANT_REFERENCE  = 'pTranID';
-    const ENROLLED            = 'pEnrolled';
-    const BANK_URL            = 'pURL';
-    const ACCOUNT_ID          = 'pAccountId';
-    const PAREQ               = 'pPAREQ';
-    const CARD_NUMBER         = 'pPAN';
-    const PMD                 = 'pMD';
-    const PARES               = 'PaRes';
-    const MD                  = 'MD';
-    const AUTH_STATUS         = 'pAuthStatus';
-    const ECI                 = 'pECI';
-    const XID                 = 'pXID';
-    const CAVV2               = 'pCAVV2';
-    const UCAF                = 'pUCAF';
-    const ALGORITHM           = 'pALGO';
-    const TRANSACTION_AMOUNT  = 'pTranAmount';
-    const AUTH_ID             = 'pAuthID';
-    const RETRIEVAL_REF_NUM   = 'pRRN';
-    const RESPONSE_CODE       = 'pRespCode';
-    const REQUEST_ID          = 'pRequestId';
-    const STATUS              = 'pStatus';
-    const CURRENCY            = 'pCurrencyCode';
+    const TRANSACTION_TYPE     = 'pTranType';
+    const MERCHANT_ID          = 'pMercID';
+    const MERCHANT_REF_NUMBER  = 'pMerchantRefNr';
+    const MERCHANT_REFERENCE   = 'pTranID';
+    const ENROLLED             = 'pEnrolled';
+    const BANK_URL             = 'pURL';
+    const ACCOUNT_ID           = 'pAccountId';
+    const PAREQ                = 'pPAREQ';
+    const CARD_NUMBER          = 'pPAN';
+    const PMD                  = 'pMD';
+    const PARES                = 'PaRes';
+    const MD                   = 'MD';
+    const AUTH_STATUS          = 'pAuthStatus';
+    const ECI                  = 'pECI';
+    const XID                  = 'pXID';
+    const CAVV2                = 'pCAVV2';
+    const UCAF                 = 'pUCAF';
+    const ALGORITHM            = 'pALGO';
+    const TRANSACTION_AMOUNT   = 'pTranAmount';
+    const AUTH_ID              = 'pAuthID';
+    const RETRIEVAL_REF_NUM    = 'pRRN';
+    const RESPONSE_CODE        = 'pRespCode';
+    const REQUEST_ID           = 'pRequestId';
+    const STATUS               = 'pStatus';
+    const CURRENCY             = 'pCurrencyCode';
+    const FAILED_RESPONSE_CODE = 'response_code'; // Will be returned in some cases like Format Error (error_code : 30)
 
     //Bharat Qr Fields
     const MASKED_CARD_NUMBER = 'F002';

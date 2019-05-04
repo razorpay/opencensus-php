@@ -18,4 +18,21 @@ class Status
     {
         return (defined(static::class.'::'.strtoupper($key)));
     }
+
+    public static function map($internalStatus)
+    {
+        $map = [
+            self::CREATED           => self::CREATED,
+            self::PENDING           => self::CREATED,
+            self::INITIATED         => self::CREATED,
+
+            self::EXPIRED           => self::FAILED,
+            self::REJECTED          => self::FAILED,
+            self::FAILED            => self::FAILED,
+
+            self::COMPLETED         => self::COMPLETED,
+        ];
+
+        return $map[$internalStatus];
+    }
 }

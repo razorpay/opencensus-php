@@ -6,6 +6,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Paytm;
@@ -51,7 +52,9 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCallbackResponse($input);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $payment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function refund(array $input)
@@ -106,7 +109,7 @@ class Gateway extends Base\Gateway
             ]);
 
         $attr = $this->lowerArrayKeys($content);
-        
+
         $attr['received'] = 1;
 
         $refund->fill($attr);
@@ -387,6 +390,20 @@ class Gateway extends Base\Gateway
         $payment->saveOrFail();
 
         return $payment;
+    }
+
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer = [];
+
+        if (empty($gatewayPayment[Entity::TXNID]) === false)
+        {
+            $acquirer['acquirer'] = [
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getGatewayTransactionId()
+            ];
+        }
+
+        return $acquirer;
     }
 
     protected function lowerArrayKeys($array)

@@ -109,10 +109,13 @@ class Constants
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
+    const ALLOW_REVERSALS_FROM_LA         = 'allow_reversals_from_la';
+    const QUEUED_PAYOUTS                  = 'queued_payouts';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
     const OVERRIDE_SUBMERCHANT_CONFIG     = 'override_submerchant_config';
+    const DOWNTIME_ROUTING                = 'downtime_routing';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -333,10 +336,14 @@ class Constants
         self::SELF_KYC_DISABLED               => true,
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
+        self::ALLOW_REVERSALS_FROM_LA         => true,
+        self::BLOCK_PL_PAY_POST_EXPIRY        => true,
+        self::QUEUED_PAYOUTS                  => true,
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
         self::OVERRIDE_SUBMERCHANT_CONFIG     => true,
+        self::DOWNTIME_ROUTING                => true,
     ];
 
     // Entity type constants
@@ -434,6 +441,16 @@ class Constants
         self::INVOICE_EXPIRE_BY_REQD    => [
             'feature'       => self::INVOICE_EXPIRE_BY_REQD,
             'display_name'  => 'Mandatory invoice expire_by field',
+            'documentation' => '',
+        ],
+        self::ALLOW_REVERSALS_FROM_LA    => [
+            'feature'       => self::ALLOW_REVERSALS_FROM_LA,
+            'display_name'  => 'Allow Refunds From Linked Accounts',
+            'documentation' => '',
+        ],
+        self::QUEUED_PAYOUTS            => [
+            'feature'       => self::QUEUED_PAYOUTS,
+            'display_name'  => 'Queued payouts',
             'documentation' => '',
         ],
     ];

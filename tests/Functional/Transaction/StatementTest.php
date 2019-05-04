@@ -206,6 +206,8 @@ class StatementTest extends TestCase
 
     protected function createBankTransferTransaction()
     {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
         $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 25]);
     }
 }

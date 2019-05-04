@@ -203,14 +203,9 @@ class ApiEventSubscriber extends Base\Core
 
         if ($payment->hasSubscription() === true)
         {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
+            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            if (strtolower($response) === 'on')
-            {
-                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
-            }
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
         }
 
         $this->prepareAndDispatchWebhook($payload);
@@ -224,14 +219,9 @@ class ApiEventSubscriber extends Base\Core
 
         if ($payment->hasSubscription() === true)
         {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
+            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            if (strtolower($response) === 'on')
-            {
-                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
-            }
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
         }
 
         $this->prepareAndDispatchWebhook($payload);
@@ -455,6 +445,26 @@ class ApiEventSubscriber extends Base\Core
             (new Transaction\Notifier($payout->transaction, $this->event))->notify();
         }
 
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutQueued(Payout\Entity $payout)
+    {
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutInitiated(Payout\Entity $payout)
+    {
         if ($this->webhookEnabledForEvent === true)
         {
             $payload = $this->getPayoutPayload($payout);

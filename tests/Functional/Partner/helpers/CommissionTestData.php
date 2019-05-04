@@ -2,9 +2,12 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Partner\Commission\Constants;
 
 return [
     'testGetCommissionsEmpty' => [
@@ -40,6 +43,13 @@ return [
                 'currency'    => 'INR',
                 'partner_id'  => 'DefaultPartner',
                 'source_type' => 'payment',
+                'merchant'    => [
+                    'id' => 'submerchantNum',
+                ],
+                'source'      => [
+                    'entity' => 'payment',
+                    'status' => 'captured',
+                ],
             ],
         ],
     ],
@@ -85,6 +95,53 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER,
+        ],
+    ],
+
+    'testGettingAnalyticsForResellerHavingLessSubMerchants' => [
+        'request'  => [
+            'url'     => '/commissions_analytics',
+            'method'  => 'GET',
+            'content' => [
+                Constants::FROM       => 1549962230,
+                Constants::TO         => Carbon::today(Timezone::IST)->getTimestamp() + 100,
+                Constants::QUERY_TYPE => Constants::AGGREGATE_DAILY,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'limit' => Constants::RESELLER_SUBMERCHANT_LIMIT,
+            ],
+        ],
+    ],
+
+    'testGettingAnalyticsForResellerHavingMoreSubMerchants' => [
+        'request'  => [
+            'url'     => '/commissions_analytics',
+            'method'  => 'GET',
+            'content' => [
+                Constants::FROM       => 1549962230,
+                Constants::TO         => Carbon::today(Timezone::IST)->getTimestamp() + 100,
+                Constants::QUERY_TYPE => Constants::AGGREGATE_DAILY,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGettingAnalyticsForAggregator' => [
+        'request'  => [
+            'url'     => '/commissions_analytics',
+            'method'  => 'GET',
+            'content' => [
+                Constants::FROM       => 1549962230,
+                Constants::TO         => Carbon::today(Timezone::IST)->getTimestamp() + 100,
+                Constants::QUERY_TYPE => Constants::AGGREGATE_DAILY,
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 ];

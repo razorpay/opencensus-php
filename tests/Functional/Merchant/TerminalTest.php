@@ -1042,4 +1042,13 @@ class TerminalTest extends TestCase
             return true;
         });
     }
+
+    public function testCreateWalletPhonepeTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

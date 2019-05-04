@@ -87,6 +87,7 @@ class Gateway
     const WALLET_OPENWALLET  = 'wallet_openwallet';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_PHONEPE     = 'wallet_phonepe';
 
     const CARDLESS_EMI       = 'cardless_emi';
 
@@ -111,8 +112,6 @@ class Gateway
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
-
-    const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -149,7 +148,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
     ];
 
     const POWER_WALLETS = [
@@ -224,7 +223,6 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
-        self::ENACH_NPCI_NETBANKING,
         self::NETBANKING_CORPORATION,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
@@ -514,45 +512,19 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
-        Payment\Gateway::AMEX => [
-            self::GO_LIVE_TIMESTAMP => 1547183527
-        ],
-        Payment\Gateway::SHARP => [
-            self::GO_LIVE_TIMESTAMP => 1535712088
-        ],
-        Payment\Gateway::HDFC => [
-            self::GO_LIVE_TIMESTAMP => 1547176106
-        ],
-        Payment\Gateway::AXIS_MIGS      => [
-            self::GO_LIVE_TIMESTAMP => 1542272247
-        ],
-        Payment\Gateway::FIRST_DATA     => [
-            self::GO_LIVE_TIMESTAMP => 1537966190
-        ],
-        Payment\Gateway::CARD_FSS       => [
-            self::GO_LIVE_TIMESTAMP => 1543816680
-        ],
-        Payment\Gateway::CYBERSOURCE => [
-            self::GO_LIVE_TIMESTAMP => 1542649738
-        ],
-        Payment\Gateway::UPI_ICICI   => [
-            self::GO_LIVE_TIMESTAMP => 1546597864
-        ],
-        Payment\Gateway::UPI_MINDGATE   => [
-            self::GO_LIVE_TIMESTAMP => 1540830393
-        ],
-        Payment\Gateway::HITACHI   => [
-            self::GO_LIVE_TIMESTAMP => 1550746997
-        ],
-        Payment\Gateway::WALLET_OLAMONEY   => [
-            self::GO_LIVE_TIMESTAMP => 1550838065
-        ],
-        Payment\Gateway::WALLET_JIOMONEY   => [
-            self::GO_LIVE_TIMESTAMP => 1552398662
-        ],
-        Payment\Gateway::UPI_AXIS   => [
-            self::GO_LIVE_TIMESTAMP => 1554715800
-        ]
+        Payment\Gateway::AMEX,
+        Payment\Gateway::SHARP,
+        Payment\Gateway::HDFC,
+        Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::CARD_FSS,
+        Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::HITACHI,
+        Payment\Gateway::WALLET_OLAMONEY,
+        Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::UPI_AXIS,
     ];
 
     public static $channels = [
@@ -674,6 +646,7 @@ class Gateway
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
+            self::WALLET_PHONEPE,
         ],
 
         Method::EMI => [
@@ -923,6 +896,7 @@ class Gateway
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
+        Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
     ];
 
     public static $upiToGatewayMap = [
@@ -1004,6 +978,11 @@ class Gateway
         self::UPI_MINDGATE,
         self::UPI_ICICI,
         self::BAJAJ,
+    ];
+
+    public static $captureVerifyQREnabledGateways = [
+        self::UPI_MINDGATE,
+        self::UPI_ICICI,
     ];
 
     /**
@@ -1366,6 +1345,7 @@ class Gateway
     public static $authorizationAuthenticationGatewayMap = [
         Gateway::HITACHI     => Gateway::MPI_BLADE,
         Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
     ];
 
@@ -1389,6 +1369,10 @@ class Gateway
         Mode::TEST => [
             '1000SharpTrmnl',
         ],
+    ];
+
+    public static $cardlessEmiRedirectFlowProvider = [
+        CardlessEmi::FLEXMONEY,
     ];
 
     public static function isNonTerminalGateway(string $gateway)
@@ -1449,7 +1433,7 @@ class Gateway
 
     public static function getScroogeGateways(): array
     {
-        return array_keys(self::$scroogeGateways);
+        return self::$scroogeGateways;
     }
 
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
@@ -1477,23 +1461,6 @@ class Gateway
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
         return (in_array($gateway, self::getScroogeGateways(), true) === true);
-    }
-
-    /**
-     * This function checks if the gateway was live at a particular timestamp
-     *
-     * @param string $gateway
-     * @param int $timestamp
-     * @return bool
-     */
-    public static function isScroogeGatewayLiveAtGivenTimestamp(string $gateway = null, int $timestamp = null): bool
-    {
-        return (
-            ($gateway !== null) and
-            ($timestamp !== null) and
-            isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
-            $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
-        );
     }
 
     /**

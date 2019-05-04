@@ -5,10 +5,12 @@ namespace RZP\Reconciliator\Base\Foundation;
 use App;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Transaction\ReconciledType;
@@ -419,6 +421,87 @@ class SubReconciliate extends Base\Core
         {
             $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
         }
+    }
+
+    /**
+     * The method formulates gateway name using terminal's gateway and
+     * gateway acquirer. This is required to check if there is mismatch
+     * between the recon gateway and the payment gateway.
+     *
+     * @param PaymentEntity $payment
+     * @return string
+     */
+    protected function getGatewayNameFromPayment(Payment\Entity $payment)
+    {
+        $paymentGateway = null;
+
+        //
+        // In case of CardFssHdfc, the payment's gateway is set as 'card_fss'
+        // so we need to get the acquirer from the terminal so as to construct
+        // the expected recon gateway as 'CardFssHdfc'
+        //
+
+        $terminal = $this->repo->terminal->fetchForPayment($payment);
+
+        $terminalGateway = $terminal->getGateway();
+
+        if (isset(RequestProcessor\Base::GATEWAY_NAME_MAPPING[$terminalGateway]) === false)
+        {
+            $paymentGateway = $payment->getGateway();
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'         => InfoCode::UNEXPECTED_TERMINAL_GATEWAY,
+                    'payment_id'        => $payment->getId(),
+                    'payment_gateway'   => $paymentGateway,
+                    'terminal_id'       => $terminal->getId(),
+                    'terminal_gateway'  => $terminalGateway,
+                    'gateway'           => $this->gateway,
+                ]
+            );
+
+            return $paymentGateway;
+        }
+
+        $mappedGateway = RequestProcessor\Base::GATEWAY_NAME_MAPPING[$terminalGateway];
+
+        if (is_array($mappedGateway) === false)
+        {
+            $paymentGateway = $mappedGateway;
+        }
+        else
+        {
+            //
+            // This happens when the terminal gateway is cybersource or card_fss.
+            // We need to check the acquirer to formulate the recon gateway name
+            //
+            // i.e. for card_fss, we formulate recon gateway as CardFssBob or
+            // CardFssHdfc, depending on whether the acquirer is barb or hdfc.
+            //
+            $gatewayAcquirer = $terminal->getGatewayAcquirer();
+
+            if (isset($mappedGateway[$gatewayAcquirer]) === false)
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code'                     => InfoCode::UNEXPECTED_TERMINAL_GATEWAY_ACQUIRER,
+                        'payment_id'                    => $payment->getId(),
+                        'terminal_id'                   => $terminal->getId(),
+                        'gateway_acquirer'              => $gatewayAcquirer,
+                        'expected_gateway_acquirers'    => array_keys($mappedGateway),
+                        'gateway'                       => $this->gateway,
+                    ]
+                );
+            }
+            else
+            {
+                $paymentGateway = $mappedGateway[$gatewayAcquirer];
+            }
+        }
+
+        return $paymentGateway;
     }
 
     /**

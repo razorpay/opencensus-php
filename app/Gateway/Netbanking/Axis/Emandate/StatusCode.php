@@ -118,7 +118,7 @@ class StatusCode
             return self::$errorDescMap[$errorDesc] ?? ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
         }
 
-        return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+        return ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
     }
 
     public static function getEmandateDebitErrorDesc($errorDesc)

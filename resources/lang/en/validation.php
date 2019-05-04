@@ -127,7 +127,10 @@ return array(
         ],
         'captcha'  => [
             'required_without' => 'The :attribute field is required'
-        ]
+        ],
+        'iins.*' => [
+            'digits' => 'The IIN elements must be of :digits digit.'
+        ],
     ],
 
     /*

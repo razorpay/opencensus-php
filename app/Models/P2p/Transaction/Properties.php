@@ -2,12 +2,18 @@
 
 namespace RZP\Models\P2p\Transaction;
 
-use RZP\Models\P2p\Base\Libraries\Context;
+use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
+use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 class Properties
 {
+    /**
+     * Default expire at is set to be 30 minutes in seconds
+     */
+    const DEFAULT_EXPIRE_AT = 1800;
+
     /**
      * @var string
      */
@@ -80,7 +86,6 @@ class Properties
                 $payer          = $this->getTransactionPayer(true);
                 $payee          = $this->getTransactionPayee(false);
                 $bankAccount    = $this->getTransactionBankAccount($payer);
-
                 break;
 
             case Action::INITIATE_COLLECT :
@@ -91,6 +96,7 @@ class Properties
                         Entity::MODE                => Mode::DEFAULT,
                         Entity::STATUS              => Status::CREATED,
                         Entity::INTERNAL_STATUS     => Status::CREATED,
+                        Entity::EXPIRE_AT           => $this->getTransactionExpireAt(),
                     ]);
 
                 $payer          = $this->getTransactionPayer(false);
@@ -108,10 +114,8 @@ class Properties
         ]);
 
         $this->input->forget([
-            Entity::PAYER_TYPE,
-            Entity::PAYER_ID,
-            Entity::PAYEE_TYPE,
-            Entity::PAYEE_ID,
+            Entity::PAYER,
+            Entity::PAYEE,
         ]);
     }
 
@@ -120,11 +124,11 @@ class Properties
         // Since only VPA as Payer is allowed
         if ($onus === false)
         {
-            $payer = (new Vpa\Core)->find($this->input->get(Entity::PAYER_ID));
+            $payer = (new Vpa\Core)->find($this->input->get(Entity::PAYER)[Entity::ID]);
         }
         else
         {
-            $payer = (new Vpa\Core)->fetch($this->input->get(Entity::PAYER_ID));
+            $payer = (new Vpa\Core)->fetch($this->input->get(Entity::PAYER)[Entity::ID]);
         }
 
         return $payer;
@@ -135,11 +139,11 @@ class Properties
         // Since only VPA as Payee is allowed
         if ($onus === false)
         {
-            $payee = (new Vpa\Core)->find($this->input->get(Entity::PAYEE_ID));
+            $payee = (new Vpa\Core)->find($this->input->get(Entity::PAYEE)[Entity::ID]);
         }
         else
         {
-            $payee = (new Vpa\Core)->fetch($this->input->get(Entity::PAYEE_ID));
+            $payee = (new Vpa\Core)->fetch($this->input->get(Entity::PAYEE)[Entity::ID]);
         }
 
         return $payee;
@@ -154,5 +158,17 @@ class Properties
         }
 
         return $bankAccount;
+    }
+
+    protected function getTransactionExpireAt()
+    {
+        $expireAt = $this->input->get(Entity::EXPIRE_AT);
+
+        if (empty($expireAt) === true)
+        {
+            $expireAt = Carbon::now()->addSeconds(self::DEFAULT_EXPIRE_AT)->getTimestamp();
+        }
+
+        return $expireAt;
     }
 }

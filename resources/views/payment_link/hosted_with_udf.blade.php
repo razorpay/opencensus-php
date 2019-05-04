@@ -19,10 +19,14 @@
         <meta name="description" content="{{{ $meta_description }}}">
 
         <meta property="og:title" content="Pay for {{{ $payment_page_data['title'] }}} by {{{ $data['merchant']['name'] }}}">
-        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
+        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}">
         <meta property="og:image:width" content="276px">
         <meta property="og:image:height" content="276px">
         <meta property="og:description" content="{{{ $meta_description }}}">
+
+        <meta name="twitter:title" content="Pay for {{{ $payment_page_data['title'] }}} by {{{ $data['merchant']['name'] }}}">
+        <meta name="twitter:description" content="{{{ $meta_description }}}" />
+        <meta name="twitter:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}" />
 
         <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
 

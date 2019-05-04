@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Merchant\Account;
 
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class Entity extends Merchant\Entity
@@ -56,6 +56,7 @@ class Entity extends Merchant\Entity
     const SETTLEMENT_SCHEDULES     = 'settlement_schedules';
     const AVERAGE_TRANSACTION_SIZE = 'average_transaction_size';
     const DASHBOARD_ACCESS         = 'dashboard_access';
+    const ALLOW_REVERSALS          = 'allow_reversals';
 
     protected static $sign = 'acc';
 
@@ -78,6 +79,7 @@ class Entity extends Merchant\Entity
         self::NOTES,
         self::FUND_TRANSFER,
         self::DASHBOARD_ACCESS,
+        self::ALLOW_REVERSALS,
     ];
 
     protected $publicSetters = [
@@ -92,6 +94,7 @@ class Entity extends Merchant\Entity
         self::SECONDARY_EMAILS,
         self::ACTIVATION_DETAILS,
         self::DASHBOARD_ACCESS,
+        self::ALLOW_REVERSALS,
     ];
 
     protected static $generators = [
@@ -215,6 +218,16 @@ class Entity extends Merchant\Entity
             $merchantUsersCount = $this->users()->count();
 
             $array[self::DASHBOARD_ACCESS] = $merchantUsersCount > 0 ? true : false;
+        }
+    }
+
+    public function setPublicAllowReversalsAttribute(array & $array)
+    {
+        if ($this->isLinkedAccount() === true)
+        {
+            $allowReversals = $this->isFeatureEnabled(Feature\Constants::ALLOW_REVERSALS_FROM_LA);
+
+            $array[self::ALLOW_REVERSALS] = $allowReversals;
         }
     }
 

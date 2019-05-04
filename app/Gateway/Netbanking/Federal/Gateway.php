@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
@@ -17,6 +18,10 @@ use RZP\Models\Payment\Verify\Action as VerifyAction;
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
+
+    const CHECKSUM_ATTRIBUTE = ResponseFields::HASH;
+
+    protected $sortRequestContent = false;
 
     protected $gateway = 'netbanking_federal';
 
@@ -65,6 +70,11 @@ class Gateway extends Base\Gateway
                 'payment_id'       => $input['payment']['id']
             ]
         );
+
+        if ((isset($content[ResponseFields::HASH]) === true) and (empty($this->getTerminalPassword()) === false))
+        {
+            $this->verifySecureHash($content);
+        }
 
         // If the payment requires TPV
         if (strlen($content[ResponseFields::PAYMENT_ID]) > 14)
@@ -134,7 +144,7 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
 
-        $expectedAmount = $this->formatAmount($input['payment']['amount']/100);
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
 
         $actualAmount   = $this->formatAmount((float) $verify->verifyResponseContent[ResponseFields::AMOUNT]);
 
@@ -145,7 +155,17 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getVerifyRequestData($verify);
 
-        $request = $this->getStandardRequestArray($content);
+        // UAT uses a different Url than prod
+        if ($this->mode === Mode::TEST)
+        {
+            $type = $this->action . '_' . $this->mode;
+        }
+        else
+        {
+            $type = null;
+        }
+
+        $request = $this->getStandardRequestArray($content, 'post', $type);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -257,6 +277,18 @@ class Gateway extends Base\Gateway
             $data[RequestFields::PAYMENT_ID] .= '.' . $input['order']['account_number'];
         }
 
+        $hashParams = [
+            $data[RequestFields::PAYEE_ID],
+            $data[RequestFields::PAYMENT_ID],
+            $data[RequestFields::ITEM_CODE],
+            $data[RequestFields::AMOUNT],
+        ];
+
+        if (empty($this->getTerminalPassword()) === false)
+        {
+            $data[RequestFields::HASH] = $this->getHashOfArray($hashParams);
+        }
+
         return $data;
     }
 
@@ -360,7 +392,7 @@ class Gateway extends Base\Gateway
 
         // Removing the 0000's at the end of the string before proceeding
         // The whitespaces don't contain the pip as a separator character
-        if (strpos($rows[count($rows) - 1], "|") === false)
+        if (strpos($rows[count($rows) - 1], '|') === false)
         {
             unset($rows[count($rows) - 1]);
         }
@@ -492,5 +524,32 @@ class Gateway extends Base\Gateway
     public function formatAmount($amount): string
     {
         return number_format($amount , 2, '.', '');
+    }
+
+    protected function getStringToHash($content, $glue = '')
+    {
+        return parent::getStringToHash($content, '|');
+    }
+
+    protected function getHashOfString($str)
+    {
+        $secret = $this->getTerminalPassword();
+
+        return hash_hmac(HashAlgo::SHA256, $str, $secret);
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $hashParams = [
+            $content[ResponseFields::PAYEE_ID],
+            $content[ResponseFields::PAYMENT_ID],
+            $content[ResponseFields::ITEM_CODE],
+            $content[ResponseFields::AMOUNT],
+            $content[ResponseFields::BANK_PAYMENT_ID],
+            $content[ResponseFields::PAID],
+            ResponseFields::HASH => $content[ResponseFields::HASH],
+        ];
+
+        parent::verifySecureHash($hashParams);
     }
 }

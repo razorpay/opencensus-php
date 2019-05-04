@@ -391,7 +391,8 @@ class Verify extends Base\Core
             if ($payment->hasBeenCaptured() === true)
             {
                 if ((in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === false) or
-                    ($payment->isBharatQr() === true))
+                    ((in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === false) and
+                    ($payment->isBharatQr() === true)))
                 {
                     $payment->setNonVerifiable();
 

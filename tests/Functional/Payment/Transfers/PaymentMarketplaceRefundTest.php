@@ -295,8 +295,6 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $paymentEntity = $this->getEntityById('payment', explode('_', $this->payment['id'])[1], true);
 
-        // sd($paymentEntity);
-
         $this->assertEquals(30000, $paymentEntity['amount_transferred']);
 
         $this->assertEquals(50000, $paymentEntity['amount_refunded']);

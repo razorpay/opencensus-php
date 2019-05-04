@@ -140,7 +140,8 @@ class StatusProcessor extends BaseRowProcessor
         $this->trace->info(
             TraceCode::FTA_RECON_PARSED_DATA,
             [
-                'parsed_data' => $this->parsedData
+                'parsed_data'   => $this->parsedData,
+                'fta_id'        => $this->reconEntityId,
             ]);
     }
 

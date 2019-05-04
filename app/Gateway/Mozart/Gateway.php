@@ -78,6 +78,8 @@ class Gateway extends Base\Gateway
 
         $gateway = $input['gateway'];
 
+        $gatewayName = $input['payment']['gateway'];
+
         $traceRes = $this->getRedactedData($gateway);
 
         $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::PAYMENT_CALLBACK_REQUEST );
@@ -110,10 +112,8 @@ class Gateway extends Base\Gateway
 
         $this->runCallbackValidationsIfApplicable($input, $response);
 
-        if ($input['payment']['gateway'] === Payment\Gateway::BAJAJFINSERV)
+        if ($this->immediateVerifyApplicable($gatewayName) === true)
         {
-            $input['gateway']['pay_verify']['RequestID'] = $response['data']['RequestID'];
-
             $verifyResponse = $this->verify($input);
 
             return $verifyResponse;
@@ -130,6 +130,16 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    public function immediateVerifyApplicable($gatewayName)
+    {
+        $immediateVerificationGateways = [
+            Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::BAJAJFINSERV
+        ];
+
+        return in_array($gatewayName, $immediateVerificationGateways);
     }
 
     public function preProcessServerCallback($input, $gateway = null): array
@@ -355,7 +365,7 @@ class Gateway extends Base\Gateway
 
     protected function getPreviousStepName($gateway)
     {
-        $previousActionForData = [
+        $previousActionForStep = [
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -363,6 +373,15 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+
+            Payment\Gateway::WALLET_PHONEPE => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => null,
+                Action::REFUND => null,
+                Action::VERIFY_REFUND => null,
+            ],
+
             Payment\Gateway::UPI_AIRTEL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -370,14 +389,15 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+
         ];
 
-        return $previousActionForData[$gateway][$this->action];
+        return $previousActionForStep[$gateway][$this->action];
     }
 
     protected function getPreviousStepForDB($gateway)
     {
-        $previousActionForStep = [
+        $previousActionForData = [
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
@@ -385,6 +405,15 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+
+            Payment\Gateway::WALLET_PHONEPE => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => null,
+                Action::REFUND => null,
+                Action::VERIFY_REFUND => null,
+            ],
+
             Payment\Gateway::UPI_AIRTEL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -392,9 +421,10 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::AUTHORIZE,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+
         ];
 
-        return $previousActionForStep[$gateway][$this->action];
+        return $previousActionForData[$gateway][$this->action];
     }
 
     protected function getPreviousData($input, $prevActionForData)
@@ -403,6 +433,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], $prevActionForData);
 
         $jsonRaw = json_decode($gatewayPayment['raw']);
+
         return $jsonRaw;
     }
 
@@ -548,8 +579,11 @@ class Gateway extends Base\Gateway
 
     protected function shouldRunCallbackValidations($input)
     {
-        $validationGateways = ['upi_airtel'];
+        $validationGateways = [
+            Payment\Gateway::UPI_AIRTEL,
+            Payment\Gateway::WALLET_PHONEPE,
+        ];
 
-        return in_array($input['payment']['gateway'], $validationGateways);
+        return in_array($input['payment']['gateway'], $validationGateways, true);
     }
 }

@@ -16,7 +16,6 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
-use RZP\Models\BharatQr\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Payment\Processor\TerminalProcessor;
@@ -307,20 +306,6 @@ class Processor extends VirtualAccount\Processor
         return $paymentArray;
     }
 
-    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $bankTransfer): bool
-    {
-        $this->setVirtualAccount($bankTransfer);
-
-        if ($this->useSharedVirtualAccount($bankTransfer) === true)
-        {
-                $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
-
-                return false;
-        }
-
-        return true;
-    }
-
     protected function useSharedVirtualAccount(Base\PublicEntity $bankTransfer): bool
     {
         if ($this->virtualAccount === null)
@@ -334,12 +319,6 @@ class Processor extends VirtualAccount\Processor
             return true;
         }
 
-        if (($this->virtualAccount->merchant->isLive() === false) and
-            ($this->isLiveMode() === true))
-        {
-           return true;
-        }
-
         // VA payments for crypto merchants are blocked based on cache key
         if (($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
             ($this->areBankTransfersBlockedForCrypto() === true))
@@ -347,7 +326,7 @@ class Processor extends VirtualAccount\Processor
             return true;
         }
 
-        return false;
+        return parent::useSharedVirtualAccount($bankTransfer);
     }
 
     protected function areBankTransfersBlockedForCrypto(): bool

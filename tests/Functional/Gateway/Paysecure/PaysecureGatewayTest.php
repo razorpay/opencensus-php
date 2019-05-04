@@ -145,9 +145,10 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'initiate2')
                 {
-                    $content['status']                = 'failure';
-                    $content['errorcode']             = '406';
-                    $content['errormsg']              = 'Not Authenticated';
+                    $content['status']      = 'failure';
+                    $content['errorcode']   = '406';
+                    $content['errormsg']    = 'Not Authenticated';
+                    $content['RedirectURL'] = '';
                 }
             }
         );
@@ -183,7 +184,7 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'auth_response')
                 {
-                    $content['AccuResponseCode'] = 'ACCU600';
+                    $content['AccuResponseCode'] = 'ACCU100';
                 }
             }
         );
@@ -199,10 +200,12 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status'  => 'failed',
-                'amount'  => 50000,
-                'method'  => 'card',
-                'gateway' => $this->paymentEntityGateway,
+                'status'        => 'failed',
+                'amount'        => 50000,
+                'method'        => 'card',
+                'gateway'       => $this->paymentEntityGateway,
+                'verify_bucket' => null,
+                'verify_at'     => null,
             ],
             $payment
         );

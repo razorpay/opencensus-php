@@ -82,6 +82,13 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'filled|array',
     ];
 
+    protected static $linkedAccountReversalCreateRules = [
+        Entity::TYPE                    => 'required|in:linked_account_reversal',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+    ];
+
     protected static $directDebitCreateRules = [
         Entity::TYPE            => 'required|in:direct_debit',
         Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
@@ -839,5 +846,49 @@ class Validator extends Base\Validator
         ];
 
         (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser());
+    }
+
+    protected function validateLinkedAccountReversalEntries(array & $entries, array $params, ME $merchant)
+    {
+        $existingTransferIds = [];
+
+        if ($merchant->isFeatureEnabled(Feature::ALLOW_REVERSALS_FROM_LA) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Refunds are not allowed on this linked account',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        foreach ($entries as $entry)
+        {
+            $amount      = $entry[Header::AMOUNT_IN_PAISE];
+            $transferId  = $entry[Header::TRANSFER_ID];
+
+            if (empty($transferId) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TRANSFER_ID);
+            }
+
+            if ((empty($amount) === true) or (is_numeric($amount) === false) or ($amount < 100))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+            }
+
+            // Batch File should not contain multiple entries for the same
+            // transfer id
+
+            if (in_array($transferId, $existingTransferIds))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_TRANSFER_ID);
+            }
+
+            $existingTransferIds[] = $transferId;
+        }
     }
 }

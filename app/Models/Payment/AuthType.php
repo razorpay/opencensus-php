@@ -41,10 +41,10 @@ class AuthType
         Method::CARD => [
             self::UNKNOWN => [
                 self::PIN,
-                self::_3DS,
                 self::OTP,
                 self::IVR,
                 self::HEADLESS_OTP,
+                self::_3DS,
             ],
             self::OTP => [
                 self::IVR,

@@ -2287,7 +2287,11 @@ class Service extends Base\Service
         {
             $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
 
+            $allowReversals = (bool) ($input['allow_reversals'] ?? false);
+
             unset($input['dashboard_access']);
+
+            unset($input['allow_reversals']);
 
             /** @var  Core */
             $merchantCore = $this->core();
@@ -2319,6 +2323,17 @@ class Service extends Base\Service
             }
 
             $this->repo->saveOrFail($subMerchant);
+
+            if (($allowReversals === true) and ($isLinkedAccount === true))
+            {
+                $featureParams = [
+                    Feature\Entity::ENTITY_ID    => $subMerchant->getId(),
+                    Feature\Entity::ENTITY_TYPE  => CE::MERCHANT,
+                    Feature\Entity::NAME         => Feature\Constants::ALLOW_REVERSALS_FROM_LA
+                ];
+
+                (new Feature\Core)->create($featureParams, true);
+            }
 
             $subMerchantAdditionType = ($isLinkedAccount === true) ? Metric::MARKETPLACE : Metric::PARTNER;
 
@@ -2610,24 +2625,38 @@ class Service extends Base\Service
     }
 
     /**
-     * Function to provide dashboard access to linked accounts.
+     * Function to provide dashboard access and allow refunds access to linked accounts.
      * @param array $input
      *
      * @return array
-     * @throws \RZP\Exception\BadRequestException
      *
      */
-    public function updateLinkedAccountDashboardAccess(array $input): array
+    public function updateLinkedAccountConfig(array $input): array
     {
         $merchant = $this->auth->getMerchant();
 
         (new Validator)->validateLinkedAccount($merchant);
 
-        $parentMerchant = $merchant->parent;
+        if (isset($input['dashboard_access']) === true)
+        {
+            $this->updateLinkedAccountDashboardAccess($input, $merchant);
+        }
 
+        if (isset($input['allow_reversals']) === true)
+        {
+            $this->updateLinkedAccountAllowReversals($input, $merchant);
+        }
+
+        return ['success' => true];
+    }
+
+    protected function updateLinkedAccountDashboardAccess(array &$input, Merchant\Entity $merchant)
+    {
         $dashboardAccess = (bool) ($input['dashboard_access'] ?? false);
 
         (new Validator)->validateLinkedAccountDashboardAccess($dashboardAccess, $merchant);
+
+        $parentMerchant = $merchant->parent;
 
         if (($dashboardAccess === true) and ($parentMerchant->isMarketplace() === true))
         {
@@ -2646,10 +2675,38 @@ class Service extends Base\Service
         }
         else
         {
+            // Remove allow reversals capability as well if dashboard access is revoked
+            $allowReversals = $merchant->isFeatureEnabled(Feature\Constants::ALLOW_REVERSALS_FROM_LA);
+
+            if ($allowReversals === true)
+            {
+                $input['allow_reversals'] = false;
+
+                $this->updateLinkedAccountAllowReversals($input, $merchant);
+
+                unset($input['allow_reversals']);
+            }
+
             $this->repo->sync($merchant,  'users', []);
         }
+    }
 
-        return ['success' => true];
+    public function updateLinkedAccountAllowReversals(array $input, Merchant\Entity $merchant)
+    {
+        $allowReversals = (bool) ($input['allow_reversals'] ?? false);
+
+        (new Validator)->validateLinkedAccountReversals($allowReversals, $merchant);
+
+        $feature = [Feature\Constants::ALLOW_REVERSALS_FROM_LA];
+
+        if ($allowReversals === true)
+        {
+            $this->addFeatures($feature, true);
+        }
+        else
+        {
+            $this->removeFeatures($feature, true);
+        }
     }
 
     /**

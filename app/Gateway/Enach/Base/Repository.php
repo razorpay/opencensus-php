@@ -21,4 +21,14 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::REGISTRATION_STATUS)
                     ->firstOrFail();
     }
+
+    public function findByGatewayReferenceIdAndStatus($gatewayReferenceId, $status)
+    {
+        return $this->newQuery()
+                    ->whereNotNull(Entity::GATEWAY_REFERENCE_ID)
+                    ->where(Entity::GATEWAY_REFERENCE_ID, $gatewayReferenceId)
+                    ->where(Entity::STATUS, $status)
+                    ->with('payment')
+                    ->firstOrFail();
+    }
 }

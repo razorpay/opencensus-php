@@ -214,7 +214,7 @@ class AttemptTest extends TestCase
     public function testPayoutFileCreationYesbankImps()
     {
         $this->createDataAndAssertInitiateTransferSuccess(
-            Channel::YESBANK, 1, Attempt\Type::PAYOUT);
+            Channel::YESBANK, 2, Attempt\Type::PAYOUT);
     }
 
     public function testPayoutFileCreationYesbankRtgsSuccess()

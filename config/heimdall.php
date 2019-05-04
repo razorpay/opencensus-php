@@ -130,6 +130,9 @@ return [
             Permission::MANAGE_BULK_FEATURE_MAPPING         => [
                 'assignable' => true,
             ],
+            Permission::MANAGE_BULK_MERCHANT_TAGGING        => [
+                'assignable' => true,
+            ],
             Permission::MERCHANT_BENEFICIARY_UPLOAD         => [
                 'assignable' => true,
             ],
