@@ -112,14 +112,9 @@ class Gateway extends Base\Gateway
 
         if ($authResponse !== null)
         {
-            if ($this->isRupayTransaction($input) === true)
-            {
-                $this->persistCardDetailsTemporarily($input, false);
-            }
-            else
-            {
-                $this->persistCardDetailsTemporarily($input);
-            }
+            $storeCvv = ($this->isRupayTransaction($input) === true);
+
+            $this->persistCardDetailsTemporarily($input, $storeCvv);
 
             return $authResponse;
         }
@@ -222,16 +217,15 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
+        $repo = $this->repo;
+
         if ($this->isRupayTransaction($input) === true)
         {
-            $gatewayPayment = $this->app['repo']->paysecure->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], Base\Action::AUTHORIZE);
+            $repo = $this->app['repo']->paysecure;
         }
-        else
-        {
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], Base\Action::AUTHORIZE);
-        }
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail(
+                            $input['payment']['id'], Base\Action::AUTHORIZE);
 
         $reverseEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::REVERSE);
 
