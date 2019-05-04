@@ -35,7 +35,7 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'hitachi_%s_card_details';
-    const CACHE_TTL = 20;
+    const CARD_CACHE_TTL = 20;
 
     const TIME_FORMAT               = 'His';
     const DATE_FORMAT               = 'md';
@@ -112,7 +112,9 @@ class Gateway extends Base\Gateway
 
         if ($authResponse !== null)
         {
-            $this->persistCardDetailsTemporarily($input);
+            $storeCvv = ($this->isRupayTransaction($input) === false);
+
+            $this->persistCardDetailsTemporarily($input, $storeCvv);
 
             return $authResponse;
         }
@@ -215,7 +217,14 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+        $repo = $this->repo;
+
+        if ($this->isRupayTransaction($input) === true)
+        {
+            $repo = $this->app['repo']->paysecure;
+        }
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail(
                             $input['payment']['id'], Base\Action::AUTHORIZE);
 
         $reverseEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::REVERSE);
@@ -416,7 +425,10 @@ class Gateway extends Base\Gateway
 
     protected function isRupayTransaction($input): bool
     {
-        return ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY);
+        return (
+            ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY) and
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARD)
+        );
     }
 
     protected function authorizeMoto(array $input)
@@ -1011,7 +1023,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray(array $input)
     {
-        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        if ($this->isRupayTransaction($input) === true)
         {
             return $this->getPaysecureRefundRequestArray($input);
         }
@@ -1041,6 +1053,9 @@ class Gateway extends Base\Gateway
 
     protected function getPaysecureRefundRequestArray(array $input)
     {
+        $gatewayPayment = $this->app['repo']->paysecure->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Base\Action::AUTHORIZE);
+
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
         $time = $createdAt->format(self::TIME_FORMAT);
@@ -1051,7 +1066,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['refund']['amount']),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
-            RequestFields::RETRIEVAL_REF_NUM   => $input['paysecure']['rrn'],
+            RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment['rrn'],
             RequestFields::MERCHANT_ID         => $input['merchant']['id'],
             RequestFields::TERMINAL_ID         => $input['terminal']['id'],
             RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
@@ -1061,7 +1076,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getReverseRequestArray(array $input, Entity $gatewayPayment)
+    protected function getReverseRequestArray(array $input, Base\Entity $gatewayPayment)
     {
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
@@ -1283,7 +1298,7 @@ class Gateway extends Base\Gateway
         else if (isset($response[ResponseFields::FAILED_RESPONSE_CODE]) === true)
         {
             $respCode = $response[ResponseFields::FAILED_RESPONSE_CODE];
-            
+
             $response[ResponseFields::RESPONSE_CODE] = $respCode;
         }
 
@@ -1491,5 +1506,17 @@ class Gateway extends Base\Gateway
         }
 
         return $key;
+    }
+
+    // Overriding this from CardCacheTrait, since for Paysecure, we want to set the cache_ttl
+    // to the one mentioned in Paysecure gateway implementation
+    protected function getCardCacheTtl()
+    {
+        if ($this->isRupayTransaction($this->input) === true)
+        {
+            return Paysecure\Gateway::CARD_CACHE_TTL;
+        }
+
+        return static::CARD_CACHE_TTL;
     }
 }

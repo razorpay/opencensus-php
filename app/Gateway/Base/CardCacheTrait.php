@@ -17,8 +17,10 @@ trait CardCacheTrait
     /**
      * Stores card details in the cache.
      * @param array $input
+     * @param bool $storeCvv
+     * @throws \Exception
      */
-    protected function persistCardDetailsTemporarily(array $input)
+    protected function persistCardDetailsTemporarily(array $input, $storeCvv = true)
     {
         $cvv = $input['card']['cvv'];
 
@@ -38,18 +40,24 @@ trait CardCacheTrait
         $key = $this->getCacheKey($input['payment']['id']);
 
         $data = [
-            'cvv'         => $this->app['encrypter']->encrypt($cvv),
             'vault_token' => $vaultToken
         ];
 
+        if ($storeCvv === true)
+        {
+            $data['cvv'] = $this->app['encrypter']->encrypt($cvv);
+        }
+
+        $cacheTtl = $this->getCardCacheTtl();
+
         // If this is set to 0, set the cache forever
-        if (static::CACHE_TTL === 0)
+        if ($cacheTtl === 0)
         {
             $this->app['cache']->store($this->secureCacheDriver)->forever($key, $data);
         }
         else
         {
-            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, $cacheTtl);
         }
     }
 
@@ -64,7 +72,10 @@ trait CardCacheTrait
 
         $input['card']['number'] = (new Card\CardVault)->getCardNumber($data['vault_token']);
 
-        $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
+        if (isset($data['cvv']) === true)
+        {
+            $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
+        }
     }
 
     /**
@@ -93,5 +104,13 @@ trait CardCacheTrait
     protected function getDriver()
     {
         return $this->app['config']->get('cache.secure_default');
+    }
+
+    // Fetches the cache ttl
+    // Added this in a function because, some gateways' would have
+    // multiple cache TTLs based on the payment network
+    protected function getCardCacheTtl()
+    {
+        return static::CARD_CACHE_TTL;
     }
 }
