@@ -393,6 +393,14 @@ class Gateway extends Base\Gateway
 
         $paresArray = $this->xmlToArray($paresXml);
 
+        $traceContent = $paresArray;
+        unset($traceContent['Message']['Signature']);
+
+        $this->trace->info(TraceCode::GATEWAY_PARES_RESPONSE,
+            [
+                'content'   => $traceContent,
+            ]);
+
         // Validate Payer Authentication Response
         $this->validatePares($input, $paresArray);
 
