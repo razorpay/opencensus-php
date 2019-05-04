@@ -48,7 +48,7 @@ trait CardCacheTrait
             $data['cvv'] = $this->app['encrypter']->encrypt($cvv);
         }
 
-        $cacheTtl = $this->getCacheTtl();
+        $cacheTtl = $this->getCardCacheTtl();
 
         // If this is set to 0, set the cache forever
         if ($cacheTtl === 0)
@@ -109,8 +109,8 @@ trait CardCacheTrait
     // Fetches the cache ttl
     // Added this in a function because, some gateways' would have
     // multiple cache TTLs based on the payment network
-    protected function getCacheTtl()
+    protected function getCardCacheTtl()
     {
-        return static::CACHE_TTL;
+        return static::CARD_CACHE_TTL;
     }
 }

@@ -21,7 +21,7 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY               = 'enstage_%s_card_details';
 
-    const CACHE_TTL               = 20;
+    const CARD_CACHE_TTL               = 20;
 
     const GATEWAY_MERCHANT_ID     = 'gateway_merchant_id';
 

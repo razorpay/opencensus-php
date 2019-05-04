@@ -35,7 +35,7 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'hitachi_%s_card_details';
-    const CACHE_TTL = 20;
+    const CARD_CACHE_TTL = 20;
 
     const TIME_FORMAT               = 'His';
     const DATE_FORMAT               = 'md';
@@ -1301,7 +1301,7 @@ class Gateway extends Base\Gateway
         else if (isset($response[ResponseFields::FAILED_RESPONSE_CODE]) === true)
         {
             $respCode = $response[ResponseFields::FAILED_RESPONSE_CODE];
-            
+
             $response[ResponseFields::RESPONSE_CODE] = $respCode;
         }
 
@@ -1513,13 +1513,13 @@ class Gateway extends Base\Gateway
 
     // Overriding this from CardCacheTrait, since for Paysecure, we want to set the cache_ttl
     // to the one mentioned in Paysecure gateway implementation
-    protected function getCacheTtl()
+    protected function getCardCacheTtl()
     {
         if ($this->isRupayTransaction($this->input) === true)
         {
-            return Paysecure\Gateway::CACHE_TTL;
+            return Paysecure\Gateway::CARD_CACHE_TTL;
         }
 
-        return static::CACHE_TTL;
+        return static::CARD_CACHE_TTL;
     }
 }
