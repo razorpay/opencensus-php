@@ -27,6 +27,8 @@ class EventTrackerClient extends AbstractEventClient
 
     protected $sns;
 
+    protected $hmacAlgo = 'sha256';
+
     const TRACK_EVENT_URL_PATTERN = 'track';
 
     const SNS_CLIENT = 'lumberjack';
@@ -375,6 +377,14 @@ class EventTrackerClient extends AbstractEventClient
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_TRACK_FAILED);
         }
+    }
+
+    // for lumberjack, we use sha256 and base 64 encoded signature
+    protected function generateSignature(string $message, string $secret)
+    {
+        $signature = json_encode(hash_hmac($this->hmacAlgo, $message, $secret, true));
+
+        return $signature;
     }
 
     /**

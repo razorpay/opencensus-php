@@ -18,7 +18,7 @@ abstract class AbstractEventClient extends Base\Core
 
     protected $events = [];
 
-    const HMAC_ALGO = 'sha1';
+    protected $hmacAlgo = 'sha1';
 
     const CONTENT_TYPE = 'application/json';
 
@@ -68,9 +68,11 @@ abstract class AbstractEventClient extends Base\Core
 
             foreach ($eventData as $eventDataChunk)
             {
+                $signature = $this->generateSignature(json_encode($eventDataChunk), $this->config['secret']);
+
                 $headers = [
                     'content-type'  => self::CONTENT_TYPE,
-                    'x-signature'   => $this->generateSignature(json_encode($eventDataChunk)),
+                    'x-signature'   => $signature,
                     'x-identifier'  => $this->config['identifier']
                 ];
 
@@ -225,18 +227,14 @@ abstract class AbstractEventClient extends Base\Core
     }
 
     /**
-     * Generates hmac signature for authenticating request
+     * Generates hmac signature for authenticating request, hex signature
      *
      * @param string $key
      * @return string $signature
      */
-    protected function generateSignature(string $key)
+    protected function generateSignature(string $message, string $secret)
     {
-        $message = $this->getHmacMessage($key);
-
-        $secret = $this->config['secret'];
-
-        $signature = hash_hmac(self::HMAC_ALGO, $message, $secret);
+        $signature = hash_hmac($this->hmacAlgo, $message, $secret);
 
         return $signature;
     }

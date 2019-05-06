@@ -297,9 +297,11 @@ class Processor
         }
         catch (\Throwable $e)
         {
+            $payment = $payment ?? null;
+
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
-            if ((isset($payment) === true) and ($payment instanceof Payment\Entity))
+            if ($payment instanceof Payment\Entity === true)
             {
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
             }

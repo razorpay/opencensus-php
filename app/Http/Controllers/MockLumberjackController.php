@@ -23,7 +23,7 @@ class MockLumberjackController extends Controller
 
         $key = $request->get('key', null);
 
-        $calcSign = hash_hmac('sha1', $key, $secret);
+        $calcSign = base64_encode(hash_hmac('sha256', $key, $secret, true));
 
         if ($signature !== $calcSign)
         {
