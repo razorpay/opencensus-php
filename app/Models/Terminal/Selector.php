@@ -481,9 +481,13 @@ class Selector extends Base\Core
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
-        if ($isProduction === false)
-        {
+        if ($isProduction === false) {
             return true;
+        }
+
+        if ($this->isTestMode() === true)
+        {
+            return false;
         }
 
         $response = $this->app->razorx->getTreatment($merchantId, 'payment_hit_routing_service', $this->mode);
