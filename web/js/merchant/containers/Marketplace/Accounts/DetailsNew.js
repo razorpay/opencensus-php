@@ -339,42 +339,41 @@ export default class Details extends Component {
                     </ToggleField>
                   </EntityDetailRow>
                 )}
-                {isAllowToEdit &&
-                  user.isAllowedLARefunds && (
-                    <EntityDetailRow
-                      label={
-                        <span>
-                          Allow Customer Refund
-                          <small
-                            className="help-content"
-                            style={{ paddingLeft: '4px' }}
-                          >
-                            <i class="i i-help" />
-                            <Popover align="right" theme="dark">
-                              <PopoverBody>
-                                <div style={{ textAlign: 'left' }}>
-                                  This allows Linked account to refund to the
-                                  customer for a transfer.
-                                </div>
-                              </PopoverBody>
-                            </Popover>
-                          </small>
-                        </span>
-                      }
+                {isAllowToEdit && (
+                  <EntityDetailRow
+                    label={
+                      <span>
+                        Allow Customer Refund
+                        <small
+                          className="help-content"
+                          style={{ paddingLeft: '4px' }}
+                        >
+                          <i class="i i-help" />
+                          <Popover align="right" theme="dark">
+                            <PopoverBody>
+                              <div style={{ textAlign: 'left' }}>
+                                This allows Linked account to refund to the
+                                customer for a transfer.
+                              </div>
+                            </PopoverBody>
+                          </Popover>
+                        </small>
+                      </span>
+                    }
+                  >
+                    <ToggleField
+                      onEdit={this.showEditAccountModal(account)}
+                      isDisabled={noLAEmail}
                     >
-                      <ToggleField
-                        onEdit={this.showEditAccountModal(account)}
-                        isDisabled={noLAEmail}
-                      >
-                        <SwitchField
-                          checked={!!account.allow_reversals}
-                          onChange={this.onToggleAllowRefunds}
-                          disabled={noLAEmail}
-                          type="prime"
-                        />
-                      </ToggleField>
-                    </EntityDetailRow>
-                  )}
+                      <SwitchField
+                        checked={!!account.allow_reversals}
+                        onChange={this.onToggleAllowRefunds}
+                        disabled={noLAEmail}
+                        type="prime"
+                      />
+                    </ToggleField>
+                  </EntityDetailRow>
+                )}
               </div>
             </div>
           </div>

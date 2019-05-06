@@ -303,8 +303,7 @@ export default class AccountsListContainer extends ListContainer {
           }
           onToggleAllowRefunds={
             showWhenUtil({
-              additionalCondition: user =>
-                user.isAllowedEdit('accounts') && user.isAllowedLARefunds,
+              additionalCondition: user => user.isAllowedEdit('accounts'),
             })
               ? this.onToggleAllowRefunds
               : undefined
