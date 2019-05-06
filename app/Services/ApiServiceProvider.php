@@ -151,6 +151,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CorePaymentService($app);
         });
 
+        $this->app->singleton('governor', function($app)
+        {
+            $goverorMock = $app['config']->get('applications.governor.mock');
+
+            if ($goverorMock === true)
+            {
+                return new Mock\GovernorService($app);
+            }
+
+            return new GovernorService($app);
+        });
+
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');

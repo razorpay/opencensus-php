@@ -1785,6 +1785,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
 
+    const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
+    const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
+    const GOVERNOR_SERVICE_RETRY                                = 'GOVERNOR_SERVICE_RETRY';
+    const GOVERNOR_SERVICE_ERROR                                = 'GOVERNOR_SERVICE_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

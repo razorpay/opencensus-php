@@ -100,6 +100,19 @@ return [
         ],
     ],
 
+    'governor' => [
+        'mock'      => env('GOVERNOR_SERVICE_MOCK', false),
+        'smart_routing'=> [
+            'username'  => env('GOVERNOR_SMART_ROUTING_SERVICE_KEY'),
+            'password'  => env('GOVERNOR_SMART_ROUTING_SERVICE_SECRET'),
+        ],
+        'cps'=> [
+            'username'  => env('GOVERNOR_CPS_SERVICE_KEY'),
+            'password'  => env('GOVERNOR_CPS_SERVICE_SECRET'),
+        ],
+        'url'       => env('GOVERNOR_LIVE_URL'),
+    ],
+
     'redisdualwrite' => [
         'elastic_cache_read'        => env('ELASTIC_CACHE_READ'),
         'skip_dual_write'           => env('SKIP_DUAL_WRITE'),
