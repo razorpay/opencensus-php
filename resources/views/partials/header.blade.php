@@ -52,27 +52,29 @@
 
             var isGaNotAvl = typeof ga === 'undefined',
                 isAnalyticsNotAvl = typeof analytics === 'undefined';
-
+            
              // If ga is undefined, push to queue
-             if (sGaNotAvl) {
+            if (isGaNotAvl) {
                 _rzpAQ.push(data);
-            };
+            } else {
+                clearInterval(_qChckr);
+                emptyRzpAQ();
+            }
 
             // If analytics is undefined, push to queue
             if (isAnalyticsNotAvl) {
                 _rzpAQ_fbq.push(data);
-            };
+            } else {
+                clearInterval(_fbqChckr);
+                emptyRzpAQ_fbq();
+            }
 
-            clearInterval(_qChckr);
-            emptyRzpAQ();
-
-            clearInterval(_fbqChckr);
-            emptyRzpAQ_fbq();
+            if (isGaNotAvl && isAnalyticsNotAvl) return;
 
             switch (data.name) {
                 case 'set_dimensions': { // Set the dimensions
                     // If ga is undefined, don't do anything
-                    if (isGaAvl) return;
+                    if (isGaNotAvl) return;
 
                     ga('old.set', data.dimensions);
                     ga('set', data.dimensions);
@@ -87,9 +89,9 @@
 
                    break;
                 }
-                default:
+                default: {
                     // If ga is undefined, don't do anything
-                    if (typeof ga === 'undefined') return;
+                    if (isGaNotAvl) return;
 
                     ga('old.send',
                         'event',
@@ -105,6 +107,7 @@
                         data.eventLabel || undefined,
                         data.eventValue || undefined
                     )
+                }
             }
         }
     </script>
