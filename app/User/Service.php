@@ -418,7 +418,6 @@ class Service extends Base\Service
                     $data['experiments']['is_banner'] = $merchantService->getTreatment('is_banner');
                     $data['experiments']['capital_announcement'] = $merchantService->getTreatment('capital_announcement');
                     $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
-                    $data['experiments']['la_refunds'] = $merchantService->getTreatment('la_refunds');
 
                     $data['current'] = $currentMerchantId;
 
