@@ -364,7 +364,7 @@ class Inferno
             $clientError = true;
         }
 
-        $this->pushRequestAttemptMetrics($statusCode);
+        $this->pushRequestAttemptMetrics($statusCode, $requestDuration);
 
         return $clientError;
     }
@@ -375,7 +375,7 @@ class Inferno
                 ($statusCode < StatusCode::REDIRECTION));
     }
 
-    protected function pushRequestAttemptMetrics(int $statusCode)
+    protected function pushRequestAttemptMetrics(int $statusCode, int $requestDuration)
     {
         $dimensions = [
             'status_code'            => $statusCode,
