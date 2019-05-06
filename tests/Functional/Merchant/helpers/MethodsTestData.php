@@ -65,6 +65,40 @@ return [
         ],
     ],
 
+    'testBulkMethodUpdateEnableBanks' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods' => [
+                    'enabled_banks' => ['HDFC']
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testBulkMethodUpdateDisableBanks' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods' => [
+                    'disabled_banks' => ['ICIC']
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testBulkMethodUpdateInvalidMerchantId' => [
         'request'  => [
             'url'     => '/methods/bulkupdate',

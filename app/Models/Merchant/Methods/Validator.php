@@ -8,7 +8,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
-
     protected static $addDisabledBanksRules = [
         Entity::DISABLED_BANKS => 'sometimes|array'
     ];
@@ -18,6 +17,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $setMethodsRules = [
+        Entity::ENABLED_BANKS  => 'sometimes|array',
         Entity::DISABLED_BANKS => 'sometimes|array',
         Entity::NETBANKING     => 'sometimes|boolean',
         Entity::AMEX           => 'sometimes|boolean',
