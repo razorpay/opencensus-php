@@ -43,11 +43,7 @@ export default class AccountsListContainer extends ListContainer {
         accountId: account.id,
       };
 
-    if (
-      account.allow_reversals &&
-      !checked &&
-      this.props.user.isAllowedLARefunds
-    ) {
+    if (account.allow_reversals && !checked) {
       header = 'Also Disable Customer Refunds?';
       message =
         'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.';
@@ -328,8 +324,7 @@ export default class AccountsListContainer extends ListContainer {
           }
           onToggleAllowRefunds={
             showWhenUtil({
-              additionalCondition: user =>
-                user.isAllowedEdit('accounts') && user.isAllowedLARefunds,
+              additionalCondition: user => user.isAllowedEdit('accounts'),
             })
               ? this.onToggleAllowRefunds
               : undefined
