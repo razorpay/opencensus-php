@@ -219,8 +219,9 @@ class Core extends Base\Core
         $authAmount = $this->getAuthTransactionAmount($subscription, $cardChange);
 
         return [
-            'amount' => $authAmount,
-            'type'   => $subscription->getType(),
+            'amount'    => $authAmount,
+            'type'      => $subscription->getType(),
+            'currency'  => $subscription->plan->item->currency,
         ];
     }
 
