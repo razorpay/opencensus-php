@@ -426,7 +426,7 @@ class OtpPaymentTest extends TestCase
         {
             $this->doAuthPayment($payment);
         },
-        GatewayRequestException::class);
+        GatewayErrorException::class);
     }
 
     public function testHeadlessOtpAuthenticationPaymentWithout3ds()
@@ -1482,7 +1482,7 @@ class OtpPaymentTest extends TestCase
             {
                 $this->doAuthPayment($payment);
             },
-            GatewayRequestException::class);
+            GatewayErrorException::class);
 
             $iin = $this->getEntityById('iin', 556763, true);
 
@@ -1861,7 +1861,7 @@ class OtpPaymentTest extends TestCase
         {
             $this->doAuthPayment($payment);
         },
-        GatewayRequestException::class);
+        GatewayErrorException::class);
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2SErrorInOtpElf()

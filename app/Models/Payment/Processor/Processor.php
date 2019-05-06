@@ -121,7 +121,7 @@ class Processor
     /**
      * Timeout to store card details for fallback auth type
      */
-    const CACHE_TTL = 10;
+    const CARD_CACHE_TTL = 10;
 
     /**
      * Timeout to store card details for redirect to authorize

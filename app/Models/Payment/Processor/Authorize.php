@@ -5178,7 +5178,7 @@ trait Authorize
         if ($type === 'fallback')
         {
             $key = $payment->getCacheInputKey();
-            $ttl = static::CACHE_TTL;
+            $ttl = static::CARD_CACHE_TTL;
         }
         else
         {

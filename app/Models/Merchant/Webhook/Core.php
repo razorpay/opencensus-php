@@ -105,7 +105,9 @@ class Core extends Base\Core
             'mode'       => $this->app['rzp.mode'],
             'event'      => json_encode($event->toArrayPublic()),
             'event_name' => $event->event,
-            'webhook_id' => $webhook->getId()
+            'webhook_id' => $webhook->getId(),
+            // Refer Inferno's eventQueuedAt.
+            'queued_at'  => millitime(),
         ];
 
         return $data;

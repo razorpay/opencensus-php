@@ -214,7 +214,7 @@ return array(
             'host'     => env('SECURE_REDIS_HOST'),
             'port'     => env('SECURE_REDIS_PORT'),
             'database' => env('SECURE_REDIS_DB'),
-            'timeout'  => 0.5,
+            'timeout'  => 5,
             'read_write_timeout' => 1,
         ],
     ],

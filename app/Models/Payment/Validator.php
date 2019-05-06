@@ -75,7 +75,7 @@ class Validator extends Base\Validator
         'test_success'                  => 'sometimes|boolean',
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
-        'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
+        'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,5760|filled',
         'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:20|filled',
         'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',

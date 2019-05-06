@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -453,6 +454,22 @@ class PaysecureGatewayTest extends TestCase
     protected function assertSuccess($authResponse, $flow)
     {
         $payment = $this->getDbLastEntityToArray('payment');
+
+        $cacheDriver = $this->app['config']->get('cache.secure_default');
+
+        $key = sprintf(Gateway::CACHE_KEY, $payment['id']);
+
+        $cacheValue = $this->app['cache']->store($cacheDriver)->get($key);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'vault_token' => base64_encode($this->payment['card']['number']),
+            ],
+            $cacheValue
+        );
+
+        // Ensure cvv does not get stored in cache
+        $this->assertArrayNotHasKey('cvv', $cacheValue);
 
         $this->assertArraySelectiveEquals(
             [

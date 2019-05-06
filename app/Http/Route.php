@@ -982,7 +982,8 @@ final class Route
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
-        'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                           ],
+        'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
+        'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -1659,6 +1660,7 @@ final class Route
         'subscription_payment_fetch_by_id',
         'commissions_get',
         'currency_fetch_all_proxy',
+        'commissions_analytics',
     ];
 
     // These will run on internal auth with the assurance

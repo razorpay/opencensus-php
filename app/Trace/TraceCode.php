@@ -1429,6 +1429,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FILE_JOB_ERROR                                = 'GATEWAY_FILE_JOB_ERROR';
 
     const VERIFY_ENROLLMENT_RESPONSE                            = 'VERIFY_ENROLLMENT_RESPONSE';
+    const GATEWAY_PARES_RESPONSE                                = 'GATEWAY_PARES_RESPONSE';
 
     // Trace code for \Models\Settings
     const SETTINGS_UPSERT_REQUEST                               = 'SETTINGS_UPSERT_REQUEST';
@@ -1494,6 +1495,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                             = 'PARTNER_REQUEST_SUBMITTED';
     const PARTNER_ACCESS_MAPS_DELETE                            = 'PARTNER_ACCESS_MAPS_DELETE';
+    const PARTNER_DELETE_APPLICATION                            = 'PARTNER_DELETE_APPLICATION';
     const PARTNER_CREATE_ACCESS_MAP_REQUEST                     = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST                     = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
     const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT             = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
