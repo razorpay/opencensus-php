@@ -333,6 +333,9 @@ class PaysecureGatewayTest extends TestCase
 
         $payment = $this->getDbLastEntityToArray('payment');
 
+        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        $this->gateway = 'hitachi';
+
         $this->refundPayment('pay_' . $payment['id'], 1000);
 
         $refund = $this->getDbLastEntityToArray('refund');
@@ -345,9 +348,59 @@ class PaysecureGatewayTest extends TestCase
                 'payment_id' => $payment['id'],
                 'gateway'    => 'hitachi',
                 'is_scrooge' => true,
+                'status'     => 'processed',
             ],
             $refund
         );
+
+        //temporary: make gateway paysecure for other testcases
+        $this->gateway = 'paysecure';
+    }
+
+    public function testPaymentRefundWithMissingRrnViaHitachi()
+    {
+        $this->testPaymentSettledViaHitachi();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->clearMockFunction();
+
+        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        $this->gateway = 'hitachi';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pStatus'] = 'Error';
+            }
+
+            if ($action === 'refund')
+            {
+                unset($content['pRRN']);
+            }
+
+        });
+
+        $this->refundPayment('pay_' . $payment['id'], 1000);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        // Hitachi refunds goes via Scrooge
+        // So, we can only check the refund entity, since the other things are handled at Scrooge
+        $this->assertArraySelectiveEquals(
+            [
+                'amount'     => 1000,
+                'payment_id' => $payment['id'],
+                'gateway'    => 'hitachi',
+                'is_scrooge' => true,
+                'status'     => 'processed',
+            ],
+            $refund
+        );
+
+        //temporary: make gateway paysecure for other testcases
+        $this->gateway = 'paysecure';
     }
 
     public function testSoapFault()

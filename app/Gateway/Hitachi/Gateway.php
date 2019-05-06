@@ -1170,7 +1170,7 @@ class Gateway extends Base\Gateway
         else
         {
             $attributes = [
-                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
+                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
                 Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
             ];
         }

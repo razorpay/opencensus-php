@@ -75,4 +75,9 @@ class Entity extends Base\Entity
 
         $this->attributes[self::HKEY] = Crypt::encrypt($hkey);
     }
+
+    public function getRrn()
+    {
+        return $this->getAttribute(self::RRN);
+    }
 }
