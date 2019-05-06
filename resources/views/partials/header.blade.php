@@ -23,19 +23,45 @@
         }
 
         function emptyRzpAQ () {
-            if (typeof ga === 'undefined' ||  _rzpAQ.length) return;
-           
-            clearQueue(_rzpAQ);
+            if (typeof ga === 'undefined' ||  !_rzpAQ.length) return;
 
+            var q = [].concat(_rzpAQ);
             _rzpAQ = [];
+            clearQueue(q);
         }
 
         function emptyRzpAQ_fbq () {
-            if (typeof analytics === 'undefined' || _rzpAQ_fbq.length) return;
+            if (typeof analytics === 'undefined' || !_rzpAQ_fbq.length) return;
 
-            clearQueue(_rzpAQ_fbq);
-
+            var q = [].concat(_rzpAQ_fbq);
             _rzpAQ_fbq = [];
+            clearQueue(_rzpAQ_fbq);
+        }
+
+        function checkGa(data) {
+             // If ga is undefined, push data to _rzpAQ
+            if (typeof ga === 'undefined') {
+                _rzpAQ.push(data);
+                return false;
+            }
+
+            clearInterval(_qChckr);
+            emptyRzpAQ();
+
+            return true;
+        }
+
+        function checkAnalytics(data) {
+           // If analytics is undefined, push to _rzpAQ_fbq
+           if (typeof analytics === 'undefined') {
+                _rzpAQ_fbq.push(data);
+                return false;
+            } 
+
+            clearInterval(_fbqChckr);
+            emptyRzpAQ_fbq();
+
+            return true;
         }
 
 
@@ -49,32 +75,10 @@
         window.rzpAnalytics = function (data) {
             // If there's no data, don't track anything
             if (!data) return;
-
-            var isGaNotAvl = typeof ga === 'undefined',
-                isAnalyticsNotAvl = typeof analytics === 'undefined';
             
-             // If ga is undefined, push to queue
-            if (isGaNotAvl) {
-                _rzpAQ.push(data);
-            } else {
-                clearInterval(_qChckr);
-                emptyRzpAQ();
-            }
-
-            // If analytics is undefined, push to queue
-            if (isAnalyticsNotAvl) {
-                _rzpAQ_fbq.push(data);
-            } else {
-                clearInterval(_fbqChckr);
-                emptyRzpAQ_fbq();
-            }
-
-            if (isGaNotAvl && isAnalyticsNotAvl) return;
-
             switch (data.name) {
                 case 'set_dimensions': { // Set the dimensions
-                    // If ga is undefined, don't do anything
-                    if (isGaNotAvl) return;
+                    if (!checkGa(data)) return;
 
                     ga('old.set', data.dimensions);
                     ga('set', data.dimensions);
@@ -82,16 +86,14 @@
                     break;
                 }
                 case 'facebook': {
-                    // If analytics is undefined don't do anything
-                    if (isAnalyticsNotAvl) return;
-                    
+                    if (!checkAnalytics(data)) return;
+                        
                     analytics.track('fb', data.event, data.value);
 
                    break;
                 }
                 default: {
-                    // If ga is undefined, don't do anything
-                    if (isGaNotAvl) return;
+                    if (!checkGa(data)) return;
 
                     ga('old.send',
                         'event',
