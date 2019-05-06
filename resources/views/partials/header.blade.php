@@ -17,9 +17,9 @@
         _rzpAQ_fbq = []; // queue for facebook pixel
 
         function clearQueue(queue) {
-            queue.forEach(function(i) {
+            for(var i=0; i < queue.length; i++) {
                 window.rzpAnalytics(queue[i]);
-            });
+            }
         }
 
         function emptyRzpAQ () {
