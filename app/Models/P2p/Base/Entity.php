@@ -65,7 +65,7 @@ class Entity extends Base\PublicEntity
         return (new ArrayBag($this->attributesToArray()));
     }
 
-    public function setPublicEntityAttribute(array & $array)
+    public function getP2pEntityName()
     {
         $entity = $this->entity;
 
@@ -74,6 +74,11 @@ class Entity extends Base\PublicEntity
             $entity = substr($this->entity, 4);
         }
 
-        $array[self::ENTITY] = $entity;
+        return $entity;
+    }
+
+    public function setPublicEntityAttribute(array & $array)
+    {
+        $array[self::ENTITY] = $this->getP2pEntityName();
     }
 }

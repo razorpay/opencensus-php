@@ -18,17 +18,13 @@ class Processor extends Base\Processor
 {
     public function add(array $input): array
     {
-        $this->initialize(Action::ADD, $input);
+        $this->initialize(Action::ADD, $input, true);
 
-        return [
-            'id'               => 'vpa_8zIfY8quFElCbH',
-            'entity'           => 'vpa',
-            'beneficiary_name' => $input['beneficiary_name'],
-            'address'          => $input['address'],
-            'username'         => 'beneficiary',
-            'handle'           => 'razorhdfc',
-            'created_at'       => time()
-        ];
+        $beneficiary = $this->findByEntity($this->input->get(Entity::TYPE), $this->input->get(Entity::ID));
+
+        $entity = $this->core->findOrCreate($beneficiary, $this->input->toArray());
+
+        return $entity->toArrayPublic();
     }
 
     public function validate(array $input): array
@@ -81,39 +77,24 @@ class Processor extends Base\Processor
         return $beneficiary->toArrayBeneficiary();
     }
 
-    public function fetchAll(array $input): array
-    {
-        $this->initialize(Action::FETCH_ALL, $input);
-
-        return [
-            'entity'   => 'collection',
-            'count'    => 2,
-            'items'    => [
-                [
-                    'id'                    => 'vpa_8zIfY8quFElCbH',
-                    'entity'                => 'vpa',
-                    'beneficiary_name'      => 'Beneficiary Name',
-                    'address'               => 'beneficiary@razorhdfc',
-                    'username'              => 'beneficiary',
-                    'handle'                => 'razorhdfc',
-                    'created_at'            => time()
-                ],
-                [
-                    'id'                    => 'ba_8zIfY7hSkCF8wr',
-                    'entity'                => 'bank_account',
-                    'beneficiary_name'      => 'Beneficiary Name',
-                    'masked_account_number' => '*********1234',
-                    'ifsc_code'             => 'RAZ00000001',
-                    'bank_name'             => 'Razorpay',
-                    'address'               => '100010001000@RAZ00000001.ifsc.npci',
-                    'created_at'            => time()
-                ]
-            ]
-        ];
-    }
-
     protected function getEntity()
     {
         return $this->input->get(Entity::TYPE);
+    }
+
+    protected function findByEntity(string $type, string $id)
+    {
+        switch ($type)
+        {
+            case BankAccount\Entity::BANK_ACCOUNT:
+                $beneficiary = (new BankAccount\Core)->find($id);
+                break;
+
+            case Vpa\Entity::VPA:
+                $beneficiary = (new Vpa\Core)->find($id);
+                break;
+        }
+
+        return $beneficiary;
     }
 }
