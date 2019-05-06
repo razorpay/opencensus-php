@@ -177,7 +177,7 @@ class Sdk
 
         $sign = $this->signContent(implode($response, ''));
 
-        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = bin2hex($sign);
+        $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
 
         $response[Fields::STATUS] = 'SUCCESS';
 

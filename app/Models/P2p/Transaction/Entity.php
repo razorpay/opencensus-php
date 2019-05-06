@@ -340,7 +340,7 @@ class Entity extends Base\Entity
      */
     public function setInternalStatus(string $internalStatus)
     {
-        $this->setStatus(Status::map($internalStatus));
+        $this->setStatus($internalStatus);
 
         return $this->setAttribute(self::INTERNAL_STATUS, $internalStatus);
     }

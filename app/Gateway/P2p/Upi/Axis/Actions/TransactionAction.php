@@ -49,6 +49,26 @@ class TransactionAction extends Action
                 Fields::UDF_PARAMETERS,
                 Fields::UPI_REQUEST_ID
             ],
+
+            self::RESPONSE => [
+
+                self::SIGNATURE => [
+                    Fields::AMOUNT,
+                    Fields::BANK_ACCOUNT_UNIQUE_ID,
+                    Fields::BANK_CODE,
+                    Fields::CUSTOMER_MOBILE_NUMBER,
+                    Fields::CUSTOMER_VPA,
+                    Fields::GATEWAY_REFERENCE_ID,
+                    Fields::GATEWAY_RESPONSE_CODE,
+                    Fields::GATEWAY_RESPONSE_MESSAGE,
+                    Fields::GATEWAY_TRANSACTION_ID,
+                    Fields::MASKED_ACCOUNT_NUMBER,
+                    Fields::MERCHANT_REQUEST_ID,
+                    Fields::PAY_TYPE,
+                    Fields::TRANSACTION_TIME_STAMP,
+                    Fields::UDF_PARAMETERS,
+                ],
+            ],
         ],
         self::REQUEST_MONEY => [
             self::VALIDATOR => [
@@ -78,6 +98,26 @@ class TransactionAction extends Action
                 Fields::UDF_PARAMETERS,
                 Fields::UPI_REQUEST_ID,
             ],
+
+            self::RESPONSE => [
+
+                self::SIGNATURE => [
+                    Fields::AMOUNT,
+                    Fields::BANK_ACCOUNT_UNIQUE_ID,
+                    Fields::BANK_CODE,
+                    Fields::CUSTOMER_MOBILE_NUMBER,
+                    Fields::CUSTOMER_VPA,
+                    Fields::GATEWAY_REFERENCE_ID,
+                    Fields::GATEWAY_RESPONSE_CODE,
+                    Fields::GATEWAY_RESPONSE_MESSAGE,
+                    Fields::GATEWAY_TRANSACTION_ID,
+                    Fields::MASKED_ACCOUNT_NUMBER,
+                    Fields::MERCHANT_REQUEST_ID,
+                    Fields::PAY_TYPE,
+                    Fields::TRANSACTION_TIME_STAMP,
+                    Fields::UDF_PARAMETERS,
+                ],
+            ],
         ],
         self::PAY_COLLECT => [
             self::VALIDATOR => [
@@ -101,6 +141,26 @@ class TransactionAction extends Action
                 Fields::TIME_STAMP,
                 Fields::UDF_PARAMETERS,
                 Fields::UPI_REQUEST_ID,
+            ],
+
+            self::RESPONSE => [
+
+                self::SIGNATURE => [
+                    Fields::AMOUNT,
+                    Fields::BANK_ACCOUNT_UNIQUE_ID,
+                    Fields::BANK_CODE,
+                    Fields::CUSTOMER_MOBILE_NUMBER,
+                    Fields::CUSTOMER_VPA,
+                    Fields::GATEWAY_REFERENCE_ID,
+                    Fields::GATEWAY_RESPONSE_CODE,
+                    Fields::GATEWAY_RESPONSE_MESSAGE,
+                    Fields::GATEWAY_TRANSACTION_ID,
+                    Fields::MASKED_ACCOUNT_NUMBER,
+                    Fields::MERCHANT_REQUEST_ID,
+                    Fields::PAY_TYPE,
+                    Fields::TRANSACTION_TIME_STAMP,
+                    Fields::UDF_PARAMETERS,
+                ],
             ],
         ],
     ];

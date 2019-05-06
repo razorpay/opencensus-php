@@ -9,8 +9,6 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
 use RZP\Models\P2p\Device;
 use RZP\Constants\Timezone;
-use RZP\Gateway\P2p\Upi\Axis\Sdk;
-use RZP\Gateway\P2p\Base\Response;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Exception\P2p\GatewayErrorException;
 
@@ -79,6 +77,23 @@ class Gateway extends Upi\Gateway
         }
 
         return $this->inputSdk();
+    }
+
+    protected function handleSdkCallback(): ArrayBag
+    {
+        $action = $this->input->get(Fields::CALLBACK)->get(Fields::ACTION);
+
+        $response = new Response();
+
+        $response->setActionMap($action, $this->actionMap[$action][Actions\Action::RESPONSE] ?? []);
+
+        $response->setVerifier($this->getMerchantVerifier());
+
+        $response->setContent($this->inputSdk());
+
+        $response->finish();
+
+        return $this->input->get(Fields::CALLBACK);
     }
 
     protected function handleGatewayResponseCode()
