@@ -172,7 +172,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
             {
                 $paymentProcessed = $this->processPayment($row, $rowDetails);
 
-                $this->persistReconciliationData($rowDetails);
+                $this->persistReconciliationData($rowDetails, $row);
 
                 /**
                  * We mark the recon as failed if payment status mapping
