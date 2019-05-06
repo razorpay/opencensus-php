@@ -1,4 +1,4 @@
-import { groupBy } from './rzp-utils';
+import { groupBy, arrayToObject } from './rzp-utils';
 
 export const OTHERS = 'Others';
 export const MOBILE_SDK = 'Mobile SDK';
@@ -133,4 +133,56 @@ export const getDefaultPaymentFilter = (startTime, endTime) => {
       gt: 0,
     },
   };
+};
+
+export const groupCommissionListData = data => {
+  const groupedData = {};
+  Object.keys(data).forEach(key => {
+    groupedData[key] = arrayToObject(data[key].result, formatData);
+  });
+
+  if (data.limit) {
+    return data;
+  }
+
+  return Object.keys(groupedData.activeMerchants)
+    .map(timestamp => ({
+      timestamp,
+      activeMerchants: groupedData.activeMerchants[timestamp],
+      earnings: groupedData.earnings[timestamp],
+      transactionVolume: groupedData.transactionVolume[timestamp],
+      transactions: groupedData.transactions[timestamp],
+      id: timestamp, // to avoid unwanted lumination of rows
+    }))
+    .sort((a, b) => b.timestamp - a.timestamp);
+
+  function formatData({ timestamp, value }) {
+    return { key: timestamp, value };
+  }
+};
+
+export const groupSingleDayCommissionData = data => {
+  const fields = [
+    'baseEarnings',
+    'addonEarnings',
+    'baseTax',
+    'addonTax',
+    'transactionVolume',
+    'activeMerchants',
+    'transactions',
+  ];
+
+  return fields.reduce(
+    (formattedData, field) => ({
+      ...formattedData,
+      ...formatData(field),
+    }),
+    {}
+  );
+
+  function formatData(field) {
+    return {
+      [field]: (data[field].result[0] || {}).value || 0,
+    };
+  }
 };

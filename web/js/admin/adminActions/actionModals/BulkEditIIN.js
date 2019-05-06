@@ -6,7 +6,8 @@ import { adminPatch } from 'common/fetch';
 import { closeModal, notifySuccess } from 'common/modal';
 
 function sanitizeIINs(commaSeparatedIINs) {
-  return commaSeparatedIINs.split(",")
+  return commaSeparatedIINs
+    .split(',')
     .map(p => p.trim())
     .filter(p => p.length === 6);
 }
@@ -43,19 +44,18 @@ export default function BulkEditIIN() {
         pendingClass="small spinner"
         type="submit"
         onSubmit={formData => {
-
           const data = {
             iins: sanitizeIINs(formData.iins),
             payload: {
               flows: {
-                [formData.flow]: Number(formData.action === 'enable')
-              }
-            }
+                [formData.flow]: Number(formData.action === 'enable'),
+              },
+            },
           };
 
           return adminPatch({
             url: `live/iins/bulk`,
-            data
+            data,
           }).then(data => {
             if (data) {
               const count = Object.keys(data).length;
@@ -63,8 +63,7 @@ export default function BulkEditIIN() {
               closeModal();
             }
           });
-        }
-        }
+        }}
       />
     </Form>
   );

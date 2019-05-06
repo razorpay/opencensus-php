@@ -1,0 +1,23 @@
+[
+  {
+    "date": "1554122834",
+    "earnings": "20000",
+    "activeMerchants": 4,
+    "transactions": 1231,
+    "volume": 22100000
+  },
+  {
+    "date": "1554036434",
+    "earnings": "30000",
+    "activeMerchants": 4,
+    "transactions": 1231,
+    "volume": 35000000
+  },
+  {
+    "date": "1553950034",
+    "earnings": "15000",
+    "activeMerchants": 4,
+    "transactions": 1231,
+    "volume": 1500000
+  }
+]
