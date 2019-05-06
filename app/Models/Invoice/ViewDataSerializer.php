@@ -159,7 +159,7 @@ class ViewDataSerializer extends Base\Core
         $partner = $this->merchant->getNonPurePlatformPartner();
 
         // Check if partner enforces its config on submerchant
-        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUB_CONFIG);
 
         if ($overrideConfig === true)
         {
@@ -190,7 +190,7 @@ class ViewDataSerializer extends Base\Core
     protected function getMerchantLogo(Merchant\Entity $partner = null)
     {
         // Check if partner enforces its config on submerchant
-        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUB_CONFIG);
 
         $image = null;
 
@@ -205,7 +205,7 @@ class ViewDataSerializer extends Base\Core
     protected function getMerchantBrandColor(Merchant\Entity $partner = null): string
     {
         // Check if partner enforces its config on submerchant
-        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUB_CONFIG);
 
         $color = null;
 
@@ -220,7 +220,7 @@ class ViewDataSerializer extends Base\Core
     protected function getMerchantBrandTextColor(Merchant\Entity $partner = null): string
     {
         // Check if partner enforces its config on submerchant
-        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUBMERCHANT_CONFIG);
+        $overrideConfig = optional($partner)->isFeatureEnabled(Feature\Constants::OVERRIDE_SUB_CONFIG);
 
         $textColor = null;
 
