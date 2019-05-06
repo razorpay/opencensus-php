@@ -36,16 +36,9 @@ export default class EarningsContainer extends Component {
             <ShowWhenRoute
               path="/partners/earnings/transactional"
               component={Transactional}
-              additionalCondition={user =>
-                !user.isPartner('reseller') &&
-                user.isTransactionalCommissionsEnabled
-              }
+              additionalCondition={user => !user.isPartner('reseller')}
             />
-            <ShowWhenRoute
-              path="/partners/earnings/daily"
-              component={Daily}
-              additionalCondition={user => user.isDailyCommissionsEnabled}
-            />
+            <ShowWhenRoute path="/partners/earnings/daily" component={Daily} />
           </Switch>
         </content>
       </tabbed-container>
