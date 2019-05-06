@@ -50,6 +50,19 @@
             // If there's no data, don't track anything
             if (!data) return;
 
+            var isGaNotAvl = typeof ga === 'undefined',
+                isAnalyticsNotAvl = typeof analytics === 'undefined';
+
+             // If ga is undefined, push to queue
+             if (sGaNotAvl) {
+                _rzpAQ.push(data);
+            };
+
+            // If analytics is undefined, push to queue
+            if (isAnalyticsNotAvl) {
+                _rzpAQ_fbq.push(data);
+            };
+
             clearInterval(_qChckr);
             emptyRzpAQ();
 
@@ -58,11 +71,8 @@
 
             switch (data.name) {
                 case 'set_dimensions': { // Set the dimensions
-                    // If ga is undefined, push to queue
-                    if (typeof ga === 'undefined') {
-                        _rzpAQ.push(data);
-                        return;
-                    };
+                    // If ga is undefined, don't do anything
+                    if (isGaAvl) return;
 
                     ga('old.set', data.dimensions);
                     ga('set', data.dimensions);
@@ -70,22 +80,16 @@
                     break;
                 }
                 case 'facebook': {
-                    // If analytics is undefined, push to queue
-                    if (typeof analytics === 'undefined') {
-                        _rzpAQ_fbq.push(data);
-                        return;
-                    };
+                    // If analytics is undefined don't do anything
+                    if (isAnalyticsNotAvl) return;
                     
                     analytics.track('fb', data.event, data.value);
 
                    break;
                 }
                 default:
-                    // If ga is undefined, push to queue
-                    if (typeof ga === 'undefined') {
-                        _rzpAQ.push(data);
-                        return;
-                    };
+                    // If ga is undefined, don't do anything
+                    if (typeof ga === 'undefined') return;
 
                     ga('old.send',
                         'event',
