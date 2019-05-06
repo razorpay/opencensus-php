@@ -4860,6 +4860,10 @@ ALTER TABLE refunds
     ADD COLUMN is_scrooge TINYINT(1) NOT NULL DEFAULT 0 AFTER processed_at,
     ADD INDEX refunds_is_scrooge_index (`is_scrooge`);
 
+ALTER TABLE `reversals`
+    ADD COLUMN `initiator_id` varchar(14) DEFAULT NULL AFTER `transaction_id`,
+    ADD COLUMN `customer_refund_id` varchar(14) DEFAULT NULL AFTER `initiator_id`;
+
 ALTER TABLE reversals
     ADD COLUMN customer_id VARCHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD COLUMN transaction_type VARCHAR(255) DEFAULT NULL after transaction_id;

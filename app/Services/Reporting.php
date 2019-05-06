@@ -18,6 +18,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Partner\Config;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Partner\Commission;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -699,8 +700,8 @@ class Reporting implements ExternalService
         $hasOfferTag        = in_array(Feature::OFFERS, $features, true);
         $hasGenericNotesTag = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
-        $showCommissionReports   = false;
-        $showTxnCommissionReport = false;
+        $showTxnCommissionReport          = false;
+        $showAggregateCommissionReports   = false;
 
         if ($merchant->isPartner() === true)
         {
@@ -713,12 +714,15 @@ class Reporting implements ExternalService
             // if at least one partner config is enabled, we show commission reports
             if ($partnerConfigs->isNotEmpty() === true)
             {
-                $showCommissionReports = true;
-            }
-
-            if (($showCommissionReports === true) and ($merchant->isResellerPartner() === false))
-            {
-                $showTxnCommissionReport = true;
+                if ($merchant->isResellerPartner() === false)
+                {
+                    $showTxnCommissionReport        = true;
+                    $showAggregateCommissionReports = true;
+                }
+                else
+                {
+                    $showAggregateCommissionReports = (new Commission\Core)->shouldShowAggregateCommissionReportForPartner($merchant);
+                }
             }
         }
 
@@ -757,7 +761,7 @@ class Reporting implements ExternalService
                 'name'      => 'Aggregate Transaction Commission Report',
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showCommissionReports,
+                'condition' => $showAggregateCommissionReports,
             ],
         ];
 

@@ -104,7 +104,25 @@ class Service extends Base\Service
                           ->transfer
                           ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $reversal = (new Reversal\Core)->reverseForTransfer($transfer, $input, $this->merchant);
+        $reversal = (new Reversal\Core)->reverseForTransferAndCustomerRefund($transfer, $input, $this->merchant, $this->merchant);
+
+        return $reversal->toArrayPublic();
+    }
+
+    public function linkedAccountReversal(string $id, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::TRANSFER_REVERSAL_REQUEST_BY_LINKED_ACCOUNT,
+            [
+                'transfer_id' => $id,
+                'input'       => $input
+            ]);
+
+        $transfer = $this->repo
+                         ->transfer
+                         ->fetchByPublicIdAndLinkedAccountMerchant($id, $this->merchant);
+
+        $reversal = (new Reversal\Core)->linkedAccountReverseForTransfer($transfer, $input, $this->merchant);
 
         return $reversal->toArrayPublic();
     }

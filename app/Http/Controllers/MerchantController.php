@@ -1155,11 +1155,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateLinkedAccountDashboardAccess()
+    public function updateLinkedAccountConfig()
     {
         $input = Request::all();
 
-        $data = $this->service()->updateLinkedAccountDashboardAccess($input);
+        $data = $this->service()->updateLinkedAccountConfig($input);
 
         return ApiResponse::json($data);
     }

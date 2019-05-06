@@ -19,10 +19,22 @@ abstract class Base extends EMandate\Base
 {
     protected $gatewayRepo;
 
+    /**
+     * For debit payments, we will be following a 9am to 9am cycle.
+     * If a request comes from the cron, begin and end is set as per 12 am to 12 am cycle.
+     * Adding 9 hours here to make the adjustment. If the request is generated manually then this will still
+     * apply as we cannot differentiate between sync and async here. So if we try to generate the file manually
+     * and put the begin and end as 9am to 9am then it will be changed to 6pm to 6pm
+     */
     public function fetchEntities(): PublicCollection
     {
-        $begin = $this->gatewayFile->getBegin();
-        $end = $this->gatewayFile->getEnd();
+        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
+                        ->addHours(9)
+                        ->getTimestamp();
+
+        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
+                      ->addHours(9)
+                      ->getTimestamp();
 
         $tokens = $this->repo->token->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
 

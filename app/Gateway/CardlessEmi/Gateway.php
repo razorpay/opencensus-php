@@ -132,9 +132,9 @@ class Gateway extends Base\Gateway
             $key = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
         }
 
-        $this->app['cache']->put($emiPlanKey, $emiPlans, self::CACHE_TTL);
+        $this->app['cache']->put($emiPlanKey, $emiPlans, self::CARD_CACHE_TTL);
 
-        $this->app['cache']->put($key, $url, self::CACHE_TTL);
+        $this->app['cache']->put($key, $url, self::CARD_CACHE_TTL);
     }
 
     /**

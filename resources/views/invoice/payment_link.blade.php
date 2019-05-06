@@ -23,7 +23,7 @@ $custom_labels                  = $data['custom_labels'];
 
     @if (isset($invoice_data))
         <meta property="og:title" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
-        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
+        <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}">
         <meta property="og:image:width" content="276px">
         <meta property="og:image:height" content="276px">
         <meta property="og:description" content="Click on this link to pay to {{{ $invoice_data['merchant_label'] }}}">

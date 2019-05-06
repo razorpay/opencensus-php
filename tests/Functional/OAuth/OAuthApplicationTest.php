@@ -4,12 +4,15 @@ namespace RZP\Tests\Functional\OAuth;
 
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class OAuthApplicationTest extends TestCase
 {
     use OAuthTrait;
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     protected $authServiceMock;
@@ -173,12 +176,24 @@ class OAuthApplicationTest extends TestCase
     {
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
+        $accessMap = $this->fixtures->create('merchant_access_map',
+            [
+                'id'        => 'CMe2wjY0hiWBrL',
+                'entity_id' => '8ckeirnw84ifke',
+            ]);
+
         $this->setAuthServiceMockDetail(
                                     'applications/8ckeirnw84ifke',
                                     'PUT',
                                     $requestParams);
 
         $this->startTest();
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'live');
+        $this->assertNull($accessMapEntity);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['id' => $accessMap->getId()], 'test');
+        $this->assertNull($accessMapEntity);
     }
 
     protected function markPartner(string $type = 'pure_platform', string $merchantId = '10000000000000')

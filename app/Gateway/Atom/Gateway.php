@@ -71,6 +71,11 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'content' => $content,
+            ]);
+
         if (isset($content[AuthResponseFields::AMOUNT],
                   $content[AuthResponseFields::TRANSACTION_ID],
                   $content[AuthResponseFields::STATUS_CODE]) === false)

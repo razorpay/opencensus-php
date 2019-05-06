@@ -80,6 +80,7 @@ class Gateway extends Base\Gateway
             [
                 'gateway' => 'billdesk',
                 'payment_id' => $input['payment']['id'],
+                'content' => $input['gateway'],
             ]
         );
 

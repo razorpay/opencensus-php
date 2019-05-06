@@ -34,7 +34,7 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'cybersource_%s_card_details';
 
-    const CACHE_TTL = 15;
+    const CARD_CACHE_TTL = 15;
 
     // Request timeout limit in seconds
     const TIMEOUT = 60;

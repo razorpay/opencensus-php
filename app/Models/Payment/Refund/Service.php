@@ -1151,8 +1151,7 @@ class Service extends Base\Service
             }
         }
 
-        if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
-                                                                  $refund->getCreatedAt()) === true)
+        if ($refund->isScrooge() === true)
         {
             $this->makeScroogeEditRefundRequest($refund, $input);
         }
@@ -1266,8 +1265,7 @@ class Service extends Base\Service
                         'status' => $refund->getStatus()
                     ]);
 
-                if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
-                                                                          $refund->getCreatedAt()) === true)
+                if ($refund->isScrooge() === true)
                 {
                     $data = [
                         Payment\Entity::STATUS => Status::PROCESSED

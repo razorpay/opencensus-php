@@ -10,6 +10,7 @@ use RZP\Gateway\Base\Entity as E;
 class CorePaymentServiceSync extends Job
 {
     const REDIS_KEY_PREFIX = 'cps_sync_timestamp';
+    const REDIS_KEY_TTL    = 30; // Minutes
     const MUTEX_KEY_PREFIX = 'cps_sync:';
     const MUTEX_TIMEOUT    = 30;
     const RETRY_COUNT      = 10;
@@ -139,6 +140,6 @@ class CorePaymentServiceSync extends Job
 
         $syncTimestampKey =  implode('_', [self::REDIS_KEY_PREFIX, $gateway, $paymentId, $action]);
 
-        $app['cache']->set($syncTimestampKey, $timestamp);
+        $app['cache']->put($syncTimestampKey, $timestamp, self::REDIS_KEY_TTL);
     }
 }

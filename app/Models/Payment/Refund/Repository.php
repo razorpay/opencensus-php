@@ -15,7 +15,9 @@ use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Wallet\Freecharge;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
@@ -29,9 +31,11 @@ class Repository extends Base\Repository
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
-        Entity::NOTES           => 'sometimes|string|max:500',
-        Entity::REVERSAL_ID     => 'filled|public_id|size:18',
-        self::EXPAND . '.*'     => 'filled|string|in:reversal|custom:expand',
+        Entity::NOTES                       => 'sometimes|string|max:500',
+        Entity::REVERSAL_ID                 => 'filled|public_id|size:18',
+        self::EXPAND . '.*'                 => 'filled|string|in:reversal|custom:expand',
+        ReversalEntity::INITIATOR_ID        => 'sometimes|string|min:14|max:18',
+        ReversalEntity::CUSTOMER_REFUND_ID  => 'filled|string|size:19',
     ];
 
     protected $appFetchParamRules = [
@@ -63,10 +67,30 @@ class Repository extends Base\Repository
     protected function validateExpand($attribute, $value)
     {
         if ((optional($this->merchant)->isLinkedAccount() === false) and
-            $value === 'reversal')
+            $value === EntityConstants::REVERSAL)
         {
-            throw new Exception\ExtraFieldsException("expand=reversal");
+            throw new Exception\ExtraFieldsException('expand=reversal');
         }
+    }
+
+    protected function addQueryParamInitiatorId($query, $params)
+    {
+        $dbAttr = $this->repo->reversal->dbColumn(ReversalEntity::INITIATOR_ID);
+
+        $query->whereHas(EntityConstants::REVERSAL, function($query) use ($params, $dbAttr) {
+            $query->where($dbAttr, $params[ReversalEntity::INITIATOR_ID]);
+        });
+    }
+
+    protected function addQueryParamCustomerRefundId($query, $params)
+    {
+        $dbAttr = $this->repo->reversal->dbColumn(ReversalEntity::CUSTOMER_REFUND_ID);
+
+        Refund\Entity::verifyIdAndSilentlyStripSign($params[ReversalEntity::CUSTOMER_REFUND_ID]);
+
+        $query->whereHas(EntityConstants::REVERSAL, function($query) use ($params, $dbAttr) {
+            $query->where($dbAttr, $params[ReversalEntity::CUSTOMER_REFUND_ID]);
+        });
     }
 
     protected function addQueryParamGateway($query, $params)

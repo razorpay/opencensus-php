@@ -100,20 +100,4 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->get();
     }
-
-    /**
-     * @param array $ids
-     *
-     * @return mixed
-     */
-    public function deleteMerchantAccessMapsByEntityIds(array $ids)
-    {
-        $this->newQueryWithConnection(Mode::LIVE)
-                    ->whereIn(Entity::ID, $ids)
-                    ->delete();
-
-        return $this->newQueryWithConnection(Mode::TEST)
-                    ->whereIn(Entity::ID, $ids)
-                    ->delete();
-    }
 }

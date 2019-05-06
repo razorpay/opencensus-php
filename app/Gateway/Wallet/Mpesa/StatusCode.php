@@ -50,7 +50,7 @@ class StatusCode
             return self::$statusCodeToErrorCodeMap[$code];
         }
 
-        return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+        return ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
     }
 
     public static function getErrorMessage(string $code)

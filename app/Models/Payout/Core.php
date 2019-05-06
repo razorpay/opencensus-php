@@ -299,9 +299,14 @@ class Core extends Base\Core
 
         $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
 
+        //
         // For VPA type, we always set it to UPI only
         // at build and we don't take the mode from FTA.
-        if (empty($ftaData[Attempt\Constants::VPA_ID]) === true)
+        //
+        // Also, we don't want to override the payout's mode if it's already set.
+        //
+        if ((empty($ftaData[Attempt\Constants::VPA_ID]) === true) and
+            ($payout->getMode() === null))
         {
             $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }

@@ -4510,7 +4510,7 @@ trait Authorize
 
             if (strtolower($response) === 'on')
             {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
+                $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
             }
         }
 
@@ -5178,7 +5178,7 @@ trait Authorize
         if ($type === 'fallback')
         {
             $key = $payment->getCacheInputKey();
-            $ttl = static::CACHE_TTL;
+            $ttl = static::CARD_CACHE_TTL;
         }
         else
         {
@@ -5332,6 +5332,12 @@ trait Authorize
                 if ($payment->hasBeenAuthorized() === true)
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
+                }
+
+                if ($payment->hasTerminal() === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
                 }
 
                 $this->repo->saveOrFail($payment);
