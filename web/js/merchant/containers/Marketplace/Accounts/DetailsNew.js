@@ -19,11 +19,18 @@ import Button from 'component/Button';
 
 import Amount from 'ui/Amount';
 
-@connect(_ => null, {
-  showNotification,
-  ...AccountActions,
-  ...ModalActions,
-})
+@connect(
+  state => {
+    return {
+      user: state.session.user,
+    };
+  },
+  {
+    showNotification,
+    ...AccountActions,
+    ...ModalActions,
+  }
+)
 export default class Details extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
