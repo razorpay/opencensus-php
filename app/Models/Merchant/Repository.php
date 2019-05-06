@@ -156,7 +156,9 @@ class Repository extends Base\Repository
 
         $start = \Carbon\Carbon::today(Timezone::IST)->subWeeks(3);
 
-        return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$start, $today])
+                    ->whereNotNull(Entity::SUSPENDED_AT);
     }
 
     public function getFewMerchantsWithNoCorrespondingScheduleTasks()
@@ -243,7 +245,8 @@ class Repository extends Base\Repository
     public function fetchAllLiveMerchants()
     {
         return $this->newQuery()
-                    ->where(Entity::LIVE, '=', 1);
+                    ->where(Entity::LIVE, '=', 1)
+                    ->whereNotNull(Entity::SUSPENDED_AT);
     }
 
     public function fetchMerchantFromEntity($entity)
