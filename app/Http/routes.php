@@ -24,6 +24,8 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/', 'UserController@getIndex')->name('dashboard');
 
+    Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
+
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
@@ -62,7 +64,7 @@ Route::group(['middleware' => ['web']], function () {
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
-        
+
         Route::post('/coupons/validate', 'MerchantController@validateCoupon');
     });
 

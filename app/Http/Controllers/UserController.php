@@ -244,6 +244,16 @@ class UserController extends Controller
     }
 
     /**
+     * Return base template for browser extensions
+     *
+     * @return \Illuminate\Http\Response
+     */
+     public function getBrowserExtensionIndex()
+     {
+        return view('extension.index');
+     }
+
+    /**
      * Generates a JWT token with the context and returns the token to the client.
      * https://github.com/lcobucci/jwt
      */
