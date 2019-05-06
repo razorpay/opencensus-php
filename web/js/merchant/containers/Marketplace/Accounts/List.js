@@ -33,30 +33,13 @@ export default class AccountsListContainer extends ListContainer {
     confirm: PropTypes.func,
   };
 
-  onToggleDashboardAccess = (account, checked, cb) => {
-    let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
-      message = `Are you sure you want to ${
-        checked ? 'Enable' : 'Disable'
-      } dashboard access for this linked account`,
-      data = {
-        dashboard_access: checked,
-        accountId: account.id,
-      };
-
-    if (
-      account.allow_reversals &&
-      !checked &&
-      this.props.user.isAllowedLARefunds
-    ) {
-      header = 'Also Disable Customer Refunds?';
-      message =
-        'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.';
-      data = {
-        accountId: account.id,
-        dashboard_access: checked,
-        allow_reversals: checked,
-      };
-    }
+  onToggleDashboardAccess = (account, cb) => {
+    const checked = !account.dashboard_access,
+      { header, message, data } = validateDashboardAccess(
+        account,
+        checked,
+        this.props.user.isAllowedLARefunds
+      );
 
     return this.context
       .confirm({
@@ -118,26 +101,12 @@ export default class AccountsListContainer extends ListContainer {
       }); // dummy catch to handle confirm abort rejection
   };
 
-  onToggleAllowRefunds = (account, checked, cb) => {
-    let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
-      message = `Are you sure you want to ${
-        checked ? 'Enable' : 'Disable'
-      } allow refunds for this linked account`,
-      data = {
-        allow_reversals: checked,
-        accountId: account.id,
-      };
-
-    if (!account.dashboard_access && checked) {
-      header = 'Also enable Dashboard Access?';
-      message =
-        'Enabling Refund to customer will also enable Dashboard access to the Linked Account.';
-      data = {
-        allow_reversals: checked,
-        accountId: account.id,
-        dashboard_access: checked,
-      };
-    }
+  onToggleAllowRefunds = (account, cb) => {
+    const checked = !account.allow_reversals,
+      { header, message, data } = validateAllowRefundsMessages(
+        account,
+        checked
+      );
 
     return this.context
       .confirm({
@@ -366,3 +335,63 @@ export default class AccountsListContainer extends ListContainer {
     );
   }
 }
+
+export const validateDashboardAccess = (
+  account,
+  checked,
+  isAllowedLARefunds
+) => {
+  let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+    message = `Are you sure you want to ${
+      checked ? 'Enable' : 'Disable'
+    } dashboard access for this linked account`,
+    data = {
+      dashboard_access: checked,
+      accountId: account.id,
+    };
+
+  if (account.allow_reversals && !checked && isAllowedLARefunds) {
+    header = 'Also Disable Customer Refunds?';
+    message =
+      'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.';
+    data = {
+      accountId: account.id,
+      dashboard_access: checked,
+      allow_reversals: checked,
+    };
+  }
+
+  return {
+    header,
+    message,
+    data,
+  };
+};
+
+export const validateAllowRefundsMessages = (account, checked) => {
+  let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
+    message = `Are you sure you want to ${
+      checked ? 'Enable' : 'Disable'
+    } allow refunds for this linked account`,
+    data = {
+      allow_reversals: checked,
+      accountId: account.id,
+    };
+
+  if (!account.dashboard_access && checked) {
+    header = 'Also enable Dashboard Access?';
+    message =
+      'Enabling Refund to customer will also enable Dashboard access to the Linked Account.';
+    data = {
+      allow_reversals: checked,
+      accountId: account.id,
+      dashboard_access: checked,
+    };
+  }
+
+  return {
+    header,
+    message,
+    data,
+  };
+};
