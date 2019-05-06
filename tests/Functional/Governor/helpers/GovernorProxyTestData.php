@@ -3,10 +3,14 @@
 return [
     'testCreateNamespace' => [
         'request' => [
-            'content' => [
-                'key'     => 'value',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
             ],
-            'url' => '/cps/rule_engine/namespace',
+            'raw' => json_encode([
+                'key'     => 'value',
+                'q'         => "1",
+            ]),
+            'url' => '/cps/rule_engine/execute/rule_chain/namespace?q1=1',
             'method' => 'POST'
         ],
         'response' => [

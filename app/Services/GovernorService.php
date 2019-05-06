@@ -120,8 +120,15 @@ class GovernorService
         return $request;
     }
 
-    protected function sendRequest(string $method, string $url, array $auth, array $data = [])
+    protected function sendRequest(string $method, string $url, array $auth, array $data, array $queryParams = [])
     {
+        $url = $url . '?';
+
+        foreach ($queryParams as $key => $value)
+        {
+            $url .= $key . '=' . $value . '&';
+        }
+
         $request = [
             'url'     => $url,
             'method'  => $method,
@@ -439,7 +446,7 @@ class GovernorService
         return $response;
     }
 
-    public function executeChains(array $input, string $source, string $namespace)
+    public function executeChains(array $input, string $source, string $namespace, array $queryParams)
     {
         $url = $this->getUrl(self::EXECUTE_CHAINS, $namespace);
 
@@ -447,7 +454,7 @@ class GovernorService
 
         $auth = $this->getAuthDetails($source);
 
-        $response = $this->sendRequest($method, $url, $auth, $input);
+        $response = $this->sendRequest($method, $url, $auth, $input, $queryParams);
 
         return $response;
     }

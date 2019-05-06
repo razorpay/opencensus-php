@@ -3,7 +3,6 @@
 namespace RZP\Http\Controllers;
 
 use Request;
-use ApiResponse;
 
 use RZP\Services\GovernorService;
 
@@ -113,9 +112,11 @@ class GovernorController extends Controller
 
     public function executeChains($source, $namespace)
     {
-        $input = Request::all();
+        $input = Request::json()->all();
 
-        $response = $this->app['governor']->executeChains($input, $source, $namespace);
+        $queryParams = Request::query();
+
+        $response = $this->app['governor']->executeChains($input, $source, $namespace, $queryParams);
 
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
