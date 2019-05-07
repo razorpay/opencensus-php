@@ -15,7 +15,7 @@ import { classList } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
-import { trackFb } from 'rzp/utils/googleAnalytics';
+import { trackFb, trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
@@ -213,6 +213,13 @@ export default class ActivationWizard extends React.Component {
         this.updateSession(response.data); // Updating % activation_progress (side bar)
 
         trackL1FormSuccess(this.user.activation_flow);
+
+        trackhubsContactUpdate({
+          email: this.props.user.email,
+          ...data,
+          l1_business_name: data.business_name,
+          business_category: this.state.dirty.business_category,
+        });
 
         const {
           isWhitelistFlow,
