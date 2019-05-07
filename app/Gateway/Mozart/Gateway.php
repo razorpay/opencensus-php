@@ -10,14 +10,13 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Constants\HashAlgo;
-use RZP\Gateway\Base\Entity as BaseEntity;
 
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'mozart';
+
+    protected $targetGateway;
 
     protected $map = [
         'data'      => Entity::RAW,
@@ -26,6 +25,8 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::action($input, Action::PAY_INIT);
+
+        $this->targetGateway = $input['payment']['gateway'];
 
         $request = $this->getMozartRequestArray($input);
 
@@ -77,9 +78,9 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::PAY_VERIFY);
 
-        $gateway = $input['gateway'];
+        $this->targetGateway = $input['payment']['gateway'];
 
-        $gatewayName = $input['payment']['gateway'];
+        $gateway = $input['gateway'];
 
         $traceRes = $this->getRedactedData($gateway);
 
@@ -114,7 +115,7 @@ class Gateway extends Base\Gateway
 
         $this->runCallbackValidationsIfApplicable($input, $response);
 
-        if ($this->immediateVerifyApplicable($gatewayName) === true)
+        if ($this->immediateVerifyApplicable($this->targetGateway) === true)
         {
             $verifyResponse = $this->verify($input);
 
@@ -173,6 +174,8 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        $this->targetGateway = $input['payment']['gateway'];
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -198,6 +201,8 @@ class Gateway extends Base\Gateway
     public function capture(array $input)
     {
         parent::capture($input);
+
+        $this->targetGateway = $input['payment']['gateway'];
 
         $request = $this->getMozartRequestArray($input);
 
@@ -230,6 +235,8 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        $this->targetGateway = $input['payment']['gateway'];
 
         $verify = new Verify($this->gateway, $input);
 
@@ -318,12 +325,12 @@ class Gateway extends Base\Gateway
     protected function verifyPaymentWithGatewayResponse($verify)
     {
         $payment = $verify->payment;
+
         $input = $verify->input;
 
         $verify->gatewaySuccess = true;
 
-        if (($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED) or
-            ($input['payment']['status'] === Payment\Status::CREATED))
+        if ($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED)
         {
             $verify->status     = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = false;
