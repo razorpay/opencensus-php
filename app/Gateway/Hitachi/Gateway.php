@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
+use RZP\Models\Terminal;
 use RZP\Gateway\Paysecure;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
@@ -133,7 +134,14 @@ class Gateway extends Base\Gateway
 
         if ($this->isRupayTransaction($input) === true)
         {
-            return $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
+            $callbackData = $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
+
+            if ($input['terminal']['mode'] === Terminal\Mode::PURCHASE)
+            {
+                $this->advicePaysecure($input);
+            }
+
+            return $callbackData;
         }
 
         $mpiEntity = $this->app['repo']
@@ -450,13 +458,17 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getAdviceRequestArrayForPaysecure($input);
 
+        $captureEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYSECURE_AUTH_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $captureEntity->fill($attributes);
+
+        $this->repo->saveOrFail($captureEntity);
 
         $this->checkErrorsAndThrowException($response);
     }

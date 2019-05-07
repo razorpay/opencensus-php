@@ -212,6 +212,51 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testCallbackAutoCapture()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opaI',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'hitachi',
+                'enabled' => 1,
+                'type' =>
+                    [
+                        'non_recurring' => '1',
+                        'recurring_3ds' => '1',
+                        'recurring_non_3ds' => '1'
+                    ],
+                'gateway_merchant_id' => 'sample_hitachi_mid',
+                'gateway_terminal_id' => 'sample_hitachi_tid',
+                'mode'                => 2,
+            ]);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'        => 'captured',
+                'amount'        => 50000,
+                'method'        => 'card',
+                'gateway'       => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertEquals(1, count($this->getDbEntities('hitachi')));
+
+        $this->assertEquals($paysecure['payment_id'], $hitachi['payment_id']);
+
+        $this->assertEquals($payment['terminal_id'], 'AqdfGh5460opaI');
+    }
+
     public function testAuthorizeFailure()
     {
         $this->mockServerContentFunction(
