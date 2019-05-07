@@ -104,7 +104,7 @@ export default class InvoiceLineItemTable extends Component {
                             {' '}
                             <Amount
                               value={invoiceTotal.subtotal * 100}
-                              currency={'INR'}
+                              currency={invoice.currency}
                             />
                           </td>
                         </tr>
@@ -114,7 +114,7 @@ export default class InvoiceLineItemTable extends Component {
                           <td class="text-right" width="30%">
                             <Amount
                               value={invoiceTotal.tax * 100}
-                              currency={'INR'}
+                              currency={invoice.currency}
                             />
                           </td>
                         </tr>
@@ -129,20 +129,22 @@ export default class InvoiceLineItemTable extends Component {
                         <b>
                           <Amount
                             value={invoiceTotal.total * 100}
-                            currency={'INR'}
+                            currency={invoice.currency}
                           />
                         </b>
                       </td>
                     </tr>
-                    <tr class="total amount-words">
-                      <td colSpan="3" class="text-right">
-                        <AmountInWords
-                          amount={invoiceTotal.total}
-                          prefix="(In Words)"
-                          suffix="/-"
-                        />
-                      </td>
-                    </tr>
+                    {!invoice.subscription_id && (
+                      <tr class="total amount-words">
+                        <td colSpan="3" class="text-right">
+                          <AmountInWords
+                            amount={invoiceTotal.total}
+                            prefix="(In Words)"
+                            suffix="/-"
+                          />
+                        </td>
+                      </tr>
+                    )}
                     {invoice.amount_paid ? (
                       <tr class="text-success amount-paid">
                         <td />
