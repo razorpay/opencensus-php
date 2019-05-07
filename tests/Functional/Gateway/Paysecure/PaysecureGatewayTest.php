@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use RZP\Gateway\Hitachi;
 use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayTimeoutException;
@@ -14,6 +15,9 @@ class PaysecureGatewayTest extends TestCase
     use DbEntityFetchTrait;
 
     protected $paymentEntityGateway = 'hitachi';
+
+    const HITACHI_MID = 'sample_hitachi_mid';
+    const HITACHI_TID = 'sample_hitachi_tid';
 
     public function setUp()
     {
@@ -30,8 +34,8 @@ class PaysecureGatewayTest extends TestCase
                     'recurring_3ds' => '1',
                     'recurring_non_3ds' => '1'
                 ],
-            'gateway_merchant_id' => 'sample_hitachi_mid',
-            'gateway_terminal_id' => 'sample_hitachi_tid',
+            'gateway_merchant_id' => self::HITACHI_MID,
+            'gateway_terminal_id' => self::HITACHI_TID,
         ]);
 
         $merchantDetailArray = [
@@ -380,6 +384,20 @@ class PaysecureGatewayTest extends TestCase
 
         //temporary: make gateway hitachi until paysecure has not been added to scrooge
         $this->gateway = 'hitachi';
+
+        $this->mockServerContentFunction(
+            function(& $content, $action)
+            {
+                if ($action === 'validateRefund') {
+                    $sentMid = $content[Hitachi\RequestFields::MERCHANT_ID];
+                    $sentTid = $content[Hitachi\RequestFields::TERMINAL_ID];
+
+                    $this->assertEquals(self::HITACHI_MID, $sentMid);
+
+                    $this->assertEquals(self::HITACHI_TID, $sentTid);
+                }
+            }
+        );
 
         $this->refundPayment('pay_' . $payment['id'], 1000);
 

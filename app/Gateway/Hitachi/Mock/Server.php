@@ -95,6 +95,8 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($content, __FUNCTION__);
 
+        $this->content($content, 'validateRefund');
+
         $response = $this->getRefundResponse($content);
 
         $this->content($response, __FUNCTION__);
