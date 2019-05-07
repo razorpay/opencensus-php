@@ -140,6 +140,61 @@ class Processor extends Base\Processor
         return $transaction->toArrayPublic();
     }
 
+    public function raiseConcern(array $input): array
+    {
+        $this->initialize(Action::RAISE_CONCERN, $input, true);
+
+        $transaction = $this->core->fetch($this->input->pull(Entity::ID));
+
+        if ($transaction->concern instanceof Concern\Entity)
+        {
+            if ($transaction->concern->isClosed() === false)
+            {
+                throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST);
+            }
+        }
+
+        $this->initiateCallGateway($transaction);
+
+        $concern = (new Concern\Core)->create($transaction, $this->input->toArray());
+
+        $this->gatewayInput->put(Entity::CONCERN, $concern);
+
+        return $this->callGateway();
+    }
+
+    public function raiseConcernSuccess(array $input): array
+    {
+        $this->initialize(Action::RAISE_CONCERN_SUCCESS, $input, true);
+
+        $concernInput = $this->input->get(Entity::CONCERN);
+
+        $concern = (new Concern\Core)->fetch($concernInput[Entity::ID]);
+
+        $concern->mergeGatewayData($concernInput[Entity::GATEWAY_DATA] ?? []);
+        $concern->setInternalStatus($concernInput[Entity::INTERNAL_STATUS]);
+
+        (new Concern\Core)->update($concern, $concernInput);
+
+        return $concern->toArrayPublic();
+    }
+
+    public function concernStatus(array $input): array
+    {
+        $this->initialize(Action::CONCERN_STATUS, $input, true);
+
+        $transaction = $this->core->fetch($this->input->pull(Entity::ID));
+
+        $concern = $transaction->concern;
+        //TODO: Validate concern status
+
+        $this->gatewayInput->put(Entity::TRANSACTION, $transaction);
+        $this->gatewayInput->put(Entity::CONCERN, $concern);
+        $this->gatewayInput->put(Entity::UPI, $transaction->upi);
+
+        return $this->callGateway();
+    }
+
     protected function initiateCallGateway(Entity $transaction)
     {
         $this->gatewayInput->putMany([

@@ -43,5 +43,9 @@ class Requests
     const P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT         = 'p2p_customer_transactions_initiate_reject';
     const P2P_CUSTOMER_TRANSACTIONS_REJECT                  = 'p2p_customer_transactions_reject';
 
+    const P2P_CUSTOMER_CONCERNS_TRANSACTION_RAISE          = 'p2p_customer_concerns_transaction_raise';
+    const P2P_CUSTOMER_CONCERNS_TRANSACTION_FETCH_ALL      = 'p2p_customer_concerns_transaction_fetch_all';
+    const P2P_CUSTOMER_CONCERNS_TRANSACTION_STATUS         = 'p2p_customer_concerns_transaction_status';
+
     const P2P_GATEWAY_CALLBACK                              = 'p2p_gateway_callback';
 }

@@ -14,6 +14,7 @@ class Fields
     const RID                       = 'rid';
     const TOKEN                     = 'token';
     const UPI_REQUEST_ID            = 'upiRequestId';
+    const UPI_RESPONSE_ID           = 'upiResponseId';
 
     // --------------------------- DEVICE --------------- //
     const SIM_ID                        = 'simId';
@@ -91,6 +92,9 @@ class Fields
     const CUSTOME_RESPONSE              = 'customResponse';
     const IS_VERIFIED_PAYEE             = 'isVerifiedPayee';
     const IS_MARKED_SPAM                = 'isMarkedSpam';
+    const QUERY_COMMENT                 = 'queryComment';
+    const QUERY_REFERENCE_ID            = 'queryReferenceId';
+    const QUERY_CLOSING_TIMESTAMP       = 'queryClosingTimestamp';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';

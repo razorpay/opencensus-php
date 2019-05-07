@@ -221,15 +221,33 @@ final class P2pRoute
                 'customer/transactions/{transaction_id}/reject/initiate',
                 'TransactionController@initiateReject'
             ],
-        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT =>
+        Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT            =>
             [
                 'post',
                 'customer/transactions/{transaction_id}/reject',
                 'TransactionController@reject'
             ],
+        Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_RAISE     =>
+            [
+                'post',
+                'customer/concerns/transactions/{transaction_id}',
+                'TransactionController@raiseConcern'
+            ],
+        Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_STATUS    =>
+            [
+                'post',
+                'customer/concerns/transactions/{transaction_id}/status',
+                'TransactionController@concernStatus'
+            ],
+        Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_FETCH_ALL =>
+            [
+                'get',
+                'customer/concerns/transactions',
+                'TransactionController@fetchAllConcern'
+            ],
 
         /*************** Callbacks **************/
-        Requests::P2P_GATEWAY_CALLBACK =>
+        Requests::P2P_GATEWAY_CALLBACK                        =>
             [
                 'post',
                 'callback/{gateway}',
@@ -279,6 +297,9 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT,
         Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT,
+        Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_RAISE,
+        Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_FETCH_ALL,
+        Requests::P2P_CUSTOMER_CONCERNS_TRANSACTION_STATUS,
     ];
 
     public static $direct = [

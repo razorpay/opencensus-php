@@ -22,6 +22,10 @@ class Validator extends Base\Validator
     protected static $rejectSuccessRules;
     protected static $incomingCollectRules;
     protected static $incomingPayRules;
+    protected static $raiseConcernRules;
+    protected static $raiseConcernSuccessRules;
+    protected static $concernStatusRules;
+    protected static $concernStatusSuccessRules;
 
     public function rules()
     {
@@ -216,5 +220,37 @@ class Validator extends Base\Validator
         $rules->merge($this->makeUpiRules());
 
         return $rules;
+    }
+
+    public function makeRaiseConcernRules()
+    {
+        $concernRules = (new Concern\Validator)->makeRules([
+            Concern\Entity::COMMENT => 'required',
+        ]);
+
+        $rules = $this->makePublicIdRules();
+
+        $rules->merge($concernRules);
+
+        return $rules;
+    }
+
+    public function makeRaiseConcernSuccessRules()
+    {
+        $rules = (new Concern\Validator)->makeRules([
+            Concern\Entity::TRANSACTION_ID          => 'required',
+            Concern\Entity::GATEWAY_REFERENCE_ID    => 'required',
+            Concern\Entity::INTERNAL_STATUS         => 'required',
+            Concern\Entity::RESPONSE_CODE           => 'required',
+            Concern\Entity::RESPONSE_DESCRIPTION    => 'sometimes',
+            Concern\Entity::GATEWAY_DATA            => 'sometimes',
+        ])->wrapRules(Entity::CONCERN);
+
+        return $rules;
+    }
+
+    public function makeConcernStatusRules()
+    {
+        return $this->makePublicIdRules();
     }
 }

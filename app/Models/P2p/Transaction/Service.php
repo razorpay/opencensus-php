@@ -67,4 +67,18 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function raiseConcern(array $input): array
+    {
+        $response = $this->processor->raiseConcern($input);
+
+        return $response;
+    }
+
+    public function concernStatus(array $input): array
+    {
+        $response = $this->processor->concernStatus($input);
+
+        return $response;
+    }
 }

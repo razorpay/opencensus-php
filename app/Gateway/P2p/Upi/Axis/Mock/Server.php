@@ -61,6 +61,61 @@ class Server extends Mock\Server
         return $response;
     }
 
+    public function transactionRaiseConcern($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD      => [
+                Fields::MERCHANT_ID                 => 'MERCHANT',
+                Fields::MERCHANT_CHANNEL_ID         => 'MERCHANTAPP',
+                Fields::MERCHANT_CUSTOMER_ID        => $request[Fields::MERCHANT_CUSTOMER_ID],
+                Fields::QUERY_REFERENCE_ID          => 'QUERY' . str_random(10),
+                Fields::QUERY_COMMENT               => $request[Fields::QUERY_COMMENT],
+                Fields::GATEWAY_TRANSACTION_ID      => $request[Fields::UPI_REQUEST_ID],
+                Fields::GATEWAY_REFERENCE_ID        => $request[Fields::UPI_RESPONSE_ID],
+                Fields::GATEWAY_RESPONSE_CODE       => '00',
+                Fields::GATEWAY_RESPONSE_MESSAGE    => 'Query raised successfully',
+            ],
+            Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'raise_concern');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
+    public function transactionConcernStatus($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD      => [
+                Fields::MERCHANT_ID                 => 'MERCHANT',
+                Fields::MERCHANT_CHANNEL_ID         => 'MERCHANTAPP',
+                Fields::MERCHANT_CUSTOMER_ID        => $request[Fields::MERCHANT_CUSTOMER_ID],
+                Fields::QUERY_REFERENCE_ID          => 'QUERY' . str_random(10),
+                Fields::QUERY_COMMENT               => 'Query transaction status',
+                Fields::GATEWAY_TRANSACTION_ID      => $request[Fields::UPI_REQUEST_ID],
+                Fields::GATEWAY_REFERENCE_ID        => $request[Fields::UPI_RESPONSE_ID],
+                Fields::GATEWAY_RESPONSE_CODE       => '00',
+                Fields::GATEWAY_RESPONSE_MESSAGE    => 'Query closed',
+                Fields::QUERY_CLOSING_TIMESTAMP     => '2022-02-22',
+            ],
+            Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'concern_status');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
     protected function makeResponse($input)
     {
         $response = new \Requests_Response();

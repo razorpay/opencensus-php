@@ -144,4 +144,32 @@ class TransactionHelper extends P2pHelper
 
         return $this->post($request);
     }
+
+    public function raiseConcern(string $transactionId, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'transaction/raise_concern';
+
+        $request = $this->request('concerns/transactions/%s', [$transactionId]);
+
+        $default = [
+            'comment' => 'Raising a concern'
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
+    public function concernStatus(string $transactionId, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'transaction/raise_concern';
+
+        $request = $this->request('concerns/transactions/%s/status', [$transactionId]);
+
+        $default = [];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
 }

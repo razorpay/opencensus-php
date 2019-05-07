@@ -224,6 +224,7 @@ class Entity
     const P2P_BENEFICIARY        = 'p2p_beneficiary';
     const P2P_TRANSACTION        = 'p2p_transaction';
     const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
+    const P2P_CONCERN            = 'p2p_concerns';
 
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
@@ -485,6 +486,8 @@ class Entity
         self::P2P_HANDLE            => \RZP\Models\P2p\Vpa\Handle::class,
         self::P2P_BENEFICIARY       => \RZP\Models\P2p\Beneficiary::class,
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
+        self::P2P_UPI_TRANSACTION   => \RZP\Models\P2p\Transaction\UpiTransaction::class,
+        self::P2P_CONCERN           => \RZP\Models\P2p\Transaction\Concern::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
