@@ -112,11 +112,18 @@
                         data.eventValue || undefined
                     )
                     
-                    // Sending Ga events to hubpot
-                    window.trackHubs({
+                    // Sending Ga events to hubspot
+                    var hsqData = {
                         id: data.eventCategory + "__" + data.eventAction,
-                        value: data.eventLabel + "__" + data.eventValue, 
-                    })
+                    };
+
+                    if (data.eventLabel) {
+                        hsqData.value = data.eventLabel;
+                        if (data.eventValue) {
+                            hsqData.value = data.eventLabel + "__" + data.eventValue;
+                        }
+                    };
+                    window.trackHubs(hsqData);
                 }
             }
         }
@@ -133,8 +140,8 @@
                 }
                 default : {
                     _hsq.push(['trackEvent', {
-                        id: id,
-                        value: value,
+                        id: data.id,
+                        value: data.value
                     }]);
                 }
             }

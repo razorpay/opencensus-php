@@ -241,7 +241,7 @@ export default class App extends Component {
         window.trackHubs({
           name: 'identify',
           id: user.id,
-          email: user.email,
+          email: user.user.email,
         });
       }
 
