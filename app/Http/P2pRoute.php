@@ -243,7 +243,7 @@ final class P2pRoute
             [
                 'get',
                 'customer/concerns/transactions',
-                'TransactionController@fetchAllConcern'
+                'TransactionController@fetchAllConcerns'
             ],
 
         /*************** Callbacks **************/
