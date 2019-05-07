@@ -442,22 +442,6 @@ app
             data: merchantData,
           };
 
-        window.trackHubs({
-          name: 'update_property',
-          data: {
-            email: $scope.signup.data.email,
-            business_type:
-              details.business_type[merchantData.business_type].name,
-            transaction_volume:
-              details.transaction_volume[merchantData.transaction_volume],
-            department: details.department[merchantData.department].name,
-            business_name: merchantData.business_name,
-            business_website: merchantData.business_website,
-            contact_mobile: merchantData.contact_mobile,
-            contact_name: merchantData.contact_name,
-          },
-        });
-
         var request = $http(payload);
         $scope.alerts.resetAlerts();
         showSpinner();
@@ -478,6 +462,22 @@ app
               } else {
                 goToVerification();
               }
+            });
+
+            window.trackHubs({
+              name: 'update_property',
+              data: {
+                email: $scope.signup.data.email,
+                business_type:
+                  details.business_type[merchantData.business_type].name,
+                transaction_volume:
+                  details.transaction_volume[merchantData.transaction_volume],
+                department: details.department[merchantData.department].name,
+                business_name: merchantData.business_name,
+                business_website: merchantData.business_website,
+                contact_mobile: merchantData.contact_mobile,
+                contact_name: merchantData.contact_name,
+              },
             });
             // else
           } else {
