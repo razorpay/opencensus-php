@@ -101,7 +101,9 @@ class MethodsTest extends TestCase
         $this->assertEquals($content['netbanking'], true);
         $this->assertEquals($content['mobikwik'], true);
 
-        $this->assertEquals($content['card_networks']['DICL'], true);
+        $this->assertEquals($content['card_networks']['DICL'], false);
+        $this->assertEquals($content['card_networks']['MAES'], true);
+        $this->assertEquals($content['card_networks']['RUPAY'], false);
     }
 
     public function testBulkMethodUpdateEnableBanks()
