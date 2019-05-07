@@ -57,6 +57,6 @@ class ErrorCodes
             return self::$errorMessageMap[$errorCode];
         }
 
-        return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+        return ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
     }
 }

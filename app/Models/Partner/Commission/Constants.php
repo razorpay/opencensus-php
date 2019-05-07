@@ -12,6 +12,18 @@ class Constants
     const COMMISSION_BREAK_UP_PREFIX = 'commission_';
 
     /**
+     * Activated submerchant count needed to show commission aggregate report for reseller
+     */
+    const RESELLER_SUBMERCHANT_LIMIT = 3;
+
+    // analytics constants
+    const TO               = 'to';
+    const FROM             = 'from';
+    const QUERY_TYPE       = 'query_type';
+    const AGGREGATE_DAILY  = 'aggregate_daily'; // day wise commission aggregates
+    const AGGREGATE_DETAIL = 'aggregate_detail'; // aggregate break up details for given day
+
+    /**
      * List of entities for which the commission can be rolled out.
      * The entities defined here must implement the CommissionSourceInterface.
      *
@@ -19,6 +31,16 @@ class Constants
      */
     public static $sourceEntities = [
         self::PAYMENT,
+    ];
+
+    /**
+     * Types of queries we can make to harvester for commission analytics
+     *
+     * @var array
+     */
+    public static $analyticsQueryTypes = [
+        self::AGGREGATE_DAILY,
+        self::AGGREGATE_DETAIL,
     ];
 
     /**
@@ -52,5 +74,15 @@ class Constants
         $entityType = $entity->getEntity();
 
         return (in_array($entityType, self::getSourceEntities(), true) === true);
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return bool
+     */
+    public static function isValidQueryType(string $type): bool
+    {
+        return (in_array($type, self::$analyticsQueryTypes, true) === true);
     }
 }

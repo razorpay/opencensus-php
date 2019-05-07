@@ -1429,6 +1429,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FILE_JOB_ERROR                                = 'GATEWAY_FILE_JOB_ERROR';
 
     const VERIFY_ENROLLMENT_RESPONSE                            = 'VERIFY_ENROLLMENT_RESPONSE';
+    const GATEWAY_PARES_RESPONSE                                = 'GATEWAY_PARES_RESPONSE';
 
     // Trace code for \Models\Settings
     const SETTINGS_UPSERT_REQUEST                               = 'SETTINGS_UPSERT_REQUEST';

@@ -32,7 +32,7 @@ class Gateway extends Base\Gateway
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
     const CERTIFICATE_FORMAT_P12     = 'p12';
 
-    const CACHE_TTL                  = 20;
+    const CARD_CACHE_TTL             = 20;
     const CACHE_KEY                  = 'first_data_%s_card_details';
     const PROCESSING                 = 'PROCESSING';
     const SERVICES                   = 'SERVICES';
@@ -2526,7 +2526,7 @@ class Gateway extends Base\Gateway
             'cvv' => $this->app['encrypter']->encrypt($cvv),
         ];
 
-        $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+        $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CARD_CACHE_TTL);
     }
 
     protected function setCardCvv(array & $input)

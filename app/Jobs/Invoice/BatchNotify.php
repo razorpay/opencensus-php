@@ -18,7 +18,7 @@ class BatchNotify extends Job
     /**
      * {@inheritDoc}
      */
-    protected $queueConfigKey = 'invoice';
+    protected $queueConfigKey = 'batch';
 
     /**
      * Batch entity id.
@@ -52,7 +52,8 @@ class BatchNotify extends Job
             Batch\Entity::ID => $this->batchId,
         ];
 
-        $this->trace->debug(TraceCode::INVOICE_BATCH_NOTIFY_JOB_RECEIVED, $tracePayload + [self::INPUT => $this->input]);
+        $this->trace->debug(TraceCode::INVOICE_BATCH_NOTIFY_JOB_RECEIVED,
+                            $tracePayload + [self::INPUT => $this->input]);
 
         try
         {

@@ -187,6 +187,8 @@ class Network
 
         foreach ($cardNetworks as $network => $value)
         {
+            $value = (int) $value;
+
             $bitPosition = self::$cardNetworkMap[strtoupper($network)];
 
             // Set the bit

@@ -544,6 +544,64 @@ class GatewayEmiFileTest extends TestCase
         Mail::assertQueued(EmiMail\File::class);
     }
 
+    public function testGenerateEmiFileForBob()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '554637',
+                'category'      => 'STANDARD',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'Bank of Baroda',
+                'issuer'        => 'BARB',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                => '90101010101011',
+                'duration'          => '9',
+                'rate'              => '1400',
+                'methods'           => 'creditcard',
+                'bank'              => 'BARB',
+                'min_amount'        => '300000',
+                'merchant_id'       => '100000Razorpay',
+            ]);
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('5546370000099413', 9);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'bob_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
+    }
+
     protected function makeEmiPaymentOnCard($card, $emiDuration,
         $save = 0, $appToken = null, $customerId = null, $merchantSubvention = false)
     {
