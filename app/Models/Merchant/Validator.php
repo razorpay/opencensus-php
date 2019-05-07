@@ -935,7 +935,7 @@ class Validator extends Base\Validator
 
     public function validatePartnerType(string $partnerType)
     {
-        if (in_array($partnerType, array_merge(Constants::$partnerTypes, ['all']), true) === false)
+        if (in_array($partnerType, Constants::$partnerTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
