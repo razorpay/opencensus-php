@@ -1079,8 +1079,8 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment['rrn'],
-            RequestFields::MERCHANT_ID         => $input['merchant']['id'],
-            RequestFields::TERMINAL_ID         => $input['terminal']['id'],
+            RequestFields::MERCHANT_ID         => $this->getMerchantId(),
+            RequestFields::TERMINAL_ID         => $this->getTerminalId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
         ];
