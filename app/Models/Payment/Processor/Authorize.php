@@ -288,6 +288,8 @@ trait Authorize
                     continue;
                 }
 
+                $this->migrateCardDataIfApplicable($payment);
+
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
