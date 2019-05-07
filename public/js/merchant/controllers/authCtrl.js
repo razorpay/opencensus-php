@@ -328,6 +328,13 @@ app
               event: 'signup_complete',
             });
 
+            window.trackHubs({
+              name: 'create_contact',
+              data: {
+                email: $scope.signup.data.email,
+              },
+            });
+
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               var signinSuccessCb = authCallbacks.getSigninCallback();
@@ -426,13 +433,30 @@ app
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
         }
+        var merchantData = $scope.signup.merchantData,
+          details = $scope.signup.details,
+          payload = {
+            method: 'post',
+            url: '/user/pre_signup',
+            transformRequest: transformRequestAsFormPost,
+            data: merchantData,
+          };
 
-        var payload = {
-          method: 'post',
-          url: '/user/pre_signup',
-          transformRequest: transformRequestAsFormPost,
-          data: $scope.signup.merchantData,
-        };
+        window.trackHubs({
+          name: 'update_property',
+          data: {
+            email: $scope.signup.data.email,
+            business_type:
+              details.business_type[merchantData.business_type].name,
+            transaction_volume:
+              details.transaction_volume[merchantData.transaction_volume],
+            department: details.department[merchantData.department].name,
+            business_name: merchantData.business_name,
+            business_website: merchantData.business_website,
+            contact_mobile: merchantData.contact_mobile,
+            contact_name: merchantData.contact_name,
+          },
+        });
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
