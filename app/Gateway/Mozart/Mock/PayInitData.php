@@ -49,15 +49,12 @@ class PayInitData extends Base\Mock\Server
     {
         $paymentId = $entities['payment']['id'];
 
-        $publicId = $this->getSignedPaymentId($paymentId);
-
         $this->gateway = $entities['payment']['gateway'];
 
         $url = $this->route->getUrlWithPublicAuth(
-            'mock_wallet_payment_get',
+            'mock_mozart_payment_post',
             [
-                'wallet' => $entities['payment']['wallet'],
-                'paymentId' => $entities['payment']['id']
+                'gateway' => $entities['payment']['gateway']
             ]);
 
         $output = [

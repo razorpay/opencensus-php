@@ -31,7 +31,7 @@ class PhonepeGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'wallet_phonepe';
+        $this->gateway = 'mozart';
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'phonepe');
     }
