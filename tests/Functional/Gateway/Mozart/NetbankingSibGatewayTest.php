@@ -17,7 +17,7 @@ class NetbankingSibGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->gateway = 'netbanking_sib';
+        $this->gateway = 'mozart';
 
         $this->bank = 'SIBL';
 
@@ -46,9 +46,9 @@ class NetbankingSibGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'netbanking_sib_authorize')
+            if ($action === 'pay_verify')
             {
-                $content['AMT'] = '50';
+                $content['data']['amount'] = '50';
             }
         });
 
@@ -68,9 +68,9 @@ class NetbankingSibGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'netbanking_sib_authorize')
+            if ($action === 'pay_verify')
             {
-                $content['PRN'] = 'ABCD1234567890'; //some random payment_id
+                $content['data']['paymentId'] = 'ABCD1234567890'; //some random payment_id
             }
         });
 
@@ -90,9 +90,9 @@ class NetbankingSibGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'netbanking_sib_authorize')
+            if ($action === 'pay_verify')
             {
-                $content['PAID'] = 'N';
+                $content['success'] = false;
             }
         });
 
@@ -118,8 +118,10 @@ class NetbankingSibGatewayTest extends TestCase
         });
     }
 
-    /*public function testAuthSuccessVerifyFailed()
+    public function testAuthSuccessVerifyFailed()
     {
+        // Fix mozart verify flow first
+        $this->markTestSkipped();
         $data = $this->testData[__FUNCTION__];
 
         $this->testPayment();
@@ -130,7 +132,7 @@ class NetbankingSibGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content[ResponseFields::STATUS] = 'Failed';
+                $content['success'] = false;
             }
         });
 
@@ -138,13 +140,7 @@ class NetbankingSibGatewayTest extends TestCase
         {
             $this->verifyPayment($payment['id']);
         });
-
-        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
-
-        $gatewayPayment = $this->getDbLastEntityToArray('netbanking', 'test');
-
-        $this->assertTestResponse($gatewayPayment, 'testAuthSuccessVerifyFailedNetbankingEntity');
-    }*/
+    }
 
     public function testPaymentVerify()
     {

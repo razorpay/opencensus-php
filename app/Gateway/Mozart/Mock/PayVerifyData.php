@@ -36,34 +36,16 @@ class PayVerifyData extends Server
 
     public function netbanking_sib($entities)
     {
-        $aes = new Base\AESCrypto(
-            AES::MODE_ECB,
-            $this->app['config']->get('gateway.mozart.netbanking_sib_test_hash_secret')
-        );
-
-        $queryParams = $aes->decryptString(base64_decode($entities['gateway']['redirect']['ENC_STR']));
-
-        parse_str($queryParams, $queryFields);
-
-        if ($queryFields['PAID'] === 'Y')
-        {
-            $success = true;
-        }
-        else
-        {
-            $success = false;
-        }
-
         $response = [
             "external_trace_id" => "DUMMY_REQUEST_ID",
             "mozart_id" => "DUMMY_MOZART_ID",
             "next" => [],
-            "success" => $success,
+            "success" => true,
             "error" => null,
             "data" => [
-                'paymentId' => $queryFields['PRN'],
-                'amount' => (int)$queryFields['AMT'],
-                "bank_payment_id" => $queryFields['BID'],
+                'paymentId' => $entities['payment']['id'],
+                'amount' => $entities['payment']['amount'],
+                "bank_payment_id" => 999999,
                 "status" => "callback_successful",
                 "_raw" => null
                 ],

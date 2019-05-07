@@ -119,8 +119,8 @@ class PayInitData extends Base\Mock\Server
     public function netbanking_sib($entities)
     {
         $url = $this->route->getUrlWithPublicAuth(
-             'mock_netbanking_payment',
-                       ['bank' => 'sib']);
+             'mock_mozart_payment_post',
+                       ['gateway' => 'netbanking_sib']);
 
         $content = [
             'ShoppingMallTranFG.TRAN_CRN' => $entities['payment']['currency'],

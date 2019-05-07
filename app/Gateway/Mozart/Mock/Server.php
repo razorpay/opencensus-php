@@ -11,13 +11,18 @@ use RZP\Constants\HashAlgo;
 
 class Server extends Base\Mock\Server
 {
+    protected $gateway;
+
+    public function setGateway($gateway)
+    {
+        $this->gateway = $gateway;
+    }
+
     public function authorize($input)
     {
         parent::authorize($input);
 
-        $gateway = $input['gateway'];
-
-        unset($input['gateway']);
+        $gateway = $this->gateway;
 
         return $this->$gateway($input);
     }
@@ -78,9 +83,9 @@ class Server extends Base\Mock\Server
 
         $response = $actionClass->$gateway($entities);
 
-        $response = json_encode($response);
-
         $this->content($response, $action);
+
+        $response = json_encode($response);
 
         $response = $this->makeResponseJson($response);
 
@@ -170,28 +175,9 @@ class Server extends Base\Mock\Server
 
         parse_str($queryParams, $queryFields);
 
-        $response = [
-            'BankId' => '059',
-            'MD'     => 'P',
-            'PID'    => $queryFields['ShoppingMallTranFG_PID'],
-            'CRN'    => 'INR',
-            'PRN'    => $queryFields['ShoppingMallTranFG_PRN'],
-            'ITC'    => 'RAZORPAY',
-            'AMT'    => $queryFields['ShoppingMallTranFG_TXN_AMT'],
-            'BID'    => 999999,
-            'PAID'   => 'Y',
-        ];
-
-        $this->content($response, 'netbanking_sib_authorize');
-
-        $aes = new Base\AESCrypto(
-            AES::MODE_ECB,
-            $this->app['config']->get('gateway.mozart.netbanking_sib_test_hash_secret')
-        );
-
         // this encrypted value is never used as the pay_verify response from mozart is mocked
         $content = [
-              "ENC_STR" => base64_encode($aes->encryptString(http_build_query($response)))
+              "ENC_STR" => 'random_encrypted_string'
         ];
 
         $request = [
