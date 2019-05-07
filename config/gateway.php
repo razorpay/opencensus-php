@@ -717,13 +717,9 @@ return [
     ],
 
     'mozart' => [
-        'upi_airtel_test_hash_secret' => env('UPI_AIRTEL_TEST_HASH_SECRET'),
+        'upi_airtel_test_hash_secret'     => env('UPI_AIRTEL_TEST_HASH_SECRET'),
+        'netbanking_sib_test_hash_secret' => env('NETBANKING_SIB_TEST_HASH_SECRET'),
         ],
-
-    'netbanking_sib' => [
-        'test_merchant_id'  => env('NETBANKING_SIB_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_SIB_TEST_HASH_SECRET'),
-    ],
 
     'sharp' => [
     ],
