@@ -113,6 +113,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 
+    public function testBankTransferProcessForTinyAmount()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 0.99);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(99, $bankTransfer['amount']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(99, $payment['amount']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
+    }
+
     public function testBankTransferProcessForDisabledMethod()
     {
         // New merchant account, VA created
