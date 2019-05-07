@@ -13,6 +13,8 @@
   <script src="https://wchat.freshchat.com/js/widget.js" async defer></script>
   <script src="https://cdn.razorpay.com/static/ticket-system/bundle.js" async defer></script>
   <script type="text/javascript">
+        var _hsq = window._hsq = window._hsq || [];
+
         _rzpAQ = []; // queue for ga
         _rzpAQ_fbq = []; // queue for facebook pixel
 
@@ -109,6 +111,38 @@
                         data.eventLabel || undefined,
                         data.eventValue || undefined
                     )
+                    
+                    // Sending Ga events to hubspot
+                    var hsqData = {
+                        id: data.eventCategory + "__" + data.eventAction,
+                    };
+
+                    if (data.eventLabel) {
+                        hsqData.value = data.eventLabel;
+                        if (data.eventValue) {
+                            hsqData.value = data.eventLabel + "__" + data.eventValue;
+                        }
+                    };
+                    window.trackHubs(hsqData);
+                }
+            }
+        }
+
+        // Hubspot trackers
+        window.trackHubs = function(data) {
+            switch(data.name) {
+                case 'identify': {
+                    _hsq.push(['identify', {
+                        id: data.id, // merchant id
+                        email: data.email, // email
+                    }]);
+                    break;
+                }
+                default : {
+                    _hsq.push(['trackEvent', {
+                        id: data.id,
+                        value: data.value
+                    }]);
                 }
             }
         }
