@@ -121,12 +121,6 @@ class Gateway extends Base\Gateway
             return $verifyResponse;
         }
 
-
-        if ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
-        {
-            $this->handleNetbankingSibCallback($input, $response);
-        }
-
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
             return [
@@ -144,7 +138,8 @@ class Gateway extends Base\Gateway
     {
         $immediateVerificationGateways = [
             Payment\Gateway::WALLET_PHONEPE,
-            Payment\Gateway::BAJAJFINSERV
+            Payment\Gateway::BAJAJFINSERV,
+            Payment\Gateway::NETBANKING_SIB,
         ];
 
         return in_array($gatewayName, $immediateVerificationGateways);
@@ -553,41 +548,6 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    public function handleNetbankingSibCallback($input, $callbackResponse)
-    {
-        $this->assertPaymentId($input['payment']['id'], $callbackResponse['data']['payment_id']);
-
-        $this->assertAmount($input['payment']['amount'], (int) $callbackResponse['data']['amount']);
-
-        // For verify callback
-        $this->action = Action::VERIFY;
-
-        $content['entities']['payment'] = $input['payment'];
-
-        $content['entities']['terminal'] = $input['terminal'];
-
-        $content['entities']['gateway']['pay_verify'] = $callbackResponse['data'];
-
-        $request = $this->getMozartRequest($content, Payment\Gateway::NETBANKING_SIB);
-
-        $traceReq = [
-            'method' => $request['method'],
-            'url' => $request['url'],
-        ];
-
-        $this->traceGatewayPaymentRequest($traceReq, $content['entities'], TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $traceRes = $this->getRedactedData($response);
-
-        $this->traceGatewayPaymentResponse($traceRes, $content['entities'], TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
-
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-
-        $this->action = Action::PAY_VERIFY;
-    }
-
     protected function updateGatewayPaymentEntityWithAction(
         MozartEntity $gatewayPayment,
         array $attributes,
@@ -677,6 +637,7 @@ class Gateway extends Base\Gateway
         $validationGateways = [
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::NETBANKING_SIB,
         ];
 
         return in_array($input['payment']['gateway'], $validationGateways, true);
