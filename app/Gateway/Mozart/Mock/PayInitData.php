@@ -2,8 +2,9 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
+use phpseclib\Crypt\AES;
+
 use RZP\Gateway\Base;
-use RZP\Gateway\Mozart;
 
 class PayInitData extends Base\Mock\Server
 {
@@ -108,6 +109,46 @@ class PayInitData extends Base\Mock\Server
                 ],
             'error'             => null,
             'success'           => true,
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
+    public function netbanking_sib($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+             'mock_netbanking_payment',
+                       ['bank' => 'sib']);
+
+        $content = [
+            'ShoppingMallTranFG.TRAN_CRN' => $entities['payment']['currency'],
+            'ShoppingMallTranFG.TXN_AMT'  => $entities['payment']['amount'],
+            'ShoppingMallTranFG.PID'      => $entities['terminal']['gateway_merchant_id'],
+            'ShoppingMallTranFG.PRN'      => $entities['payment']['id'],
+            'ShoppingMallTranFG.ITC'      => 'Razorpay',
+            'ShoppingMallTranFG.RU'       => $entities['callbackUrl']
+        ];
+
+        $aes = new Base\AESCrypto(
+                             AES::MODE_ECB,
+                             $this->app['config']->get('gateway.mozart.netbanking_sib_test_hash_secret')
+                           );
+
+        $response = [
+            'data' => [],
+            'error'             => null,
+            'success'           => true,
+            'next' => [
+                "redirect" => [
+                    "content" => [
+                        'QS' => base64_encode($aes->encryptString(http_build_query($content))),
+                    ],
+                    'method' => 'post',
+                    'url' => $url
+                ]
+            ],
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];

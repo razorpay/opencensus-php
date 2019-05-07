@@ -2,10 +2,11 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
-use RZP\Gateway\Base;
-use RZP\Gateway\Mozart;
+use phpseclib\Crypt\AES;
 
-class PayVerifyData extends Base\Mock\Server
+use RZP\Gateway\Base;
+
+class PayVerifyData extends Server
 {
     public function upi_airtel($entities)
     {
@@ -29,6 +30,44 @@ class PayVerifyData extends Base\Mock\Server
         ];
 
         $this->content($response, 'callback');
+
+        return $response;
+    }
+
+    public function netbanking_sib($entities)
+    {
+        $aes = new Base\AESCrypto(
+            AES::MODE_ECB,
+            $this->app['config']->get('gateway.mozart.netbanking_sib_test_hash_secret')
+        );
+
+        $queryParams = $aes->decryptString(base64_decode($entities['gateway']['redirect']['ENC_STR']));
+
+        parse_str($queryParams, $queryFields);
+
+        if ($queryFields['PAID'] === 'Y')
+        {
+            $success = true;
+        }
+        else
+        {
+            $success = false;
+        }
+
+        $response = [
+            "external_trace_id" => "DUMMY_REQUEST_ID",
+            "mozart_id" => "DUMMY_MOZART_ID",
+            "next" => [],
+            "success" => $success,
+            "error" => null,
+            "data" => [
+                'paymentId' => $queryFields['PRN'],
+                'amount' => (int)$queryFields['AMT'],
+                "bank_payment_id" => $queryFields['BID'],
+                "status" => "callback_successful",
+                "_raw" => null
+                ],
+            ];
 
         return $response;
     }

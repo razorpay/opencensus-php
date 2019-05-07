@@ -32,6 +32,25 @@ class VerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function netbanking_sib($entities)
+    {
+        $response = [
+            "error" => null,
+            "next" => [],
+            "success" => true,
+            "external_trace_id" => "DUMMY_REQUEST_ID",
+            "mozart_id" => "DUMMY_MOZART_ID",
+            "data" => [
+                "_raw" => ["BODY" => "Transaction Completed Successfully"]
+            ],
+        ];
+
+        $this->content($response, 'verify');
+
+        return $response;
+    }
+
     public static function bajajfinserv($entities)
     {
         $response = [
