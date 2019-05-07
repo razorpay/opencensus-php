@@ -111,7 +111,7 @@ export default class extends React.Component {
 
     return this.state.disabled ? (
       <AmountTooltip
-        currency={this.props.currency}
+        currency={option.name}
         parentQuerySelector={this.props.parentQuerySelector}
       >
         {optionContent}

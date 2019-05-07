@@ -6,7 +6,9 @@ export const getAmount = (key = 'amount') => item => {
   // Handles nested keys like 'item.amount'
   let value = key.split('.').reduce((prev, curr) => prev[curr], item);
 
-  return <Amount currency={item.currency || 'INR'} value={value} />;
+  let currency = item.currency || (item.item ? item.item.currency : '');
+
+  return <Amount currency={currency || 'INR'} value={value} />;
 };
 
 export const getTime = (key, format = 'DD MMM YYYY, hh:mm:ss a') => item => (

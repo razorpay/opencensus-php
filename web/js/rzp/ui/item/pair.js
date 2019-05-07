@@ -122,7 +122,7 @@ export const planName = {
 };
 
 export const planAmount = {
-  title: 'Amount/Unit (INR)',
+  title: 'Amount/Unit',
   value: getAmount('item.amount'),
   columnClass: textRightClass,
 };
