@@ -209,14 +209,26 @@ export default class Sidebar extends Component {
 class PartnerSidebar extends Component {
   constructor(props) {
     super(props);
-    const isPartnerRoute =
-      props.location.pathname === '/' ||
-      props.location.pathname.includes('partners');
+    const isPartnerRoute = this.isPartnerRoute(props);
     this.state = {
       partnerOpen: isPartnerRoute,
       merchantOpen: !isPartnerRoute,
     };
   }
+
+  componentWillReceiveProps(nextProps) {
+    const isPartnerRoute = this.isPartnerRoute(nextProps);
+    if (isPartnerRoute !== this.state.partnerOpen) {
+      this.setState({
+        partnerOpen: isPartnerRoute,
+        merchantOpen: !isPartnerRoute,
+      });
+    }
+  }
+
+  isPartnerRoute = props =>
+    props.location.pathname === '/' ||
+    props.location.pathname.includes('partners');
 
   toggle = type => () => {
     this.setState(

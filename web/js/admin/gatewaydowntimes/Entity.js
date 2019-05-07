@@ -279,9 +279,6 @@ export default class Entity extends Component {
                 defaultValue={network}
                 disabled={!isEditable}
               >
-                <option key="NA" value="NA">
-                  NA
-                </option>
                 <option key="ALL" value="ALL">
                   All
                 </option>
