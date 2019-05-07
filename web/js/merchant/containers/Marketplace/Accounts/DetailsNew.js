@@ -299,7 +299,7 @@ export default class Details extends Component {
             <div class="SliderPanel__Body">
               <div class="panel-body">
                 <EntityDetailRow label="Email">
-                  {!account.email ? (
+                  {noLAEmail ? (
                     <button
                       class="btn btn-link no-padding"
                       onClick={this.showEditAccountModal(account)}
