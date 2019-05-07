@@ -29,15 +29,6 @@ class Gateway extends Mozart\Gateway
     {
         $request = parent::authorize($input);
 
-        if ($request['method'] === 'post')
-        {
-            $request['content']['gateway'] = $this->targetGateway;
-        }
-        else if ($request['method'] === 'get')
-        {
-            $request['url'] = $request['url'] . '&gateway=' . $this->targetGateway;
-        }
-
         return $request;
     }
 }
