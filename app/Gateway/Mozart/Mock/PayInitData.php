@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
-use phpseclib\Crypt\AES;
-
 use RZP\Gateway\Base;
 
 class PayInitData extends Base\Mock\Server
@@ -69,16 +67,16 @@ class PayInitData extends Base\Mock\Server
         $response = [
             'data' => [
                 '_raw' => '',
-                'code'=> '',
-                'message'=> '',
-                'received'=> true,
-                'status'=> 'authorization_successfull',
-                'success'=> null
+                'code' => '',
+                'message' => '',
+                'received' => true,
+                'status' => 'authorization_successfull',
+                'success' => null
             ],
-            'error'=> null,
-            'external_trace_id'=> '',
-            'mozart_id'=> '',
-            'next'=> [
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [
                 'redirect' => [
                     'content' => $output,
                     'method' => 'post',
@@ -86,7 +84,7 @@ class PayInitData extends Base\Mock\Server
                 ]
             ],
 
-            'success'=> true
+            'success' => true
         ];
 
         return $response;
@@ -118,30 +116,16 @@ class PayInitData extends Base\Mock\Server
     {
         $url = $this->route->getUrlWithPublicAuth(
              'mock_mozart_payment_post',
-                       ['gateway' => 'netbanking_sib']);
-
-        $content = [
-            'ShoppingMallTranFG.TRAN_CRN' => $entities['payment']['currency'],
-            'ShoppingMallTranFG.TXN_AMT'  => $entities['payment']['amount'],
-            'ShoppingMallTranFG.PID'      => $entities['terminal']['gateway_merchant_id'],
-            'ShoppingMallTranFG.PRN'      => $entities['payment']['id'],
-            'ShoppingMallTranFG.ITC'      => 'Razorpay',
-            'ShoppingMallTranFG.RU'       => $entities['callbackUrl']
-        ];
-
-        $aes = new Base\AESCrypto(
-                             AES::MODE_ECB,
-                             $this->app['config']->get('gateway.mozart.netbanking_sib_test_hash_secret')
-                           );
+                       ['gateway' => 'netbanking_sib', 'callbackUrl' => $entities['callbackUrl']]);
 
         $response = [
             'data' => [],
             'error'             => null,
             'success'           => true,
             'next' => [
-                "redirect" => [
-                    "content" => [
-                        'QS' => base64_encode($aes->encryptString(http_build_query($content))),
+                'redirect' => [
+                    'content' => [
+                        'QS' => 'random_encrypted_string',
                     ],
                     'method' => 'post',
                     'url' => $url

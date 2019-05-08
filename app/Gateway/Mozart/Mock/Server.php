@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
-use phpseclib\Crypt\AES;
-
 use Str;
 use RZP\App;
 use RZP\Gateway\Base;
@@ -95,8 +93,8 @@ class Server extends Base\Mock\Server
     public function getAsyncCallbackContent(array $payment)
     {
         $response = [
-            'code'      => "0",
-            'errorCode' => "000",
+            'code'      => '0',
+            'errorCode' => '000',
             'messageText' => 'success',
             'rrn' => '987654321',
             'txnStatus' => 'SUCCESS',
@@ -166,22 +164,14 @@ class Server extends Base\Mock\Server
 
     protected function netbanking_sib($input)
     {
-        $aes = new Base\AESCrypto(
-                                   AES::MODE_ECB,
-                                    $this->app['config']->get('gateway.mozart.netbanking_sib_test_hash_secret')
-                                 );
-
-        $queryParams = $aes->decryptString(base64_decode($input['QS']));
-
-        parse_str($queryParams, $queryFields);
 
         // this encrypted value is never used as the pay_verify response from mozart is mocked
         $content = [
-              "ENC_STR" => 'random_encrypted_string'
+              'ENC_STR' => 'random_encrypted_string'
         ];
 
         $request = [
-            'url'          => $queryFields['ShoppingMallTranFG_RU'],
+            'url'          => $input['callbackUrl'],
             'content'      => $content,
             'method'       => 'post',
         ];

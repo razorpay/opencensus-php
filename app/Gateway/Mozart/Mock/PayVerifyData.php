@@ -2,11 +2,9 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
-use phpseclib\Crypt\AES;
-
 use RZP\Gateway\Base;
 
-class PayVerifyData extends Server
+class PayVerifyData extends Base\Mock\Server
 {
     public function upi_airtel($entities)
     {
@@ -37,17 +35,17 @@ class PayVerifyData extends Server
     public function netbanking_sib($entities)
     {
         $response = [
-            "external_trace_id" => "DUMMY_REQUEST_ID",
-            "mozart_id" => "DUMMY_MOZART_ID",
-            "next" => [],
-            "success" => true,
-            "error" => null,
-            "data" => [
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true,
+            'error' => null,
+            'data' => [
                 'paymentId' => $entities['payment']['id'],
                 'amount' => $entities['payment']['amount'],
-                "bank_payment_id" => 999999,
-                "status" => "callback_successful",
-                "_raw" => null
+                'bank_payment_id' => 999999,
+                'status' => 'callback_successful',
+                '_raw' => null
                 ],
             ];
 
