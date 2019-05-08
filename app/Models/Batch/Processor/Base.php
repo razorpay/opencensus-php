@@ -1079,6 +1079,11 @@ class Base extends BaseModel\Core
                 ]);
         }
 
+        if ($this->shouldSendToBatchService())
+        {
+           $ufh->addBucketConfigForBatchService(Batch\Constants::BATCH_SERVICE);
+        }
+
         return $ufh->localFilePath($filePath)
                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
                    ->name($name)
