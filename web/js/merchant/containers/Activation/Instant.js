@@ -11,7 +11,7 @@ import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { showNotification } from 'rzp/modules/notifications';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
+import { classList, addPrefixToObjectKeys } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
@@ -21,7 +21,7 @@ import {
   showKYCDetailsModal,
 } from 'merchant/modules/home';
 
-import formFields from './L1FormMap';
+import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
 import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';
 
 function defaultFieldProps(f) {
@@ -214,12 +214,8 @@ export default class ActivationWizard extends React.Component {
 
         trackL1FormSuccess(this.user.activation_flow);
 
-        trackhubsContactUpdate({
-          email: this.props.user.email,
-          ...data,
-          l1_business_name: data.business_name,
-          business_category: this.state.dirty.business_category,
-        });
+        // updating contact propteries of hubspot contact
+        updateHubSpotContactsProperties(data);
 
         const {
           isWhitelistFlow,
@@ -536,4 +532,20 @@ function isFieldValid(field, activation, data) {
   }
 
   return true;
+}
+
+function updateHubSpotContactsProperties(data) {
+  const hbsData = addPrefixToObjectKeys('l1_', data);
+
+  delete hbsData.l1_business_model;
+
+  const trackData = {
+    ...hbsData,
+    l1_business_type: (
+      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
+    ).label,
+    l1_promoter_pan: !!hbsData.l1_promoter_pan,
+  };
+
+  trackhubsContactUpdate(trackData);
 }
