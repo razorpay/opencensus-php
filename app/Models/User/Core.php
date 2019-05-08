@@ -17,6 +17,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
+use RZP\Models\Partner\Config as PartnerConfig;
 
 class Core extends Base\Core
 {
@@ -133,9 +134,9 @@ class Core extends Base\Core
     {
         $response = $user->toArrayPublic();
 
-        $merchants = $user->merchants
-                          ->where(Merchant\Entity::SUSPENDED_AT, null)
-                          ->callOnEveryItem('toArrayUser');
+        $merchantEntities = $user->merchants->where(Merchant\Entity::SUSPENDED_AT, null);
+
+        $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 
         // Prepares unique list of merchants for users out of pivot relations.
         $merchantsUnique = [];
@@ -159,6 +160,7 @@ class Core extends Base\Core
 
         // Additional resources for users.
         $merchantsUnique = $this->appendBankingSpecificDetails(array_values($merchantsUnique));
+        $merchantsUnique = $this->appendPartnerSpecificDetails($merchantsUnique, $merchantEntities);
         $invitations     = $user->invitations->callOnEveryItem('toArrayUser');
         $settings        = $user->getAllSettings();
 
@@ -167,6 +169,40 @@ class Core extends Base\Core
         $response[Entity::SETTINGS]    = $settings;
 
         return $response;
+    }
+
+    /**
+     * Add partner specific details in serialized unique list of merchants where applies.
+     *
+     * @param array                 $merchants
+     * @param Base\PublicCollection $merchantEntities
+     *
+     * @return array
+     */
+    protected function appendPartnerSpecificDetails(array $merchants, Base\PublicCollection $merchantEntities)
+    {
+        $configCore = new PartnerConfig\Core;
+
+        return array_map(
+            function (array $merchant) use ($merchantEntities, $configCore)
+            {
+                $merchantEntity = $merchantEntities->find($merchant[Merchant\Entity::ID]);
+
+                if ($merchantEntity->isPartner() === true)
+                {
+                    $configs = $configCore->fetchAllConfigsByPartner($merchantEntity);
+
+                    if ($configs->isNotEmpty() === true)
+                    {
+                        $merchant['partner'] = [
+                            'has_configs' => true,
+                        ];
+                    }
+                }
+
+                return $merchant;
+            },
+        $merchants);
     }
 
     /**
