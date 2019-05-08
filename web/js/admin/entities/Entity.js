@@ -250,8 +250,8 @@ const actions = {
     />
   ),
   batch: (entity, entityComponent) => {
-    const normalBatch = entity.status !== 'processed' && !entity.processing;
-    const reconStuckBatch =
+    const normalCase = entity.status !== 'processed' && !entity.processing;
+    const reconInProcessingBatch =
       entity.type === 'reconciliation' &&
       entity.status === 'created' &&
       entity.processing &&
@@ -261,7 +261,7 @@ const actions = {
     // We want to enable retry option for such batches, if updated_at is 2 hour (or more) older
     return (
       entity &&
-      (normalBatch || reconStuckBatch) && (
+      (normalCase || reconInProcessingBatch) && (
         <ShowWhen permission="retry_batch">
           <AsyncButton
             class="btn"
