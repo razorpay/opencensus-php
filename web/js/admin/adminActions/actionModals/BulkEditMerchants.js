@@ -67,7 +67,7 @@ export default class BulkEditMerchants extends React.Component {
     type: 'method',
   };
 
-  async onSubmit(body) {
+  onSubmit(body) {
     if (!body.merchant_ids) {
       notifyError('Merchant Ids are mandatory.');
       return;
