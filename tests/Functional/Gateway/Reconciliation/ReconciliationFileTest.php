@@ -1522,6 +1522,64 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testHdfcFssReconBatchSummaryCount()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertNull($payment1['reference1']);
+        $this->assertNull($payment1['reference2']);
+
+        $row1 = $this->overrideHdfcPayment($gatewayPayment1);
+
+        // payment2 : Exception case
+        $payment2 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment2 = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertNull($payment2['reference1']);
+        $this->assertNull($payment2['reference2']);
+
+        $row2 = $this->overrideHdfcPayment($gatewayPayment2);
+        // set the payment ID to some random 14 char string
+        $row2[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = 'Abcde12345ABCD';
+
+        // Payment3
+        $payment3 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment3 = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertNull($payment3['reference1']);
+        $this->assertNull($payment3['reference2']);
+
+        $row3 = $this->overrideHdfcPayment($gatewayPayment3);
+
+        $entries[] = $row1;
+        $entries[] = $row2;
+        $entries[] = $row3;
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+
+        $updatedTransaction1 = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        // Check failure count, Here exception should have occurred at 2nd row
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(3, $batch['total_count']);
+        $this->assertEquals(2, $batch['processed_count']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(1, $batch['failure_count']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
     public function testMobikwikReconPaymentFile()
     {
         $this->fixtures->create('terminal:shared_mobikwik_terminal');
