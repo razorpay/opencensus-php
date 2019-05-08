@@ -13,7 +13,7 @@ pipeline:
     when:
       event: push
   prepare_test:
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     commands:
@@ -46,7 +46,7 @@ pipeline:
 # This suite is supposed to use default ES index
   application_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -69,7 +69,7 @@ pipeline:
         include: [push]
   features_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -94,7 +94,7 @@ pipeline:
         include: [push]
   feature_2_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -119,7 +119,7 @@ pipeline:
         include: [push]
   feature_3_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -144,7 +144,7 @@ pipeline:
         include: [push]
   feature_4_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -169,7 +169,7 @@ pipeline:
         include: [push]
   feature_5_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -194,7 +194,7 @@ pipeline:
         include: [push]
   payment_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -219,7 +219,7 @@ pipeline:
         include: [push]
   gateway_1_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
@@ -244,7 +244,7 @@ pipeline:
         include: [push]
   gateway_2_test_suite:
     group: A
-    image: razorpay/onggi:php-intlphp-7.2
+    image: razorpay/onggi:php-7.2
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
