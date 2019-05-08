@@ -452,26 +452,7 @@ app
             window.ga &&
               window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
 
-            var merchantData = $scope.signup.merchantData,
-              details = $scope.signup.details;
-
-            window.trackHubs({
-              name: 'update_property',
-              data: {
-                business_type: details.business_type[merchantData.business_type]
-                  ? details.business_type[merchantData.business_type].name
-                  : '',
-                transaction_volume:
-                  details.transaction_volume[merchantData.transaction_volume],
-                department: details.department[merchantData.department]
-                  ? details.department[merchantData.department].name
-                  : '',
-                business_name: merchantData.business_name,
-                business_website: merchantData.business_website,
-                contact_mobile: merchantData.contact_mobile,
-                contact_name: merchantData.contact_name,
-              },
-            });
+            updateHubSpotContactProperty();
 
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
@@ -542,49 +523,7 @@ app
             });
           }
 
-          var merchantData = $scope.signup.merchantData,
-            details = $scope.signup.details,
-            department = null,
-            business_type = null,
-            transaction_volume =
-              details.transaction_volume[merchantData.transaction_volume],
-            business_type_list = Object.keys(details.business_type),
-            department_list = Object.keys(details.department);
-
-          for (var key in business_type_list) {
-            idx = business_type_list[key];
-
-            if (
-              details.business_type[idx].value === merchantData.business_type
-            ) {
-              business_type = details.business_type[idx].name;
-
-              break;
-            }
-          }
-
-          for (var key in department_list) {
-            idx = department_list[key];
-
-            if (details.department[idx].value === merchantData.department) {
-              department = details.department[idx].name;
-
-              break;
-            }
-          }
-
-          window.trackHubs({
-            name: 'update_property',
-            data: {
-              business_type: business_type,
-              transaction_volume: transaction_volume,
-              department: department,
-              business_name: merchantData.business_name,
-              business_website: merchantData.business_website,
-              contact_mobile: merchantData.contact_mobile,
-              contact_name: merchantData.contact_name,
-            },
-          });
+          updateHubSpotContactProperty();
 
           $('.business-type-substep').scrollTop(0);
           $timeout(function() {
@@ -1349,6 +1288,51 @@ app
           }
         }
       });
+
+      // Updating contact properties on hubspot
+      function updateHubSpotContactProperty() {
+        var merchantData = $scope.signup.merchantData,
+          details = $scope.signup.details,
+          department = null,
+          business_type = null,
+          transaction_volume =
+            details.transaction_volume[merchantData.transaction_volume],
+          business_type_list = Object.keys(details.business_type),
+          department_list = Object.keys(details.department);
+
+        for (var key in business_type_list) {
+          idx = business_type_list[key];
+
+          if (details.business_type[idx].value === merchantData.business_type) {
+            business_type = details.business_type[idx].name;
+
+            break;
+          }
+        }
+
+        for (var key in department_list) {
+          idx = department_list[key];
+
+          if (details.department[idx].value === merchantData.department) {
+            department = details.department[idx].name;
+
+            break;
+          }
+        }
+
+        window.trackHubs({
+          name: 'update_property',
+          data: {
+            signup_business_type: business_type,
+            signup_transaction_volume: transaction_volume,
+            signup_department: department,
+            signup_business_name: merchantData.business_name,
+            signup_business_website: merchantData.business_website,
+            signup_contact_mobile: merchantData.contact_mobile,
+            signup_contact_name: merchantData.contact_name,
+          },
+        });
+      }
     },
   ])
   .directive('overrideTab', [
