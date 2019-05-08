@@ -984,6 +984,17 @@ class Gateway extends Base\Gateway
         $this->id = $id;
     }
 
+    public function createGatewayEntity($attributes)
+    {
+        $payment = $this->getNewGatewayPaymentEntity();
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
     /**
      * Strips sensitive data before calling trace class to
      * prevent sensitive data from being traced

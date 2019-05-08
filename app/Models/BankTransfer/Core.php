@@ -161,8 +161,8 @@ class Core extends Base\Core
         $this->trace->traceException(
             $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
 
-        // Skip slack alerts in test mode
-        if ($this->isTestMode() === true)
+        // Slack alerts are only for prod
+        if ($this->isEnvironmentProduction() === false)
         {
             return;
         }

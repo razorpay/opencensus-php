@@ -1303,6 +1303,7 @@ class Gateway
         IFSC::YESB,
         IFSC::SBIN,
         IFSC::CITI,
+        IFSC::BARB,
     ];
 
     public static $emiBankToGatewayMap = [

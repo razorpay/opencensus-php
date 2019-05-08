@@ -466,4 +466,21 @@ return [
         'bank_name'       => 'SBIN',
         'status'          => 'Ok',
     ],
+
+    'testBankTransferProcessWithPayerBankAccountOf4Chars' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => 'UDAN',
+            'payer_ifsc'     => 'HDFC0000001',
+            'mode'           => 'neft',
+            'transaction_id' => 'utr_thisisbestutr',
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'NEFT payment of 50,000 rupees',
+        ],
+    ],
 ];

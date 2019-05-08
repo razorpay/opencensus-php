@@ -768,7 +768,9 @@ class ApiEventSubscriber extends Base\Core
             'mode'       => $this->getMode(),
             'event'      => json_encode($event->toArrayPublic()),
             'event_name' => $eventFired,
-            'webhook_id' => $webhook->getId()
+            'webhook_id' => $webhook->getId(),
+            // Refer Inferno's eventQueuedAt.
+            'queued_at'  => millitime(),
         ];
 
         return $data;

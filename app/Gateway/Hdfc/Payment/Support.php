@@ -5,6 +5,7 @@ namespace RZP\Gateway\Hdfc\Payment;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Hdfc\Payment;
 use Razorpay\Trace\Logger as Trace;
@@ -104,8 +105,19 @@ trait Support
 
         if (($status === Status::CAPTURED) and ($type === 'refund'))
         {
-            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureFailuresOrFail(
+            $entity = $this->repo->retrieveCapturedOrAcceptedCaptureFailures(
                                             $input['payment']['id']);
+            if (empty($entity) === true)
+            {
+                throw new Exception\LogicException(
+                    'Captured Entity not found in DB',
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    [
+                        'payment_id'  => $input['payment']['id'],
+                    ]);
+            }
+
+            $this->model = $entity;
         }
         else if ($status === Status::CAPTURED)
         {

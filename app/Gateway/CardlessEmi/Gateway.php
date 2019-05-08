@@ -704,8 +704,9 @@ class Gateway extends Base\Gateway
 
     protected function checkAuthorizationSuccess($response)
     {
-        if ((isset($response[ResponseFields::STATUS]) === true) and
-             ($response[ResponseFields::STATUS] !== 'authorized'))
+        if ((isset($response[ResponseFields::STATUS]) === false) or
+             ($response[ResponseFields::STATUS] !== 'authorized') or
+            (isset($response[ResponseFields::ERROR_CODE]) === true))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
@@ -728,8 +729,8 @@ class Gateway extends Base\Gateway
     protected function checkCaptureSuccess($response)
     {
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) or
-            ((isset($response[ResponseFields::STATUS]) === true) and
-                ($response[ResponseFields::STATUS] !== 'captured')))
+            (isset($response[ResponseFields::STATUS]) === false) or
+                ($response[ResponseFields::STATUS] !== 'captured'))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED);
@@ -740,8 +741,8 @@ class Gateway extends Base\Gateway
     {
         if (((isset($response[ResponseFields::ERROR_CODE]) === true) and
              ($response[ResponseFields::ERROR_CODE] !== 'OK')) or
-            ((isset($response[ResponseFields::STATUS]) === true) and
-             ($response[ResponseFields::STATUS] !== self::SUCCESS_RESPONSE)))
+            (isset($response[ResponseFields::STATUS]) === false) or
+             ($response[ResponseFields::STATUS] !== self::SUCCESS_RESPONSE))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);

@@ -103,6 +103,13 @@ class DailyReconStatusSummary extends Mailable
                     $this->attach($file['url'], ['as' => $file['name']]);
                 }
             }
+
+            if (empty($data['recon_summary_file']) === false)
+            {
+                $file  = $data['recon_summary_file'];
+
+                $this->attach($file['url'], ['as' => $file['name']]);
+            }
         }
 
         return $this;
