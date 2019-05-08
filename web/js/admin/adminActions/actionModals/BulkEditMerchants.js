@@ -78,15 +78,14 @@ export default class BulkEditMerchants extends React.Component {
       return;
     }
 
-    let payload = null;
+    let payload = null,
+      merchant_ids = body.merchant_ids,
+      type = body.attributes.type;
 
     /* If type is hold_funds or international, request goes to old API: /merchants/bulk, 
        otherwise request will go to new API: /methods/bulkupdate
     */
-    if (
-      body.attributes.type === 'hold_funds' ||
-      body.attributes.type === 'international'
-    ) {
+    if (type === 'hold_funds' || type === 'international') {
       Object.keys(body.attributes).forEach(key => {
         if (!body.attributes[key]) {
           delete body.attributes[key];
@@ -96,32 +95,28 @@ export default class BulkEditMerchants extends React.Component {
       payload = {
         url: `live/merchants/bulk`,
         data: {
-          merchant_ids: splitAndFilter(body.merchant_ids, ','),
+          merchant_ids: splitAndFilter(merchant_ids, ','),
           attributes: body.attributes,
         },
       };
     } else {
       const request = { merchants: null, methods: {} };
-      const { merchant_ids, attributes } = body;
-      request.merchants = merchant_ids
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item.length === 14);
+      const { attributes } = body;
+      let sub_type = attributes.sub_type;
+      request.merchants = splitAndFilter(merchant_ids, ',');
 
-      if (attributes.type === 'method') {
-        request.methods[attributes.sub_type] = attributes.action;
-      } else if (attributes.type === 'card_networks') {
+      if (type === 'method') {
+        request.methods[sub_type] = attributes.action;
+      } else if (type === 'card_networks') {
         request.methods['card_networks'] = {};
-        request.methods.card_networks[attributes.sub_type] = parseInt(
-          attributes.action
-        );
-      } else if (attributes.type === 'banks') {
+        request.methods.card_networks[sub_type] = parseInt(attributes.action);
+      } else if (type === 'banks') {
         if (attributes.action == 1) {
           request.methods.enabled_banks = [];
-          request.methods.enabled_banks.push(attributes.sub_type);
+          request.methods.enabled_banks.push(sub_type);
         } else {
           request.methods.disabled_banks = [];
-          request.methods.disabled_banks.push(attributes.sub_type);
+          request.methods.disabled_banks.push(sub_type);
         }
       }
 
