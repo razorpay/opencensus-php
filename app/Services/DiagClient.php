@@ -28,7 +28,7 @@ class DiagClient extends EventTrackerClient
     protected function getEventContext()
     {
         return [
-            'task_id' => $this->request->getTaskId(),
+            'task_id'    => $this->request->getTaskId(),
             'request_id' => $this->request->getId()
         ];
     }

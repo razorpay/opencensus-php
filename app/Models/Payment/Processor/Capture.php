@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -530,46 +531,57 @@ trait Capture
         /** @var Payment\Entity $payment */
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment, $autoCaptured)
+        try 
         {
-            $this->lockForUpdateAndReload($payment);
-
-            if ($payment->hasBeenCaptured() === true)
+            $this->repo->transaction(function() use ($payment, $autoCaptured)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
-            }
+                $this->lockForUpdateAndReload($payment);
 
-            $this->updatePaymentCaptured($payment, $autoCaptured);
+                if ($payment->hasBeenCaptured() === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+                }
 
-            //
-            // We want to take balance lock towards the end of the transaction.
-            //
-            // If you are adding more merchant IDs here, ensure credits stuff is handled in `handleLateBalanceUpdate`.
-            // Currently, since we are doing this only for Dream11, we are not handling credits.
-            // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
-            //
-            if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
-                ($payment->getMerchantId() === Preferences::MID_DREAM11))
-            {
-                $payment->setLateBalanceUpdate();
-            }
+                $this->updatePaymentCaptured($payment, $autoCaptured);
 
-            list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
+                //
+                // We want to take balance lock towards the end of the transaction.
+                //
+                // If you are adding more merchant IDs here, ensure credits stuff is handled in `handleLateBalanceUpdate`.
+                // Currently, since we are doing this only for Dream11, we are not handling credits.
+                // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
+                //
+                if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
+                    ($payment->getMerchantId() === Preferences::MID_DREAM11))
+                {
+                    $payment->setLateBalanceUpdate();
+                }
 
-            $this->updateOrderAfterCapture($payment);
+                list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
 
-            $this->updateVirtualAccountStatusIfApplicable($payment);
+                $this->updateOrderAfterCapture($payment);
 
-            $this->createPartnerCommission($payment);
+                $this->updateVirtualAccountStatusIfApplicable($payment);
 
-            if ($payment->isLateBalanceUpdate() === true)
-            {
-                $this->handleLateBalanceUpdate($txn, $merchantBalance);
-            }
+                $this->createPartnerCommission($payment);
+
+                if ($payment->isLateBalanceUpdate() === true)
+                {
+                    $this->handleLateBalanceUpdate($txn, $merchantBalance);
+                }
+            });
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
-        });
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)
