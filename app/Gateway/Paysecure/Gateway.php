@@ -198,7 +198,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $internalErrorCode,
                 $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_MESSAGE] ?? null,
                 $traceData
             );
         }
@@ -488,7 +488,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_MESSAGE] ?? null,
                 [
                     'gateway'    => $this->gateway,
                     'payment_id' => $this->input['payment']['id'],
