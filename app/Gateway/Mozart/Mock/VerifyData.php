@@ -116,3 +116,4 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 }
+

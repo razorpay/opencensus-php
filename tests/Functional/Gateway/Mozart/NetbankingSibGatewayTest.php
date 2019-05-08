@@ -120,8 +120,6 @@ class NetbankingSibGatewayTest extends TestCase
 
     public function testAuthSuccessVerifyFailed()
     {
-        // Fix mozart verify flow first
-        $this->markTestSkipped();
         $data = $this->testData[__FUNCTION__];
 
         $this->testPayment();
