@@ -9,14 +9,11 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
-use RZP\Constants\Mode;
 
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'mozart';
-
-    protected $targetGateway;
 
     protected $map = [
         'data'      => Entity::RAW,
@@ -25,8 +22,6 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::action($input, Action::PAY_INIT);
-
-        $this->targetGateway = $input['payment']['gateway'];
 
         $request = $this->getMozartRequestArray($input);
 
@@ -48,7 +43,6 @@ class Gateway extends Base\Gateway
         $attributes = $this->getMappedAttributes($response);
 
         $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
-
 
         if ($input['payment']['method'] === 'upi')
         {
@@ -77,8 +71,6 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::action($input, Action::PAY_VERIFY);
-
-        $this->targetGateway = $input['payment']['gateway'];
 
         $gateway = $input['gateway'];
 
@@ -115,11 +107,9 @@ class Gateway extends Base\Gateway
 
         $this->runCallbackValidationsIfApplicable($input, $response);
 
-        if ($this->immediateVerifyApplicable($this->targetGateway) === true)
+        if ($this->immediateVerifyApplicable($input['payment']['gateway']) === true)
         {
-            $verifyResponse = $this->verify($input);
-
-            return $verifyResponse;
+            $this->verifyCallback($input);
         }
 
         if ($input['payment']['method'] === Payment\Method::UPI)
@@ -130,6 +120,11 @@ class Gateway extends Base\Gateway
                     Payment\Entity::REFERENCE16 => $response['responseBody']['data']['rrn'] ?? null,
                 ]
             ];
+        }
+
+        if ($input['payment']['method'] === Payment\Method::NETBANKING)
+        {
+            return $this->getCallbackResponseData($input);
         }
 
         return $response;
@@ -174,8 +169,6 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $this->targetGateway = $input['payment']['gateway'];
-
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -201,8 +194,6 @@ class Gateway extends Base\Gateway
     public function capture(array $input)
     {
         parent::capture($input);
-
-        $this->targetGateway = $input['payment']['gateway'];
 
         $request = $this->getMozartRequestArray($input);
 
@@ -236,11 +227,35 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $this->targetGateway = $input['payment']['gateway'];
-
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function verifyCallback($input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verifyResponseContent = $this->sendPaymentVerifyRequest($verify);
+
+        //
+        // If the status in callback and verify does not match
+        //
+        if ($verifyResponseContent['success'] !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                $verifyResponseContent['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $verifyResponseContent['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $input['payment']['gateway']
+                ]);
+        }
     }
 
     public function sendPaymentVerifyRequest($verify)
@@ -279,13 +294,13 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($content['success'] === true)
+        $verify->gatewaySuccess = $content['success'];
+
+        $this->checkApiSuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $this->verifyPaymentWithGatewayResponse($verify);
-        }
-        else
-        {
-            $this->verifyNonExistentCase($verify);
+            $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
@@ -583,7 +598,7 @@ class Gateway extends Base\Gateway
 
     protected function updateBankPaymentIdFromResponse($content, $gatewayPayment)
     {
-        // temporary change - will go after conditional operation implementation
+        // temporary change - will go after conditional operation implementation on mozart
         $rawResponse = $content['data']['_raw']['BODY'];
 
         $gatewayPaymentRaw = json_decode($gatewayPayment['raw'], true);
