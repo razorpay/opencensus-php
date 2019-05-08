@@ -328,6 +328,13 @@ app
               event: 'signup_complete',
             });
 
+            window.trackHubs({
+              name: 'create_contact',
+              data: {
+                email: $scope.signup.data.email,
+              },
+            });
+
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               var signinSuccessCb = authCallbacks.getSigninCallback();
@@ -426,7 +433,6 @@ app
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
         }
-
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
@@ -445,6 +451,8 @@ app
             pushToDrip();
             window.ga &&
               window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
+
+            updateHubSpotContactProperty();
 
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
@@ -514,6 +522,9 @@ app
               $scope.alerts.addAlert('danger', value);
             });
           }
+
+          updateHubSpotContactProperty();
+
           $('.business-type-substep').scrollTop(0);
           $timeout(function() {
             $scope.signup.showMore = false;
@@ -1277,6 +1288,51 @@ app
           }
         }
       });
+
+      // Updating contact properties on hubspot
+      function updateHubSpotContactProperty() {
+        var merchantData = $scope.signup.merchantData,
+          details = $scope.signup.details,
+          department = null,
+          business_type = null,
+          transaction_volume =
+            details.transaction_volume[merchantData.transaction_volume],
+          business_type_list = Object.keys(details.business_type),
+          department_list = Object.keys(details.department);
+
+        for (var key in business_type_list) {
+          idx = business_type_list[key];
+
+          if (details.business_type[idx].value === merchantData.business_type) {
+            business_type = details.business_type[idx].name;
+
+            break;
+          }
+        }
+
+        for (var key in department_list) {
+          idx = department_list[key];
+
+          if (details.department[idx].value === merchantData.department) {
+            department = details.department[idx].name;
+
+            break;
+          }
+        }
+
+        window.trackHubs({
+          name: 'update_property',
+          data: {
+            signup_business_type: business_type,
+            signup_transaction_volume: transaction_volume,
+            signup_department: department,
+            signup_business_name: merchantData.business_name,
+            signup_business_website: merchantData.business_website,
+            signup_contact_mobile: merchantData.contact_mobile,
+            signup_contact_name: merchantData.contact_name,
+          },
+        });
+      }
     },
   ])
   .directive('overrideTab', [

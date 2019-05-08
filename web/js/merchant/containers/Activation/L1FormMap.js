@@ -23,24 +23,26 @@ const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 const individualMsg =
   'We are not supporting individuals (unregistered businesses) at the moment. We shall inform you when we start supporting individuals.';
 
+export const BUSINESS_TYPE_OPTIONS = [
+  { label: '--Select--', name: '' },
+  { label: 'Private Limited', name: PRIVATE },
+  { label: 'Proprietorship', name: PROPRIETORSHIP },
+  { label: 'Partnership', name: PARTNERSHIP },
+  { label: 'Individual', name: INDIVIDUAL },
+  { label: 'Public Limited', name: PUBLIC },
+  { label: 'LLP', name: LLP },
+  { label: 'Trust', name: TRUST },
+  { label: 'Society', name: SOCIETY },
+  { label: 'NGO', name: NGO },
+];
+
 /* Form fields of Payment Links */
 export default [
   {
     label: 'Business Type',
     name: 'business_type',
     _cmp: Input.Select,
-    options: [
-      { label: '--Select--', name: '' },
-      { label: 'Private Limited', name: PRIVATE },
-      { label: 'Proprietorship', name: PROPRIETORSHIP },
-      { label: 'Partnership', name: PARTNERSHIP },
-      { label: 'Individual', name: INDIVIDUAL },
-      { label: 'Public Limited', name: PUBLIC },
-      { label: 'LLP', name: LLP },
-      { label: 'Trust', name: TRUST },
-      { label: 'Society', name: SOCIETY },
-      { label: 'NGO', name: NGO },
-    ],
+    options: BUSINESS_TYPE_OPTIONS,
     description: activation => {
       // Changing description of self
       const currentBusinessType =

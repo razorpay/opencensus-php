@@ -31,3 +31,10 @@ export const trackFb = event => {
     event,
   });
 };
+
+export const trackhubsContactUpdate = data => {
+  window.trackHubs({
+    name: 'update_property',
+    data,
+  });
+};
