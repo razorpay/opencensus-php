@@ -40,6 +40,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Jobs\RunShieldCheck;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
@@ -1749,6 +1750,40 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->processCurrencyConversions($payment);
+
+        $this->attachEntityOrigin($payment);
+    }
+
+    /**
+     * When calculating commission, we proceed only if there is an entity origin associated with the payment.
+     * Here we fetch the entity origin for the current request and associate with the payment so that
+     * explicit fees can be shown as a part of fee breakup to the customer if applicable
+     *
+     * @param $payment
+     */
+    protected function attachEntityOrigin($payment)
+    {
+        try
+        {
+            // Fetch origin entity for the payment based on the auth used to initiate the payment.
+            $entityOrigin = (new EntityOrigin\Core)->fetchEntityOrigin($payment);
+
+            if (empty($entityOrigin) === false)
+            {
+                // associate origin entity to payment relation
+                $payment->setRelation('entityOrigin', $entityOrigin);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // The payment should not be blocked even if the origin cannot be fetched. Log an error and proceed.
+            $this->trace->critical(TraceCode::ORIGIN_SET_FAILED,
+                [
+                    'message'     => $e->getMessage(),
+                    'entity_type' => $payment->getEntity(),
+                    'entity_id'   => $payment->getId(),
+                ]);
+        }
     }
 
     protected function parseContact(string $contact): PhoneBook
