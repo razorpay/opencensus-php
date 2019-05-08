@@ -104,6 +104,22 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
         ]);
     }
 
+    public function initiateReject(Response $response)
+    {
+        $request = $this->initiateSdkRequest(TransactionAction::DECLINE_COLLECT);
+
+        $transformer = new TransactionRequestTransformer($this->input->toArray());
+
+        $transformer->put(Fields::ACTION, TransactionAction::DECLINE_COLLECT);
+        $transformer->put(Fields::MERCHANT_CUSTOMER_ID, $this->getMerchantCustomerId());
+        $transformer->put(Fields::TIMESTAMP, $this->getTimeStamp());
+        $transformer->put(Fields::UPI_REQUEST_ID, $this->getUpiRequestId());
+
+        $request->merge($transformer->transform());
+
+        $response->setRequest($request);
+    }
+
     public function reject(Response $response)
     {
 

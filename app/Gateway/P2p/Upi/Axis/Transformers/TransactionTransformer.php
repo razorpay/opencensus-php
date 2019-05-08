@@ -46,6 +46,15 @@ class TransactionTransformer extends Transformer
                     Entity::INTERNAL_STATUS => Status::COMPLETED,
                 ];
                 break;
+
+            case TransactionAction::DECLINE_COLLECT:
+                $output = [
+                    Entity::TYPE            => Type::COLLECT,
+                    Entity::MODE            => $this->getTransactionMode(),
+                    Entity::FLOW            => Flow::DEBIT,
+                    Entity::INTERNAL_STATUS => Status::REJECTED,
+                ];
+                break;
         }
 
         $output[Entity::ID] = $this->input[UpiTransaction\Entity::TRANSACTION_ID];
@@ -132,8 +141,22 @@ class TransactionTransformer extends Transformer
         }
 
         $output[Entity::INTERNAL_ERROR_CODE] = ErrorMap::gatewayMap($gatewayCode);
-        $output[Entity::INTERNAL_STATUS]     = ErrorMap::isDeemedError($gatewayCode) ?
-                                                   Status::PENDING :
-                                                   Status::FAILED;
+
+        $internalStatus = Status::FAILED;
+
+        if (in_array($gatewayCode, ErrorMap::$pendingErrors, true) === true)
+        {
+            $internalStatus = Status::PENDING;
+        }
+        else if (in_array($gatewayCode, ErrorMap::$rejectedErrors, true) === true)
+        {
+            $internalStatus = Status::REJECTED;
+        }
+        else if (in_array($gatewayCode, ErrorMap::$expiredErrors, true) === true)
+        {
+            $internalStatus = Status::EXPIRED;
+        }
+
+        $output[Entity::INTERNAL_STATUS] = $internalStatus;
     }
 }

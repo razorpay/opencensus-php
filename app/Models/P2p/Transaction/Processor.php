@@ -190,6 +190,8 @@ class Processor extends Base\Processor
                 break;
 
             case Status::FAILED:
+            case Status::EXPIRED:
+            case Status::REJECTED:
                 $actions = $this->setTransactionFailed($transaction, $input);
                 break;
 

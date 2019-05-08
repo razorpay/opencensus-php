@@ -69,6 +69,20 @@ class TransactionRequestTransformer extends TransactionTransformer
                     Fields::TIME_STAMP              => $this->getTimestamp(),
                     Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
                 ];
+                break;
+
+            case TransactionAction::DECLINE_COLLECT:
+                $output = [
+                    Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
+                    Fields::AMOUNT                  => $this->getFormattedAmount(),
+                    Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
+                    Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                    Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
+                    Fields::PAYEE_VPA               => $this->getPayerVpa(),
+                    Fields::TIME_STAMP              => $this->getTimestamp(),
+                    Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
+                ];
+
         }
 
         return $output;
