@@ -54,7 +54,8 @@ class PayInitData extends Base\Mock\Server
         $url = $this->route->getUrlWithPublicAuth(
             'mock_mozart_payment_post',
             [
-                'gateway' => $entities['payment']['gateway']
+                'gateway' => $entities['payment']['gateway'],
+                'paymentId' => $entities['payment']['id']
             ]);
 
         $output = [

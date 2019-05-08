@@ -25,13 +25,13 @@ class PhonepeGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->setMockGatewayTrue();
-
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_phonepe_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'mozart';
+
+        $this->setMockGatewayTrue();
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'phonepe');
     }
@@ -71,11 +71,12 @@ class PhonepeGatewayTest extends TestCase
 
     public function testCallbackEmptyResponseBody()
     {
-        $this->mockServerContentFunction(function (& $content)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            $content = [];
-
-            return $content;
+            if ($action === 'authorize')
+            {
+                $content = [];
+            }
         });
 
         $data = $this->testData[__FUNCTION__];

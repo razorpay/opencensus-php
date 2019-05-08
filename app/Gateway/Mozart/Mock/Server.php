@@ -150,7 +150,7 @@ class Server extends Base\Mock\Server
 
         $paymentId = $content['paymentId'];
 
-        $this->content($content);
+        $this->content($content, 'authorize');
 
         $publicId = $this->getSignedPaymentId($paymentId);
 
@@ -187,5 +187,10 @@ class Server extends Base\Mock\Server
         ];
 
         return $this->makePostResponse($request);
+    }
+
+    protected function getUpiAirtelSecret()
+    {
+        return $this->app['config']->get('gateway.mozart.upi_airtel_test_hash_secret');
     }
 }
