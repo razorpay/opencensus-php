@@ -602,14 +602,16 @@ export default class ActivationWizard extends React.Component {
           window.hj('tagRecording', ['activation_form_save_error']);
         }
 
-        trackFb(`KYC_complete_${data.data.activation_flow}`);
-
         onAction &&
           onAction.trackSubmit({
             error: data.errors,
             type: false,
           });
       } else {
+        trackFb(`KYC_complete_${data.data.activation_flow}`);
+
+        updateHubSpotContactsProperties({ l2_final_submission: true });
+
         onAction &&
           onAction.trackSubmit({
             type: true,
