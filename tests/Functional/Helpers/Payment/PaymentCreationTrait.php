@@ -296,13 +296,9 @@ trait PaymentCreationTrait
 
         $response = $this->makeRequestParent($request);
 
+        $this->ba->publicAuth();
+
         return $this->handlePaymentCreationFlow($response, $request);
-
-        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
-
-        $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
-
-        return $this->submitPaymentCallbackRequest($request);
     }
 
     protected function handleWalletTopupFlow($response, $request, &$callback = null)

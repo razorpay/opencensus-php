@@ -642,7 +642,7 @@ class OtpPaymentTest extends TestCase
         assertTrue($this->otpFlow);
     }
 
-    public function testHeadlessOtpAuthenticationPaymentS2SRedirectFlowFailed()
+    public function testHeadlessOtpAuthenticationPaymentS2SDoubleRedirectOtp()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' => [
@@ -665,7 +665,6 @@ class OtpPaymentTest extends TestCase
                     ],
                 ];
             });
-
 
         $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
         $this->mockCardVault();
@@ -706,13 +705,168 @@ class OtpPaymentTest extends TestCase
         GatewayRequestException::class,
         'Gateway request timed out');
 
-        // $this->makeRequestAndCatchException(
-        // function() use ($response)
-        // {
-        //     $this->makeRedirectToAuthorize($response->getTargetUrl());
-        // },
-        // BadRequestException::class,
-        // 'The payment has already been processed');
+        $this->mockOtpElf();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['status' => 'created']);
+
+        $this->makeRedirectToAuthorize($response->getTargetUrl());
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $payment2['id']);
+        $this->assertEquals('authorized',   $payment2['status']);
+        $this->assertEquals('headless_otp', $payment2['auth_type']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentS2SDoubleRedirect3ds()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->count = 0;
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if (($this->count === 0) and
+                ($action === 'authenticate'))
+            {
+                $this->count = 1;
+                throw new GatewayTimeoutException('Timed out', null, true);
+            }
+        }, 'mpi_blade');
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->mockCardVault();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+
+        $this->makeRequestAndCatchException(
+        function() use ($response)
+        {
+            $this->makeRedirectToAuthorize($response->getTargetUrl());
+        },
+        GatewayRequestException::class,
+        'Gateway request timed out');
+
+        $this->mockOtpElf();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['status' => 'created']);
+
+        $this->makeRedirectToAuthorize($response->getTargetUrl());
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $payment2['id']);
+        $this->assertEquals('authorized',   $payment2['status']);
+        $this->assertNull($payment2['auth_type']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentS2SRedirect3dsCallbackUrl()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->count = 0;
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if (($this->count === 0) and
+                ($action === 'authenticate'))
+            {
+                $this->count = 1;
+                throw new GatewayTimeoutException('Timed out', null, true);
+            }
+        }, 'mpi_blade');
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->mockCardVault();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+            ],
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['callback_url'] = 'https://google.com';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+
+        $id = getTextBetweenStrings($response->getTargetUrl(), '/payments/', '/authorize');
+
+        $this->redirectToAuthorize = true;
+
+        $url = $this->getPaymentRedirectToAuthorizrUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $this->app['env'] = 'dev';
+
+        $this->app['config']->set('app.debug', false);
+
+        $response = $this->makeRequestParent($request);
+
+        $request = $this->getFormRequestFromResponse($response->getContent(), $url);
+
+        $this->assertEquals('https://google.com', $request['url']);
+        $this->assertEquals('The gateway request to submit payment information timed out. Please submit your details again', $request['content']['error[description]']);
+        $this->assertEquals('GATEWAY_ERROR', $request['content']['error[code]']);
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2SHtmlView()
@@ -2354,7 +2508,6 @@ class OtpPaymentTest extends TestCase
         $route = $this->app['api.route'];
 
         $url = $route->getPublicCallbackUrlWithHash($content['razorpay_payment_id'], 'rzp_test_TheTestAuthKey', 'payment_callback_post');
-
 
         $request = [
             'method'  => 'POST',
