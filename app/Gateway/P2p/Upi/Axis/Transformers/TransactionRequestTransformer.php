@@ -56,9 +56,47 @@ class TransactionRequestTransformer extends TransactionTransformer
                     Fields::TIME_STAMP              => $this->getTimestamp(),
                     Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
                 ];
+                break;
+
+            case TransactionAction::PAY_COLLECT:
+                $output = [
+                    Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
+                    Fields::AMOUNT                  => $this->getFormattedAmount(),
+                    Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
+                    Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                    Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
+                    Fields::PAYEE_VPA               => $this->getPayerVpa(),
+                    Fields::TIME_STAMP              => $this->getTimestamp(),
+                    Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
+                ];
         }
 
         return $output;
+    }
+
+    public function transformAction()
+    {
+        $type = $this->input[Entity::TRANSACTION][Entity::TYPE];
+        $flow = $this->input[Entity::TRANSACTION][Entity::FLOW];
+
+        if ($type === Type::PAY)
+        {
+            if ($flow === Flow::DEBIT)
+            {
+                return TransactionAction::SEND_MONEY;
+            }
+        }
+        else if ($type === Type::COLLECT)
+        {
+            if ($flow === Flow::DEBIT)
+            {
+                return TransactionAction::PAY_COLLECT;
+            }
+            else if ($flow === Flow::CREDIT)
+            {
+                return TransactionAction::REQUEST_MONEY;
+            }
+        }
     }
 
     public function getAccountRefenceId()
@@ -121,7 +159,15 @@ class TransactionRequestTransformer extends TransactionTransformer
 
     public function getUpiRequestId()
     {
-        return $this->input[Fields::UPI_REQUEST_ID];
+        switch ($this->input[Fields::ACTION])
+        {
+            case TransactionAction::PAY_COLLECT:
+            case TransactionAction::DECLINE_COLLECT:
+                return $this->input[Entity::UPI][UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
+
+            default:
+                return $this->input[Fields::UPI_REQUEST_ID];
+        }
     }
 
     public function getCollectExpiryMinutes()

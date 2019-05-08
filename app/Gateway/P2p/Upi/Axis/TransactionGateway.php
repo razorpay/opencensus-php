@@ -63,22 +63,32 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
 
     public function initiateAuthorize(Response $response)
     {
+        $transformer = new TransactionRequestTransformer($this->input->toArray());
+        $action = $transformer->transformAction();
+
+        $transformer->put(Fields::ACTION, $action);
+        $transformer->put(Fields::MERCHANT_CUSTOMER_ID, $this->getMerchantCustomerId());
+        $transformer->put(Fields::TIMESTAMP, $this->getTimeStamp());
+        $transformer->put(Fields::UPI_REQUEST_ID, $this->getUpiRequestId());
+
+        $request = $this->initiateSdkRequest($action);
+
+        $request->merge($transformer->transform());
+
+        $response->setRequest($request);
     }
 
     public function authorizeTransaction(Response $response)
     {
-        // since there is signature present in the input payload.
-        // We would like to verify the signature before processing the input
-        // TODO: ADD VERIFICATION CODE
-
         $sdk = $this->handleInputSdk();
+        $callback = $this->handleSdkCallback();
 
         $transaction = $this->input->get(Entity::TRANSACTION);
 
         $transformer = new UpiTransactionTransformer($sdk->toArray());
 
         $transformer->put(Fields::MERCHANT_REQUEST_ID, $this->getMerchantRequestId($transaction));
-        $transformer->put(Fields::ACTION, $this->input->get(Fields::CALLBACK)->get(Fields::ACTION));
+        $transformer->put(Fields::ACTION, $callback->get(Fields::ACTION));
 
         // gateway is responsible for setting appropriate state of transaction to initiated, completed or
         // pending based on the transaction type and the response returned by gateway.

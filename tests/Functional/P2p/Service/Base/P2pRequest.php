@@ -20,6 +20,8 @@ class P2pRequest
 
     protected $server = [];
 
+    protected $content = '';
+
     public function __construct(string $uri)
     {
         $this->app = App::getFacadeRoot();
@@ -41,11 +43,18 @@ class P2pRequest
         return $this;
     }
 
-    public function content(array $content): self
+    public function data(array $data): self
     {
-        $this->server['HTTP_CONTENT_TYPE'] = 'application/json';
+        $this->data = $data;
 
-        $this->data = $content;
+        return $this;
+    }
+
+    public function json(string $content): self
+    {
+        $this->server['CONTENT_TYPE'] = 'application/json';
+
+        $this->content = $content;
 
         return $this;
     }
@@ -59,7 +68,7 @@ class P2pRequest
                         [],
                         [],
                         $this->server,
-                        '');
+                        $this->content);
 
         return $response;
     }

@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Transaction;
 
 use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
+use RZP\Models\P2p\BankAccount;
 use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
@@ -102,7 +103,37 @@ class Properties
                 $payer          = $this->getTransactionPayer(false);
                 $payee          = $this->getTransactionPayee(true);
                 $bankAccount    = $this->getTransactionBankAccount($payee);
+                break;
 
+            case Action::INCOMING_COLLECT :
+
+                $this->input->putMany([
+                    Entity::TYPE                => Type::COLLECT,
+                    Entity::FLOW                => Flow::DEBIT,
+                    Entity::MODE                => Mode::DEFAULT,
+                    Entity::STATUS              => Status::CREATED,
+                    Entity::INTERNAL_STATUS     => Status::CREATED,
+                    Entity::EXPIRE_AT           => $this->getTransactionExpireAt(),
+                ]);
+
+                $payer          = $this->getTransactionPayer(true);
+                $payee          = $this->getTransactionPayee(false);
+                $bankAccount    = $this->getTransactionBankAccount($payer);
+                break;
+
+            case Action::INCOMING_PAY :
+
+                $this->input->putMany([
+                    Entity::TYPE                => Type::PAY,
+                    Entity::FLOW                => Flow::CREDIT,
+                    Entity::MODE                => Mode::DEFAULT,
+                    Entity::STATUS              => Status::CREATED,
+                    Entity::INTERNAL_STATUS     => Status::CREATED,
+                ]);
+
+                $payer          = $this->getTransactionPayer(false);
+                $payee          = $this->getTransactionPayee(true);
+                $bankAccount    = $this->getTransactionBankAccount($payee);
                 break;
         }
 
@@ -121,14 +152,29 @@ class Properties
 
     protected function getTransactionPayer(bool $onus)
     {
-        // Since only VPA as Payer is allowed
+        $input = $this->input->get(Entity::PAYER);
+
         if ($onus === false)
         {
-            $payer = (new Vpa\Core)->find($this->input->get(Entity::PAYER)[Entity::ID]);
+            if (isset($input[Entity::ID]) === false)
+            {
+                $payer = (new Vpa\Core)->handleBeneficiary($input);
+            }
+            else
+            {
+                $payer = (new Vpa\Core)->find($input[Entity::ID]);
+            }
         }
         else
         {
-            $payer = (new Vpa\Core)->fetch($this->input->get(Entity::PAYER)[Entity::ID]);
+            if (isset($input[Entity::ID]) === false)
+            {
+                $payer = (new Vpa\Core)->fetchByUsernameHandle($input);
+            }
+            else
+            {
+                $payer = (new Vpa\Core)->fetch($input[Entity::ID]);
+            }
         }
 
         return $payer;
@@ -136,14 +182,33 @@ class Properties
 
     protected function getTransactionPayee(bool $onus)
     {
-        // Since only VPA as Payee is allowed
+        $input = $this->input->get(Entity::PAYEE);
+
         if ($onus === false)
         {
-            $payee = (new Vpa\Core)->find($this->input->get(Entity::PAYEE)[Entity::ID]);
+            $core = ($input[Entity::TYPE] ?? null) === Entity::BANK_ACCOUNT ?
+                                                        new BankAccount\Core :
+                                                        new Vpa\Core;
+
+            if (isset($input[Entity::ID]) === false)
+            {
+                $payee = $core->handleBeneficiary($input);
+            }
+            else
+            {
+                $payee = $core->find($input[Entity::ID]);
+            }
         }
         else
         {
-            $payee = (new Vpa\Core)->fetch($this->input->get(Entity::PAYEE)[Entity::ID]);
+            if (isset($input[Entity::ID]) === false)
+            {
+                $payee = (new Vpa\Core)->fetchByUsernameHandle($input);
+            }
+            else
+            {
+                $payee = (new Vpa\Core)->fetch($input[Entity::ID]);
+            }
         }
 
         return $payee;
@@ -155,6 +220,10 @@ class Properties
         if ($entity instanceof VPA\Entity)
         {
             $bankAccount = $entity->bankAccount;
+        }
+        else
+        {
+            assert(false, 'Only VPA can have bank account');
         }
 
         return $bankAccount;
