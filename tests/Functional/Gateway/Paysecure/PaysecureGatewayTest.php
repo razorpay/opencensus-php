@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use RZP\Gateway\Hitachi;
+use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -13,6 +15,9 @@ class PaysecureGatewayTest extends TestCase
     use DbEntityFetchTrait;
 
     protected $paymentEntityGateway = 'hitachi';
+
+    const HITACHI_MID = 'sample_hitachi_mid';
+    const HITACHI_TID = 'sample_hitachi_tid';
 
     public function setUp()
     {
@@ -29,8 +34,8 @@ class PaysecureGatewayTest extends TestCase
                     'recurring_3ds' => '1',
                     'recurring_non_3ds' => '1'
                 ],
-            'gateway_merchant_id' => 'sample_hitachi_mid',
-            'gateway_terminal_id' => 'sample_hitachi_tid',
+            'gateway_merchant_id' => self::HITACHI_MID,
+            'gateway_terminal_id' => self::HITACHI_TID,
         ]);
 
         $merchantDetailArray = [
@@ -211,6 +216,51 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testCallbackAutoCapture()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opaI',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'hitachi',
+                'enabled' => 1,
+                'type' =>
+                    [
+                        'non_recurring' => '1',
+                        'recurring_3ds' => '1',
+                        'recurring_non_3ds' => '1'
+                    ],
+                'gateway_merchant_id' => 'sample_hitachi_mid',
+                'gateway_terminal_id' => 'sample_hitachi_tid',
+                'mode'                => 2,
+            ]);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'        => 'captured',
+                'amount'        => 50000,
+                'method'        => 'card',
+                'gateway'       => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertEquals(1, count($this->getDbEntities('hitachi')));
+
+        $this->assertEquals($paysecure['payment_id'], $hitachi['payment_id']);
+
+        $this->assertEquals($payment['terminal_id'], 'AqdfGh5460opaI');
+    }
+
     public function testAuthorizeFailure()
     {
         $this->mockServerContentFunction(
@@ -332,6 +382,23 @@ class PaysecureGatewayTest extends TestCase
 
         $payment = $this->getDbLastEntityToArray('payment');
 
+        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        $this->gateway = 'hitachi';
+
+        $this->mockServerContentFunction(
+            function(& $content, $action)
+            {
+                if ($action === 'validateRefund') {
+                    $sentMid = $content[Hitachi\RequestFields::MERCHANT_ID];
+                    $sentTid = $content[Hitachi\RequestFields::TERMINAL_ID];
+
+                    $this->assertEquals(self::HITACHI_MID, $sentMid);
+
+                    $this->assertEquals(self::HITACHI_TID, $sentTid);
+                }
+            }
+        );
+
         $this->refundPayment('pay_' . $payment['id'], 1000);
 
         $refund = $this->getDbLastEntityToArray('refund');
@@ -344,9 +411,59 @@ class PaysecureGatewayTest extends TestCase
                 'payment_id' => $payment['id'],
                 'gateway'    => 'hitachi',
                 'is_scrooge' => true,
+                'status'     => 'processed',
             ],
             $refund
         );
+
+        //temporary: make gateway paysecure for other testcases
+        $this->gateway = 'paysecure';
+    }
+
+    public function testPaymentRefundWithMissingRrnViaHitachi()
+    {
+        $this->testPaymentSettledViaHitachi();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->clearMockFunction();
+
+        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        $this->gateway = 'hitachi';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pStatus'] = 'Error';
+            }
+
+            if ($action === 'refund')
+            {
+                unset($content['pRRN']);
+            }
+
+        });
+
+        $this->refundPayment('pay_' . $payment['id'], 1000);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        // Hitachi refunds goes via Scrooge
+        // So, we can only check the refund entity, since the other things are handled at Scrooge
+        $this->assertArraySelectiveEquals(
+            [
+                'amount'     => 1000,
+                'payment_id' => $payment['id'],
+                'gateway'    => 'hitachi',
+                'is_scrooge' => true,
+                'status'     => 'processed',
+            ],
+            $refund
+        );
+
+        //temporary: make gateway paysecure for other testcases
+        $this->gateway = 'paysecure';
     }
 
     public function testSoapFault()
@@ -453,6 +570,22 @@ class PaysecureGatewayTest extends TestCase
     protected function assertSuccess($authResponse, $flow)
     {
         $payment = $this->getDbLastEntityToArray('payment');
+
+        $cacheDriver = $this->app['config']->get('cache.secure_default');
+
+        $key = sprintf(Gateway::CACHE_KEY, $payment['id']);
+
+        $cacheValue = $this->app['cache']->store($cacheDriver)->get($key);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'vault_token' => base64_encode($this->payment['card']['number']),
+            ],
+            $cacheValue
+        );
+
+        // Ensure cvv does not get stored in cache
+        $this->assertArrayNotHasKey('cvv', $cacheValue);
 
         $this->assertArraySelectiveEquals(
             [

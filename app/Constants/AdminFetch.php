@@ -2094,6 +2094,12 @@ class AdminFetch
                     ],
                 ],
             ],
+            Entity::MERCHANT_PROMOTION => [
+                'promotion_id'  => [
+                    Fetch::LABEL => 'Promotion Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ]
+            ],
         ];
 
         //

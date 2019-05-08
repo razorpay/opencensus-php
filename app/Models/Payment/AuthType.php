@@ -60,7 +60,23 @@ class AuthType
             self::_3DS => [
                 self::_3DS,
             ],
-        ]
+        ],
+        Method::EMI => [
+            self::UNKNOWN => [
+                self::OTP,
+                self::IVR,
+                self::HEADLESS_OTP,
+                self::_3DS,
+            ],
+            self::OTP => [
+                self::IVR,
+                self::OTP,
+                self::HEADLESS_OTP,
+            ],
+            self::_3DS => [
+                self::_3DS,
+            ],
+        ],
     ];
 
     public static $featureToAuthMap = [

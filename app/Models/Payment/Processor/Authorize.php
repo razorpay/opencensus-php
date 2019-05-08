@@ -308,6 +308,8 @@ trait Authorize
                     continue;
                 }
 
+                $this->migrateCardDataIfApplicable($payment);
+
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
@@ -5202,7 +5204,7 @@ trait Authorize
         if ($type === 'fallback')
         {
             $key = $payment->getCacheInputKey();
-            $ttl = static::CACHE_TTL;
+            $ttl = static::CARD_CACHE_TTL;
         }
         else
         {

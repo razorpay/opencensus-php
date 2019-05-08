@@ -193,9 +193,9 @@ class Core extends Base\Core
      * it'll provide the channel from which transfer has to be done
      * and also whether to route it through FTS or not
      *
-     * @param Base\Entity     $source
-     * @param string          $sourceType
-     * @param CardEntity|null $card
+     * @param Base\PublicEntity $source
+     * @param string            $sourceType
+     * @param CardEntity|null   $card
      * @return array
      *
      * TODO: refactor this section so that we dont have to use `shouldUseGateway` and `getChannelForTransfer`
@@ -217,7 +217,7 @@ class Core extends Base\Core
 
             $amount = $source->getAmount();
 
-            $mode = Mode::IMPS;
+            $mode = strtolower(Mode::IMPS);
 
             //
             // only imps is supported for now

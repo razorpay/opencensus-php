@@ -51,7 +51,7 @@ class Gateway extends Base\Gateway
     use Base\CardCacheTrait;
 
     const CACHE_KEY = 'hdfc_fss_%s_card_details';
-    const CACHE_TTL = 20;
+    const CARD_CACHE_TTL = 20;
 
     protected $secureCacheDriver;
 
@@ -982,6 +982,17 @@ class Gateway extends Base\Gateway
     protected function setId($id)
     {
         $this->id = $id;
+    }
+
+    public function createGatewayEntity($attributes)
+    {
+        $payment = $this->getNewGatewayPaymentEntity();
+
+        $payment->fill($attributes);
+
+        $payment->saveOrFail();
+
+        return $payment;
     }
 
     /**
