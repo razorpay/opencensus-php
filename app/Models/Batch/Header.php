@@ -284,7 +284,7 @@ class Header
     //
     const ENACH_NPCI_NETBANKING_REGISTER_UMRN              = 'UMRN';
     const ENACH_NPCI_NETBANKING_REGISTER_STATUS            = 'STATUS';
-    const ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID        = 'MESSAGE_ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_MESSAGE_ID        = 'MESSAGE_ID';
     const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE      = 'MANDATE_DATE';
     const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID        = 'MANDATE_ID';
     const ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO       = 'CUST_REF_NO';
@@ -791,7 +791,7 @@ class Header
                 self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
                 self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
                 self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
-                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MESSAGE_ID,
             ],
             self::OUTPUT => [
                 self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE,
@@ -822,10 +822,11 @@ class Header
                 self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
                 self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
                 self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
-                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MESSAGE_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+                self::PAYMENT_ID
             ],
         ],
 
