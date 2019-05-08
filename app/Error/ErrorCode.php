@@ -161,6 +161,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                                = 'GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR';
     const GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR                                    = 'GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR';
     const GATEWAY_ERROR_BANK_OFFLINE                                                = 'GATEWAY_ERROR_BANK_OFFLINE';
+    const GATEWAY_ERROR_INTERNAL_SERVER_ERROR                                       = 'GATEWAY_ERROR_INTERNAL_SERVER_ERROR';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH                                  = 'GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH';

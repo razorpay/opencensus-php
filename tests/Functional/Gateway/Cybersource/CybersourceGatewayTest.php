@@ -12,6 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Cybersource\Fields;
 use RZP\Jobs\CorePaymentServiceSync;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 
@@ -19,6 +20,7 @@ class CybersourceGatewayTest extends TestCase
 {
     use PaymentTrait;
     use TransactionTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -662,6 +664,37 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertNotNull($cybersource['ref']);
         $this->assertTestResponse($cybersource);
+    }
+
+    public function testGatewayTimeOutAtCapture()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'capture')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'GATEWAY_ERROR_TIMED_OUT';
+                $content['data'] = null;
+            }
+        });
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->doAuthAndCapturePayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('cybersource', $payment['gateway']);
+
+        $this->assertEquals(2, count($this->getDbEntities('cybersource')));
+
+        $cybs = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($payment['id'], 'pay_'.$cybs['payment_id']);
+        $this->assertEquals('capture', $cybs['action']);
+        $this->assertEquals('created', $cybs['status']);
     }
 
     public function testGatewayPaymentXidMisMatch()
