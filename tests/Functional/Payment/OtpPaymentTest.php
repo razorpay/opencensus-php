@@ -706,13 +706,13 @@ class OtpPaymentTest extends TestCase
         GatewayRequestException::class,
         'Gateway request timed out');
 
-        $this->makeRequestAndCatchException(
-        function() use ($response)
-        {
-            $this->makeRedirectToAuthorize($response->getTargetUrl());
-        },
-        BadRequestException::class,
-        'The payment has already been processed');
+        // $this->makeRequestAndCatchException(
+        // function() use ($response)
+        // {
+        //     $this->makeRedirectToAuthorize($response->getTargetUrl());
+        // },
+        // BadRequestException::class,
+        // 'The payment has already been processed');
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2SHtmlView()
