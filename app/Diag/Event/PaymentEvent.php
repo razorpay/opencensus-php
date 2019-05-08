@@ -44,13 +44,23 @@ class PaymentEvent extends Event
         $payment = $this->entity;
 
         $properties['payment'] = [
-                'id'       => $payment->getPublicId(),
-                'amount'   => $payment->getAmount(),
-                'currency' => $payment->getCurrency(),
-                'method'   => $payment->getMethod(),
-                'issuer'   => $payment->getIssuer(),
+                'id'           => $payment->getPublicId(),
+                'amount'       => $payment->getAmount(),
+                'currency'     => $payment->getCurrency(),
+                'method'       => $payment->getMethod(),
+                'issuer'       => $payment->getIssuer(),
+                'type'         => $payment->getTransactionType(),
         ];
 
+        // upi properties
+        if ($payment->isUpi() === true)
+        {
+            $properties['payment'] += [
+                'vpa'   => $payment->getVpa()
+            ];
+        }
+
+        // card properties
         if ($payment->hasCard() === true)
         {
             $card = $payment->card;

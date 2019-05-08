@@ -13,6 +13,7 @@ use Lib\PhoneBook;
 
 use RZP\Jobs;
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -113,25 +114,44 @@ trait Authorize
     {
         // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
 
-        if (empty($gatewayInput['selected_terminals_ids']) === false)
-        {
-            $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
-        }
-        else if (($payment->isPushPaymentMethod() === true) and
-            ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
-        {
-            $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
-        }
-        else
-        {
-            $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
-        }
+        $this->app['diag']->trackPaymentEvent(EventCode::TERMINAL_SELECTION_INITIATED, $payment);
 
-        $this->trace->info(
-            TraceCode::SELECTED_TERMINAL_IDS,
-            [
-                'selected_terminals_ids'  => array_pluck($this->selectedTerminals,Terminal\Entity::ID),
-            ]);
+        try
+        {
+            if (empty($gatewayInput['selected_terminals_ids']) === false)
+            {
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
+            }
+            else if (($payment->isPushPaymentMethod() === true) and
+                ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
+            {
+                $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
+            }
+            else
+            {
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+            }
+            
+            $this->trace->info(
+                TraceCode::SELECTED_TERMINAL_IDS,
+                [
+                    'selected_terminals_ids'  => array_pluck($this->selectedTerminals, Terminal\Entity::ID),
+                ]);
+
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::TERMINAL_SELECTION_PROCESSED,
+                $payment,
+                null,
+                [
+                    'terminal_count' => count($this->selectedTerminals)
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::TERMINAL_SELECTION_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
     }
 
     protected function setAuthenticationGatewayViaGatewayRules(Payment\Entity $payment, array & $gatewayInput)
@@ -331,6 +351,8 @@ trait Authorize
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
 
         $this->runShieldCheck($this->payment);
     }
@@ -4923,6 +4945,8 @@ trait Authorize
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
             return true;
         });
