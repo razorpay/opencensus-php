@@ -112,7 +112,7 @@ class SubscriptionRegistrationTest extends TestCase
 
     public function testFetchAuthLinks()
     {
-        $subrAttributes = ['method' => 'emandate'];
+        $subrAttributes = ['method' => 'emandate', 'notes' => []];
 
         $subr = $this->fixtures->create('subscription_registration', $subrAttributes);
 
@@ -140,7 +140,8 @@ class SubscriptionRegistrationTest extends TestCase
         $subrAttributes = [
             'method'      => 'emandate',
             'entity_id'   => $bank->getId(),
-            'entity_type' => E::BANK_ACCOUNT
+            'entity_type' => E::BANK_ACCOUNT,
+            'notes'       => [],
         ];
 
         $subr = $this->fixtures->create('subscription_registration', $subrAttributes);

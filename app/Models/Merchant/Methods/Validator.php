@@ -8,7 +8,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
-
     protected static $addDisabledBanksRules = [
         Entity::DISABLED_BANKS => 'sometimes|array'
     ];
@@ -18,31 +17,33 @@ class Validator extends Base\Validator
     ];
 
     protected static $setMethodsRules = [
-        Entity::DISABLED_BANKS => 'sometimes|array',
-        Entity::NETBANKING     => 'sometimes|boolean',
-        Entity::AMEX           => 'sometimes|boolean',
-        Entity::PAYTM          => 'sometimes|boolean',
-        Entity::PAYZAPP        => 'sometimes|boolean',
-        Entity::PAYUMONEY      => 'sometimes|boolean',
-        Entity::AIRTELMONEY    => 'sometimes|boolean',
-        Entity::AMAZONPAY      => 'sometimes|boolean',
-        Entity::OPENWALLET     => 'sometimes|boolean',
-        Entity::OLAMONEY       => 'sometimes|boolean',
-        Entity::PHONEPE        => 'sometimes|boolean',
-        Entity::MOBIKWIK       => 'sometimes|boolean',
-        Entity::FREECHARGE     => 'sometimes|boolean',
-        Entity::JIOMONEY       => 'sometimes|boolean',
-        Entity::SBIBUDDY       => 'sometimes|boolean',
-        Entity::EMI            => 'sometimes|boolean',
-        Entity::CREDIT_CARD    => 'sometimes|boolean',
-        Entity::DEBIT_CARD     => 'sometimes|boolean',
-        Entity::UPI            => 'sometimes|boolean',
-        Entity::AEPS           => 'sometimes|boolean',
-        Entity::EMANDATE       => 'sometimes|boolean',
-        Entity::MPESA          => 'sometimes|boolean',
-        Entity::BANK_TRANSFER  => 'sometimes|boolean',
-        Entity::CARDLESS_EMI   => 'sometimes|boolean',
-        Entity::CARD_NETWORKS  => 'sometimes|array|custom',
+        Entity::ENABLED_BANKS      => 'sometimes|array',
+        Entity::DISABLED_BANKS     => 'sometimes|array',
+        Entity::NETBANKING         => 'sometimes|boolean',
+        Entity::AMEX               => 'sometimes|boolean',
+        Entity::PAYTM              => 'sometimes|boolean',
+        Entity::PAYZAPP            => 'sometimes|boolean',
+        Entity::PAYUMONEY          => 'sometimes|boolean',
+        Entity::AIRTELMONEY        => 'sometimes|boolean',
+        Entity::AMAZONPAY          => 'sometimes|boolean',
+        Entity::OPENWALLET         => 'sometimes|boolean',
+        Entity::OLAMONEY           => 'sometimes|boolean',
+        Entity::PHONEPE            => 'sometimes|boolean',
+        Entity::MOBIKWIK           => 'sometimes|boolean',
+        Entity::FREECHARGE         => 'sometimes|boolean',
+        Entity::JIOMONEY           => 'sometimes|boolean',
+        Entity::SBIBUDDY           => 'sometimes|boolean',
+        Entity::EMI                => 'sometimes|boolean',
+        Entity::CREDIT_CARD        => 'sometimes|boolean',
+        Entity::DEBIT_CARD         => 'sometimes|boolean',
+        Entity::UPI                => 'sometimes|boolean',
+        Entity::AEPS               => 'sometimes|boolean',
+        Entity::EMANDATE           => 'sometimes|boolean',
+        Entity::MPESA              => 'sometimes|boolean',
+        Entity::BANK_TRANSFER      => 'sometimes|boolean',
+        Entity::CARDLESS_EMI       => 'sometimes|boolean',
+        Entity::CARD_NETWORKS      => 'sometimes|array',
+        Entity::CARD_NETWORKS.'.*' => 'sometimes|boolean'
     ];
 
     protected static $setMethodsValidators = [
@@ -68,19 +69,6 @@ class Validator extends Base\Validator
     protected function validateMethods($attribute, $methods, $parameters)
     {
         $this->validateInput('set_methods', $methods);
-    }
-
-    protected function validateCardNetworks($attribute, $networks, $parameters)
-    {
-        foreach ($networks as $network => $value)
-        {
-            if (($value !== 1) and
-                ($value !== 0))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Not a boolean value'. $network .' '. $value);
-            }
-        }
     }
 
     protected function validateDisabledBanks(array $input)

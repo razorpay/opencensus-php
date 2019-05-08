@@ -191,30 +191,40 @@ class Gateway extends Mindgate\Gateway
 
             $gatewayPayment = $gatewayPayment ?? null;
 
-            switch ($errorCode)
+            // In case of php run time exceptions $errorCode may be 0 and
+            // it will execute the first case of following switch case and not the default case
+            if (empty($code) === true)
             {
-                case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_FTA_REQUEST_INVALID', $input);
-                    break;
+                $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                    'RZP_PAYOUT_UNKNOWN_ERROR',
+                    $input,
+                    Status::PENDING);
+            }
+            else {
+                switch ($errorCode) {
+                    case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                            'RZP_FTA_REQUEST_INVALID', $input);
+                        break;
 
-                case ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_REQUEST_ENCRYPTION_FAILURE', $input);
-                    break;
+                    case ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                            'RZP_REQUEST_ENCRYPTION_FAILURE', $input);
+                        break;
 
-                case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_REQUEST_DECRYPTION_FAILED',
-                                                                                    $input,
-                                                                                    Status::PENDING);
-                    break;
+                    case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                            'RZP_REQUEST_DECRYPTION_FAILED',
+                            $input,
+                            Status::PENDING);
+                        break;
 
-                default:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_PAYOUT_UNKNOWN_ERROR',
-                                                                                    $input,
-                                                                                    Status::PENDING);
+                    default:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                            'RZP_PAYOUT_UNKNOWN_ERROR',
+                            $input,
+                            Status::PENDING);
+                }
             }
         }
 
@@ -319,32 +329,44 @@ class Gateway extends Mindgate\Gateway
 
             $gatewayPayment = $gatewayPayment ?? null;
 
-            switch ($code)
+            // In case of php run time exceptions $errorCode may be 0 and
+            // it will execute the first case of following switch case and not the default case
+            if (empty($code) === true)
             {
-                case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_FTA_REQUEST_INVALID',
-                                                                                   $input);
-                    break;
+                $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                    'RZP_PAYOUT_UNKNOWN_ERROR',
+                    $input,
+                    Status::PENDING);
+            }
+            else
+            {
+                switch ($code)
+                {
+                    case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                       'RZP_FTA_REQUEST_INVALID',
+                                                                                       $input);
+                        break;
 
-                case ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_REQUEST_ENCRYPTION_FAILURE',
-                                                                                   $input);
-                    break;
+                    case ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                       'RZP_REQUEST_ENCRYPTION_FAILURE',
+                                                                                       $input);
+                        break;
 
-                case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_REQUEST_DECRYPTION_FAILED',
-                                                                                   $input,
-                                                                                   Status::PENDING);
-                    break;
+                    case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                       'RZP_REQUEST_DECRYPTION_FAILED',
+                                                                                       $input,
+                                                                                       Status::PENDING);
+                        break;
 
-                default:
-                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
-                                                                                   'RZP_PAYOUT_UNKNOWN_ERROR',
-                                                                                   $input,
-                                                                                   Status::PENDING);
+                    default:
+                        $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                       'RZP_PAYOUT_UNKNOWN_ERROR',
+                                                                                       $input,
+                                                                                       Status::PENDING);
+                }
             }
         }
 

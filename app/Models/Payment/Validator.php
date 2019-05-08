@@ -75,7 +75,7 @@ class Validator extends Base\Validator
         'test_success'                  => 'sometimes|boolean',
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
-        'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
+        'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,5760|filled',
         'auth_type'                     => 'sometimes_if:method,emandate,card,emi|string|max:20|filled',
         'preferred_auth'                => 'sometimes_if:method,card,emi|array|max:3|filled',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
@@ -499,14 +499,22 @@ class Validator extends Base\Validator
 
         $receiverType = null;
 
+        // No limit on amount for payments of method defined in Method::$methodsWithoutAmountValidation
+        if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
+        {
+            return;
+        }
+
         if (isset($input[Entity::RECEIVER]) === true)
         {
             $receiverType = $input[Entity::RECEIVER]['type'];
         }
 
-        if ($method !== Payment\Method::EMANDATE)
+        // The payments received on these receivers are push based. We can't really control after
+        // we already received a payments. So removing amount validation check on it
+        if (empty($receiverType) === false)
         {
-            $this->validateInputValues('min_amount_check', $input);
+            return;
         }
 
         if (($method === Payment\Method::WALLET) and
@@ -525,17 +533,9 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        // No limit on amount for payments of method defined in Method::$methodsWithoutAmountValidation
-        if (in_array($method, Method::$methodsWithoutAmountValidation, true) === true)
+        if ($method !== Payment\Method::EMANDATE)
         {
-            return;
-        }
-
-        // The payments received on these receivers are push based. We can't really control after
-        // we already received a payments. So removing amount validation check on it
-        if (empty($receiverType) === false)
-        {
-            return;
+            $this->validateInputValues('min_amount_check', $input);
         }
 
         if ($method === Payment\Method::UPI)

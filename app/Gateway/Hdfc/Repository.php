@@ -512,7 +512,7 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function retrieveCapturedOrAcceptedCaptureFailuresOrFail($paymentId)
+    public function retrieveCapturedOrAcceptedCaptureFailures($paymentId)
     {
         $payment = $this->newQuery()
                         ->where('payment_id', '=', $paymentId)
@@ -530,7 +530,7 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $paymentId)
                     ->where('status', '=', Payment\Status::CAPTURE_FAILED)
                     ->whereIn('error_code2', $errorCodes)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function retrieveCapturedOrAcceptedCaptureError($paymentId)

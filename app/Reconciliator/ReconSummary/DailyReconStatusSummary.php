@@ -15,11 +15,12 @@ class DailyReconStatusSummary extends Base\Core
     use FileHandlerTrait;
 
     protected static $rules = [
-        Constants::FROM          => 'sometimes|epoch',
-        Constants::TO            => 'sometimes|epoch',
-        Constants::EMAILS        => 'sometimes',
-        Constants::EMAILS . '.*' => 'sometimes|email',
-        Constants::ATTACH        => 'sometimes|bool',
+        Constants::FROM                 => 'sometimes|epoch',
+        Constants::TO                   => 'sometimes|epoch',
+        Constants::EMAILS               => 'sometimes',
+        Constants::EMAILS . '.*'        => 'sometimes|email',
+        Constants::UNRECON_DATA_FILE    => 'sometimes|bool',
+        Constants::RECON_SUMMARY_FILE   => 'sometimes|bool',
     ];
 
     public function generateReconSummary(array $input = [])
@@ -35,7 +36,8 @@ class DailyReconStatusSummary extends Base\Core
         $summary = $this->getFormattedSummary(
             $inputParams[Constants::FROM],
             $inputParams[Constants::TO],
-            $inputParams[Constants::ATTACH]
+            $inputParams[Constants::UNRECON_DATA_FILE],
+            $inputParams[Constants::RECON_SUMMARY_FILE]
         );
 
         $reconSummaryMail = new ReconSummarymail(
@@ -52,9 +54,11 @@ class DailyReconStatusSummary extends Base\Core
         return ['success' => true];
     }
 
-    protected function getFormattedSummary(int $from, int $to, bool $attach): array
+    protected function getFormattedSummary(int $from, int $to, bool $attachUnreconFile, bool $attachReconSummaryFile): array
     {
         $data = [];
+
+        $file = [];
 
         foreach (Constants::ENTITIES as $entity)
         {
@@ -62,13 +66,42 @@ class DailyReconStatusSummary extends Base\Core
 
             $data[$entity]['summary'] = (new $entityClass)->getReconStatusSummary($from, $to);
 
-            if ($attach === true)
+            if ($attachUnreconFile === true)
             {
                 $data[$entity]['unreconciled_data_file'] = (new $entityClass)->getUnreconciledDataFile($from, $to);
+            }
+
+            if ($attachReconSummaryFile === true)
+            {
+                $reconSummaryData = $data[$entity]['summary'];
+
+                $data[$entity]['recon_summary_file'] = $this->getReconSummaryFile($reconSummaryData, $entity);
             }
         }
 
         return $data;
+    }
+
+    protected function getReconSummaryFile($reconSummaryData, $entity) : array
+    {
+        $fileContent = [];
+
+        foreach ($reconSummaryData as $date => $rows)
+        {
+            foreach ($rows as $row)
+            {
+                // We don't want to include metadata rows, so ignore such rows
+                if ($row['gateway'] !== 'All')
+                {
+                    $fileContent[] = $row;
+                }
+            }
+        }
+
+        return  [
+            'url'  => $this->createExcelFile($fileContent, $entity . ' Recon Summary','files/settlement'),
+            'name' => $entity . ' Recon Summary.xlsx'
+        ];
     }
 
     protected function setInputParams(array $input): array
@@ -86,7 +119,9 @@ class DailyReconStatusSummary extends Base\Core
                                     $input[Constants::TO] :
                                     Carbon::today(Timezone::IST)->getTimestamp(),
 
-            Constants::ATTACH => boolval($input[Constants::ATTACH] ?? false)
+            Constants::UNRECON_DATA_FILE  => boolval($input[Constants::UNRECON_DATA_FILE] ?? false),
+
+            Constants::RECON_SUMMARY_FILE => boolval($input[Constants::RECON_SUMMARY_FILE] ?? true)
         ];
 
         return $input;

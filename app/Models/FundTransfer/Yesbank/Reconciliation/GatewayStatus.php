@@ -51,7 +51,7 @@ class GatewayStatus extends BaseStatus
     const U43 = 'U43'; const U44 = 'U44'; const U45 = 'U45'; const U46 = 'U46'; const U47 = 'U47'; const U48 = 'U48';
     const U49 = 'U49'; const U50 = 'U50'; const U51 = 'U51'; const U52 = 'U52'; const U53 = 'U53'; const U54 = 'U54';
     const U66 = 'U66'; const U67 = 'U67'; const U68 = 'U68'; const U69 = 'U69'; const U70 = 'U70'; const U77 = 'U77';
-    const U78 = 'U78'; const OC = 'OC'; const OD = 'OD'; const NC = 'NC'; const ND = 'ND'; const DT = 'DT';
+    const U78 = 'U78'; const U88 = 'U88'; const OC = 'OC'; const OD = 'OD'; const NC = 'NC'; const ND = 'ND'; const DT = 'DT';
     const EXT_RSP9001 = 'EXT_RSP9001'; const EXT_RSP9002 = 'EXT_RSP9002'; const EXT_RSP9003 = 'EXT_RSP9003';
     const EXT_RSP9004 = 'EXT_RSP9004'; const EXT_RSP9005 = 'EXT_RSP9005'; const EXT_RSP9006 = 'EXT_RSP9006';
     const EXT_RSP9007 = 'EXT_RSP9007'; const EXT_RSP9010 = 'EXT_RSP9010'; const EXT_RSP9011 = 'EXT_RSP9011';
@@ -254,6 +254,7 @@ class GatewayStatus extends BaseStatus
         self::U69                               => 'Payout failed. Contact support for help.',
         self::U70                               => 'Payout failed. Contact support for help.',
         self::U77                               => 'Payout failed. Contact support for help.',
+        self::U88                               => 'Payout failed. Contact support for help.',
         self::U78                               => "Contact's bank systems are down. Try again later.",
         self::OC                                => 'Payout failed. Contact support for help.',
         self::OD                                => 'Payout failed. Contact support for help.',
@@ -494,6 +495,7 @@ class GatewayStatus extends BaseStatus
         self::U70                               => 'Received Late Response',
         self::U77                               => 'Merchant blocked',
         self::U78                               => "Beneficiary bank offline",
+        self::U88                               => "Connection timeout in reqpay credit",
         self::OC                                => 'Original Credit Not Found',
         self::OD                                => 'Original Debit Not Found',
         self::NC                                => 'Credit Not Done',

@@ -63,6 +63,7 @@ class Constants
             self::SCBL,
             self::SBI,
             self::CITI,
+            self::BOB,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -162,6 +163,7 @@ class Constants
             self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com'],
             // todo: Add the recepients to the bank group
             self::CITI     => ['citibank.emi@razorpay.com'],
+            self::BOB      => ['bob.cc.emi@razorpay.com'],
         ],
 
         Type::REFUND_FAILED => [

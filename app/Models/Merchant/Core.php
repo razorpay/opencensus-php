@@ -1446,6 +1446,25 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity $partner
+     *
+     * @return PublicCollection
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function fetchActivatedSubMerchantsForPartner(Entity $partner): Base\PublicCollection
+    {
+        $appIds = $this->getPartnerApplicationIds($partner);
+
+        return $this->repo
+                    ->merchant
+                    ->fetchSubmerchantsByAppIds($appIds,
+                        [
+                            Detail\Entity::ACTIVATION_STATUS => Entity::ACTIVATED,
+                        ]);
+    }
+
+    /**
      * Fetch the list of all merchants the submerchant is associated with
      *
      * @param string $submerchantId

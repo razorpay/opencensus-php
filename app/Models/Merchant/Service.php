@@ -31,6 +31,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
@@ -1250,6 +1251,34 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updatePaymentMethods($merchantId, $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantMethods = (new Methods\Core)->getPaymentMethods($merchant);
+
+        $disabledBanks = $merchantMethods->getDisabledBanks();
+
+        if (isset($input[Methods\Entity::DISABLED_BANKS]) === true)
+        {
+            $inputBanks = $input[Methods\Entity::DISABLED_BANKS];
+
+            $disabledBanks = array_unique(array_merge($disabledBanks, $inputBanks));
+        }
+        else if (isset($input[Methods\Entity::ENABLED_BANKS]) === true)
+        {
+            $inputBanks = $input[Methods\Entity::ENABLED_BANKS];
+
+            $disabledBanks = array_unique(array_diff($disabledBanks, $inputBanks));
+
+            unset($input[Methods\Entity::ENABLED_BANKS]);
+        }
+
+        $input[Methods\Entity::DISABLED_BANKS] = $disabledBanks;
+
+        return (new Methods\Core)->setPaymentMethods($merchant, $input);
+    }
+
     public function updateMethodsForMultipleMerchants($input)
     {
         $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
@@ -1268,7 +1297,7 @@ class Service extends Base\Service
             {
                 $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
                 {
-                    $this->setPaymentMethods($merchantId, $input['methods']);
+                    $this->updatePaymentMethods($merchantId, $input['methods']);
                 });
 
                 $successCount++;

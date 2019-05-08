@@ -337,4 +337,10 @@ class Fields
     const PAYMENT_ID     = 'paymentid';
 
     const AUTH_RESP_CODE = 'authRespCode';
+
+    const STATUS         = 'status';
+
+    const AMOUNT_FULL    = 'amount';
+
+    const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
 }

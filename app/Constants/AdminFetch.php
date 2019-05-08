@@ -2008,7 +2008,11 @@ class AdminFetch
                 'entity_type' => [
                     Fetch::LABEL  => 'Entity Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => ['payment'],
+                    Fetch::VALUES => [
+                        'payment',
+                        'subscription',
+                        'virtual_account',
+                    ],
                 ],
             ],
 
@@ -2089,6 +2093,12 @@ class AdminFetch
                         Commission\Status::REFUNDED,
                     ],
                 ],
+            ],
+            Entity::MERCHANT_PROMOTION => [
+                'promotion_id'  => [
+                    Fetch::LABEL => 'Promotion Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ]
             ],
         ];
 

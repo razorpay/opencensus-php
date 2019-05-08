@@ -260,7 +260,7 @@ class ErrorCodes
             return self::$errorCodeMap[$code];
         }
 
-        return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+        return ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
     }
 
     public static function getErrorDesc($code = null)

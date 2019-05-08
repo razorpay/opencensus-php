@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING        = 'netbanking';
     const AMEX              = 'amex';
     const DISABLED_BANKS    = 'disabled_banks';
+    const ENABLED_BANKS     = 'enabled_banks';
     const BANKS             = 'banks';
     const MOBIKWIK          = 'mobikwik';
     const OLAMONEY          = 'olamoney';
