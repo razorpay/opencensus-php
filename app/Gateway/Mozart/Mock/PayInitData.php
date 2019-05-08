@@ -45,8 +45,6 @@ class PayInitData extends Base\Mock\Server
 
     public function wallet_phonepe($entities)
     {
-        $paymentId = $entities['payment']['id'];
-
         $this->gateway = $entities['payment']['gateway'];
 
         $url = $this->route->getUrlWithPublicAuth(
@@ -83,7 +81,6 @@ class PayInitData extends Base\Mock\Server
                     'url' => $url,
                 ]
             ],
-
             'success' => true
         ];
 
