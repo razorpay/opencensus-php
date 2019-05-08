@@ -153,7 +153,7 @@
                     _hsq.push(['identify', data.data]);
 
                     _hsq.push(['trackEvent', {
-                        id: 'UPDATING_PROPERTY',
+                        id: 'UPDATE_CONTACT_PROPERTY',
                     }]);
                     break;
                 }

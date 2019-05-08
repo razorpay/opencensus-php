@@ -433,14 +433,12 @@ app
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
         }
-        var merchantData = $scope.signup.merchantData,
-          details = $scope.signup.details,
-          payload = {
-            method: 'post',
-            url: '/user/pre_signup',
-            transformRequest: transformRequestAsFormPost,
-            data: merchantData,
-          };
+        var payload = {
+          method: 'post',
+          url: '/user/pre_signup',
+          transformRequest: transformRequestAsFormPost,
+          data: $scope.signup.merchantData,
+        };
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
@@ -454,6 +452,27 @@ app
             window.ga &&
               window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
 
+            var merchantData = $scope.signup.merchantData,
+              details = $scope.signup.details;
+
+            window.trackHubs({
+              name: 'update_property',
+              data: {
+                business_type: details.business_type[merchantData.business_type]
+                  ? details.business_type[merchantData.business_type].name
+                  : '',
+                transaction_volume:
+                  details.transaction_volume[merchantData.transaction_volume],
+                department: details.department[merchantData.department]
+                  ? details.department[merchantData.department].name
+                  : '',
+                business_name: merchantData.business_name,
+                business_website: merchantData.business_website,
+                contact_mobile: merchantData.contact_mobile,
+                contact_name: merchantData.contact_name,
+              },
+            });
+
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
@@ -462,22 +481,6 @@ app
               } else {
                 goToVerification();
               }
-            });
-
-            window.trackHubs({
-              name: 'update_property',
-              data: {
-                email: $scope.signup.data.email,
-                business_type:
-                  details.business_type[merchantData.business_type].name,
-                transaction_volume:
-                  details.transaction_volume[merchantData.transaction_volume],
-                department: details.department[merchantData.department].name,
-                business_name: merchantData.business_name,
-                business_website: merchantData.business_website,
-                contact_mobile: merchantData.contact_mobile,
-                contact_name: merchantData.contact_name,
-              },
             });
             // else
           } else {
@@ -538,6 +541,51 @@ app
               $scope.alerts.addAlert('danger', value);
             });
           }
+
+          var merchantData = $scope.signup.merchantData,
+            details = $scope.signup.details,
+            department = null,
+            business_type = null,
+            transaction_volume =
+              details.transaction_volume[merchantData.transaction_volume],
+            business_type_list = Object.keys(details.business_type),
+            department_list = Object.keys(details.department);
+
+          for (var key in business_type_list) {
+            idx = business_type_list[key];
+
+            if (
+              details.business_type[idx].value === merchantData.business_type
+            ) {
+              business_type = details.business_type[idx].name;
+
+              break;
+            }
+          }
+
+          for (var key in department_list) {
+            idx = department_list[key];
+
+            if (details.department[idx].value === merchantData.department) {
+              department = details.department[idx].name;
+
+              break;
+            }
+          }
+
+          window.trackHubs({
+            name: 'update_property',
+            data: {
+              business_type: business_type,
+              transaction_volume: transaction_volume,
+              department: department,
+              business_name: merchantData.business_name,
+              business_website: merchantData.business_website,
+              contact_mobile: merchantData.contact_mobile,
+              contact_name: merchantData.contact_name,
+            },
+          });
+
           $('.business-type-substep').scrollTop(0);
           $timeout(function() {
             $scope.signup.showMore = false;

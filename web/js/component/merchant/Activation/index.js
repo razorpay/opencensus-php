@@ -13,7 +13,7 @@ import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import { trackFb } from 'rzp/utils/googleAnalytics';
+import { trackFb, trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -485,6 +485,14 @@ export default class ActivationWizard extends React.Component {
         }
       } else {
         cb && cb(true);
+
+        const hbsData = reqData;
+
+        if (reqData.business_name) {
+          hbsData.l2_business_name = reqData.business_name;
+        }
+
+        trackhubsContactUpdate(hbsData);
 
         const latestDirty = { ...this.state.dirty };
         Object.keys(savingDataOfWhichTab).forEach(key => {
