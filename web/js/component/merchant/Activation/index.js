@@ -7,7 +7,7 @@ import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
+import { classList, addPrefixToObjectKeys } from 'common/util';
 import { activationDuration } from 'common/data';
 import {
   addDropShield,
@@ -23,6 +23,7 @@ import mainFormTabsContent, {
 import accountFormTabsContent, {
   accountFormTabs,
   accountFormFieldNamesMeta,
+  BUSINESS_TYPE_OPTIONS,
 } from './AccountActivationFormMap';
 
 import * as trackers from 'merchant/containers/Activation/ga_new';
@@ -186,6 +187,10 @@ export default class ActivationWizard extends React.Component {
 
         a.onChange = (file, progressTracker) => {
           return props.saveFile(a.name, file, progressTracker).then(() => {
+            updateHubSpotContactsProperties({
+              [a.name]: true,
+            });
+
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
           });
         };
@@ -486,13 +491,7 @@ export default class ActivationWizard extends React.Component {
       } else {
         cb && cb(true);
 
-        const hbsData = reqData;
-
-        if (reqData.business_name) {
-          hbsData.l2_business_name = reqData.business_name;
-        }
-
-        trackhubsContactUpdate(hbsData);
+        updateHubSpotContactsProperties(reqData);
 
         const latestDirty = { ...this.state.dirty };
         Object.keys(savingDataOfWhichTab).forEach(key => {
@@ -1396,4 +1395,28 @@ class SubmitForm extends React.Component {
       </div>
     );
   }
+}
+
+function updateHubSpotContactsProperties(data) {
+  const hbsData = addPrefixToObjectKeys('l2_', data);
+
+  const trackData = {
+    ...hbsData,
+  };
+
+  if (data.business_type) {
+    trackData.l2_business_type = (
+      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
+    ).label;
+  }
+
+  if (data.promoter_pan) {
+    trackData.l2_promoter_pan = !!trackData.l2_promoter_pan;
+  }
+
+  if (data.gstin) {
+    trackData.l2_gstin = !!trackData;
+  }
+
+  trackhubsContactUpdate(trackData);
 }
