@@ -251,6 +251,8 @@ abstract class Processor extends Base\Core
 
         if ($this->useSharedVirtualAccount($entity) === true)
         {
+            $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_PAYMENT_REROUTED_TO_SHARED);
+
             $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
 
             return false;
