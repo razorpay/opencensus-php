@@ -24,7 +24,7 @@ class UpiAirtelGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->gateway = 'mozart';
+        $this->gateway = 'upi_airtel';
 
         $this->setMockGatewayTrue();
 

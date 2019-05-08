@@ -20,12 +20,4 @@ class Repository extends Base\Repository
                     ->get()
                     ->keyBy(Entity::ACTION);
     }
-
-    public function findByPaymentIdAndActionsOrFail($paymentId, $actions)
-    {
-        return $this->newQuery()
-            ->where('payment_id', '=', $paymentId)
-            ->whereIn('action', $actions)
-            ->firstOrFail();
-    }
 }

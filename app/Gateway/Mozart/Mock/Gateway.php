@@ -24,11 +24,4 @@ class Gateway extends Mozart\Gateway
 
         return $this->jsonToArray($response->body, true);
     }
-
-    public function authorize(array $input)
-    {
-        $request = parent::authorize($input);
-
-        return $request;
-    }
 }

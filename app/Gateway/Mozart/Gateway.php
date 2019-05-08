@@ -74,6 +74,8 @@ class Gateway extends Base\Gateway
 
         $gateway = $input['gateway'];
 
+        $gatewayName = $input['payment']['gateway'];
+
         $traceRes = $this->getRedactedData($gateway);
 
         $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::PAYMENT_CALLBACK_REQUEST );
@@ -107,7 +109,7 @@ class Gateway extends Base\Gateway
 
         $this->runCallbackValidationsIfApplicable($input, $response);
 
-        if ($this->immediateVerifyApplicable($input['payment']['gateway']) === true)
+        if ($this->immediateVerifyApplicable($gatewayName) === true)
         {
             $this->verifyCallback($input);
         }
@@ -315,47 +317,6 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function verifyNonExistentCase($verify)
-    {
-        $payment = $verify->payment;
-        $input = $verify->input;
-
-        $verify->gatewaySuccess = false;
-
-        if (($payment === null) and ($input['payment']['status'] === 'failed'))
-        {
-            $verify->apiSuccess = false;
-        }
-        else if (($payment === null) or ($input['payment']['status'] !== Payment\Status::AUTHORIZED))
-        {
-            $verify->apiSuccess = false;
-        }
-        else if ($input['payment']['status'] === Payment\Status::AUTHORIZED)
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = true;
-        }
-    }
-
-    protected function verifyPaymentWithGatewayResponse($verify)
-    {
-        $payment = $verify->payment;
-
-        $input = $verify->input;
-
-        $verify->gatewaySuccess = true;
-
-        if ($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED)
-        {
-            $verify->status     = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = false;
-        }
-        else
-        {
-            $verify->apiSuccess = true;
-        }
-    }
-
     protected function getMozartRequestArray($input)
     {
         $input['terminal'] = $input['terminal']->toArrayWithPassword();
@@ -367,14 +328,6 @@ class Gateway extends Base\Gateway
         if ($prevStepName != null)
         {
             $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
-        }
-
-        // temporary change
-        if (($this->action === Action::VERIFY) and
-            ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB) and
-            (isset($input['gateway'][$prevStepName]['bank_payment_id']) === false))
-        {
-            $input['gateway'][$prevStepName]['bank_payment_id'] = '0';
         }
 
         $content['entities'] = $input;
@@ -409,7 +362,6 @@ class Gateway extends Base\Gateway
 
     protected function getPreviousStepName($gateway)
     {
-
         $previousActionForStep = [
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,
