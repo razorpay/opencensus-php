@@ -88,6 +88,9 @@ class Fields
     const GATEWAY_REFERENCE_ID          = 'gatewayReferenceId';
     const MERCHANT_PAYLOAD_SIGNATURE    = 'merchantPayloadSignature';
     const COLLECT_REQ_EXPIRY_MINS       = 'collectRequestExpiryMinutes';
+    const CUSTOME_RESPONSE              = 'customResponse';
+    const IS_VERIFIED_PAYEE             = 'isVerifiedPayee';
+    const IS_MARKED_SPAM                = 'isMarkedSpam';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';
@@ -97,4 +100,9 @@ class Fields
     const P2P_PAY                       = 'P2P_PAY';
     const SCAN_PAY                      = 'SCAN_PAY';
     const INTENT_PAY                    = 'INTENT_PAY';
+
+    // ------------------- CALLBACK FIELDS ------------- //
+    const HEADERS                       = 'headers';
+    const X_MERCHANT_PAYLOAD_SIGNATURE  = 'x-merchant-payload-signature';
+    const PAYEE_MOBILE_NUMBER           = 'payeeMobileNumber';
 }

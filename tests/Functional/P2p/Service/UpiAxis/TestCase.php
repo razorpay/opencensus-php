@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis;
 
+use Carbon\Carbon;
 use RZP\Tests\P2p\Service;
+use RZP\Gateway\P2p\Upi\Axis\Mock\Sdk;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class TestCase extends Service\TestCase
@@ -27,4 +29,9 @@ class TestCase extends Service\TestCase
             'vpa'           => Fixtures::CUSTOMER_2_VPA_1_AXIS,
         ],
     ];
+
+    protected function mockSdk($gateway = null): Sdk
+    {
+        return parent::mockSdk($gateway);
+    }
 }

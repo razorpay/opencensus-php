@@ -37,9 +37,19 @@ class Core extends Base\Core
 
     public function checkLocalAvailability(string $username): bool
     {
-        $vpa = $this->repo->fetchByUsernameHandle($username, $this->context()->handleCode(), true);
+        $vpa = $this->repo->findByUsernameHandle($username, $this->context()->handleCode(), true);
 
         return ($vpa instanceof Entity);
+    }
+
+    public function fetchByUsernameHandle(array $input)
+    {
+        return $this->repo->fetchByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE]);
+    }
+
+    public function findByUsernameHandle(array $input)
+    {
+        return $this->repo->findByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE]);
     }
 
     public function create(array $input): Entity
@@ -57,7 +67,7 @@ class Core extends Base\Core
 
     public function handleBeneficiary(array $input)
     {
-        $vpa = $this->repo->fetchByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE], true);
+        $vpa = $this->repo->findByUsernameHandle($input[Entity::USERNAME], $input[Entity::HANDLE], true);
 
         if ($vpa instanceof Entity)
         {

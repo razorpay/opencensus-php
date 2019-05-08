@@ -9,7 +9,6 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
 use RZP\Models\P2p\Device;
 use RZP\Constants\Timezone;
-use RZP\Gateway\P2p\Upi\Axis\Sdk;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Exception\P2p\GatewayErrorException;
 
@@ -38,7 +37,13 @@ class Gateway extends Upi\Gateway
     {
         $rsa = new RSA();
 
-        $rsa->loadKey($this->config['bank_public_key']);
+        $rsa->loadKey($this->config['bank_public_key'], RSA::PUBLIC_FORMAT_PKCS1);
+
+        $rsa->setHash('sha256');
+
+        $rsa->setMGFHash('sha256');
+
+        $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
 
         return $rsa;
     }
@@ -72,6 +77,23 @@ class Gateway extends Upi\Gateway
         }
 
         return $this->inputSdk();
+    }
+
+    protected function handleSdkCallback(): ArrayBag
+    {
+        $action = $this->input->get(Fields::CALLBACK)->get(Fields::ACTION);
+
+        $response = new Response();
+
+        $response->setActionMap($action, $this->actionMap[$action][Actions\Action::RESPONSE] ?? []);
+
+        $response->setVerifier($this->getMerchantVerifier());
+
+        $response->setContent($this->inputSdk());
+
+        $response->finish();
+
+        return $this->input->get(Fields::CALLBACK);
     }
 
     protected function handleGatewayResponseCode()
@@ -199,7 +221,7 @@ class Gateway extends Upi\Gateway
                 ]);
         }
 
-        $request->setActionMap($action, $this->actionMap[$action]);
+        $request->setActionMap($action, $this->actionMap[$action], $this->getRequestId());
 
         $request->setConfig($this->config);
 
@@ -210,7 +232,12 @@ class Gateway extends Upi\Gateway
     {
         $request = $s2sRequest->finish();
 
+        $entity = $this->getEntity();
+
         $this->trace->info(TraceCode::P2P_GATEWAY_REQUEST, [
+            'action'    => $this->action,
+            'entity'    => $entity,
+            'gateway'   => $this->gateway,
             'request'   => $request,
             'source'    => $s2sRequest->source(),
             'mock'      => $this->mock,
@@ -225,8 +252,12 @@ class Gateway extends Upi\Gateway
         $response = $s2sRequest->response($response);
 
         $this->trace->info(TraceCode::P2P_GATEWAY_RESPONSE, [
+            'action'    => $this->action,
+            'entity'    => $entity,
+            'gateway'   => $this->gateway,
             'response'  => $response,
             'source'    => $s2sRequest->source(),
+            'mock'      => $this->mock,
         ]);
 
         if ($this->isS2sFailure($response))
@@ -304,5 +335,12 @@ class Gateway extends Upi\Gateway
         }
 
         return $str;
+    }
+
+    protected function getEntity()
+    {
+        $action = strtr(static::class, ['RZP\Gateway\P2p\Upi\Axis\\' => '', 'Gateway' => '']);
+
+        return snake_case($action);
     }
 }

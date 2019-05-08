@@ -14,6 +14,7 @@ class ErrorMap
     const UNAUTHORIZED                                  = 'UNAUTHORIZED';
     const SESSION_EXPIRED                               = 'SESSION_EXPIRED';
     const INVALID_DATA                                  = 'INVALID_DATA';
+    const INVALID_SIGNATURE                             = 'INVALID_SIGNATURE';
 
     public static $errorMap = [
         self::NOT_AVAILABLE                             => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
@@ -23,6 +24,7 @@ class ErrorMap
         self::UNAUTHORIZED                              => ErrorCode::GATEWAY_ERROR_DEVICE_INVALID_TOKEN,
         self::SESSION_EXPIRED                           => ErrorCode::GATEWAY_ERROR_DEVICE_INVALID_TOKEN,
         self::INVALID_DATA                              => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+        self::INVALID_SIGNATURE                         => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
     ];
 
     public static $deemedErrors = [

@@ -143,6 +143,10 @@ class Entity extends Base\Entity
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
         Entity::CREATED_AT,
+        Entity::PAYER,
+        Entity::PAYEE,
+        Entity::BANK_ACCOUNT,
+        Entity::UPI,
     ];
 
     protected $defaults = [
@@ -336,7 +340,7 @@ class Entity extends Base\Entity
      */
     public function setInternalStatus(string $internalStatus)
     {
-        $this->setStatus(Status::map($internalStatus));
+        $this->setStatus($internalStatus);
 
         return $this->setAttribute(self::INTERNAL_STATUS, $internalStatus);
     }
@@ -403,6 +407,18 @@ class Entity extends Base\Entity
     public function setCompletedAt(int $completedAt)
     {
         return $this->setAttribute(self::COMPLETED_AT, $completedAt);
+    }
+
+    public function markCompleted()
+    {
+        $this->setInternalStatus(Status::COMPLETED);
+        $this->setAttribute(self::COMPLETED_AT, $this->freshTimestamp());
+    }
+
+    public function markInitiated()
+    {
+        $this->setInternalStatus(Status::INITIATED);
+        $this->setAttribute(self::INITIATED_AT, $this->freshTimestamp());
     }
 
     /***************** GETTERS *****************/
@@ -614,6 +630,26 @@ class Entity extends Base\Entity
     public function getCompletedAt()
     {
         return $this->getAttribute(self::COMPLETED_AT);
+    }
+
+    public function isCompleted(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::COMPLETED]);
+    }
+
+    public function isProcessing(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::INITIATED, Status::PENDING]);
+    }
+
+    public function isFailed(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::FAILED, Status::REJECTED, Status::EXPIRED]);
+    }
+
+    public function isCreated(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::CREATED]);
     }
 
     /***************** RELATIONS *****************/

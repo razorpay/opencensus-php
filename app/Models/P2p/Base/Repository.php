@@ -5,11 +5,14 @@ namespace RZP\Models\P2p\Base;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Error\P2p\ErrorCode;
+use RZP\Http\BasicAuth\Type;
 use RZP\Models\P2p\Base\Traits\ApplicationTrait;
 
 class Repository extends Base\Repository
 {
     use ApplicationTrait;
+
+    protected $merchantIdRequiredForMultipleFetch = false;
 
     public function getEntityObject()
     {
@@ -55,6 +58,25 @@ class Repository extends Base\Repository
     {
         $query = parent::newQuery();
 
+        $this->addCommonQueryParamMerchantId($query, null);
+
+        return $query;
+    }
+
+    protected function addCommonQueryParamMerchantId($query, $merchantId)
+    {
+        // If context is not set, we need to make
+        if ($this->context()->getContextType() === null)
+        {
+            $basicAuth = $this->app['basicauth']->getAuthType();
+
+            // For privilege auth, we don't need to initiate the context
+            if (in_array($basicAuth, [Type::PRIVILEGE_AUTH, Type::ADMIN_AUTH]))
+            {
+                return parent::addCommonQueryParamMerchantId($query, $merchantId);
+            }
+        }
+
         if ($query->getModel()->hasDevice())
         {
             if ($this->context()->isContextDevice() === false)
@@ -63,6 +85,16 @@ class Repository extends Base\Repository
             }
 
             $query->device($this->context()->getDevice());
+        }
+
+        if ($query->getModel()->hasCustomer())
+        {
+            if ($this->context()->isContextDevice() === false)
+            {
+                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_DEVICE_REQUIRED);
+            }
+
+            $query->customer($this->context()->getDevice()->customer);
         }
 
         if ($query->getModel()->hasMerchant())
@@ -79,7 +111,5 @@ class Repository extends Base\Repository
         {
             $query->handle($this->context()->getHandle());
         }
-
-        return $query;
     }
 }
