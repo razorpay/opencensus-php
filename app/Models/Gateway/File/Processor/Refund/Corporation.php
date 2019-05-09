@@ -52,7 +52,8 @@ class Corporation extends Base
                 $row['merchant']['billing_label'],
                 number_format($row['refund']['amount'] / 100, 2, '.', ''),
                 $refundDate,
-                'Refund initiated by Customer'
+                'Refund initiated by Customer',
+                $row['refund']['id']
             ];
 
             ++$count;
