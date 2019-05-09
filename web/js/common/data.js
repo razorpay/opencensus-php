@@ -267,3 +267,12 @@ export const publicFeature = {
     },
   },
 };
+
+// partner types
+export const partnerTypes = [
+  'fully_managed',
+  'aggregator',
+  'pure_platform',
+  'reseller',
+  'bank',
+];
