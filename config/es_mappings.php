@@ -30,6 +30,7 @@ return [
                     'tokenizer' => 'edge_ngram_tokenizer',
                     'filter'    => [
                         'lowercase',
+                        'en_stopwords',
                     ],
                 ],
 
@@ -56,6 +57,7 @@ return [
                     'filter'      => [
                         'standard',
                         'lowercase',
+                        'en_stopwords',
                     ],
                 ],
             ],
@@ -71,6 +73,10 @@ return [
                 ],
             ],
             'filter' => [
+                'en_stopwords' => [
+                    'type'      => 'stop',
+                    'stopwords' => '_english_',
+                ],
             ],
             'char_filter' => [
                 'punctuation_remap' => [
