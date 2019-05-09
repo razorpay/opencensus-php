@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { methods } from 'common/data';
+import { methods, cardSteps, authTypes, authGateway } from 'common/data';
 import { prevent, classList } from 'common/util';
 import moment from 'moment';
 import { PowerSelect, TypeAhead } from 'react-power-select';
@@ -218,6 +218,43 @@ export function SelectMethod(props) {
     </SelectField>
   );
 }
+
+export const SelectCardStep = props => {
+  return (
+    <SelectField name="cardstep" label="Step" {...props}>
+      {Object.keys(cardSteps).map((s, idx) => (
+        <option value={s} key={idx}>
+          {cardSteps[s]}
+        </option>
+      ))}
+    </SelectField>
+  );
+};
+
+export const SelectAuthType = props => {
+  return (
+    <SelectField name="authtype" label="Auth Type" {...props}>
+      {Object.keys(authTypes).map((at, idx) => (
+        <option value={at} key={idx}>
+          {authTypes[at]}
+        </option>
+      ))}
+    </SelectField>
+  );
+};
+
+export const SelectAuthenticationGateway = props => {
+  return (
+    <SelectField name="authgateway" label="Auth Gateway" {...props}>
+      <option value={null} />
+      {Object.keys(authGateway).map((ag, idx) => (
+        <option value={ag} key={idx}>
+          {authGateway[ag]}
+        </option>
+      ))}
+    </SelectField>
+  );
+};
 
 class SearchableSelect extends Component {
   static defaultProps = {
