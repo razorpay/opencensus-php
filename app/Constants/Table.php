@@ -79,6 +79,7 @@ class Table
     const MERCHANT_OFFER            = 'merchant_offer';
     const LINE_ITEM_TAX             = 'line_item_taxes';
     const DISPUTE_REASON            = 'dispute_reasons';
+    const MERCHANT_USER             = 'merchant_users';
     const MERCHANT_EMAIL            = 'merchant_emails';
     const VIRTUAL_ACCOUNT           = 'virtual_accounts';
     const MERCHANT_DETAIL           = 'merchant_details';

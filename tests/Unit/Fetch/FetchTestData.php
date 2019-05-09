@@ -420,6 +420,8 @@ return [
 
     E::STATEMENT => [],
 
+    E::MERCHANT_USER => [],
+
     E::P2P_DEVICE => [],
 
     E::P2P_DEVICE_TOKEN => [],

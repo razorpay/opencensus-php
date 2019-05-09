@@ -61,4 +61,25 @@ class Pivot extends Relations\Pivot
     {
         return (int) $this->attributes[self::UPDATED_AT];
     }
+
+    /**
+     * Need to handle this since this does not extend the usual public
+     * entity or Base/EloquentEx where merchant id param is handled
+     * for other Models. This flow throws error in RepositoryFetch function
+     * `addQueryParamMerchantId` if not handled here.
+     *
+     * @param $query
+     * @param $merchantId
+     */
+    public function scopeMerchantId($query, $merchantId)
+    {
+        $merchantIdColumn = $this->dbColumn(Common::MERCHANT_ID);
+
+        $query->where($merchantIdColumn, $merchantId);
+    }
+
+    protected function dbColumn($col)
+    {
+        return $this->getTable() . '.' . $col;
+    }
 }
