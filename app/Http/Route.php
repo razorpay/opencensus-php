@@ -504,6 +504,7 @@ final class Route
         'invoice_get_count'                        => ['get',      'invoices-count',                                 'InvoiceController@getInvoicesCount'                                ],
         'invoice_fetch_multiple'                   => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
         'invoice_update'                           => ['patch',    'invoices/{id}',                                  'InvoiceController@updateInvoice'                                   ],
+        'invoice_update_billing_period'            => ['patch',    'invoices/{id}/update_billing_period',            'InvoiceController@updateBillingPeriod'                             ],
         'invoice_issue'                            => ['post',     'invoices/{id}/issue',                            'InvoiceController@issueInvoice'                                    ],
         'invoice_delete'                           => ['delete',   'invoices/{id}',                                  'InvoiceController@deleteInvoice'                                   ],
         'invoice_add_line_items'                   => ['post',     'invoices/{id}/line_items',                       'InvoiceController@addLineItems'                                    ],
@@ -1639,6 +1640,7 @@ final class Route
         'commissions_get',
         'currency_fetch_all_proxy',
         'commissions_analytics',
+        'invoice_update_billing_period',
     ];
 
     // These will run on internal auth with the assurance
@@ -2632,6 +2634,7 @@ final class Route
             'subscription_payment_fetch_by_id',
             'entity_origin_create',
             'currency_fetch_all_proxy',
+            'invoice_update_billing_period',
         ],
 
         'kotak' => [

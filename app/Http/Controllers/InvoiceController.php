@@ -59,6 +59,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoice);
     }
 
+    public function updateBillingPeriod(string $id)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service()->updateBillingPeriod($id, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
     public function issueInvoice(string $id)
     {
         $invoice = $this->service()->issue($id);

@@ -203,6 +203,11 @@ class Validator extends Base\Validator
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
 
+    protected static $editBillingPeriodRules = [
+        Entity::BILLING_START            => 'filled|epoch',
+        Entity::BILLING_END              => 'filled|epoch',
+    ];
+
     protected static $editPaidRules = [
         Entity::NOTES               => 'sometimes|notes',
     ];
