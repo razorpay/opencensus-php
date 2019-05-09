@@ -140,10 +140,10 @@ export default function(state = initialState, action) {
       return set(
         state,
         'accounts',
-        state.accounts.map(e => {
-          if (e.id === action.payload.id) return action.payload;
+        state.accounts.map(acc => {
+          if (acc.id === action.payload.id) return action.payload;
 
-          return e;
+          return acc;
         })
       );
 
