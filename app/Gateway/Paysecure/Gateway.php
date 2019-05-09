@@ -145,7 +145,8 @@ class Gateway extends Base\Gateway
         }
 
         // Check payment status
-        if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE], [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
+        if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE],
+                [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
         {
             $traceData = [
                 'gateway'    => $this->gateway,
@@ -495,7 +496,8 @@ class Gateway extends Base\Gateway
                     'command'    => $action,
                 ],
                 null,
-                Action::AUTHENTICATE
+                Action::AUTHENTICATE,
+                true
             );
         }
     }
