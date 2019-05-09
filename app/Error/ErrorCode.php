@@ -10,6 +10,11 @@ class ErrorCode
      */
 
     /**
+    *   All Successful operation status are tracked using this error code
+    */
+    const SUCCESS                                                                   = 'SUCCESS';
+
+    /**
      * All internal un-explained and sudden errors are encapsulated
      * by the following error code.
      */
