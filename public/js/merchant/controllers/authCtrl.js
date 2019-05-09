@@ -268,6 +268,11 @@ app
       }
 
       $scope.createAccount = function($valid) {
+        window.rzpAnalytics({
+          name: 'facebook',
+          event: 'signup_start',
+        });
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -317,6 +322,11 @@ app
                 'Signup - Email Password',
                 'Click - Create Account (Success)'
               );
+
+            window.rzpAnalytics({
+              name: 'facebook',
+              event: 'signup_complete',
+            });
 
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {

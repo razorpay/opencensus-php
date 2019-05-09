@@ -11,7 +11,7 @@ const baseUrl = {
   disp: '/disputes/',
   acc: '/submerchants/',
   token: '/tokens/',
-  comm: '/commissions/',
+  comm: '/partners/earnings/transactional/',
   rvrsl: '/route/reversals/',
 };
 

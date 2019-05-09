@@ -5,17 +5,32 @@ $fee-breakup-bg = #EEF1F2
   height: 70px
   background-color: $fee-breakup-bg
   display: table
-  border-left: 2px solid $prime
+  border-left: 2px solid
   padding: 5px 0
-  &--item
+
+  /* types of fee breakup */
+  &.primary
+    border-left-color: $prime
+
+  &.warning
+    border-left-color: #F5C723;
+
+  &.danger
+    border-left-color: #EF7A88;
+  /* */
+
+  &--item,
+  &--add-symbol
     display: table-cell
     vertical-align: middle
-    padding-left: 10px
     position: relative
-    padding: 0 17px
+
+  &--item
+    padding: 0 10px
 
     &:first-child
       border-right: 1px solid $prime-27
+      padding-right: 25px
 
       &:before,
       &:after
@@ -35,3 +50,6 @@ $fee-breakup-bg = #EEF1F2
         top: calc(50% - 4px)
         border-width: 5px
         border-color: transparent transparent transparent $fee-breakup-bg
+
+    &:nth-child(2)
+      padding-left: 25px

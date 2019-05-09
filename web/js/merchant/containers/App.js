@@ -237,6 +237,12 @@ export default class App extends Component {
             dimension5: user.role, // Logged User Role
           },
         });
+
+        window.trackHubs({
+          name: 'identify',
+          id: user.id,
+          email: user.user.email,
+        });
       }
 
       return Promise.resolve({ data: user });

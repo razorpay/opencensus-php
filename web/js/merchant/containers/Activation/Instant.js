@@ -15,6 +15,7 @@ import { classList } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
+import { trackFb } from 'rzp/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
@@ -225,6 +226,8 @@ export default class ActivationWizard extends React.Component {
           this.props.showKYCDetailsModal();
         }
 
+        trackFb('activation_complete_success');
+
         return this.props.history.replace(`/`);
       })
       .catch(err => {
@@ -236,6 +239,8 @@ export default class ActivationWizard extends React.Component {
         }
 
         trackL1FormError();
+
+        trackFb('activation_complete_error');
 
         if (this.onActivationSuccess) {
           this.onActivationSuccess({ success: false });
@@ -326,6 +331,8 @@ export default class ActivationWizard extends React.Component {
 
   componentDidMount() {
     this.handleUIUpdate();
+
+    trackFb('activation_start');
   }
 
   componentDidUpdate() {

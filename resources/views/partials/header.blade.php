@@ -13,18 +13,63 @@
   <script src="https://wchat.freshchat.com/js/widget.js" async defer></script>
   <script src="https://cdn.razorpay.com/static/ticket-system/bundle.js" async defer></script>
   <script type="text/javascript">
-        _rzpAQ = [];
-        function emptyRzpAQ () {
-            if (typeof ga === 'undefined' || (_rzpAQ && _rzpAQ.length === 0)) return;
-            var q = [].concat(_rzpAQ);
-            _rzpAQ = [];
-            if (q.length > 0) {
-                for (var i = 0; i < q.length; i++) {
-                    window.rzpAnalytics(q[i]);
-                }
+        var _hsq = window._hsq = window._hsq || [];
+
+        _rzpAQ = []; // queue for ga
+        _rzpAQ_fbq = []; // queue for facebook pixel
+
+        function clearQueue(queue) {
+            for(var i=0; i < queue.length; i++) {
+                window.rzpAnalytics(queue[i]);
             }
         }
-        var _qChckr = setInterval(emptyRzpAQ, 500);
+
+        function emptyRzpAQ () {
+            if (typeof ga === 'undefined' ||  !_rzpAQ.length) return;
+
+            var q = [].concat(_rzpAQ);
+            _rzpAQ = [];
+            clearQueue(q);
+        }
+
+        function emptyRzpAQ_fbq () {
+            if (typeof analytics === 'undefined' || !_rzpAQ_fbq.length) return;
+
+            var q = [].concat(_rzpAQ_fbq);
+            _rzpAQ_fbq = [];
+            clearQueue(_rzpAQ_fbq);
+        }
+
+        function checkGa(data) {
+             // If ga is undefined, push data to _rzpAQ
+            if (typeof ga === 'undefined') {
+                _rzpAQ.push(data);
+                return false;
+            }
+
+            clearInterval(_qChckr);
+            emptyRzpAQ();
+
+            return true;
+        }
+
+        function checkAnalytics(data) {
+           // If analytics is undefined, push to _rzpAQ_fbq
+           if (typeof analytics === 'undefined') {
+                _rzpAQ_fbq.push(data);
+                return false;
+            } 
+
+            clearInterval(_fbqChckr);
+            emptyRzpAQ_fbq();
+
+            return true;
+        }
+
+
+        var _qChckr = setInterval(emptyRzpAQ, 500),
+            _fbqChckr = setInterval(emptyRzpAQ_fbq, 500);
+
         /**
          * Method to track Google Analytics
          * @param {Object} eventData Data of the event
@@ -32,23 +77,26 @@
         window.rzpAnalytics = function (data) {
             // If there's no data, don't track anything
             if (!data) return;
-
-            // If ga is undefined, push to queue
-            if (typeof ga === 'undefined') {
-                _rzpAQ.push(data);
-                return;
-            };
-
-            // `ga` exists now, empty the queue.
-            clearInterval(_qChckr);
-            emptyRzpAQ();
-
+            
             switch (data.name) {
-                case 'set_dimensions': // Set the dimensions
+                case 'set_dimensions': { // Set the dimensions
+                    if (!checkGa(data)) return;
+
                     ga('old.set', data.dimensions);
                     ga('set', data.dimensions);
+
                     break;
-                default:
+                }
+                case 'facebook': {
+                    if (!checkAnalytics(data)) return;
+                        
+                    analytics.track('fb', data.event, data.value);
+
+                   break;
+                }
+                default: {
+                    if (!checkGa(data)) return;
+
                     ga('old.send',
                         'event',
                         data.eventCategory || undefined,
@@ -63,6 +111,39 @@
                         data.eventLabel || undefined,
                         data.eventValue || undefined
                     )
+                    
+                    // Sending Ga events to hubspot
+                    var hsqData = {
+                        id: data.eventCategory + "__" + data.eventAction,
+                    };
+
+                    if (data.eventLabel) {
+                        hsqData.value = data.eventLabel;
+                        if (data.eventValue) {
+                            hsqData.value = data.eventLabel + "__" + data.eventValue;
+                        }
+                    };
+                    window.trackHubs(hsqData);
+                }
+            }
+        }
+
+        // Hubspot trackers
+        window.trackHubs = function(data) {
+            switch(data.name) {
+                case 'identify': {
+                    _hsq.push(['identify', {
+                        id: data.id, // merchant id
+                        email: data.email, // email
+                    }]);
+                    break;
+                }
+                default : {
+                    _hsq.push(['trackEvent', {
+                        id: data.id,
+                        value: data.value
+                    }]);
+                }
             }
         }
     </script>
