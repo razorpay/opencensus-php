@@ -4,6 +4,9 @@ import Field, {
   SelectField,
   SelectMode,
   SelectMethod,
+  SelectCardStep,
+  SelectAuthType,
+  SelectAuthenticationGateway,
   TextAreaField,
 } from 'ui/Field';
 
@@ -220,6 +223,33 @@ class GatewayRuleForm extends Component {
           </SelectField>
         )}
 
+        {model.method === 'card' && (
+          <SelectCardStep
+            value={model.cardstep}
+            onChange={model.onPropChange}
+            disabled={!!model.id}
+          />
+        )}
+
+        {model.method === 'card' &&
+          model.cardstep === 'authentication' && (
+            <SelectAuthType
+              value={model.authtype}
+              onChange={model.onPropChange}
+              disabled={!!model.id}
+              required
+            />
+          )}
+
+        {model.method === 'card' &&
+          model.cardstep === 'authentication' && (
+            <SelectAuthenticationGateway
+              value={model.authgateway}
+              onChange={model.onPropChange}
+              disabled={!!model.id}
+            />
+          )}
+
         <SelectField
           name="gateway"
           label="Gateway"
@@ -327,10 +357,9 @@ class GatewayRuleForm extends Component {
         <SelectField
           name="shared_terminal"
           label="Shared Terminal"
-          defaultValue={model.shared_terminal | 0}
           disabled={!!model.id}
         >
-          <option value="" />
+          <option value={null} />
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
@@ -338,10 +367,9 @@ class GatewayRuleForm extends Component {
         <SelectField
           name="international"
           label="International"
-          defaultValue={model.international | 0}
           disabled={!!model.id}
         >
-          <option value="" />
+          <option value={null} />
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
@@ -349,11 +377,10 @@ class GatewayRuleForm extends Component {
         <SelectField
           name="recurring"
           label="Recurring"
-          defaultValue={model.recurring | 0}
           disabled={!!model.id}
           onChange={this.handleChangeWithState}
         >
-          <option value="" />
+          <option value={null} />
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
