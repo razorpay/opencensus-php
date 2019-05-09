@@ -61,6 +61,39 @@ return [
         ],
     ],
 
+    'testGetForPartnerHavingConfigs' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                        'partner_type' => 'pure_platform',
+                        'partner'      => [
+                            'has_configs' => true,
+                        ],
+                    ],
+                ],
+                'invitations'             => [
+                ],
+                'settings'                => [
+                ],
+            ],
+        ],
+    ],
+
     'testLogin' => [
         'request' => [
             'url'     => '/users/login',

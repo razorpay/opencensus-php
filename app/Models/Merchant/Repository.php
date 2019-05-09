@@ -80,6 +80,11 @@ class Repository extends Base\Repository
 
     protected function validatePartnerType($attribute, $value)
     {
+        if ($value === 'all')
+        {
+            return true;
+        }
+
         (new Validator)->validatePartnerType($value);
     }
 

@@ -239,6 +239,17 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultipleCustomersViaEs()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('customer', ['id' => '100001customer']);
+
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testOtpFlowForEmailOptionalMerchants()
     {
         $this->ba->publicAuth();

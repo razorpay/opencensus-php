@@ -145,6 +145,15 @@ trait PartnerTrait
         return [$application, $accessMap];
     }
 
+    public function setSubmerchantPublicAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)
+    {
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchantId]);
+
+        $key = $key->getKey();
+
+        $this->ba->publicAuth('rzp_test_' . $key);
+    }
+
     public function setSubmerchantPrivateAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)
     {
         $key = $this->fixtures->create('key', ['merchant_id' => $merchantId]);

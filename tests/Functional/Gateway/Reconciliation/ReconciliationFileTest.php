@@ -668,6 +668,105 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testAxisCyberSourceReconPaymentModifiedFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
+
+        //
+        // Changing the 'ref' in cybersource entities, as we are dealing with 3 payments here.
+        // If we don't change then the same 'ref' will be used to get the payment...and that
+        // will result in all these MIS rows getting the same payment_id from gateway_payment
+        //
+        $gatewayPayment1['ref'] = $gatewayPayment1['ref'] . '1';
+        $this->fixtures->edit('cybersource', $gatewayPayment1['id'], ['ref' => $gatewayPayment1['ref']]);
+
+        $this->assertNull($payment1['reference1']);
+
+        $row1 = $this->overrideAxisPayment($gatewayPayment1,[],'cybersource');
+
+        // Payment_id field not set in row
+        $row1['merchant_trans_ref'] = '';
+
+        // Payment2
+        $payment2 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment2 = $this->getDbLastEntityToArray('cybersource');
+
+        $gatewayPayment2['ref'] = $gatewayPayment2['ref'] . '2';
+        $this->fixtures->edit('cybersource', $gatewayPayment2['id'], ['ref' =>  $gatewayPayment2['ref']]);
+
+        $this->assertNull($payment2['reference1']);
+
+        $row2 = $this->overrideAxisPayment($gatewayPayment2,[],'cybersource');
+
+        // Payment_id field is set to valid payment_id
+        $row2['merchant_trans_ref'] = $gatewayPayment2['payment_id'];
+
+        // Payment3 : negative test
+        $payment3 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment3 = $this->getDbLastEntityToArray('cybersource');
+
+        $gatewayPayment3['ref'] = $gatewayPayment3['ref'] . '3';
+
+        //
+        // Here, intentionally change the cybersource ref by appending '00' so
+        // that for this row, we won't not find the cybersource entity, which will
+        // result in payment absent error.
+        //
+        $this->fixtures->edit('cybersource', $gatewayPayment3['id'], ['ref' => $gatewayPayment3['ref'] . '00']);
+
+        $this->assertNull($payment3['reference1']);
+
+        $row3 = $this->overrideAxisPayment($gatewayPayment3,[],'cybersource');
+
+        // Payment_id field is set to random string
+        $row3['merchant_trans_ref'] = 'Xyz1234';
+
+        $entries[] = $row1;
+        $entries[] = $row2;
+        $entries[] = $row3;
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
+        $this->runForFiles([$file], 'Axis');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+        $updatedPayment2 = $this->getDbEntityById('payment' ,$payment2['id']);
+        $updatedPayment3 = $this->getDbEntityById('payment' ,$payment3['id']);
+
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[1][AxisPaymentRecon::COLUMN_ARN], $updatedPayment2['reference1']);
+        $this->assertNull($updatedPayment3['reference1']);
+
+        // Recon should not overwrite reference2 if it was saved before
+        $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
+        $this->assertEquals($payment2['reference2'], $updatedPayment2['reference2']);
+        $this->assertEquals($payment3['reference2'], $updatedPayment3['reference2']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+        $this->assertTrue($updatedPayment2['gateway_captured']);
+        $this->assertTrue($updatedPayment3['gateway_captured']);
+
+        $updatedTransaction1 = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+        $updatedTransaction2 = $this->getEntityById('transaction', $updatedPayment2['transaction_id'], true);
+        $updatedTransaction3 = $this->getEntityById('transaction', $updatedPayment3['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+        $this->assertNotNull($updatedTransaction2['reconciled_at']);
+        $this->assertNull($updatedTransaction3['reconciled_at']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(2, $batch['success_count']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
     public function testHdfcFssReconRefundFile()
     {
         $this->gateway = 'hdfc';
@@ -1520,6 +1619,64 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($updatedTransaction['reconciled_type']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testHdfcFssReconBatchSummaryCount()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertNull($payment1['reference1']);
+        $this->assertNull($payment1['reference2']);
+
+        $row1 = $this->overrideHdfcPayment($gatewayPayment1);
+
+        // payment2 : Exception case
+        $payment2 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment2 = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertNull($payment2['reference1']);
+        $this->assertNull($payment2['reference2']);
+
+        $row2 = $this->overrideHdfcPayment($gatewayPayment2);
+        // set the payment ID to some random 14 char string
+        $row2[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = 'Abcde12345ABCD';
+
+        // Payment3
+        $payment3 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment3 = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertNull($payment3['reference1']);
+        $this->assertNull($payment3['reference2']);
+
+        $row3 = $this->overrideHdfcPayment($gatewayPayment3);
+
+        $entries[] = $row1;
+        $entries[] = $row2;
+        $entries[] = $row3;
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+
+        $updatedTransaction1 = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        // Check failure count, Here exception should have occurred at 2nd row
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals(3, $batch['total_count']);
+        $this->assertEquals(2, $batch['processed_count']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(1, $batch['failure_count']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
     public function testMobikwikReconPaymentFile()

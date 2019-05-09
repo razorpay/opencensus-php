@@ -9,10 +9,12 @@ use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class NetbankingCorpCombinedFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -99,6 +101,8 @@ class NetbankingCorpCombinedFileTest extends TestCase
 
     protected function checkRefundsFile(array $refundsFileData)
     {
+        $refund = $this->getDbLastEntity('refund');
+
         $date = Carbon::today(Timezone::IST)->format('dmY');
 
         $this->assertFileExists($refundsFileData['url']);
@@ -109,7 +113,7 @@ class NetbankingCorpCombinedFileTest extends TestCase
 
         $refundsFileRow = explode('|', $refundsFileContents[1]);
 
-        $this->assertCount(9, $refundsFileRow);
+        $this->assertCount(10, $refundsFileRow);
 
         $this->assertEquals(trim($refundsFileRow[1]), $date);
 
@@ -118,5 +122,7 @@ class NetbankingCorpCombinedFileTest extends TestCase
         $this->assertEquals(trim($refundsFileRow[4]), '500.00');
 
         $this->assertEquals(trim($refundsFileRow[6]), '500.00');
+
+        $this->assertEquals(trim($refundsFileRow[9]), $refund['id']);
     }
 }

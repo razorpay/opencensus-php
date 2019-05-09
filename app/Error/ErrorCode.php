@@ -31,6 +31,9 @@ class ErrorCode
     const GATEWAY_ERROR_GENERIC_ERROR                                               = 'GATEWAY_ERROR_GENERIC_ERROR';
     const GATEWAY_ERROR_PAYMENT_FAILED                                              = 'GATEWAY_ERROR_PAYMENT_FAILED';
 
+    const GATEWAY_ERROR_SYSTEM_UNAVAILABLE                                          = 'GATEWAY_ERROR_SYSTEM_UNAVAILABLE';
+    const GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED                       = 'GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED';
+
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                             = 'GATEWAY_ERROR_REQUEST_TIMEOUT';
     const GATEWAY_ERROR_DENIED_BY_RISK                                              = 'GATEWAY_ERROR_DENIED_BY_RISK';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                         = 'GATEWAY_ERROR_PROCESSING_DECLINED';
@@ -54,6 +57,7 @@ class ErrorCode
     const GATEWAY_ERROR_DATA_MISMATCH                                               = 'GATEWAY_ERROR_DATA_MISMATCH';
     const GATEWAY_ERROR_CARD_NUMBER_MISMATCH                                        = 'GATEWAY_ERROR_CARD_NUMBER_MISMATCH';
     const GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR                                        = 'GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR';
+    const GATEWAY_ERROR_NO_CREDIT_ACCOUNT                                           = 'GATEWAY_ERROR_NO_CREDIT_ACCOUNT';
     const GATEWAY_ERROR_CHECKSUM_MATCH_FAILED                                       = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
     const GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR                                  = 'GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR';
@@ -166,6 +170,9 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                                = 'GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR';
     const GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR                                    = 'GATEWAY_ERROR_PAYMENT_CHARGEBACK_ERROR';
     const GATEWAY_ERROR_BANK_OFFLINE                                                = 'GATEWAY_ERROR_BANK_OFFLINE';
+    const GATEWAY_ERROR_INTERNAL_SERVER_ERROR                                       = 'GATEWAY_ERROR_INTERNAL_SERVER_ERROR';
+
+    const GATEWAY_ERROR_INVALID_TRANSACTION                                         = 'GATEWAY_ERROR_INVALID_TRANSACTION';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH                                  = 'GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH';
@@ -1178,6 +1185,7 @@ class ErrorCode
 
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                        = 'BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG';
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE';
+    const GATEWAY_ERROR_ISSUER_UNAVAILABLE                                          = 'GATEWAY_ERROR_ISSUER_UNAVAILABLE';
 
     const NODAL_BENEFICIARY_REGISTRATION_FAILED_RESPONSE                            = 'NODAL_BENEFICIARY_REGISTRATION_FAILED_RESPONSE';
     const BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE                          = 'BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE';

@@ -505,14 +505,6 @@ class Calculator extends Base\Core
             return false;
         }
 
-        // @todo remove this check when customer fee bearer model is supported for explicit commissions
-        if ($this->isCustomerFeeBearer() === true)
-        {
-            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER);
-
-            return false;
-        }
-
         return true;
     }
 
@@ -610,6 +602,15 @@ class Calculator extends Base\Core
      */
     protected function validateTotalCommissionLessThanTxnAmount()
     {
+        //
+        // For a customer fee bearer model, the amount is inclusive of the commission and
+        // hence will always be less than the commission
+        //
+        if ($this->isCustomerFeeBearer() === true)
+        {
+            return;
+        }
+
         $totalCommission = 0;
 
         foreach ($this->commissions as $commission)

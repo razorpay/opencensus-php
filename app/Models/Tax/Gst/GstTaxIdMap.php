@@ -6,49 +6,6 @@ use RZP\Models\Tax\Entity;
 
 class GstTaxIdMap
 {
-    // Todo: Remove backward compatibility code once dashboard starts consuming new response
-
-    // IGST
-    const DEPRECATED_IGST_0     = '9nDpYboKAK9j7t';
-    const DEPRECATED_IGST_500   = '9nDpYciCWeNBzE';
-    const DEPRECATED_IGST_1200  = '9nDpYdbYNqD4Rw';
-    const DEPRECATED_IGST_1800  = '9nDpYf1tTUs2Vh';
-    const DEPRECATED_IGST_2800  = '9nDpYfqgnYW5Dx';
-
-    // CGST
-    const DEPRECATED_CGST_0     = '9nDpYglSpU58lc';
-    const DEPRECATED_CGST_250   = '9nDpYhZ0d60X7V';
-    const DEPRECATED_CGST_300   = '9nDzjuY7cmkaSC';
-    const DEPRECATED_CGST_500   = '9nDpYiArP6j0qT';
-    const DEPRECATED_CGST_600   = '9nDpYivRHUQQV8';
-    const DEPRECATED_CGST_900   = '9nDpYjuyZsOlMK';
-    const DEPRECATED_CGST_1200  = '9nDpYkng64GyTa';
-    const DEPRECATED_CGST_1400  = '9nDpYlTs7cWM80';
-    const DEPRECATED_CGST_1800  = '9nDpYmPK2K2mVi';
-    const DEPRECATED_CGST_2800  = '9nDpYnFEoqJQ5v';
-
-    // SGST
-    const DEPRECATED_SGST_0     = '9nDpYnvgiGXrZh';
-    const DEPRECATED_SGST_250   = '9nDpYoeYBsXRvC';
-    const DEPRECATED_SGST_500   = '9nDpYpMRZgJEgU';
-    const DEPRECATED_SGST_600   = '9nDpYpuN72gdfY';
-    const DEPRECATED_SGST_900   = '9nDpYqgYcqpr8q';
-    const DEPRECATED_SGST_1200  = '9nDpYrIMXQTtPd';
-    const DEPRECATED_SGST_1400  = '9nDpYs1yK0pndD';
-    const DEPRECATED_SGST_1800  = '9nDpYsoU7subph';
-    const DEPRECATED_SGST_2800  = '9nDpYtb0S0JhMP';
-
-    // UTGST
-    const DEPRECATED_UTGST_0    = '9nDpYuFVNQcVaU';
-    const DEPRECATED_UTGST_250  = '9nDpYv53mqSsip';
-    const DEPRECATED_UTGST_500  = '9nDpYvgwu0p8WP';
-    const DEPRECATED_UTGST_600  = '9nDpYwRScK0Mz2';
-    const DEPRECATED_UTGST_900  = '9nDpYxMkO0LLhz';
-    const DEPRECATED_UTGST_1200 = '9nDpYyC50acDzW';
-    const DEPRECATED_UTGST_1400 = '9nDpYz26oaOHgI';
-    const DEPRECATED_UTGST_1800 = '9nDpYznDzU7NKP';
-    const DEPRECATED_UTGST_2800 = '9nDpZ0hEw4vZky';
-
     // Naming convention: <IGST|CGST|SGST>_<TAX_RATE * 10000>
 
     // IGST

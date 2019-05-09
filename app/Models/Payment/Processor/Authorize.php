@@ -41,6 +41,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Jobs\RunShieldCheck;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
@@ -112,10 +113,9 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
-        // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
-
         $this->app['diag']->trackPaymentEvent(EventCode::TERMINAL_SELECTION_INITIATED, $payment);
 
+        // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
         try
         {
             if (empty($gatewayInput['selected_terminals_ids']) === false)
@@ -1771,6 +1771,40 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->processCurrencyConversions($payment);
+
+        $this->attachEntityOrigin($payment);
+    }
+
+    /**
+     * When calculating commission, we proceed only if there is an entity origin associated with the payment.
+     * Here we fetch the entity origin for the current request and associate with the payment so that
+     * explicit fees can be shown as a part of fee breakup to the customer if applicable
+     *
+     * @param $payment
+     */
+    protected function attachEntityOrigin($payment)
+    {
+        try
+        {
+            // Fetch origin entity for the payment based on the auth used to initiate the payment.
+            $entityOrigin = (new EntityOrigin\Core)->fetchEntityOrigin($payment);
+
+            if (empty($entityOrigin) === false)
+            {
+                // associate origin entity to payment relation
+                $payment->setRelation('entityOrigin', $entityOrigin);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // The payment should not be blocked even if the origin cannot be fetched. Log an error and proceed.
+            $this->trace->critical(TraceCode::ORIGIN_SET_FAILED,
+                [
+                    'message'     => $e->getMessage(),
+                    'entity_type' => $payment->getEntity(),
+                    'entity_id'   => $payment->getId(),
+                ]);
+        }
     }
 
     protected function parseContact(string $contact): PhoneBook
@@ -5310,6 +5344,8 @@ trait Authorize
     {
         $payment = $this->retrieve($paymentId);
 
+        $this->checkForMerchantCallbackUrl($payment);
+
         $this->trace->info(
             TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT,
             [
@@ -5344,8 +5380,6 @@ trait Authorize
             $this->setCardNumberAndCvv($inputDetails);
         }
 
-        $this->setPreferredAuthIfApplicable($payment);
-
         $resource = $this->getCallbackMutexResource($payment);
 
         $response = $this->mutex->acquireAndRelease(
@@ -5360,15 +5394,38 @@ trait Authorize
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
 
+                // if payment is already processed and failed we will throw an error
+                if ($payment->isFailed() === true)
+                {
+                    return $this->rethrowFailedPaymentErrorException($payment);
+                }
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                /*
+                 * In double redirect scenario terminal will be set
+                 * we will use the same terminal and set auth type as null
+                 * since in first request authtype might have set to
+                 * headless_otp,otp,ivr
+                 */
                 if ($payment->hasTerminal() === true)
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                    $this->trace->info(
+                        TraceCode::PAYMENT_SECOND_REDIRECT_TO_AUTHORIZE_REQUEST,
+                        [
+                            'payment_id'   => $payment->getId(),
+                            'auth_type'    => $payment->getAuthType(),
+                            'terminal_id'  => $payment->getTerminalId(),
+                        ]);
+
+                    $gatewayInput['selected_terminals_ids'] = [$payment->getTerminalId()];
+
+                    $payment->setAuthType(null);
                 }
 
                 $this->repo->saveOrFail($payment);
 
-                $gatewayInput = $inputDetails['gateway_input'];
+                $this->setPreferredAuthIfApplicable($payment);
 
                 unset($inputDetails['gatewayInput']);
 

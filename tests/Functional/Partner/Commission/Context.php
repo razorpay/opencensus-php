@@ -942,4 +942,129 @@ return [
             ],
         ],
     ],
+
+    'testExplicitCustomerFeeBearer' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'fee_bearer'      => 'customer',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'explicit_plan_id' => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+            ],
+            'create_payment'     => [
+                'amount' => (4000 * 100 + (4000 * 2) + (4000 * 2 * 18/100) + (4000 * 0.2) + (4000 * 0.2 * 18/100)),
+                'auth'   => 'partner',
+                'fee'    => ((4000 * 2) + (4000 * 2 * 18/100) + (4000 * 0.2) + (4000 * 0.2 * 18/100)),
+            ],
+        ],
+    ],
+
+    'testImplicitAndExplicitCustomerFeeBearer' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '180',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+                'fee_bearer'      => 'customer',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
+                'explicit_plan_id' => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+            ],
+            'create_payment'     => [
+                'amount' => (4000 * 100 + (4000 * 2) + (4000 * 2 * 18/100) + (4000 * 0.2) + (4000 * 0.2 * 18/100)), // amount+fee+commission+commission_tax
+                'auth'   => 'partner',
+                'fee'    => ((4000 * 2) + (4000 * 2 * 18/100) + (4000 * 0.2) + (4000 * 0.2 * 18/100)),
+            ],
+        ],
+    ],
+
+    'testImplicitAndExplicitGreaterThanAmountCustomerFeeBearer' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => 'FixedPriPlanAB',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '50000',
+                    'type'         => 'pricing',
+                ],
+                [
+                    'plan_id'      => 'FixedCommPlanA',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '30000',
+                    'type'         => 'commission',
+                ],
+                [
+                    'plan_id'      => 'FixedCommPlanB',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '500000',
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => 'FixedPriPlanAB',
+                'fee_bearer'      => 'customer',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => 'FixedCommPlanA',
+                'explicit_plan_id' => 'FixedCommPlanB',
+            ],
+            'create_payment'     => [
+                'amount' => (4000 + 50000 + (50000 * 18/100) + 500000 + (500000 * 18/100)) * 100, // amount+fee+commission+commission_tax
+                'auth'   => 'partner',
+                'fee'    => (50000 + (50000 * 18/100) + 500000 + (500000 * 18/100)) * 100,
+            ],
+        ],
+    ],
+
+    'testExplicitRecordOnlyCustomerFeeBearer' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'fee_bearer'      => 'customer',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'                   => 'partner',
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 0,
+            ],
+            'create_payment'     => [
+                'amount' => (4000 * 100 + (4000 * 2) + (4000 * 2 * 18/100)), // amount+fee
+                'auth'   => 'partner',
+                'fee'    => ((4000 * 2) + (4000 * 2 * 18/100)),
+            ],
+        ],
+    ],
 ];

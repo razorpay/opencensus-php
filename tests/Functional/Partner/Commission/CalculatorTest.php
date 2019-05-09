@@ -231,4 +231,37 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    /**
+     * Asserts that the explicit commission gets created if the merchant is on a customer fee bearer model
+     */
+    public function testExplicitCustomerFeeBearer()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * Asserts that both explicit and implicit commission gets created
+     * if the merchant is on a customer fee bearer model
+     */
+    public function testImplicitAndExplicitCustomerFeeBearer()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * Asserts that both explicit and implicit commission gets created
+     * if the merchant is on a customer fee bearer model and sum is greater than payment amount
+     */
+    public function testImplicitAndExplicitGreaterThanAmountCustomerFeeBearer()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that commission is created for record-only model
+     */
+    public function testExplicitRecordOnlyCustomerFeeBearer()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
 }

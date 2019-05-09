@@ -227,6 +227,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $axisMigsTerminalRules = [

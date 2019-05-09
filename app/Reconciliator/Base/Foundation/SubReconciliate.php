@@ -151,6 +151,12 @@ class SubReconciliate extends Base\Core
                         $this->runReconciliate($row);
                     });
                 }
+                catch (\Exception $ex)
+                {
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+
+                    throw $ex;
+                }
                 finally
                 {
                     $batch->incrementProcessedCount();

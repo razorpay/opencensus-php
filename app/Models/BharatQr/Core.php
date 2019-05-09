@@ -5,6 +5,7 @@ namespace RZP\Models\BharatQr;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
@@ -42,7 +43,19 @@ class Core extends Base\Core
 
                     // This will be null in case it's a duplicate notification
                     return $bharatQr;
-                });
+                },
+                // Avg response time of this whole route is about 300ms,
+                // so 10x of that should be quite safe
+                $ttl = 30,
+                $errorCode = ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                // A process will generally not need to do multiple retries at
+                // all, since the retry times are adequate for the previous
+                // process to complete. Still setting to 3 for freak occurrences.
+                $retryCount = 3,
+                // 2x and 4x of avg response time for this entire route
+                // (not just the process within the lock)
+                $minRetryDelay = 600,
+                $maxRetryDelay = 1200);
 
             $valid = true;
         }
@@ -69,8 +82,8 @@ class Core extends Base\Core
         $this->trace->traceException(
             $ex, Trace::CRITICAL, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
 
-        // Skip slack alerts in test mode
-        if ($this->isTestMode() === true)
+        // Slack alerts are only for prod
+        if ($this->isEnvironmentProduction() === false)
         {
             return;
         }

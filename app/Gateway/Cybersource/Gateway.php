@@ -250,9 +250,13 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::action($input, Action::CAPTURE);
+        parent::capture($input);
 
-        $this->gatewayPayment = null;
+        $attributes = [
+            'status' => 'created',
+        ];
+
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], 'authorize');

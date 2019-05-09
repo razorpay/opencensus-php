@@ -84,6 +84,7 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
                 'transaction_id'         => $this->input->get('upi')->get('transaction_id'),
                 'network_transaction_id' => $transactionId,
                 'gateway_transaction_id' => 'SRP' . $this->input->get('transaction')->get('payer_id'),
+                'gateway_reference_id'   => 'SRP' . $this->input->get('transaction')->get('payer_id'),
                 'rrn'                    => (string) random_integer(12),
             ],
         ]);

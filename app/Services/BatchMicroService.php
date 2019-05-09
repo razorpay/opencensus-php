@@ -88,6 +88,8 @@ class BatchMicroService
             $relativeUri = '/'. self::BATCH_URLS['batch'] . '?' . http_build_query($data);
         }
 
+        $this->trace->info(TraceCode::BATCH_SERVICE_MULTIPART_PAYLOAD, ['multipartData' => $multipartData]);
+
         $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
 
         $batchResponse = (array) json_decode($response->getBody());

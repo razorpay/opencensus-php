@@ -265,6 +265,48 @@ class Server extends Base\Mock\Server
         return $request;
     }
 
+    public function getAsyncFailureCallbackContentForBharatQr($qrCodeId, $amount = 100)
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = [
+            random_integer(10),
+            'RZP' .$qrCodeId,
+            $this->formatAmount($amount),
+            '2017:12:01 00:00:02',
+            Status::FAILURE,
+            'Transaction failure',
+            'NA',
+            // Approval Number
+            random_integer(5),
+            'sample@icici',
+            // NPCI Reference Id
+            random_integer(16),
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'PNB!10000000000!PNBI1111111!8966829290'
+        ];
+
+        $this->content($content,'callback');
+
+        $response = $this->makeResponse($content);
+
+        $request = [
+            'url'       => '/payment/callback/bharatqr/upi_hdfc',
+            'method'    => 'post',
+            'content'   => [
+                'pgMerchantId' => 'abcd_bharat_qr',
+                'meRes'        => $response->content()
+            ]
+        ];
+
+        return $request;
+    }
+
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
         $status = Status::SUCCESS;

@@ -34,8 +34,6 @@ class Entity extends Base\PublicEntity
     const RATE        = 'rate';
 
     // Additional output keys
-    const GST_TAX_SLABS     = 'gst_tax_slabs';
-    const GST_TAX_ID_MAP    = 'gst_tax_id_map';
     const GST_TAX_SLABS_V2  = 'gst_tax_slabs_v2';
     const GST_TAX_ID_MAP_V2 = 'gst_tax_id_map_v2';
 
