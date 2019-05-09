@@ -45,6 +45,31 @@ return [
         ]
     ],
 
+    'testPostSendInvitationToExistingTeamUser' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'role'        => 'manager',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'User with given email is already a member of the team',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER,
+        ],
+    ],
+
     'testPostSendInvitationToInvitedUser' => [
         'request' => [
             'url'     => '/invitations',
