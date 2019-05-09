@@ -544,7 +544,74 @@ return [
         ]
     ],
 
+    'testAddPricingPlanBankTransferRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => 100,
+                'max_fee'             => 1000,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => 100,
+                'max_fee'             => 1000,
+                'type'                => 'pricing',
+            ],
+        ],
+    ],
 
+    'testAddPricingPlanBankTransferRuleWithoutMaxFee' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => 100,
+                'fixed_rate'          => 1000,
+                'max_fee'             => '0',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bank transfer pricing should include percent rate and max fee',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPricingPlanBankTransferRuleWithoutPercentRate' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'bank_transfer',
+                'percent_rate'        => '',
+                'max_fee'             => 1000,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Bank transfer pricing should include percent rate and max fee',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 
     'testAddPricingPlanNBRule' => [
         'request' => [

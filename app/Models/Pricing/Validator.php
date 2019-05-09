@@ -65,6 +65,7 @@ class Validator extends Base\Validator
         'addPlanRulePricingMethod',
         'addPlanRuleMinAndMaxFee',
         'addPlanRulePayoutFundTransfer',
+        'addPlanRuleBankTransfer',
     ];
 
     protected static $fetchRules = [
@@ -209,6 +210,33 @@ class Validator extends Base\Validator
                         'Payment method type for card should be debit / credit');
                 }
             }
+        }
+    }
+
+    protected function validateaddPlanRuleBankTransfer($input)
+    {
+        // Bank Transfer payments can't be rejected, so
+        // a percent rate rule is always required for the
+        // lowest amounts, since a flat pricing would fail
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::BANK_TRANSFER)
+        {
+            return;
+        }
+
+        // If it's an amount range rule, percentage rate is not mandated,
+        // since the min amount may be high enough to not need it
+        if ((isset($input[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
+            (empty($input[Entity::AMOUNT_RANGE_MIN]) === false) and
+            ($input[Entity::AMOUNT_RANGE_MIN] !== 0))
+        {
+            return;
+        }
+
+        if ((empty($input[Entity::PERCENT_RATE]) === true) or
+            (empty($input[Entity::MAX_FEE]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Bank transfer pricing should include percent rate and max fee');
         }
     }
 
