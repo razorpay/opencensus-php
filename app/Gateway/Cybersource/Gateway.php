@@ -250,7 +250,7 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::action($input, Action::CAPTURE);
+        parent::capture($input);
 
         $attributes = [
             'status' => 'created',
