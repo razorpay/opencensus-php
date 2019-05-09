@@ -37,6 +37,7 @@ class Constants
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
     const CITI             = 'citi';
+    const SIB              = 'sib';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
@@ -80,6 +81,7 @@ class Constants
             self::IDFC,
             self::VIJAYA,
             self::CORPORATION,
+            self::SIB,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -138,7 +140,8 @@ class Constants
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
             self::ALLA        => ['settlements@razorpay.com','imps.recon@allahabadbank.in'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
-            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
+            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com'],
+            self::SIB         => [''],
         ],
 
         Type::EMANDATE_REGISTER => [
