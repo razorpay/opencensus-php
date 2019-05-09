@@ -49,11 +49,7 @@ export default class Details extends Component {
   onToggleDashboardAccess = (isChecked, cb) => {
     const { account } = this.state,
       checked = !account.dashboard_access,
-      { header, message, data } = validateDashboardAccess(
-        account,
-        checked,
-        this.props.user.isAllowedLARefunds
-      );
+      { header, message, data } = validateDashboardAccess(account, checked);
 
     return this.context
       .confirm({
@@ -85,6 +81,11 @@ export default class Details extends Component {
                     ...account,
                     ...data,
                   },
+                });
+
+                this.props.updateAccount({
+                  ...account,
+                  ...data,
                 });
 
                 return resp;
@@ -155,6 +156,11 @@ export default class Details extends Component {
                     ...account,
                     ...data,
                   },
+                });
+
+                this.props.updateAccount({
+                  ...account,
+                  ...data,
                 });
 
                 return resp;

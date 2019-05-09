@@ -35,11 +35,7 @@ export default class AccountsListContainer extends ListContainer {
 
   onToggleDashboardAccess = (account, cb) => {
     const checked = !account.dashboard_access,
-      { header, message, data } = validateDashboardAccess(
-        account,
-        checked,
-        this.props.user.isAllowedLARefunds
-      );
+      { header, message, data } = validateDashboardAccess(account, checked);
 
     return this.context
       .confirm({
@@ -335,11 +331,7 @@ export default class AccountsListContainer extends ListContainer {
   }
 }
 
-export const validateDashboardAccess = (
-  account,
-  checked,
-  isAllowedLARefunds
-) => {
+export const validateDashboardAccess = (account, checked) => {
   let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
     message = `Are you sure you want to ${
       checked ? 'Enable' : 'Disable'
@@ -349,7 +341,7 @@ export const validateDashboardAccess = (
       accountId: account.id,
     };
 
-  if (account.allow_reversals && !checked && isAllowedLARefunds) {
+  if (account.allow_reversals && !checked) {
     header = 'Also Disable Customer Refunds?';
     message =
       'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.';
