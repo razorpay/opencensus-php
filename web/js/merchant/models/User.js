@@ -272,8 +272,11 @@ export default class User {
       : !!this.partner_type;
   }
 
-  isHavingPartnerConfigs() {
-    return user.partner_has_configs;
+  get isHavingPartnerConfigs() {
+    const currentMerchant = (this.merchants || {})[this.current];
+    return (
+      !!currentMerchant.partner_type && currentMerchant.partner.has_configs
+    );
   }
 
   getExpStatus(name) {
