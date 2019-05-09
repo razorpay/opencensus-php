@@ -17,7 +17,7 @@ const SOCIETY = 10; // 'Society'
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
 
-const BUSINESS_TYPE_OPTIONS = [
+export const BUSINESS_TYPE_OPTIONS = [
   { label: '--Select--', name: '' },
   { label: 'Private Limited', name: PRIVATE },
   { label: 'Proprietorship', name: PROPRIETORSHIP },
