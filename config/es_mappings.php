@@ -591,16 +591,10 @@ return [
                 'index_options'   => 'offsets',
             ],
             'contact' => [
-                'type'            => 'text',
-                'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard_custom',
-                'index_options'   => 'offsets',
+                'type'  => 'keyword',
             ],
             'email' => [
-                'type'            => 'text',
-                'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard_custom',
-                'index_options'   => 'offsets',
+                'type'  => 'keyword',
             ],
             'gstin' => [
                 'type'  => 'keyword',
