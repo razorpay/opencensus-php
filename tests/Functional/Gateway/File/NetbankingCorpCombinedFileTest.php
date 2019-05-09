@@ -65,7 +65,7 @@ class NetbankingCorpCombinedFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($refund)
+        Mail::assertSent(DailyFileMail::class, function ($mail)
         {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
