@@ -30,6 +30,7 @@ return [
                     'tokenizer' => 'edge_ngram_tokenizer',
                     'filter'    => [
                         'lowercase',
+                        'en_stopwords',
                     ],
                 ],
 
@@ -56,6 +57,7 @@ return [
                     'filter'      => [
                         'standard',
                         'lowercase',
+                        'en_stopwords',
                     ],
                 ],
             ],
@@ -71,6 +73,10 @@ return [
                 ],
             ],
             'filter' => [
+                'en_stopwords' => [
+                    'type'      => 'stop',
+                    'stopwords' => '_english_',
+                ],
             ],
             'char_filter' => [
                 'punctuation_remap' => [
@@ -522,6 +528,42 @@ return [
             ],
             'utr' => [
                 'type'  => 'keyword',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+        ],
+    ],
+
+    'item_mapping' => [
+        '_all' => [
+            'enabled' => false
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'active' => [
+                'type'  => 'boolean',
+            ],
+            'type' => [
+                'type'  => 'keyword',
+            ],
+            'name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'description' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
             ],
             'created_at' => [
                 'type'   => 'date',
