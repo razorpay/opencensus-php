@@ -440,4 +440,5 @@ return [
 
     E::P2P_UPI_TRANSACTION => [],
 
+    E::CUSTOMER => [],
 ];
