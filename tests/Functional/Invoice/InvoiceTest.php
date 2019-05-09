@@ -2675,6 +2675,23 @@ class InvoiceTest extends TestCase
             });
     }
 
+    public function testUpdateBillingPeriod()
+    {
+        $this->createOrder();
+
+        $this->createIssuedInvoice();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        self::assertEquals($invoice['billing_start'], 1557305769);
+
+        self::assertEquals($invoice['billing_end'], 1557386719);
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertInvoiceCreateResponse(array $response)

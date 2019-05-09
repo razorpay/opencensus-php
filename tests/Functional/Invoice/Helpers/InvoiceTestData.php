@@ -4693,5 +4693,18 @@ return [
         ],
     ],
 
+    'testUpdateBillingPeriod' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/update_billing_period',
+            'method' => 'patch',
+            'content' => [
+                'billing_start' => '1557305769',
+                'billing_end'   => '1557386719',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     // ----------------------------------------------------------------------
 ];
