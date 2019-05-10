@@ -1417,7 +1417,7 @@ function updateHubSpotContactsProperties(data) {
   }
 
   if (data.gstin) {
-    trackData.l2_gstin = !!trackData;
+    trackData.l2_gstin = !!trackData.l2_gstin;
   }
 
   trackhubsContactUpdate(trackData);
