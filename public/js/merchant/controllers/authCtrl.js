@@ -116,7 +116,7 @@ app
           business_type: {
             1: {
               name: 'Not Yet Registered',
-              value: 99,
+              value: 11,
             },
             2: {
               name: 'Individual',
