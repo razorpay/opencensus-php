@@ -306,10 +306,35 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getGatewaySettledAt(array $row)
     {
-        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === false)
+        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === true)
         {
-            return Carbon::createFromFormat('d-m-Y', $row[ReconciliationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
+            return null;
         }
+
+        $gatewaySettledAtTimestamp = null;
+
+        $settledAt = $row[ReconciliationFields::PAYMENT_DATE];
+
+        $format = 'd-m-Y';
+
+        try
+        {
+            $gatewaySettledAtTimestamp = Carbon::createFromFormat($format, $settledAt, Timezone::IST)->timestamp;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'         => InfoCode::INCORRECT_DATE_FORMAT,
+                    'settled_at'        => $settledAt,
+                    'expected_format'   => $format,
+                    'payment_id'        => $this->payment->getId(),
+                    'gateway'           => $this->gateway,
+                ]);
+        }
+
+        return $gatewaySettledAtTimestamp;
     }
 
     protected function getAuthCode($row)
