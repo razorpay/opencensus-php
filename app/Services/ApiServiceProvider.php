@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Vpa;
+use RZP\Models\Card;
 use RZP\Models\User;
 use RZP\Services\FTS;
 use RZP\Models\Batch;
@@ -482,6 +483,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // transaction
             'adjustment'                => Adjustment\Entity::class,
             'payment'                   => Payment\Entity::class,
+            'card'                      => Card\Entity::class,
             'order'                     => Order\Entity::class,
             'refund'                    => Payment\Refund\Entity::class,
             'settlement'                => Settlement\Entity::class,

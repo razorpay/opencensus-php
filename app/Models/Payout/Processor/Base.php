@@ -69,7 +69,7 @@ abstract class Base extends BaseCore
     protected $balance;
 
     /**
-     * @var BankAccount\Entity|Vpa\Entity
+     * @var BankAccount\Entity|Vpa\Entity|Card\Entity
      */
     protected $fundTransferDestination;
 
@@ -333,16 +333,19 @@ abstract class Base extends BaseCore
         {
             case E::BANK_ACCOUNT:
                 $ftaCore->createWithBankAccount($payout, $ftaAccount, $ftaInput);
-
-                return;
+                break;
 
             case E::VPA:
                 $ftaCore->createWithVpa($payout, $ftaAccount, $ftaInput);
+                break;
 
-                return;
+            case E::CARD:
+                $ftaCore->createWithCard($payout, $ftaAccount, $ftaInput);
+                break;
 
             default:
-                // Throw exception
+                throw new Exception\InvalidArgumentException(
+                    'Payout fta destination entity is invalid. '. $ftaAccount->getEntity());
         }
     }
 

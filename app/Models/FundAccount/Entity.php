@@ -45,6 +45,9 @@ class Entity extends Base\PublicEntity
     // VPA is basically publicly exposed underlying account
     // when account type is VPA
     const VPA           = 'vpa';
+    // Card is basically publicly exposed underlying account
+    // when account type is card
+    const CARD          = 'card';
 
     protected $generateIdOnCreate = true;
 
@@ -148,6 +151,7 @@ class Entity extends Base\PublicEntity
 
             // Generic format for all other types, but be explicit.
             case Type::BANK_ACCOUNT:
+            case Type::CARD:
                 return ucfirst(str_replace('_', ' ', $this->getAccountType()));
         }
     }

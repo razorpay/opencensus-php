@@ -63,7 +63,11 @@ class Core extends Base\Core
         return $fundTransferAttempt;
     }
 
-    public function createWithCard(Base\Entity $source, CardEntity $card, array $values = []): Entity
+    public function createWithCard(
+        Base\Entity $source, 
+        CardEntity $card, 
+        array $values = [],
+        $instantDispatch = false): Entity
     {
         $fundTransferAttempt = $this->create($source, $values, $card);
 
@@ -71,13 +75,22 @@ class Core extends Base\Core
         $fundTransferAttempt->card()->associate($card);
 
         // This needs to be done after filling FTA since it uses getters on the entity.
-        // Also, this needs to be done after associating vpa or bank_account only
+        // Also, this needs to be done after associating destination only
         // because it needs the association to figure out the destination type.
         $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
         if ($fundTransferAttempt->getIsFTS() === true)
+        {
+            $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        }
+
+        if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
+        else if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
@@ -290,7 +303,7 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Base\Entity     $source - currently refund entity
+     * @param Base\Entity     $source - refund/payout/fa-validation/etc entity
      * @param array           $values Attributes of the created FTA
      * @param CardEntity|null $card
      *

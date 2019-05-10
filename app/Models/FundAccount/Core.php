@@ -5,6 +5,7 @@ namespace RZP\Models\FundAccount;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -109,6 +110,13 @@ class Core extends Base\Core
 
             case Type::VPA:
                 $account = (new Vpa\Core)->createForBankingSource($accountInput, $source);
+                break;
+
+            case Type::CARD:
+                // cvv needs to be passed otherwise card creation will fail if it's not present
+                // hence passing a dummy value. It's not stored anyways.
+                $accountInput['cvv'] = $accountInput['cvv'] ?? '000';
+                $account = (new Card\Core)->create($accountInput, $merchant);
                 break;
 
             default:

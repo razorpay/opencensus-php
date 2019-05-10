@@ -152,6 +152,7 @@ class Database
 
     protected function createDatabases()
     {
+        return;
         //
         // Define a dummy connection called 'mysql_init'
         // with no database specified, used just to connect
@@ -169,11 +170,16 @@ class Database
         $this->config->set('database.connections.mysql_init', $tempMysqlConf);
 
         $apiLiveDb = env('DB_LIVE_DATABASE', 'api_live');
+        $apiLivePwd = env('DB_LIVE_PASSWORD', 'api_live');
+
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiLiveDb}`");
         $this->db->connection('mysql_init')->getPdo()->exec("GRANT ALL PRIVILEGES ON `{$apiLiveDb}`.* TO 'root'@'%'");
+
         $apiTestDb = env('DB_TEST_DATABASE', 'api_test');
+        $apiTestPwd = env('DB_TEST_DATABASE', 'api_test');
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiTestDb}`");
         $this->db->connection('mysql_init')->getPdo()->exec("GRANT ALL PRIVILEGES ON `{$apiTestDb}`.* TO 'root'@'%'");
+
         $authDb = env('DB_AUTH_DATABASE', 'auth');
         $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$authDb}`");
     }

@@ -3,6 +3,7 @@
 namespace RZP\Models\FundAccount;
 
 use RZP\Base;
+use RZP\Exception;
 
 /**
  * Class Validator
@@ -18,12 +19,17 @@ class Validator extends Base\Validator
      */
     const MAX_VPA_AMOUNT = 10000000;
 
+    protected static $createValidators = [
+        'accountAttribute'
+    ];
+
     protected static $createRules = [
         Entity::CUSTOMER_ID  => 'sometimes|public_id',
         Entity::CONTACT_ID   => 'sometimes|public_id',
         Entity::ACCOUNT_TYPE => 'required|string|custom',
-        Entity::VPA          => 'required_without:bank_account|associative_array',
-        Entity::BANK_ACCOUNT => 'required_without:vpa|associative_array',
+        Entity::VPA          => 'sometimes|associative_array',
+        Entity::BANK_ACCOUNT => 'sometimes|associative_array',
+        Entity::CARD         => 'sometimes|associative_array',
     ];
 
     protected static $beforeCreateRules = [
@@ -38,5 +44,18 @@ class Validator extends Base\Validator
     public function validateAccountType($attribute, $value)
     {
         Type::validateType($value);
+    }
+
+    protected function validateAccountAttribute($input)
+    {
+        // Only one of card, vpa and bank_account can be present.
+
+        $correctPresence = (isset($input[Entity::CARD]) xor isset($input[Entity::VPA]) xor isset($input[Entity::BANK_ACCOUNT]));
+
+        if ($correctPresence === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Only one of card, vpa or bank_account can be present');
+        }
     }
 }
