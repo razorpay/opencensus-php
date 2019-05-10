@@ -115,20 +115,24 @@ app
         details: {
           business_type: {
             1: {
-              name: 'Private Limited',
-              value: 4,
+              name: 'Not Yet Registered',
+              value: 11,
             },
             2: {
+              name: 'Individual',
+              value: 2,
+            },
+            3: {
               name: 'Proprietorship',
               value: 1,
             },
-            3: {
+            4: {
+              name: 'Private Limited',
+              value: 4,
+            },
+            5: {
               name: 'Partnership',
               value: 3,
-            },
-            4: {
-              name: 'Individual',
-              value: 2,
             },
             6: {
               name: 'Public Limited',
