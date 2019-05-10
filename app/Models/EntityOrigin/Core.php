@@ -180,7 +180,7 @@ class Core extends Base\Core
         // A receiver will always have an associated VA entity
         $virtualAccount = $receiver->virtualAccount;
 
-        $vaEntityOrigin = $virtualAccount->entityOrigin;
+        $vaEntityOrigin = optional($virtualAccount)->entityOrigin;
 
         $originEntity = optional($vaEntityOrigin)->origin;
 
