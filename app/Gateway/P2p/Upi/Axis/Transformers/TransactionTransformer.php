@@ -8,6 +8,7 @@ use RZP\Models\P2p\Transaction\Mode;
 use RZP\Models\P2p\Transaction\Type;
 use RZP\Models\P2p\Transaction\Flow;
 use RZP\Gateway\P2p\Upi\Axis\ErrorMap;
+use RZP\Models\P2p\Transaction\Action;
 use RZP\Models\P2p\Transaction\Status;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\UpiTransaction;
@@ -18,12 +19,11 @@ class TransactionTransformer extends Transformer
 {
     public function transform(): array
     {
-        switch ($this->input[Fields::ACTION])
+        switch ($this->action)
         {
             case TransactionAction::SEND_MONEY:
                 $output = [
                     Entity::TYPE            => Type::PAY,
-                    Entity::MODE            => $this->getTransactionMode(),
                     Entity::FLOW            => Flow::DEBIT,
                     Entity::INTERNAL_STATUS => Status::COMPLETED,
                 ];
@@ -32,7 +32,6 @@ class TransactionTransformer extends Transformer
             case TransactionAction::REQUEST_MONEY:
                 $output = [
                     Entity::TYPE            => Type::COLLECT,
-                    Entity::MODE            => $this->getTransactionMode(),
                     Entity::FLOW            => Flow::CREDIT,
                     Entity::INTERNAL_STATUS => Status::INITIATED,
                 ];
@@ -41,7 +40,6 @@ class TransactionTransformer extends Transformer
             case TransactionAction::PAY_COLLECT:
                 $output = [
                     Entity::TYPE            => Type::COLLECT,
-                    Entity::MODE            => $this->getTransactionMode(),
                     Entity::FLOW            => Flow::DEBIT,
                     Entity::INTERNAL_STATUS => Status::COMPLETED,
                 ];
@@ -50,85 +48,70 @@ class TransactionTransformer extends Transformer
             case TransactionAction::DECLINE_COLLECT:
                 $output = [
                     Entity::TYPE            => Type::COLLECT,
-                    Entity::MODE            => $this->getTransactionMode(),
                     Entity::FLOW            => Flow::DEBIT,
                     Entity::INTERNAL_STATUS => Status::REJECTED,
                 ];
                 break;
+
+            case UpiAction::COLLECT_REQUEST_RECEIVED:
+                $output = [
+                    Entity::TYPE            => Type::COLLECT,
+                    Entity::FLOW            => Flow::DEBIT,
+                    Entity::INTERNAL_STATUS => Status::CREATED,
+                ];
+                break;
+
+            case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
+                $output = [
+                    Entity::TYPE            => Type::PAY,
+                    Entity::FLOW            => Flow::CREDIT,
+                    Entity::INTERNAL_STATUS => Status::COMPLETED,
+                ];
+                break;
+
+            case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
+                $output = [
+                    Entity::TYPE            => Type::COLLECT,
+                    Entity::FLOW            => Flow::CREDIT,
+                    Entity::INTERNAL_STATUS => Status::COMPLETED,
+                ];
+                break;
         }
 
-        $output[Entity::ID] = $this->input[UpiTransaction\Entity::TRANSACTION_ID];
+        return $output;
+    }
+
+    public function transformSdk()
+    {
+        $request = $this->input[Entity::TRANSACTION];
+
+        $output = $this->transform();
 
         $this->checkForError($output);
 
-        return $output;
+        return array_merge($request, $output);
     }
 
     public function transformIncoming(): array
     {
-        switch ($this->input[Fields::TYPE])
-        {
-            case UpiAction::COLLECT_REQUEST_RECEIVED:
+        $request = $this->input[Entity::TRANSACTION];
 
-                $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
+        $output = $this->transform();
 
-                $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
-                $payee[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYEE_NAME];
+        $this->checkForError($output);
 
-                $output = [
-                    Entity::TYPE            => Type::COLLECT,
-                    Entity::MODE            => $this->getTransactionMode(),
-                    Entity::FLOW            => Flow::DEBIT,
-                    Entity::AMOUNT          => $this->toPaisa($this->input[Fields::AMOUNT]),
-                    Entity::CURRENCY        => 'INR',
-                    Entity::DESCRIPTION     => $this->input[Fields::REMARKS],
-                    Entity::PAYER           => $payer,
-                    Entity::PAYEE           => $payee,
-                    Entity::INTERNAL_STATUS => Status::CREATED,
-                ];
-
-                break;
-
-            case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
-
-                $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
-
-                $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
-                $payer[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYER_NAME];
-
-                $output = [
-                    Entity::TYPE            => Type::PAY,
-                    Entity::MODE            => $this->getTransactionMode(),
-                    Entity::FLOW            => Flow::CREDIT,
-                    Entity::AMOUNT          => $this->toPaisa($this->input[Fields::AMOUNT]),
-                    Entity::CURRENCY        => 'INR',
-                    Entity::DESCRIPTION     => 'Money recieved',
-                    Entity::PAYER           => $payer,
-                    Entity::PAYEE           => $payee,
-                    Entity::INTERNAL_STATUS => Status::COMPLETED,
-                ];
-
-                break;
-        }
-
-        return $output;
+        return array_merge($request, $output);
     }
 
-    public function getTransactionMode()
+    public function transformCallback(): array
     {
-        $payType = $this->input[Entity::GATEWAY_DATA][Fields::PAY_TYPE] ?? null;
+        $request = $this->input[Entity::TRANSACTION];
 
-        switch ($payType)
-        {
-            case Fields::INTENT_PAY:
-                return Mode::INTENT;
+        $output = $this->transform();
 
-            case Fields::SCAN_PAY:
-                return Mode::QR_CODE;
+        $this->checkForError($output);
 
-            default:
-                return Mode::DEFAULT;
-        }
+        return array_merge($request, $output);
     }
 
     public function checkForError(& $output)
@@ -140,23 +123,27 @@ class TransactionTransformer extends Transformer
             return;
         }
 
-        $output[Entity::INTERNAL_ERROR_CODE] = ErrorMap::gatewayMap($gatewayCode);
-
-        $internalStatus = Status::FAILED;
+        $internalErrorCode = ErrorMap::gatewayMap($gatewayCode);
 
         if (in_array($gatewayCode, ErrorMap::$pendingErrors, true) === true)
         {
-            $internalStatus = Status::PENDING;
+            $output[Entity::INTERNAL_STATUS]     = Status::PENDING;
         }
         else if (in_array($gatewayCode, ErrorMap::$rejectedErrors, true) === true)
         {
-            $internalStatus = Status::REJECTED;
+            $output[Entity::INTERNAL_STATUS]     = Status::REJECTED;
+            $output[Entity::INTERNAL_ERROR_CODE] = $internalErrorCode;
         }
         else if (in_array($gatewayCode, ErrorMap::$expiredErrors, true) === true)
         {
-            $internalStatus = Status::EXPIRED;
+            $output[Entity::INTERNAL_STATUS]     = Status::EXPIRED;
+            $output[Entity::INTERNAL_ERROR_CODE] = $internalErrorCode;
+        }
+        else
+        {
+            $output[Entity::INTERNAL_STATUS]     = Status::FAILED;
+            $output[Entity::INTERNAL_ERROR_CODE] = $internalErrorCode;
         }
 
-        $output[Entity::INTERNAL_STATUS] = $internalStatus;
     }
 }

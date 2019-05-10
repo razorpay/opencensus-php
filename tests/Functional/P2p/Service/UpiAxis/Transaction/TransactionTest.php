@@ -5,10 +5,14 @@ namespace RZP\Tests\P2p\Service\UpiAxis\Transaction;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\Status;
+use RZP\Tests\P2p\Service\Base\Traits;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
+use RZP\Models\P2p\Transaction\UpiTransaction;
 
 class TransactionTest extends TestCase
 {
+    use Traits\TransactionTrait;
+
     public function testInitiatePay()
     {
         $helper = $this->getTransactionHelper();
@@ -52,6 +56,7 @@ class TransactionTest extends TestCase
         $transaction = $this->fixtures->getDbLastTransaction();
 
         $this->assertTrue($transaction->isCompleted());
+        $this->assertGreaterThanOrEqual($transaction->getCompletedAt(), $this->now()->getTimestamp());
     }
 
     public function testCollectAuthorize()
@@ -69,12 +74,11 @@ class TransactionTest extends TestCase
         $transaction = $this->fixtures->getDbLastTransaction();
 
         $this->assertTrue($transaction->isProcessing());
+        $this->assertGreaterThanOrEqual($transaction->getInitiatedAt(), $this->now()->getTimestamp());
     }
 
     public function testCollectAccept()
     {
-        $this->forceTestMode();
-
         $helper = $this->getTransactionHelper();
 
         $this->mockSdk()->setCallback('COLLECT_REQUEST_RECEIVED', [
@@ -120,8 +124,6 @@ class TransactionTest extends TestCase
 
     public function testPayAccept()
     {
-        $this->forceTestMode();
-
         $helper = $this->getTransactionHelper();
 
         $this->mockSdk()->setCallback('CUSTOMER_CREDITED_VIA_PAY', [
@@ -151,8 +153,6 @@ class TransactionTest extends TestCase
 
     public function testCollectReject()
     {
-        $this->forceTestMode();
-
         $helper = $this->getTransactionHelper();
 
         $this->mockSdk()->setCallback('COLLECT_REQUEST_RECEIVED', [
@@ -196,10 +196,62 @@ class TransactionTest extends TestCase
         ], $transaction->reload()->toArray());
     }
 
-    protected function forceTestMode()
+    public function testCollectAccepted()
     {
-        //$handle = clone $this->fixtures->handle;
-        // Temporary work around, could not find better way
-        //$handle->setConnection('live')->setCode('000')->saveOrFail();
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createCollectTransaction([]);
+
+        $this->mockSdk()->setCallback('CUSTOMER_CREDITED_VIA_COLLECT', [
+            Fields::AMOUNT                  => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA               => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA               => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID          => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                 => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID     => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID    => $transaction->getCustomerId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction->reload();
+
+        $this->assertArraySubset([
+            Entity::STATUS            => Status::COMPLETED,
+            Entity::INTERNAL_STATUS   => Status::COMPLETED,
+        ], $transaction->reload()->toArray());
+    }
+
+    public function testCollectPendingToSuccess()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createCollectPendingTransaction();
+
+        $this->mockSdk()->setCallback('CUSTOMER_CREDITED_VIA_COLLECT', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID              => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $this->assertTrue($transaction->reload()->isCompleted());
+        $this->assertArraySubset([
+            Entity::STATUS            => Status::COMPLETED,
+        ], $transaction->toArrayPublic());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'BT',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Transaction pending'
+        ], $transaction->upi->toArrayPublic());
     }
 }

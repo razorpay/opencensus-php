@@ -7,6 +7,7 @@ use phpseclib\Crypt\RSA;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Gateway\P2p\Upi\Axis\Gateway;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
+use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\BankAccountAction;
 
 class Sdk
@@ -145,6 +146,8 @@ class Sdk
             Fields::UDF_PARAMETERS              => '{}'
         ];
 
+        $this->content($response, $this->action);
+
         $stringToSign = implode($response, '');
 
         $gateway = new Gateway();
@@ -174,6 +177,8 @@ class Sdk
             Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIMESTAMP],
             Fields::UDF_PARAMETERS              => '{}'
         ];
+
+        $this->content($response, $this->action);
 
         $sign = $this->signContent(implode($response, ''));
 
@@ -214,15 +219,12 @@ class Sdk
     {
         $response = [
             Fields::AMOUNT                      => $this->input[Fields::AMOUNT],
-            Fields::BANK_ACCOUNT_UNIQUE_ID      => $this->input[Fields::ACCOUNT_REFERENCE_ID],
-            Fields::BANK_CODE                   => '123456',
             Fields::CUSTOMER_MOBILE_NUMBER      => '919000000001',
             Fields::CUSTOMER_VPA                => $this->input[Fields::CUSTOMER_VPA],
             Fields::GATEWAY_REFERENCE_ID        => '911416196085', // rrn
             Fields::GATEWAY_RESPONSE_CODE       => 'ZA',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Transaction declined',
             Fields::GATEWAY_TRANSACTION_ID      => $this->input[Fields::UPI_REQUEST_ID],
-            Fields::MASKED_ACCOUNT_NUMBER       => 'XXXX123456',
             Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIMESTAMP],
             Fields::UDF_PARAMETERS              => '{}'
         ];
@@ -250,6 +252,9 @@ class Sdk
 
     public function setCallback(string $type, array $input)
     {
+        $successCode = '00';
+        $successMessage = 'Your transaction is approved';
+
         switch ($type)
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
@@ -279,12 +284,35 @@ class Sdk
                     Fields::BANK_CODE                   => random_integer(6),
                     Fields::CUSTOME_RESPONSE            => '{}',
                     Fields::GATEWAY_REFERENCE_ID        => '911416196085',
-                    Fields::GATEWAY_RESPONSE_CODE       => '00',
-                    Fields::GATEWAY_RESPONSE_MESSAGE    => 'Transaction is approved',
+                    Fields::GATEWAY_RESPONSE_CODE       => $input[Fields::GATEWAY_RESPONSE_CODE] ?? $successCode,
+                    Fields::GATEWAY_RESPONSE_MESSAGE    => $input[Fields::GATEWAY_RESPONSE_MESSAGE] ?? $successMessage,
                     Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
                     Fields::MASKED_ACCOUNT_NUMBER       => 'xxxxx0123456',
                     Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
                     Fields::MERCHANT_ID                 => 'MERCHANT',
+                    Fields::PAYEE_MOBILE_NUMBER         => '919000000001',
+                    Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
+                    Fields::PAYER_NAME                  => $input[Fields::PAYER_NAME] ?? 'Beneficiary Name',
+                    Fields::PAYER_VPA                   => $input[Fields::PAYER_VPA],
+                    Fields::TRANSACTION_TIME_STAMP      => $input[Fields::TIMESTAMP] ?? Carbon::now()->getTimestamp(),
+                    Fields::TYPE                        => $type,
+                ];
+                break;
+
+            case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
+                $callback = [
+                    Fields::AMOUNT                      => $input[Fields::AMOUNT],
+                    Fields::BANK_ACCOUNT_UNIQUE_ID      => str_random(16),
+                    Fields::BANK_CODE                   => random_integer(6),
+                    Fields::CUSTOME_RESPONSE            => '{}',
+                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::GATEWAY_RESPONSE_CODE       => $input[Fields::GATEWAY_RESPONSE_CODE] ?? $successCode,
+                    Fields::GATEWAY_RESPONSE_MESSAGE    => $input[Fields::GATEWAY_RESPONSE_MESSAGE] ?? $successMessage,
+                    Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
+                    Fields::MASKED_ACCOUNT_NUMBER       => 'xxxxx0123456',
+                    Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::MERCHANT_ID                 => 'MERCHANT',
+                    Fields::MERCHANT_REQUEST_ID         => $input[Fields::MERCHANT_REQUEST_ID],
                     Fields::PAYEE_MOBILE_NUMBER         => '919000000001',
                     Fields::PAYEE_VPA                   => $input[Fields::PAYEE_VPA],
                     Fields::PAYER_NAME                  => $input[Fields::PAYER_NAME] ?? 'Beneficiary Name',

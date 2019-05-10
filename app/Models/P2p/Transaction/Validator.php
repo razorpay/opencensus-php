@@ -91,6 +91,7 @@ class Validator extends Base\Validator
             Entity::GATEWAY              => 'required',
             Entity::STATUS               => 'required',
             Entity::INTERNAL_STATUS      => 'required',
+            Entity::INTERNAL_ERROR_CODE  => 'sometimes',
             Entity::EXPIRE_AT            => 'sometimes',
         ]);
 

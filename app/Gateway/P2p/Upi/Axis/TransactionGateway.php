@@ -85,18 +85,14 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
 
         $transaction = $this->input->get(Entity::TRANSACTION);
 
-        $transformer = new UpiTransactionTransformer($sdk->toArray());
-
+        $transformer = new UpiTransactionTransformer($sdk->toArray(), $callback->get(Fields::ACTION));
         $transformer->put(Fields::MERCHANT_REQUEST_ID, $this->getMerchantRequestId($transaction));
-        $transformer->put(Fields::ACTION, $callback->get(Fields::ACTION));
 
-        // gateway is responsible for setting appropriate state of transaction to initiated, completed or
-        // pending based on the transaction type and the response returned by gateway.
-        $upi = $transformer->transform();
+        $upi = $transformer->transformSdk();
 
-        $transformer = new TransactionTransformer($upi);
+        $transformer = new TransactionTransformer($upi, $callback->get(Fields::ACTION));
 
-        $transaction = $transformer->transform();
+        $transaction = $transformer->transformSdk();
 
         $response->setData([
             Entity::TRANSACTION => $transaction,

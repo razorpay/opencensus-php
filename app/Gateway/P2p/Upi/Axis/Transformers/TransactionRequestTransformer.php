@@ -173,15 +173,7 @@ class TransactionRequestTransformer extends TransactionTransformer
 
     public function getUpiRequestId()
     {
-        switch ($this->input[Fields::ACTION])
-        {
-            case TransactionAction::PAY_COLLECT:
-            case TransactionAction::DECLINE_COLLECT:
-                return $this->input[Entity::UPI][UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
-
-            default:
-                return $this->input[Fields::UPI_REQUEST_ID];
-        }
+        return $this->input[Entity::UPI][UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
     }
 
     public function getCollectExpiryMinutes()
