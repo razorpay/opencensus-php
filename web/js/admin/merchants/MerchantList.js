@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
 import user from 'admin/user';
-import { statusPill } from 'common/data';
-import { formatDate } from 'common/util';
+import { statusPill, partnerTypes } from 'common/data';
+import { formatDate, snakeToTitleCase } from 'common/util';
 import { adminFetch } from 'common/fetch';
 import { openMerchantEntity } from './entity/entity-resources';
 
@@ -120,6 +120,17 @@ export default class MerchantList extends Component {
                 </option>
               </SelectField>
             )}
+
+            <SelectField name="partner_type" label="Partner Type">
+              <option value="">None</option>
+              <option value="all">All</option>
+              {partnerTypes.map(type => (
+                <option value={type} key={type}>
+                  {snakeToTitleCase(type)}
+                </option>
+              ))}
+            </SelectField>
+
             <Field
               name="sub_accounts_merc-id"
               label="Linked-accounts for ID"
@@ -173,6 +184,7 @@ const fields = [
         </span>
       ),
   ],
+  ['Partner Type', item => snakeToTitleCase(item.partner_type || '') || '--'],
   ['Registered At', item => formatDate(item.created_at)],
   [
     'Submitted At',

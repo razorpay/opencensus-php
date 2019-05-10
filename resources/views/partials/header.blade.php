@@ -138,6 +138,25 @@
                     }]);
                     break;
                 }
+                case 'create_contact': {
+                    _hsq.push(['identify', {
+                        email: data.data.email,
+                        id: 'new_signup'
+                    }]);
+
+                    _hsq.push(['trackEvent', {
+                        id: 'CREATEING_CONTACT'
+                    }]);
+                    break;
+                }
+                case 'update_property': {
+                    _hsq.push(['identify', data.data]);
+
+                    _hsq.push(['trackEvent', {
+                        id: 'UPDATE_CONTACT_PROPERTY',
+                    }]);
+                    break;
+                }
                 default : {
                     _hsq.push(['trackEvent', {
                         id: data.id,

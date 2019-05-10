@@ -33,6 +33,7 @@ export default class CommissionEntityContainer extends Component {
 
   render() {
     const { loading: isLoading, entity, error } = this.props;
+    const source = entity.source || {};
     return (
       <div class="content-wrapper content-sm txn-details Commission--Detail">
         {isLoading ? (
@@ -54,26 +55,33 @@ export default class CommissionEntityContainer extends Component {
                       gst={entity.tax}
                       base={entity.credit - entity.tax}
                     />
-                    {/* merchant details */}
-                    <EntityDetailRow label="Affiliate Account">
-                      <Definition>
-                        <>{entity.merchant.name}</>
-                        <>{entity.merchant.id}</>
-                      </Definition>
-                    </EntityDetailRow>
+                    {entity.source_type === 'payment' && (
+                      <>
+                        <div className="sub-heading">
+                          <strong>Payment Details</strong>
+                        </div>
 
-                    <EntityDetailRow label="Created At">
-                      <Time value={entity.created_at} format="ll" />
-                    </EntityDetailRow>
+                        <EntityDetailRow label="Affiliated Account">
+                          <Definition>
+                            <>{entity.merchant.name}</>
+                            <>{entity.merchant.id}</>
+                          </Definition>
+                        </EntityDetailRow>
 
-                    <div class="pair-group-item">
-                      <strong>Transactions</strong>
-                    </div>
+                        <EntityDetailRow label="Amount">
+                          <Amount
+                            value={source.amount}
+                            currency={source.currency}
+                          />
+                        </EntityDetailRow>
 
-                    <EntityDetailRow
-                      label="Type"
-                      value={capitalize(entity.source_type)}
-                    />
+                        <EntityDetailRow label="ID" value={source.id} />
+
+                        <EntityDetailRow label="Created At">
+                          <Time value={source.created_at} format="ll" />
+                        </EntityDetailRow>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -88,10 +96,10 @@ export default class CommissionEntityContainer extends Component {
 function CommissionEarningBreakUp(props) {
   return (
     <>
-      <div class="pair-group-item">
-        <div class="pair-label">Earnings from Razorpay</div>
+      <div class="sub-heading">
+        <strong>Earnings from Razorpay</strong>
       </div>
-      <div class="pair-group-item EarningsBreakup">
+      <div class="pair-group-item vertical">
         <div class="pair-value">
           <DualBreakup>
             <>
