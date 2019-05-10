@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity as EmiPlanEntity;
+
 class Axis extends Base
 {
     const BANK_CODE   = IFSC::UTIB;
@@ -23,6 +24,8 @@ class Axis extends Base
 
             $merchant = $emiPayment->merchant;
 
+            $rateofinterest = $emiPayment->emiPlan[EmiPlanEntity::RATE] / 100;
+
             $txn = $emiPayment->transaction;
 
             $formattedData[] = [
@@ -35,8 +38,8 @@ class Axis extends Base
                 'MCC (Merchant Category Code)' => $merchant->getCategory(), // Non Mandatory,
                 'Tenure'                       => $emiTenure,
                 'Source'                       => 'Razorpay',
-                'EMI ID'                       => $emiPayment->getId(),// Non Mandatory, filling with our payment id
-                'Rate of Interest'             => $emiPayment->emiPlan[EmiPlanEntity::RATE] / 100,
+                'EMI ID'                       => $emiPayment->getId(), // Non Mandatory, filling with our payment id
+                'Rate of Interest'             => number_format($rateofinterest, 2, '.', ''),
             ];
         }
 
