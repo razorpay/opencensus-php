@@ -159,6 +159,7 @@ class Name
     const CREATE_MERCHANT_INVITE              = 'create_merchant_invite';
     const EDIT_MERCHANT_INVITE                = 'edit_merchant_invite';
     const VIEW_MERCHANT_INVITE                = 'view_merchant_invite';
+    const EDIT_MERCHANT_FORCE_ACTIVATION      = 'edit_merchant_force_activation';
     const VIEW_WORKFLOW                       = 'view_workflow';
     const CREATE_WORKFLOW                     = 'create_workflow';
     const VIEW_ALL_WORKFLOW                   = 'view_all_workflow';
@@ -243,5 +244,6 @@ class Name
         Merchant\Action::DISABLE_RECEIPT_EMAILS => self::EDIT_MERCHANT_DISABLE_RECEIPT,
         Merchant\Action::ENABLE_INTERNATIONAL   => self::EDIT_MERCHANT_ENABLE_INTERNATIONAL,
         Merchant\Action::DISABLE_INTERNATIONAL  => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
+        Merchant\Action::FORCE_ACTIVATE  => self::EDIT_MERCHANT_FORCE_ACTIVATION,
     ];
 }

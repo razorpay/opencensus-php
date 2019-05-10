@@ -20,6 +20,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Product;
@@ -462,6 +463,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
+    public function getActivatedAt()
+    {
+        return $this->getAttribute(self::ACTIVATED_AT);
+    }
+
     /**
      * Is the merchant a linked-account under Marketplace?
      */
@@ -623,6 +629,25 @@ class Entity extends Base\PublicEntity
     public function activate()
     {
         $this->setDiwaliPromotionalFeatureIfApplicable();
+        $this->setAttribute(self::ACTIVATED, true);
+        $this->setAttribute(self::LIVE, true);
+        $this->setAttribute(self::ACTIVATED_AT, time());
+    }
+
+    public function forceActivate()
+    {
+        $app = App::getFacadeRoot();
+
+        $app['trace']->info(
+                        TraceCode::MERCHANT_FORCE_ACTIVATED,
+                        [
+                            'activated'         => $this->isActivated(),
+                            'activated_at'      => $this->getactivatedAt(),
+                            'live'              => $this->isLive(),
+                            'activation_status' => $this->merchantDetail->getActivationStatus(),
+                            'activation_flow'   => $this->merchantDetail->getActivationFlow(),
+                        ]);
+
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
         $this->setAttribute(self::ACTIVATED_AT, time());
