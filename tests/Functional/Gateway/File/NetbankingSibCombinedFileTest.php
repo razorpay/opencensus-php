@@ -75,14 +75,13 @@ class NetbankingSibCombinedFileTest extends TestCase
             $testData = [
                 'subject' => 'SIB Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => 500,
-                    'refunds' => 500,
-                    'total'   => 0
+                    'claims'  => '500.00',
+                    'refunds' => '500.00',
+                    'total'   => '0.00'
                 ],
                 'count' => [
                     'claims'  => 1,
                     'refunds' => 1,
-                    'total'   => 2
                 ],
             ];
 
