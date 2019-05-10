@@ -275,7 +275,8 @@ export default class User {
   get isHavingPartnerConfigs() {
     const currentMerchant = (this.merchants || {})[this.current];
     return (
-      !!currentMerchant.partner_type && currentMerchant.partner.has_configs
+      !!currentMerchant.partner_type &&
+      (currentMerchant.partner || {}).has_configs
     );
   }
 
