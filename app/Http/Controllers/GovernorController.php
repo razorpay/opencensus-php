@@ -8,8 +8,6 @@ use RZP\Services\GovernorService;
 
 class GovernorController extends Controller
 {
-    protected $service = GovernorService::class;
-
     public function createNamespace($source)
     {
         $input = Request::all();
