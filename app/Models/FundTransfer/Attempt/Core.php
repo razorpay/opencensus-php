@@ -11,7 +11,6 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
-use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
 use RZP\Models\Admin\ConfigKey;
@@ -19,7 +18,6 @@ use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Card\Issuer as CardIssuer;
-use RZP\Models\FundTransfer\Base\Initiator;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -30,7 +28,7 @@ use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 class Core extends Base\Core
 {
     public function createWithBankAccount(
-        Base\Entity $source,
+        Base\PublicEntity $source,
         BankAccountEntity $bankAccount,
         array $values = [],
         $instantDispatch = false): Entity
@@ -64,14 +62,13 @@ class Core extends Base\Core
     }
 
     public function createWithCard(
-        Base\Entity $source, 
-        CardEntity $card, 
-        array $values = [],
-        $instantDispatch = false): Entity
+        Base\PublicEntity $source,
+        CardEntity $card,
+        array $values = []): Entity
     {
         $fundTransferAttempt = $this->create($source, $values, $card);
 
-        // TODO: Make this polymorphic instead of having bankAccount and vpa separately
+        // TODO: Make this polymorphic instead of having bankAccount, vpa and card separately
         $fundTransferAttempt->card()->associate($card);
 
         // This needs to be done after filling FTA since it uses getters on the entity.
@@ -82,15 +79,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($fundTransferAttempt);
 
         if ($fundTransferAttempt->getIsFTS() === true)
-        {
-            $this->sendFTSFundTransferRequest($fundTransferAttempt);
-        }
-
-        if ($instantDispatch === true)
-        {
-            $this->dispatchForTransfer($fundTransferAttempt);
-        }
-        else if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
@@ -116,7 +104,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createWithVpa(Base\Entity $source, VpaEntity $vpa, array $values = []): Entity
+    public function createWithVpa(Base\PublicEntity $source, VpaEntity $vpa, array $values = []): Entity
     {
         $fundTransferAttempt = $this->create($source, $values);
 
@@ -142,7 +130,6 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return array
-     * @throws LogicException
      */
     public function nodalFileUploadThroughBeam(array $input): array
     {
@@ -303,13 +290,13 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Base\Entity     $source - refund/payout/fa-validation/etc entity
-     * @param array           $values Attributes of the created FTA
-     * @param CardEntity|null $card
+     * @param Base\PublicEntity $source - refund/payout/fa-validation/etc entity
+     * @param array             $values Attributes of the created FTA
+     * @param CardEntity|null   $card
      *
      * @return Entity
      */
-    protected function create(Base\Entity $source, array $values = [], CardEntity $card = null)
+    protected function create(Base\PublicEntity $source, array $values = [], CardEntity $card = null)
     {
         $fundTransferAttempt = new Entity;
 

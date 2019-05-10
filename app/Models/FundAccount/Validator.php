@@ -19,10 +19,6 @@ class Validator extends Base\Validator
      */
     const MAX_VPA_AMOUNT = 10000000;
 
-    protected static $createValidators = [
-        'accountAttribute'
-    ];
-
     protected static $createRules = [
         Entity::CUSTOMER_ID  => 'sometimes|public_id',
         Entity::CONTACT_ID   => 'sometimes|public_id',
@@ -41,6 +37,10 @@ class Validator extends Base\Validator
         Entity::ACTIVE => 'filled|boolean',
     ];
 
+    protected static $createValidators = [
+        'accountAttribute'
+    ];
+
     public function validateAccountType($attribute, $value)
     {
         Type::validateType($value);
@@ -50,12 +50,18 @@ class Validator extends Base\Validator
     {
         // Only one of card, vpa and bank_account can be present.
 
-        $correctPresence = (isset($input[Entity::CARD]) xor isset($input[Entity::VPA]) xor isset($input[Entity::BANK_ACCOUNT]));
+        $correctPresence = ((isset($input[Entity::CARD]) === true) xor
+                            (isset($input[Entity::VPA]) === true) xor
+                            (isset($input[Entity::BANK_ACCOUNT]) === true));
 
         if ($correctPresence === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Only one of card, vpa or bank_account can be present');
+                'Only one of card, vpa or bank_account can be present',
+                null,
+                [
+                    'input' => $input,
+                ]);
         }
     }
 }

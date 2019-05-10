@@ -261,10 +261,14 @@ class Validator extends Base\Validator
 
             if (in_array($mode, $validModes, true) === false)
             {
-                Exception\BadRequestValidationFailureException(
-                    'Payout mode should be NEFT/IMPS/RTGS/IFT');
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payout mode should be NEFT/IMPS/RTGS/IFT',
+                    'mode',
+                    [
+                        'mode'  => $mode,
+                        'input' => $input,
+                    ]);
             }
-
         }
     }
 

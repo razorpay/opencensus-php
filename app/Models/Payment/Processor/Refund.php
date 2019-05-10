@@ -2050,8 +2050,8 @@ trait Refund
         return $this->repo->transaction(function () use ($input, $payment, $fundTransferAttemptInput)
         {
             $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
-                $payment->card,
-                $fundTransferAttemptInput);
+                                                                  $payment->card,
+                                                                  $fundTransferAttemptInput);
 
             return $fta;
         });

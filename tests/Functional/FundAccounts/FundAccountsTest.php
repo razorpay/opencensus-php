@@ -88,9 +88,9 @@ class FundAccountsTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $expectedCardAttrs = [
-            'merchant_id' => '10000000000000',
-            'expiry_month' => 4,
-            'expiry_year' => 2025,            
+            'merchant_id'   => '10000000000000',
+            'expiry_month'  => 4,
+            'expiry_year'   => 2025,
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);

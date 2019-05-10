@@ -113,10 +113,10 @@ class Core extends Base\Core
                 break;
 
             case Type::CARD:
-                // cvv needs to be passed otherwise card creation will fail if it's not present
-                // hence passing a dummy value. It's not stored anyways.
-                $accountInput['cvv'] = $accountInput['cvv'] ?? '000';
-                $account = (new Card\Core)->create($accountInput, $merchant);
+                // cvv needs to be passed otherwise card creation will fail if it's
+                // not present, hence passing a dummy value. It's not stored anyways.
+                $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::DUMMY_CVV;
+                $account = (new Card\Core)->createForFundAccount($accountInput, $merchant);
                 break;
 
             default:
@@ -154,7 +154,6 @@ class Core extends Base\Core
      * @param string $id
      * @param Merchant\Entity $merchant
      * @return Entity
-     * @throws Exception\BaseException, if id is not found
      */
     public function findByPublicIdAndMerchant(string $id, Merchant\Entity $merchant): Entity
     {

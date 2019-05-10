@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::DETAILS,
         self::BANK_ACCOUNT,
+        self::CARD,
         self::BATCH_ID,
         self::VPA,
         self::ACTIVE,
@@ -139,6 +140,9 @@ class Entity extends Base\PublicEntity
 
             case Type::VPA:
                 return $this->account->getAddress();
+
+            case Type::CARD:
+                return $this->account->getFormatted();
         }
     }
 

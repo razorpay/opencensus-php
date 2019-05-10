@@ -32,6 +32,16 @@ class Core extends Base\Core
         return $card;
     }
 
+    public function createForFundAccount($input, $merchant)
+    {
+        // - Validate Issuer Bank
+        // - Ensure the card is saved
+
+        $card = $this->create($input, $merchant);
+
+        return $card;
+    }
+
     public function edit($card, $input)
     {
         $card->edit($input);
