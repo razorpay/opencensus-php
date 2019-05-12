@@ -94,7 +94,7 @@ class WrapperElement extends Component {
             }
           >
             <a
-              href="https://docs.razorpay.com/docs/getting-started"
+              href="https://razorpay.com/docs/payment-gateway/getting-started-guide/"
               target="_blank"
               onClick={this.trackStep}
               {...otherProps}
