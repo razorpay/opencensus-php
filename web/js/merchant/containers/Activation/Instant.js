@@ -215,7 +215,10 @@ export default class ActivationWizard extends React.Component {
         trackL1FormSuccess(this.user.activation_flow);
 
         // updating contact propteries of hubspot contact
-        updateHubSpotContactsProperties(data);
+        updateHubSpotContactsProperties({
+          ...data,
+          activation_flow: this.user.activation_flow,
+        });
 
         const {
           isWhitelistFlow,
