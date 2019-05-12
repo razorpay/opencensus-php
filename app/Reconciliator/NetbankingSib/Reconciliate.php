@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\NetbankingSib;
 
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Mozart\NetbankingSib\ReconFields;
 
 class Reconciliate extends Base\Reconciliate
 {

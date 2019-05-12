@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingSib;
+namespace RZP\Gateway\Mozart\NetbankingSib;
 
 class ReconFields
 {
