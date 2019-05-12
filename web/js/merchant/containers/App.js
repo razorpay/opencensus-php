@@ -304,6 +304,13 @@ export default class App extends Component {
     } else {
       LocalStorageService.setItem(this.modeToken, mode);
       location.reload();
+
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          is_live: true,
+        },
+      });
     }
   };
 
