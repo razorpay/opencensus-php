@@ -57,7 +57,7 @@ export default class InstantActivationSuccess extends Component {
                       <a
                         className="Button--secondary Button active"
                         target="_blank"
-                        href="https://www.razorpay.com/docs"
+                        href="https://razorpay.com/docs"
                         onClick={() => {
                           track.trackIntegration();
                           onClose();
