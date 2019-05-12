@@ -187,7 +187,7 @@ export default class ProfileDropdown extends Component {
                 >
                   <div class="media media-action">
                     <div class="media-body">
-                      <a target="_blank" href="https://docs.razorpay.com">
+                      <a target="_blank" href="https://razorpay.com/docs">
                         Documentation
                       </a>
                     </div>
