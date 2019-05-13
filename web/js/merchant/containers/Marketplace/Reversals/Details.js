@@ -5,10 +5,17 @@ import { fetchTransfer } from 'merchant/modules/marketplace/transfer';
 
 import ReversalDetails from 'merchant/components/Marketplace/Reversals/Details';
 
-@connect(state => ({ reversal: state.reversal, transfer: state.transfer }), {
-  fetchTransfer,
-  fetchReversal,
-})
+@connect(
+  state => ({
+    reversal: state.reversal,
+    transfer: state.transfer,
+    user: state.session.user,
+  }),
+  {
+    fetchTransfer,
+    fetchReversal,
+  }
+)
 export default class ReversalDetailsContainer extends Component {
   fetchData(reversalId) {
     if (!reversalId) {
@@ -16,6 +23,8 @@ export default class ReversalDetailsContainer extends Component {
     }
 
     this.props.fetchReversal(reversalId).then(resp => {
+      if (this.props.notAllowFetchTransfer) return;
+
       if (resp) {
         this.props.fetchTransfer(resp.transfer_id);
       }
@@ -35,7 +44,7 @@ export default class ReversalDetailsContainer extends Component {
   }
 
   render() {
-    const { reversal, transfer, onClose } = this.props;
+    const { reversal, transfer, onClose, user } = this.props;
     let statusMsg = {};
 
     const errors = reversal.errors || transfer.errors;
@@ -54,6 +63,7 @@ export default class ReversalDetailsContainer extends Component {
         isLoading={reversal.loading || transfer.loading}
         statusMsg={statusMsg}
         onClose={onClose}
+        merchant={user.merchants[user.current]}
       />
     );
   }

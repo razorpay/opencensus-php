@@ -284,7 +284,7 @@ function updateEntity(data) {
 }
 
 function deleteEmiPlan() {
-  return adminDelete(`emi/${this.id}`);
+  return adminDelete(`live/emi/${this.id}`);
 }
 
 function downloadFile() {

@@ -21,11 +21,17 @@ export default class SwitchField extends React.Component {
     isActionPending: false,
   };
 
+  get isControlled() {
+    return typeof this.props.checked !== 'undefined';
+  }
+
   toggle = e => {
     // it's an actual click, not triggered syntheticmouseevent due to form submission
     if (e.pageX && e.pageY) {
       const onChange = this.props.onChange;
       const isChecked = !this.state.checked;
+
+      if (this.props.disabled) return;
 
       this.setState({ checked: isChecked }, _ => {
         const self = this;
@@ -60,6 +66,7 @@ export default class SwitchField extends React.Component {
 
   render() {
     let { checked, isActionPending } = this.state;
+    checked = this.isControlled ? this.props.checked : checked;
 
     let buttonClass = this.buttonClass + ' checkbox-knob--' + this.props.type;
     if (checked) {

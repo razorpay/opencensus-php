@@ -17,6 +17,19 @@ const SOCIETY = 10; // 'Society'
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
 
+export const BUSINESS_TYPE_OPTIONS = [
+  { label: '--Select--', name: '' },
+  { label: 'Private Limited', name: PRIVATE },
+  { label: 'Proprietorship', name: PROPRIETORSHIP },
+  { label: 'Partnership', name: PARTNERSHIP },
+  { label: 'Individual', name: INDIVIDUAL },
+  { label: 'Public Limited', name: PUBLIC },
+  { label: 'LLP', name: LLP },
+  { label: 'Trust', name: TRUST },
+  { label: 'Society', name: SOCIETY },
+  { label: 'NGO', name: NGO },
+];
+
 const businessFields = [
   {
     label: 'Business Name',
@@ -27,18 +40,7 @@ const businessFields = [
     label: 'Business Type',
     name: 'business_type',
     _cmp: Input.Select,
-    options: [
-      { label: '--Select--', name: '' },
-      { label: 'Private Limited', name: PRIVATE },
-      { label: 'Proprietorship', name: PROPRIETORSHIP },
-      { label: 'Partnership', name: PARTNERSHIP },
-      { label: 'Individual', name: INDIVIDUAL },
-      { label: 'Public Limited', name: PUBLIC },
-      { label: 'LLP', name: LLP },
-      { label: 'Trust', name: TRUST },
-      { label: 'Society', name: SOCIETY },
-      { label: 'NGO', name: NGO },
-    ],
+    options: BUSINESS_TYPE_OPTIONS,
   },
   {
     label: 'Business PAN Number',

@@ -13,12 +13,20 @@ Builds are done using Drone. See the `.drone.yml` file for details on these.
 * Install [`node`](https://github.com/creationix/nvm) (`v6` or above)
 * Install [`yarn`](https://yarnpkg.com/en/docs/install)
 
+Note - Install node version 9.11 if you get problems while running npm build. 
+
 # Setup instructions with Docker (for local development)
 
 #### Pre-requisites
 
 * Setup Razorpay API locally. Check [Razorpay API Docker](https://github.com/razorpay/api/blob/master/readme-docker.md)
 * Once set up, ensure `Docker for mac` is running.
+
+#### Setup docker env vars
+create environment/env.php based on environment/env.sample.php
+It should return 'dev_docker', for which should be created as environement/.env.dev\_docker (use .env.defaults as template)
+
+Note - if you are going to be using RazorpayX, then configure BANKING\_SERVICE\_URL with the URL of your local RazorpayX  to the env to allow CORS.
 
 #### Setup Dashboard/Building Container
 
@@ -31,6 +39,8 @@ $ make build
 The above will take care of building a `Containerized dashboard app` from your
 local file-system, spin up `mysql:5.6` container and establish connection
 to run the app locally.
+
+Once this is done, run `npm install` in the main folder followed by `npm run build`. 
 
 You should be able to access the app at:
 `http://dashboard.razorpay.in:38080/`
@@ -71,6 +81,8 @@ $ make test AT="--filter <mytestname> --stop-on-failure"
 ```
 
 #### Connecting to mysql:
+
+You need to connect to the API DB and not dashboard DB. Either SSH into the API DB container or connect externally. If you are SSHing, the port is 3306
 
 Available Databases:
 * dashboard

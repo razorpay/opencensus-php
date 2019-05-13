@@ -13,6 +13,7 @@ export default {
     'support',
     'rbl_supervisor',
     'rbl_agent',
+    'agent',
   ],
   orders: [
     'owner',
@@ -35,6 +36,7 @@ export default {
     'finance',
     'support',
     'rbl_supervisor',
+    'agent',
   ],
   invoices: [
     'owner',
@@ -106,6 +108,7 @@ export default {
     'operations',
     'finance',
     'rbl_supervisor',
+    'agent',
   ],
   api_keys: ['owner', 'admin'],
   profile: [

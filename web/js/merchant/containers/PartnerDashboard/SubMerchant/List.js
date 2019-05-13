@@ -88,7 +88,7 @@ const activationStatus = {
 };
 
 const switchMerchantActionBtn = handleSwitchMerchant => ({
-  title: 'Switch Merchant',
+  title: 'Switch Account',
   value: item =>
     item.dashboard_access ? (
       <button
@@ -232,7 +232,7 @@ export default class SubMerchantsList extends ListContainer {
                       onClick={this.handleAddMerchant}
                     >
                       <i class="i i-plus" />
-                      Add New Merchant
+                      Add New Account
                     </button>
                   </ShowWhen>
                 </>
@@ -246,6 +246,7 @@ export default class SubMerchantsList extends ListContainer {
                 onSubmit={this.search}
                 onSearchAnalytics={trackSearchAnalytics}
                 onClearAnalytics={trackClearAnalytics}
+                showAppIdFilter={user.isPartner('pure_platform')}
               />
               <DataTable
                 title="Sub Merchants"

@@ -92,6 +92,21 @@ export const mapBy = (array, prop) => {
   });
 };
 
+/**
+ * Converst [{a: 'key', b: 'value'}] => {key: value}
+ * @param {Array} array
+ * @param {Function} iterator
+ */
+export const arrayToObject = (array = [], iterator) => {
+  return array.reduce((accumulator, currentItem) => {
+    const { key, value } = iterator(currentItem);
+    return {
+      ...accumulator,
+      [key]: value,
+    };
+  }, {});
+};
+
 export const groupBy = (records, colName) => {
   const result = {};
 
