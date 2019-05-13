@@ -272,6 +272,11 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
+    // Bank such as Netbanking Canara enforces to send fee in request.
+    const FEE_IN_AUTHORIZE_GATEWAYS = [
+      Payment\Gateway::NETBANKING_CANARA
+    ];
+
     // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates-new
     const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::YESB,

@@ -1521,6 +1521,10 @@ trait Authorize
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
         $gatewayInput['payment_analytics'] = $payment->getMetadata('payment_analytics');
 
+        // Bank such as Netbanking Canara enforces to send fee in request.
+        // Adding fee calculation as part of gateway input only if applicable
+        $this->addFeeIfApplicable($payment, $gatewayInput);
+
         if ($payment->hasOrder())
         {
             $gatewayInput['order'] = $payment->order->toArray();
@@ -5481,5 +5485,20 @@ trait Authorize
         }
 
         return $emiPlans[0];
+    }
+
+    protected function addFeeIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    {
+        if (in_array($payment->getGateway(), Payment\Gateway::FEE_IN_AUTHORIZE_GATEWAYS, true) === false)
+        {
+            return;
+        }
+
+        list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
+        {
+            return (new Pricing\Fee)->calculateMerchantFees($payment);
+        });
+
+        $gatewayInput['payment_fee'] = $fee;
     }
 }
