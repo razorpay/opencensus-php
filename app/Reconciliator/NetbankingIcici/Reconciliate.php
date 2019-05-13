@@ -15,6 +15,7 @@ class Reconciliate extends Base\Reconciliate
         'razorpaysireports'             => self::PAYMENT,
         'razorpaybrokerreports'         => self::PAYMENT,
         'razorpaysoftwarepvtltdreports' => self::PAYMENT,
+        'razorpaydonationreports'       => self::PAYMENT,
     ];
 
     const EXCLUDE_FILE_STRING = 'success';

@@ -41,7 +41,7 @@ return [
         ],
         'batch_service_bucket_config' => [
             'name'   => env('AWS_S3_BATCH_BUCKET'),
-            'region' => env('AWS_BUCKET_BATCH_REGION', 'us-east-1')
+            'region' => env('AWS_BUCKET_BATCH_REGION', 'ap-south-1')
         ],
         'h2h_default_bucket_config' => [
             'name'   => env('AWS_H2H_DEFAULT_BUCKET'),

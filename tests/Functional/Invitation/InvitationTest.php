@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Invitation;
 
 use DB;
 use Mail;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -73,6 +74,15 @@ class InvitationTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testPostSendInvitationToExistingTeamUser()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email'] = $this->merchantUser['email'];
+
+        $this->startTest();
     }
 
     public function testPostSendInvitationToInvitedUser()

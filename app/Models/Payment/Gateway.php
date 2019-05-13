@@ -188,6 +188,7 @@ class Gateway
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
         self::PAYTM             => self::PAYTM,
+        self::AMEX              => self::AMEX,
     ];
 
     /**
