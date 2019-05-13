@@ -1557,28 +1557,4 @@ class Gateway extends Base\Gateway
 
         return static::CARD_CACHE_TTL;
     }
-
-
-    protected function runPaymentVerifyFlow($verify)
-    {
-        try
-        {
-            parent::runPaymentVerifyFlow($verify);
-        }
-        catch (Exception\PaymentVerificationException $e)
-        {
-            s("verify ex");
-            if (($verify->gatewaySuccess === true) and
-                ($verify->apiSuccess === false) and
-                ($this->isRupayTransaction($this->input)) and
-                ($this->input['terminal']['mode'] === Terminal\Mode::PURCHASE)
-            )
-            {
-                s("sending advice");
-                $this->call(Base\Action::ADVICE, $this->input);
-            }
-
-            throw $e;
-        }
-    }
 }

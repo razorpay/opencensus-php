@@ -398,6 +398,7 @@ class HitachiGatewayTest extends TestCase
         $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
 
         $this->assertEquals(1, $verify['payment']['verified']);
+
         $this->assertEquals('status_match', $verify['gateway']['status']);
 
         //
