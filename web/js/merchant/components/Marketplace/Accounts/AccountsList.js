@@ -116,7 +116,7 @@ const AccountsListItem = ({
               isDashboard
             >
               <SwitchField
-                defaultChecked={!!account.dashboard_access}
+                checked={!!account.dashboard_access}
                 onChange={onToggleDashboardAccess}
                 disabled={noLAEmail}
                 type="prime"
@@ -133,7 +133,7 @@ const AccountsListItem = ({
               isDisabled={noLAEmail}
             >
               <SwitchField
-                defaultChecked={!!account.allow_reversals}
+                checked={!!account.allow_reversals}
                 onChange={onToggleAllowRefunds}
                 disabled={noLAEmail}
                 type="prime"
@@ -198,14 +198,12 @@ export default ({
               onEdit={() => onEdit(account)}
               onToggleDashboardAccess={
                 onToggleDashboardAccess
-                  ? (isChecked, cb) =>
-                      onToggleDashboardAccess(account, isChecked, cb)
+                  ? (isChecked, cb) => onToggleDashboardAccess(account, cb)
                   : undefined
               }
               onToggleAllowRefunds={
                 onToggleAllowRefunds
-                  ? (isChecked, cb) =>
-                      onToggleAllowRefunds(account, isChecked, cb)
+                  ? (isChecked, cb) => onToggleAllowRefunds(account, cb)
                   : undefined
               }
             />

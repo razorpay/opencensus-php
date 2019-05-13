@@ -99,7 +99,7 @@ export default class TransfersListContainer extends ListContainer {
 
   render() {
     return (
-      <div>
+      <div class="transfers-list">
         <tabbed-container>
           <header id="marketplace-header">
             <NavLink to="/transfers">Transfers</NavLink>
