@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
 use RZP\Models\P2p\Vpa;
+use RZP\Error\P2p\Error;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Base\Upi;
@@ -101,35 +102,6 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function reject(array $input): array
-    {
-        $this->initialize(Action::REJECT, $input, true);
-
-        $transaction = $this->core->fetch($this->input->get(Entity::ID));
-
-        $transaction->setStatus(Status::FAILED);
-        $transaction->setInternalStatus(Status::REJECTED);
-
-        $this->repo()->saveOrFail($transaction);
-
-        $this->gatewayInput->put(Entity::TRANSACTION, $transaction);
-
-        return $this->callGateway();
-    }
-
-    public function rejectSuccess(array $input): array
-    {
-        $this->initialize(Action::REJECT_SUCCESS, $input, true);
-
-        $transaction = $this->core->fetch($this->input->get(Entity::TRANSACTION)[Entity::ID]);
-
-        $this->core->updateUpi($transaction, [
-            Entity::STATUS  => Status::REJECTED,
-        ]);
-
-        return $transaction->toArrayPublic();
-    }
-
     public function incomingCollect(array $input): array
     {
         $this->initialize(Action::INCOMING_COLLECT, $input, true);
@@ -190,6 +162,8 @@ class Processor extends Base\Processor
                 break;
 
             case Status::FAILED:
+            case Status::EXPIRED:
+            case Status::REJECTED:
                 $actions = $this->setTransactionFailed($transaction, $input);
                 break;
 
@@ -233,6 +207,15 @@ class Processor extends Base\Processor
             ]);
         }
 
+        // TODO: Add support for partial payments
+        if ($input[Entity::AMOUNT] !== $transaction->getAmount())
+        {
+            $input[Entity::INTERNAL_STATUS]     = Status::FAILED;
+            $input[Entity::INTERNAL_ERROR_CODE] = ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED;
+
+            return $this->setTransactionFailed($transaction, $input);
+        }
+
         $transaction->markCompleted();
 
         return $actions;
@@ -258,6 +241,11 @@ class Processor extends Base\Processor
         }
 
         $transaction->setInternalStatus($input[Entity::INTERNAL_STATUS]);
+
+        $error = new Error($input[Entity::INTERNAL_ERROR_CODE]);
+
+        $transaction->setErrorCode($error->getPublicErrorCode());
+        $transaction->setErrorDescription($error->getDescription());
 
         return $actions;
     }

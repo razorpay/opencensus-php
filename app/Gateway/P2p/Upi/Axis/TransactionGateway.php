@@ -85,23 +85,35 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
 
         $transaction = $this->input->get(Entity::TRANSACTION);
 
-        $transformer = new UpiTransactionTransformer($sdk->toArray());
-
+        $transformer = new UpiTransactionTransformer($sdk->toArray(), $callback->get(Fields::ACTION));
         $transformer->put(Fields::MERCHANT_REQUEST_ID, $this->getMerchantRequestId($transaction));
-        $transformer->put(Fields::ACTION, $callback->get(Fields::ACTION));
 
-        // gateway is responsible for setting appropriate state of transaction to initiated, completed or
-        // pending based on the transaction type and the response returned by gateway.
-        $upi = $transformer->transform();
+        $upi = $transformer->transformSdk();
 
-        $transformer = new TransactionTransformer($upi);
+        $transformer = new TransactionTransformer($upi, $callback->get(Fields::ACTION));
 
-        $transaction = $transformer->transform();
+        $transaction = $transformer->transformSdk();
 
         $response->setData([
             Entity::TRANSACTION => $transaction,
             Entity::UPI         => $upi,
         ]);
+    }
+
+    public function initiateReject(Response $response)
+    {
+        $request = $this->initiateSdkRequest(TransactionAction::DECLINE_COLLECT);
+
+        $transformer = new TransactionRequestTransformer($this->input->toArray());
+
+        $transformer->put(Fields::ACTION, TransactionAction::DECLINE_COLLECT);
+        $transformer->put(Fields::MERCHANT_CUSTOMER_ID, $this->getMerchantCustomerId());
+        $transformer->put(Fields::TIMESTAMP, $this->getTimeStamp());
+        $transformer->put(Fields::UPI_REQUEST_ID, $this->getUpiRequestId());
+
+        $request->merge($transformer->transform());
+
+        $response->setRequest($request);
     }
 
     public function reject(Response $response)
