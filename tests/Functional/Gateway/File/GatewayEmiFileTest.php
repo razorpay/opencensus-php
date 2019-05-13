@@ -329,48 +329,6 @@ class GatewayEmiFileTest extends TestCase
 
         Queue::fake();
 
-        $this->fixtures->create('terminal:shared_hitachi_terminal');
-
-        $this->fixtures->create('gateway_rule', [
-            'method'        => 'emi',
-            'merchant_id'   => '100000Razorpay',
-            'gateway'       => 'hitachi',
-            'issuer'        => 'SBIN',
-            'type'          => 'filter',
-            'filter_type'   => 'select',
-            'min_amount'    => 0,
-            'group'         => 'routing_filter',
-            'emi_subvention'=> 'customer',
-            'step'          => 'authorization',
-        ]);
-
-        $this->ba->publicAuth();
-
-        $this->makeEmiPaymentOnCard('4006660000086709', 9);
-
-        $this->makeEmiPaymentOnCard('4006660000086709', 12);
-
-        $this->ba->adminAuth();
-
-        $content = $this->startTest();
-
-        $content = $content['items'][0];
-
-        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull(File\Entity::SENT_AT);
-        $this->assertNull($content[File\Entity::FAILED_AT]);
-        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
-
-        $this->assertSbiEmiFileData($content, 1);
-
-    }
-
-    public function testGenerateEmiFileForSbiWithNoSbiEmiTerminal()
-    {
-        Mail::fake();
-
-        Queue::fake();
-
         $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
 
         $this->fixtures->edit('merchant_detail', $merchantId,[

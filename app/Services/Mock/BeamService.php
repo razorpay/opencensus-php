@@ -4,6 +4,7 @@
 namespace RZP\Services\Mock;
 
 use RZP\Services;
+use RZP\Jobs\BeamJob;
 
 
 class BeamService extends Services\Beam\Service
