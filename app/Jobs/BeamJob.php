@@ -66,6 +66,7 @@ class BeamJob extends Job
      * @param array $request
      * @param array $retryTimeLines
      * @param array $mailInfo
+     * @param bool $mock
      */
     public function __construct(array $request, array $retryTimeLines, array $mailInfo, bool $mock)
     {
@@ -116,12 +117,6 @@ class BeamJob extends Job
 
     public function handleRequest()
     {
-        if ($this->mock === true)
-        {
-            return [
-                'failed' => 'null'
-            ];
-        }
         $this->trace->info(
             TraceCode::BEAM_REQUEST,
             [
