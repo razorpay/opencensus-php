@@ -143,6 +143,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::UPI_ICICI          => 1,
         RequestProcessor\Base::PAYZAPP            => 1,
         RequestProcessor\Base::AIRTEL             => 1,
+        RequestProcessor\Base::NETBANKING_SIB     => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -281,6 +282,15 @@ class Validator extends Base\Core
             RequestProcessor\Base::NETBANKING_AXIS);
 
         return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingSibEmail(array $emailDetails)
+    {
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_SIB);
+
+        return $validAttachmentCount;
     }
 
     public function validateNetbankingBobEmail(array $emailDetails)
