@@ -285,7 +285,6 @@ class Gateway extends Base\Gateway
 
                 if (($verify->gatewaySuccess === true) and
                     ($verify->apiSuccess === false) and
-                    ($this->isRupayTransaction($this->input)) and
                     ($this->input['terminal']['mode'] === Terminal\Mode::PURCHASE)
                 )
                 {
