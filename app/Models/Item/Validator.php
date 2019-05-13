@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
         Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'required|currency',
+        Entity::CURRENCY            => 'required|currency|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'filled|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'filled|size:3|in:INR',
+        Entity::CURRENCY            => 'filled|currency|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
         Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
@@ -178,9 +178,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateInternationalSupport(array $input, Merchant\Entity $merchant)
+    public function validateCurrency($attribute, $currency)
     {
-        $currency = $input[Entity::CURRENCY];
+        $merchant = app()->basicauth->getMerchant();
 
         $international = $merchant->isInternational();
 
