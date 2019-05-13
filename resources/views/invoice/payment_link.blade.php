@@ -18,12 +18,13 @@ $custom_labels                  = $data['custom_labels'];
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
+    <meta name="description" content="Payment of {{$invoice_data['currency']}} {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
     @include('invoice.robot')
 
     @if (isset($invoice_data))
-        <meta property="og:title" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
+        <meta property="og:title" content="Payment of {{$invoice_data['currency']}} {{amount_format_IN($invoice_data['amount'])}} requested by {{{ $invoice_data['merchant_label'] }}} for {{{ $invoice_data['description'] }}}">
         <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}">
+
         <meta property="og:image:width" content="276px">
         <meta property="og:image:height" content="276px">
         <meta property="og:description" content="Click on this link to pay to {{{ $invoice_data['merchant_label'] }}}">
@@ -292,16 +293,16 @@ $custom_labels                  = $data['custom_labels'];
                                         @endif
                                     </span>
                                     <div class="val" id="display-pay-amt">
-                                        ₹{{amount_format_IN($invoice_data['amount'])}}
+                                        {{$invoice_data['currency_symbol']}} {{amount_format_IN($invoice_data['amount'])}}
                                     </div>
 
                                     <div class="info" id="partial-payment-info">
                                         <div class="val">
-                                            <b>₹{{amount_format_IN($invoice_data['amount_due'])}}</b>
+                                            <b>{{$invoice_data['currency_symbol']}} {{amount_format_IN($invoice_data['amount_due'])}}</b>
                                             <span class="light">Due</span>
                                         </div>
                                         <div class="val">
-                                            <span> ₹{{amount_format_IN($invoice_data['amount_paid'])}}</span>
+                                            <span> {{$invoice_data['currency_symbol']}} {{amount_format_IN($invoice_data['amount_paid'])}}</span>
                                             <span class="light">Paid</span>
                                         </div>
                                     </div>
@@ -323,7 +324,7 @@ $custom_labels                  = $data['custom_labels'];
                                         @foreach ($invoice_payments as $key => $item)
                                             <div class="modal-col">
                                                 <div class="row"><b style="color: #2e3345">
-                                                        ₹{{amount_format_IN($item['amount'])}} Paid </b>on {{epoch_format($item['created_at'])}}
+                                                        {{$invoice_data['currency_symbol']}} {{amount_format_IN($item['amount'])}} Paid </b>on {{epoch_format($item['created_at'])}}
                                                 </div>
                                                 <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                                 <div class="row">Payment ID: {{$item['id']}}</div>
@@ -449,15 +450,15 @@ $custom_labels                  = $data['custom_labels'];
                                 @endif
                             </span>
                             <div class="val" id="display-pay-amt">
-                                ₹{{amount_format_IN($invoice_data['amount'])}}
+                                {{$invoice_data['currency_symbol']}} {{amount_format_IN($invoice_data['amount'])}}
                             </div>
                             <div class="info" id="partial-payment-info">
                                 <div class="val">
-                                    <b>₹{{amount_format_IN($invoice_data['amount_due'])}}</b>
+                                    <b>{{$invoice_data['currency_symbol']}} {{amount_format_IN($invoice_data['amount_due'])}}</b>
                                     <span class="light">Due</span>
                                 </div>
                                 <div class="val">
-                                    <span>₹{{amount_format_IN($invoice_data['amount_paid'])}}</span>
+                                    <span>{{$invoice_data['currency_symbol']}} {{amount_format_IN($invoice_data['amount_paid'])}}</span>
                                     <span class="light">Paid</span>
                                 </div>
                             </div>
@@ -505,7 +506,7 @@ $custom_labels                  = $data['custom_labels'];
                                 @foreach ($invoice_payments as $key => $item)
                                     <div class="modal-col">
                                         <div class="row"><b style="color: #2e3345">
-                                                ₹{{amount_format_IN($item['amount'])}} Paid </b>on {{epoch_format($item['created_at'])}}
+                                                {{$invoice_data['currency_symbol']}} {{amount_format_IN($item['amount'])}} Paid </b>on {{epoch_format($item['created_at'])}}
                                         </div>
                                         <div class="row">Paid using <span style="text-transform: capitalize">{{$item['method']}}</span></div>
                                         <div class="row">Payment ID: {{$item['id']}}</div>
@@ -565,7 +566,7 @@ $custom_labels                  = $data['custom_labels'];
 
         if (checkIsDesktop()) {
             document.getElementById('scs-box').style.display = 'block';
-            var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
+            var successNote = "You have successfully paid " + data.invoice.currency_symbol + ' ' + (amount/100).toFixed(2);
 
             if (!data.invoice.partial_payment) {
                 successNote += '<div> Payment ID: ' + data.invoice.payment_id + ' </div>'
@@ -573,9 +574,9 @@ $custom_labels                  = $data['custom_labels'];
 
             document.getElementById('scs-msg').innerHTML = successNote;
 
-            document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
+            document.getElementById('display-pay-amt').innerHTML = '<span> ' + data.invoice.currency_symbol + ' ' + (amount/100).toFixed(2);
         } else {
-            document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
+            document.getElementById('display-pay-amt').innerHTML = '<span> ' + data.invoice.currency_symbol + ' ' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
         }
     }
 
@@ -661,7 +662,6 @@ $custom_labels                  = $data['custom_labels'];
                 // parent: '#chkout-box',
                 description: '#' + invoiceObj.id,
                 handler: function(response) {
-
                     if (globalScope.hasRedirect()) {
 
                         return globalScope.redirectToCallback(

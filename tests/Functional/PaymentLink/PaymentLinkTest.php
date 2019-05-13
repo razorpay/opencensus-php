@@ -83,13 +83,6 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdatePaymentLinkInvalidAmountCurrency()
-    {
-        $this->createPaymentLink(self::TEST_PL_ID);
-
-        $this->startTest();
-    }
-
     public function testUpdatePaymentLinkWithBadExpireBy()
     {
         $this->createPaymentLink();
@@ -188,7 +181,7 @@ class PaymentLinkTest extends TestCase
     {
         $attributes = [
             PaymentLinkModel\Entity::AMOUNT        => null,
-            PaymentLinkModel\Entity::CURRENCY      => null,
+            PaymentLinkModel\Entity::CURRENCY      => 'INR',
             PaymentLinkModel\Entity::TIMES_PAYABLE => 10,
         ];
 

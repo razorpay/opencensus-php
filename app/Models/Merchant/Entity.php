@@ -260,7 +260,10 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::WEBSITE,
         self::RECEIPT_EMAIL_ENABLED,
-        self::PARENT_ID
+        self::PARENT_ID,
+        self::INTERNATIONAL,
+        self::CONVERT_CURRENCY,
+        self::FEE_BEARER,
     ];
 
     protected $public = [

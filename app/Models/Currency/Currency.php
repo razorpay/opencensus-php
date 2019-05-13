@@ -919,7 +919,7 @@ class Currency
 
     public static function isSupportedCurrency($currency)
     {
-        if (in_array($currency, self::SUPPORTED_CURRENCIES) === true)
+        if (in_array($currency, self::SUPPORTED_CURRENCIES, true) === true)
         {
             return true;
         }

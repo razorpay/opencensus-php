@@ -47,6 +47,7 @@ class Header
     const PAYMENT_LINK_ID          = 'Payment Link Id';
     const SHORT_URL                = 'Payment Link Short URL';
     const FIRST_PAYMENT_MIN_AMOUNT = 'First Payment Min Amount (In Paise)';
+    const CURRENCY                 = 'Currency';
 
     //
     // IRCTC Headers
@@ -1592,12 +1593,19 @@ class Header
             $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
         }
 
+        if (($type === Type::PAYMENT_LINK) and
+            ((in_array(self::CURRENCY, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::CURRENCY;
+        }
+
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
         // Todo: Fix this hack!
         if (($valid === false) and ($type === Type::PAYMENT_LINK))
         {
             $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
+
             $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
         }
 

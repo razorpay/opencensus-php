@@ -11,6 +11,7 @@ use RZP\Models\User;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -21,6 +22,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID        = 'merchant_id';
     const AMOUNT             = 'amount';
     const CURRENCY           = 'currency';
+    const CURRENCY_SYMBOL    = 'currency_symbol';
     const EXPIRE_BY          = 'expire_by';
     const TIMES_PAYABLE      = 'times_payable';
     const TIMES_PAID         = 'times_paid';
@@ -121,6 +123,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::EXPIRE_BY,
         self::TIMES_PAYABLE,
         self::TIMES_PAID,
@@ -141,10 +144,15 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
     ];
 
+    protected $appends = [
+        self::CURRENCY_SYMBOL,
+    ];
+
     protected $public = [
         self::ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::EXPIRE_BY,
         self::TIMES_PAYABLE,
         self::TIMES_PAID,
@@ -169,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::EXPIRE_BY,
         self::TIMES_PAYABLE,
         self::TIMES_PAID,
@@ -207,6 +216,7 @@ class Entity extends Base\PublicEntity
         self::STATUS             => Status::ACTIVE,
         self::STATUS_REASON      => null,
         self::DESCRIPTION        => null,
+        self::CURRENCY           => 'INR',
         self::NOTES              => [],
         self::HOSTED_TEMPLATE_ID => null,
         self::UDF_JSONSCHEMA_ID  => null,
@@ -235,6 +245,23 @@ class Entity extends Base\PublicEntity
         {
             $array[Entity::DESCRIPTION] = Utility::convertTextToQuillFormat($description);
         }
+    }
+
+    /**
+     * Sets currency symbol as per the currency.
+     */
+    protected function getCurrencySymbolAttribute()
+    {
+        $currency = $this->getCurrency();
+
+        $currencySymbol = null;
+
+        if (empty($currency) === false)
+        {
+            $currencySymbol = Currency::getSymbol($currency);
+        }
+
+        return $currencySymbol;
     }
 
     // -------------------------------------- Relations -------------------------------

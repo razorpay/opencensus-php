@@ -87,6 +87,11 @@ class PaymentLink
             $input[Invoice\Entity::FIRST_PAYMENT_MIN_AMOUNT] = $firstMinAmount;
         }
 
+        if (empty($entry[Batch\Header::CURRENCY]) === false)
+        {
+            $input[Invoice\Entity::CURRENCY] = $entry[Batch\Header::CURRENCY];
+        }
+
         return $input;
     }
 }
