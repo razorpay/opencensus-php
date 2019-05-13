@@ -273,6 +273,18 @@ app
           event: 'signup_start',
         });
 
+        window.trackHubs({
+          name: 'create_contact',
+          data: {
+            email: $scope.signup.data.email,
+            signup_start: true,
+          },
+        });
+
+        window.trackHubs({
+          id: 'SIGNUP_START',
+        });
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -329,10 +341,15 @@ app
             });
 
             window.trackHubs({
-              name: 'create_contact',
+              name: 'update_property',
               data: {
                 email: $scope.signup.data.email,
+                signup_complete: true,
               },
+            });
+
+            window.trackHubs({
+              id: 'SIGNUP_COMPLETE',
             });
 
             $scope.isLoggedIn = true;
@@ -363,6 +380,21 @@ app
             });
           } else {
             hideSpinner();
+
+            window.trackHubs({
+              name: 'update_property',
+              data: {
+                email: $scope.signup.data.email,
+                signup_complete: false,
+                error: data.errors[0],
+              },
+            });
+
+            window.trackHubs({
+              id: 'SIGNUP_FAILED',
+              value: data.errors[0],
+            });
+
             if (
               data.errors &&
               data.errors[0] &&
