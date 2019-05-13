@@ -25,7 +25,19 @@ const CustomInput = props => {
           </Popover>
         </small>
       </div>
-      <Input {...props} />
+
+      <Input.Group class="InputGroup--inline">
+        <div class="Input-content">
+          <Input.CurrencySelect
+            name="currency"
+            defaultValue="INR"
+            disabled
+            parentQuerySelector=".Modal-body"
+          />
+
+          <Input {...props} />
+        </div>
+      </Input.Group>
     </div>
   );
 };
@@ -38,6 +50,7 @@ export default [
       {
         name: 'currency',
         _cmp: Input.CurrencySelect,
+        parentQuerySelector: '.Modal-body',
       },
       {
         name: 'amount',
@@ -86,7 +99,6 @@ export default [
     },
     {
       name: 'first_payment_min_amount',
-      addonBefore: <AmountTooltip currency={'INR'} />,
       placeholder: '0.00',
       size: 'half_big',
       _autoRenderImpure: true,

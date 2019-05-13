@@ -114,20 +114,34 @@ export default class EditMinimumAmount extends React.Component {
       content = (
         <div style={{ marginTop: 4 }}>
           {MIN_AMOUNT_TEXT}
-          <Input
-            name="first_payment_min_amount"
-            placeholder={titleCase(MIN_AMOUNT_TEXT)}
-            addonBefore={<AmountTooltip currency={'INR'} />}
-            class="Input--small"
-            value={this.state.first_payment_min_amount}
-            validator={val => validateMinAmount(val, this.props.maximum / 100)}
-            onChange={e => {
-              this.setState({
-                first_payment_min_amount: e.target.value,
-              });
-            }}
-          />
-          <div style={{ textAlign: 'right', marginBottom: 12, width: 260 }}>
+          <Input.Group class="InputGroup--inline">
+            <div class="Input-content">
+              <Input.CurrencySelect
+                name="currency"
+                defaultValue="INR"
+                disabled
+              />
+
+              <Input
+                name="first_payment_min_amount"
+                placeholder={titleCase(MIN_AMOUNT_TEXT)}
+                class="Input--small"
+                value={this.state.first_payment_min_amount}
+                validator={val =>
+                  validateMinAmount(val, this.props.maximum / 100)
+                }
+                onChange={e => {
+                  this.setState({
+                    first_payment_min_amount: e.target.value,
+                  });
+                }}
+              />
+            </div>
+          </Input.Group>
+
+          <div
+            style={{ textAlign: 'right', margin: '8px 0 12px 0', width: 260 }}
+          >
             <Button.Transparent
               class="Button--Link"
               onClick={() => {

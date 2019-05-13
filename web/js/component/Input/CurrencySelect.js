@@ -166,7 +166,14 @@ export default class extends React.Component {
             </div>
           </div>
         ) : (
-          <div class="value">{this.INR_option.sym}</div>
+          <div class="value">
+            <AmountTooltip
+              currency={this.INR_option.name}
+              parentQuerySelector={this.props.parentQuerySelector}
+            >
+              {this.INR_option.sym}
+            </AmountTooltip>
+          </div>
         )}
       </div>
     );
