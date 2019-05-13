@@ -65,7 +65,7 @@ class TransactionRequestTransformer extends TransactionTransformer
                     Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
                     Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
                     Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
-                    Fields::PAYEE_VPA               => $this->getPayerVpa(),
+                    Fields::PAYEE_VPA               => $this->getPayeeVpa(),
                     Fields::TIME_STAMP              => $this->getTimestamp(),
                     Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
                 ];
@@ -78,7 +78,7 @@ class TransactionRequestTransformer extends TransactionTransformer
                     Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
                     Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
                     Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
-                    Fields::PAYEE_VPA               => $this->getPayerVpa(),
+                    Fields::PAYEE_VPA               => $this->getPayeeVpa(),
                     Fields::TIME_STAMP              => $this->getTimestamp(),
                     Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
                 ];

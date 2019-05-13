@@ -206,6 +206,8 @@ class Sdk
             Fields::UDF_PARAMETERS              => '{}'
         ];
 
+        $this->content($response, $this->action);
+
         $sign = $this->signContent(implode($response, ''));
 
         $response[Fields::MERCHANT_PAYLOAD_SIGNATURE] = $sign;
@@ -228,6 +230,8 @@ class Sdk
             Fields::TRANSACTION_TIME_STAMP      => $this->input[Fields::TIMESTAMP],
             Fields::UDF_PARAMETERS              => '{}'
         ];
+
+        $this->content($response, $this->action);
 
         $sign = $this->signContent(implode($response, ''));
 
