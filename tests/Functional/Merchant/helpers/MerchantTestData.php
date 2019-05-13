@@ -3117,6 +3117,23 @@ return [
         ]
     ],
 
+    'testMerchantForceActivate' => [
+        'request' => [
+            'content' => [
+                'action' => 'force_activate'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'activated' => true,
+                'live'      => true,
+            ],
+        ]
+    ],
+
     'testMerchantArchiveWithNoMerchantDetails' => [
         'request' => [
             'content' => [

@@ -20,6 +20,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Product;
@@ -462,6 +463,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
+    public function getActivatedAt()
+    {
+        return $this->getAttribute(self::ACTIVATED_AT);
+    }
+
     /**
      * Is the merchant a linked-account under Marketplace?
      */
@@ -626,6 +632,36 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
         $this->setAttribute(self::ACTIVATED_AT, time());
+    }
+
+    /**
+     * Due to a bug which shows up intermittently, a few of the merchant's attributes (live, activated, activated_at)
+     * are not set in the activation flow and hence must be forcefully set through a database query. This function
+     * enables the same through the admin dashboard. The bug could not be reproduced.
+     * Ref - https://razorpay.slack.com/archives/C3TGQGX19/p1553853920002200 for more details.
+     *
+     * This action must be used only when this particular issue is observed.
+     */
+    public function forceActivate()
+    {
+        if (($this->isActivated() === true) or ($this->isLive() === true))
+        {
+            return;
+        }
+
+        $this->setAttribute(self::ACTIVATED, true);
+        $this->setAttribute(self::LIVE, true);
+        $this->setAttribute(self::ACTIVATED_AT, time());
+
+        app('trace')->info(
+            TraceCode::MERCHANT_FORCE_ACTIVATED,
+            [
+                'activated'         => $this->isActivated(),
+                'activated_at'      => $this->getactivatedAt(),
+                'live'              => $this->isLive(),
+                'activation_status' => $this->merchantDetail->getActivationStatus(),
+                'activation_flow'   => $this->merchantDetail->getActivationFlow(),
+            ]);
     }
 
     public function suspend()
