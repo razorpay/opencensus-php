@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 use RZP\Constants;
 use RZP\Error\ErrorCode;
-use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Plan;
@@ -15,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Models\Currency\Currency;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Plan\ChargeSubscription;
 use RZP\Exception\LogicException;
