@@ -386,7 +386,7 @@ app
               data: {
                 email: $scope.signup.data.email,
                 signup_complete: false,
-                error: data.errors[0],
+                signup_complete_error: data.errors[0],
               },
             });
 
