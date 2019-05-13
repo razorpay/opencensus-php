@@ -15,6 +15,7 @@ class Validator extends Base\Validator
     protected static $initiateAuthorizeRules;
     protected static $authorizeRules;
     protected static $rejectRules;
+    protected static $incomingCollectRules;
 
     public function rules()
     {
@@ -68,7 +69,24 @@ class Validator extends Base\Validator
 
     public function makeEditRules()
     {
-        return $this->makeCreateRules();
+        $rules = $this->makeRules([
+            Entity::GATEWAY_DATA                 => 'sometimes',
+            Entity::STATUS                       => 'sometimes',
+            Entity::NETWORK_TRANSACTION_ID       => 'sometimes',
+            Entity::GATEWAY_TRANSACTION_ID       => 'sometimes',
+            Entity::GATEWAY_REFERENCE_ID         => 'sometimes',
+            Entity::RRN                          => 'sometimes',
+            Entity::REF_ID                       => 'sometimes',
+            Entity::GATEWAY_ERROR_CODE           => 'sometimes',
+            Entity::GATEWAY_ERROR_DESCRIPTION    => 'sometimes',
+            Entity::RISK_SCORES                  => 'sometimes',
+            Entity::PAYER_ACCOUNT_NUMBER         => 'sometimes',
+            Entity::PAYER_IFSC_CODE              => 'sometimes',
+            Entity::PAYEE_ACCOUNT_NUMBER         => 'sometimes',
+            Entity::PAYEE_IFSC_CODE              => 'sometimes',
+        ]);
+
+        return $rules;
     }
 
     public function makeInitiatePaySuccessRules()
@@ -106,8 +124,8 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([
             Entity::NETWORK_TRANSACTION_ID  => 'required',
             Entity::GATEWAY_TRANSACTION_ID  => 'required',
-            Entity::GATEWAY_REFERENCE_ID    => 'sometimes',
-            Entity::RRN                     => 'sometimes',
+            Entity::GATEWAY_REFERENCE_ID    => 'required',
+            Entity::RRN                     => 'required',
         ]);
 
         return $rules;
@@ -118,5 +136,15 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([]);
 
         return $rules;
+    }
+
+    public function makeIncomingCollectRules()
+    {
+        return $this->makeAuthorizeTransactionSuccessRules();
+    }
+
+    public function makeIncomingPayRules()
+    {
+        return $this->makeAuthorizeTransactionSuccessRules();
     }
 }

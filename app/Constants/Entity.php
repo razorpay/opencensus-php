@@ -85,6 +85,7 @@ class Entity
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';
     const LINE_ITEM_TAX             = 'line_item_tax';
+    const MERCHANT_USER             = 'merchant_user';
     const MERCHANT_EMAIL            = 'merchant_email';
     const PARTNER_CONFIG            = 'partner_config';
     const DISPUTE_REASON            = 'dispute_reason';
@@ -361,6 +362,7 @@ class Entity
         self::PAYMENT_DOWNTIME          => \RZP\Models\Payment\Downtime::class,
         self::GATEWAY_RULE              => \RZP\Models\Gateway\Rule::class,
         self::GATEWAY_FILE              => \RZP\Models\Gateway\File::class,
+        self::MERCHANT_USER             => \RZP\Models\Merchant\MerchantUser::class,
         self::MERCHANT_EMAIL            => \RZP\Models\Merchant\Email::class,
         self::PAYMENT_ANALYTICS         => \RZP\Models\Payment\Analytics::class,
         self::CREDIT_TRANSACTION        => \RZP\Models\Merchant\Credits\Transaction::class,

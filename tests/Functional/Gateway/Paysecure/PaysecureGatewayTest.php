@@ -299,6 +299,44 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testAuthorizeFailureWithNoErrorMessage()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'authorize')
+                {
+                    unset($content['apprcode']);
+
+                    $content['status'] = 'failure';
+
+                    $content['errorcode'] = '57';
+
+                    unset($content['errormsg']);
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+    }
+
     public function testInititiateFailure()
     {
         $this->mockServerContentFunction(

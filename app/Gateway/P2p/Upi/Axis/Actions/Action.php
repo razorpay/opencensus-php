@@ -8,6 +8,8 @@ class Action
 
     const VALIDATOR     = 'validator';
 
+    const RESPONSE      = 'response';
+
     const SOURCE        = 'source';
 
     const DIRECT        = 'direct';

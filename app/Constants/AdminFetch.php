@@ -9,6 +9,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Partner\Config\Entity as PartnerConfig;
 
 /**
@@ -2094,6 +2095,18 @@ class AdminFetch
                     ],
                 ],
             ],
+
+            Entity::MERCHANT_USER => [
+                MerchantUser\Entity::MERCHANT_ID => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                MerchantUser\Entity::USER_ID => [
+                    Fetch::LABEL  => 'User Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::MERCHANT_PROMOTION => [
                 'promotion_id'  => [
                     Fetch::LABEL => 'Promotion Id',

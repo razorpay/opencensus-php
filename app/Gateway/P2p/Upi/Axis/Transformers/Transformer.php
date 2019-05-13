@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis\Transformers;
 
+use RZP\Models\P2p\Vpa;
+
 abstract class Transformer
 {
     public $input;
@@ -32,5 +34,20 @@ abstract class Transformer
         $booleanValue = filter_var($value, FILTER_VALIDATE_BOOLEAN);
 
         return $booleanValue;
+    }
+
+    public function toPaisa($value)
+    {
+        return round(floatval($value) * 100);
+    }
+
+    public function toUsernameHandle($value)
+    {
+        $vpa = explode(Vpa\Entity::AEROBASE, $value);
+
+        return [
+            Vpa\Entity::USERNAME    => $vpa[0],
+            Vpa\Entity::HANDLE      => $vpa[1] ?? null,
+        ];
     }
 }

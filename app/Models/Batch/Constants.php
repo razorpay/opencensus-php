@@ -15,4 +15,6 @@ class Constants
     const TO_UPPER_CASE         = 1;
 
     const TO_LOWER_CASE         = 2;
+
+    const BATCH_SERVICE         = 'batch_service';
 }

@@ -113,6 +113,10 @@ class VpaTest extends TestCase
         $response = $helper->checkAvailability($request['callback'], $content);
 
         $this->assertArrayHasKey(Entity::SUGGESTIONS, $response);
-        $this->assertSame($response[Entity::SUGGESTIONS], $suggestions);
+        $this->assertSame($response[Entity::SUGGESTIONS], array_map(
+            function($item)
+            {
+                return explode('@', $item)[0];
+            }, $suggestions));
     }
 }

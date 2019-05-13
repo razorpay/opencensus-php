@@ -178,22 +178,22 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Card Holder Name:</td>
-        <td><input type="text" name="card[name]" size="25" value="shashank"></td>
+        <td><input type="text" name="card[name]" size="25" value="shashank" autocomplete="cc-name"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->
         <td><input type="hidden" value="INR" name="currency"></td>
     </tr>
     <tr>
         <td colspan="40"><b>Card No: </b> </td>
-        <td><input type="text" name="card[number]" value="4012001038443335" size="25"></td>
+        <td><input type="text" name="card[number]" value="4012001038443335" size="25" autocomplete="cc-number"></td>
     </tr>
     <tr>
         <td colspan="40">CVV:</td>
-        <td><input size="3" type="text" name="card[cvv]" value="880" maxlength=4></td>
+        <td><input size="3" type="text" name="card[cvv]" value="880" maxlength=4 autocomplete="cc-csc"></td>
     </tr>
     <tr>
         <td colspan ='40'>Exp Date:</td>
-        <td><input type="text" name="card[expiry_month]" value="11"></td>
-        <td><input type="text" name="card[expiry_year]" value="2020"></td>
+        <td><input type="text" name="card[expiry_month]" value="11" autocomplete="cc-exp-month"></td>
+        <td><input type="text" name="card[expiry_year]" value="2020" autocomplete="cc-exp-year"></td>
         <tr>
             <td colspan='40'>Amount:</td>
             <td><input type="text" name="amount" size="25" value="100"></td>
@@ -208,8 +208,8 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Email:</td>
-        <td><input type="text" name="email" size="25" value="test@razorpay.com"></td>
-        <td><input type="text" name="contact" size="25" value="9876543210"></td>
+        <td><input type="text" name="email" size="25" value="test@razorpay.com" autocomplete="email"></td>
+        <td><input type="text" name="contact" size="25" value="9876543210" autocomplete="tel"></td>
     </tr>
     <tr>
         <td colspan='40'>Razorpay Order Id:</td>
@@ -233,7 +233,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>VPA:</td>
-        <td><input type="text" name="vpa" size="25" value="nemomobile@imobile"></td>
+        <td><input type="text" name="vpa" size="25" value="nemomobile@imobile" autocomplete="vpa"></td>
     </tr>
 <!--    <tr>-->
 <!--        <td colspan='40'>Account Number:</td>-->

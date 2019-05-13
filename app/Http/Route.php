@@ -2391,6 +2391,7 @@ final class Route
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
 
         'merchant_partners_fetch'                  => '*',
+        'webhook_fire'                             => Permission::MAKE_API_CALL,
     ];
 
     public static $direct = [

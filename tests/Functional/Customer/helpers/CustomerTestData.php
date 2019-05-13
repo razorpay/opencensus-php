@@ -351,6 +351,101 @@ return [
         ],
     ],
 
+    'testGetMultipleCustomersViaEs' => [
+        'request' => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [
+                'q'           => 'name',
+                'search_hits' => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id'      => 'cust_100001customer',
+                        'entity'  => 'customer',
+                        'name'    => 'name',
+                        'contact' => '9988776655',
+                        'email'   => null,
+                        'gstin'   => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleCustomersViaEsExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'customer_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'customer_test',
+        'body'  => [
+            '_source' => true,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'multi_match' => [
+                                'query'  => 'name',
+                                'type'   => 'best_fields',
+                                'fields' => [
+                                    'name',
+                                    'contact',
+                                    'email',
+                                    'gstin',
+                                ],
+                                'boost'                => 1,
+                                'minimum_should_match' => '75%',
+                                'lenient'              => true
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleCustomersViaEsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id'     => '100001customer',
+                    '_source' => [
+                        'id'      => '100001customer',
+                        'name'    => 'name',
+                        'contact' => '9988776655',
+                        'email'   => null,
+                        'gstin'   => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetCustomerTokens' => [
         'request' => [
             'url' => '/customers/cust_100000customer/tokens',

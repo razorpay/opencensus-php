@@ -64,6 +64,7 @@ class Validator extends Base\Validator
 
     protected static $editTerminalGateways = [
         Payment\Gateway::ATOM,
+        Payment\Gateway::AMEX,
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
         Payment\Gateway::BILLDESK,
@@ -227,6 +228,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $axisMigsTerminalRules = [
@@ -281,6 +283,12 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+    ];
+
+    protected static $amexEditTerminalRules = [
+        Entity::GATEWAY                     => 'sometimes|in:' . Gateway::AMEX,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|alpha_num|min:8',
+        Entity::TYPE                        => 'sometimes|array',
     ];
 
     protected static $billdeskEditTerminalRules = [

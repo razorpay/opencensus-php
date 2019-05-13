@@ -72,6 +72,9 @@
         },
         "expire_at": {
             "type": ["integer", "null"]
+        },
+        "upi":{
+            "type": ["object", "null"]
         }
     }
 }

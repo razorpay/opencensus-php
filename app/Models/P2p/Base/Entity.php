@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const UPI           = 'upi';
     const ACTION        = 'action';
     const DATA          = 'data';
+    const CONTEXT       = 'context';
 
     /**
      * Generator for refreshed at
@@ -50,6 +51,11 @@ class Entity extends Base\PublicEntity
     }
 
     public function hasDevice(): bool
+    {
+        return false;
+    }
+
+    public function hasCustomer(): bool
     {
         return false;
     }

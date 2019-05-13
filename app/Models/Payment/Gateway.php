@@ -188,6 +188,7 @@ class Gateway
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
         self::PAYTM             => self::PAYTM,
+        self::AMEX              => self::AMEX,
     ];
 
     /**
@@ -271,13 +272,15 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
-    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates
+    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates-new
     const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::YESB,
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
         IFSC::KKBK,
+        IFSC::INDB,
+        IFSC::ICIC,
         Netbanking::PUNB_R,
         Netbanking::BARB_R
     ];

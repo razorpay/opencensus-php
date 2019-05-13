@@ -138,7 +138,7 @@ class Gateway extends Base\Gateway
 
             if ($input['terminal']['mode'] === Terminal\Mode::PURCHASE)
             {
-                $this->advicePaysecure($input);
+                $this->call(Base\Action::ADVICE, $input);
             }
 
             return $callbackData;
@@ -168,7 +168,7 @@ class Gateway extends Base\Gateway
 
         if ($this->isRupayTransaction($input) === true)
         {
-            $this->advicePaysecure($input);
+            $this->call(Base\Action::ADVICE, $input);
 
             return;
         }
@@ -454,8 +454,11 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowException($response);
     }
 
-    protected function advicePaysecure(array $input)
+    // used only by paysecure authorized Rupay payment to capture payments
+    public function advice(array $input)
     {
+        parent::advice($input);
+
         $request = $this->getAdviceRequestArrayForPaysecure($input);
 
         $captureEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);

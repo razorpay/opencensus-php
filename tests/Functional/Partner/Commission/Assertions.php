@@ -406,6 +406,78 @@ class Assertions extends TestCase
         $this->assertEquals(144, $commission->getTax());
     }
 
+    public function testExplicitCustomerFeeBearer(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
+    public function testImplicitAndExplicitCustomerFeeBearer(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT, 2);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
+    public function testImplicitAndExplicitGreaterThanAmountCustomerFeeBearer(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT, 2);
+    }
+
+    public function testExplicitRecordOnlyCustomerFeeBearer(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
     protected function getCommissionByType(Calculator $calculator, string $type, int $totalCount)
     {
         $commissions   = $calculator->getCommissions();
