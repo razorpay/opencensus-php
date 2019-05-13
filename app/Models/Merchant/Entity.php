@@ -634,23 +634,41 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATED_AT, time());
     }
 
+    /**
+     * Due to a bug which shows up intermittently, a few of the merchant's attributes (live, activated, activated_at)
+     * are not set in the activation flow and hence must be forcefully set through a database query. This function
+     * enables the same through the admin dashboard. The bug could not be reproduced.
+     * Ref - https://razorpay.slack.com/archives/C3TGQGX19/p1553853920002200 for more details.
+     *
+     * This action must be used only when this particular issue is observed.
+     */
     public function forceActivate()
     {
-        $app = App::getFacadeRoot();
+        if ($this->isActivated() === true)
+        {
+            return;
+        }
 
-        $app['trace']->info(
-                        TraceCode::MERCHANT_FORCE_ACTIVATED,
-                        [
-                            'activated'         => $this->isActivated(),
-                            'activated_at'      => $this->getactivatedAt(),
-                            'live'              => $this->isLive(),
-                            'activation_status' => $this->merchantDetail->getActivationStatus(),
-                            'activation_flow'   => $this->merchantDetail->getActivationFlow(),
-                        ]);
+        if ($this->isLive() === true)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
 
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
         $this->setAttribute(self::ACTIVATED_AT, time());
+
+        $app['trace']->info(
+            TraceCode::MERCHANT_FORCE_ACTIVATED,
+            [
+                'activated'         => $this->isActivated(),
+                'activated_at'      => $this->getactivatedAt(),
+                'live'              => $this->isLive(),
+                'activation_status' => $this->merchantDetail->getActivationStatus(),
+                'activation_flow'   => $this->merchantDetail->getActivationFlow(),
+            ]);
     }
 
     public function suspend()
