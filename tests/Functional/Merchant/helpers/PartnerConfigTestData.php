@@ -130,6 +130,9 @@ return [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'application_id'         => Constants::DEFAULT_PLATFORM_APP_ID,
                 'commissions_enabled'    => 1,
+                'explicit_plan_id'       => null,
+                'implicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
             ],
         ],
         'response' => [
