@@ -20,11 +20,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[ReconFields::BANK_REFERENCE_NUMBER] ?? null;
     }
 
-    protected function getGatewayPaymentDate($row)
-    {
-        return $row[ReconFields::TRANSACTION_DATE] ?? null;
-    }
-
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
         if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
