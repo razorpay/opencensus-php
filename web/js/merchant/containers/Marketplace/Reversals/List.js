@@ -7,10 +7,16 @@ import { fetchReversals as fetchAll } from 'merchant/modules/collection';
 
 import { reversalId, transferId, amount, createdAt } from 'rzp/ui/item/pair';
 
-@connect(state => state.reversals, { fetchAll })
+@connect(
+  state => ({
+    ...state.reversals,
+    user: state.session.user,
+  }),
+  { fetchAll }
+)
 export default class ReversalsListContainer extends ListContainer {
   render() {
-    let { loading, items, error } = this.props;
+    let { loading, items, error, user } = this.props;
 
     return (
       <div class="content-wrapper">

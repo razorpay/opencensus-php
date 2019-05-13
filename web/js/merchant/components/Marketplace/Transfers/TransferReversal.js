@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'rzp/ui/Amount';
@@ -41,10 +42,19 @@ const NumReversals = ({ reversals, titleCase = false }) => {
   );
 };
 
-const ReversalsList = ({ reversals }) => {
+const ReversalsList = ({ reversals, transfer = {} }) => {
   const reversalHeading = {
     title: 'Reversal Details',
     subTitle: <NumReversals reversals={reversals} titleCase={true} />,
+  };
+
+  var transferReversalId = {
+    ...reversalId,
+    value: item => (
+      <Link to={`/route/transfers/${transfer.id}/` + `${item.id}`}>
+        <code>{item.id}</code>
+      </Link>
+    ),
   };
 
   return (
@@ -54,7 +64,7 @@ const ReversalsList = ({ reversals }) => {
         <DataTable
           customClass="reversals-table"
           progressLoader={true}
-          columns={[reversalId, amount, createdAtWithStyle]}
+          columns={[transferReversalId, amount, createdAtWithStyle]}
           items={reversals.items}
           loading={reversals.loading}
           showHeaders={false}
@@ -91,7 +101,7 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
     return (
       <div>
         <p>Fully Reversed</p>
-        <ReversalsList reversals={reversals} />
+        <ReversalsList reversals={reversals} transfer={transfer} />
       </div>
     );
   }
@@ -119,7 +129,7 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
           </button>
         </ShowWhen>
       </p>
-      <ReversalsList reversals={reversals} />
+      <ReversalsList reversals={reversals} transfer={transfer} />
     </div>
   );
 };

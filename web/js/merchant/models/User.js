@@ -272,6 +272,14 @@ export default class User {
       : !!this.partner_type;
   }
 
+  get isHavingPartnerConfigs() {
+    const currentMerchant = (this.merchants || {})[this.current];
+    return (
+      !!currentMerchant.partner_type &&
+      (currentMerchant.partner || {}).has_configs
+    );
+  }
+
   getExpStatus(name) {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }
@@ -308,6 +316,14 @@ export default class User {
 
   get isCapitalBannerEnabled() {
     return this.getExpStatus('capital_banner');
+  }
+
+  get isDailyCommissionsEnabled() {
+    return this.getExpStatus('daily_commissions');
+  }
+
+  get isTransactionalCommissionsEnabled() {
+    return this.getExpStatus('transactional_commissions');
   }
 
   get isExpireByRequired() {

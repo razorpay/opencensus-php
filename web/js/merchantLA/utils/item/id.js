@@ -42,6 +42,7 @@ export const order = makeIdLink('order');
 export const dispute = makeIdLink('dispute');
 
 export const transfer = makeIdLink('transfer');
+export const customerRefund = makeIdLink('customerRefundId');
 export const source = item => idLink(item[sources[item.entity]]);
 export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');

@@ -7,7 +7,8 @@
     }
     if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
         analytics.init(['ga', 'fb', 'linkedin'], {
-          ga: 'UA-53341507-2'
+          ga: 'UA-53341507-2',
+          fb: '697927486977350'
         });
         // Init old key as well
         ga('create', 'UA-53341507-1', 'auto', 'old');
@@ -43,6 +44,16 @@
     } else {
         ga = function () {};
     }
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '697927486977350');
+    fbq('track', 'PageView');
   </script>
 </body>
 </html>

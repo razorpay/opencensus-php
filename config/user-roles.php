@@ -1,6 +1,6 @@
 <?php
 /**
- * @see https://docs.razorpay.com/v1/page/team-support
+ * @see https://razorpay.com/docs/team-support/
  */
 $all = ['owner', 'manager', 'operations', 'finance', 'admin', 'support', 'sellerapp'];
 

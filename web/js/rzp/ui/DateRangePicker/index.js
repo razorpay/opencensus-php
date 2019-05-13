@@ -163,7 +163,7 @@ class DateRangePicker extends Component {
         <div className="presets-container pull-left">
           {presets.length > 0 && (
             <PowerSelect
-              className="react-normal-select"
+              className="date-range-preset-select react-normal-select"
               onChange={this.onPresetChange}
               searchEnabled={false}
               optionLabelPath="name"

@@ -306,3 +306,13 @@ export function getExperiment(name) {
 
   return null;
 }
+
+export const addPrefixToObjectKeys = (prefix, data) => {
+  const newData = {};
+
+  for (const key in data) {
+    newData[`${prefix}${key}`] = data[key];
+  }
+
+  return newData;
+};

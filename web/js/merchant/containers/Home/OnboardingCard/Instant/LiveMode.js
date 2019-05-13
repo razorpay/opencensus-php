@@ -21,6 +21,13 @@ export default class LiveMode extends Component {
     this.switchToLive = () => {
       props.track.switchToLive();
       switchToMode(props.merchantId, 'live');
+
+      window.trackHubs({
+        name: 'update_property',
+        data: {
+          is_live: true,
+        },
+      });
     };
   }
 

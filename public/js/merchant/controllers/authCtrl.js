@@ -115,20 +115,24 @@ app
         details: {
           business_type: {
             1: {
-              name: 'Private Limited',
-              value: 4,
+              name: 'Not Yet Registered',
+              value: 11,
             },
             2: {
+              name: 'Individual',
+              value: 2,
+            },
+            3: {
               name: 'Proprietorship',
               value: 1,
             },
-            3: {
+            4: {
+              name: 'Private Limited',
+              value: 4,
+            },
+            5: {
               name: 'Partnership',
               value: 3,
-            },
-            4: {
-              name: 'Individual',
-              value: 2,
             },
             6: {
               name: 'Public Limited',
@@ -268,6 +272,23 @@ app
       }
 
       $scope.createAccount = function($valid) {
+        window.rzpAnalytics({
+          name: 'facebook',
+          event: 'signup_start',
+        });
+
+        window.trackHubs({
+          name: 'create_contact',
+          data: {
+            email: $scope.signup.data.email,
+            signup_start: true,
+          },
+        });
+
+        window.trackHubs({
+          id: 'SIGNUP_START',
+        });
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -318,6 +339,23 @@ app
                 'Click - Create Account (Success)'
               );
 
+            window.rzpAnalytics({
+              name: 'facebook',
+              event: 'signup_complete',
+            });
+
+            window.trackHubs({
+              name: 'update_property',
+              data: {
+                email: $scope.signup.data.email,
+                signup_complete: true,
+              },
+            });
+
+            window.trackHubs({
+              id: 'SIGNUP_COMPLETE',
+            });
+
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               var signinSuccessCb = authCallbacks.getSigninCallback();
@@ -346,6 +384,21 @@ app
             });
           } else {
             hideSpinner();
+
+            window.trackHubs({
+              name: 'update_property',
+              data: {
+                email: $scope.signup.data.email,
+                signup_complete: false,
+                signup_complete_error: data.errors[0],
+              },
+            });
+
+            window.trackHubs({
+              id: 'SIGNUP_FAILED',
+              value: data.errors[0],
+            });
+
             if (
               data.errors &&
               data.errors[0] &&
@@ -413,10 +466,14 @@ app
         i.src =
           'https://q.quora.com/_/ad/0b40045f43e5492d916199b03c35aa48/pixel?tag=ViewContent&noscript=1';
 
+        // Fire Twitter pixel
+        i = new Image();
+        i.src =
+          'https://analytics.twitter.com/i/adsct?txn_id=o1tr7&p_id=Twitter&tw_sale_amount=0&tw_order_quantity=0';
+
         if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
           $scope.signup.merchantData.coupon_code = $scope.coupon.val;
         }
-
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
@@ -435,6 +492,8 @@ app
             pushToDrip();
             window.ga &&
               window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
+
+            updateHubSpotContactProperty();
 
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
@@ -504,6 +563,9 @@ app
               $scope.alerts.addAlert('danger', value);
             });
           }
+
+          updateHubSpotContactProperty();
+
           $('.business-type-substep').scrollTop(0);
           $timeout(function() {
             $scope.signup.showMore = false;
@@ -1267,6 +1329,51 @@ app
           }
         }
       });
+
+      // Updating contact properties on hubspot
+      function updateHubSpotContactProperty() {
+        var merchantData = $scope.signup.merchantData,
+          details = $scope.signup.details,
+          department = null,
+          business_type = null,
+          transaction_volume =
+            details.transaction_volume[merchantData.transaction_volume],
+          business_type_list = Object.keys(details.business_type),
+          department_list = Object.keys(details.department);
+
+        for (var key in business_type_list) {
+          idx = business_type_list[key];
+
+          if (details.business_type[idx].value === merchantData.business_type) {
+            business_type = details.business_type[idx].name;
+
+            break;
+          }
+        }
+
+        for (var key in department_list) {
+          idx = department_list[key];
+
+          if (details.department[idx].value === merchantData.department) {
+            department = details.department[idx].name;
+
+            break;
+          }
+        }
+
+        window.trackHubs({
+          name: 'update_property',
+          data: {
+            signup_business_type: business_type,
+            signup_transaction_volume: transaction_volume,
+            signup_department: department,
+            signup_business_name: merchantData.business_name,
+            signup_business_website: merchantData.business_website,
+            signup_contact_mobile: merchantData.contact_mobile,
+            signup_contact_name: merchantData.contact_name,
+          },
+        });
+      }
     },
   ])
   .directive('overrideTab', [

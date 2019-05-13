@@ -5,12 +5,13 @@ import Definition from 'rzp/ui/Definition';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
-
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReversalDetails extends Component {
   render() {
-    const { reversal, transfer, isLoading, onClose } = this.props;
+    const { reversal, transfer, isLoading, onClose, merchant } = this.props,
+      isLAInitiator =
+        (reversal.initiator_id || '').replace('acc_', '') !== merchant.id;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -52,6 +53,23 @@ export default class ReversalDetails extends Component {
                     currency={reversal.currency}
                   />
                 </EntityDetailRow>
+
+                <EntityDetailRow
+                  label="Initiated By"
+                  value={() =>
+                    isLAInitiator
+                      ? transfer.recipient_details.name
+                      : merchant.name
+                  }
+                />
+
+                {isLAInitiator &&
+                  reversal.customer_refund_id && (
+                    <EntityDetailRow
+                      label="Customer Refund ID"
+                      value={() => reversal.customer_refund_id}
+                    />
+                  )}
 
                 <EntityDetailRow
                   label="Created At"

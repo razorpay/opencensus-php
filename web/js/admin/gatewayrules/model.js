@@ -7,6 +7,8 @@ import { closeModal, notifyError, notifySuccess, confirm } from 'common/modal';
 const defaultProps = {
   type: '',
   method: '',
+  cardstep: 'authorisation',
+  authtype: '',
 };
 
 export default class GatewayRule extends CollectionItem {
