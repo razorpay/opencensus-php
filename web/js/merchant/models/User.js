@@ -330,15 +330,8 @@ export default class User {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
   }
 
-  // TODO: Populate this list in the starting of App load
-  get getCurrencyList() {
-    return [
-      {
-        label: 'British Pound',
-        name: 'GBP',
-        symbol: '£',
-      },
-    ];
+  get isInttCurrenciesEnabled() {
+    return this.getExpStatus('international_currencies');
   }
 }
 

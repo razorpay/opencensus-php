@@ -49,8 +49,6 @@ export default class extends React.Component {
       currency,
       isDisabled = this.props.disabled;
 
-    let INR_option;
-
     if (this.props.user.international) {
       const defaultValue = this.props.defaultValue;
 
@@ -124,7 +122,8 @@ export default class extends React.Component {
   render() {
     const props = this.props;
 
-    const isInternationalEnabled = this.props.user.international;
+    const isInternationalEnabled =
+      this.props.user.international && this.props.user.isInttCurrenciesEnabled;
 
     return (
       <div
@@ -133,7 +132,7 @@ export default class extends React.Component {
           !isInternationalEnabled && 'Input--noMargin'
         )}
       >
-        {isInternationalEnabled ? (
+        {isInternationalEnabled && !this.props.disabled ? (
           <div class="Input-content">
             <div class="Input-elWrapper">
               <div class="Input-el">
@@ -162,7 +161,6 @@ export default class extends React.Component {
                   }
                   showClear={false}
                   searchEnabled
-                  disabled={this.state.disabled}
                 />
               </div>
             </div>
