@@ -832,7 +832,14 @@ class Core extends Base\Core
     {
         if ($subscription->isFutureNotUpfront() === true)
         {
-            $authAmount = Entity::DEFAULT_AUTH_AMOUNT;
+            if ($subscription->plan->item->getCurrency() === Currency::INR)
+            {
+                return Entity::DEFAULT_AUTH_AMOUNT;
+            }
+
+            $currencyDetails = Currency::getDetails();
+
+            return $currencyDetails[$subscription->plan->item->getCurrency()]['min_auth_value'];
         }
         else
         {
