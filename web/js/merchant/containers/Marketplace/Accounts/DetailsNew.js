@@ -53,12 +53,8 @@ export default class Details extends Component {
 
     return this.context
       .confirm({
-        header: header,
-        message: () => (
-          <div class="text-semi-muted">
-            <p>{message}</p>
-          </div>
-        ),
+        header,
+        message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
@@ -76,17 +72,20 @@ export default class Details extends Component {
                   } for merchant "${account.name}"`,
                 });
 
-                this.setState({
-                  account: {
-                    ...account,
-                    ...data,
+                this.setState(
+                  {
+                    account: {
+                      ...account,
+                      ...data,
+                    },
                   },
-                });
-
-                this.props.updateAccount({
-                  ...account,
-                  ...data,
-                });
+                  () => {
+                    this.props.updateAccount({
+                      ...account,
+                      ...data,
+                    });
+                  }
+                );
 
                 return resp;
               } else {
@@ -128,12 +127,8 @@ export default class Details extends Component {
 
     return this.context
       .confirm({
-        header: header,
-        message: () => (
-          <div class="text-semi-muted">
-            <p>{message}</p>
-          </div>
-        ),
+        header,
+        message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
@@ -151,18 +146,20 @@ export default class Details extends Component {
                   } for merchant "${account.name}"`,
                 });
 
-                this.setState({
-                  account: {
-                    ...account,
-                    ...data,
+                this.setState(
+                  {
+                    account: {
+                      ...account,
+                      ...data,
+                    },
                   },
-                });
-
-                this.props.updateAccount({
-                  ...account,
-                  ...data,
-                });
-
+                  () => {
+                    this.props.updateAccount({
+                      ...account,
+                      ...data,
+                    });
+                  }
+                );
                 return resp;
               } else {
                 throw 'Some network error has occurred';
@@ -313,7 +310,7 @@ export default class Details extends Component {
                   </span>{' '}
                   {account.activation_details &&
                   account.activation_details.status == 'activated' ? (
-                    <a class="m-l" link onClick={this.showActivationForm}>
+                    <a class="m-l" onClick={this.showActivationForm}>
                       Show Activation Form
                     </a>
                   ) : (

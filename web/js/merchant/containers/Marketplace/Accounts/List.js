@@ -39,12 +39,8 @@ export default class AccountsListContainer extends ListContainer {
 
     return this.context
       .confirm({
-        header: header,
-        message: () => (
-          <div class="text-semi-muted">
-            <p>{message}</p>
-          </div>
-        ),
+        header,
+        message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
@@ -106,12 +102,8 @@ export default class AccountsListContainer extends ListContainer {
 
     return this.context
       .confirm({
-        header: header,
-        message: () => (
-          <div class="text-semi-muted">
-            <p>{message}</p>
-          </div>
-        ),
+        header,
+        message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
