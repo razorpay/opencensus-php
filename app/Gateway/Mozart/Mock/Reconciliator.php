@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Airtel\Mock;
+namespace RZP\Gateway\Mozart\Mock;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
@@ -44,10 +44,10 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 ->format('d/m/Y');
 
             $col = [
-                NetbankingSib\ReconFields::TRANSACTION_DATE     => $date,
-                NetbankingSib\ReconFields::PAYMENT_ID           => $row['payment']['id'],
-                NetbankingSib\ReconFields::PAYMENT_AMOUNT       => $row['payment']['amount'] / 100,
-               NetbankingSib\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row['mozart']['raw']),
+                NetbankingSib\ReconFields::TRANSACTION_DATE      => $date,
+                NetbankingSib\ReconFields::PAYMENT_ID            => $row['payment']['id'],
+                NetbankingSib\ReconFields::PAYMENT_AMOUNT        => $row['payment']['amount'] / 100,
+                NetbankingSib\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row['mozart']['raw']),
             ];
 
             $this->content($col, 'col_payment_yesb_nb_recon');
@@ -64,7 +64,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
     {
         $this->gateway = $input['gateway'];
 
-        parent::generateReconciliation($input);
+        return parent::generateReconciliation($input);
     }
 
     protected function fetchBankPaymentId($data)
@@ -98,12 +98,19 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         $creator = new FileStore\Creator;
 
         $creator->extension($this->fileExtension)
-            ->content($content)
-            ->name($this->fileToWriteName)
-            ->store($store)
-            ->type($type)
-            ->save();
+                ->content($content)
+                ->name($this->fileToWriteName)
+                ->store($store)
+                ->type($type)
+                ->save();
 
         return $creator;
+    }
+
+    protected function getEntitiesToReconcile()
+    {
+        return $this->repo
+                    ->payment
+                    ->fetch(['gateway' => $this->gateway]);
     }
 }
