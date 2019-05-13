@@ -179,7 +179,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function updateBillingPeriod($invoice, $input): Entity
+    public function updateBillingPeriod(Entity $invoice, array $input): Entity
     {
         $operation = 'editBillingPeriod';
 

@@ -104,7 +104,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function updateBillingPeriod(string $id, $input): array
+    public function updateBillingPeriod(string $id, array $input): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id,$this->merchant);
 

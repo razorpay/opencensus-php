@@ -2684,12 +2684,6 @@ class InvoiceTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
-
-        $invoice = $this->getLastEntity('invoice', true);
-
-        self::assertEquals($invoice['billing_start'], 1557305769);
-
-        self::assertEquals($invoice['billing_end'], 1557386719);
     }
 
     // -------------------- Protected methods --------------------
