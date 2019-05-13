@@ -42,7 +42,11 @@ class Validator extends Base\Validator
 
     public function makeAddRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules([
+            Entity::TYPE        => 'required',
+            Entity::ID          => 'required',
+            Entity::VALIDATED   => 'sometimes',
+        ]);
 
         return $rules;
     }
