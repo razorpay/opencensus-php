@@ -51,6 +51,13 @@ class EmiTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddBOBEmiPlansWithMerchant()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testEnableMerchantSubvention()
     {
         $emiPlan = $this->fixtures->create('emi_plan');
