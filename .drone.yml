@@ -319,18 +319,41 @@ pipeline:
     when:
       environment: zeta
       event: deployment
-  deploy-prod:
+  deploy-prod-blue:
+    group: PROD_DEPLOY
     image: razorpay/drone-kubernetes
     pull: true
     secrets:
       - docker_username
       - docker_password
-      - server_url_prod
-      - server_cert_prod
-      - client_cert_prod
-      - client_key_prod
+      - server_url_prodblue
+      - server_cert_prodblue
+      - client_cert_prodblue
+      - client_key_prodblue
     user: drone
-    cluster: prod
+    cluster: prod-blue
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: dashboard
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod
+      event: deployment
+  deploy-prod-green:
+    group: PROD_DEPLOY
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_prodgreen
+      - server_cert_prodgreen
+      - client_cert_prodgreen
+      - client_key_prodgreen
+    user: drone
+    cluster: prod-green
     auth_mode: client-cert
     deployment: dashboard
     repo: razorpay/dashboard
