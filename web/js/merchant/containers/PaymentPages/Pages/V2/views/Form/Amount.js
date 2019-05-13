@@ -172,7 +172,7 @@ export class AmountCreator extends React.PureComponent {
     } = this.state;
 
     const isCurrencyChangeDisabled = !!this.props.field.id;
-    console.log('...', this.props.field);
+    // console.log('...', this.props.field);
 
     return (
       <Form
@@ -187,6 +187,7 @@ export class AmountCreator extends React.PureComponent {
                 name="currency"
                 disabled={isCurrencyChangeDisabled}
                 defaultValue={this.props.field.currency}
+                parentQuerySelector=".Modal-body"
               />
 
               <Input

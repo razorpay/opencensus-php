@@ -76,7 +76,12 @@ function ItemOption({ option }) {
 function getInformativeMessage(totalAmount, currency) {
   return (
     <p>
-      Total: <Amount value={totalAmount} currency={currency} />
+      Total:{' '}
+      <Amount
+        value={totalAmount}
+        currency={currency}
+        parentQuerySelector=".Modal-body"
+      />
     </p>
   );
 }
