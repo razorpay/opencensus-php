@@ -38,6 +38,7 @@ export default function NewSubscriptionLinkReview({
           <Amount
             value={selectedPlan.item.amount}
             currency={selectedPlan.item.currency}
+            parentQuerySelector=".Modal-body"
           />
         </p>
       </div>
@@ -52,6 +53,7 @@ export default function NewSubscriptionLinkReview({
               <Amount
                 value={authorizationAmount}
                 currency={selectedPlan.item.currency}
+                parentQuerySelector=".Modal-body"
               />
             </p>
             <div>
@@ -59,11 +61,16 @@ export default function NewSubscriptionLinkReview({
                 <Amount
                   value={planAmount}
                   currency={selectedPlan.item.currency}
+                  parentQuerySelector=".Modal-body"
                 />&nbsp;x&nbsp;{planQuantity}&nbsp;(quantity)
               </EntityDetailRow>
               {!!addOnAmount && (
                 <EntityDetailRow label="Upfront Amount">
-                  <Amount value={addOnAmount} currency={'INR'} />
+                  <Amount
+                    value={addOnAmount}
+                    currency={'INR'}
+                    parentQuerySelector=".Modal-body"
+                  />
                 </EntityDetailRow>
               )}
             </div>
@@ -78,6 +85,7 @@ export default function NewSubscriptionLinkReview({
               <Amount
                 value={subscriptioAmount}
                 currency={selectedPlan.item.currency}
+                parentQuerySelector=".Modal-body"
               />
             </p>
             <div>

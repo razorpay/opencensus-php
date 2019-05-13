@@ -329,6 +329,10 @@ export default class User {
   get isExpireByRequired() {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
   }
+
+  get isInttCurrenciesEnabled() {
+    return this.getExpStatus('international_currencies');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

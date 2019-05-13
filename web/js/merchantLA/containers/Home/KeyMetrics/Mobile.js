@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
 import Change from 'rzp/ui/Change';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import {

@@ -10,15 +10,11 @@ const currencies = {
 
 export default ({ value, currency = 'INR', className, ...attrs }) => {
   const amount = getFormattedAmount(value);
-  const currencySymbolMapping =
-    (window.currencyLib && window.currencyLib.displayCurrencies) || currencies;
+  const currencySymbol = currencies[currency] || currency;
 
   return (
     <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
-      <span
-        dangerouslySetInnerHTML={{ __html: currencySymbolMapping[currency] }}
-      />
-      {amount.split('.')[0]}
+      {currencySymbol} {amount.split('.')[0]}
       <span class="rzp-paise">.{amount.split('.')[1]}</span>
     </span>
   );

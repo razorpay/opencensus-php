@@ -1,6 +1,9 @@
 #paymentpage-container
   min-height: 100vh
 
+  .rzp-whole
+    font-weight: bold
+
 .TemplateCard
   border-radius: 4px
   background: #fff
@@ -612,7 +615,6 @@
     border-bottom: 1px solid #efefef
 
     & > div:not(.dropdown-options)
-      width: 50%
       display: inline-block
       padding: 0
       margin: 0
@@ -625,6 +627,9 @@
         overflow-y: scroll
 
   form[name="form_creator_generic"]
+    & > div:not(.dropdown-options)
+      width: 50%
+
     .Input:not(.Input--checkbox) .Input-content
       margin-top: 8px
 
@@ -646,13 +651,17 @@
 
   form[name="form_creator_amount"]
     .section-1
-      .Input-addons
-        width: 32px
-        line-height: 32px
-        background: transparent !important
+      & > div:first-of-type
+        width: 63%
 
-      .Input-el
-        padding-left: 32px
+      & > div:last-of-type
+        width: 37%
+
+      .PowerSelect__Trigger
+        height: 30px
+
+        &Label, &Status
+          height: 30px
 
       .Input-content, .Input-label
         display: inline-block
@@ -666,8 +675,11 @@
         float: left
         margin-bottom: 4px
 
-      .Input-el:not([type=checkbox])
-        width: 144px
+      .Input--amount
+        .Input-content
+          margin-right: 0
+        .Input-el
+          width: 120px
 
     .section-2
       .Input-el:not([type=checkbox])
@@ -675,6 +687,9 @@
         width: 80px
         padding: 0 8px
 
+    .Input--Currency .value
+      line-height: 32px
+      height: 32px
 
   .section-2
     > .Input:nth-of-type(1)

@@ -9,8 +9,12 @@ export default function NewSubscriptionLinkAddOnDetails({
   selectedItems,
   fields: { addons },
   internals,
+  currency,
+  disableCurrencySelect,
   ...props
 }) {
+  const filteredAddOns = items.items.filter(item => item.currency === currency);
+
   return (
     <div class="Subscription--New-addons">
       <Input.Check
@@ -25,10 +29,12 @@ export default function NewSubscriptionLinkAddOnDetails({
             <AddOnItem
               key={index}
               name={`addons.${index}`}
-              items={items.items}
+              items={filteredAddOns}
               itemsLoading={items.loading}
               onSelectItem={props.onSelectItem(index)}
               selectedItem={addon}
+              currency={currency}
+              disableCurrencySelect={disableCurrencySelect}
             />
             <span class="remove-btn" onClick={props.removeAddOn(index)}>
               <i class="i i-close" />

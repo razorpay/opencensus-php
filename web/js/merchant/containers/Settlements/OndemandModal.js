@@ -10,6 +10,7 @@ import { fetchCurrentBalance } from 'merchant/modules/home';
 import Input from 'component/Input';
 import Alert from 'rzp/ui/Forms/Alert';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { AmountTooltip } from 'rzp/ui/Amount';
 
 @connect(state => ({ user: state.session.user }), {
   closeModal,
@@ -169,7 +170,7 @@ export default class OndemandModal extends Component {
                   <Input
                     label="Enter amount to be settled"
                     required={true}
-                    addonBefore="₹"
+                    addonBefore={<AmountTooltip currency={'INR'} />}
                     autoFocus={true}
                     name="amount"
                     class="Input"

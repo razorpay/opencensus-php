@@ -1523,7 +1523,7 @@ export default class InvoicesNewContainer extends Component {
                                 ) : (
                                   <Amount
                                     value={invoiceTotal.total * 100}
-                                    currency={'INR'}
+                                    currency={invoice.currency}
                                   />
                                 )}
                               </h3>

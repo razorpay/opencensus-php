@@ -79,6 +79,7 @@ export default class NewSubscriptionLink extends Component {
 
   handleChangeInPlan = ({ option }) => {
     this.setState({
+      currencyOfSelectedPlan: option.currency,
       fields: {
         ...this.state.fields,
         plan_id: option.id,
@@ -243,6 +244,8 @@ export default class NewSubscriptionLink extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             removeAddOn={this.handleRemoveBtn}
+            currency={this.state.currencyOfSelectedPlan}
+            disableCurrencySelect
           />
         );
       case 2:

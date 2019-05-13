@@ -28,6 +28,7 @@ import { resizeWindow } from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';
 
@@ -149,6 +150,9 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
+      this.fetchSupportedCurrencies().then(({ data }) => {
+        window.currencyList = data;
+      }),
     ]).then(response => {
       if (response[0].showInstantActivation) {
         setTrackData({
@@ -197,6 +201,10 @@ export default class App extends Component {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
+  }
+
+  fetchSupportedCurrencies() {
+    return merchantFetch('currency/all/proxy');
   }
 
   fetchUser() {

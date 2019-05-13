@@ -408,13 +408,13 @@ export default class CreateNewContainer extends React.Component {
         f.hasOwnProperty('inlineFields') &&
         Array.isArray(f.inlineFields)
       ) {
-        let label;
-        if (typeof f.label === 'function') {
+        let label = f.label;
+        if (typeof label === 'function') {
           label = f.label(this);
         }
 
-        let className;
-        if (typeof f.className === 'function') {
+        let className = f.className;
+        if (typeof className === 'function') {
           className = f.className(this);
         }
 

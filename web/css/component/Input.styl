@@ -127,6 +127,117 @@
 .Input--capitalize .Input-el
   text-transform: uppercase
 
+.Input--Currency
+  width: 60px
+  vertical-align: top
+
+  &.Input--noMargin
+    width: 36px
+    text-align: center
+
+    .value
+      padding: 0
+      background-color: #f0f3f4
+      color: #57666d
+      width: 36px
+      line-height: 34px
+      display: inline-block
+      margin-right: -4px
+      border: 1px solid #e2e2e2
+      border-top-left-radius: 2px
+      border-bottom-left-radius: 2px
+      border-right: transparent
+
+  .Input-el
+    padding: 0
+    background: transparent
+    border: none
+    width: 62px
+
+  .PowerSelect
+    border-radius: 2px
+    padding: 0
+
+    &.PowerSelect--open
+      border-bottom: 1px solid $primary-color
+
+  .PowerSelect__Trigger
+    height: 34px
+
+    &Label
+      padding: 0 0 0 12px
+      text-align: center
+      height: 34px
+
+      > div
+        width: 28px
+
+    &Status
+      height: 32px
+
+.Input--Currency-dropdown.PowerSelect__Tether
+  margin-top: 8px
+  min-width: 240px
+  z-index: 100001
+
+  &::before
+    content: ''
+    position: absolute
+    top: -9px
+    left: 20px
+    z-index: -1
+    width: 0
+    height: 0
+    border-left: 10px solid transparent
+    border-right: 10px solid transparent
+    border-bottom: 12px solid #ccc
+
+  &::after
+    content: ''
+    position: absolute
+    top: -8px
+    left: 22px
+    width: 0
+    height: 0
+    border-left: 8px solid transparent
+    border-right: 8px solid transparent
+    border-bottom: 10px solid #fff
+
+  .PowerSelect__OptGroup
+    padding-left: 0
+
+    &__Label
+      font-size: 14px
+      font-weight: 600
+      background: #fff
+      pointer-events: none
+      padding: 6px 8px
+      position: sticky
+      top: 0
+
+.Input--Currency-dropdown.PowerSelect__Menu
+  .PowerSelect__Options
+    padding: 0 8px 8px
+
+  .PowerSelect__Option
+    padding: 4px 8px
+
+    .currency-symbol
+      display: inline-block
+      min-width: 16px
+      text-align: center
+
+    .i-check
+      display: none
+      float: right
+
+  .PowerSelect__Option--highlighted
+    font-weight: 600
+
+    .i-check
+      display: inline-block
+
+
 .Input--PowerDropdown
   .Input-elWrapper
     z-index: 9999
@@ -504,6 +615,14 @@ textarea.Input-el
     .Input-content .Input-content
       margin-left: 0
       margin-right: 20px
+
+    .Input-content .Input--Currency
+      .Input-content
+        margin-right: 8px
+
+      &.Input--noMargin
+        .Input-content
+          margin-right: 0
 
 /* Placeholder states for Input element */
 .Input-el
