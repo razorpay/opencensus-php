@@ -86,6 +86,22 @@ class Type
     ];
 
     /**
+     * For following batch types, sometimes batches get stuck during
+     * processing due to big file size or infra issue. So we are enabling
+     * 'Retry Batch' option for these batches even when they are in created
+     * state and having processing = true.
+     *
+     * Here the value against each type indicates the time gap from updated_at
+     * in seconds, after which only we will allow such retries.
+     *
+     * @var array
+     */
+    public static $retryInProcessingBatchTypes = [
+        // 2 hours gap for Recon batches
+        self::RECONCILIATION    => 7200,
+    ];
+
+    /**
      * Following batch types get processed via CRON job, CRON currently runs
      * less frequently (now every 6 hrs).
      *

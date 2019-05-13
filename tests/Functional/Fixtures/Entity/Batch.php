@@ -93,6 +93,34 @@ class Batch extends Base
         return $batch;
     }
 
+    public function createReconWithCreatedStatusAndProcessingTrue(array $fileRows = [])
+    {
+        $params = [
+            Entity::GATEWAY         => 'FirstData',
+            Entity::TYPE            => Type::RECONCILIATION,
+            Entity::STATUS          => Status::CREATED,
+            Entity::PROCESSING      => true,
+            Entity::SUCCESS_COUNT   => 0,
+            Entity::FAILURE_COUNT   => 0,
+            Entity::PROCESSED_COUNT => 0,
+            Entity::TOTAL_COUNT     => 0,
+        ];
+
+        $batch = $this->fixtures->create('batch', $params);
+
+        $this->writeToExcelFile($fileRows, $batch->getId(), self::INPUT_FILE_DIR);
+
+        $this->fixtures->create(
+            'file_store',
+            [
+                'entity_id' => $batch->getId(),
+                'type'      => FileStore\Type::RECONCILIATION_BATCH_INPUT,
+                'name'      => 'batch/upload/' . $batch->getFileKey(),
+                'location'  => 'batch/upload/' . $batch->getFileKeyWithExt(),
+            ]);
+
+        return $batch;
+    }
 
     public function create(array $attributes = array())
     {

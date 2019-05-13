@@ -2,6 +2,7 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
 use Carbon\Carbon;
+use RZP\Models\Batch;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
 use RZP\Models\Payment\Refund;
@@ -1582,6 +1583,67 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::FAILED);
 
         // Retrying failed batch.
+        $this->retryFailedBatch('batch_' . $batch['id']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        // Asserting status of batch as 'Processed' and counts.
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+        $this->assertEquals(1, $batch['total_count']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(1, $batch['processed_count']);
+    }
+
+    /**
+     * Test for reconciliation batch which are stuck in created state, having processing = true.
+     * Retrying will be allowed for such batches only if updated_at is older than the specified
+     * time gap (i.e. currently set at 2 hours).
+     */
+    public function testInProcessingReconBatchRetry()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->getNewPaymentEntity(false, true);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
+
+        $entries[] = $this->overrideFirstDataPayment($gatewayPayment1);
+
+        // Creating batch with created status with processing as true.
+        $this->fixtures->create('batch:recon_with_created_status_and_processing_true', $entries);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        // Asserting status of batch as created, and processing  = true.
+        $this->assertBatchStatus(Status::CREATED);
+        $this->assertEquals(1, $batch['processing']);
+        $this->assertEquals(0, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(0, $batch['processed_count']);
+
+        // Retrying In Processing batch.
+        $this->retryFailedBatch('batch_' . $batch['id']);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        // Assert that the batch was not retried.
+        $this->assertEquals(Status::CREATED, $batch['status']);
+        $this->assertEquals(1, $batch['processing']);
+        $this->assertEquals(0, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(0, $batch['processed_count']);
+
+        // Now change the updated_at of batch to 2 hours older and then retry
+        $timeGap = Batch\Type::$retryInProcessingBatchTypes['reconciliation'];
+
+        $olderUpdatedAt = $batch['updated_at'] - $timeGap;
+
+        $this->fixtures->edit('batch', $batch['id'], ['updated_at' => $olderUpdatedAt]);
+
+        // Retrying In Processing batch, this time it will be allowed for retry.
         $this->retryFailedBatch('batch_' . $batch['id']);
 
         $batch = $this->getDbLastEntityToArray('batch');

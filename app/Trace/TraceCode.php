@@ -1113,6 +1113,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_FILE_PROCESSING_ERROR                           = 'BATCH_FILE_PROCESSING_ERROR';
     const BATCH_FILE_PROCESSED                                  = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                               = 'BATCH_ALREADY_PROCESSED';
+    const RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH                 = 'RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH';
     const BATCH_PROCESSING_ENTRY                                = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                                = 'BATCH_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                                   = 'BATCH_PROCESS_ASYNC';
