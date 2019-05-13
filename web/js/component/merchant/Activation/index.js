@@ -610,7 +610,14 @@ export default class ActivationWizard extends React.Component {
       } else {
         trackFb(`KYC_complete_${data.data.activation_flow}`);
 
-        updateHubSpotContactsProperties({ l2_final_submission: true });
+        updateHubSpotContactsProperties(
+          {
+            final_submission: true,
+          },
+          {
+            account_status: data.data.activation_status,
+          }
+        );
 
         onAction &&
           onAction.trackSubmit({
@@ -1399,11 +1406,12 @@ class SubmitForm extends React.Component {
   }
 }
 
-function updateHubSpotContactsProperties(data) {
+function updateHubSpotContactsProperties(data, extra) {
   const hbsData = addPrefixToObjectKeys('l2_', data);
 
   const trackData = {
     ...hbsData,
+    ...extra,
   };
 
   if (data.business_type) {
