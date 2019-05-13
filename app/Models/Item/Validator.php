@@ -4,8 +4,10 @@ namespace RZP\Models\Item;
 
 use RZP\Base;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -26,7 +28,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
         Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'required|size:3|in:INR',
+        Entity::CURRENCY            => 'required|currency|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'filled|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
@@ -43,7 +45,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'filled|size:3|in:INR',
+        Entity::CURRENCY            => 'filled|currency|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
         Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
@@ -173,6 +175,23 @@ class Validator extends Base\Validator
                 "item must be of type: {$actualType}",
                 Entity::TYPE,
                 compact('id', 'expectedType', 'actualType'));
+        }
+    }
+
+    public function validateCurrency($attribute, $currency)
+    {
+        $merchant = app()->basicauth->getMerchant();
+
+        $international = $merchant->isInternational();
+
+        if (($international !== true) and ($currency !== Currency::INR))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
+                null,
+                [
+                    'currency' => $currency
+                ]);
         }
     }
 }

@@ -2630,6 +2630,7 @@ final class Route
             'subscription_manual_retry',
             'token_fetch_card',
             'subscription_payment_fetch_by_id',
+            'merchant_fetch_keys',
             'entity_origin_create',
             'currency_fetch_all_proxy',
         ],
@@ -2896,6 +2897,8 @@ final class Route
         // 'subscriptions_retry',
         'subscription_update_data',
         'subscription_payment_process',
+        'subscription_view_live',
+        'subscription_view_test',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
     ];
