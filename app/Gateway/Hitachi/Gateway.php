@@ -1534,4 +1534,30 @@ class Gateway extends Base\Gateway
 
         return static::CARD_CACHE_TTL;
     }
+
+    // If a terminal mode is purchase, we send the advice message during the processing of callback
+    // But, in the case of late authorized payments, this callback would not be processed and hence
+    // advice messages would not be sent
+    // Hence, in this case(ie, gatewaySuccess is true, but apiSuccess is false), during verify
+    // we need to send an advice message separately before throwing the exception to the api side
+    protected function runPaymentVerifyFlow($verify)
+    {
+        try
+        {
+            parent::runPaymentVerifyFlow($verify);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            if (($verify->gatewaySuccess === true) and
+                ($verify->apiSuccess === false) and
+                ($this->isRupayTransaction($this->input)) and
+                ($this->input['terminal']['mode'] === Terminal\Mode::PURCHASE)
+            )
+            {
+                $this->call(Base\Action::ADVICE, $this->input);
+            }
+
+            throw $e;
+        }
+    }
 }
