@@ -54,8 +54,10 @@ export function changeData({
       currSelectedPlan.item.amount * fields.quantity -
       prevSelectedPlan.item.amount * previousSubscription.quantity;
 
-  const changes = [
-    {
+  const changes = [];
+
+  if (prevSelectedPlan.item.name !== currSelectedPlan.item.name) {
+    changes.push({
       heading: 'Plan Change',
       changes: [
         {
@@ -63,8 +65,11 @@ export function changeData({
           change: currSelectedPlan.item.name,
         },
       ],
-    },
-    {
+    });
+  }
+
+  if (previousSubscription.quantity !== fields.quantity) {
+    changes.push({
       heading: 'Quantity',
       changes: [
         {
@@ -72,8 +77,11 @@ export function changeData({
           change: fields.quantity,
         },
       ],
-    },
-    {
+    });
+  }
+
+  if (previousSubscription.total_count !== fields.total_count) {
+    changes.push({
       heading: 'Count (No of cycles)',
       changes: [
         {
@@ -81,31 +89,30 @@ export function changeData({
           change: fields.total_count,
         },
       ],
-    },
-    {
+    });
+  }
+
+  if (previousSubscription.start_at !== fields.start_at) {
+    changes.push({
       heading: 'Start Date',
       changes: [
         {
-          current: moment
-            .unix(previousSubscription.start_at)
-            .format('DD MMM, YYYY'),
-          change: moment.unix(fields.start_at).format('DD MMM, YYYY'),
+          current: getTimeInFormat(previousSubscription.start_at),
+          change: getTimeInFormat(fields.start_at),
         },
       ],
-    },
-  ];
+    });
+  }
 
   const summary = [
     <li>
       <Amount
         value={prevSelectedPlan.item.amount}
         currency={prevSelectedPlan.item.currency}
-      />{' '}
-      {previousSubscription.quantity > 1 ? (
-        <>charged every {previousSubscription.quantity} monthly</>
-      ) : (
-        <>changed for month </>
-      )}
+      />
+      {previousSubscription.quantity > 1
+        ? `charged every ${previousSubscription.quantity} monthly`
+        : 'changed for month'}
       <b>
         <i class="i i-arrow-forward" />
         <Amount
@@ -146,3 +153,5 @@ export function changeData({
     summary,
   };
 }
+
+const getTimeInFormat = date => moment.unix(date).format('DD MMM, YYYY');
