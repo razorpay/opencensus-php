@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Constants;
 use RZP\Error\ErrorCode;
+use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Plan;
@@ -287,7 +288,14 @@ class Core extends Base\Core
         }
         else
         {
-            return Entity::DEFAULT_AUTH_AMOUNT;
+            if ($subscription->plan->item->getCurrency() === Currency::INR)
+            {
+                return Entity::DEFAULT_AUTH_AMOUNT;
+            }
+
+            $currencyDetails = Currency::getDetails();
+
+            return $currencyDetails[$subscription->plan->item->getCurrency()]['min_auth_value'];
         }
     }
 
