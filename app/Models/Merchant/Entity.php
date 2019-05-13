@@ -644,23 +644,16 @@ class Entity extends Base\PublicEntity
      */
     public function forceActivate()
     {
-        if ($this->isActivated() === true)
+        if (($this->isActivated() === true) or ($this->isLive() === true))
         {
             return;
         }
-
-        if ($this->isLive() === true)
-        {
-            return;
-        }
-
-        $app = App::getFacadeRoot();
 
         $this->setAttribute(self::ACTIVATED, true);
         $this->setAttribute(self::LIVE, true);
         $this->setAttribute(self::ACTIVATED_AT, time());
 
-        $app['trace']->info(
+        app('trace')->info(
             TraceCode::MERCHANT_FORCE_ACTIVATED,
             [
                 'activated'         => $this->isActivated(),
