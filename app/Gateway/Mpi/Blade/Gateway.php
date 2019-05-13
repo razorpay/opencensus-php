@@ -6,7 +6,6 @@ use Cache;
 use Carbon\Carbon;
 use GuzzleHttp;
 use DOMDocument;
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use Requests_Hooks;
 use RZP\Models\Card;
@@ -14,10 +13,13 @@ use RZP\Gateway\Mpi\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use Lib\Formatters\Xml;
+use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base as BaseGateway;
 use RZP\Gateway\Base\Action as Action;
+use RZP\Models\Payment as PaymentEntity;
 use RZP\Gateway\Mpi\Base\DeviceCategory;
 
 class Gateway extends Base\Gateway
@@ -866,11 +868,27 @@ class Gateway extends Base\Gateway
     {
         $merchantId = '';
 
-        switch ($input['card']['network_code'])
+        $gateway = $input['payment']['gateway'];
+
+        $network = $input['card']['network_code'];
+
+        switch ($network)
         {
             case Card\Network::MC:
             case Card\Network::MAES:
-                $merchantId = $this->config['live_mastercard_merchant_id'];
+                if ($gateway == PaymentEntity\Gateway::FIRST_DATA)
+                {
+                    // For Authenticating First Data requests we need to create merid by appending id provided from
+                    // first data with the store id that is placed in gateway_merchant_id field in terminal
+                    $envMerchantId = $this->config[$gateway]['live_merchant_id'];
+                    $storeId = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+                    $merchantId = $envMerchantId . substr($storeId, -8);
+                }
+                else
+                {
+                    $merchantId = $this->config['live_mastercard_merchant_id'];
+                }
 
                 break;
 

@@ -47,15 +47,18 @@ class Gateway extends Base\Gateway
             return $this->config['test_acq_bin'];
         }
 
-        switch ($input['card']['network_code'])
+        $gateway = $input['payment']['gateway'];
+        $network = $input['card']['network_code'];
+
+        switch ($network)
         {
             case Card\Network::MC:
             case Card\Network::MAES:
-                $acqBin = $this->config['live_mastercard_acq_bin'];
+                $acqBin = $this->config[$gateway]['live_mastercard_acq_bin'] ?? $this->config['live_mastercard_acq_bin'];
                 break;
 
             case Card\Network::VISA:
-                $acqBin = $this->config['live_visa_acq_bin'];
+                $acqBin = $this->config[$gateway]['live_visa_acq_bin'] ?? $this->config['live_visa_acq_bin'];
                 break;
 
             default:
