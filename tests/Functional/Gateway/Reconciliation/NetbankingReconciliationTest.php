@@ -781,6 +781,33 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
+    public function testSibSuccessRecon()
+    {
+        $this->gateway = 'netbanking_sib';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_sib');
+
+        $fileContents = $this->generateFile('sib', ['gateway' => 'netbanking_sib']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingSib', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testCorporationSuccessRecon()
     {
         $this->gateway = 'netbanking_corporation';
@@ -1103,6 +1130,21 @@ class NetbankingReconciliationTest extends TestCase
         $netbanking = $this->fixtures->create('netbanking', $netbankingAttributes);
 
         return $netbanking;
+    }
+
+    protected function createMozartEntity($paymentId, $amount, $gateway)
+    {
+        $mozartAttributes = [
+            'payment_id'      => $paymentId,
+            'gateway'         => $gateway,
+            'amount'          => $amount,
+            'raw'             => json_encode(['payment_id' => $paymentId,'bank_payment_id' => '99999']),
+            'action'          => 'authorize',
+        ];
+
+        $mozart = $this->fixtures->create('mozart', $mozartAttributes);
+
+        return $mozart;
     }
 
     protected function generateFile($bank, $input)
