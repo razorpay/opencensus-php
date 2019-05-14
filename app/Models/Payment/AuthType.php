@@ -79,6 +79,12 @@ class AuthType
         ],
     ];
 
+    // auth types which will get set if payment create request has auth_type as OTP
+    public static $otpAuthTypes = [
+        self::HEADLESS_OTP,
+        self::IVR,
+    ];
+
     public static $featureToAuthMap = [
         self::PIN  => [Feature\Constants::ATM_PIN_AUTH],
         self::OTP  => [Feature\Constants::IVR, Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],

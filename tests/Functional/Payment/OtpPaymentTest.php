@@ -2691,6 +2691,99 @@ class OtpPaymentTest extends TestCase
         }
     }
 
+    public function testOtpPreferredAuthPaymentWithRetryCheck()
+    {
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'load'          => 100,
+            'group'         => null,
+            'currency'      => 'INR',
+            'step'          => 'authorization',
+        ]);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->create('terminal:direct_first_data_recurring_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin' => '556763',
+            'country' => 'IN',
+            'issuer' => 'ICIC',
+            'network' => 'MasterCard',
+            'flows' => [
+                '3ds' => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $this->otpFlow = false;
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        TerminalOptions::setTestChance(500);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $otpelf = $this->mockOtpElf();
+        $this->count = 0;
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function ()
+            {
+                if ($this->count === 0)
+                {
+                    $this->count = 1;
+                    return [
+                        'success' => false,
+                        'error'   => [
+                            'reason' => 'UNSERVICEABLE_PAGE'
+                        ],
+                    ];
+                }
+
+                return [
+                        'success' => true,
+                        'data' => [
+                            'action' => 'page_resolved',
+                            'data' => [
+                                'next' => ['submit_otp', 'resend_otp'],
+                                'type' => 'otp'
+                            ]]
+                        ];
+            });
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
     // @codingStandardsIgnoreLine
     protected function doS2SOtpSubmitCallback(array $content, string $otp)
     {

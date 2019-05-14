@@ -131,7 +131,7 @@ trait Authorize
             {
                 $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
             }
-            
+
             $this->trace->info(
                 TraceCode::SELECTED_TERMINAL_IDS,
                 [
@@ -305,6 +305,9 @@ trait Authorize
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))
                 {
+
+                    $this->preProcessAuthBeforeRetry($payment);
+
                     continue;
                 }
 
@@ -323,6 +326,24 @@ trait Authorize
         }
 
         return $request;
+    }
+
+
+    protected function preProcessAuthBeforeRetry($payment)
+    {
+        $isPreferredAuthEmpty = (empty($payment->getMetadata(Payment\Entity::PREFERRED_AUTH)) === true);
+
+        if ($isPreferredAuthEmpty === false)
+        {
+            $payment->setAuthType(null);
+            return;
+        }
+
+        if (($payment->getAuthType() !== null) and
+            (in_array($payment->getAuthType(), Payment\AuthType::$otpAuthTypes, true) === true))
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
+        }
     }
 
     protected function logAndCheckForAuthRetry($e, $payment): bool
