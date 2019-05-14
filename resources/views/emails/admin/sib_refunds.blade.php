@@ -18,7 +18,7 @@
                         <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
                             <p>Please find the attached summery sheet for –South Indian Bank  PAYMENT GATEWAY transactions for the period Dtd. {{{$date}}} For your kind perusal please find attached  Refund File</p>
                             <p>Refund Amount – {{{$amount['refunds']}}}</p>
-                            <p>Net Payable Amount – {{{$amount['claims']}}}</p>
+                            <p>Net Payable Amount – {{{$amount['total']}}}</p>
                         </td>
                     </tr></table>
             </div>
