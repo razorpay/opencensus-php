@@ -132,7 +132,7 @@ export default class extends React.Component {
           !isInternationalEnabled && 'Input--noMargin'
         )}
       >
-        {isInternationalEnabled && !this.props.disabled ? (
+        {isInternationalEnabled ? (
           <div class="Input-content">
             <div class="Input-elWrapper">
               <div class="Input-el">
@@ -150,6 +150,7 @@ export default class extends React.Component {
                   searchIndices={['name', 'label']}
                   placeholder="Select currency"
                   optionComponent={CurrencyOption}
+                  disabled={this.props.disabled}
                   selectedOptionLabelPath="name"
                   selectedOptionComponent={this.getSelectedCurrencyOption}
                   onChange={this.onSelectCurrency}
