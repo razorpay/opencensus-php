@@ -115,6 +115,15 @@ class Core extends Base\Core
         return $downtime;
     }
 
+    public function delete(Entity $downtime): Entity
+    {
+        $this->repo->gateway_downtime->deleteOrFail($downtime);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DELETED, $downtime->toArrayPublic());
+
+        return $downtime;
+    }
+
     /**
      * Fetches downtime information at the current time and Future for displaying at Dashboard
      *

@@ -704,6 +704,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REFUND_VERIFY_UNEXPECTED                      = 'GATEWAY_REFUND_VERIFY_UNEXPECTED';
     const GATEWAY_DOWNTIME_CREATE                               = 'GATEWAY_DOWNTIME_CREATE';
     const GATEWAY_DOWNTIME_EDIT                                 = 'GATEWAY_DOWNTIME_EDIT';
+    const GATEWAY_DOWNTIME_DELETED                              = 'GATEWAY_DOWNTIME_DELETED';
     const GATEWAY_VERIFY_INVALID_HEADER                         = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_DOWNTIME_DELETE                               = 'GATEWAY_DOWNTIME_DELETE';
     const GATEWAY_ALREADY_REFUNDED                              = 'GATEWAY_ALREADY_REFUNDED';
