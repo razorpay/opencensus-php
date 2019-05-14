@@ -533,6 +533,7 @@ class Gateway
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
+        Payment\Gateway::WALLET_PHONEPE,
     ];
 
     public static $channels = [
