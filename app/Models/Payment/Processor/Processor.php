@@ -291,7 +291,7 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, null, []);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
 
             return $paymentData;
         }
@@ -308,7 +308,7 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, []);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
         }
@@ -1661,43 +1661,36 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
-        try
+        if ($payment == null)
         {
-            if ($payment == null)
-            {
-                $payment = $this->buildPaymentEntity($input);
-            }
-
-            if ($this->merchant->isFeeBearerCustomer() === true)
-            {
-                $this->verifyProvidedFee($payment, $input);
-            }
-
-            $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
-
-            $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
-
-            $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
-
-            $this->validateAndSetReceiverIfApplicable($payment, $input);
-
-            $this->validateBankTransferDetailsIfApplicable($payment);
-
-            $this->validateAndSetInvoiceDetailsIfApplicable($payment);
-
-            $metadata = $payment->getMetadata();
-
-            $this->trace->info(
-                TraceCode::PAYMENT_METADATA,
-                [
-                    'metadata'   => $metadata,
-                    'payment_id' => $payment->getId()
-                ]);
+            $payment = $this->buildPaymentEntity($input);
         }
-        catch (\Throwable $ex)
+
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
-            throw $ex;            
+            $this->verifyProvidedFee($payment, $input);
         }
+
+        $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
+
+        $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+        $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
+
+        $this->validateAndSetReceiverIfApplicable($payment, $input);
+
+        $this->validateBankTransferDetailsIfApplicable($payment);
+
+        $this->validateAndSetInvoiceDetailsIfApplicable($payment);
+
+        $metadata = $payment->getMetadata();
+
+        $this->trace->info(
+            TraceCode::PAYMENT_METADATA,
+            [
+                'metadata'   => $metadata,
+                'payment_id' => $payment->getId()
+            ]);
 
         $this->payment = $payment;
 

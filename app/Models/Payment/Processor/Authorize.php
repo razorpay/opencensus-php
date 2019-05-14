@@ -75,7 +75,7 @@ trait Authorize
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_PROCESSED, $payment, null, []);
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_PROCESSED, $payment);
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
@@ -297,7 +297,6 @@ trait Authorize
                 if ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true)
                 {
                     $request = $this->runHeadlessOtpFlow($payment, $request);
-                    // $request = $this->openHeadlessBrowser($payment, $request);
                 }
 
                 break;
@@ -1891,25 +1890,44 @@ trait Authorize
         {
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
 
+            $riskSource = Risk\Source::INTERNAL;
+
+            // for now use api only for bin based blocking until shield is not live 100%
+            $this->validateBlockedCard($payment);
+
             if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
                 ($payment->shouldRunShieldChecks() === true))
             {
+                $riskSource = Risk\Source::SHIELD;
+
                 $this->validateFraudDetectionV2($payment);
             }
             else if ($payment->shouldRunFraudChecks() === true)
             {
                 $this->validateEmailTld($payment);
 
-                $this->validateFraudDetection($payment, $this->merchant);
+                $riskSource = Risk\Source::MAXMIND;
 
-                $this->validateBlockedCard($payment);
+                $this->validateFraudDetection($payment, $this->merchant);
             }
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_PROCESSED, $payment);
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_RISKCHECK_PROCESSED, 
+                $payment,
+                null,
+                [
+                    'risk_source'   => $riskSource
+                ]);
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_RISKCHECK_PROCESSED,
+                $payment,
+                $ex,
+                [
+                    'riskSource' => $riskSource
+                ]);
 
             throw $ex;
         }
@@ -2004,7 +2022,7 @@ trait Authorize
             $this->updatePaymentAuthFailed($e);
 
             $riskData = [
-                Risk\Entity::REASON => Risk\RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
+                Risk\Entity::REASON     => Risk\RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
                 Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
             ];
 
