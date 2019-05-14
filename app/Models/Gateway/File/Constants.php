@@ -141,7 +141,7 @@ class Constants
             self::ALLA        => ['settlements@razorpay.com','imps.recon@allahabadbank.in'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
             self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com'],
-            self::SIB         => [''],
+            self::SIB         => ['sib.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

@@ -114,7 +114,7 @@ class Base extends Core
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
-        self::NETBANKING_SIB         => [],
+        self::NETBANKING_SIB         => ['epayments@sib.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
         self::NETBANKING_CANARA      => [],
