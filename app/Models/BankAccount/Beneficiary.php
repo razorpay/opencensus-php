@@ -104,25 +104,31 @@ class Beneficiary extends Base\Core
     {
         (new Validator)->validateInput('beneficiary_register', $input);
 
-        if (isset($input[Entity::ON]))
+        $to = Carbon::today(Timezone::IST);
+
+        if ((isset($input[Entity::FROM]) === true) and (isset($input[Entity::TO]) === true))
         {
-            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
+            $to   = Carbon::createFromTimestamp($input[Entity::TO], Timezone::IST);
+            $from = Carbon::createFromTimestamp($input[Entity::FROM], Timezone::IST);
         }
         else
         {
-            $today = Carbon::today(Timezone::IST);
-        }
+            if (isset($input[Entity::ON]) === true)
+            {
+                $to = Carbon::createFromTimestamp($input[Entity::ON], Timezone::IST);
+            }
 
-        if (Holidays::isWorkingDay($today) === false)
-        {
-            return ['message' => 'Today is a holiday! Happy holidays :)'];
-        }
+            if (Holidays::isWorkingDay($to) === false)
+            {
+                return ['message' => 'Today is a holiday! Happy holidays :)'];
+            }
 
-        $from = Holidays::getPreviousWorkingDay($today);
+            $from = Holidays::getPreviousWorkingDay($to);
+        }
 
         $bankAccounts = $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp(
             $from->getTimestamp(),
-            $today->getTimestamp());
+            $to->getTimestamp());
 
         if ($bankAccounts->count() === 0)
         {
@@ -138,8 +144,8 @@ class Beneficiary extends Base\Core
         $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
 
         // should notify after beneficiary file is generated.
-        $message = "Merchant Beneficiary file generated. Beneficiary added since".
-            " last report is ". $newBeneficiaryCount;
+        $message = 'Merchant Beneficiary file generated. Beneficiary added since'.
+            ' last report is '. $newBeneficiaryCount;
 
         (new SlackNotification)->send($message, ['channel' => $channel]);
 
@@ -210,8 +216,8 @@ class Beneficiary extends Base\Core
 
         $beneficiaryCount = $bankAccounts->count();
 
-        $message = "Merchant Beneficiary api executed. Beneficiary added since ".
-                   "last report is ". $beneficiaryCount;
+        $message = 'Merchant Beneficiary api executed. Beneficiary added since '.
+                   'last report is '. $beneficiaryCount;
 
         (new SlackNotification)->send($message, ['channel' => $channel]);
 
@@ -241,7 +247,7 @@ class Beneficiary extends Base\Core
         if ($status === false)
         {
             throw new LogicException(
-                "Beneficiary registration failed",
+                'Beneficiary registration failed',
                 null,
                 [
                     'channel'         => $channel,
