@@ -20,7 +20,7 @@ import GenericEntity from 'admin/entities/Entity';
 import MerchantActivationForm from 'admin/merchants/entity/MerchantActivationForm';
 import MerchantAnalyticStats from 'admin/merchants/entity/MerchantAnalyticStats';
 import MerchantReportConfig from 'admin/merchants/entity/MerchantReportConfig/List';
-import PartnerConfig from 'admin/merchants/entity/PartnerConfig/List';
+import PartnerConfig from 'admin/merchants/entity/PartnerConfig/List/index.js';
 
 import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';

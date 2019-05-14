@@ -3,10 +3,22 @@ import { getFormattedAmount } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
 
 const currencies = {
-  INR: '₹',
-  USD: 'US$',
-  SGD: 'S$',
-  EUR: '€',
+  INR: {
+    name: 'Indian Rupee',
+    symbol: '₹',
+  },
+  USD: {
+    name: 'US Dollar',
+    symbol: '$',
+  },
+  SGD: {
+    name: 'Singapore Dollar',
+    symbol: 'S$',
+  },
+  EUR: {
+    name: 'Euro',
+    symbol: '€',
+  },
 };
 
 export default ({
@@ -16,8 +28,13 @@ export default ({
   parentQuerySelector,
   ...attrs
 }) => {
+  if (!currency) {
+    currency = 'INR';
+  }
+
   const amount = getFormattedAmount(value);
-  let currencySymbol = currencies[currency];
+
+  let currencySymbol = currencies[currency].symbol;
 
   if (window.currencyList && window.currencyList[currency]) {
     currencySymbol = window.currencyList[currency].symbol;
@@ -44,12 +61,16 @@ export default ({
 // Get the currencySymbolMapping from user.getCurrencyList
 export function AmountTooltip({
   children,
-  currency,
+  currency = 'INR',
   customClass,
   parentQuerySelector,
 }) {
+  if (!currency) {
+    currency = 'INR';
+  }
+
   const currencySymbolMapping = currencies;
-  let currencySymbol = currencies[currency];
+  let currencySymbol = currencies[currency].symbol;
 
   if (window.currencyList && window.currencyList[currency]) {
     currencySymbol = window.currencyList[currency].symbol;
