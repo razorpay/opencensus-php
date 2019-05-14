@@ -68,7 +68,7 @@ export default function NewSubscriptionLinkReview({
                 <EntityDetailRow label="Upfront Amount">
                   <Amount
                     value={addOnAmount}
-                    currency={'INR'}
+                    currency={selectedPlan.item.currency}
                     parentQuerySelector=".Modal-body"
                   />
                 </EntityDetailRow>
