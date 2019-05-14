@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner\Config;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants as AppConstants;
 
@@ -18,6 +19,7 @@ class Repository extends Base\Repository
         Entity::DEFAULT_PLAN_ID  => 'sometimes|string|size:14',
         Entity::IMPLICIT_PLAN_ID => 'sometimes|string|size:14',
         Entity::EXPLICIT_PLAN_ID => 'sometimes|string|size:14',
+        Entity::COMMISSION_MODEL => 'sometimes|string|custom',
     ];
 
     /**
@@ -81,5 +83,16 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->orderBy(Entity::ID, 'desc')
                     ->get();
+    }
+
+    /**
+     * @param $attribute
+     * @param $type
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateCommissionModel($attribute, $type)
+    {
+        CommissionModel::validate($type);
     }
 }

@@ -123,6 +123,7 @@ final class Route
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
+        'payment_validate_account'                 => ['post',     'payments/validate/account',                      'PaymentController@postPaymentValidateEntity'                       ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
@@ -504,6 +505,7 @@ final class Route
         'invoice_get_count'                        => ['get',      'invoices-count',                                 'InvoiceController@getInvoicesCount'                                ],
         'invoice_fetch_multiple'                   => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
         'invoice_update'                           => ['patch',    'invoices/{id}',                                  'InvoiceController@updateInvoice'                                   ],
+        'invoice_update_billing_period'            => ['patch',    'invoices/{id}/update_billing_period',            'InvoiceController@updateBillingPeriod'                             ],
         'invoice_issue'                            => ['post',     'invoices/{id}/issue',                            'InvoiceController@issueInvoice'                                    ],
         'invoice_delete'                           => ['delete',   'invoices/{id}',                                  'InvoiceController@deleteInvoice'                                   ],
         'invoice_add_line_items'                   => ['post',     'invoices/{id}/line_items',                       'InvoiceController@addLineItems'                                    ],
@@ -564,6 +566,7 @@ final class Route
         'gateway_fetch_downtimes'                  => ['get',      'gateway/downtimes',                              'GatewayController@getGatewayDowntimes'                             ],
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                  => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
+        'gateway_delete_downtime'                  => ['delete',   'gateway/downtimes/{id}',                         'GatewayController@deleteGatewayDowntime'                           ],
         'gateway_downtime_vajra_webhook'           => ['post',     'gateway/downtimes/webhook/vajra',                'GatewayController@postGatewayDowntimeVajraWebhook'                 ],
         'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
@@ -1117,6 +1120,7 @@ final class Route
         'virtual_account_order_create',
         'payment_redirect_3ds',
         'currency_fetch_all',
+        'payment_validate_account',
     ];
 
     public static $device = [
@@ -1639,6 +1643,7 @@ final class Route
         'commissions_get',
         'currency_fetch_all_proxy',
         'commissions_analytics',
+        'invoice_update_billing_period',
     ];
 
     // These will run on internal auth with the assurance
@@ -1820,6 +1825,7 @@ final class Route
         'gateway_file_retry',
         'gateway_remove_priorities',
         'gateway_update_downtime',
+        'gateway_delete_downtime',
         'gateway_update_priorities',
         'gateway_update_rule',
         'get_cache_counts',
@@ -2222,6 +2228,7 @@ final class Route
         'gateway_file_retry'                       => '*',
         'gateway_remove_priorities'                => '*',
         'gateway_update_downtime'                  => Permission::UPDATE_GATEWAY_DOWNTIME,
+        'gateway_delete_downtime'                  => Permission::UPDATE_GATEWAY_DOWNTIME,
         'gateway_update_priorities'                => '*',
         'get_cache_counts'                         => '*',
         'get_config_keys'                          => '*',
@@ -2630,8 +2637,10 @@ final class Route
             'subscription_manual_retry',
             'token_fetch_card',
             'subscription_payment_fetch_by_id',
+            'merchant_fetch_keys',
             'entity_origin_create',
             'currency_fetch_all_proxy',
+            'invoice_update_billing_period',
         ],
 
         'kotak' => [
@@ -2896,6 +2905,8 @@ final class Route
         // 'subscriptions_retry',
         'subscription_update_data',
         'subscription_payment_process',
+        'subscription_view_live',
+        'subscription_view_test',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
     ];

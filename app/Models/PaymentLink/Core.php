@@ -226,6 +226,8 @@ class Core extends Base\Core
         // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
+        $paymentLink->getValidator()->validatePaymentCurrency($payment);
+
         // 2. Validates Payment notes (UDF values), if applicable
         $udfSchema = new UdfSchema($paymentLink);
 

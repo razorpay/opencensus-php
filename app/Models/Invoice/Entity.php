@@ -18,6 +18,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
+use RZP\Models\Currency\Currency;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
@@ -113,6 +114,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_PAID              = 'amount_paid';
     const AMOUNT_DUE               = 'amount_due';
     const CURRENCY                 = 'currency';
+    const CURRENCY_SYMBOL          = 'currency_symbol';
     const USER_ID                  = 'user_id';
     const SOURCE                   = 'source';
     const BILLING_START            = 'billing_start';
@@ -342,6 +344,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::COMMENT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::SHORT_URL,
         self::VIEW_LESS,
         self::SOURCE,
@@ -397,6 +400,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::DESCRIPTION,
         self::NOTES,
         self::COMMENT,
@@ -444,6 +448,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::DESCRIPTION,
         self::COMMENT,
         self::SHORT_URL,
@@ -463,6 +468,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::INVOICE_NUMBER,
         self::TAXABLE_AMOUNT,
+        self::CURRENCY_SYMBOL,
     ];
 
     protected $publicSetters = [
@@ -1213,6 +1219,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $details;
+    }
+
+    /**
+     * Sets currency symbol as per the currency.
+     */
+    protected function getCurrencySymbolAttribute()
+    {
+        $currency = $this->getCurrency();
+
+        return Currency::getSymbol($currency);
     }
 
     protected function getPaymentIdAttribute()

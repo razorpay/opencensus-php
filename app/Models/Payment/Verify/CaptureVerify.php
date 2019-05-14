@@ -57,6 +57,7 @@ class CaptureVerify extends Verify
 
                 case Action::FINISH:
                     $result = Result::UNKNOWN;
+                    $this->handleFinishAction($payment);
                     $this->updateVerifyBucket($payment, $filter, self::LAST);
                     break;
 
@@ -146,5 +147,27 @@ class CaptureVerify extends Verify
         }
 
         return $result;
+    }
+
+    protected function handleFinishAction($payment)
+    {
+        // Dry run temporary alert on slack for failed captured payment verification
+        $message = 'Dry Run - Captured payment verification failed - payment will go on hold (temporary alert - ignore)';
+
+        $slackArray = [
+            'payment_id'    => $payment->getId(),
+            'verified_at'   => $payment->getVerifyAt(),
+            'verify_bucket' => $payment->getVerifyBucket(),
+            'gateway'       => $payment->getGateway(),
+            'status'        => $payment->getStatus(),
+        ];
+
+        $this->slack->queue(
+            $message,
+            $slackArray,
+            [
+                'channel' => $this->slackChannel,
+            ]
+        );
     }
 }

@@ -69,6 +69,19 @@ return [
         ],
     ],
 
+    'testImplicitVariableAndExplicitForSubvention' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testExplicitOnInternationalPayment' => [
         'request' => [
             'method' => 'POST',

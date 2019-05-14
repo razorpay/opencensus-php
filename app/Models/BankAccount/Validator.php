@@ -98,6 +98,8 @@ class Validator extends Base\Validator
 
     protected static $beneficiaryRegisterRules = [
         Entity::ON                      => 'sometimes|epoch',
+        Entity::TO                      => 'required_with:from|epoch',
+        Entity::FROM                    => 'required_with:to|epoch',
         Entity::RECIPIENT_EMAILS        => 'sometimes|array',
         Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
     ];

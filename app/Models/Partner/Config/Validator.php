@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::DEFAULT_PLAN_ID        => 'required|alpha_num|size:14',
         Entity::IMPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
         Entity::EXPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
+        Entity::COMMISSION_MODEL       => 'sometimes|string|custom', // will make required once dashboard admin changes go live
         Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer|nullable',
         Entity::COMMISSIONS_ENABLED    => 'required|boolean',
         Entity::EXPLICIT_REFUND_FEES   => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
@@ -27,10 +28,15 @@ class Validator extends Base\Validator
         Entity::DEFAULT_PLAN_ID        => 'sometimes|alpha_num|size:14',
         Entity::IMPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
         Entity::EXPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
+        Entity::COMMISSION_MODEL       => 'sometimes|string|custom', // will make required once dashboard admin changes go live
         Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer|nullable',
         Entity::COMMISSIONS_ENABLED    => 'sometimes|boolean',
         Entity::EXPLICIT_REFUND_FEES   => 'sometimes|boolean',
         Entity::EXPLICIT_SHOULD_CHARGE => 'sometimes|boolean',
+    ];
+
+    protected static $createValidators = [
+        'add_implicit_expiry_date',
     ];
 
     public function validateEmptyConfig($config)
@@ -44,6 +50,28 @@ class Validator extends Base\Validator
                     Entity::ORIGIN_ID => $config->{Entity::ORIGIN_ID},
                     Entity::ID        => $config->{Entity::ID},
                 ]);
+        }
+    }
+
+    /**
+     * @param $attribute
+     * @param $type
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateCommissionModel($attribute, $type)
+    {
+        CommissionModel::validate($type);
+    }
+
+    public function validateAddImplicitExpiryDate(array $input)
+    {
+        // expiry date should not be set for subvention model
+        if (((empty($input[Entity::IMPLICIT_EXPIRY_AT]) === false)) and
+            (empty($input[Entity::COMMISSION_MODEL]) === false) and
+            ($input[Entity::COMMISSION_MODEL] === CommissionModel::SUBVENTION))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION);
         }
     }
 }

@@ -245,6 +245,33 @@ class UpiSbiGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateAccountVpa()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountVpaFailed()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountInvalidInput()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     /**
      * When we verify a payment whose vpa validation failed,
      * we should be getting a response that says no transaction found.

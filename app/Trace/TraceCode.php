@@ -704,6 +704,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REFUND_VERIFY_UNEXPECTED                      = 'GATEWAY_REFUND_VERIFY_UNEXPECTED';
     const GATEWAY_DOWNTIME_CREATE                               = 'GATEWAY_DOWNTIME_CREATE';
     const GATEWAY_DOWNTIME_EDIT                                 = 'GATEWAY_DOWNTIME_EDIT';
+    const GATEWAY_DOWNTIME_DELETED                              = 'GATEWAY_DOWNTIME_DELETED';
     const GATEWAY_VERIFY_INVALID_HEADER                         = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_DOWNTIME_DELETE                               = 'GATEWAY_DOWNTIME_DELETE';
     const GATEWAY_ALREADY_REFUNDED                              = 'GATEWAY_ALREADY_REFUNDED';
@@ -938,6 +939,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_SUSPEND                                      = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                                    = 'MERCHANT_UNSUSPEND';
 
+    const MERCHANT_FORCE_ACTIVATED                              = 'MERCHANT_FORCE_ACTIVATED';
     const MERCHANT_ACTIVATED_AT_OUT_OF_SYNC                     = 'MERCHANT_ACTIVATED_AT_OUT_OF_SYNC';
 
     const MERCHANT_PAYOUT_SKIPPED                               = 'MERCHANT_PAYOUT_SKIPPED';
@@ -1113,6 +1115,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_FILE_PROCESSING_ERROR                           = 'BATCH_FILE_PROCESSING_ERROR';
     const BATCH_FILE_PROCESSED                                  = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                               = 'BATCH_ALREADY_PROCESSED';
+    const RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH                 = 'RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH';
     const BATCH_PROCESSING_ENTRY                                = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                                = 'BATCH_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                                   = 'BATCH_PROCESS_ASYNC';

@@ -4923,3 +4923,9 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE fund_transfer_attempts
     ADD INDEX fund_transfer_attempts_card_id_index (card_id);
+
+ALTER TABLE partner_configs
+    ADD COLUMN `commission_model` varchar(255) not null default 'commission' after `explicit_should_charge`;
+
+ALTER TABLE commissions
+    ADD COLUMN `model` varchar(255) not null default 'commission' after `record_only`;

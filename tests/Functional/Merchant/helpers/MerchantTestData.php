@@ -3117,6 +3117,23 @@ return [
         ]
     ],
 
+    'testMerchantForceActivate' => [
+        'request' => [
+            'content' => [
+                'action' => 'force_activate'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'activated' => true,
+                'live'      => true,
+            ],
+        ]
+    ],
+
     'testMerchantArchiveWithNoMerchantDetails' => [
         'request' => [
             'content' => [
@@ -4084,14 +4101,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
         ],
     ],
 
