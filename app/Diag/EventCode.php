@@ -18,8 +18,8 @@ class EventCode
     const PAYMENT_INPUT_VALIDATIONS2_PROCESSED          = 'payment.input.validations.processed';
     const PAYMENT_RISKCHECK_INITIATED                   = 'payment.riskcheck.initiated';
     const PAYMENT_RISKCHECK_PROCESSED                   = 'payment.riskcheck.processed';
-    const TERMINAL_SELECTION_INITIATED                  = 'terminal.selection.initiated';
-    const TERMINAL_SELECTION_PROCESSED                  = 'terminal.selection.processed';
+    const PAYMENT_TERMINAL_SELECTION_INITIATED          = 'payment.terminal.selection.initiated';
+    const PAYMENT_TERMINAL_SELECTION_PROCESSED          = 'payment.terminal.selection.processed';
     const PAYMENT_CREATION_PROCESSED                    = 'payment.creation.processed';
     const PAYMENT_CREATE_REDIRECT_RESPONSE_SENT         = 'payment.create.redirect.response.sent';
     const PAYMENT_CREATE_REDIRECT_INITIATED             = 'payment.create.redirect.initiated';
@@ -42,6 +42,8 @@ class EventCode
     const PAYMENT_S2S_CALLBACK_INITIATED                = 'payment.s2s.callback.initiated';
     const PAYMENT_REDIRECT_CALLBACK_INITIATED           = 'payment.redirect.callback.initiated';
     const PAYMENT_CAPTURE_INITIATED                     = 'payment.capture.initiated';
+    const PAYMENT_PRICING_CALCULATIONS_INITIATED        = 'payment.pricing.calculations.initiated';
+    const PAYMENT_PRICING_CALCULATIONS_PROCESSED        = 'payment.pricing.calculations.processed';
     const PAYMENT_CAPTURE_PROCESSED                     = 'payment.capture.processed';
     const PAYMENT_CREATE_REQUEST_PROCESSED              = 'payment.create.request.processed';
     const PAYMENT_RESPONSE_SENT                         = 'payment.response.sent';

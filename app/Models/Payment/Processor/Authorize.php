@@ -115,7 +115,7 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::TERMINAL_SELECTION_INITIATED, $payment);
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_TERMINAL_SELECTION_INITIATED, $payment);
 
         // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
         try
@@ -141,7 +141,7 @@ trait Authorize
                 ]);
 
             $this->app['diag']->trackPaymentEvent(
-                EventCode::TERMINAL_SELECTION_PROCESSED,
+                EventCode::PAYMENT_TERMINAL_SELECTION_PROCESSED,
                 $payment,
                 null,
                 [
@@ -150,7 +150,7 @@ trait Authorize
         }
         catch (\Throwable $ex)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::TERMINAL_SELECTION_PROCESSED, $payment, $ex);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_TERMINAL_SELECTION_PROCESSED, $payment, $ex);
 
             throw $ex;
         }
@@ -245,20 +245,22 @@ trait Authorize
 
         while ($retryAttempts < $maxRetryAttempts)
         {
-            $this->app['diag']->trackPaymentEvent(
-                EventCode::PAYMENT_AUTHENTICATION_INITIATED, 
-                $payment,
-                null,
-                [
-                    'attempt'   => $retryAttempts
-                ]);
-
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             // Uncomment this to test with Sharp or any other terminal locally.
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
 
             $payment->associateTerminal($currentTerminal);
+
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_INITIATED, 
+                $payment,
+                null,
+                [
+                    'attempt'     => $retryAttempts,
+                    'terminal_id' => $payment->getTerminalId(),
+                    'gateway'     => $payment->getGateway()
+                ]);
 
             $terminalGatewayInput = $gatewayInput;
 
