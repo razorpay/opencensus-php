@@ -253,8 +253,6 @@ class Processor
 
     public function process(array $input, $gatewayInput = []): array
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
-
         try
         {
             $startTime = microtime(true);
@@ -262,6 +260,8 @@ class Processor
             $this->setMethodForInput($input);
 
             $this->appendMetadataForPayment($input);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, $payment);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -291,7 +291,7 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_PROCESSED, $payment, null, []);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, null, []);
 
             return $paymentData;
         }
@@ -308,7 +308,7 @@ class Processor
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_PROCESSED, $payment, $e, []);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, []);
 
             throw $e;
         }
@@ -1661,41 +1661,44 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
-        if ($payment == null)
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_VALIDATIONS_INITIATED, $payment);
+
+        try
         {
-            $payment = $this->buildPaymentEntity($input);
+            if ($payment == null)
+            {
+                $payment = $this->buildPaymentEntity($input);
+            }
+
+            if ($this->merchant->isFeeBearerCustomer() === true)
+            {
+                $this->verifyProvidedFee($payment, $input);
+            }
+
+            $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
+
+            $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+            $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
+
+            $this->validateAndSetReceiverIfApplicable($payment, $input);
+
+            $this->validateBankTransferDetailsIfApplicable($payment);
+
+            $this->validateAndSetInvoiceDetailsIfApplicable($payment);
+
+            $metadata = $payment->getMetadata();
+
+            $this->trace->info(
+                TraceCode::PAYMENT_METADATA,
+                [
+                    'metadata'   => $metadata,
+                    'payment_id' => $payment->getId()
+                ]);
         }
-
-        // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
-
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        catch (\Throwable $ex)
         {
-            $this->verifyProvidedFee($payment, $input);
-        }
-
-        $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
-
-        $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
-
-        $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
-
-        $this->validateAndSetReceiverIfApplicable($payment, $input);
-
-        $this->validateBankTransferDetailsIfApplicable($payment);
-
-        $this->validateAndSetInvoiceDetailsIfApplicable($payment);
-
-        $metadata = $payment->getMetadata();
-
-        $this->trace->info(
-            TraceCode::PAYMENT_METADATA,
-            ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
-
-        if (isset($metadata['checkout_id']) === false)
-        {
-             $this->trace->warning(
-                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
-                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
+            throw $ex;            
         }
 
         $this->payment = $payment;
@@ -2619,6 +2622,8 @@ class Processor
     public function redirectTo3ds($id)
     {
         $payment = $this->retrieve($id);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
 
         $diff = time() - $payment->getCreatedAt();
 

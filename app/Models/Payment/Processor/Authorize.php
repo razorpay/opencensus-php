@@ -75,6 +75,8 @@ trait Authorize
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_PROCESSED, $payment, null, []);
+
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
@@ -175,6 +177,9 @@ trait Authorize
         //
         $this->setSelectedTerminals($payment, $gatewayInput);
 
+        // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
+
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
             $this->repo->saveOrFail($payment);
@@ -240,6 +245,14 @@ trait Authorize
 
         while ($retryAttempts < $maxRetryAttempts)
         {
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_INITIATED, 
+                $payment,
+                null,
+                [
+                    'attempt'   => $retryAttempts
+                ]);
+
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             // Uncomment this to test with Sharp or any other terminal locally.
@@ -270,7 +283,7 @@ trait Authorize
             {
                 if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
                 {
-                    $request = $this->callGatewayFunction(Action::OTP_GENERATE, $terminalGatewayInput);
+                    $request = $this->runOtpPaymentFlow($payment, $terminalGatewayInput);
                 }
                 else
                 {
@@ -281,7 +294,8 @@ trait Authorize
 
                 if ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true)
                 {
-                    $request = $this->openHeadlessBrowser($payment, $request);
+                    $request = $this->runHeadlessOtpFlow($payment, $request);
+                    // $request = $this->openHeadlessBrowser($payment, $request);
                 }
 
                 break;
@@ -323,6 +337,26 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
+    {
+        try
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_GENERATE_OTP_INITIATED, $payment);
+
+            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_GENERATE_OTP_PROCESSED, $payment);
+
+            return $request;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_GENERATE_OTP_PROCESSED, $payment, $ex);
+
+            throw $ex            
+        }
     }
 
     protected function logAndCheckForAuthRetry($e, $payment): bool
@@ -669,32 +703,46 @@ trait Authorize
 
     protected function runPaymentInputValidations(Payment\Entity $payment, array $input)
     {
-        $this->validateCardAndCvv($payment, $input);
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_INITIATED, $payment, $ex);
+        
+        try
+        {
+            $this->validateCardAndCvv($payment, $input);
 
-        $this->validateRecurringIfApplicable($payment, $input);
+            $this->validateRecurringIfApplicable($payment, $input);
 
-        $this->validateCardAuthenticationIfApplicable($payment, $input);
+            $this->validateCardAuthenticationIfApplicable($payment, $input);
 
-        $this->validateS2SIfApplicable($payment);
+            $this->validateS2SIfApplicable($payment);
 
-        $this->validateSubscriptionInputIfPresent($payment, $input);
+            $this->validateSubscriptionInputIfPresent($payment, $input);
 
-        $this->verifyPaymentMethodEnabled($payment);
+            $this->verifyPaymentMethodEnabled($payment);
 
-        $this->validatePaymentNetworkSupported($payment);
+            $this->validatePaymentNetworkSupported($payment);
 
-        $this->runInternationalChecks($payment);
+            $this->runInternationalChecks($payment);
 
-        $this->runFraudChecksIfApplicable($payment);
+            $this->runFraudChecksIfApplicable($payment);
 
-        // Fees validation can only happen after international validation has gone through
-        // otherwise can cause issues with international pricing rule being not available when
-        // international is not enabled.
-        $this->verifyFeesLessThanAmount($payment);
+            // Fees validation can only happen after international validation has gone through
+            // otherwise can cause issues with international pricing rule being not available when
+            // international is not enabled.
+            $this->verifyFeesLessThanAmount($payment);
 
-        $this->validateOfferIfApplicable($payment, $input);
+            $this->validateOfferIfApplicable($payment, $input);
 
-        $this->validateCardlessEmiIfApplicable($payment, $input);
+            $this->validateCardlessEmiIfApplicable($payment, $input);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
+
     }
 
     protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)
@@ -1836,18 +1884,31 @@ trait Authorize
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
-        if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
-            ($payment->shouldRunShieldChecks() === true))
+        try 
         {
-            $this->validateFraudDetectionV2($payment);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
+
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+                ($payment->shouldRunShieldChecks() === true))
+            {
+                $this->validateFraudDetectionV2($payment);
+            }
+            else if ($payment->shouldRunFraudChecks() === true)
+            {
+                $this->validateEmailTld($payment);
+
+                $this->validateFraudDetection($payment, $this->merchant);
+
+                $this->validateBlockedCard($payment);
+            }
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_PROCESSED, $payment);
         }
-        else if ($payment->shouldRunFraudChecks() === true)
+        catch (\Throwable $ex)
         {
-            $this->validateEmailTld($payment);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_PROCESSED, $payment, $ex);
 
-            $this->validateFraudDetection($payment, $this->merchant);
-
-            $this->validateBlockedCard($payment);
+            throw $ex;
         }
     }
 
@@ -2947,6 +3008,8 @@ trait Authorize
             $this->trace->traceException($e);
         }
         // @codingStandardsIgnoreEnd
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CARDSAVING_PROCESSED, $payment);
 
         return $token;
     }
@@ -4098,6 +4161,8 @@ trait Authorize
             $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RESPONSE_SENT, $payment);
+
         return $returnData;
     }
 
@@ -4326,7 +4391,13 @@ trait Authorize
 
     protected function callGatewayAuthorize(array $data)
     {
-        return $this->callGatewayFunction(Action::AUTHORIZE, $data);
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $payment);
+        
+        $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT, $payment);
+
+        return $response
     }
 
     /**
@@ -5341,13 +5412,13 @@ trait Authorize
             $payload
         );
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_RESPONSE_SENT , $payment);
+
         return $data;
     }
 
-    public function processRedirectToAuthorize(string $paymentId, string $trackId)
+    public function processRedirectToAuthorize(Payment\Entity $payment, string $trackId)
     {
-        $payment = $this->retrieve($paymentId);
-
         $this->checkForMerchantCallbackUrl($payment);
 
         $this->trace->info(

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -14,40 +15,55 @@ trait OtpResend
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        $payment = $this->retrieve($id);
-
         $this->trace->info(
             TraceCode::PAYMENT_OTP_RESEND_REQUEST,
             [
                 'input'         => $input,
-                'payment_id'    => $payment->getId(),
-                'gateway'       => $payment->getGateway(),
+                'payment_id'    => $id
             ]);
 
-        $this->validatePaymentStatus($payment);
-
-        $gatewayInput = [];
-
-        $this->prePaymentOtpResendProcessing($payment, $input, $gatewayInput);
-
-        if ($this->canRunOtpPaymentFlow($payment) === true)
+        try
         {
-            $data = $this->runOtpResendFlow($gatewayInput, $payment);
+            $payment = $this->retrieve($id);
 
-            $payment->resetOtpAttempts();
-            $payment->saveOrFail();
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED, $payment);
+        
+            $this->validatePaymentStatus($payment);
 
-            $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND);
+            $gatewayInput = [];
 
-            return $data;
+            $this->prePaymentOtpResendProcessing($payment, $input, $gatewayInput);
+
+            if ($this->canRunOtpPaymentFlow($payment) === true)
+            {
+                $data = $this->runOtpResendFlow($gatewayInput, $payment);
+
+                $payment->resetOtpAttempts();
+                
+                $this->repo->saveOrFail($payment);
+
+                $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment);
+
+                return $data;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Gateway does not support OTP resend',
+                    null,
+                    [
+                        'payment_id' => $id
+                    ]);
+            }
         }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED, $payment, $ex);
+         
+            $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
 
-        $this->app['segment']->trackPayment($payment, TraceCode::OTP_RESEND_EXCEPTION);
-
-        throw new Exception\LogicException(
-            'Gateway does not support OTP resend',
-            null,
-            ['payment_id' => $id]);
+            throw $ex;
+        }
     }
 
     protected function runOtpResendFlow($gatewayInput, $payment)

@@ -86,6 +86,8 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        $this->logPaymentRequestEvent($input);
+
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         if (($this->app['basicauth']->getMerchant()->isFeeBearerCustomer() === true) and
@@ -119,6 +121,8 @@ class PaymentCreateController extends Controller
         // when cache is set to false. See jQuery docs for details
         unset($input['_']);
 
+        $this->logPaymentRequestEvent($input);
+
         $data = $this->service(E::PAYMENT)->process($input);
 
         return ApiResponse::json($data);
@@ -136,6 +140,8 @@ class PaymentCreateController extends Controller
 
         unset($input['callback']);
 
+        $this->logPaymentRequestEvent($input);
+
         $data = $this->service(E::PAYMENT)->process($input);
 
         return ApiResponse::json($data);
@@ -147,6 +153,8 @@ class PaymentCreateController extends Controller
     public function postCreateWalletPayment()
     {
         $input = Request::all();
+
+        $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->processWallet($input);
 
@@ -180,6 +188,8 @@ class PaymentCreateController extends Controller
             unset($input['flow']);
         }
 
+        $this->logPaymentRequestEvent($input);
+
         $data = $this->service(E::PAYMENT)->processUpi($input);
 
         $response = ['razorpay_payment_id' => $data['payment_id']];
@@ -205,6 +215,8 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        $this->logPaymentRequestEvent($input);
+
         $this->setMerchantCallbackUrlIfApplicable($input);
 
         return $this->createFeeBearerCustomerPayment($input);
@@ -223,6 +235,8 @@ class PaymentCreateController extends Controller
 
             unset($input['view']);
         }
+
+        $this->logPaymentRequestEvent($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
@@ -245,6 +259,8 @@ class PaymentCreateController extends Controller
     public function postPaymentFees()
     {
         $input = Request::all();
+
+        $this->logPaymentRequestEvent($input);
 
         $this->setMerchantCallbackUrlIfApplicable($input);
 
@@ -635,5 +651,10 @@ class PaymentCreateController extends Controller
 
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
+    }
+
+    protected function logPaymentRequestEvent(array $input)
+    {
+        $this->app['diag']->logPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
     }
 }
