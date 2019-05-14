@@ -9,7 +9,6 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Mozart\NetbankingSib;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
-
 class Reconciliator extends Base\Mock\PaymentReconciliator
 {
     protected function addGatewayEntityIfNeeded(array & $data)

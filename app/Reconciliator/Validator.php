@@ -299,7 +299,7 @@ class Validator extends Base\Core
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::NETBANKING_SIB);
 
-        return $validAttachmentCount;
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     public function validateNetbankingBobEmail(array $emailDetails)
