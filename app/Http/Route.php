@@ -2823,6 +2823,7 @@ final class Route
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
+        'merchant_methods_downtime_private'    => [Feature::EXPOSE_DOWNTIMES],
 
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],

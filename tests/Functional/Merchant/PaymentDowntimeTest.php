@@ -34,6 +34,8 @@ class PaymentDowntimeTest extends TestCase
                 'config:enable_payment_downtimes' => '1',
             ],
         ]);
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
     }
 
     public function testGetUpiDowntimeForAllGateways()
