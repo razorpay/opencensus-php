@@ -442,6 +442,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPaymentValidateEntity()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->validateEntity($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPaymentFlowsPrivate()
     {
         $input = Request::all();

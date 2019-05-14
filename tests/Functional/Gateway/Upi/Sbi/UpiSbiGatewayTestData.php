@@ -151,4 +151,66 @@ return [
             ],
         ]
     ],
+
+    'testValidateAccountVpa' => [
+        'request' => [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'vpa',
+                'value'  => 'success@sbi'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'vpa'           => "success@sbi",
+                'success'       => true,
+                'customer_name' => "Test User",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testValidateAccountVpaFailed' => [
+        'request' => [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'vpa',
+                'value'  => 'failedvalidate@sbi'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'vpa'           => "failedvalidate@sbi",
+                'success'       => false,
+                'customer_name' => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testValidateAccountInvalidInput' => [
+        'request' => [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'xyz',
+                'value'  => 'failedvalidate@sbi'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The selected entity is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

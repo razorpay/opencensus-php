@@ -176,6 +176,11 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
+    protected static $validateEntityRules = [
+        'entity'   => 'required|string|in:vpa',
+        'value'    => 'required',
+    ];
+
     protected static $callbackUrlValidationRules = [
         'callback_url' => 'sometimes|url|custom',
     ];

@@ -123,6 +123,7 @@ final class Route
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
+        'payment_validate_account'                 => ['post',     'payments/validate/account',                      'PaymentController@postPaymentValidateEntity'                       ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
@@ -1118,6 +1119,7 @@ final class Route
         'virtual_account_order_create',
         'payment_redirect_3ds',
         'currency_fetch_all',
+        'payment_validate_account',
     ];
 
     public static $device = [
