@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Requests_Session;
 
+use Requests;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -14,7 +15,6 @@ class GovernorService
     const ACCEPT_HEADER            = 'Accept';
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
-    const X_REQUEST_ID             = 'X-Request-ID';
     const APPLICATION_JSON         = 'application/json';
 
     const REQUEST_TIMEOUT = 40;
@@ -63,6 +63,10 @@ class GovernorService
         'method'    =>  "GET",
     ];
 
+    const GET_RULE   =   [
+        'url'       =>  "rule_engine/rule/:namespace/:entity_identifier",
+        'method'    =>  "GET",
+    ];
 
     const CREATE_RULE_CHAIN  =   [
         'url'       =>  "rule_engine/rule_chain/:namespace",
@@ -86,6 +90,13 @@ class GovernorService
         'url'       =>  "rule_engine/execute/rule_chain/:namespace",
         'method'    =>  "POST",
     ];
+
+    /**
+     * The application instance.
+     *
+     * @var Application
+     */
+    protected $app;
 
     protected $config;
 
@@ -120,8 +131,14 @@ class GovernorService
         return $request;
     }
 
-    protected function sendRequest(string $method, string $url, array $auth, array $data, array $queryParams = [])
+    public function sendRequest(array $requestSchema, $data, $source, $namespace = null, $getEntityIdentifier = null, array $queryParams = [])
     {
+        $url = $this->getUrl($requestSchema, $namespace, $getEntityIdentifier);
+
+        $method = $this->getMethod($requestSchema);
+
+        $auth = $this->getAuthDetails($source);
+
         $url = $url . '?';
 
         foreach ($queryParams as $key => $value)
@@ -135,7 +152,6 @@ class GovernorService
             'content' => $data,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
-                self::X_REQUEST_ID             => $this->app['request']->getId(),
             ],
             'options' => [
                 'auth' => $auth,
@@ -161,14 +177,24 @@ class GovernorService
         {
             try
             {
-                $response = $this->request->request(
-                    $request['url'],
-                    $request['headers'],
-                    json_encode($request['content']),
-                    $request['method'],
-                    $request['options']);
-
-                break;
+                switch($request['method']) {
+                    case Requests::POST:
+                    case Requests::PUT:
+                        $response = $this->request->request(
+                            $request['url'],
+                            $request['headers'],
+                            json_encode($request['content']),
+                            $request['method'],
+                            $request['options']);
+                            break;
+                    default:
+                        $response = $this->request->request(
+                            $request['url'],
+                            $request['headers'],
+                            null,
+                            $request['method'],
+                            $request['options']);
+                }
             }
             catch(\Requests_Exception $e)
             {
@@ -203,11 +229,13 @@ class GovernorService
         return $baseUrl;
     }
 
-    protected function getUrl($requestArray, $namespace = ''): string
+    protected function getUrl($requestArray, $namespace = '', $getEntityIdentifier = ''): string
     {
         $baseUrl = $this->getBaseUrl();
 
         $url = $baseUrl . str_replace_first(':namespace', $namespace, $requestArray['url']);
+
+        $url = str_replace_first(':entity_identifier', $getEntityIdentifier, $url);
 
         return $url;
     }
@@ -300,162 +328,5 @@ class GovernorService
             default:
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
-    }
-
-    public function createNamespace(array $input, $source)
-    {
-        $url = $this->getUrl(self::CREATE_NAMESPACE);
-
-        $method = $this->getMethod(self::CREATE_NAMESPACE);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function getDomainModels(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::DOMAIN_MODEL_LIST, $namespace);
-
-        $method = $this->getMethod(self::DOMAIN_MODEL_LIST);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function createDomainModel(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::CREATE_DOMAIN_MODEL, $namespace);
-
-        $method = $this->getMethod(self::CREATE_DOMAIN_MODEL);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function updateDomainModel(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::UPDATE_DOMAIN_MODEL, $namespace);
-
-        $method = $this->getMethod(self::UPDATE_DOMAIN_MODEL);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function createRule(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::CREATE_RULE, $namespace);
-
-        $method = $this->getMethod(self::CREATE_RULE);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function createRules(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::CREATE_RULES, $namespace);
-
-        $method = $this->getMethod(self::CREATE_RULES);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function updateRule(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::UPDATE_RULE, $namespace);
-
-        $method = $this->getMethod(self::UPDATE_RULE);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function getRules(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::RULE_LIST, $namespace);
-
-        $method = $this->getMethod(self::RULE_LIST);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function createRuleChain(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::CREATE_RULE_CHAIN, $namespace);
-
-        $method = $this->getMethod(self::CREATE_RULE_CHAIN);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-
-    public function updateRuleChain(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::UPDATE_RULE_CHAIN, $namespace);
-
-        $method = $this->getMethod(self::UPDATE_RULE_CHAIN);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function getRuleChains(array $input, string $source, string $namespace)
-    {
-        $url = $this->getUrl(self::RULE_CHAIN_LIST, $namespace);
-
-        $method = $this->getMethod(self::RULE_CHAIN_LIST);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input);
-
-        return $response;
-    }
-
-    public function executeChains(array $input, string $source, string $namespace, array $queryParams)
-    {
-        $url = $this->getUrl(self::EXECUTE_CHAINS, $namespace);
-
-        $method = $this->getMethod(self::EXECUTE_CHAINS);
-
-        $auth = $this->getAuthDetails($source);
-
-        $response = $this->sendRequest($method, $url, $auth, $input, $queryParams);
-
-        return $response;
     }
 }

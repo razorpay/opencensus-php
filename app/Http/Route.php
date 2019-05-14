@@ -1064,6 +1064,7 @@ final class Route
         'governor_create_rule_bulk'               => ['patch',    '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRules'                            ],
         'governor_update_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
         'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@getRules'                               ],
+        'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',          'GovernorController@getRule'                                ],
 
         // Governor Proxy APIs - Rule Chain
         'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@createRuleChain'                        ],
@@ -2026,6 +2027,7 @@ final class Route
         'governor_create_rule_bulk',
         'governor_update_rule',
         'governor_rule_list',
+        'governor_get_rule',
         'governor_create_rule_chain',
         'governor_update_rule_chain',
         'governor_rule_chain_list',
@@ -2435,6 +2437,7 @@ final class Route
         'governor_create_rule_bulk'                => '*',
         'governor_update_rule'                     => '*',
         'governor_rule_list'                       => '*',
+        'governor_get_rule'                        => '*',
         'governor_create_rule_chain'               => '*',
         'governor_update_rule_chain'               => '*',
         'governor_rule_chain_list'                 => '*',

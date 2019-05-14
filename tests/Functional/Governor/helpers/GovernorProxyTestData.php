@@ -6,12 +6,8 @@ return [
             'server' => [
                 'CONTENT_TYPE'  => 'application/json',
             ],
-            'raw' => json_encode([
-                'key'     => 'value',
-                'q'         => "1",
-            ]),
-            'url' => '/cps/rule_engine/execute/rule_chain/namespace?q1=1',
-            'method' => 'POST'
+            'url' => '/cps/rule_engine/rule/namespace/entity_identifier1',
+            'method' => 'GET'
         ],
         'response' => [
             'content' => [
