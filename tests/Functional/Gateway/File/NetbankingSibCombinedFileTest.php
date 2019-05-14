@@ -42,11 +42,15 @@ class NetbankingSibCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        // full refund
+        $paymentArray    = $this->getDefaultNetbankingPaymentArray($this->bank);
 
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment1     = $this->doAuthAndCapturePayment($paymentArray);
+        $refundFull   = $this->refundPayment($payment1['id']);
 
-        $refund = $this->refundPayment($payment['id']);
+        //partial refund
+        $payment2        = $this->doAuthAndCapturePayment($paymentArray);
+        $refundPartial   = $this->refundPayment($payment2['id'], 500);
 
         $this->ba->adminAuth();
 
@@ -68,26 +72,29 @@ class NetbankingSibCombinedFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $file);
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($payment, $refund)
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($payment1, $payment2, $refundFull, $refundPartial)
         {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
             $testData = [
                 'subject' => 'SIB Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => '500.00',
-                    'refunds' => '500.00',
-                    'total'   => '0.00'
+                    'claims'  => '1000.00',
+                    'refunds' => '505.00',
+                    'total'   => '495.00'
                 ],
                 'count' => [
-                    'claims'  => 1,
-                    'refunds' => 1,
+                    'claims'  => 2,
+                    'refunds' => 2,
                 ],
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            $this->checkRefundsFile($mail->viewData['refundsFile'], $payment, $refund);
+            $this->checkRefundsFile(
+                                    $mail->viewData['refundsFile'],
+                                    $payment1['id'],
+                                    [$refundFull['amount'], $refundPartial['amount']]);
 
             $this->assertCount(1, $mail->attachments);
 
@@ -96,24 +103,30 @@ class NetbankingSibCombinedFileTest extends TestCase
     }
 
 
-    protected function checkRefundsFile(array $refundFileData, $payment, $refund)
+    protected function checkRefundsFile(array $refundFileData, $paymentId, $refundAmts)
     {
         $refundsFileContents = file($refundFileData['url']);
 
-        $this->assertCount(1, $refundsFileContents);
+        $this->assertCount(2, $refundsFileContents);
 
-        $refundFileRowData = explode('||',$refundsFileContents[0]);
+        $fullRefundRowData = explode('||',$refundsFileContents[0]);
+        $fullRefundRowData = array_combine(self::REFUND_FIELDS, $fullRefundRowData);
 
-        $this->assertCount(6, $refundFileRowData);
+        $partialRefundRowData = explode('||',$refundsFileContents[1]);
+        $partialRefundRowData = array_combine(self::REFUND_FIELDS, $partialRefundRowData);
 
-        $refundFileRowData = array_combine(self::REFUND_FIELDS, $refundFileRowData);
+        $this->assertCount(6, $fullRefundRowData);
 
-        $this->fixtures->stripSign($payment['id']);
+        $this->fixtures->stripSign($paymentId);
 
-        $this->assertEquals($payment['id'], $refundFileRowData[Sib::PAYMENT_ID]);
+        $this->assertEquals($paymentId, $fullRefundRowData[Sib::PAYMENT_ID]);
 
-        $refundAmount = number_format($refund['amount'] / 100, 2, '.', '');
 
-        $this->assertEquals($refundAmount, $refundFileRowData[Sib::REFUND_AMOUNT]);
+        // validating if partial refund amount is reflected in the file
+        $refundAmount = number_format(($refundAmts[0]) / 100, 2, '.', '');
+        $this->assertEquals($refundAmount, $fullRefundRowData[Sib::REFUND_AMOUNT]);
+
+        $refundAmount = number_format(($refundAmts[1]) / 100, 2, '.', '');
+        $this->assertEquals($refundAmount, $partialRefundRowData[Sib::REFUND_AMOUNT]);
     }
 }
