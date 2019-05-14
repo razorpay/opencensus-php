@@ -79,9 +79,8 @@ class Mode
 
     public static function validateModeOfAccountType($mode, $accountType)
     {
-        $expectedAccountType = get_key_from_subarray_match($mode, self::$modeAccountTypeMap);
-
-        if ($accountType !== $expectedAccountType)
+        if ((isset(self::$modeAccountTypeMap[$accountType]) === false) or
+            (in_array($mode, self::$modeAccountTypeMap[$accountType], true) === false))
         {
             throw new BadRequestValidationFailureException("$mode is not a valid mode for account type $accountType");
         }

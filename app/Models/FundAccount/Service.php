@@ -3,6 +3,7 @@
 namespace RZP\Models\FundAccount;
 
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -38,9 +39,7 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, [
-            'input' => $input
-        ]);
+        $this->traceFundAccountNewRequest($input);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
@@ -73,5 +72,27 @@ class Service extends Base\Service
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $entity->toArrayPublic();
+    }
+
+    protected function traceFundAccountNewRequest(array $input)
+    {
+        $this->unsetSensitiveCardDetails($input);
+
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $input);
+    }
+
+    protected function unsetSensitiveCardDetails(array & $input)
+    {
+        if ((isset($input[Entity::CARD]) === true) and
+            (is_array($input[Entity::CARD]) === true))
+        {
+            if (empty($input[Entity::CARD][Card\Entity::NUMBER]) === false)
+            {
+                $input[Entity::CARD][Card\Entity::IIN] = substr($input[Entity::CARD][Card\Entity::NUMBER], 0, 6);
+            }
+
+            unset($input[Entity::CARD][Card\Entity::CVV]);
+            unset($input[Entity::CARD][Card\Entity::NUMBER]);
+        }
     }
 }

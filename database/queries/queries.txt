@@ -4920,3 +4920,6 @@ ALTER TABLE `p2p_vpa` MODIFY `device_id` VARCHAR(14) CHARACTER SET utf8 COLLATE 
 ALTER TABLE merchant_banks
     ADD COLUMN phonepe TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
     ADD INDEX merchant_banks_phonepe_index (phonepe);
+
+ALTER TABLE fund_transfer_attempts
+    ADD INDEX fund_transfer_attempts_card_id_index (card_id);

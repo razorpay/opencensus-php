@@ -313,6 +313,10 @@ class Entity extends Base\PublicEntity
         {
             return E::BANK_ACCOUNT;
         }
+        else if ($this->hasCard() === true)
+        {
+            return E::CARD;
+        }
         else
         {
             return null;
