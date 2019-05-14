@@ -32,7 +32,7 @@ export default class TeamContainer extends Component {
     let invitations = this.props.invitations;
     let users = this.props.users;
     let otherUsers = users.filter(
-      user => user.email !== this.props.merchant.email
+      user => user.email !== this.props.merchant.user.email
     );
 
     return (
