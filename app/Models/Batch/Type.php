@@ -3,6 +3,8 @@
 namespace RZP\Models\Batch;
 
 use RZP\Exception;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Type
 {
@@ -142,6 +144,24 @@ class Type
     ];
 
     /**
+     * Batch sub_types
+     *
+     * @var array
+     */
+    public static $subTypes = [
+        Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
+        Gateway::HITACHI,
+        Gateway::BILLDESK,
+        Gateway::ATOM,
+        Gateway::UPI_MINDGATE,
+        CardlessEmi::ZESTMONEY,
+        CardlessEmi::FLEXMONEY,
+        CardlessEmi::EARLYSALARY,
+    ];
+
+    /**
      * Following batch types get processed via Kubernetes Job, this is used for long
      * running batches.
      *
@@ -182,6 +202,14 @@ class Type
         foreach ($types as $row)
         {
             self::validateType($row);
+        }
+    }
+
+    public static function validateSubType(string $type)
+    {
+        if (in_array($type, self::$subTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $type);
         }
     }
 

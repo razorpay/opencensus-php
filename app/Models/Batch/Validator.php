@@ -133,7 +133,7 @@ class Validator extends Base\Validator
 
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici,netbanking_hdfc,upi_mindgate',
+        Entity::SUB_TYPE             => 'required|string|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
@@ -303,6 +303,11 @@ class Validator extends Base\Validator
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
+    }
+
+    protected function validateSubType($attribute, $value)
+    {
+        Type::validateSubType($value);
     }
 
     protected function validatePayoutMode($attribute, $value)
