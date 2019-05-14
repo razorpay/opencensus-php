@@ -23,8 +23,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
-        Entity::CURRENCY        => 'required_with:amount|nullable|currency|custom',
+        Entity::AMOUNT          => 'sometimes|nullable|mysql_unsigned_int|min:100|custom',
+        Entity::CURRENCY        => 'filled|currency|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',

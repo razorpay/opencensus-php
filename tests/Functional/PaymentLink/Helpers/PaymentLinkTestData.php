@@ -37,30 +37,6 @@ return [
         ],
     ],
 
-    'testCreatePaymentLinkWithCurrencyAndNoAmount' => [
-        'request'   => [
-            'url'     => '/payment_links',
-            'method'  => 'post',
-            'content' => [
-                'currency' => 'INR',
-                'title'    => 'Sample title',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required when currency is present.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testCreatePaymentLinkWithoutAmountOrCurrency' => [
         'request'  => [
             'url'     => '/payment_links',

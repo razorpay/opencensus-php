@@ -208,7 +208,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::AMOUNT             => null,
-        self::CURRENCY           => null,
         self::EXPIRE_BY          => null,
         self::TIMES_PAYABLE      => null,
         self::TIMES_PAID         => 0,
@@ -292,6 +291,11 @@ class Entity extends Base\PublicEntity
 
     public function getCurrency()
     {
+        if ($this->getAttribute(self::CURRENCY) === null)
+        {
+            return Currency::INR;
+        }
+
         return $this->getAttribute(self::CURRENCY);
     }
 
