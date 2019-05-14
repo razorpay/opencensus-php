@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
@@ -274,7 +275,7 @@ class Service extends Base\Service
 
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
 
-            return $response
+            return $response;
         }
         catch (\Throwable $e)
         {
@@ -345,7 +346,7 @@ class Service extends Base\Service
 
     public function forceAuthorizeFailed($id, $input)
     {
-        
+        $payment = $this->core->retrieveById($id);
 
         $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 

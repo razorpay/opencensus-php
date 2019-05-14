@@ -12,6 +12,7 @@ use View;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
@@ -655,6 +656,6 @@ class PaymentCreateController extends Controller
 
     protected function logPaymentRequestEvent(array $input)
     {
-        $this->app['diag']->logPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
     }
 }

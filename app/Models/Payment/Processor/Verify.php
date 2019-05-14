@@ -26,7 +26,7 @@ trait Verify
      */
     public function verify(Payment\Entity $payment)
     {
-        $this->app['diag']->trackPaymentVerifyEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment);
+        $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment);
 
         $this->setPayment($payment);
 

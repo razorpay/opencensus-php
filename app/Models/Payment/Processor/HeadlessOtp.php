@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Risk;
@@ -86,7 +87,7 @@ trait HeadlessOtp
         return false;
     }
 
-    protected function runHeadlessOtpFlow(Payment]\Entity $payment, $request)
+    protected function runHeadlessOtpFlow(Payment\Entity $payment, $request)
     {
         // This will happen in case of single step payment.
         // Where payment is not to be authenticated

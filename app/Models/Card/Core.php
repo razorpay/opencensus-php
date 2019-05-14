@@ -63,8 +63,6 @@ class Core extends Base\Core
 
         if (isset($input[Entity::VAULT]) === true)
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CARDSAVING_INITIATED, $payment);
-            
             $newCard = (new Card\Entity)->build($input);
 
             if (($newCard->getVaultToken() !== null) and

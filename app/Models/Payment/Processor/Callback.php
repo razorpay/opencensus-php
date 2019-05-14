@@ -7,6 +7,7 @@ use Mail;
 use RZP\Jobs;
 use RZP\Error;
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Card;

@@ -25,8 +25,8 @@ class EventCode
     const PAYMENT_CREATE_REDIRECT_INITIATED             = 'payment.create.redirect.initiated';
     const PAYMENT_CREATE_REDIRECT_PROCESSED             = 'payment.create.redirect.processed';
     const PAYMENT_AUTHENTICATION_INITIATED              = 'payment.authentication.initiated';
-    const PAYMENT_AUTHENTICATION_OTP_INITIATED          = 'payment.authentication.otp.initiated';
-    const PAYMENT_AUTHENTICATION_OTP_PROCESSED          = 'payment.authentication.otp.processed';
+    const PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED = 'payment.authentication.otp.generate.initiated';
+    const PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED = 'payment.authentication.otp.generate.processed';
     const PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED   = 'payment.authentication.otp.resend.initiated';
     const PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED   = 'payment.authentication.otp.resend.processed';
     const PAYMENT_AUTHENTICATION_OTP_SUBMIT_INITIATED   = 'payment.authentication.otp.submit.initiated';

@@ -20,7 +20,7 @@ trait PaymentEvent
         $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $code, $properties);
     }
 
-    public function trackPaymentVerifyEvent(
+    public function trackVerifyPaymentEvent(
         string $code, 
         Payment\Entity $payment = null, 
         \Throwable $ex = null)

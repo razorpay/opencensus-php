@@ -261,7 +261,7 @@ class Processor
 
             $this->appendMetadataForPayment($input);
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, $payment);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -1660,8 +1660,6 @@ class Processor
     protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
     {
         $this->tracePaymentNewRequest($input);
-
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_VALIDATIONS_INITIATED, $payment);
 
         try
         {
