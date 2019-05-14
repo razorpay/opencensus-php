@@ -4920,3 +4920,9 @@ ALTER TABLE `p2p_vpa` MODIFY `device_id` VARCHAR(14) CHARACTER SET utf8 COLLATE 
 ALTER TABLE merchant_banks
     ADD COLUMN phonepe TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
     ADD INDEX merchant_banks_phonepe_index (phonepe);
+
+ALTER TABLE partner_configs
+    ADD COLUMN `commission_model` varchar(255) not null default 'commission' after `explicit_should_charge`;
+
+ALTER TABLE commissions
+    ADD COLUMN `model` varchar(255) not null default 'commission' after `record_only`;

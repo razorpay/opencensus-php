@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
 
     const TAX               = 'tax';
     const TYPE              = 'type';
+    const MODEL             = 'model';
     const DEBIT             = 'debit';
     const NOTES             = 'notes';
     const CREDIT            = 'credit';
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::CURRENCY,
         self::RECORD_ONLY,
+        self::MODEL,
     ];
 
     protected $public = [
@@ -67,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE_TYPE,
         self::RECORD_ONLY,
+        self::MODEL,
         self::CREATED_AT,
         self::MERCHANT,
         self::SOURCE,
@@ -82,6 +85,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::TYPE        => Type::IMPLICIT,
+        self::MODEL       => PartnerConfig\CommissionModel::COMMISSION,
         self::NOTES       => [],
         self::STATUS      => Status::CREATED,
         self::CURRENCY    => 'INR',

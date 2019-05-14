@@ -719,6 +719,7 @@ class Calculator extends Base\Core
             Entity::FEE         => $commissionFee,
             Entity::TAX         => $commissionTax,
             Entity::TYPE        => Type::EXPLICIT,
+            Entity::MODEL       => PartnerConfig\CommissionModel::COMMISSION,
             Entity::DEBIT       => 0,
             Entity::CREDIT      => $commissionFee,
             Entity::RECORD_ONLY => ($this->getPartnerConfig()->isExplicitRecordOnly() === true) ? 1 : 0,
@@ -757,10 +758,18 @@ class Calculator extends Base\Core
             Entity::FEE         => $commissionFee,
             Entity::TAX         => $commissionTax,
             Entity::TYPE        => Type::IMPLICIT,
+            Entity::MODEL       => $this->getPartnerConfig()->getCommissionModel(),
             Entity::DEBIT       => 0,
             Entity::CREDIT      => $commissionFee,
             Entity::RECORD_ONLY => 0,
         ];
+
+        // if subvention, we have to debit from partner instead of crediting
+        if ($this->getPartnerConfig()->getCommissionModel() === PartnerConfig\CommissionModel::SUBVENTION)
+        {
+            $payload[Entity::DEBIT]  = $commissionFee;
+            $payload[Entity::CREDIT] = 0;
+        }
 
         $commission = $this->buildCommission($payload);
 
@@ -805,11 +814,18 @@ class Calculator extends Base\Core
         $payload = [
             Entity::FEE         => $commissionFee,
             Entity::TAX         => $commissionTax,
+            Entity::MODEL       => $this->getPartnerConfig()->getCommissionModel(),
             Entity::TYPE        => Type::IMPLICIT,
             Entity::DEBIT       => 0,
             Entity::CREDIT      => $commissionFee,
             Entity::RECORD_ONLY => 0,
         ];
+
+        if ($this->getPartnerConfig()->getCommissionModel() === PartnerConfig\CommissionModel::SUBVENTION)
+        {
+            $payload[Entity::DEBIT]  = $commissionFee;
+            $payload[Entity::CREDIT] = 0;
+        }
 
         $commission = $this->buildCommission($payload);
 

@@ -5,10 +5,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Partner\Config;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Transaction\Entity as Transaction;
-use RZP\Models\Partner\Config\Entity as PartnerConfig;
 use RZP\Models\Partner\Commission\Entity as Commission;
 use RZP\Models\Partner\Commission\Type as CommissionType;
 
@@ -34,7 +34,7 @@ class CreateCommissionsTable extends Migration
 
             $table->char(Commission::PARTNER_ID, Merchant::ID_LENGTH);
 
-            $table->char(Commission::PARTNER_CONFIG_ID, PartnerConfig::ID_LENGTH);
+            $table->char(Commission::PARTNER_CONFIG_ID, Config\Entity::ID_LENGTH);
 
             $table->string(Commission::TYPE)
                   ->default(CommissionType::IMPLICIT);
@@ -63,6 +63,9 @@ class CreateCommissionsTable extends Migration
             $table->tinyInteger(Commission::RECORD_ONLY)
                   ->default(0);
 
+            $table->string(Commission::MODEL)
+                  ->default(Config\CommissionModel::COMMISSION);
+
             $table->text(Commission::NOTES);
 
             $table->integer(Commission::CREATED_AT);
@@ -85,7 +88,7 @@ class CreateCommissionsTable extends Migration
                   ->on_delete('restrict');
 
             $table->foreign(Commission::PARTNER_CONFIG_ID)
-                  ->references(PartnerConfig::ID)
+                  ->references(Config\Entity::ID)
                   ->on(Table::PARTNER_CONFIG)
                   ->on_delete('restrict');
 

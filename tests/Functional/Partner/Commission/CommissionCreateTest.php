@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Partner\Commission;
 
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
@@ -451,6 +452,31 @@ class CommissionCreateTest extends TestCase
         $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
     }
 
+    public function testImplicitVariableAndExplicitForSubvention()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'commission_model'       => Config\CommissionModel::SUBVENTION,
+                'implicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT, 2);
+
+        $this->assertEquals(Config\CommissionModel::SUBVENTION, $commission['model']);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT, 2);
+
+        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+    }
+
     /**
      * checks that both implicit and explicit commissions are created
      * if both implicit and explicit plans are present and the fee model is postpaid
@@ -562,6 +588,11 @@ class CommissionCreateTest extends TestCase
         if ($type === CommissionType::IMPLICIT)
         {
             $this->assertFalse($commissionByType['record_only']);
+        }
+        else
+        {
+            // explicit commission can never be of subvention model
+            $this->assertEquals(Config\CommissionModel::COMMISSION, $commissionByType['model']);
         }
 
         return [$payment, $commissionByType];
