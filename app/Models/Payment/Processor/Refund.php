@@ -19,9 +19,8 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
-use RZP\Models\Card\Issuer;
+use RZP\Models\FundTransfer;
 use RZP\Jobs\ScroogeRefundRetry;
-use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
@@ -2131,7 +2130,7 @@ trait Refund
                 $cardIssuer = $iin->getIssuer();
 
                 if (($cardType === Type::CREDIT) and
-                    (in_array($cardIssuer, Issuer::YESBANK_SUPPORTED_ISSUER) === true))
+                    (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true))
                 {
                     return true;
                 }

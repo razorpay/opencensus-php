@@ -5,16 +5,17 @@ namespace RZP\Models\FundAccount;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
 
 /**
- * Class Entity
- *
- * @package RZP\Models\FundAccount
+ * @property Card\Entity|BankAccount\Entity|Vpa\Entity account
  */
 class Entity extends Base\PublicEntity
 {

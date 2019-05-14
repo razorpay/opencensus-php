@@ -8,13 +8,12 @@ use RZP\Models\Card\Issuer;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
  * @property mixed batchFundTransfer
  * @property mixed bankAccount
- * @property Card\Entity card
+ * @property Card\Entity $card
  */
 class Entity extends Base\PublicEntity
 {

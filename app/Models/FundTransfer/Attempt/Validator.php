@@ -97,6 +97,7 @@ class Validator extends Base\Validator
 
     public function validateModeIfSet()
     {
+        /** @var Entity $attempt */
         $attempt = $this->entity;
 
         if ($attempt->hasMode() === false)
@@ -108,6 +109,13 @@ class Validator extends Base\Validator
         $destinationType = $attempt->getDestinationType();
 
         Mode::validateModeOfAccountType($mode, $destinationType);
+
+        if ($destinationType === Constants\Entity::CARD)
+        {
+            $cardIssuer = $attempt->card->getIssuer();
+
+            Mode::validateModeOfIssuer($mode, $cardIssuer);
+        }
 
         $channel = $attempt->getChannel();
 
@@ -153,7 +161,12 @@ class Validator extends Base\Validator
     {
         if (Purpose::isValid($value) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('Invalid purpose', $attribute);
+            throw new BadRequestValidationFailureException(
+                'Invalid purpose passed to FTA',
+                $attribute,
+                [
+                    'value' => $value
+                ]);
         }
     }
 }

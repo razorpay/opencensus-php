@@ -2,8 +2,9 @@
 
 namespace RZP\Models\FundTransfer;
 
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Card\Issuer;
 use RZP\Models\FundAccount\Type;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Mode
 {
@@ -14,7 +15,7 @@ class Mode
 
     const UPI = 'UPI';
 
-    public static $modeMap = [
+    protected static $modeMap = [
         self::RTGS  => self::RTGS,
         self::IMPS  => self::IMPS,
         self::NEFT  => self::NEFT,
@@ -22,7 +23,7 @@ class Mode
         self::UPI   => self::UPI,
     ];
 
-    public static $modeAccountTypeMap = [
+    protected static $modeAccountTypeMap = [
         Type::BANK_ACCOUNT => [
             self::RTGS,
             self::IMPS,
@@ -33,19 +34,65 @@ class Mode
             self::UPI,
         ],
         Type::CARD => [
-            self::RTGS,
             self::IMPS,
-            self::NEFT,
-            self::IFT,
+            self::UPI,
         ]
     ];
 
-    public static function validateModeOfAccountType($mode, $accountType) {
+    /**
+     * Don't have nodal bank specific issuer map since SHK confirmed
+     * that all nodal banks will support the same list of card issuers.
+     * (issuer supporting bank transfer is not at nodal bank level.)
+     *
+     * @var array
+     */
+    protected static $issuerModeMap = [
+        Issuer::UTIB    => [
+            self::IMPS
+        ],
+        Issuer::HDFC    => [
+            self::IMPS
+        ],
+        Issuer::INDB    => [
+            self::IMPS
+        ],
+        Issuer::KKBK    => [
+            self::IMPS
+        ],
+        Issuer::ANDB    => [
+            self::IMPS
+        ],
+        Issuer::ICIC    => [
+            self::UPI
+        ],
+    ];
+
+    protected static $allTimeTransferModes = [
+        self::IMPS,
+        self::IFT
+    ];
+
+    public static function getSupportedIssuers()
+    {
+        return array_keys(self::$issuerModeMap);
+    }
+
+    public static function validateModeOfAccountType($mode, $accountType)
+    {
         $expectedAccountType = get_key_from_subarray_match($mode, self::$modeAccountTypeMap);
 
         if ($accountType !== $expectedAccountType)
         {
             throw new BadRequestValidationFailureException("$mode is not a valid mode for account type $accountType");
+        }
+    }
+
+    public static function validateModeOfIssuer(string $mode = null, string $issuer = null)
+    {
+        if ((isset(self::$issuerModeMap[$issuer]) === false) or
+            (in_array($mode, self::$issuerModeMap[$issuer], true) === false))
+        {
+            throw new BadRequestValidationFailureException("$mode is not a valid mode for issuer $issuer");
         }
     }
 
@@ -55,10 +102,7 @@ class Mode
      * @return array
      */
     public static function get24x7TransferModes(): array {
-        return [
-            self::IMPS,
-            self::IFT,
-        ];
+        return self::$allTimeTransferModes;
     }
 
     public static function isValid(string $mode): bool
