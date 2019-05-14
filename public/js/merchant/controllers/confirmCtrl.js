@@ -68,6 +68,11 @@ app.controller('ConfirmCtrl', [
             email_verified: true,
           };
 
+          window.trackHubs({
+            name: 'update_property',
+            data: dripPayload,
+          });
+
           $timeout(function() {
             try {
               // try-catch, since there could be tracker blocking scripts

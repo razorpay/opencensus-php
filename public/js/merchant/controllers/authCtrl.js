@@ -345,14 +345,6 @@ app
             });
 
             window.trackHubs({
-              name: 'update_property',
-              data: {
-                email: $scope.signup.data.email,
-                signup_complete: true,
-              },
-            });
-
-            window.trackHubs({
               id: 'SIGNUP_COMPLETE',
             });
 
@@ -384,15 +376,6 @@ app
             });
           } else {
             hideSpinner();
-
-            window.trackHubs({
-              name: 'update_property',
-              data: {
-                email: $scope.signup.data.email,
-                signup_complete: false,
-                signup_complete_error: data.errors[0],
-              },
-            });
 
             window.trackHubs({
               id: 'SIGNUP_FAILED',
