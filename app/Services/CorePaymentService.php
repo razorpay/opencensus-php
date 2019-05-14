@@ -22,7 +22,7 @@ class CorePaymentService
     const X_REQUEST_ID             = 'X-Request-ID';
     const APPLICATION_JSON         = 'application/json';
 
-    const REQUEST_TIMEOUT = 40;
+    const REQUEST_TIMEOUT = 75; // Seconds
     const MAX_RETRY_COUNT = 1;
 
     // request and response fields
