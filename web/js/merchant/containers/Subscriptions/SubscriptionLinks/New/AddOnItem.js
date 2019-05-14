@@ -57,6 +57,7 @@ export default class AddOnItem extends Component {
             name={`${props.name}.quantity`}
             quantity={props.selectedItem.quantity}
             rate={props.selectedItem.item.amount}
+            currency={props.currency}
           />
         )}
       </div>
