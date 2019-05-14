@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
+use Carbon\Carbon;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 class Sib extends Base
 {
@@ -57,8 +59,11 @@ class Sib extends Base
 
         $amount['claims'] = $this->getFormattedAmount($amount['claims']);
 
+        $date = Carbon::yesterday(Timezone::IST)->format('d.m.Y');
+
         return [
             'bankName'    => self::BANK_NAME,
+            'date'        => $date,
             'amount'      => $amount,
             'count'       => $count,
             'refundsFile' => $refundsFile,
