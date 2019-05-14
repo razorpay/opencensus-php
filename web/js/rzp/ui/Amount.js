@@ -34,7 +34,9 @@ export default ({
 
   const amount = getFormattedAmount(value);
 
-  let currencySymbol = currencies[currency].symbol;
+  let currencySymbol = currencies[currency]
+    ? currencies[currency].symbol
+    : currency;
 
   if (window.currencyList && window.currencyList[currency]) {
     currencySymbol = window.currencyList[currency].symbol;
@@ -69,18 +71,22 @@ export function AmountTooltip({
     currency = 'INR';
   }
 
-  const currencySymbolMapping = currencies;
-  let currencySymbol = currencies[currency].symbol;
+  let currencySymbol = currencies[currency]
+    ? currencies[currency].symbol
+    : currency;
+
+  let currencyName = currencySymbol;
 
   if (window.currencyList && window.currencyList[currency]) {
     currencySymbol = window.currencyList[currency].symbol;
+    currencyName = window.currencyList[currency].name;
   }
 
   return (
     <span
       className={classList('help-content help-content--currency', customClass)}
     >
-      {children || <span>{currencySymbolMapping[currency]}</span>}
+      {children || <span>{currencySymbol}</span>}
       <Popover
         align="top"
         theme="dark"
@@ -88,7 +94,7 @@ export function AmountTooltip({
       >
         <PopoverBody>
           <div style={{ textAlign: 'center' }}>
-            {currencySymbol} - {window.currencyList[currency].name} ({currency})
+            {currencySymbol} - {currencyName} ({currency})
           </div>
         </PopoverBody>
       </Popover>

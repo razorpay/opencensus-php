@@ -170,10 +170,15 @@ export default class OndemandModal extends Component {
                   <Input
                     label="Enter amount to be settled"
                     required={true}
-                    addonBefore={<AmountTooltip currency={'INR'} />}
+                    addonBefore={
+                      <AmountTooltip
+                        currency={'INR'}
+                        parentQuerySelector=".Modal"
+                      />
+                    }
                     autoFocus={true}
                     name="amount"
-                    class="Input"
+                    class="Input Input--Amount"
                     disabled={this.state.isSaving}
                     value={this.state.amount}
                     validator={this.validateAmount}

@@ -369,10 +369,16 @@ export default class CreateNewAuthLinkContainer extends Component {
                   name="mandateMaxAmount"
                   placeholder="100000"
                   label="Token Max Amount"
-                  addonBefore={<AmountTooltip currency={'INR'} />}
+                  addonBefore={
+                    <AmountTooltip
+                      currency={'INR'}
+                      parentQuerySelector=".Modal"
+                    />
+                  }
                   size="half_big"
                   validator={checkIfAmount}
                   description="Max Amount for Mandate"
+                  class="Input--Amount"
                 />
               </Fragment>
             )}
