@@ -58,7 +58,7 @@ class Validator extends Base\Core
                                                             "/^Corporation Bank - FEBA - RazorPay Recon File "
                                                             . "(0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}/"
                                                          ],
-
+        RequestProcessor\Base::NETBANKING_SIB     => ["/^Daily Transaction Details/"],
         RequestProcessor\Base::AXIS               => [
                                                         "/^Axis Estatement [0-9]{2}-"
                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
@@ -86,7 +86,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::EMANDATE_AXIS      => ["/axis e[\-]?mandate debit file/i"],
         RequestProcessor\Base::NETBANKING_ALLAHABAD => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
-        ];
+    ];
 
     const GATEWAY_BODY_REGEX = [
         RequestProcessor\Base::OLAMONEY               => ["/^Please find settlement report for /"],
@@ -95,6 +95,7 @@ class Validator extends Base\Core
                                                             "/Kindly find attached below the MIS for "
                                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
                                                          ],
+        RequestProcessor\Base::NETBANKING_SIB         => ["/^Please find attached the text file which contains the daily transaction details/"],
         RequestProcessor\Base::NETBANKING_ICICI       => ["/Please find below the payment report for the day./"],
         RequestProcessor\Base::NETBANKING_FEDERAL     => [
                                                             "/^MIS Report File Dated "
@@ -286,6 +287,14 @@ class Validator extends Base\Core
 
     public function validateNetbankingSibEmail(array $emailDetails)
     {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_SIB);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::NETBANKING_SIB);
+
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::NETBANKING_SIB);
