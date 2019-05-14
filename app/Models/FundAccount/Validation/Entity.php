@@ -4,7 +4,7 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
@@ -15,7 +15,8 @@ use RZP\Models\Transaction\Entity as Transaction;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use Traits\NotesTrait;
+    use Traits\HasBalance;
 
     const ID                     = 'id';
     const RECEIPT                = 'receipt';
@@ -31,6 +32,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const BALANCE_ID             = 'balance_id';
     const ERROR_CODE             = 'error_code';
     const INTERNAL_ERROR_CODE    = 'internal_error_code';
     const ERROR_DESCRIPTION      = 'error_description';
@@ -70,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::ERROR_CODE,
+        self::BALANCE_ID,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT,
