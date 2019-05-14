@@ -21,7 +21,7 @@ class NonBlockingHttp
         $this->timeout = $app['config']->get('applications.non_blocking_http.timeout') ?? self::DEFAULT_TIMEOUT;
     }
 
-    public function postRequest(string $url, $payload, array $headers = null)
+    public function postRequest(string $url, $payload, array $headers = null, string $username = null, string $password = null)
     {
         try
         {
@@ -32,6 +32,11 @@ class NonBlockingHttp
             curl_setopt($curl_handler, CURLOPT_FRESH_CONNECT, true);
 
             curl_setopt($curl_handler, CURLOPT_CUSTOMREQUEST, "POST");
+
+            if (empty($username) === false)
+            {
+                curl_setopt($curl_handler, CURLOPT_USERPWD, $username . ':' . $password);
+            }
 
             curl_setopt($curl_handler, CURLOPT_POSTFIELDS, $encodedData);
 

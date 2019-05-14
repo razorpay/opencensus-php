@@ -306,7 +306,9 @@ return [
 
     'smart_routing' => [
         'url'       => env('SMART_ROUTING_URL'),
-        'mock'      => env('SMART_ROUTING_MOCK',false)
+        'mock'      => env('SMART_ROUTING_MOCK',false),
+        'username'  => env('SMART_ROUTING_USERNAME'),
+        'password'  => env('SMART_ROUTING_PASSWORD')
     ],
 
     'non_blocking_http' => [

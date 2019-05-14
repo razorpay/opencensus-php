@@ -728,4 +728,9 @@ class Netbanking
 
         return $banks;
     }
+
+    public static function getGatewaySupportedBankList()
+    {
+        return self::$gatewaySupportedBanks;
+    }
 }

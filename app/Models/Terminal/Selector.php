@@ -10,14 +10,20 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
+use RZP\Models\Card\Network;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
+
+
 
 class Selector extends Base\Core
 {
@@ -87,7 +93,6 @@ class Selector extends Base\Core
         $payment = $this->input['payment'];
 
         $token = $payment->getGlobalOrLocalTokenEntity();
-
         if (empty($token) === true)
         {
             $this->input['gateway_tokens'] = new Base\PublicCollection();
@@ -433,16 +438,7 @@ class Selector extends Base\Core
                 return;
             }
 
-            $payment_data = [
-                'amount'      => $payment->getAmount(),
-                'currency'    => $payment->getCurrency(),
-                'bank'        => $payment->getBank(),
-                'method'      => $payment->getMethod(),
-                'notes'       => $payment->getNotes(),
-                'merchant_id' => $payment->merchant->getId(),
-                'contact'     => $payment->getContact(),
-                'email'       => $payment->getEmail()
-            ];
+            $payment_data = $payment->toArray();
 
             $downtimes = $this->repo->useSlave(function () use ($filteredTerminals)
             {
@@ -458,6 +454,8 @@ class Selector extends Base\Core
                 'sortedTerminals'    => $sortedTerminals,
                 'downtimes'          => $downtimes,
                 'failedTerminalsIds' => $failedTerminalIds,
+                'gatewayTokens'      => $this->input['gateway_tokens'],
+                'gatewayConfig'      => $this->getGatewayConfig(),
                 'chance'             => $this->options->getChance(),
             ];
 
@@ -481,7 +479,8 @@ class Selector extends Base\Core
     {
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
-        if ($isProduction === false) {
+        if ($isProduction === false)
+        {
             return true;
         }
 
@@ -492,12 +491,39 @@ class Selector extends Base\Core
 
         $response = $this->app->razorx->getTreatment($merchantId, 'payment_hit_routing_service', $this->mode);
 
-        if (($response === 'control') or
-            ($response === 'off'))
+        if (($response === 'control') or ($response === 'off'))
         {
             return false;
         }
 
         return true;
+    }
+
+
+    protected function getGatewayConfig()
+    {
+        return [
+            'CybersourceMerchantWhitelist'    => Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+            'MccFilterGateways'               => Gateway::MCC_FILTER_GATEWAYS,
+            'OnlyAuthorizationGateway'        => Gateway::$onlyAuthorizationGateway,
+            'TerminalBitPosition'             => Terminal\Type::getBitPositions(),
+            'GatewayAcquirerIfscMapping'      => Gateway::$gatewaysEmandateBanksMap,
+            'BharatQrCardNetwork'             => Gateway::$bharatQrCardNetwork,
+            'CardNetworkMap'                  => Gateway::$cardNetworkMap,
+            'CardNetworkRecurringMap'         => Gateway::$cardNetworkRecurringMap,
+            'NetbankingGateways'              => Gateway::$netbankingGateways,
+            'AuthTypeToEmandateGatewayMap'    => Gateway::$authTypeToEmandateGatewayMap,
+            'RecurringGateways'               => Gateway::$recurringGateways,
+            'UpiIntentGateways'               => Gateway::$upiIntentGateways,
+            'SubscriptionOverOneYearGateways' => Gateway::$subscriptionOverOneYearGateways,
+            'Headless'                        => Gateway::$headless,
+            'EmiBankToGatewayMap'             => Gateway::$emiBankToGatewayMap,
+            'NetbankingToGatewayMap'          => Gateway::$netbankingToGatewayMap,
+            'GatewaysEmandateBanksMap'        => Gateway::$gatewaysEmandateBanksMap,
+            'EmiBanksCardTerminals'           => Gateway::$emiBanksUsingCardTerminals,
+            'GatewaySupportedBanks'           => Netbanking::getGatewaySupportedBankList(),
+            'NetworkCodes'                    => Network::$cardNetworkMap,
+            'Networks'                        => Network::$fullName,
+        ];
     }
 }

@@ -57,7 +57,11 @@ class SmartRouting
 
         $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
 
-        $this->app->nonBlockingHttp->postRequest($url, $data, $headers);
+        $username = $this->app['config']->get('applications.smart_routing.username');
+
+        $password = $this->app['config']->get('applications.smart_routing.password');
+
+        $this->app->nonBlockingHttp->postRequest($url, $data, $headers, $username, $password);
     }
 
     public function sendRequest($url, $method, $data = null)
@@ -75,13 +79,20 @@ class SmartRouting
 
             $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
 
+            $authentication = [
+                $this->app['config']->get('applications.smart_routing.username'),
+                $this->app['config']->get('applications.smart_routing.password')
+            ];
+
             $options = [
                 'timeout' => self::REQUEST_TIMEOUT,
+                'auth'    => $authentication
+
             ];
 
             $request = [
-                'url' => $url,
-                'method' => $method,
+                'url'     => $url,
+                'method'  => $method,
                 'headers' => $headers,
                 'options' => $options,
                 'content' => $data
