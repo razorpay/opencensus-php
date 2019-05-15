@@ -351,11 +351,11 @@ class Sbi extends Base
         $bucketConfig = $this->getBucketConfig();
 
         $data =  [
-            Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
-            Service::BEAM_PUSH_BUCKET_NAME => $bucketConfig['name'],
+            Service::BEAM_PUSH_FILES         => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME       => BeamConstants::SBI_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
             Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
-            Service::BEAM_PUSH_DECRYPTION => [
+            Service::BEAM_PUSH_DECRYPTION    => [
                 Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
                 Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
                 Service::BEAM_PUSH_DECRYPTION_KEY  => bin2hex($data['password']),
@@ -369,7 +369,7 @@ class Sbi extends Base
             'fileInfo'  => $fileInfo,
             'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'File Send failure',
+            'subject'   => 'SBI EMI - File Send failure',
             'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
         ];
 

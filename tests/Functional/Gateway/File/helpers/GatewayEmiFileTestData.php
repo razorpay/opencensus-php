@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Error\PublicErrorCode;
 
 return [
     'testGenerateEmiFile' => [
@@ -295,6 +296,38 @@ return [
                         'target'              => 'sbi',
                         'entity'              => 'gateway_file',
                         'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testGenerateEmiFileForSbiWithBeamFailure' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['sbi'],
+                'begin'   => Carbon::today(Timezone::IST)->subMinutes(30)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'admin'  => true,
+                'items'  => [
+                    [
+                        'status'            => 'failed',
+                        'attempts'          => 1,
+                        'sender'            => 'emifiles@razorpay.com',
+                        'type'              => 'emi',
+                        'target'            => 'sbi',
+                        'entity'            => 'gateway_file',
+                        'error_code'        => 'error_sending_file',
+                        'error_description' => 'Error occurred while sending file',
                     ]
                 ]
             ]

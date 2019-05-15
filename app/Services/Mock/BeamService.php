@@ -9,6 +9,8 @@ use RZP\Jobs\BeamJob;
 
 class BeamService extends Services\Beam\Service
 {
+    protected $mockService = null;
+
     public function content(& $content, $action = '')
     {
         return $content;
@@ -16,6 +18,11 @@ class BeamService extends Services\Beam\Service
 
     public function beamPush(array $pushData, array $intervalInfo, array $mailInfo, $synchronous = false)
     {
+        if ($this->mockService !== null)
+        {
+            return $this->mockService->beamPush($pushData, $intervalInfo, $mailInfo, $synchronous);
+        }
+
         $request = $this->getBeamRequest($pushData, $intervalInfo, $mailInfo);
 
         if ($synchronous === true)
@@ -24,7 +31,7 @@ class BeamService extends Services\Beam\Service
                 'failed' => 'null'
             ];
 
-            $content = $this->content($content, 'beam_push');
+            $this->content($content, 'beam_push_sync');
 
             return $content;
         }
@@ -32,5 +39,10 @@ class BeamService extends Services\Beam\Service
         BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
 
         return [];
+    }
+
+    public function setMockService(BeamService $beamService)
+    {
+        $this->mockService = $beamService;
     }
 }

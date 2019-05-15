@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Excel;
 use Queue;
+use Mockery;
 
 use Carbon\Carbon;
 use RZP\Encryption;
@@ -235,71 +236,7 @@ class GatewayEmiFileTest extends TestCase
 
     public function testGenerateEmiFileForSbi()
     {
-        Mail::fake();
-
-        Queue::fake();
-
-        $merchantId = $this->fixtures->create(
-            'merchant_detail:valid_fields',
-            ['business_name' => 'A weird merch@nt name\' w!th special chars and > 40 chars']
-        )['merchant_id'];
-
-        $this->fixtures->create('terminal:shared_hitachi_terminal');
-
-        $this->fixtures->create('gateway_rule', [
-            'method'        => 'emi',
-            'merchant_id'   => '100000Razorpay',
-            'gateway'       => 'hitachi',
-            'issuer'        => 'SBIN',
-            'type'          => 'filter',
-            'filter_type'   => 'select',
-            'min_amount'    => 0,
-            'group'         => 'routing_filter',
-            'emi_subvention'=> 'customer',
-            'step'          => 'authorization',
-        ]);
-
-        $this->fixtures->edit('merchant_detail', $merchantId,[
-            'merchant_id' => '10000000000000',
-        ]);
-
-        $this->fixtures->create('iin',
-            [
-                'iin'           => '400666',
-                'category'      => 'STANDARD',
-                'network'       => 'MasterCard',
-                'type'          => 'credit',
-                'country'       => 'IN',
-                'issuer_name'   => 'STATE BANK OF INDI',
-                'issuer'        => 'SBIN',
-                'emi'           => 1,
-                'trivia'        => 'random trivia'
-            ]);
-
-        $terminal = $this->fixtures->create('terminal', [
-            'merchant_id'           => '10000000000000',
-            'gateway'               => Payment\Gateway::EMI_SBI,
-            'gateway_merchant_id'   => '250000002',
-            'gateway_terminal_id'   => '38R00001',
-            'enabled'               => 0,
-        ]);
-
-        $this->fixtures->edit('terminal', $terminal->getId(),[
-            'enabled'   => 1,
-        ]);
-
-        $this->ba->publicAuth();
-
-        // Generated using luhn generator
-        $this->makeEmiPaymentOnCard('4006660000086709', 9);
-
-        $payment = $this->getLastPayment(true);
-
-        $this->assertEquals('hitachi', $payment['gateway']);
-
-        $this->makeEmiPaymentOnCard('4006660000086709', 12);
-
-        $this->ba->adminAuth();
+        $this->prerequisitesForSbiEmi();
 
         $content = $this->startTest();
 
@@ -321,6 +258,26 @@ class GatewayEmiFileTest extends TestCase
 
             return $mail->hasTo('emi.ops@sbicard.com');
         });
+    }
+
+    public function testGenerateEmiFileForSbiWithBeamFailure()
+    {
+        $this->prerequisitesForSbiEmi();
+
+        $this->mockBeamContentFunction(
+            function (&$content, $action = '')
+            {
+                $content = [
+                    'failed'   => [],
+                    'job_name' => 'sbi_emi',
+                    'success'  => null,
+                ];
+            }
+        );
+
+        $this->startTest();
+
+        Mail::assertNotQueued(EmiMail\File::class);
     }
 
     public function testGenerateEmiFileForSbiWithNoSbiEmiTerminal()
@@ -597,5 +554,86 @@ class GatewayEmiFileTest extends TestCase
         }
 
         $this->doAuthAndCapturePayment($payment);
+    }
+
+    protected function prerequisitesForSbiEmi()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $merchantId = $this->fixtures->create(
+            'merchant_detail:valid_fields',
+            ['business_name' => 'A weird merch@nt name\' w!th special chars and > 40 chars']
+        )['merchant_id'];
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'emi',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'issuer'        => 'SBIN',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'routing_filter',
+            'emi_subvention'=> 'customer',
+            'step'          => 'authorization',
+        ]);
+
+        $this->fixtures->edit('merchant_detail', $merchantId,[
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '400666',
+                'category'      => 'STANDARD',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $terminal = $this->fixtures->create('terminal', [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => Payment\Gateway::EMI_SBI,
+            'gateway_merchant_id'   => '250000002',
+            'gateway_terminal_id'   => '38R00001',
+            'enabled'               => 0,
+        ]);
+
+        $this->fixtures->edit('terminal', $terminal->getId(),[
+            'enabled'   => 1,
+        ]);
+
+        $this->ba->publicAuth();
+
+        // Generated using luhn generator
+        $this->makeEmiPaymentOnCard('4006660000086709', 9);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('hitachi', $payment['gateway']);
+
+        $this->makeEmiPaymentOnCard('4006660000086709', 12);
+
+        $this->ba->adminAuth();
+    }
+
+    protected function mockBeamContentFunction($closure)
+    {
+        $beamServiceMock = Mockery::mock(\RZP\Services\Mock\BeamService::class, [$this->app])->makePartial();
+
+        $service = $beamServiceMock
+            ->shouldReceive('content')
+            ->andReturnUsing($closure)
+            ->mock();
+
+        $this->app['beam']->setMockService($service);
     }
 }
