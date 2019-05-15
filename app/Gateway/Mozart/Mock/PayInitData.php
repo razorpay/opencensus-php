@@ -86,6 +86,7 @@ class PayInitData extends Base\Mock\Server
 
         return $response;
     }
+
     public function upi_airtel($entities)
     {
         $response = [
