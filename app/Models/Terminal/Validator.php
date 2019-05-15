@@ -579,13 +579,6 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array'
     ];
 
-    protected static $netbankingSibTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:netbanking_sib',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
-        Entity::TYPE                       => 'sometimes|array'
-    ];
-
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
