@@ -22,12 +22,12 @@ export default class CreateAddOn extends Component {
   state = {};
 
   componentWillMount() {
-    let { addon, subscriptionId } = this.props;
+    let { addon, subscriptionId, currency = 'INR' } = this.props;
 
     let initProps = {
       addon,
       subscription_id: subscriptionId,
-      item: { currency: 'INR' },
+      item: { currency },
       quantity: 1,
     };
 
@@ -52,7 +52,7 @@ export default class CreateAddOn extends Component {
   };
 
   render() {
-    const { handleSubmit, invalid, addon } = this.props;
+    const { handleSubmit, invalid, addon, currency } = this.props;
 
     return (
       <div class="addon-create">
@@ -88,7 +88,8 @@ export default class CreateAddOn extends Component {
             <div class="form-group">
               <div style={{ display: 'inline-block', width: '62%' }}>
                 <label class="control-label label-required">
-                  Price per unit (in ₹)
+                  Price per unit (in{' '}
+                  {(window.currencyList[currency] || {}).symbol})
                 </label>
                 <Field
                   name="item[amount]"

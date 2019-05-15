@@ -471,6 +471,7 @@ export default class SubscriptionDetailsContainer extends Component {
           subscriptionId={this.props.entity.id}
           onSave={this.handleOnCreateAddOn}
           closeModal={this.props.closeModal}
+          currency={this.props.plan.item.currency}
         />
       ),
     });

@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { Field, FieldArray, reduxForm } from 'redux-form';
+import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import Input from 'component/Input';
 import InputField from 'rzp/ui/Forms/InputField';
@@ -19,6 +19,8 @@ import {
   getEventCategoryFromPath,
 } from 'rzp/utils/rzp-utils';
 
+const selector = formValueSelector('newPlan');
+
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
 
@@ -31,10 +33,18 @@ let Label = ({ text, htmlFor, required }) => {
   );
 };
 
-@connect(null, {
-  savePlan,
-  showNotification,
-})
+@connect(
+  state => {
+    const { currency } = selector(state, 'item') || {};
+    return {
+      currency,
+    };
+  },
+  {
+    savePlan,
+    showNotification,
+  }
+)
 @reduxForm({
   form: 'newPlan',
   initialValues: {
@@ -111,7 +121,7 @@ export default class AddPlan extends Component {
   };
 
   render() {
-    const { handleSubmit, invalid, plan } = this.props;
+    const { handleSubmit, invalid, plan, currency } = this.props;
 
     return (
       <div class="content-wrapper content-sm txn-details plan-fields-wrapper">
@@ -203,6 +213,7 @@ export default class AddPlan extends Component {
                     <Input.CurrencySelect
                       name="currency"
                       onChange={this.onCurrencyChange}
+                      defaultValue={currency}
                     />
                     <Field
                       name="item[amount]"
