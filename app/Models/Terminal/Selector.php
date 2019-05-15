@@ -7,10 +7,11 @@ use Cache;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card\NetworkName;
+use RZP\Models\Settlement\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
-use RZP\Models\Card\Network;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -20,6 +21,7 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 
@@ -438,7 +440,19 @@ class Selector extends Base\Core
                 return;
             }
 
-            $payment_data = $payment->toArray();
+            $paymentData = $payment->toArray();
+
+            if ($payment->getCardId() !== null)
+            {
+                $paymentData['card'] = $this->repo->card->findOrFail($payment->getCardId())->toArray();
+            }
+
+            if ($payment->getEmiPlanId() !== null)
+            {
+                $paymentData['emi'] = $payment->emiPlan();
+            }
+            $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
+
 
             $downtimes = $this->repo->useSlave(function () use ($filteredTerminals)
             {
@@ -447,22 +461,21 @@ class Selector extends Base\Core
 
             $failedTerminalIds = $this->options->getFailedTerminals();
 
+            $merchantData = $this->getMerchantData($merchant);
+
             $data = [
-                'payment'            => $payment_data,
-                'merchant'           => $merchant,
-                'allTerminals'       => $allTerminals,
-                'sortedTerminals'    => $sortedTerminals,
-                'downtimes'          => $downtimes,
-                'failedTerminalsIds' => $failedTerminalIds,
-                'gatewayTokens'      => $this->input['gateway_tokens'],
-                'gatewayConfig'      => $this->getGatewayConfig(),
-                'chance'             => $this->options->getChance(),
+                'payment'             => $paymentData,
+                'merchant'            => $merchantData,
+                'terminals'           => $allTerminals,
+                'filtered_terminals'  => $sortedTerminals,
+                'gateway_downtime'    => $downtimes,
+                'failed_terminals'    => $failedTerminalIds,
+                'gateway_tokens'      => $this->input['gateway_tokens'],
+                'gateway_config'      => $this->getGatewayConfig(),
+                'chance'              => $this->options->getChance(),
             ];
 
-            $endpoint = '/route';
-
-            $this->app->smartRouting->sendNonBlockingRequest($endpoint, $data);
-
+            $this->app->smartRouting->sendNonBlockingRequest('/route', $data);
         }
         catch (\Throwable $e)
         {
@@ -472,7 +485,6 @@ class Selector extends Base\Core
                     'error'     => $e->getMessage(),
                 ]);
         }
-
     }
 
     protected function shouldHitRoutingService(string $merchantId)
@@ -503,27 +515,67 @@ class Selector extends Base\Core
     protected function getGatewayConfig()
     {
         return [
-            'CybersourceMerchantWhitelist'    => Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
-            'MccFilterGateways'               => Gateway::MCC_FILTER_GATEWAYS,
-            'OnlyAuthorizationGateway'        => Gateway::$onlyAuthorizationGateway,
-            'TerminalBitPosition'             => Terminal\Type::getBitPositions(),
-            'GatewayAcquirerIfscMapping'      => Gateway::$gatewaysEmandateBanksMap,
-            'BharatQrCardNetwork'             => Gateway::$bharatQrCardNetwork,
-            'CardNetworkMap'                  => Gateway::$cardNetworkMap,
-            'CardNetworkRecurringMap'         => Gateway::$cardNetworkRecurringMap,
-            'NetbankingGateways'              => Gateway::$netbankingGateways,
-            'AuthTypeToEmandateGatewayMap'    => Gateway::$authTypeToEmandateGatewayMap,
-            'RecurringGateways'               => Gateway::$recurringGateways,
-            'UpiIntentGateways'               => Gateway::$upiIntentGateways,
-            'SubscriptionOverOneYearGateways' => Gateway::$subscriptionOverOneYearGateways,
-            'Headless'                        => Gateway::$headless,
-            'EmiBankToGatewayMap'             => Gateway::$emiBankToGatewayMap,
-            'NetbankingToGatewayMap'          => Gateway::$netbankingToGatewayMap,
-            'GatewaysEmandateBanksMap'        => Gateway::$gatewaysEmandateBanksMap,
-            'EmiBanksCardTerminals'           => Gateway::$emiBanksUsingCardTerminals,
-            'GatewaySupportedBanks'           => Netbanking::getGatewaySupportedBankList(),
-            'NetworkCodes'                    => Network::$cardNetworkMap,
-            'Networks'                        => Network::$fullName,
+            'cybersource_merchant_whitelist'      => Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+            'mcc_filter_gateways'                 => Gateway::MCC_FILTER_GATEWAYS,
+            'only_authorization_gateway'          => Gateway::$onlyAuthorizationGateway,
+            'bit_position'                        => Terminal\Type::getBitPositions(),
+            'gateway_acquirer_ifsc_mapping'       => Gateway::$gatewaysEmandateBanksMap,
+            'bharat_qr_card_network'              => Gateway::$bharatQrCardNetwork,
+            'card_network_map'                    => Gateway::$cardNetworkMap,
+            'card_network_recurring_map'          => Gateway::$cardNetworkRecurringMap,
+            'netbanking_gateways'                 => Gateway::$netbankingGateways,
+            'auth_type_to_emandate_gateway_map'   => Gateway::$authTypeToEmandateGatewayMap,
+            'recurring_gateways'                  => Gateway::$recurringGateways,
+            'upi_intent_gateways'                 => Gateway::$upiIntentGateways,
+            'subscription_over_one_year_gateways' => Gateway::$subscriptionOverOneYearGateways,
+            'headless'                            => Gateway::$headless,
+            'emi_bank_to_gateway_map'             => Gateway::$emiBankToGatewayMap,
+            'netbanking_to_gateway_map'           => Gateway::$netbankingToGatewayMap,
+            'gateways_emandate_banks_map'         => Gateway::$gatewaysEmandateBanksMap,
+            'emi_banks_card_terminals'            => Gateway::$emiBanksUsingCardTerminals,
+            'gateway_supported_banks'             => Netbanking::getGatewaySupportedBankList(),
+            'network_codes'                       => NetworkName::$codes
         ];
+    }
+
+    protected function getPaymentMetadataArray($payment)
+    {
+        $metadata = $payment->getMetadata();
+
+        $metadata['payment_analytics'] = $metadata['payment_analytics']->toArray();
+
+        return $metadata;
+    }
+
+    protected function getMerchantData($merchant)
+    {
+        $merchantData = [];
+
+        $merchantData['id']                = $merchant->getId();
+        $merchantData['entity']            = 'Merchant';
+        $merchantData['live']              = $merchant->isLive();
+        $merchantData['hold_funds']        = $merchant->getHoldFunds();
+        $merchantData['pricing_plan_id']   = $merchant->getPricingPlanId();
+        $merchantData['category']          = $merchant->getCategory();
+        $merchantData['category_2']        = $merchant->getCategory2();
+        $merchantData['international']     = $merchant->isInternational();
+        $merchantData['has_key_access']    = $merchant->getHasKeyAccess();
+        $merchantData['features']          = $merchant->getEnabledFeatures();
+
+        $subMerchantIds = [];
+
+        if ($merchant->isPartner() === true)
+        {
+            $subMerchants = (new MerchantCore())->listSubmerchants($merchant, []);
+
+            foreach ($subMerchants as $subMerchant)
+            {
+                $subMerchantIds[] = $subMerchant->getId();
+            }
+        }
+        $merchantData['sub_merchants_ids']  = $subMerchantIds;
+
+        return $merchantData;
+
     }
 }
