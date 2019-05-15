@@ -7,8 +7,6 @@ use Cache;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Card\NetworkName;
-use RZP\Models\Settlement\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
@@ -17,15 +15,14 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Card\NetworkName;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
-
-
 
 class Selector extends Base\Core
 {
@@ -95,6 +92,7 @@ class Selector extends Base\Core
         $payment = $this->input['payment'];
 
         $token = $payment->getGlobalOrLocalTokenEntity();
+
         if (empty($token) === true)
         {
             $this->input['gateway_tokens'] = new Base\PublicCollection();

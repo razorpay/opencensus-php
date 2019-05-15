@@ -5,12 +5,9 @@ namespace RZP\Services;
 use Requests;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use RZP\Models\Card\Validator;
-
 
 class SmartRouting
 {
-
     const X_RAZORPAY_TASKID  = 'X-Razorpay-TaskId';
 
     const REQUEST_TIMEOUT    = 20;

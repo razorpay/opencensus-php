@@ -7,7 +7,6 @@ use RZP\Trace\TraceCode;
 
 class NonBlockingHttp
 {
-
     const DEFAULT_TIMEOUT   = '50';
 
     protected $trace;
@@ -53,7 +52,6 @@ class NonBlockingHttp
         }
         catch (\Throwable $e)
         {
-            s($e);
             $this->trace->info(
                 TraceCode::NON_BLOCKING_HTTP_ERROR,
                 [
