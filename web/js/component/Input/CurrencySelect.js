@@ -166,7 +166,7 @@ export default class extends React.Component {
             </div>
           </div>
         ) : (
-          <div class="help-content--currency input-group-addon">
+          <div class="value help-content--currency input-group-addon">
             <input
               name={props.name || 'currency'}
               value={this.state.currency.name}
@@ -174,10 +174,10 @@ export default class extends React.Component {
               readOnly
             />
             <AmountTooltip
-              currency={this.state.currency.name}
+              currency={this.state.currency.name || this.INR_option.name}
               parentQuerySelector={this.props.parentQuerySelector}
             >
-              {this.state.currency.sym}
+              {this.state.currency.sym || this.INR_option.sym}
             </AmountTooltip>
           </div>
         )}
