@@ -676,10 +676,15 @@
         margin-bottom: 4px
 
       .Input--amount
+        left: 1px
+
         .Input-content
           margin-right: 0
         .Input-el
           width: 120px
+
+      .Input--noMargin + .Input--amount .Input-el
+        width: 144px
 
     .section-2
       .Input-el:not([type=checkbox])

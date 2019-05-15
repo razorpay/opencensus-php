@@ -4,19 +4,6 @@ import { setNativeValue } from 'rzp/utils/rzp-utils';
 import { AmountTooltip } from 'rzp/ui/Amount';
 import { classList } from 'common/util';
 
-// TODO: Move to common var utils list
-// NOTE: CSS is effected with index no. change
-const currencyArray = [
-  {
-    label: 'Frequently Used',
-    options: [],
-  },
-  {
-    label: 'All others',
-    options: [],
-  },
-];
-
 const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
 
 function CurrencyOption({ option }) {
@@ -45,7 +32,16 @@ export default class extends React.Component {
   state = this.initState();
 
   initState() {
-    let currencyList = [...currencyArray],
+    let currencyList = [
+        {
+          label: 'Frequently Used',
+          options: [],
+        },
+        {
+          label: 'All others',
+          options: [],
+        },
+      ],
       currency,
       isDisabled = this.props.disabled;
 
@@ -154,11 +150,6 @@ export default class extends React.Component {
                   selectedOptionComponent={this.getSelectedCurrencyOption}
                   onChange={this.onSelectCurrency}
                   selected={this.state.currency}
-                  afterOptionsComponent={
-                    !props.user.getCurrencyList
-                      ? _ => <div>Loading currencies...</div>
-                      : undefined
-                  }
                   showClear={false}
                   searchEnabled
                 />
