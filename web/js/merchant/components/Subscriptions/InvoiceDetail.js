@@ -182,74 +182,70 @@ export default class InvoiceDetail extends Component {
                   )}
                 />
 
-                {
-                  do {
-                    if (
-                      invoice.status === 'next_due' &&
-                      subscription.status !== 'pending'
-                    ) {
-                      <EntityDetailRow
-                        label="Charge at"
-                        value={() => (
+                {do {
+                  if (
+                    invoice.status === 'next_due' &&
+                    subscription.status !== 'pending'
+                  ) {
+                    <EntityDetailRow
+                      label="Charge at"
+                      value={() => (
+                        <div>
                           <div>
-                            <div>
-                              <Time
-                                value={
-                                  subscription.status === 'halted'
-                                    ? invoice.billing_start
-                                    : nextChargeAt
-                                }
-                                format="DD MMM YYYY, hh:mm:ss a"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      />;
-                    } else if (invoice.status === 'issued') {
-                      <EntityDetailRow
-                        label={`${
-                          subscription.status === 'pending'
-                            ? 'Next Charge at'
-                            : 'Charge at'
-                        }`}
-                        value={() => (
-                          <div>
-                            <div>
-                              <Time
-                                value={nextChargeAt}
-                                format="DD MMM YYYY, hh:mm:ss a"
-                              />
-                            </div>
-
-                            {
-                              do {
-                                if (
-                                  [
-                                    'active',
-                                    'pending',
-                                    'halted',
-                                    'completed',
-                                  ].indexOf(subscription.status) > -1 ||
-                                  (subscription.status === 'cancelled' &&
-                                    (curInvoiceIndex > 1 ||
-                                      (subscription.type !== 3 &&
-                                        subscription.type !== 1)))
-                                ) {
-                                  <AsyncButton
-                                    class="btn btn-default m-t"
-                                    text=" Attempt Charge"
-                                    pendingText="Attempting..."
-                                    onClick={() => onManualAttempt(invoice.id)}
-                                  />;
-                                }
+                            <Time
+                              value={
+                                subscription.status === 'halted'
+                                  ? invoice.billing_start
+                                  : nextChargeAt
                               }
-                            }
+                              format="DD MMM YYYY, hh:mm:ss a"
+                            />
                           </div>
-                        )}
-                      />;
-                    }
+                        </div>
+                      )}
+                    />;
+                  } else if (invoice.status === 'issued') {
+                    <EntityDetailRow
+                      label={`${
+                        subscription.status === 'pending'
+                          ? 'Next Charge at'
+                          : 'Charge at'
+                      }`}
+                      value={() => (
+                        <div>
+                          <div>
+                            <Time
+                              value={nextChargeAt}
+                              format="DD MMM YYYY, hh:mm:ss a"
+                            />
+                          </div>
+
+                          {do {
+                            if (
+                              [
+                                'active',
+                                'pending',
+                                'halted',
+                                'completed',
+                              ].indexOf(subscription.status) > -1 ||
+                              (subscription.status === 'cancelled' &&
+                                (curInvoiceIndex > 1 ||
+                                  (subscription.type !== 3 &&
+                                    subscription.type !== 1)))
+                            ) {
+                              <AsyncButton
+                                class="btn btn-default m-t"
+                                text=" Attempt Charge"
+                                pendingText="Attempting..."
+                                onClick={() => onManualAttempt(invoice.id)}
+                              />;
+                            }
+                          }}
+                        </div>
+                      )}
+                    />;
                   }
-                }
+                }}
 
                 <EntityDetailRow
                   label="Recurring Amount"
@@ -257,18 +253,20 @@ export default class InvoiceDetail extends Component {
                     <div>
                       <div class="label--primary">
                         <Amount
-                          currency={plan.item.currency}
+                          currency={invoice.currency}
                           value={subscription.quantity * plan.item.unit_amount}
                         />
                       </div>
-                      <small class="label--secondary">
-                        {subscription.quantity} x{' '}
-                        <Amount
-                          currency={plan.item.currency}
-                          value={plan.item.unit_amount}
-                        />{' '}
-                        per unit
-                      </small>
+                      {subscription.quantity && (
+                        <small class="label--secondary">
+                          {subscription.quantity} x{' '}
+                          <Amount
+                            currency={invoice.currency}
+                            value={plan.item.unit_amount}
+                          />{' '}
+                          per unit
+                        </small>
+                      )}
                     </div>
                   )}
                 />
