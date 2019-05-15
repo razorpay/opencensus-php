@@ -5,6 +5,7 @@ namespace RZP\Gateway\Mozart;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -117,22 +118,7 @@ class Gateway extends Base\Gateway
             $this->verifyCallback($input);
         }
 
-        if ($input['payment']['method'] === Payment\Method::UPI)
-        {
-            return [
-                'acquirer' => [
-                    Payment\Entity::VPA => $response['responseBody']['data']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
-                    Payment\Entity::REFERENCE16 => $response['responseBody']['data']['rrn'] ?? null,
-                ]
-            ];
-        }
-
-        if ($input['payment']['method'] === Payment\Method::NETBANKING)
-        {
-            return $this->getCallbackResponseData($input);
-        }
-
-        return $response;
+        return $this->getResponseData($input, $response);
     }
 
     public function immediateVerifyApplicable($gatewayName)
@@ -599,7 +585,19 @@ class Gateway extends Base\Gateway
 
             if (isset ($response['data']['amount']))
             {
-                $this->assertAmount($response['data']['amount'], $input['payment']['amount']);
+                // All gateways need to be migrated to formatted amount flow after testing on UAT
+                if ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
+                {
+                    $dbAmount      = number_format($input['payment']['amount'] / 100, 2, '.', '');
+                    $gatewayAmount = number_format($response['data']['amount'], 2, '.', '');
+                }
+                else
+                {
+                    $dbAmount      = $input['payment']['amount'];
+                    $gatewayAmount = $response['data']['amount'];
+                }
+
+                $this->assertAmount($dbAmount, $gatewayAmount);
             }
             else
             {
@@ -618,5 +616,28 @@ class Gateway extends Base\Gateway
         ];
 
         return in_array($input['payment']['gateway'], $validationGateways, true);
+    }
+
+    protected function getResponseData($input, $mozartResponse)
+    {
+        if ($input['payment']['method'] === Payment\Method::UPI)
+        {
+            $response = [
+                'acquirer' => [
+                    Payment\Entity::VPA         => $mozartResponse['responseBody']['data']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
+                    Payment\Entity::REFERENCE16 => $mozartResponse['responseBody']['data']['rrn'] ?? null,
+                ]
+            ];
+        }
+        elseif ($input['payment']['method'] === Payment\Method::NETBANKING)
+        {
+            $response = $this->getCallbackResponseData($input);
+        }
+        else
+        {
+            $response = $mozartResponse;
+        }
+
+        return $response;
     }
 }

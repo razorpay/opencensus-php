@@ -106,6 +106,31 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $paymentId = null;
 
+        //
+        // First we check if we have received payment id in the row,
+        // If not, then only we check gateway payment using the order id.
+        //
+        foreach (self::COLUMN_PAYMENT_ID as $cpi)
+        {
+            if (empty($row[$cpi]) === false)
+            {
+                $pid = trim($row[$cpi]);
+
+                if (UniqueIdEntity::verifyUniqueId($pid, false) === true)
+                {
+                    // Valid payment id
+                    $paymentId = $pid;
+
+                    break;
+                }
+            }
+        }
+
+        if (empty($paymentId) === false)
+        {
+            return $paymentId;
+        }
+
         $orderId = trim($row[self::COLUMN_ORDER_ID]);
 
         $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(

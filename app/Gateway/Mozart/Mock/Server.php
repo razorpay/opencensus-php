@@ -181,6 +181,6 @@ class Server extends Base\Mock\Server
 
     protected function getUpiAirtelSecret()
     {
-        return $this->app['config']->get('gateway.mozart.upi_airtel_test_hash_secret');
+        return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');
     }
 }

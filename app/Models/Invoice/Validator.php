@@ -15,6 +15,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
@@ -92,7 +93,7 @@ class Validator extends Base\Validator
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
-        Entity::CURRENCY                 => 'filled|in:INR',
+        Entity::CURRENCY                 => 'filled|currency|custom',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
         Entity::DRAFT                    => 'filled|boolean',
@@ -126,7 +127,7 @@ class Validator extends Base\Validator
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
-        Entity::CURRENCY                 => 'filled|in:INR',
+        Entity::CURRENCY                 => 'filled|currency|custom',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
         Entity::DRAFT                    => 'filled|boolean',
@@ -156,7 +157,7 @@ class Validator extends Base\Validator
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
-        Entity::CURRENCY                 => 'filled|in:INR',
+        Entity::CURRENCY                 => 'filled|currency|custom',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
         Entity::DRAFT                    => 'filled|in:0',
@@ -201,6 +202,11 @@ class Validator extends Base\Validator
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100|nullable',
         Entity::CALLBACK_URL             => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|sometimes|string|in:get|nullable',
+    ];
+
+    protected static $editBillingPeriodRules = [
+        Entity::BILLING_START            => 'filled|epoch',
+        Entity::BILLING_END              => 'filled|epoch',
     ];
 
     protected static $editPaidRules = [
@@ -351,7 +357,7 @@ class Validator extends Base\Validator
 
             if (($expiryRequiredFeature === true) and (empty($expireBy) === true))
             {
-                throw new BadRequestValidationFailureException("expire_by is required.");
+                throw new BadRequestValidationFailureException('expire_by is required.');
             }
         }
     }
@@ -563,7 +569,7 @@ class Validator extends Base\Validator
         if ($partialPaymentEnabled === false)
         {
             throw new BadRequestValidationFailureException(
-                "First payment min amount cannot be set when partial payment is disabled",
+                'First payment min amount cannot be set when partial payment is disabled',
                 Entity::FIRST_PAYMENT_MIN_AMOUNT);
         }
 
@@ -575,7 +581,7 @@ class Validator extends Base\Validator
         if ($firstPaymentAmount >= $amount)
         {
             throw new BadRequestValidationFailureException(
-                "First payment min amount must be lesser than the amount",
+                'First payment min amount must be lesser than the amount',
                 Entity::FIRST_PAYMENT_MIN_AMOUNT,
                 [
                     'amount'                   => $amount,
@@ -595,7 +601,7 @@ class Validator extends Base\Validator
             if ($isReceiptMandatory === true)
             {
                 throw new BadRequestValidationFailureException(
-                    "Receipt is a required field and must be set",
+                    'Receipt is a required field and must be set',
                     Entity::RECEIPT);
             }
         }
@@ -990,6 +996,24 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateInternational()
+    {
+        $invoice = $this->entity;
+
+        $type = $invoice->getType();
+
+        $currency = $invoice->getCurrency();
+
+        if (($currency !== Currency::INR) and
+            ((Type::isPaymentLinkType($type) === false) and ($invoice->isOfSubscription() === false)))
+        {
+            throw new BadRequestValidationFailureException(
+                'Currency ' . $currency . ' is not supported',
+                'currency'
+            );
+        }
+    }
+
     public function validateExternalEntity()
     {
         $invoice = $this->entity;
@@ -998,8 +1022,26 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invalid External Entity',
-                "entity_type"
+                'entity_type'
                 );
+        }
+    }
+
+    public function validateCurrency(string $attribute, string $currency)
+    {
+        $invoice = $this->entity;
+
+        $international = $invoice->merchant->isInternational();
+
+        // Non International accounts should not create PL in other currencies.
+        if (($international !== true) and ($currency !== Currency::INR))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
+                null,
+                [
+                    'currency' => $currency
+                ]);
         }
     }
 }

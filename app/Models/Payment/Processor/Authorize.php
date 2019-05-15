@@ -13,6 +13,7 @@ use Lib\PhoneBook;
 
 use RZP\Jobs;
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -40,6 +41,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Jobs\RunShieldCheck;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
@@ -111,27 +113,45 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
+        $this->app['diag']->trackPaymentEvent(EventCode::TERMINAL_SELECTION_INITIATED, $payment);
+
         // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
+        try
+        {
+            if (empty($gatewayInput['selected_terminals_ids']) === false)
+            {
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
+            }
+            else if (($payment->isPushPaymentMethod() === true) and
+                ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
+            {
+                $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
+            }
+            else
+            {
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+            }
 
-        if (empty($gatewayInput['selected_terminals_ids']) === false)
-        {
-            $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
-        }
-        else if (($payment->isPushPaymentMethod() === true) and
-            ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
-        {
-            $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
-        }
-        else
-        {
-            $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
-        }
+            $this->trace->info(
+                TraceCode::SELECTED_TERMINAL_IDS,
+                [
+                    'selected_terminals_ids'  => array_pluck($this->selectedTerminals, Terminal\Entity::ID),
+                ]);
 
-        $this->trace->info(
-            TraceCode::SELECTED_TERMINAL_IDS,
-            [
-                'selected_terminals_ids'  => array_pluck($this->selectedTerminals,Terminal\Entity::ID),
-            ]);
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::TERMINAL_SELECTION_PROCESSED,
+                $payment,
+                null,
+                [
+                    'terminal_count' => count($this->selectedTerminals)
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::TERMINAL_SELECTION_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
     }
 
     protected function setAuthenticationGatewayViaGatewayRules(Payment\Entity $payment, array & $gatewayInput)
@@ -285,6 +305,9 @@ trait Authorize
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))
                 {
+
+                    $this->preProcessAuthBeforeRetry($payment);
+
                     continue;
                 }
 
@@ -303,6 +326,24 @@ trait Authorize
         }
 
         return $request;
+    }
+
+
+    protected function preProcessAuthBeforeRetry($payment)
+    {
+        $isPreferredAuthEmpty = (empty($payment->getMetadata(Payment\Entity::PREFERRED_AUTH)) === true);
+
+        if ($isPreferredAuthEmpty === false)
+        {
+            $payment->setAuthType(null);
+            return;
+        }
+
+        if (($payment->getAuthType() !== null) and
+            (in_array($payment->getAuthType(), Payment\AuthType::$otpAuthTypes, true) === true))
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
+        }
     }
 
     protected function logAndCheckForAuthRetry($e, $payment): bool
@@ -333,6 +374,8 @@ trait Authorize
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
 
         $this->runShieldCheck($this->payment);
     }
@@ -1499,6 +1542,10 @@ trait Authorize
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
         $gatewayInput['payment_analytics'] = $payment->getMetadata('payment_analytics');
 
+        // Bank such as Netbanking Canara enforces to send fee in request.
+        // Adding fee calculation as part of gateway input only if applicable
+        $this->addFeeIfApplicable($payment, $gatewayInput);
+
         if ($payment->hasOrder())
         {
             $gatewayInput['order'] = $payment->order->toArray();
@@ -1749,6 +1796,40 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->processCurrencyConversions($payment);
+
+        $this->attachEntityOrigin($payment);
+    }
+
+    /**
+     * When calculating commission, we proceed only if there is an entity origin associated with the payment.
+     * Here we fetch the entity origin for the current request and associate with the payment so that
+     * explicit fees can be shown as a part of fee breakup to the customer if applicable
+     *
+     * @param $payment
+     */
+    protected function attachEntityOrigin($payment)
+    {
+        try
+        {
+            // Fetch origin entity for the payment based on the auth used to initiate the payment.
+            $entityOrigin = (new EntityOrigin\Core)->fetchEntityOrigin($payment);
+
+            if (empty($entityOrigin) === false)
+            {
+                // associate origin entity to payment relation
+                $payment->setRelation('entityOrigin', $entityOrigin);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // The payment should not be blocked even if the origin cannot be fetched. Log an error and proceed.
+            $this->trace->critical(TraceCode::ORIGIN_SET_FAILED,
+                [
+                    'message'     => $e->getMessage(),
+                    'entity_type' => $payment->getEntity(),
+                    'entity_id'   => $payment->getId(),
+                ]);
+        }
     }
 
     protected function parseContact(string $contact): PhoneBook
@@ -4926,6 +5007,8 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
+
             return true;
         });
 
@@ -5286,6 +5369,8 @@ trait Authorize
     {
         $payment = $this->retrieve($paymentId);
 
+        $this->checkForMerchantCallbackUrl($payment);
+
         $this->trace->info(
             TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT,
             [
@@ -5320,8 +5405,6 @@ trait Authorize
             $this->setCardNumberAndCvv($inputDetails);
         }
 
-        $this->setPreferredAuthIfApplicable($payment);
-
         $resource = $this->getCallbackMutexResource($payment);
 
         $response = $this->mutex->acquireAndRelease(
@@ -5336,15 +5419,38 @@ trait Authorize
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
 
+                // if payment is already processed and failed we will throw an error
+                if ($payment->isFailed() === true)
+                {
+                    return $this->rethrowFailedPaymentErrorException($payment);
+                }
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                /*
+                 * In double redirect scenario terminal will be set
+                 * we will use the same terminal and set auth type as null
+                 * since in first request authtype might have set to
+                 * headless_otp,otp,ivr
+                 */
                 if ($payment->hasTerminal() === true)
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                    $this->trace->info(
+                        TraceCode::PAYMENT_SECOND_REDIRECT_TO_AUTHORIZE_REQUEST,
+                        [
+                            'payment_id'   => $payment->getId(),
+                            'auth_type'    => $payment->getAuthType(),
+                            'terminal_id'  => $payment->getTerminalId(),
+                        ]);
+
+                    $gatewayInput['selected_terminals_ids'] = [$payment->getTerminalId()];
+
+                    $payment->setAuthType(null);
                 }
 
                 $this->repo->saveOrFail($payment);
 
-                $gatewayInput = $inputDetails['gateway_input'];
+                $this->setPreferredAuthIfApplicable($payment);
 
                 unset($inputDetails['gatewayInput']);
 
@@ -5400,5 +5506,20 @@ trait Authorize
         }
 
         return $emiPlans[0];
+    }
+
+    protected function addFeeIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    {
+        if (in_array($payment->getGateway(), Payment\Gateway::FEE_IN_AUTHORIZE_GATEWAYS, true) === false)
+        {
+            return;
+        }
+
+        list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
+        {
+            return (new Pricing\Fee)->calculateMerchantFees($payment);
+        });
+
+        $gatewayInput['payment_fee'] = $fee;
     }
 }

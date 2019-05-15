@@ -125,6 +125,7 @@ class Base extends Mailable
         else
         {
             $args = [
+                $this->data['invoice']['currency'],
                 $this->data['invoice']['amount_formatted'],
             ];
         }

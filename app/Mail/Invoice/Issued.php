@@ -7,8 +7,8 @@ use RZP\Models\Invoice\Type;
 class Issued extends Base
 {
     const SUBJECT_TEMPLATES = [
-        Type::LINK    => ' Requesting payment of Rs. %s (via Razorpay)',
-        Type::ECOD    => ' Requesting payment of Rs. %s (via Razorpay)',
+        Type::LINK    => ' Requesting payment of %s %s (via Razorpay)',
+        Type::ECOD    => ' Requesting payment of %s %s (via Razorpay)',
         Type::INVOICE => ' Invoice from %s',
     ];
 

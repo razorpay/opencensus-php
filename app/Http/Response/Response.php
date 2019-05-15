@@ -288,6 +288,8 @@ class Response
             'payment_redirect_callback',
             'payment_callback_get',
             'payment_callback_post',
+            'payment_redirect_to_authorize_get',
+            'payment_redirect_to_authorize_post',
         ];
 
         return (in_array($route, $callbackRoutes));
@@ -306,7 +308,9 @@ class Response
             'payment_callback_post',
             'payment_callback_with_key_get',
             'payment_callback_with_key_post',
-            'payment_redirect_callback'
+            'payment_redirect_callback',
+            'payment_redirect_to_authorize_get',
+            'payment_redirect_to_authorize_post',
         ];
 
         return (in_array($route, $callbackRoutes));

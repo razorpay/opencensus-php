@@ -505,14 +505,6 @@ class Calculator extends Base\Core
             return false;
         }
 
-        // @todo remove this check when customer fee bearer model is supported for explicit commissions
-        if ($this->isCustomerFeeBearer() === true)
-        {
-            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER);
-
-            return false;
-        }
-
         return true;
     }
 
@@ -610,6 +602,15 @@ class Calculator extends Base\Core
      */
     protected function validateTotalCommissionLessThanTxnAmount()
     {
+        //
+        // For a customer fee bearer model, the amount is inclusive of the commission and
+        // hence will always be less than the commission
+        //
+        if ($this->isCustomerFeeBearer() === true)
+        {
+            return;
+        }
+
         $totalCommission = 0;
 
         foreach ($this->commissions as $commission)
@@ -718,6 +719,7 @@ class Calculator extends Base\Core
             Entity::FEE         => $commissionFee,
             Entity::TAX         => $commissionTax,
             Entity::TYPE        => Type::EXPLICIT,
+            Entity::MODEL       => PartnerConfig\CommissionModel::COMMISSION,
             Entity::DEBIT       => 0,
             Entity::CREDIT      => $commissionFee,
             Entity::RECORD_ONLY => ($this->getPartnerConfig()->isExplicitRecordOnly() === true) ? 1 : 0,
@@ -756,10 +758,18 @@ class Calculator extends Base\Core
             Entity::FEE         => $commissionFee,
             Entity::TAX         => $commissionTax,
             Entity::TYPE        => Type::IMPLICIT,
+            Entity::MODEL       => $this->getPartnerConfig()->getCommissionModel(),
             Entity::DEBIT       => 0,
             Entity::CREDIT      => $commissionFee,
             Entity::RECORD_ONLY => 0,
         ];
+
+        // if subvention, we have to debit from partner instead of crediting
+        if ($this->getPartnerConfig()->getCommissionModel() === PartnerConfig\CommissionModel::SUBVENTION)
+        {
+            $payload[Entity::DEBIT]  = $commissionFee;
+            $payload[Entity::CREDIT] = 0;
+        }
 
         $commission = $this->buildCommission($payload);
 
@@ -804,11 +814,18 @@ class Calculator extends Base\Core
         $payload = [
             Entity::FEE         => $commissionFee,
             Entity::TAX         => $commissionTax,
+            Entity::MODEL       => $this->getPartnerConfig()->getCommissionModel(),
             Entity::TYPE        => Type::IMPLICIT,
             Entity::DEBIT       => 0,
             Entity::CREDIT      => $commissionFee,
             Entity::RECORD_ONLY => 0,
         ];
+
+        if ($this->getPartnerConfig()->getCommissionModel() === PartnerConfig\CommissionModel::SUBVENTION)
+        {
+            $payload[Entity::DEBIT]  = $commissionFee;
+            $payload[Entity::CREDIT] = 0;
+        }
 
         $commission = $this->buildCommission($payload);
 

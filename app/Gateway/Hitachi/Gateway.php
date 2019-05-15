@@ -138,7 +138,7 @@ class Gateway extends Base\Gateway
 
             if ($input['terminal']['mode'] === Terminal\Mode::PURCHASE)
             {
-                $this->advicePaysecure($input);
+                $this->call(Base\Action::ADVICE, $input);
             }
 
             return $callbackData;
@@ -168,7 +168,7 @@ class Gateway extends Base\Gateway
 
         if ($this->isRupayTransaction($input) === true)
         {
-            $this->advicePaysecure($input);
+            $this->call(Base\Action::ADVICE, $input);
 
             return;
         }
@@ -266,11 +266,33 @@ class Gateway extends Base\Gateway
         // For RuPay transactions, route it to PaySecure
         if ($this->isRupayTransaction($input) === true)
         {
-            return $this->app['gateway']->call(
-                Payment\Gateway::PAYSECURE,
-                $this->action,
-                $input,
-                $this->mode);
+            try
+            {
+                return $this->app['gateway']->call(
+                    Payment\Gateway::PAYSECURE,
+                    $this->action,
+                    $input,
+                    $this->mode);
+            }
+            catch (Exception\PaymentVerificationException $e)
+            {
+                // If a terminal mode is purchase, we send the advice message during the processing of callback
+                // But, in the case of late authorized payments, this callback would not be processed and hence
+                // advice messages would not be sent
+                // Hence, in this case(ie, gatewaySuccess is true, but apiSuccess is false), during verify
+                // we need to send an advice message separately before throwing the exception to the api side
+                $verify = $e->getVerifyObject();
+
+                if (($verify->gatewaySuccess === true) and
+                    ($verify->apiSuccess === false) and
+                    ($this->input['terminal']['mode'] === Terminal\Mode::PURCHASE)
+                )
+                {
+                    $this->call(Base\Action::ADVICE, $this->input);
+                }
+
+                throw $e;
+            }
         }
 
         $verify = new Verify($this->gateway, $input);
@@ -454,8 +476,11 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowException($response);
     }
 
-    protected function advicePaysecure(array $input)
+    // used only by paysecure authorized Rupay payment to capture payments
+    public function advice(array $input)
     {
+        parent::advice($input);
+
         $request = $this->getAdviceRequestArrayForPaysecure($input);
 
         $captureEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);

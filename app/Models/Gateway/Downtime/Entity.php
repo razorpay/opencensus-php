@@ -4,10 +4,13 @@ namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Base\Traits\HardDeletes;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Entity extends Base\PublicEntity
 {
+    use HardDeletes;
+
     const ID            = 'id';
     const GATEWAY       = 'gateway';
     const ISSUER        = 'issuer';

@@ -179,6 +179,17 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    public function updateBillingPeriod(Entity $invoice, array $input): Entity
+    {
+        $operation = 'editBillingPeriod';
+
+        $invoice->edit($input, $operation);
+
+        $this->repo->saveOrFail($invoice);
+
+        return $invoice;
+    }
+
     public function issue(Entity $invoice, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(

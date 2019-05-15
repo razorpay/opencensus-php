@@ -3,6 +3,8 @@
 namespace RZP\Models\Batch;
 
 use RZP\Exception;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Type
 {
@@ -86,6 +88,22 @@ class Type
     ];
 
     /**
+     * For following batch types, sometimes batches get stuck during
+     * processing due to big file size or infra issue. So we are enabling
+     * 'Retry Batch' option for these batches even when they are in created
+     * state and having processing = true.
+     *
+     * Here the value against each type indicates the time gap from updated_at
+     * in seconds, after which only we will allow such retries.
+     *
+     * @var array
+     */
+    public static $retryInProcessingBatchTypes = [
+        // 2 hours gap for Recon batches
+        self::RECONCILIATION    => 7200,
+    ];
+
+    /**
      * Following batch types get processed via CRON job, CRON currently runs
      * less frequently (now every 6 hrs).
      *
@@ -123,6 +141,24 @@ class Type
         self::FUND_ACCOUNT,
         self::MERCHANT_ONBOARDING,
         self::LINKED_ACCOUNT_REVERSAL
+    ];
+
+    /**
+     * Batch sub_types
+     *
+     * @var array
+     */
+    public static $subTypes = [
+        Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
+        Gateway::HITACHI,
+        Gateway::BILLDESK,
+        Gateway::ATOM,
+        Gateway::UPI_MINDGATE,
+        CardlessEmi::ZESTMONEY,
+        CardlessEmi::FLEXMONEY,
+        CardlessEmi::EARLYSALARY,
     ];
 
     /**
@@ -166,6 +202,14 @@ class Type
         foreach ($types as $row)
         {
             self::validateType($row);
+        }
+    }
+
+    public static function validateSubType(string $type)
+    {
+        if (in_array($type, self::$subTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $type);
         }
     }
 

@@ -39,11 +39,6 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreatePaymentLinkWithCurrencyAndNoAmount()
-    {
-        $this->startTest();
-    }
-
     public function testCreatePaymentLinkWithoutAmountOrCurrency()
     {
         $this->startTest();
@@ -79,13 +74,6 @@ class PaymentLinkTest extends TestCase
     public function testUpdatePaymentLink()
     {
         $this->createPaymentLink(self::TEST_PL_ID, ['amount' => 2000]);
-
-        $this->startTest();
-    }
-
-    public function testUpdatePaymentLinkInvalidAmountCurrency()
-    {
-        $this->createPaymentLink(self::TEST_PL_ID);
 
         $this->startTest();
     }
@@ -188,7 +176,7 @@ class PaymentLinkTest extends TestCase
     {
         $attributes = [
             PaymentLinkModel\Entity::AMOUNT        => null,
-            PaymentLinkModel\Entity::CURRENCY      => null,
+            PaymentLinkModel\Entity::CURRENCY      => 'INR',
             PaymentLinkModel\Entity::TIMES_PAYABLE => 10,
         ];
 

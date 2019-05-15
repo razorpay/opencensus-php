@@ -127,7 +127,7 @@ class TransactionHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function callbackIncomingCollect(string $gateway, array $content = [])
+    public function callback(string $gateway, array $options = [])
     {
         // This API work on direct auth
         $this->setMerchantInContext(false);
@@ -138,9 +138,9 @@ class TransactionHelper extends P2pHelper
 
         $this->resetContexts();
 
-        $default = [];
+        $request->server($options['server'] ?? []);
 
-        $this->content($request, $default, $content);
+        $request->json($options['content']);
 
         return $this->post($request);
     }

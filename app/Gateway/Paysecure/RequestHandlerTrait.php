@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Utility;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 
 trait RequestHandlerTrait
 {
@@ -302,6 +303,8 @@ trait RequestHandlerTrait
 
         $soapClient = $this->getSoapClientObject($request);
 
+        $startTime = microtime(true);
+
         try
         {
             $response = $soapClient->__soapCall('CallPaySecure', array('parameters' => $requestBody));
@@ -337,6 +340,36 @@ trait RequestHandlerTrait
             else
             {
                 throw $sf;
+            }
+        }
+        finally
+        {
+            $completed = microtime(true);
+
+            try
+            {
+                $metricsDriver = app('trace')->metricsDriver(\RZP\Gateway\Base\Metric::DOGSTATSD_DRIVER);
+
+                /**
+                 * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
+                 */
+                $metricsDriver->histogram('gateway_request_total_time_ms',
+                    ($completed - $startTime) * 1000,
+                    [
+                        'gateway' => 'paysecure',
+                        'action'  => $command ?? 'none',
+                    ]);
+            }
+            catch (\Throwable $e)
+            {
+                $this->app['trace']->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
+                    [
+                        'gateway' => 'paysecure',
+                        'action'  => $command ?? 'none',
+                    ]);
             }
         }
 

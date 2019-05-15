@@ -49,6 +49,11 @@ abstract class Base extends BaseProcessor
 
         $payment = $this->fetchPaymentEntity($parsedData);
 
+        if ($this->shouldUpdateBatchOutputWithPaymentId() === true)
+        {
+            $entry[Batch\Header::PAYMENT_ID] = $payment->getId();
+        }
+
         list($payment, $authorizeSuccess) = $this->forceAuthorizeIfApplicable($payment, $parsedData);
 
         if ($authorizeSuccess === false)
@@ -259,5 +264,10 @@ abstract class Base extends BaseProcessor
     protected function fetchPaymentEntity($data): Payment\Entity
     {
         return $this->repo->payment->findOrFailPublic($data[self::PAYMENT_ID]);
+    }
+
+    protected function shouldUpdateBatchOutputWithPaymentId()
+    {
+        return false;
     }
 }

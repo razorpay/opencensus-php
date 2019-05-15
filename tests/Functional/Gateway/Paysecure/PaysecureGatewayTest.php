@@ -19,6 +19,8 @@ class PaysecureGatewayTest extends TestCase
     const HITACHI_MID = 'sample_hitachi_mid';
     const HITACHI_TID = 'sample_hitachi_tid';
 
+    protected $terminal;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
@@ -27,7 +29,7 @@ class PaysecureGatewayTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
-        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+        $this->terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' =>
                 [
                     'non_recurring' => '1',
@@ -299,6 +301,44 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testAuthorizeFailureWithNoErrorMessage()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'authorize')
+                {
+                    unset($content['apprcode']);
+
+                    $content['status'] = 'failure';
+
+                    $content['errorcode'] = '57';
+
+                    unset($content['errormsg']);
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+    }
+
     public function testInititiateFailure()
     {
         $this->mockServerContentFunction(
@@ -518,6 +558,61 @@ class PaysecureGatewayTest extends TestCase
                 ]
             ],
             $verify
+        );
+    }
+
+    // For terminal mode "purchase", capture would not be called
+    // And for this payments, we send the advice message for late auth payments
+    // when the verify exception is caught.
+    // This test case covers if this advice message is called. If the advise message is not called,
+    // the hitachi entity would not exist.
+    public function testLateAuthorizedViaPurchaseTerminal()
+    {
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 2,
+
+            ]
+        );
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'authorize')
+                {
+                    throw new GatewayTimeoutException('Timed out');
+                }
+            }
+        );
+
+        $data = $this->testData['testAuthorizeFailed'];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $data = $this->testData['testVerifyFailedPayment'];
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment->getPublicId());
+        });
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertEquals($payment['id'], $hitachi['payment_id']);
+
+        $this->assertNotNull($hitachi['pRRN']);
+
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 3,
+            ]
         );
     }
 

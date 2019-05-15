@@ -2675,6 +2675,17 @@ class InvoiceTest extends TestCase
             });
     }
 
+    public function testUpdateBillingPeriod()
+    {
+        $this->createOrder();
+
+        $this->createIssuedInvoice();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertInvoiceCreateResponse(array $response)

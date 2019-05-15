@@ -20,10 +20,9 @@ class Validator extends Base\Validator
         RequestFields::MODE_OF_TRANSACTION            => 'required|in:PER',
         RequestFields::CLIENT_ACCOUNT                 => 'sometimes',
         RequestFields::CHECKSUM                       => 'required',
-
+        RequestFields::FLDREF1                        => 'required',
+        RequestFields::FLDREF2                        => 'required',
         //additional fields - we do not send any value here
-        'fldRef1'  => 'sometimes',
-        'fldRef2'  => 'sometimes',
         'fldRef3'  => 'sometimes',
         'fldRef4'  => 'sometimes',
         'fldRef5'  => 'sometimes',

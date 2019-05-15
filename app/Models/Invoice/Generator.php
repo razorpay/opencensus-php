@@ -205,6 +205,10 @@ class Generator extends Base\Core
             $this->invoice->setSubscriptionId($this->subscriptionId);
         }
 
+        $validator = $this->invoice->getValidator();
+
+        $validator->validateInternational();
+
         if ($this->batchId != null)
         {
             $this->invoice->setBatchId($this->batchId);
@@ -213,7 +217,6 @@ class Generator extends Base\Core
         {
             $this->invoice->batch()->associate($this->batch);
         }
-
 
         $this->createLineItems($input);
     }

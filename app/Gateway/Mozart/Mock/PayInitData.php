@@ -116,17 +116,17 @@ class PayInitData extends Base\Mock\Server
                        ['gateway' => 'netbanking_sib', 'callbackUrl' => $entities['callbackUrl']]);
 
         $response = [
-            'data' => [],
+            'data'              => [],
             'error'             => null,
             'success'           => true,
-            'next' => [
-                'redirect' => [
-                    'content' => [
-                        'QS' => 'random_encrypted_string',
-                    ],
-                    'method' => 'post',
-                    'url' => $url
-                ]
+            'next'              => [
+                            'redirect' => [
+                                'method'  => 'post',
+                                'url'     => $url,
+                                'content' => [
+                                    'QS' => 'random_encrypted_string',
+                                ],
+                            ]
             ],
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',

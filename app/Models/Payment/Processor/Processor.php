@@ -15,6 +15,7 @@ use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Gateway;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Pricing;
@@ -252,6 +253,8 @@ class Processor
 
     public function process(array $input, $gatewayInput = []): array
     {
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
+
         try
         {
             $startTime = microtime(true);
@@ -288,18 +291,24 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_PROCESSED, $payment, null, []);
+
             return $paymentData;
         }
         catch (\Throwable $e)
         {
+            $payment = $payment ?? null;
+
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
-            if ((isset($payment) === true) and ($payment instanceof Payment\Entity))
+            if ($payment instanceof Payment\Entity === true)
             {
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
             }
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_PROCESSED, $payment, $e, []);
 
             throw $e;
         }

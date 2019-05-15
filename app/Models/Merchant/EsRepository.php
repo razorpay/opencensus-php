@@ -144,7 +144,14 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForPartnerType(array &$query, string $value)
     {
-        $this->addTermFilter($query, Entity::PARTNER_TYPE, $value);
+        if ($value === 'all')
+        {
+            $this->addNotNullFilterForField($query, Entity::PARTNER_TYPE);
+        }
+        else
+        {
+            $this->addTermFilter($query, Entity::PARTNER_TYPE, $value);
+        }
     }
 
     public function buildQueryForAdmins(array & $query, array $value)

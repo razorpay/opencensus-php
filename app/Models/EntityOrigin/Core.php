@@ -8,36 +8,22 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
-use RZP\Models\VirtualAccount\Receiver;
 
 class Core extends Base\Core
 {
     /**
      * Origin entity can be an instance of Merchant entity or an Oauth application
      *
-     * @param Base\PublicEntity                 $entity
-     * @param Merchant\Entity|OAuthApp\Entity   $originEntity
-     * @param array                             $input
+     * @param Base\PublicEntity $entity
+     * @param                   $originEntity
      *
      * @return Entity
      */
-    public function create(Base\PublicEntity $entity, $originEntity, array $input = []): Entity
+    public function create(Base\PublicEntity $entity, $originEntity): Entity
     {
-        $entityOrigin = new Entity;
-
-        $entityOrigin->build($input);
-
-        $entityOrigin->origin()->associate($originEntity);
-
-        $entityOrigin->entity()->associate($entity);
+        $entityOrigin = $this->build($entity, $originEntity);
 
         $this->repo->saveOrFail($entityOrigin);
-
-        // @todo : Remove later, not required
-        $this->trace->info(TraceCode::ORIGIN_CREATED,
-            [
-                Entity::ID => $entityOrigin->getId(),
-            ]);
 
         return $entityOrigin;
     }
@@ -54,58 +40,69 @@ class Core extends Base\Core
 
     /**
      * @param Base\PublicEntity $entity
-     *
-     * @return void
      */
     public function createEntityOrigin(Base\PublicEntity $entity)
     {
         try
         {
-            $subscription = $entity->subscription;
-            $receiver     = $entity->receiver;      // Example receiver: Qr_code entity
-            
-            //
-            // If the txn has an associated subscription entity, fetch the subscription's entity_origin.
-            // If the txn has an associated receiver entity, it is a VA txn. We extract the VA from the receiver
-            // and set the VA's entity_origin as the entity_origin for this txn.
-            // If the txn does not have either of those, basic auth is used to extract the origin entity's details.
-            //
-            if (empty($subscription) === false)
-            {
-                $originEntity = $this->getOriginEntityFromSubscription($subscription);
-            }
-            else if (empty($receiver) === false)
-            {
-                $originEntity = $this->getOriginEntityFromReceiver($receiver);
-            }
-            else
-            {
-                $originEntity = $this->getOriginEntityFromAuth();
-            }
+            $entityOrigin = $this->fetchEntityOrigin($entity);
 
-            //
-            // Non null origin details are returned only for public auth, partner auth and bearer auth.
-            // Return if null values are returned.
-            //
-            if (empty($originEntity) === true)
+            if (empty($entityOrigin) === false)
             {
-                return;
+                $this->repo->saveOrFail($entityOrigin);
             }
-
-            $this->create($entity, $originEntity);
         }
         catch (\Throwable $e)
         {
             // The payment should not be blocked even if the origin cannot be created. Log an error and proceed.
             $this->trace->critical(TraceCode::ORIGIN_SET_FAILED,
-                                    [
-                                        'message'           => $e->getMessage(),
-                                        Entity::ENTITY_TYPE => $entity->getEntity(),
-                                        Entity::ENTITY_ID   => $entity->getId(),
-                                    ]);
-
-            return;
+                [
+                    'message'           => $e->getMessage(),
+                    Entity::ENTITY_TYPE => $entity->getEntity(),
+                    Entity::ENTITY_ID   => $entity->getId(),
+                ]);
         }
+    }
+
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return Entity|null
+     */
+    public function fetchEntityOrigin(Base\PublicEntity $entity)
+    {
+        $subscription = $entity->subscription;
+        $receiver     = $entity->receiver;      // Example receiver: Qr_code entity
+
+        //
+        // If the txn has an associated subscription entity, fetch the subscription's entity_origin.
+        // If the txn has an associated receiver entity, it is a VA txn. We extract the VA from the receiver
+        // and set the VA's entity_origin as the entity_origin for this txn.
+        // If the txn does not have either of those, basic auth is used to extract the origin entity's details.
+        //
+        if (empty($subscription) === false)
+        {
+            $originEntity = $this->getOriginEntityFromSubscription($subscription);
+        }
+        else if (empty($receiver) === false)
+        {
+            $originEntity = $this->getOriginEntityFromReceiver($receiver);
+        }
+        else
+        {
+            $originEntity = $this->getOriginEntityFromAuth();
+        }
+
+        //
+        // Non null origin details are returned only for public auth, partner auth and bearer auth.
+        // Return if null values are returned.
+        //
+        if (empty($originEntity) === true)
+        {
+            return null;
+        }
+
+        return $this->build($entity, $originEntity);
     }
 
     /**
@@ -142,51 +139,33 @@ class Core extends Base\Core
     }
 
     /**
-     * Origin type and id can be null.
+     * Origin entity can be an instance of Merchant entity or an Oauth application
      *
-     * @param $originType
-     * @param $originId
+     * @param Base\PublicEntity                 $entity
+     * @param Merchant\Entity|OAuthApp\Entity   $originEntity
+     * @param array                             $input
      *
-     * @return mixed|null
+     * @return Entity
      */
-    protected function fetchOriginEntity($originType, $originId)
+    protected function build(Base\PublicEntity $entity, $originEntity, array $input = []): Entity
     {
-        $originEntity = null;
+        $entityOrigin = new Entity;
 
-        switch ($originType)
-        {
-            case Constants::MERCHANT:
-                // If the merchant's credentials are used, fetch the merchant entity directly from the BasicAuth
-                $originEntity = app('basicauth')->getMerchant();
-                break;
+        $entityOrigin->generateId();
 
-            case Constants::APPLICATION:
-                $originEntity = (new OAuthApp\Repository)->find($originId);
-                break;
+        $entityOrigin->build($input);
 
-            default:
-                break;
-        }
+        $entityOrigin->origin()->associate($originEntity);
 
-        if ($originEntity === null)
-        {
-            $authType                  = app('basicauth')->getAuthType();
-            $hasPartnerAuthCallbackKey = app('basicauth')->hasPartnerAuthCallbackKey();
-            $routeName                 = app('router')->currentRouteName();
+        $entityOrigin->entity()->associate($entity);
 
-            $this->trace->critical(
-                TraceCode::ORIGIN_INVALID_TYPE,
-                [
-                    Entity::ORIGIN_TYPE             => $originType,
-                    Entity::ORIGIN_ID               => $originId,
-                    'auth_type'                     => $authType,
-                    'has_partner_auth_callback_key' => $hasPartnerAuthCallbackKey,
-                    'route_name'                    => $routeName,
-                ]
-            );
-        }
+        // @todo : Remove later, not required
+        $this->trace->info(TraceCode::ORIGIN_CREATED,
+            [
+                Entity::ID => $entityOrigin->getId(),
+            ]);
 
-        return $originEntity;
+        return $entityOrigin;
     }
 
     /**
@@ -201,7 +180,7 @@ class Core extends Base\Core
         // A receiver will always have an associated VA entity
         $virtualAccount = $receiver->virtualAccount;
 
-        $vaEntityOrigin = $virtualAccount->entityOrigin;
+        $vaEntityOrigin = optional($virtualAccount)->entityOrigin;
 
         $originEntity = optional($vaEntityOrigin)->origin;
 
@@ -256,6 +235,41 @@ class Core extends Base\Core
     {
         list($originType, $originId) = app('basicauth')->getOriginDetailsFromAuth();
 
-        return $this->fetchOriginEntity($originType, $originId);
+        $originEntity = null;
+
+        switch ($originType)
+        {
+            case Constants::MERCHANT:
+                // If the merchant's credentials are used, fetch the merchant entity directly from the BasicAuth
+                $originEntity = app('basicauth')->getMerchant();
+                break;
+
+            case Constants::APPLICATION:
+                $originEntity = (new OAuthApp\Repository)->findOrFail($originId);
+                break;
+
+            default:
+                break;
+        }
+
+        if ($originEntity === null)
+        {
+            $authType                  = app('basicauth')->getAuthType();
+            $hasPartnerAuthCallbackKey = app('basicauth')->hasPartnerAuthCallbackKey();
+            $routeName                 = app('router')->currentRouteName();
+
+            $this->trace->critical(
+                TraceCode::ORIGIN_INVALID_TYPE,
+                [
+                    Entity::ORIGIN_TYPE             => $originType,
+                    Entity::ORIGIN_ID               => $originId,
+                    'auth_type'                     => $authType,
+                    'has_partner_auth_callback_key' => $hasPartnerAuthCallbackKey,
+                    'route_name'                    => $routeName,
+                ]
+            );
+        }
+
+        return $originEntity;
     }
 }

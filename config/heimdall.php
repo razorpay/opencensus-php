@@ -172,6 +172,10 @@ return [
             Permission::EDIT_MERCHANT_RISK_THRESHOLD        => [
                 'assignable' => true,
             ],
+            Permission::EDIT_MERCHANT_FORCE_ACTIVATION      => [
+                'assignable' => true,
+                'workflow'   => true,
+            ],
             Permission::EDIT_MERCHANT_METHODS               => '',
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',

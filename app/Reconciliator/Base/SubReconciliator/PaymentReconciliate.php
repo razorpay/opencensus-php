@@ -1370,11 +1370,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $dbReference2 = $this->payment->getReference2();
 
         $trimmedDbReference2 = ltrim($dbReference2, '0');
+        $trimmedReconReference2 = ltrim($reference2, '0');
 
         if ((empty($dbReference2) === false) and
             ($dbReference2 !== '00') and
             ($dbReference2 !== $reference2) and
-            ($trimmedDbReference2 !== $reference2) and
+            ($trimmedDbReference2 !== $trimmedReconReference2) and
             (strtolower($dbReference2) !== strtolower($reference2)) and
             ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_AUTH_CODE) === false))
         {

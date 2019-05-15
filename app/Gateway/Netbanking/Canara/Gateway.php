@@ -100,11 +100,11 @@ class Gateway extends Base\Gateway
 
     protected function getRequestData($input)
     {
-        $paymentEntity = $input['payment'];
+        $merchantName = substr($input['merchant']->getFilteredDba(), 0, 8);
 
-        $date = $this->getFormatedDate($paymentEntity[Payment\Entity::CREATED_AT]);
+        $date = $this->getFormatedDate($input['payment'][Payment\Entity::CREATED_AT]);
 
-        $amount = $this->formatAmount($paymentEntity[Payment\Entity::AMOUNT] / 100);
+        $amount = $this->formatAmount($input['payment'][Payment\Entity::AMOUNT] / 100);
 
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
@@ -114,10 +114,12 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY                      => Constants::CURRENCY,
             RequestFields::AMOUNT                        => $amount,
             RequestFields::SERVICE_CHARGE                => 0,
-            RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
+            RequestFields::PAYMENT_ID                    => $input['payment'][Payment\Entity::ID],
             RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::DATE                          => $date,
+            RequestFields::FLDREF1                       => $merchantName,
+            RequestFields::FLDREF2                       => $input['payment_fee']
         ];
 
         return $data;

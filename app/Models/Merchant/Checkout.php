@@ -25,6 +25,7 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 
 class Checkout
 {
@@ -529,6 +530,15 @@ class Checkout
         $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
         $data['version'] = 1;
+
+        /*
+        if hdfc merchant, sending redirect true. Done specificially
+        for shopify merchants of HDFC.
+        */
+        if ($merchant->getOrgId() === ORG_ENTITY::HDFC_ORG_ID)
+        {
+            $data['options']['redirect'] = true;
+        }
 
         //
         // When using Keyless auth, checkout has no way to identify the request mode

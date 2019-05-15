@@ -11,13 +11,6 @@ class Repository extends Base\Repository
 {
     protected $entity = 'customer';
 
-    protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::EMAIL           => 'sometimes|email',
-        Entity::ACTIVE          => 'sometimes|in:0,1',
-        Entity::CONTACT         => 'sometimes'
-    );
-
     public function getGlobalCustomerForPayment($payment)
     {
         if ($payment->getGlobalCustomerId() !== null)

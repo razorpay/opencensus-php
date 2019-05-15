@@ -182,7 +182,13 @@ class Core extends Base\Core
             ],
         ];
 
-        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, null);
+        $virtualAccount = $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer);
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_SHARED_ACCOUNT_CREATED,
+            $virtualAccount->toArrayPublic());
+
+        return $virtualAccount;
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)

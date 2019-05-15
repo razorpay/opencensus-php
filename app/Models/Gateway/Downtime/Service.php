@@ -26,6 +26,15 @@ class Service extends Base\Service
         return $downtime->toArrayAdmin();
     }
 
+    public function delete(string $id)
+    {
+        $downtime = $this->repo->gateway_downtime->findOrFailPublic($id);
+
+        $downtime = $this->core()->delete($downtime);
+
+        return $downtime->toArrayAdmin();
+    }
+
     public function getExternalApiHealth($input)
     {
         return $this->core()->getExternalApiHealthData($input);

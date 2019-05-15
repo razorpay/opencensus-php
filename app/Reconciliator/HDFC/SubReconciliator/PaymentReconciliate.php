@@ -640,13 +640,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             Hdfc\Fields::STATUS                 => Hdfc\Payment\Status::CAPTURED,
             Hdfc\Fields::RESULT                 => strtoupper(Hdfc\Payment\Status::CAPTURED),
             Hdfc\Fields::AUTH                   => $this->getAuthCode($row),
-            Hdfc\Fields::REF                    => $this->getSequenceNumber($row),
         ];
 
         if ($this->isDataAvailableForCaptureEntity($attributes) === false)
         {
             return;
         }
+
+        // 'ref' is optional, that is why added after the previous check
+        $attributes[Hdfc\Fields::REF] = $this->getSequenceNumber($row);
 
         try
         {

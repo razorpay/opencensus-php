@@ -106,6 +106,7 @@ class Type
     const BATCH_OUTPUT                      = 'batch_output';
     const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
+    const BATCH_SERVICE                     = 'batch_service';
 
     const BLANK                             = 'blank';
 
@@ -153,6 +154,7 @@ class Type
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
+    const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -426,6 +428,10 @@ class Type
 
         self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
+        ],
+
+        self::BATCH_SERVICE_BUCKET_CONFIG => [
+            self::BATCH_SERVICE,
         ],
     ];
 

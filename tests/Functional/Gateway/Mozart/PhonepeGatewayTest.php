@@ -56,9 +56,12 @@ class PhonepeGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
-        $this->mockServerContentFunction(function (& $content)
+        $this->mockServerContentFunction(function (& $content, $action)
         {
-            $content['amount'] = 100;
+            if ($action === 'authorize')
+            {
+                $content['amount'] = 100;
+            }
         });
 
         $data = $this->testData[__FUNCTION__];

@@ -265,7 +265,7 @@ class P2pHelper
     {
         $content = array_filter(array_replace_recursive($content, $override));
 
-        return $request->content($content);
+        return $request->data($content);
     }
 
     /**

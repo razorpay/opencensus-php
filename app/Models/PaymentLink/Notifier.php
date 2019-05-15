@@ -132,6 +132,7 @@ class Notifier extends Base\Core
                 'merchant_name' => $merchant->getBillingLabel(),
                 'amount'        => amount_format_IN($paymentLink->getAmount()),
                 'invoice_link'  => $paymentLink->getShortUrl(),
+                'currency'      => $paymentLink->getCurrency(),
             ],
         ];
     }

@@ -1529,6 +1529,17 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function validateEntity(array $input)
+    {
+        (new Payment\Validator())->validateInput('validate_entity', $input);
+
+        $validator = Payment\Validation\Factory::build($input['entity']);
+
+        $data = $validator->processValidation($input);
+
+        return $data;
+    }
+
     protected function setHoldFalse(Payment\Entity $payment)
     {
         $this->repo->payment->lockForUpdateAndReload($payment);

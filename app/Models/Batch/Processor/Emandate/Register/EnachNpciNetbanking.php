@@ -17,6 +17,7 @@ class EnachNpciNetbanking extends Base
 
     const UMRN        = 'umrn';
     const NPCI_REF_ID = 'npci_reference_id';
+    const MESSAGE_ID  = 'message_id';
 
     protected $gatewayPaymentMapping = [
         self::GATEWAY_REGISTRATION_STATUS => Entity::REGISTRATION_STATUS,
@@ -37,7 +38,7 @@ class EnachNpciNetbanking extends Base
             self::UMRN                        => $gatewayToken,
             self::TOKEN_STATUS                => $status,
             self::TOKEN_ERROR_CODE            => $this->getTokenErrorMessage($gatewayTokenStatus, $entry),
-            self::PAYMENT_ID                  => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID],
+            self::MESSAGE_ID                  => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_MESSAGE_ID],
             self::NPCI_REF_ID                 => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID],
             self::GATEWAY_REGISTRATION_STATUS => $gatewayTokenStatus,
             self::GATEWAY_ERROR_CODE          => $entry[Batch\Header::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE],
@@ -120,5 +121,10 @@ class EnachNpciNetbanking extends Base
                                         );
 
         return $enach['payment'];
+    }
+
+    protected function shouldUpdateBatchOutputWithPaymentId()
+    {
+        return true;
     }
 }

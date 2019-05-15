@@ -10,6 +10,7 @@ use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Diag\EventCode;
 
 class Service extends Base\Service
 {
@@ -24,13 +25,26 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $merchant = $this->merchant;
+        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $input);
 
-        $this->modifyOfferRequestFromOldFormat($input);
+        try
+        {
+            $merchant = $this->merchant;
 
-        $this->modifyBankAccountRequestFromOldFormat($input);
+            $this->modifyOfferRequestFromOldFormat($input);
 
-        $order = (new Core)->create($input, $merchant);
+            $this->modifyBankAccountRequestFromOldFormat($input);
+
+            $order = (new Core)->create($input, $merchant);
+
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, $order);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex);
+
+            throw $ex;
+        }
 
         return $order->toArrayPublic();
     }

@@ -185,6 +185,23 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         $subReconciliatorObject->runReconciliate($row);
                     });
                 }
+                catch (\Exception $ex)
+                {
+                    //
+                    // Increment failure count.
+                    // Note : This is needed because sometime when batch faces any exception
+                    // (e.g. payment absent) then recon process terminates mid way. If failure
+                    // count was 0 at this time, then the batch status is set to 'processed',
+                    // which should not happen in such failure cases.
+                    //
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+
+                    //
+                    // Throw the exception because we do not want to process the
+                    // remaining file, as something is wrong with this file.
+                    //
+                    throw $ex;
+                }
                 finally
                 {
                     $batch->incrementProcessedCount();
