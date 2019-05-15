@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
@@ -260,16 +261,21 @@ class Service extends Base\Service
 
     public function redirectToAuthorize($id)
     {
+        $traceData = ['track_id' => $id];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, null, null, $traceData);
+
         try
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST,
-                ['track_id' => $id]
-            );
+            $this->trace->info(TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST, $traceData);
 
-            list($merchant, $paymentId) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+            list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
 
-            return $this->getNewProcessor($merchant)->processRedirectToAuthorize($paymentId, $id);
+            $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
+
+            return $response;
         }
         catch (\Throwable $e)
         {
@@ -277,9 +283,11 @@ class Service extends Base\Service
                 $e,
                 Trace::CRITICAL,
                 TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE,
-                ['track_id' => $id]
+                $traceData
             );
-            // add metrics
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, null, $e, $traceData);
+
             throw $e;
         }
     }
@@ -331,7 +339,9 @@ class Service extends Base\Service
             $this->app['basicauth']->authCreds->creds['account_id'] = $payload['account_id'];
         }
 
-        return [$merchant, $payload['payment_id']];
+        $payment = $this->core->retrieveById($payload['payment_id']);
+
+        return [$merchant, $payment];
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -1201,6 +1211,8 @@ class Service extends Base\Service
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
                              ->timeoutPayment();
+
+                        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
                         $count++;
                     }

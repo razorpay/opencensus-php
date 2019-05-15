@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Risk;
@@ -86,9 +87,8 @@ trait HeadlessOtp
         return false;
     }
 
-    protected function openHeadlessBrowser(Payment\Entity $payment, $request)
+    protected function runHeadlessOtpFlow(Payment\Entity $payment, $request)
     {
-        //
         // This will happen in case of single step payment.
         // Where payment is not to be authenticated
         if ($request === null)
@@ -96,6 +96,26 @@ trait HeadlessOtp
             return;
         }
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_INITIATED, $payment);
+
+        try
+        {
+            $response = $this->openHeadlessBrowser($payment, $request);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment);
+
+            return $response;
+        }
+        catch(\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
+    }
+
+    protected function openHeadlessBrowser(Payment\Entity $payment, $request)
+    {        
         $originalTermUrl = null;
 
         if (($this->isRupayNetwork($payment) === false) and

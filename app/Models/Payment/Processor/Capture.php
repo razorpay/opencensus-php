@@ -39,6 +39,14 @@ trait Capture
             ]
         );
 
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_CAPTURE_INITIATED, 
+            $payment, 
+            null, 
+            [
+                'input'  => $input
+            ]);
+
         $this->setPayment($payment);
 
         // set the input currency if missing and payment currency is INR
@@ -62,7 +70,15 @@ trait Capture
      */
     public function autoCapturePayment($payment)
     {
-        $this->payment = $payment;
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_CAPTURE_INITIATED, 
+            $payment, 
+            null,
+            [
+                'auto_capture' => 1
+            ]);
+
+        $this->setPayment($payment);
 
         $amount = $payment->getAmount();
 
@@ -325,10 +341,14 @@ trait Capture
 
             $this->captureOnGateway($data, $autoCaptured);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
+
             return $payment;
         }
         catch (\Throwable $e)
         {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $e);
+
             (new Payment\Metric)->pushExceptionMetrics($e, Payment\Metric::PAYMENT_CAPTURE_FAILED);
 
             throw $e;
@@ -531,57 +551,46 @@ trait Capture
         /** @var Payment\Entity $payment */
         $payment = $this->payment;
 
-        try 
+        $this->repo->transaction(function() use ($payment, $autoCaptured)
         {
-            $this->repo->transaction(function() use ($payment, $autoCaptured)
+            $this->lockForUpdateAndReload($payment);
+
+            if ($payment->hasBeenCaptured() === true)
             {
-                $this->lockForUpdateAndReload($payment);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
+            }
 
-                if ($payment->hasBeenCaptured() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
-                }
+            $this->updatePaymentCaptured($payment, $autoCaptured);
 
-                $this->updatePaymentCaptured($payment, $autoCaptured);
+            //
+            // We want to take balance lock towards the end of the transaction.
+            //
+            // If you are adding more merchant IDs here, ensure credits stuff is handled in `handleLateBalanceUpdate`.
+            // Currently, since we are doing this only for Dream11, we are not handling credits.
+            // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
+            //
+            if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
+                ($payment->getMerchantId() === Preferences::MID_DREAM11))
+            {
+                $payment->setLateBalanceUpdate();
+            }
 
-                //
-                // We want to take balance lock towards the end of the transaction.
-                //
-                // If you are adding more merchant IDs here, ensure credits stuff is handled in `handleLateBalanceUpdate`.
-                // Currently, since we are doing this only for Dream11, we are not handling credits.
-                // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
-                //
-                if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
-                    ($payment->getMerchantId() === Preferences::MID_DREAM11))
-                {
-                    $payment->setLateBalanceUpdate();
-                }
+            list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
 
-                list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
+            $this->updateOrderAfterCapture($payment);
 
-                $this->updateOrderAfterCapture($payment);
+            $this->updateVirtualAccountStatusIfApplicable($payment);
 
-                $this->updateVirtualAccountStatusIfApplicable($payment);
+            $this->createPartnerCommission($payment);
 
-                $this->createPartnerCommission($payment);
+            if ($payment->isLateBalanceUpdate() === true)
+            {
+                $this->handleLateBalanceUpdate($txn, $merchantBalance);
+            }
+        });
 
-                if ($payment->isLateBalanceUpdate() === true)
-                {
-                    $this->handleLateBalanceUpdate($txn, $merchantBalance);
-                }
-            });
-
-            $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
-
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $ex);
-
-            throw $ex;
-        }
+        $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)
