@@ -129,7 +129,7 @@ export default class extends React.Component {
       <div
         class={classList(
           'Input Input--Currency',
-          !isInternationalEnabled && 'Input--noMargin'
+          (!isInternationalEnabled || this.props.disabled) && 'Input--noMargin'
         )}
       >
         {isInternationalEnabled && !this.props.disabled ? (
@@ -166,7 +166,7 @@ export default class extends React.Component {
             </div>
           </div>
         ) : (
-          <div class="value help-content--currency input-group-addon">
+          <div class="value">
             <input
               name={props.name || 'currency'}
               value={this.state.currency.name}
@@ -174,10 +174,10 @@ export default class extends React.Component {
               readOnly
             />
             <AmountTooltip
-              currency={this.state.currency.name || this.INR_option.name}
+              currency={this.state.currency.name}
               parentQuerySelector={this.props.parentQuerySelector}
             >
-              {this.state.currency.sym || this.INR_option.sym}
+              {this.state.currency.sym}
             </AmountTooltip>
           </div>
         )}
