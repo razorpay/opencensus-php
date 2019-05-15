@@ -25,12 +25,12 @@ class Sdk
         $this->input    = $request['content'];
     }
 
-    public function withError(string $code)
+    public function withError(string $code, string $description = null)
     {
         $response = $this->initiateResponse(true);
 
         $response[Fields::ERROR_CODE] = $code;
-        $response[Fields::ERROR_DESCRIPTION] = str_replace('_', ' ', $code);
+        $response[Fields::ERROR_DESCRIPTION] = $description ?? str_replace('_', ' ', $code);
 
         $this->errors[] = $response;
 

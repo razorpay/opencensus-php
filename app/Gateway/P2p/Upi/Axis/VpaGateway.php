@@ -58,7 +58,7 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
                 break;
             default:
-                $this->throwP2pGatewayException();
+                throw $this->p2pGatewayException(ErrorMap::INVALID_CALLBACK, $callback);
         }
     }
 
@@ -163,7 +163,7 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
         if ($this->toBoolean($sdk[Fields::AVAILABLE]) === false)
         {
-            $this->throwP2pGatewayException();
+            throw $this->p2pGatewayException(ErrorMap::NOT_AVAILABLE);
         }
 
         // It was just to check availability
@@ -186,6 +186,8 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
     protected function handleLinkAccount(Response $response, $bankAccount)
     {
         $sdk = $this->handleInputSdk();
+
+        $this->handleGatewayResponseCode($sdk);
 
         $vpa = new VpaTransformer($sdk->toArray());
 

@@ -196,7 +196,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         if (($this->isDeviceBound($sdk) === false))
         {
             // Should never come here as sdk can not be success for non bound device
-            throw $this->p2pGatewayException(ErrorMap::INVALID_RESPONSE, [Entity::SDK => $sdk]);
+            throw $this->p2pGatewayException(ErrorMap::NOT_AVAILABLE, [Entity::SDK => $sdk]);
         }
         else if ($this->isDeviceActivated($sdk) === false)
         {
@@ -216,7 +216,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         if (($this->isDeviceActivated($sdk) === false))
         {
             // Should never come here as sdk can not be success for non activated device
-            throw $this->p2pGatewayException(ErrorMap::INVALID_RESPONSE, [Entity::SDK => $sdk]);
+            throw $this->p2pGatewayException(ErrorMap::NOT_AVAILABLE, [Entity::SDK => $sdk]);
         }
     }
 
