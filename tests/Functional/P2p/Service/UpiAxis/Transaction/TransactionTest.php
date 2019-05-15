@@ -81,12 +81,14 @@ class TransactionTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
+        $gatewayTransactionId = str_random(35);
         $this->mockSdk()->setCallback('COLLECT_REQUEST_RECEIVED', [
             Fields::AMOUNT                  => '1.00',
             Fields::PAYEE_VPA               => 'random@mypsp',
             Fields::PAYER_VPA               => $this->fixtures->vpa->getAddress(),
             Fields::UPI_REQUEST_ID          => 'RZP' . str_random(32),
             Fields::REMARKS                 => 'SomeTransaction',
+            Fields::GATEWAY_TRANSACTION_ID  => $gatewayTransactionId,
             Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_1)
                                                               ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID]
         ]);
@@ -105,7 +107,13 @@ class TransactionTest extends TestCase
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
         ], $transaction->toArray());
 
+        $this->assertArraySubset([
+            UpiTransaction\Entity::NETWORK_TRANSACTION_ID => $gatewayTransactionId,
+            UpiTransaction\Entity::GATEWAY_TRANSACTION_ID => $gatewayTransactionId,
+        ], $transaction->upi->toArray());
+
         $coproto = $helper->initiateAuthorize($transaction->getPublicId());
+        $this->assertSame($gatewayTransactionId, $coproto['request']['content']['upiRequestId']);
 
         $content = $this->handleSdkRequest($coproto);
 
@@ -126,12 +134,14 @@ class TransactionTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
+        $gatewayTransactionId = str_random(35);
         $this->mockSdk()->setCallback('CUSTOMER_CREDITED_VIA_PAY', [
             Fields::AMOUNT                  => '1.00',
             Fields::PAYER_VPA               => 'random@mypsp',
             Fields::PAYEE_VPA               => $this->fixtures->vpa->getAddress(),
             Fields::UPI_REQUEST_ID          => 'RZP' . str_random(32),
             Fields::REMARKS                 => 'SomeTransaction',
+            Fields::GATEWAY_TRANSACTION_ID  => $gatewayTransactionId,
             Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_1)
                                                    ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID]
         ]);
@@ -149,6 +159,11 @@ class TransactionTest extends TestCase
             Entity::PAYEE_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
         ], $transaction->reload()->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::NETWORK_TRANSACTION_ID => $gatewayTransactionId,
+            UpiTransaction\Entity::GATEWAY_TRANSACTION_ID => $gatewayTransactionId,
+        ], $transaction->upi->toArray());
     }
 
     public function testCollectReject()

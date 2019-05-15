@@ -35,14 +35,17 @@ class Core extends Base\Core
         $refId                = $this->context()->getRequestId();
         $networkTransactionId = $this->context()->handlePrefix() . $this->app['request']->getId();
 
-        $defined = [
-            UpiTransaction\Entity::STATUS                   => $transaction->getInternalStatus(),
-            UpiTransaction\Entity::ACTION                   => $action,
+        $default = [
             UpiTransaction\Entity::NETWORK_TRANSACTION_ID   => $networkTransactionId,
             UpiTransaction\Entity::REF_ID                   => $refId,
         ];
 
-        $cleaned = $this->cleanUpiInput($input);
+        $cleaned = $this->cleanUpiInput(array_merge($default, $input));
+
+        $defined = [
+            UpiTransaction\Entity::STATUS                   => $transaction->getInternalStatus(),
+            UpiTransaction\Entity::ACTION                   => $action,
+        ];
 
         $upi = (new UpiTransaction\Core)->create($transaction, array_merge($cleaned, $defined));
 
