@@ -9,6 +9,7 @@ import { required } from 'rzp/utils/validators';
 import { saveAddOn } from 'merchant/modules/addons';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+import { AmountTooltip } from 'rzp/ui/Amount';
 
 @connect(null, {
   saveAddOn,
@@ -87,9 +88,14 @@ export default class CreateAddOn extends Component {
 
             <div class="form-group">
               <div style={{ display: 'inline-block', width: '62%' }}>
-                <label class="control-label label-required">
+                <label class="control-label label-required price-per-unit">
                   Price per unit (in{' '}
-                  {(window.currencyList[currency] || {}).symbol})
+                  <AmountTooltip
+                    currency={currency}
+                    parentQuerySelector=".Modal"
+                  >
+                    {window.currencyList[currency].symbol}
+                  </AmountTooltip>)
                 </label>
                 <Field
                   name="item[amount]"
