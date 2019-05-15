@@ -2429,19 +2429,19 @@ final class Route
 
         'merchant_partners_fetch'                  => '*',
 
-        'governor_create_namespace'                => '*',
-        'governor_domain_model_list'               => '*',
-        'governor_create_domain_model'             => '*',
-        'governor_update_namespace'                => '*',
-        'governor_create_rule'                     => '*',
-        'governor_create_rule_bulk'                => '*',
-        'governor_update_rule'                     => '*',
-        'governor_rule_list'                       => '*',
-        'governor_get_rule'                        => '*',
-        'governor_create_rule_chain'               => '*',
-        'governor_update_rule_chain'               => '*',
-        'governor_rule_chain_list'                 => '*',
-        'governor_rule_chain_execute'              => '*',
+        'governor_create_namespace'                => Permission::CREATE_GATEWAY_RULE,
+        'governor_domain_model_list'               => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_domain_model'             => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_namespace'                => Permission::EDIT_GATEWAY_RULE,
+        'governor_create_rule'                     => Permission::CREATE_GATEWAY_RULE,
+        'governor_create_rule_bulk'                => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule'                     => Permission::EDIT_GATEWAY_RULE,
+        'governor_rule_list'                       => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_rule'                        => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_rule_chain'               => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule_chain'               => Permission::EDIT_GATEWAY_RULE,
+        'governor_rule_chain_list'                 => Permission::VIEW_GATEWAY_RULE,
+        'governor_rule_chain_execute'              => Permission::VIEW_GATEWAY_RULE,
     ];
 
     public static $direct = [
