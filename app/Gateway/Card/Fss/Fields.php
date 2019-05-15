@@ -43,9 +43,15 @@ class Fields
 
     const BANK_CODE                     = 'bankCode';
 
-    const UDF5                          = 'udf5';
+    const UDF1                          = 'udf1';
+
+    const UDF2                          = 'udf2';
 
     const UDF3                          = 'udf3';
+
+    const UDF4                          = 'udf4';
+
+    const UDF5                          = 'udf5';
 
     const TRAN_DATA                     = 'trandata';
 

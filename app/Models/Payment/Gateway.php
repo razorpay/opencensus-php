@@ -100,6 +100,7 @@ class Gateway
     const ACQUIRER_RATN         = 'ratn';
     const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
+    const ACQUIRER_SBIN         = 'sbin';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -145,7 +146,7 @@ class Gateway
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
         self::AMEX         => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
-        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
+        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB, self::ACQUIRER_SBIN],
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
@@ -924,6 +925,7 @@ class Gateway
         self::ACQUIRER_AMEX => Network::AMEX,
         self::ACQUIRER_RATN => IFSC::RATN,
         self::ACQUIRER_BARB => IFSC::BARB,
+        self::ACQUIRER_SBIN => IFSC::SBIN,
     ];
 
     /**

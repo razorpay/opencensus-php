@@ -14,8 +14,12 @@ class Acquirer
     //ICIC is the bank code of ICICI Bank
     const ICICI = 'icic';
 
+    // Bank code of SBI is SBIN
+    const SBI   = 'sbin';
+
     public static $validGatewayAcquirers = [
         self::FSS,
         self::BOB,
+        self::SBI
     ];
 }

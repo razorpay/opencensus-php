@@ -314,6 +314,11 @@ return [
             'test_hash_secret'  => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
             'bank_code'         => env('FSS_GATEWAY_BANK_CODE', '12345678'),
             'terminal_password' => env('FSS_GATEWAY_TERMINAL_PASSWORD', 'password'),
+        ],
+        'sbin' => [
+            'terminal_password' => env('FSS_SBI_TEST_GATEWAY_TERMINAL_PASSWORD', 'password'),
+            'test_hash_secret'  => env('FSS_SBI_TEST_HASH_SECRET', 'secret'),
+            'merchant_id'       => env('FSS_SBI_TEST_GATEWAY_MERCHANT_ID', '123')
         ]
     ],
 
