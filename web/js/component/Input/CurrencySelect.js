@@ -132,7 +132,7 @@ export default class extends React.Component {
           !isInternationalEnabled && 'Input--noMargin'
         )}
       >
-        {isInternationalEnabled ? (
+        {isInternationalEnabled && !this.props.disabled ? (
           <div class="Input-content">
             <div class="Input-elWrapper">
               <div class="Input-el">
@@ -150,7 +150,6 @@ export default class extends React.Component {
                   searchIndices={['name', 'label']}
                   placeholder="Select currency"
                   optionComponent={CurrencyOption}
-                  disabled={this.props.disabled}
                   selectedOptionLabelPath="name"
                   selectedOptionComponent={this.getSelectedCurrencyOption}
                   onChange={this.onSelectCurrency}
@@ -167,7 +166,7 @@ export default class extends React.Component {
             </div>
           </div>
         ) : (
-          <div class="value">
+          <div class="help-content--currency input-group-addon">
             <input
               name={props.name || 'currency'}
               value={this.state.currency.name}
@@ -175,10 +174,10 @@ export default class extends React.Component {
               readOnly
             />
             <AmountTooltip
-              currency={this.INR_option.name}
+              currency={this.state.currency.name}
               parentQuerySelector={this.props.parentQuerySelector}
             >
-              {this.INR_option.sym}
+              {this.state.currency.sym}
             </AmountTooltip>
           </div>
         )}
