@@ -99,10 +99,6 @@ export default class AddItem extends Component {
       this._initialize(this.props.item);
     }
 
-    this.props.initialize({
-      currency: this.props.currency || 'INR',
-    });
-
     Promise.all(promises)
       .then(([taxes, gst]) => {
         this.setState({
@@ -178,7 +174,10 @@ export default class AddItem extends Component {
     }
 
     // Initialize and set state.
-    this.props.initialize(item);
+    this.props.initialize({
+      ...item,
+      currency: this.props.currency
+    });
 
     this.setState({
       showCessForm,
