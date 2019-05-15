@@ -300,7 +300,7 @@ export default class SubscriptionDetailsContainer extends Component {
     return {
       id: 'inv_upcoming',
       status: 'next_due',
-      currency: 'INR',
+      currency: this.props.plan && this.props.plan.item.currency,
       billing_start: chargeAt,
       amount: planAmount + totalAddOnsAmount,
     };
@@ -471,6 +471,7 @@ export default class SubscriptionDetailsContainer extends Component {
           subscriptionId={this.props.entity.id}
           onSave={this.handleOnCreateAddOn}
           closeModal={this.props.closeModal}
+          currency={this.props.plan.item.currency}
         />
       ),
     });

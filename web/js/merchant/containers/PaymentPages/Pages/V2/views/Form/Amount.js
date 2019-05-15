@@ -2,7 +2,7 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList, getFormattedAmount } from 'common/util';
-import Amount from 'rzp/ui/Amount';
+import Amount, { AmountTooltip } from 'rzp/ui/Amount';
 import EditLayer from '../EditLayer';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
@@ -72,7 +72,16 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                     )}
                 </React.Fragment>;
               } else {
-                <input class="Field-el" placeholder="Enter Amount" disabled />;
+                <React.Fragment>
+                  <span class="Field-addon--before">
+                    <AmountTooltip currency={paymentPageEntity.currency} />
+                  </span>
+                  <input
+                    className="Field-el"
+                    placeholder="Enter Amount"
+                    disabled
+                  />
+                </React.Fragment>;
               }
             } else {
               <Button.Transparent
