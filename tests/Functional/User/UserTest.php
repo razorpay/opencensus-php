@@ -17,6 +17,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -46,6 +47,43 @@ class UserTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testRegister()
+    {
+        Mail::fake();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $row = DB::table('merchant_map')
+                    ->where('merchant_id', '=', $merchant['id'])
+                    ->where('entity_id', '=', $adminId)
+                    ->where('entity_type', '=', 'admin')
+                    ->first();
+
+        $this->assertNotNull($row);
     }
 
     public function testGet()

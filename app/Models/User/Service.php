@@ -5,8 +5,8 @@ namespace RZP\Models\User;
 use Mail;
 use Hash;
 use Config;
-
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -50,7 +50,7 @@ class Service extends Base\Service
             $user = (new Core)->getUserFromEmail($invitation);
 
             // Since input would be lacking an email in case of registration via the invitation
-            $input['email'] = $invitation['email'];
+            $input[Entity::EMAIL] = $invitation[Invitation\Entity::EMAIL];
 
             unset($input['invitation']);
         }
@@ -66,14 +66,10 @@ class Service extends Base\Service
 
             if (isset($tokenData['id']) === true)
             {
-                $tokenSignUpInput = [
-                    'signed_up' => 1
-                ];
+                $tokenSignUpInput = [AdminLead\Entity::SIGNED_UP => 1];
 
                 (new AdminLead\Service)->editInvitation(
-                    $tokenData['org_id'],
-                    $tokenData['id'],
-                    $tokenSignUpInput);
+                    $tokenData[AdminLead\Entity::ORG_ID], $tokenData[AdminLead\Entity::ID], $tokenSignUpInput);
             }
 
             unset($input['merchant_invitation']);
@@ -87,9 +83,9 @@ class Service extends Base\Service
          */
         if (empty($user) === true)
         {
-            $input['password_confirmation'] = $input['password'];
+            $input[Entity::PASSWORD_CONFIRMATION] = $input[Entity::PASSWORD];
 
-            $input['name'] = $input['name'] ?? '';
+            $input[Entity::NAME] = $input[Entity::NAME] ?? '';
 
             unset($input['ref']);
 
@@ -105,14 +101,14 @@ class Service extends Base\Service
         if (empty($invitationToken) === false)
         {
             $invitationAcceptInput = [
-                'user_id' => $user['id'],
-                'action' => 'accept',
-                'email'  => $user['email'],
+                Invitation\Entity::USER_ID => $user[Entity::ID],
+                Invitation\Entity::ACTION  => 'accept',
+                Invitation\Entity::EMAIL   => $user[Entity::EMAIL],
             ];
 
-            (new Invitation\Service)->action($invitation['id'], $invitationAcceptInput);
+            (new Invitation\Service)->action($invitation[Invitation\Entity::ID], $invitationAcceptInput);
 
-            $this->confirm($user['id']);
+            $this->confirm($user[Entity::ID]);
 
             (new Core)->subscribeToMailingList($user);
 
@@ -121,13 +117,16 @@ class Service extends Base\Service
         else
         {
             $merchantInputData = [
-                'email' => $user['email'],
-                'name'  => $businessName
+                Merchant\Entity::EMAIL => $user[Entity::EMAIL],
+                Merchant\Entity::NAME  => $businessName
             ];
 
             if (empty($tokenData) === false)
             {
-                $merchantInputData['org_id'] = $tokenData['org_id'];
+                // Merchant belongs to the same org that the inviting admin does
+                $merchantInputData[Merchant\Entity::ORG_ID] = $tokenData[AdminLead\Entity::ORG_ID];
+                // Map merchant to the admin that generated his lead (invited merchant to sign up)
+                $merchantInputData[Merchant\Entity::ADMINS] = [$tokenData[AdminLead\Entity::ADMIN_ID]];
             }
 
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
