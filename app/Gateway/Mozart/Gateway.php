@@ -321,14 +321,9 @@ class Gateway extends Base\Gateway
 
         $content['entities'] = $input;
 
-        return $this->getMozartRequest($content, $input['payment']['gateway']);
-    }
-
-    protected function getMozartRequest($content, $gateway)
-    {
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
-        $url =  $baseUrl . 'payments/' . $gateway . '/v1/' . $this->action;
+        $url =  $baseUrl . 'payments/' . $input['payment']['gateway'] . '/v1/' . $this->action;
 
         $authentication = [
             'api',
