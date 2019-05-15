@@ -1178,6 +1178,7 @@ class DatabaseSeeder extends Seeder
         $this->createSbibuddyTerminals();
         $this->createOpenwalletTerminals();
         $this->createVodafoneMpesaTerminal();
+        $this->createNetbankingSibTerminal();
         $this->createNetbankingRblTerminal();
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
@@ -1756,6 +1757,24 @@ class DatabaseSeeder extends Seeder
                 'recurring'           => 0,
                 'created_at'          => time(),
                 'updated_at'          => time(),
+            )
+        );
+    }
+
+    protected function createNetbankingSibTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_SIB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_SIB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_sib',
+                'gateway_secure_secret' => Crypt::encrypt('test_key'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
             )
         );
     }

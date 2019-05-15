@@ -31,6 +31,7 @@ return [
         'isg',
         'kotak',
         'mobikwik',
+        'netbanking_sib',
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
@@ -96,6 +97,7 @@ return [
     'mock_kotak'                  => env('KOTAK_MOCK'),
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
+    'mock_netbanking_sib'         => env('NETBANKING_SIB_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
@@ -721,7 +723,9 @@ return [
     ],
 
     'mozart' => [
-        'upi_airtel_test_hash_secret' => env('UPI_AIRTEL_TEST_HASH_SECRET'),
+        'upi_airtel' => [
+            'test_hash_secret' => env('UPI_AIRTEL_TEST_HASH_SECRET')
+        ],
     ],
 
     'sharp' => [
