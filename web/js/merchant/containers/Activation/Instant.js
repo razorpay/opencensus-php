@@ -218,6 +218,7 @@ export default class ActivationWizard extends React.Component {
         updateHubSpotContactsProperties({
           ...data,
           activation_flow: this.user.activation_flow,
+          completed: true,
         });
 
         const {
@@ -339,6 +340,11 @@ export default class ActivationWizard extends React.Component {
     this.handleUIUpdate();
 
     trackFb('activation_start');
+
+    // updating contact propteries of hubspot contact
+    updateHubSpotContactsProperties({
+      started: true,
+    });
   }
 
   componentDidUpdate() {
@@ -542,13 +548,15 @@ function updateHubSpotContactsProperties(data) {
 
   delete hbsData.l1_business_model;
 
-  const trackData = {
-    ...hbsData,
-    l1_business_type: (
+  if (data.business_type) {
+    hbsData.l1_business_type = (
       BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
-    ).label,
-    l1_promoter_pan: !!hbsData.l1_promoter_pan,
-  };
+    ).label;
+  }
 
-  trackhubsContactUpdate(trackData);
+  if (hbsData.l1_promoter_pan) {
+    hbsData.l1_promoter_pan == !!hbsData.l1_promoter_pan;
+  }
+
+  trackhubsContactUpdate(hbsData);
 }
