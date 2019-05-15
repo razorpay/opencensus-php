@@ -14,8 +14,8 @@ class EventCode
     const PAYMENT_INPUT_VALIDATIONS_PROCESSED           = 'payment.input.validations.processed';
     const PAYMENT_CARDSAVING_INITIATED                  = 'payment.cardsaving.initiated';
     const PAYMENT_CARDSAVING_PROCESSED                  = 'payment.cardsaving.processed';
-    const PAYMENT_INPUT_VALIDATIONS2_INITIATED          = 'payment.input.validations.initiated';
-    const PAYMENT_INPUT_VALIDATIONS2_PROCESSED          = 'payment.input.validations.processed';
+    const PAYMENT_INPUT_VALIDATIONS2_INITIATED          = 'payment.input.validations2.initiated';
+    const PAYMENT_INPUT_VALIDATIONS2_PROCESSED          = 'payment.input.validations2.processed';
     const PAYMENT_RISKCHECK_INITIATED                   = 'payment.riskcheck.initiated';
     const PAYMENT_RISKCHECK_PROCESSED                   = 'payment.riskcheck.processed';
     const PAYMENT_TERMINAL_SELECTION_INITIATED          = 'payment.terminal.selection.initiated';
