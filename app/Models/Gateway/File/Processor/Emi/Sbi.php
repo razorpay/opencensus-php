@@ -6,7 +6,6 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Encryption;
-use RZP\Exception\GatewayErrorException;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -22,6 +21,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
