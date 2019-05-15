@@ -9,11 +9,14 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'mozart';
 
     protected $map = [
