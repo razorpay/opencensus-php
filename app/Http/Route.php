@@ -604,6 +604,11 @@ final class Route
         'subscription_view_test'                   => ['get',      't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_live_post'              => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_test_post'              => ['post',     't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
+        'subscription_item_create'                 => ['post',     'subscriptions/items',                            'SubscriptionController@postCreateItem'                             ],
+        'subscription_item_fetch'                  => ['get',      'subscriptions/items/{id}',                       'SubscriptionController@getItem'                                    ],
+        'subscription_item_fetch_multiple'         => ['get',      'subscriptions/items',                            'SubscriptionController@getItems'                                   ],
+        'subscription_item_update'                 => ['patch',    'subscriptions/items/{id}',                       'SubscriptionController@postUpdateItem'                             ],
+        'subscription_item_delete'                 => ['delete',   'subscriptions/items/{id}',                       'SubscriptionController@postDeleteItem'                             ],
         'addon_fetch'                              => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
         'token_fetch_card'                         => ['get',      'tokens/{id}/card',                               'CustomerController@fetchTokenCard'                                 ],
         'addon_fetch_multiple'                     => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
@@ -1249,6 +1254,11 @@ final class Route
         'addon_fetch',
         'addon_fetch_multiple',
         'addon_delete',
+        'subscription_item_create',
+        'subscription_item_fetch',
+        'subscription_item_fetch_multiple',
+        'subscription_item_update',
+        'subscription_item_delete',
         'p2p_fetch_private',
         'customer_collect_request_fetch_private',
         'payout_purpose_get',
@@ -2913,6 +2923,11 @@ final class Route
         'subscription_view_test',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
+        'subscription_item_create',
+        'subscription_item_fetch',
+        'subscription_item_fetch_multiple',
+        'subscription_item_update',
+        'subscription_item_delete'
     ];
 
     // These routes are redirected after a feature check
