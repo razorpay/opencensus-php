@@ -55,6 +55,39 @@ class AnalyticsTest extends TestCase
         $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
 
+    public function testIntegrationForWoocommerce()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['notes']['woocommerce_order_id'] = 'lalala_woocommerce';
+
+        $payment = $this->doAuthPayment($payment);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals('woocommerce', $paymentAnalytic[AnalyticsEntity::INTEGRATION]);
+    }
+
+    public function testIntegrationForMagento()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['notes']['magento_trans_id'] = 'lalala_magento';
+
+        $payment = $this->doAuthPayment($payment);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals('magento', $paymentAnalytic[AnalyticsEntity::INTEGRATION]);
+    }
+
+    public function testIntegrationForShopify()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['notes']['platform'] = 'shopify';
+
+        $payment = $this->doAuthPayment($payment);
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals('shopify', $paymentAnalytic[AnalyticsEntity::INTEGRATION]);
+    }
+
     public function testAttemptsWithOrderId()
     {
         // First payment attempt
@@ -122,7 +155,7 @@ class AnalyticsTest extends TestCase
 
         $payment['_']['library_version'] = '3846fgjb';
 
-        $payment['_']['integration'] = 'woo_commerce';
+        $payment['_']['integration'] = 'woocommerce';
 
         $payment['_']['integration_version'] = '0.1.2';
 

@@ -33,6 +33,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
@@ -727,6 +728,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
         $this->metadata['preferred_auth'] = $input['preferred_auth'] ?? null;
 
+        if (empty($input[self::NOTES]) === false)
+        {
+            $this->setIntegrationUsingNotes($input);
+        }
+
         // We should only set referer if input['referer'] is defined
         // and metadata['referer'] is false because checkout also
         // sends us the referer info and we don't want to override it
@@ -734,6 +740,56 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             (isset($this->metadata['referer']) === false))
         {
             $this->metadata['referer'] = $input['referer'];
+        }
+    }
+
+    /**
+     * A lot of our plugins make their payments recognizable by sending
+     * their own order id in the payment notes, eg. prestashop_order_id.
+     * This is not a great way of identifying payments, since notes should
+     * be a merchant-controlled field, and not used for our own logic.
+     *
+     * Ideally, we should recognise integrations from the '_' metadata sent
+     * in the payment request. Until all the plugins can be updated,
+     * however, we use the notes values to set integration in database.
+     */
+    protected function setIntegrationUsingNotes(array $input)
+    {
+        // If integration is already set by some other flow, don't overwrite it.
+        if (empty($this->metadata[Analytics\Entity::INTEGRATION]) === false)
+        {
+            return;
+        }
+
+        // Check for presence of integration_order_id in notes
+        foreach (Metadata::INTEGRATION_VALUES as $integration => $index)
+        {
+            $integrationOrderId = $integration . '_order_id';
+
+            if (empty($input[self::NOTES][$integrationOrderId]) === false)
+            {
+                $this->metadata[Analytics\Entity::INTEGRATION] = $integration;
+
+                return;
+            }
+        }
+
+        // Some version of magento have magento_trans_id and not magento_order_id
+        if (empty($input[self::NOTES]['magento_trans_id']) === false)
+        {
+            $this->metadata[Analytics\Entity::INTEGRATION] = Metadata::MAGENTO;
+
+            return;
+        }
+
+        // Shopify has its own format, sending the
+        // name of the integration under notes[platform].
+        if ((empty($input[self::NOTES]['platform']) === false) and
+            ($input[self::NOTES]['platform'] === Metadata::SHOPIFY))
+        {
+            $this->metadata[Analytics\Entity::INTEGRATION] = Metadata::SHOPIFY;
+
+            return;
         }
     }
 
