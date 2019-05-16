@@ -279,9 +279,6 @@ class Core extends Base\Core
 
         $ba->merchant()->associate($merchant);
 
-        // Doing this since bank account type/source should not be null
-        $source = $source ?? $merchant;
-
         $ba->source()->associate($source);
 
         $this->repo->saveOrFail($ba);
