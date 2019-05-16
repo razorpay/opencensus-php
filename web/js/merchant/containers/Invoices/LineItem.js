@@ -49,6 +49,7 @@ export default class InvoiceLineItem extends React.Component {
           }}
           isNew
           showTaxes={showTaxes}
+          currency={'INR'}
         />
       ),
     });

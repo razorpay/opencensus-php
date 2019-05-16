@@ -97,6 +97,8 @@ export default class AddItem extends Component {
 
     if (this.props.item) {
       this._initialize(this.props.item);
+    } else {
+      this.props.initialize({ currency: this.props.currency });
     }
 
     Promise.all(promises)
@@ -174,10 +176,7 @@ export default class AddItem extends Component {
     }
 
     // Initialize and set state.
-    this.props.initialize({
-      ...item,
-      currency: this.props.currency
-    });
+    this.props.initialize(item);
 
     this.setState({
       showCessForm,
