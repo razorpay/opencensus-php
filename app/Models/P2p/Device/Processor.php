@@ -88,7 +88,7 @@ class Processor extends Base\Processor
         $device = $this->core->createOrUpdate($deviceInput);
 
         // We now can put device in context, which will be used in device token
-        $this->context()->setDevice($device);
+        $this->context()->setDevice($device, true);
 
         // Now we will create the deviceToken, which will have gateway and CL data
         $deviceTokenInput = array_only($deviceData, [
@@ -96,6 +96,9 @@ class Processor extends Base\Processor
         ]);
 
         $deviceToken = (new DeviceToken\Core)->create($deviceTokenInput);
+
+        // Now we can inject Device Token
+        $this->context()->setDeviceToken($deviceToken);
 
         // Now we can update the register token
         (new RegisterToken\Core)->updateTokenCompleted($registerToken);

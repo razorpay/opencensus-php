@@ -42,6 +42,7 @@ class Gateway
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
+    const NETBANKING_SIB         = 'netbanking_sib';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
@@ -99,6 +100,7 @@ class Gateway
     const ACQUIRER_RATN         = 'ratn';
     const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
+    const ACQUIRER_SBIN         = 'sbin';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -112,8 +114,6 @@ class Gateway
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
-
-    const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -146,7 +146,7 @@ class Gateway
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
         self::AMEX         => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
-        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
+        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB, self::ACQUIRER_SBIN],
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
@@ -190,6 +190,7 @@ class Gateway
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
         self::PAYTM             => self::PAYTM,
+        self::AMEX              => self::AMEX,
     ];
 
     /**
@@ -273,13 +274,20 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
-    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates
+    // Bank such as Netbanking Canara enforces to send fee in request.
+    const FEE_IN_AUTHORIZE_GATEWAYS = [
+      Payment\Gateway::NETBANKING_CANARA
+    ];
+
+    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates-new
     const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::YESB,
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
         IFSC::KKBK,
+        IFSC::INDB,
+        IFSC::ICIC,
         Netbanking::PUNB_R,
         Netbanking::BARB_R
     ];
@@ -514,45 +522,20 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
-        Payment\Gateway::AMEX => [
-            self::GO_LIVE_TIMESTAMP => 1547183527
-        ],
-        Payment\Gateway::SHARP => [
-            self::GO_LIVE_TIMESTAMP => 1535712088
-        ],
-        Payment\Gateway::HDFC => [
-            self::GO_LIVE_TIMESTAMP => 1547176106
-        ],
-        Payment\Gateway::AXIS_MIGS      => [
-            self::GO_LIVE_TIMESTAMP => 1542272247
-        ],
-        Payment\Gateway::FIRST_DATA     => [
-            self::GO_LIVE_TIMESTAMP => 1537966190
-        ],
-        Payment\Gateway::CARD_FSS       => [
-            self::GO_LIVE_TIMESTAMP => 1543816680
-        ],
-        Payment\Gateway::CYBERSOURCE => [
-            self::GO_LIVE_TIMESTAMP => 1542649738
-        ],
-        Payment\Gateway::UPI_ICICI   => [
-            self::GO_LIVE_TIMESTAMP => 1546597864
-        ],
-        Payment\Gateway::UPI_MINDGATE   => [
-            self::GO_LIVE_TIMESTAMP => 1540830393
-        ],
-        Payment\Gateway::HITACHI   => [
-            self::GO_LIVE_TIMESTAMP => 1550746997
-        ],
-        Payment\Gateway::WALLET_OLAMONEY   => [
-            self::GO_LIVE_TIMESTAMP => 1550838065
-        ],
-        Payment\Gateway::WALLET_JIOMONEY   => [
-            self::GO_LIVE_TIMESTAMP => 1552398662
-        ],
-        Payment\Gateway::UPI_AXIS   => [
-            self::GO_LIVE_TIMESTAMP => 1554715800
-        ]
+        Payment\Gateway::AMEX,
+        Payment\Gateway::SHARP,
+        Payment\Gateway::HDFC,
+        Payment\Gateway::AXIS_MIGS,
+        Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::CARD_FSS,
+        Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::HITACHI,
+        Payment\Gateway::WALLET_OLAMONEY,
+        Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::UPI_AXIS,
+        Payment\Gateway::WALLET_PHONEPE,
     ];
 
     public static $channels = [
@@ -624,6 +607,7 @@ class Gateway
             self::BILLDESK,
             self::EBS,
             self::ATOM,
+            self::NETBANKING_SIB,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
@@ -941,6 +925,7 @@ class Gateway
         self::ACQUIRER_AMEX => Network::AMEX,
         self::ACQUIRER_RATN => IFSC::RATN,
         self::ACQUIRER_BARB => IFSC::BARB,
+        self::ACQUIRER_SBIN => IFSC::SBIN,
     ];
 
     /**
@@ -1255,6 +1240,7 @@ class Gateway
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
+        IFSC::SIBL         => Gateway::NETBANKING_SIB,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
@@ -1319,6 +1305,7 @@ class Gateway
         IFSC::YESB,
         IFSC::CITI,
         IFSC::SBIN,
+        IFSC::BARB,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -1331,6 +1318,7 @@ class Gateway
         IFSC::YESB,
         IFSC::SBIN,
         IFSC::CITI,
+        IFSC::BARB,
     ];
 
     public static $emiBankToGatewayMap = [
@@ -1461,7 +1449,7 @@ class Gateway
 
     public static function getScroogeGateways(): array
     {
-        return array_keys(self::$scroogeGateways);
+        return self::$scroogeGateways;
     }
 
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
@@ -1489,23 +1477,6 @@ class Gateway
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
         return (in_array($gateway, self::getScroogeGateways(), true) === true);
-    }
-
-    /**
-     * This function checks if the gateway was live at a particular timestamp
-     *
-     * @param string $gateway
-     * @param int $timestamp
-     * @return bool
-     */
-    public static function isScroogeGatewayLiveAtGivenTimestamp(string $gateway = null, int $timestamp = null): bool
-    {
-        return (
-            ($gateway !== null) and
-            ($timestamp !== null) and
-            isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
-            $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
-        );
     }
 
     /**

@@ -21,7 +21,7 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY               = 'enstage_%s_card_details';
 
-    const CACHE_TTL               = 20;
+    const CARD_CACHE_TTL          = 20;
 
     const GATEWAY_MERCHANT_ID     = 'gateway_merchant_id';
 
@@ -453,7 +453,7 @@ class Gateway extends Base\Gateway
     protected function validateResponseContent($response)
     {
         if ((isset($response[Field::RESPONSE_CODE]) === true) and
-            (in_array($response[Field::RESPONSE_CODE], ['000', '016'], true) === true))
+            (in_array($response[Field::RESPONSE_CODE], ['000'], true) === true))
         {
             $content = $this->getCheckSumArray($response);
 

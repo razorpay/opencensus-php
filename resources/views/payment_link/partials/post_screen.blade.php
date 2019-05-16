@@ -68,15 +68,16 @@
 <script>
     var requestParams = {!!utf8_json_encode($request_params)!!};
 
-    function showSuccessMsg(respPaymentId, amountPaid) {
+    function showSuccessMsg() {
 
         var respPaymentId = requestParams.razorpay_payment_id;
         var amountPaid = data.payment_link.amount;
+        var currency = data.payment_link.currency;
 
         var successMsg = 'Your payment is successful';
 
         if (amountPaid) {
-            successMsg = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
+            successMsg = 'You\'ve successfully paid ' + currency + ' ' + (amountPaid/100).toFixed(2);
         }
         document.getElementById('success-msg').innerHTML = successMsg;
         document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;

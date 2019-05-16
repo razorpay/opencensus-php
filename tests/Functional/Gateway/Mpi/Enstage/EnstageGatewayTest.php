@@ -51,9 +51,9 @@ class EnstageGatewayTest extends TestCase
             {
                 if ($action === 'otp_generate')
                 {
+                    $content = [];
                     $content[Field::RESPONSE_CODE] = '016';
                     $content[Field::RES_DESC] = 'CARD NOT PARTICITIPATING IN 3ds';
-                    unset($content[Field::MESSAGE_HASH]);
                 }
             },
             $this->gateway

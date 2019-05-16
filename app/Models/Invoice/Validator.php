@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Batch;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
@@ -14,6 +15,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
@@ -50,7 +52,12 @@ class Validator extends Base\Validator
 
     const RECEIPT_REQUIRED = 'receipt_required';
 
+    /**
+     * Caps for maximum allowed line items.
+     * @see Merchant\RazorxTreatment::INV_INCREASED_LINE_ITEMS_CAP.
+     */
     const MAX_ALLOWED_LINE_ITEMS = 20;
+    const MAX_ALLOWED_LINE_ITEMS_EXPERIMENTAL = 50;
 
     const MIN_AMOUNT = 100;
 
@@ -81,12 +88,12 @@ class Validator extends Base\Validator
         Entity::TYPE                     => 'filled|string|max:16|custom',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
-        Entity::CURRENCY                 => 'filled|in:INR',
+        Entity::CURRENCY                 => 'filled|currency|custom',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
         Entity::DRAFT                    => 'filled|boolean',
@@ -115,12 +122,12 @@ class Validator extends Base\Validator
         Entity::TYPE                     => 'filled|string|max:16|custom',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
-        Entity::CURRENCY                 => 'filled|in:INR',
+        Entity::CURRENCY                 => 'filled|currency|custom',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
         Entity::DRAFT                    => 'filled|boolean',
@@ -145,12 +152,12 @@ class Validator extends Base\Validator
         Entity::TYPE                     => 'filled|string|max:16|custom',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
-        Entity::CURRENCY                 => 'filled|in:INR',
+        Entity::CURRENCY                 => 'filled|currency|custom',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
         Entity::DRAFT                    => 'filled|in:0',
@@ -171,7 +178,7 @@ class Validator extends Base\Validator
         Entity::INVOICE_NUMBER           => 'sometimes|string|min:1|max:40|nullable',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
-        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
+        Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100|nullable',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:100',
@@ -195,6 +202,11 @@ class Validator extends Base\Validator
         Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100|nullable',
         Entity::CALLBACK_URL             => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|sometimes|string|in:get|nullable',
+    ];
+
+    protected static $editBillingPeriodRules = [
+        Entity::BILLING_START            => 'filled|epoch',
+        Entity::BILLING_END              => 'filled|epoch',
     ];
 
     protected static $editPaidRules = [
@@ -345,7 +357,7 @@ class Validator extends Base\Validator
 
             if (($expiryRequiredFeature === true) and (empty($expireBy) === true))
             {
-                throw new BadRequestValidationFailureException("expire_by is required.");
+                throw new BadRequestValidationFailureException('expire_by is required.');
             }
         }
     }
@@ -557,7 +569,7 @@ class Validator extends Base\Validator
         if ($partialPaymentEnabled === false)
         {
             throw new BadRequestValidationFailureException(
-                "First payment min amount cannot be set when partial payment is disabled",
+                'First payment min amount cannot be set when partial payment is disabled',
                 Entity::FIRST_PAYMENT_MIN_AMOUNT);
         }
 
@@ -569,7 +581,7 @@ class Validator extends Base\Validator
         if ($firstPaymentAmount >= $amount)
         {
             throw new BadRequestValidationFailureException(
-                "First payment min amount must be lesser than the amount",
+                'First payment min amount must be lesser than the amount',
                 Entity::FIRST_PAYMENT_MIN_AMOUNT,
                 [
                     'amount'                   => $amount,
@@ -589,7 +601,7 @@ class Validator extends Base\Validator
             if ($isReceiptMandatory === true)
             {
                 throw new BadRequestValidationFailureException(
-                    "Receipt is a required field and must be set",
+                    'Receipt is a required field and must be set',
                     Entity::RECEIPT);
             }
         }
@@ -872,24 +884,55 @@ class Validator extends Base\Validator
         // Expired: All views show custom torn or some kind of page and need data
     }
 
-    public function validateMaxAllowedLineItems()
+    /**
+     * Validator function gets called from spine against custom rule defined
+     * in above rules e.g. createRules etc.
+     * @param string $attribute
+     * @param array  $value
+     */
+    public function validateLineItems(string $attribute, array $value)
     {
-        $invoice = $this->entity;
-        $count   = $invoice->lineItems()->count();
+        $this->validateLineItemsCount(count($value));
+    }
 
-        if ($count >= self::MAX_ALLOWED_LINE_ITEMS)
+    /**
+     * Given a line items count validates that it is within limit.
+     * @see validateLineItems & validateMaxAllowedLineItems.
+     * @param int $lineItemsCount
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateLineItemsCount(int $lineItemsCount)
+    {
+        $invoice             = $this->entity;
+        $merchant            = $invoice->merchant;
+        $maxAllowedLineItems = $this->getMaxAllowedLineItemsForMerchant($merchant);
+
+        if ($lineItemsCount > $maxAllowedLineItems)
         {
-            $message = 'The invoice may not have more than ' . self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
+            $message = 'The invoice may not have more than ' . $maxAllowedLineItems . ' items in total.';
 
             throw new BadRequestValidationFailureException(
-                        $message,
-                        Entity::LINE_ITEMS,
-                        [
-                            Entity::ID                => $invoice->getId(),
-                            'max_allowed_line_items'  => self::MAX_ALLOWED_LINE_ITEMS,
-                            'actual_line_items_count' => $count,
-                        ]);
+                $message,
+                Entity::LINE_ITEMS,
+                [
+                    Entity::ID                => $invoice->getId(),
+                    'max_allowed_line_items'  => $maxAllowedLineItems,
+                    'actual_line_items_count' => $lineItemsCount,
+                ]);
         }
+    }
+
+    protected function getMaxAllowedLineItemsForMerchant(Merchant\Entity $merchant): int
+    {
+        $variant = app()->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::INV_INCREASED_LINE_ITEMS_CAP,
+            // No need to maintain experiments per mode.
+            Mode::LIVE);
+
+        return strtolower($variant) === 'on' ?
+            self::MAX_ALLOWED_LINE_ITEMS_EXPERIMENTAL :
+            self::MAX_ALLOWED_LINE_ITEMS;
     }
 
     public function validateNotifyInvoicesOfBatch(
@@ -953,6 +996,24 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateInternational()
+    {
+        $invoice = $this->entity;
+
+        $type = $invoice->getType();
+
+        $currency = $invoice->getCurrency();
+
+        if (($currency !== Currency::INR) and
+            ((Type::isPaymentLinkType($type) === false) and ($invoice->isOfSubscription() === false)))
+        {
+            throw new BadRequestValidationFailureException(
+                'Currency ' . $currency . ' is not supported',
+                'currency'
+            );
+        }
+    }
+
     public function validateExternalEntity()
     {
         $invoice = $this->entity;
@@ -961,8 +1022,26 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Invalid External Entity',
-                "entity_type"
+                'entity_type'
                 );
+        }
+    }
+
+    public function validateCurrency(string $attribute, string $currency)
+    {
+        $invoice = $this->entity;
+
+        $international = $invoice->merchant->isInternational();
+
+        // Non International accounts should not create PL in other currencies.
+        if (($international !== true) and ($currency !== Currency::INR))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
+                null,
+                [
+                    'currency' => $currency
+                ]);
         }
     }
 }

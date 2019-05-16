@@ -29,6 +29,11 @@ class RedisLagCheckerTest extends TestCase
             return new MockPDO();
         });
 
+        if ($result instanceof  \Closure)
+        {
+            $result = call_user_func($result);
+        }
+
         $this->assertInstanceOf(PDO::class, $result);
     }
 

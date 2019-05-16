@@ -30,7 +30,7 @@ class EventTrackerTest extends TestCase
 
         $secret = $config['secret'];
 
-        $signature = hash_hmac('sha1', $key, $secret);
+        $signature = $this->getSignature($key, $secret);
 
         $headers = $this->testData[__FUNCTION__]['request']['server'];
 
@@ -57,7 +57,7 @@ class EventTrackerTest extends TestCase
 
         $secret = $config['secret'] . 'incorrect';
 
-        $signature = hash_hmac('sha1', $key, $secret);
+        $signature = $this->getSignature($key, $secret);
 
         $headers = $this->testData[__FUNCTION__]['request']['server'];
 
@@ -74,5 +74,10 @@ class EventTrackerTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['key'] = $key;
 
         $this->startTest();
+    }
+
+    protected function getSignature($message, $secret)
+    {
+        return base64_encode(hash_hmac('sha256', $message, $secret, true));
     }
 }

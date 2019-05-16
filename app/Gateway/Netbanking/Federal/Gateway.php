@@ -71,7 +71,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        if ((isset($content[ResponseFields::HASH]) === true) and (empty($this->getSecret()) === false))
+        if ((isset($content[ResponseFields::HASH]) === true) and (empty($this->getTerminalPassword()) === false))
         {
             $this->verifySecureHash($content);
         }
@@ -284,7 +284,7 @@ class Gateway extends Base\Gateway
             $data[RequestFields::AMOUNT],
         ];
 
-        if (empty($this->getSecret()) === false)
+        if (empty($this->getTerminalPassword()) === false)
         {
             $data[RequestFields::HASH] = $this->getHashOfArray($hashParams);
         }
@@ -533,7 +533,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        $secret = $this->getSecret();
+        $secret = $this->getTerminalPassword();
 
         return hash_hmac(HashAlgo::SHA256, $str, $secret);
     }

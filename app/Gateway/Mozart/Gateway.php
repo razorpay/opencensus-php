@@ -5,18 +5,18 @@ namespace RZP\Gateway\Mozart;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\HashAlgo;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Base\Entity as BaseEntity;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'mozart';
 
     protected $map = [
@@ -106,6 +106,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
+
         $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction($gatewayPayment, $response, true, Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
@@ -114,29 +115,18 @@ class Gateway extends Base\Gateway
 
         if ($this->immediateVerifyApplicable($gatewayName) === true)
         {
-            $verifyResponse = $this->verify($input);
-
-            return $verifyResponse;
+            $this->verifyCallback($input);
         }
 
-        if ($input['payment']['method'] === Payment\Method::UPI)
-        {
-            return [
-                'acquirer' => [
-                    Payment\Entity::VPA => $response['responseBody']['data']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
-                    Payment\Entity::REFERENCE16 => $response['responseBody']['data']['rrn'] ?? null,
-                ]
-            ];
-        }
-
-        return $response;
+        return $this->getResponseData($input, $response);
     }
 
     public function immediateVerifyApplicable($gatewayName)
     {
         $immediateVerificationGateways = [
             Payment\Gateway::WALLET_PHONEPE,
-            Payment\Gateway::BAJAJFINSERV
+            Payment\Gateway::BAJAJFINSERV,
+            Payment\Gateway::NETBANKING_SIB,
         ];
 
         return in_array($gatewayName, $immediateVerificationGateways);
@@ -233,6 +223,32 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    protected function verifyCallback($input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verifyResponseContent = $this->sendPaymentVerifyRequest($verify);
+
+        //
+        // If the status in callback and verify does not match
+        //
+        if ($verifyResponseContent['success'] !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                $verifyResponseContent['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $verifyResponseContent['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $input['payment']['gateway']
+                ]);
+        }
+    }
+
     public function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
@@ -269,60 +285,25 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        if ($content['success'] === true)
+        $verify->gatewaySuccess = $content['success'];
+
+        $this->checkApiSuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $this->verifyPaymentWithGatewayResponse($verify);
-        }
-        else
-        {
-            $this->verifyNonExistentCase($verify);
+            $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
+        if ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
+        {
+            $content = $this->updateBankPaymentIdFromResponse($content, $verify->payment);
+        }
+
         $this->updateGatewayPaymentEntityWithAction($verify->payment, $content, true, Action::AUTHORIZE);
 
         return $verify->status;
-    }
-
-    protected function verifyNonExistentCase($verify)
-    {
-        $payment = $verify->payment;
-        $input = $verify->input;
-
-        $verify->gatewaySuccess = false;
-
-        if (($payment === null) and ($input['payment']['status'] === 'failed'))
-        {
-            $verify->apiSuccess = false;
-        }
-        else if (($payment === null) or ($input['payment']['status'] !== Payment\Status::AUTHORIZED))
-        {
-            $verify->apiSuccess = false;
-        }
-        else if ($input['payment']['status'] === Payment\Status::AUTHORIZED)
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = true;
-        }
-    }
-
-    protected function verifyPaymentWithGatewayResponse($verify)
-    {
-        $payment = $verify->payment;
-        $input = $verify->input;
-
-        $verify->gatewaySuccess = true;
-
-        if ($input['payment']['status'] !== 'failed')
-        {
-            $verify->apiSuccess = true;
-        }
-        else
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = false;
-        }
     }
 
     protected function getMozartRequestArray($input)
@@ -390,6 +371,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
 
+            Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_VERIFY,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -422,6 +408,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
 
+            Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
         ];
 
         return $previousActionForData[$gateway][$this->action];
@@ -432,7 +423,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], $prevActionForData);
 
-        $jsonRaw = json_decode($gatewayPayment['raw']);
+        $jsonRaw = json_decode($gatewayPayment['raw'], true);
 
         return $jsonRaw;
     }
@@ -541,6 +532,28 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    protected function updateBankPaymentIdFromResponse($content, $gatewayPayment)
+    {
+        // temporary change - will go after conditional operation implementation on mozart
+        $rawResponse = $content['data']['_raw']['BODY'];
+
+        $gatewayPaymentRaw = json_decode($gatewayPayment['raw'], true);
+
+        if ($rawResponse === 'Transaction Completed Successfully')
+        {
+            $content['data']['bank_payment_id'] = $gatewayPaymentRaw['bank_payment_id'];
+        }
+
+        if (strpos($rawResponse, 'Transaction Completed Successfully. Bank Reference Number is') !== false)
+        {
+            $splitRawResponse = explode(' ', $rawResponse);
+
+            $content['data']['bank_payment_id'] = $splitRawResponse[count($splitRawResponse) - 1];
+        }
+
+        return $content;
+    }
+
     protected function getPaymentToVerify(Verify $verify)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
@@ -567,7 +580,19 @@ class Gateway extends Base\Gateway
 
             if (isset ($response['data']['amount']))
             {
-                $this->assertAmount($response['data']['amount'], $input['payment']['amount']);
+                // All gateways need to be migrated to formatted amount flow after testing on UAT
+                if ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
+                {
+                    $dbAmount      = number_format($input['payment']['amount'] / 100, 2, '.', '');
+                    $gatewayAmount = number_format($response['data']['amount'], 2, '.', '');
+                }
+                else
+                {
+                    $dbAmount      = $input['payment']['amount'];
+                    $gatewayAmount = $response['data']['amount'];
+                }
+
+                $this->assertAmount($dbAmount, $gatewayAmount);
             }
             else
             {
@@ -582,8 +607,32 @@ class Gateway extends Base\Gateway
         $validationGateways = [
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::NETBANKING_SIB,
         ];
 
         return in_array($input['payment']['gateway'], $validationGateways, true);
+    }
+
+    protected function getResponseData($input, $mozartResponse)
+    {
+        if ($input['payment']['method'] === Payment\Method::UPI)
+        {
+            $response = [
+                'acquirer' => [
+                    Payment\Entity::VPA         => $mozartResponse['responseBody']['data']['vpa'] ?? $input['terminal']['gateway_merchant_id2'],
+                    Payment\Entity::REFERENCE16 => $mozartResponse['responseBody']['data']['rrn'] ?? null,
+                ]
+            ];
+        }
+        elseif ($input['payment']['method'] === Payment\Method::NETBANKING)
+        {
+            $response = $this->getCallbackResponseData($input);
+        }
+        else
+        {
+            $response = $mozartResponse;
+        }
+
+        return $response;
     }
 }

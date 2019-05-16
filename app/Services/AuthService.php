@@ -11,6 +11,7 @@ use RZP\Http\OAuthCache;
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
+use RZP\Models\Merchant\AccessMap;
 
 class AuthService
 {
@@ -100,7 +101,19 @@ class AuthService
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
-        return $this->sendRequest('applications/' . $id, Requests::PUT, $input);
+        $this->trace->info(
+            TraceCode::PARTNER_DELETE_APPLICATION,
+            [
+                'application_id' => $id,
+                'merchant_id'    => $merchantId,
+            ]
+        );
+        $result = $this->sendRequest('applications/' . $id, Requests::PUT, $input);
+
+        // deletes the access mapping for the application
+        (new AccessMap\Core)->deleteAccessMapByApplicationId($id);
+
+        return $result;
     }
 
     public function updateApplication(string $id, array $input, string $merchantId) : array

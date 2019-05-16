@@ -208,6 +208,10 @@ class MySqlConnection extends BaseMySqlConnection
                 {
                     $this->previousReadPdo = $this->readPdo;
                 }
+                else if ($result instanceof Closure)
+                {
+                    $result = call_user_func($result);
+                }
 
                 //
                 // Reset this to false here, so that the lag check is not

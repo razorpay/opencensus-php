@@ -64,6 +64,7 @@ class Validator extends Base\Validator
 
     protected static $editTerminalGateways = [
         Payment\Gateway::ATOM,
+        Payment\Gateway::AMEX,
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
         Payment\Gateway::BILLDESK,
@@ -83,6 +84,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_EQUITAS,
         Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
+        Payment\Gateway::NETBANKING_FEDERAL,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
@@ -124,7 +126,9 @@ class Validator extends Base\Validator
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes',
@@ -183,6 +187,9 @@ class Validator extends Base\Validator
     protected static $billdeskTerminalRules = [
         Entity::GATEWAY                    => 'required|in:billdesk',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|min:2',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TYPE . '.non_recurring'    => 'sometimes|in:0,1',
     ];
 
     protected static $ebsTerminalRules = [
@@ -226,6 +233,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $axisMigsTerminalRules = [
@@ -280,6 +288,12 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
+    ];
+
+    protected static $amexEditTerminalRules = [
+        Entity::GATEWAY                     => 'sometimes|in:' . Gateway::AMEX,
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|alpha_num|min:8',
+        Entity::TYPE                        => 'sometimes|array',
     ];
 
     protected static $billdeskEditTerminalRules = [
@@ -555,16 +569,24 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+    ];
+
+    protected static $netbankingSibTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_sib',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::TYPE                       => 'sometimes|array'
     ];
 
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string'
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
     ];
 
     protected static $netbankingFederalEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_federal',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string'
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string'
     ];
 
     protected static $netbankingRblTerminalRules = [
@@ -759,6 +781,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::CARDLESS_EMI                => 'required|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
@@ -896,12 +919,13 @@ class Validator extends Base\Validator
         $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
                                     (in_array($gateway, $nonCardPurchaseExceptions, true)));
 
-        // Migs, Amex, and OpenWallet terminals are always in auth-capture mode
+        // Migs, Amex, OpenWallet, CardlessEmi terminals are always in auth-capture mode
         //
         $authCaptureOnly = [
             Gateway::AXIS_MIGS,
             Gateway::AMEX,
-            Gateway::WALLET_OPENWALLET
+            Gateway::WALLET_OPENWALLET,
+            Gateway::CARDLESS_EMI,
         ];
 
         $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
@@ -1125,6 +1149,11 @@ class Validator extends Base\Validator
         if (empty($input[Entity::EMI]) === false)
         {
             return Method::EMI;
+        }
+
+        if (empty($input[Entity::CARDLESS_EMI]) === false)
+        {
+            return Method::CARDLESS_EMI;
         }
 
         return null;

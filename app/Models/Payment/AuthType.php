@@ -60,7 +60,29 @@ class AuthType
             self::_3DS => [
                 self::_3DS,
             ],
-        ]
+        ],
+        Method::EMI => [
+            self::UNKNOWN => [
+                self::OTP,
+                self::IVR,
+                self::HEADLESS_OTP,
+                self::_3DS,
+            ],
+            self::OTP => [
+                self::IVR,
+                self::OTP,
+                self::HEADLESS_OTP,
+            ],
+            self::_3DS => [
+                self::_3DS,
+            ],
+        ],
+    ];
+
+    // auth types which will get set if payment create request has auth_type as OTP
+    public static $otpAuthTypes = [
+        self::HEADLESS_OTP,
+        self::IVR,
     ];
 
     public static $featureToAuthMap = [

@@ -1078,6 +1078,7 @@ class Core extends Base\Core
         {
             $this->deleteSupportingEntities($merchant);
 
+            // removes partner application and associated merchant access map entries for non-platform partners
             $this->deletePartnerApp($merchant);
 
             $merchant->setPartnerType();
@@ -1223,12 +1224,17 @@ class Core extends Base\Core
     {
         if ($merchant->isPurePlatformPartner() === true)
         {
+            //
             // A dummy internal application for pure platforms does not exist
+            // un-marking a platform partner should not delete applications and access mappings
+            // only explicit delete application deletes mapping for platform partners
+            //
             return;
         }
 
         $app = $this->getInternalPartnerApp($merchant);
 
+        // deletes the application and access mapping
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
 
         return $app;
@@ -1440,6 +1446,25 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity $partner
+     *
+     * @return PublicCollection
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function fetchActivatedSubMerchantsForPartner(Entity $partner): Base\PublicCollection
+    {
+        $appIds = $this->getPartnerApplicationIds($partner);
+
+        return $this->repo
+                    ->merchant
+                    ->fetchSubmerchantsByAppIds($appIds,
+                        [
+                            Detail\Entity::ACTIVATION_STATUS => Entity::ACTIVATED,
+                        ]);
+    }
+
+    /**
      * Fetch the list of all merchants the submerchant is associated with
      *
      * @param string $submerchantId
@@ -1578,9 +1603,8 @@ class Core extends Base\Core
 
     /**
      * Cleans up all the supporting entities that were created when the merchant was a partner. This includes -
-     * 1. All the mappings (merchant_access_maps) that link the submerchants to the partner.
-     * 2. All the ref tags that indicate that the merchant is a referral to a partner.
-     * 3. All the mappings (merchant_users) that is currently allowing the partner user to access a submerchant.
+     * 1. All the ref tags that indicate that the merchant is a referral to a partner.
+     * 2. All the mappings (merchant_users) that is currently allowing the partner user to access a submerchant.
      *
      * @param Entity $partner
      *
@@ -1601,31 +1625,16 @@ class Core extends Base\Core
                            ->merchant_access_map
                            ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());
 
-        // Fetch submerchants
+        //
+        // Fetch subMerchants
+        // access maps will be deleted as part of delete application flow
+        //
         $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
         $submerchants   = $this->repo->merchant->findMany($submerchantIds);
-
-        $this->deleteAllPartnerSubmerchantAccessMaps($accessMaps);
 
         $this->deleteAllSubmerchantRefTags($submerchants, $partner);
 
         $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
-    }
-
-    /**
-     * @param PublicCollection $accessMaps
-     */
-    protected function deleteAllPartnerSubmerchantAccessMaps(Base\PublicCollection $accessMaps)
-    {
-        $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
-
-        $this->trace->info(
-            TraceCode::PARTNER_ACCESS_MAPS_DELETE,
-            [
-                'ids' => $accessMapIds,
-            ]);
-
-        $this->repo->merchant_access_map->deleteMerchantAccessMapsByEntityIds($accessMapIds);
     }
 
     /**
@@ -2104,7 +2113,7 @@ class Core extends Base\Core
         if ($merchant->isInternational() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL);
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED);
         }
 
         $merchant->disableInternational();

@@ -118,6 +118,7 @@ class Repository extends Base\Repository
                     ->where(Entity::METHOD, '=', $method)
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+                    ->where(Entity::RECURRING,'=', '0')
                     ->whereIn(Entity::CARD_ID, $cardIds)
                     ->where(function($query)
                     {

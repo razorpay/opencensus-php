@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::GROUP                   => 'filled|string|max:50',
         Entity::FILTER_TYPE             => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
         Entity::LOAD                    => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
-        Entity::GATEWAY_ACQUIRER        => 'sometimes_if:type,filter|string|max:30',
+        Entity::GATEWAY_ACQUIRER        => 'sometimes|string|max:30',
         Entity::INTERNATIONAL           => 'filled|boolean',
         Entity::NETWORK_CATEGORY        => 'sometimes_if:type,filter|string|max:30',
         Entity::CATEGORY2               => 'sometimes_if:type,filter|string|max:30|custom',

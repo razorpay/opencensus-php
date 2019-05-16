@@ -47,9 +47,10 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_INVITATION_USER_ALREADY_INVITED);
         }
 
-        if (($merchant->users
+        if (($merchant->users()
                       ->where(Entity::EMAIL, $email)
-                      ->where(Entity::PRODUCT, $product)
+                      ->wherePivot(Entity::PRODUCT, $product)
+                      ->get()
                       ->isEmpty()) === false)
         {
             throw new Exception\BadRequestException(

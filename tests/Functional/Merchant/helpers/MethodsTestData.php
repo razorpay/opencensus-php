@@ -54,8 +54,44 @@ return [
                     'credit_card' => true,
                     'netbanking' => true,
                     'card_networks' => [
-                        'dicl' => 1
+                        'DICL' => '0',
+                        'MAES' => '1',
+                        'RUPAY'=> '0'
                     ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testBulkMethodUpdateEnableBanks' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods' => [
+                    'enabled_banks' => ['HDFC']
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testBulkMethodUpdateDisableBanks' => [
+        'request' => [
+            'url' => '/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods' => [
+                    'disabled_banks' => ['ICIC']
                 ],
             ],
         ],

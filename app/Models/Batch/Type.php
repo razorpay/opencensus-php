@@ -3,48 +3,52 @@
 namespace RZP\Models\Batch;
 
 use RZP\Exception;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Type
 {
-    const REFUND                = 'refund';
-    const PAYMENT_LINK          = 'payment_link';
+    const REFUND                    = 'refund';
+    const PAYMENT_LINK              = 'payment_link';
 
     // Merchant Onboarding
-    const MERCHANT_ONBOARDING   = 'merchant_onboarding';
+    const MERCHANT_ONBOARDING       = 'merchant_onboarding';
 
     // IRCTC Batch Types
-    const IRCTC_REFUND          = 'irctc_refund';
-    const IRCTC_SETTLEMENT      = 'irctc_settlement';
+    const IRCTC_REFUND              = 'irctc_refund';
+    const IRCTC_SETTLEMENT          = 'irctc_settlement';
 
     // Marketplace Batch
-    const LINKED_ACCOUNT        = 'linked_account';
+    const LINKED_ACCOUNT            = 'linked_account';
 
     // Virtual Account Bulk Creation
-    const VIRTUAL_BANK_ACCOUNT  = 'virtual_bank_account';
+    const VIRTUAL_BANK_ACCOUNT      = 'virtual_bank_account';
 
     // Bank Transfer Bulk Insert
-    const BANK_TRANSFER         = 'bank_transfer';
+    const BANK_TRANSFER             = 'bank_transfer';
 
-    const RECURRING_CHARGE      = 'recurring_charge';
+    const RECURRING_CHARGE          = 'recurring_charge';
 
-    const RECONCILIATION        = 'reconciliation';
+    const RECONCILIATION            = 'reconciliation';
 
-    const EMANDATE              = 'emandate';
+    const EMANDATE                  = 'emandate';
 
-    const PAYOUT                = 'payout';
+    const PAYOUT                    = 'payout';
 
-    const SUB_MERCHANT          = 'sub_merchant';
+    const SUB_MERCHANT              = 'sub_merchant';
 
-    const DIRECT_DEBIT          = 'direct_debit';
+    const DIRECT_DEBIT              = 'direct_debit';
 
-    const ENTITY_MAPPING        = 'entity_mapping';
+    const ENTITY_MAPPING            = 'entity_mapping';
 
-    const AUTH_LINK             = 'auth_link';
+    const AUTH_LINK                 = 'auth_link';
 
-    const INSTANT_ACTIVATION    = 'instant_activation';
+    const INSTANT_ACTIVATION        = 'instant_activation';
 
     // Batch Terminal Creation
-    const TERMINAL              = 'terminal';
+    const TERMINAL                  = 'terminal';
+
+    const LINKED_ACCOUNT_REVERSAL   = 'linked_account_reversal';
 
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
@@ -84,6 +88,22 @@ class Type
     ];
 
     /**
+     * For following batch types, sometimes batches get stuck during
+     * processing due to big file size or infra issue. So we are enabling
+     * 'Retry Batch' option for these batches even when they are in created
+     * state and having processing = true.
+     *
+     * Here the value against each type indicates the time gap from updated_at
+     * in seconds, after which only we will allow such retries.
+     *
+     * @var array
+     */
+    public static $retryInProcessingBatchTypes = [
+        // 2 hours gap for Recon batches
+        self::RECONCILIATION    => 7200,
+    ];
+
+    /**
      * Following batch types get processed via CRON job, CRON currently runs
      * less frequently (now every 6 hrs).
      *
@@ -120,10 +140,29 @@ class Type
         self::CONTACT,
         self::FUND_ACCOUNT,
         self::MERCHANT_ONBOARDING,
+        self::LINKED_ACCOUNT_REVERSAL
     ];
 
     /**
-     * Following batch types get processed via Keubernetes Job, this is used for long
+     * Batch sub_types
+     *
+     * @var array
+     */
+    public static $subTypes = [
+        Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
+        Gateway::HITACHI,
+        Gateway::BILLDESK,
+        Gateway::ATOM,
+        Gateway::UPI_MINDGATE,
+        CardlessEmi::ZESTMONEY,
+        CardlessEmi::FLEXMONEY,
+        CardlessEmi::EARLYSALARY,
+    ];
+
+    /**
+     * Following batch types get processed via Kubernetes Job, this is used for long
      * running batches.
      *
      * @var array
@@ -131,6 +170,10 @@ class Type
     public static $kubernetesJobGroup = [
         // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
         self::PAYMENT_LINK,
+    ];
+
+    public static $batchTypeMigrated = [
+        self::PAYMENT_LINK
     ];
 
     public static function exists(string $type)
@@ -159,6 +202,14 @@ class Type
         foreach ($types as $row)
         {
             self::validateType($row);
+        }
+    }
+
+    public static function validateSubType(string $type)
+    {
+        if (in_array($type, self::$subTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $type);
         }
     }
 

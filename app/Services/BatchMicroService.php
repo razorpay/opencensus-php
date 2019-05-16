@@ -35,10 +35,6 @@ class BatchMicroService
 
     protected $client;
 
-    public static $batchTypeMigrated = [
-        Batch\Type::PAYMENT_LINK
-    ];
-
     const BATCH_URLS = [
         'download'  => 'download',
         'batch'     => 'batch',
@@ -91,6 +87,8 @@ class BatchMicroService
 
             $relativeUri = '/'. self::BATCH_URLS['batch'] . '?' . http_build_query($data);
         }
+
+        $this->trace->info(TraceCode::BATCH_SERVICE_MULTIPART_PAYLOAD, ['multipartData' => $multipartData]);
 
         $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
 
@@ -413,7 +411,7 @@ class BatchMicroService
 
     public function isMigratedBatchType(string $type): bool
     {
-        return in_array($type, self::$batchTypeMigrated, true);
+        return in_array($type, Batch\Type::$batchTypeMigrated, true);
     }
 
     /**

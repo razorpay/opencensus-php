@@ -15,6 +15,7 @@ use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Gateway;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Pricing;
@@ -121,7 +122,7 @@ class Processor
     /**
      * Timeout to store card details for fallback auth type
      */
-    const CACHE_TTL = 10;
+    const CARD_CACHE_TTL = 10;
 
     /**
      * Timeout to store card details for redirect to authorize
@@ -260,6 +261,8 @@ class Processor
 
             $this->appendMetadataForPayment($input);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
+
             $payment = $this->buildPaymentEntity($input);
 
             $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -288,18 +291,24 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+
             return $paymentData;
         }
         catch (\Throwable $e)
         {
+            $payment = $payment ?? null;
+
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
-            if ((isset($payment) === true) and ($payment instanceof Payment\Entity))
+            if ($payment instanceof Payment\Entity === true)
             {
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
             }
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
         }
@@ -1657,8 +1666,6 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
-
         if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
@@ -1680,14 +1687,10 @@ class Processor
 
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
-            ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
-
-        if (isset($metadata['checkout_id']) === false)
-        {
-             $this->trace->warning(
-                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
-                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
-        }
+            [
+                'metadata'   => $metadata,
+                'payment_id' => $payment->getId()
+            ]);
 
         $this->payment = $payment;
 
@@ -2093,11 +2096,16 @@ class Processor
 
     protected function unsetSensitiveCardDetails(array & $input)
     {
-        if ((isset($input['card'])) and
-            (is_array($input['card'])))
+        if ((isset($input[Payment\Entity::CARD]) === true) and
+            (is_array($input[Payment\Entity::CARD]) === true))
         {
-            unset($input['card'][Card\Entity::CVV]);
-            unset($input['card'][Card\Entity::NUMBER]);
+            if (empty($input[Payment\Entity::CARD][Card\Entity::NUMBER]) === false)
+            {
+                $input[Payment\Entity::CARD][Card\Entity::IIN] = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+            }
+
+            unset($input[Payment\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Payment\Entity::CARD][Card\Entity::NUMBER]);
         }
     }
 
@@ -2605,6 +2613,8 @@ class Processor
     public function redirectTo3ds($id)
     {
         $payment = $this->retrieve($id);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
 
         $diff = time() - $payment->getCreatedAt();
 

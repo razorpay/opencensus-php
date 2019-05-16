@@ -173,6 +173,46 @@ class CommissionTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGettingAnalyticsForResellerHavingLessSubMerchants()
+    {
+        list($partner) = $this->createSampleCommission(['partner_type' => 'reseller']);
+
+        $this->ba->proxyAuth('rzp_test_'. $partner->getId());
+
+        $this->startTest();
+    }
+
+    public function testGettingAnalyticsForResellerHavingMoreSubMerchants()
+    {
+        list($partner, $subMerchant, $payment, $config) = $this->createSampleCommission(['partner_type' => 'reseller']);
+
+        $application = $config->entity;
+
+        $this->createSubMerchant($partner, $application, ['id' => 'submerchant001']);
+        $this->createSubMerchant($partner, $application, ['id' => 'submerchant002']);
+
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => $subMerchant->getId(), 'activation_status' => 'activated']);
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => 'submerchant001', 'activation_status' => 'activated']);
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => 'submerchant002', 'activation_status' => 'activated']);
+
+        $this->ba->proxyAuth('rzp_test_'. $partner->getId());
+
+        $result = $this->startTest();
+
+        $this->assertArrayHasKey('recent_payments', $result);
+    }
+
+    public function testGettingAnalyticsForAggregator()
+    {
+        list($partner) = $this->createSampleCommission();
+
+        $this->ba->proxyAuth('rzp_test_'. $partner->getId());
+
+        $result = $this->startTest();
+
+        $this->assertArrayHasKey('recent_payments', $result);
+    }
+
     protected function assertCommissionData($partner, $subMerchant, $source, $result)
     {
         $expected = [

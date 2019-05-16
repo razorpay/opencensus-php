@@ -123,6 +123,7 @@ final class Route
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
+        'payment_validate_account'                 => ['post',     'payments/validate/account',                      'PaymentController@postPaymentValidateEntity'                       ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
@@ -187,7 +188,7 @@ final class Route
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
-        'merchant_dashboard_access_la'             => ['post',     'la-merchants/dashboard-access',                  'MerchantController@updateLinkedAccountDashboardAccess'             ],
+        'merchant_edit_config_la'                  => ['post',     'la-merchants/config',                            'MerchantController@updateLinkedAccountConfig'                      ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
         'merchant_fetch_webhooks'                  => ['get',      'merchants/{id}/webhooks',                        'MerchantController@getMerchantWebhooks'                            ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
@@ -405,6 +406,8 @@ final class Route
         'mock_sharp_payment_submit'                => ['post',     'gateway/mocksharp/payment/submit',               'MockGatewayController@postSharpPayment'                            ],
         'mock_netbanking_payment'                  => ['post',     'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
         'mock_netbanking_payment_get'              => ['get',      'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
+        'mock_mozart_payment_post'                 => ['post',     'gateway/mock/mozart/{gateway}',                  'MockGatewayController@postMozartPayment'                           ],
+        'mock_mozart_payment_get'                  => ['get',      'gateway/mock/mozart/{gateway}',                  'MockGatewayController@postMozartPayment'                           ],
         'mock_wallet_payment'                      => ['post',     'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_get'                  => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'       => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
@@ -504,6 +507,7 @@ final class Route
         'invoice_get_count'                        => ['get',      'invoices-count',                                 'InvoiceController@getInvoicesCount'                                ],
         'invoice_fetch_multiple'                   => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
         'invoice_update'                           => ['patch',    'invoices/{id}',                                  'InvoiceController@updateInvoice'                                   ],
+        'invoice_update_billing_period'            => ['patch',    'invoices/{id}/update_billing_period',            'InvoiceController@updateBillingPeriod'                             ],
         'invoice_issue'                            => ['post',     'invoices/{id}/issue',                            'InvoiceController@issueInvoice'                                    ],
         'invoice_delete'                           => ['delete',   'invoices/{id}',                                  'InvoiceController@deleteInvoice'                                   ],
         'invoice_add_line_items'                   => ['post',     'invoices/{id}/line_items',                       'InvoiceController@addLineItems'                                    ],
@@ -564,6 +568,7 @@ final class Route
         'gateway_fetch_downtimes'                  => ['get',      'gateway/downtimes',                              'GatewayController@getGatewayDowntimes'                             ],
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                  => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
+        'gateway_delete_downtime'                  => ['delete',   'gateway/downtimes/{id}',                         'GatewayController@deleteGatewayDowntime'                           ],
         'gateway_downtime_vajra_webhook'           => ['post',     'gateway/downtimes/webhook/vajra',                'GatewayController@postGatewayDowntimeVajraWebhook'                 ],
         'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
@@ -753,6 +758,7 @@ final class Route
         'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLinkedAccountReversal'                       ],
         'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                      ],
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
+        'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
@@ -981,7 +987,8 @@ final class Route
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
-        'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                           ],
+        'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
+        'commissions_analytics'                    => ['get',      'commissions_analytics',                          'CommissionController@fetchAnalytics'                               ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -1088,6 +1095,8 @@ final class Route
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
         'mock_netbanking_payment_get',
+        'mock_mozart_payment_post',
+        'mock_mozart_payment_get',
         'mock_cardless_emi_payment',
         'mock_emandate_payment',
         'mock_card_fss_payment',
@@ -1115,6 +1124,7 @@ final class Route
         'virtual_account_order_create',
         'payment_redirect_3ds',
         'currency_fetch_all',
+        'payment_validate_account',
     ];
 
     public static $device = [
@@ -1458,7 +1468,7 @@ final class Route
 
     public static $proxy = [
         'get_es_pricing_merchant',
-        'merchant_dashboard_access_la',
+        'merchant_edit_config_la',
         'merchant_fetch_users',
         'setl_fetch_transactions',
         'setl_get_details',
@@ -1476,6 +1486,7 @@ final class Route
         'reversal_fetch_multiple_la',
         'reversal_fetch_la',
         'transfer_fetch_la',
+        'la_transfer_create_reversal',
         'transfer_fetch_multiple_la',
         'transfer_fetch_reversals_la',
         'bank_account_fetch',
@@ -1635,6 +1646,8 @@ final class Route
         'subscription_payment_fetch_by_id',
         'commissions_get',
         'currency_fetch_all_proxy',
+        'commissions_analytics',
+        'invoice_update_billing_period',
     ];
 
     // These will run on internal auth with the assurance
@@ -1816,6 +1829,7 @@ final class Route
         'gateway_file_retry',
         'gateway_remove_priorities',
         'gateway_update_downtime',
+        'gateway_delete_downtime',
         'gateway_update_priorities',
         'gateway_update_rule',
         'get_cache_counts',
@@ -2218,6 +2232,7 @@ final class Route
         'gateway_file_retry'                       => '*',
         'gateway_remove_priorities'                => '*',
         'gateway_update_downtime'                  => Permission::UPDATE_GATEWAY_DOWNTIME,
+        'gateway_delete_downtime'                  => Permission::UPDATE_GATEWAY_DOWNTIME,
         'gateway_update_priorities'                => '*',
         'get_cache_counts'                         => '*',
         'get_config_keys'                          => '*',
@@ -2387,6 +2402,7 @@ final class Route
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
 
         'merchant_partners_fetch'                  => '*',
+        'webhook_fire'                             => Permission::MAKE_API_CALL,
     ];
 
     public static $direct = [
@@ -2625,8 +2641,10 @@ final class Route
             'subscription_manual_retry',
             'token_fetch_card',
             'subscription_payment_fetch_by_id',
+            'merchant_fetch_keys',
             'entity_origin_create',
             'currency_fetch_all_proxy',
+            'invoice_update_billing_period',
         ],
 
         'kotak' => [
@@ -2757,6 +2775,7 @@ final class Route
         'transfer_fetch_multiple'              => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_fetch'                       => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_create_reversal'             => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'la_transfer_create_reversal'          => [Feature::ALLOW_REVERSALS_FROM_LA],
         'plan_create'                          => [Feature::SUBSCRIPTIONS],
         'plan_fetch'                           => [Feature::SUBSCRIPTIONS],
         'plan_fetch_multiple'                  => [Feature::SUBSCRIPTIONS],
@@ -2890,6 +2909,8 @@ final class Route
         // 'subscriptions_retry',
         'subscription_update_data',
         'subscription_payment_process',
+        'subscription_view_live',
+        'subscription_view_test',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
     ];
@@ -3207,16 +3228,6 @@ final class Route
                 [
                     'as' => 'api_status',
                     'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
-                ]);
-    }
-
-    public function defineStatusFTSRoute()
-    {
-        $this->router
-             ->get('/v1/ftshealthcheck',
-                [
-                    'as' => 'fts_status',
-                    'uses' => '\RZP\Http\Controllers\PublicController@getFTSStatus'
                 ]);
     }
 

@@ -45,7 +45,7 @@ class Validator extends Base\Validator
 
     protected static $addVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
-        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
+        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:4,20',
         Entity::BENEFICIARY_NAME      => 'required|max:40|string',
     ];
 
@@ -98,6 +98,8 @@ class Validator extends Base\Validator
 
     protected static $beneficiaryRegisterRules = [
         Entity::ON                      => 'sometimes|epoch',
+        Entity::TO                      => 'required_with:from|epoch',
+        Entity::FROM                    => 'required_with:to|epoch',
         Entity::RECIPIENT_EMAILS        => 'sometimes|array',
         Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
     ];

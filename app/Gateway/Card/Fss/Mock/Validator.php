@@ -25,7 +25,10 @@ class Validator extends Base\Validator
         Fields::CURRENCY_CODE       => 'required|string',
         Fields::TYPE                => 'required|string|custom',
         Fields::UDF5                => 'required|string|in:TrackID,trackid',
+        Fields::UDF4                => 'sometimes|string',
         Fields::UDF3                => 'sometimes|string',
+        Fields::UDF2                => 'sometimes|string',
+        Fields::UDF1                => 'sometimes|string',
         Fields::LANGUAGE_ID         => 'required|string|in:USA',
         Fields::ID                  => 'required|string',
         Fields::PASSWORD            => 'required|string',
@@ -53,6 +56,9 @@ class Validator extends Base\Validator
         Fields::PASSWORD            => 'sometimes|string',
         Fields::UDF5                => 'sometimes|string',
         Fields::UDF3                => 'sometimes|string',
+        Fields::UDF1                => 'sometimes|string',
+        Fields::UDF2                => 'sometimes|string',
+        Fields::UDF4                => 'sometimes|string',
         Fields::LANGUAGE_ID         => 'sometimes|string',
         Fields::BANK_CODE           => 'sometimes|string',
     ];
@@ -69,8 +75,11 @@ class Validator extends Base\Validator
     {
         $bobCardTypes = array_values(CardType::getCardTypesByAcquirer(Acquirer::BOB));
         $fssCardTypes = array_values(CardType::getCardTypesByAcquirer(Acquirer::FSS));
+        $sbiCardTypes = array_values(CardType::getCardTypesByAcquirer(Acquirer::SBI));
 
-        if ((in_array($value, $bobCardTypes) === false) and (in_array($value, $fssCardTypes) === false))
+        if ((in_array($value, $bobCardTypes) === false) and
+            (in_array($value, $fssCardTypes) === false) and
+            (in_array($value, $sbiCardTypes) === false))
         {
             throw new Exception\BadRequestValidationFailureException( 'Invalid Card Type');
         }

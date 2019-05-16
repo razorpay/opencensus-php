@@ -634,6 +634,25 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(Role::LINKED_ACCOUNT_OWNER, $users->first()->role);
     }
 
+    public function testCreateMarketplaceLinkedAccountWithRefundAllowed()
+    {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $account = $this->startTest();
+
+        $feature = $this->getLastEntity('feature', true);
+
+        $this->assertEquals($feature['name'], FeatureConstants::ALLOW_REVERSALS_FROM_LA);
+
+        $this->assertEquals($feature['entity_id'], $account['id']);
+    }
+
     public function testUpdateLinkedAccountEmail()
     {
         Mail::fake();
@@ -1112,5 +1131,153 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($app->getId(), $liveMapping['entity_id']);
 
         $this->assertEquals('application', $liveMapping['entity_type']);
+    }
+
+    public function testLinkedAccountReversalFeature()
+    {
+        $account = $this->setUpMarketplaceAccounts();
+
+        $this->setUpAuth(__FUNCTION__, $account);
+
+        $this->startTest();
+
+        $allowReversals = $account->isFeatureEnabled(FeatureConstants::ALLOW_REVERSALS_FROM_LA);
+
+        $this->assertTrue($allowReversals);
+    }
+
+    public function testLinkedAccountReversalFeatureRevoke()
+    {
+        $account = $this->setUpMarketplaceAccounts();
+
+        $this->setUpAuth(__FUNCTION__, $account);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $account->id);
+
+        $this->startTest();
+
+        $allowReversals = $account->isFeatureEnabled(FeatureConstants::ALLOW_REVERSALS_FROM_LA);
+
+        $this->assertFalse($allowReversals);
+    }
+
+    public function testLinkedAccountReversalFeatureAlreadyGiven()
+    {
+        $account = $this->setUpMarketplaceAccounts();
+
+        $this->setUpAuth(__FUNCTION__, $account);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $account->id);
+
+        $this->startTest();
+    }
+
+    public function testLinkedAccountReversalFeatureAlreadyRemoved()
+    {
+        $account = $this->setUpMarketplaceAccounts();
+
+        $this->setUpAuth(__FUNCTION__, $account);
+
+        $this->startTest();
+    }
+
+    public function testLinkedAccountReversalFeatureNoUsers()
+    {
+        $account = $this->setUpMarketplaceAccounts(false);
+
+        $this->setUpAuth(__FUNCTION__, $account);
+
+        $this->startTest();
+    }
+
+    public function testLinkedAccountDisbaleReversalFeatureAndDashboardAccess()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $user = $this->fixtures->create('user', ['email' => 'testing1@testing.com']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $account['id'],
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ALLOW_REVERSALS_FROM_LA], $account->id);
+
+        $this->startTest();
+
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+
+        $allowReversals = $account->isFeatureEnabled(FeatureConstants::ALLOW_REVERSALS_FROM_LA);
+
+        $this->assertEquals(0, $users->count());
+
+        $this->assertFalse($allowReversals);
+    }
+
+    public function testLinkedAccountEnableReversalFeatureAndDashboardAccess()
+    {
+        Mail::fake();
+
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+
+        $allowReversals = $account->isFeatureEnabled(FeatureConstants::ALLOW_REVERSALS_FROM_LA);
+
+        $this->assertEquals(1, $users->count());
+
+        $this->assertTrue($allowReversals);
+    }
+
+    protected function setUpMarketplaceAccounts($createUser = true)
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        if ($createUser === true)
+        {
+            $user = $this->fixtures->create('user', ['email' => 'testing1@testing.com']);
+
+            $mappingData = [
+                'user_id'     => $user['id'],
+                'merchant_id' => $account['id'],
+                'role'        => Role::LINKED_ACCOUNT_OWNER,
+            ];
+
+            $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+        }
+
+        return $account;
+    }
+
+    protected function setUpAuth(string $testName, $account)
+    {
+        $this->testData[$testName]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->ba->proxyAuth();
     }
 }

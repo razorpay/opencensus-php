@@ -12,14 +12,18 @@ class Status
     const REMITTER_RETURN_INITIATED  = 'RET';
     const REMITTER_RETURN_POSTED     =' RRC';
     const VERIFY_SUCCESS             = 'SUCCESS';
-    const VERIFY_FAILURE             = 'FAILED';
+    const VERIFY_FAILED              = 'FAILED';
+    const VERIFY_FAILURE             = 'FAILURE';
     const VERIFY_PENDING             = 'PENDING';
-    const VERIFY_TIMEOUT             = 'TIMED-OUT';
+    const VERIFY_TIMEDOUT            = 'TIMED-OUT';
+    const VERIFY_TIMEOUT             = 'TIMEOUT';
 
     const STATUS_CODES = [
         self::VERIFY_SUCCESS    => self::SUCCESS,
         self::VERIFY_FAILURE    => self::FAILURE,
+        self::VERIFY_FAILED     => self::FAILURE,
         self::VERIFY_TIMEOUT    => self::TIMEOUT,
+        self::VERIFY_TIMEDOUT   => self::TIMEOUT,
         self::VERIFY_PENDING    => self::PENDING,
 
         self::SUCCESS           => self::SUCCESS,

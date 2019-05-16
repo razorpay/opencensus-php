@@ -299,6 +299,8 @@ class Gateway extends Base\Gateway
 
         if ($isBharatQr === true)
         {
+            $this->checkCallbackResponseStatus($response);
+
             $response = $this->getQrData($response);
         }
 

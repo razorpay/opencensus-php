@@ -2627,7 +2627,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function emiPlan()
     {
-        return $this->belongsTo('RZP\Models\Emi\Entity');
+        return $this->belongsTo('RZP\Models\Emi\Entity')->withTrashed();
     }
 
     public function transfers()

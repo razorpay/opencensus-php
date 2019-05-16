@@ -24,7 +24,9 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait { parseExcelSheets as parentParseExcelSheets; }
+    use FileHandlerTrait {
+        parseExcelSheets as parentParseExcelSheets;
+    }
 
     /**
      * Lock wait timeout for batch entity
@@ -678,12 +680,7 @@ class Base extends BaseModel\Core
         $formatted = [];
         $headers   = $this->getOutputFileHeadings();
 
-        // Todo: temp
-        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::PL_FIRST_MIN_AMOUNT) === true))
-        {
-            $headers[] = Batch\Header::FIRST_PAYMENT_MIN_AMOUNT;
-        }
+        $this->updateBatchHeadersIfApplicable($headers, $entries);
 
         foreach ($entries as $entry)
         {
@@ -830,7 +827,13 @@ class Base extends BaseModel\Core
      */
     protected function updateBatchPostValidation(array $entries, array $input)
     {
-        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
+        // Since amouunt can be in amount header or amount (in paise) header
+        // use whichever is available
+        $amountCol = array_column($entries, Batch\Header::AMOUNT);
+        $amountInPaisaCol = array_column($entries, Batch\Header::AMOUNT_IN_PAISE);
+        $amountCol = count($amountCol) > 0 ? $amountCol : $amountInPaisaCol;
+
+        $totalAmount = array_sum($amountCol);
         $totalCount  = count($entries);
 
         $this->batch->setAmount($totalAmount);
@@ -1071,6 +1074,11 @@ class Base extends BaseModel\Core
                     'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
                     'secret' => openssl_random_pseudo_bytes(256)
                 ]);
+        }
+
+        if ($this->shouldSendToBatchService())
+        {
+           $ufh->addBucketConfigForBatchService(Batch\Constants::BATCH_SERVICE);
         }
 
         return $ufh->localFilePath($filePath)
@@ -1381,12 +1389,23 @@ class Base extends BaseModel\Core
 
     public function shouldSendToBatchService(): bool
     {
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
-            $this->mode
-        );
+        $result = false;
 
-        return (($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true) && (strtolower($variant) === 'on'));
+        if ($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true)
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
+                                                        $this->mode
+                                                        );
+
+            $result = (strtolower($variant) === 'on');
+        }
+
+        return $result;
+    }
+
+    protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
+    {
+        return;
     }
 }

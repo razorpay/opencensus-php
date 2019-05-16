@@ -351,6 +351,7 @@ class Notifier extends Base\Core
         $defaultParams   = [
             'merchant_name' => $merchant->getBillingLabel(),
             'invoice_link'  => $this->invoice->getShortUrl(),
+            'currency'      => $this->invoice->getCurrency(),
             'amount'        => $this->invoice->getAmount() / 100,
         ];
 
@@ -437,7 +438,6 @@ class Notifier extends Base\Core
                 ];
 
                 break;
-
 
             case Preferences::MID_VARTHANA_FINANCE:
 

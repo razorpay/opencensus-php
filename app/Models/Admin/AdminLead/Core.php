@@ -2,14 +2,11 @@
 
 namespace RZP\Models\Admin\AdminLead;
 
-use Carbon\Carbon;
 use Mail;
 
-use RZP\Constants\MailTags;
-use RZP\Exception;
-use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
-use RZP\Models\Admin\Admin;
 use RZP\Models\Base;
+use RZP\Models\Admin\Admin;
+use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 
 class Core extends Base\Core
 {

@@ -88,6 +88,8 @@ class MethodsTest extends TestCase
 
         $this->fixtures->create('pricing:standard_plan');
 
+        $this->fixtures->merchant->setDisabledBanks('10000000000000', ['HDFC']);
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
 
         $this->ba->adminAuth();
@@ -99,7 +101,49 @@ class MethodsTest extends TestCase
         $this->assertEquals($content['netbanking'], true);
         $this->assertEquals($content['mobikwik'], true);
 
-        $this->assertEquals($content['card_networks']['DICL'], true);
+        $this->assertEquals($content['card_networks']['DICL'], false);
+        $this->assertEquals($content['card_networks']['MAES'], true);
+        $this->assertEquals($content['card_networks']['RUPAY'], false);
+    }
+
+    public function testBulkMethodUpdateEnableBanks()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->setDisabledBanks('10000000000000', ['HDFC', 'ICIC']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $content = $this->getLastEntity('methods', true);
+
+        // Assert if HDFC removed from `disabled_banks` list
+        $this->assertArraySelectiveEquals(['ICIC'], $content['disabled_banks']);
+    }
+
+    public function testBulkMethodUpdateDisableBanks()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->setDisabledBanks('10000000000000', ['HDFC']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $content = $this->getLastEntity('methods', true);
+
+        // Assert if ICIC is added to`disabled_banks` list
+        $this->assertArraySelectiveEquals(['HDFC', 'ICIC'], $content['disabled_banks']);
     }
 
     public function testBulkMethodUpdateInvalidMerchantId()

@@ -36,6 +36,8 @@ class S2sDirect extends S2s
     {
         $this->request['method'] = $this->actionMap['direct']['method'];
 
+        $this->content->put(Fields::UDF_PARAMETERS, json_encode($this->udf));
+
         $this->request['content'] = $this->content->toJson();
 
         $this->request['headers'] = $this->getHeaders();

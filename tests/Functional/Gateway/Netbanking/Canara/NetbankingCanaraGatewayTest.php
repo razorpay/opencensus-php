@@ -47,8 +47,7 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $netbankingentity = $this->getLastEntity('netbanking', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $netbankingentity);
+        $this->assertArraySelectiveEquals($this->testData['testPaymentNetbankingEntity'], $netbankingentity);
     }
 
     public function testPartnerPayment()

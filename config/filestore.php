@@ -39,6 +39,10 @@ return [
             'name'   => env('AWS_S3_TEST_BUCKET'),
             'region' => env('AWS_BUCKET_REGION', 'us-east-1')
         ],
+        'batch_service_bucket_config' => [
+            'name'   => env('AWS_S3_BATCH_BUCKET'),
+            'region' => env('AWS_BUCKET_BATCH_REGION', 'ap-south-1')
+        ],
         'h2h_default_bucket_config' => [
             'name'   => env('AWS_H2H_DEFAULT_BUCKET'),
             'region' => env('AWS_H2H_DEFAULT_BUCKET_REGION', 'ap-south-1')

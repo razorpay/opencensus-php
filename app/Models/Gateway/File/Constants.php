@@ -37,6 +37,7 @@ class Constants
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
     const CITI             = 'citi';
+    const SIB              = 'sib';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
@@ -63,6 +64,7 @@ class Constants
             self::SCBL,
             self::SBI,
             self::CITI,
+            self::BOB,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -79,6 +81,7 @@ class Constants
             self::IDFC,
             self::VIJAYA,
             self::CORPORATION,
+            self::SIB,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -137,7 +140,8 @@ class Constants
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
             self::ALLA        => ['settlements@razorpay.com','imps.recon@allahabadbank.in'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
-            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
+            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com'],
+            self::SIB         => ['sib.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
@@ -162,6 +166,7 @@ class Constants
             self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com'],
             // todo: Add the recepients to the bank group
             self::CITI     => ['citibank.emi@razorpay.com'],
+            self::BOB      => ['bob.cc.emi@razorpay.com'],
         ],
 
         Type::REFUND_FAILED => [

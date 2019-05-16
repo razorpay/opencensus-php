@@ -7,6 +7,7 @@ use Config;
 
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
@@ -25,6 +26,8 @@ trait Verify
      */
     public function verify(Payment\Entity $payment)
     {
+        $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment);
+
         $this->setPayment($payment);
 
         $refunds = $this->repo->refund->findForPayment($payment);
@@ -49,6 +52,12 @@ trait Verify
         try
         {
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
+
+            $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS, $data['gateway']);
+
+            $data['payment'] = $payment->toArrayAdmin();
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment);
         }
         catch (Exception\PaymentVerificationException $e)
         {
@@ -68,11 +77,15 @@ trait Verify
                 $this->updatePaymentVerified($payment, VerifyStatus::UNKNOWN);
             }
 
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e);
+
             throw $e;
         }
         catch (\Exception $e)
         {
             $this->updatePaymentVerified($payment, VerifyStatus::ERROR);
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e);
 
             throw $e;
         }
@@ -80,12 +93,10 @@ trait Verify
         {
             $this->updatePaymentVerified($payment, VerifyStatus::ERROR);
 
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED, $payment, $e);
+
             throw $e;
         }
-
-        $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS, $data['gateway']);
-
-        $data['payment'] = $payment->toArrayAdmin();
 
         return $data;
     }

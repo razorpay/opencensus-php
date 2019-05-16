@@ -601,6 +601,14 @@ final class FactoryData
             'expires_at'    => Carbon::now()->addDays(30)->getTimestamp(),
         ]);
 
+        $factory(\RZP\Models\Admin\AdminLead\Entity::class, [
+            'id'            => $faker->uniqueid,
+            'admin_id'      => 'RazorpayUserId',
+            'org_id'        => '100000razorpay',
+            'token'         => $faker->name(30),
+            'email'         => 'admin.lead@razorpay.com',
+        ]);
+
         $factory(\RZP\Models\Merchant\Detail\Entity::class, [
             'merchant_id'   => $faker->uniqueid,
             'contact_email' => $faker->email,

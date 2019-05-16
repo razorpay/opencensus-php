@@ -396,6 +396,103 @@ return [
         ],
     ],
 
+    'testGetMultipleItemsViaEs' => [
+        'request' => [
+            'url'     => '/items',
+            'method'  => 'get',
+            'content' => [
+                'q'      => 'product',
+                'type'   => 'invoice',
+                'active' => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'item_1000000001item',
+                        // Doesn't assert rest attributes in this test case.
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleItemsViaEsExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'item_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'item_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'multi_match' => [
+                                'query'  => 'product',
+                                'type'   => 'best_fields',
+                                'fields' => [
+                                    'name',
+                                    'description',
+                                ],
+                                'boost'                => 1,
+                                'minimum_should_match' => '75%',
+                                'lenient'              => true
+                            ],
+                        ]
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'type' => [
+                                            'value' => 'invoice',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'active' => [
+                                            'value' => true,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleItemsViaEsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000000001item',
+                ],
+            ],
+        ],
+    ],
+
     'testUpdateItem' => [
         'request' => [
             'url'     => '/items/item_1000000000item',

@@ -34,7 +34,7 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'cybersource_%s_card_details';
 
-    const CACHE_TTL = 15;
+    const CARD_CACHE_TTL = 15;
 
     // Request timeout limit in seconds
     const TIMEOUT = 60;
@@ -250,9 +250,13 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::action($input, Action::CAPTURE);
+        parent::capture($input);
 
-        $this->gatewayPayment = null;
+        $attributes = [
+            'status' => 'created',
+        ];
+
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], 'authorize');
@@ -960,8 +964,6 @@ class Gateway extends Base\Gateway
 
     protected function getAttributeFromAuthReversalResponse(array $input, array $response)
     {
-        $ccAuthReversalReply = $response[F::CC_AUTH_REVERSAL_REPLY];
-
         $attributes = [
             E::REF                => $response[F::REQUEST_ID],
             E::REASON_CODE        => $response[F::REASON_CODE],

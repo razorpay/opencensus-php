@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Risk;
@@ -86,9 +87,8 @@ trait HeadlessOtp
         return false;
     }
 
-    protected function openHeadlessBrowser(Payment\Entity $payment, $request)
+    protected function runHeadlessOtpFlow(Payment\Entity $payment, $request)
     {
-        //
         // This will happen in case of single step payment.
         // Where payment is not to be authenticated
         if ($request === null)
@@ -96,6 +96,26 @@ trait HeadlessOtp
             return;
         }
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_INITIATED, $payment);
+
+        try
+        {
+            $response = $this->openHeadlessBrowser($payment, $request);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment);
+
+            return $response;
+        }
+        catch(\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
+    }
+
+    protected function openHeadlessBrowser(Payment\Entity $payment, $request)
+    {        
         $originalTermUrl = null;
 
         if (($this->isRupayNetwork($payment) === false) and
@@ -158,7 +178,8 @@ trait HeadlessOtp
         {
             $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_FAILURE;
 
-            if (in_array($response['error']['reason'], OtpElf::$otpElfErrors, true) === true)
+            if ((isset($response['error']['fatal']) === true) and
+                ($response['error']['fatal'] === true))
             {
                 $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
 
@@ -183,10 +204,14 @@ trait HeadlessOtp
         {
             $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
 
-            throw new Exception\GatewayRequestException(
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_OTPELF_FAILURE,
+                $response['error']['reason'] ?? $traceCode ?? null,
                 'Failed to open Headless Browser',
+                $traceInput,
                 null,
-                false);
+                Payment\Action::ENROLL,
+                true);
         }
 
         /*

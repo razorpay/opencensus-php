@@ -6,10 +6,11 @@ use RZP\Base\Fetch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\FundTransfer;
+use RZP\Models\Partner\Config;
 use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
-use RZP\Models\Partner\Config\Entity as PartnerConfig;
+use RZP\Models\Merchant\MerchantUser;
 
 /**
  * Class AdminFetch
@@ -223,6 +224,10 @@ class AdminFetch
             ],
             Entity::BATCH_FILE_STORE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'batch_id'    => [
+                    Fetch::LABEL  => 'Batch Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
         ];
@@ -2008,7 +2013,11 @@ class AdminFetch
                 'entity_type' => [
                     Fetch::LABEL  => 'Entity Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => ['payment'],
+                    Fetch::VALUES => [
+                        'payment',
+                        'subscription',
+                        'virtual_account',
+                    ],
                 ],
             ],
 
@@ -2021,7 +2030,7 @@ class AdminFetch
             ],
 
             Entity::PARTNER_CONFIG => [
-                PartnerConfig::ENTITY_TYPE => [
+                Config\Entity::ENTITY_TYPE => [
                     Fetch::LABEL  => 'Entity Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
@@ -2029,25 +2038,33 @@ class AdminFetch
                         'merchant',
                     ],
                 ],
-                PartnerConfig::ENTITY_ID => [
+                Config\Entity::ENTITY_ID => [
                     Fetch::LABEL => 'Entity Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
-                PartnerConfig::ORIGIN_ID => [
+                Config\Entity::ORIGIN_ID => [
                     Fetch::LABEL => 'Origin Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
-                PartnerConfig::DEFAULT_PLAN_ID  => [
+                Config\Entity::DEFAULT_PLAN_ID  => [
                     Fetch::LABEL => 'Default Plan',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
-                PartnerConfig::IMPLICIT_PLAN_ID => [
+                Config\Entity::IMPLICIT_PLAN_ID => [
                     Fetch::LABEL => 'Implicit Plan',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
-                PartnerConfig::EXPLICIT_PLAN_ID => [
+                Config\Entity::EXPLICIT_PLAN_ID => [
                     Fetch::LABEL => 'Explicit Plan',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                Config\Entity::COMMISSION_MODEL => [
+                    Fetch::LABEL  => 'Commission Model',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Config\CommissionModel::COMMISSION,
+                        Config\CommissionModel::SUBVENTION,
+                    ],
                 ],
             ],
 
@@ -2089,6 +2106,24 @@ class AdminFetch
                         Commission\Status::REFUNDED,
                     ],
                 ],
+            ],
+
+            Entity::MERCHANT_USER => [
+                MerchantUser\Entity::MERCHANT_ID => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                MerchantUser\Entity::USER_ID => [
+                    Fetch::LABEL  => 'User Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::MERCHANT_PROMOTION => [
+                'promotion_id'  => [
+                    Fetch::LABEL => 'Promotion Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ]
             ],
         ];
 

@@ -53,10 +53,10 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
-     * Number of minutes that the cache key will be stored
+     * Number of minutes that the card cache key will be stored
      * @var integer
      */
-    const CACHE_TTL = 15;
+    const CARD_CACHE_TTL = 15;
 
     /**
      * In gateway responses one particular field contains
@@ -317,13 +317,6 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::ADVICE;
-
-        if ($input['payment']['status'] !== Status::AUTHORIZED)
-        {
-            throw new Exception\RuntimeException(
-                'Payment status should be authorized',
-                ['payment_id' => $input['payment']['id']]);
-        }
     }
 
     public function refund(array $input)

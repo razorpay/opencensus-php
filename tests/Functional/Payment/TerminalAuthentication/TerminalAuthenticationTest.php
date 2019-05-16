@@ -522,6 +522,80 @@ class TerminalAuthenticationTest extends TestCase
         $this->assertEquals($expectedTerminal, $authTerminal);
     }
 
+    public function testAuthenticationGatewayEmi()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ],
+            'capability' => 2
+        ]);
+
+        $this->fixtures->merchant->enableEmi();
+
+        $card = [
+            'number'       => '41476700000006',
+            'name'         => 'Harshil',
+            'expiry_month' => '12',
+            'expiry_year'  => '2024',
+            'cvv'          => '566'
+        ];
+
+        $cardEntity = (new Card\Entity)->fill($card);
+
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $attributes = [
+            'amount'       => '300000',
+            'method'       => 'emi',
+            'emi_duration' => '9',
+            'bank'         => 'ICIC',
+        ];
+
+        $payment = array_merge($payment, $attributes);
+
+        $payment['token'] = '10000cardtoken';
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        unset($payment['card']);
+
+        $card = (new Card\Entity)->fill($card);
+
+        $payment = (new Payment\Entity)->fill($payment);
+
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+        $terminal = Terminal\Entity::find('1000HdfcShared');
+
+        $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($terminal);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $expectedTerminal = [
+            AuthTerminals::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            AuthTerminals::GATEWAY                   => Gateway::HDFC,
+            AuthTerminals::CAPABILITY                => Capability::AUTHORIZE,
+            AuthTerminals::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            AuthTerminals::AUTH_TYPE                 => AuthType::_3DS,
+            AuthTerminals::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ];
+
+        TerminalOptions::setTestChance(0);
+
+        $paymentAuthSelect = new Terminal\AuthSelector($input);
+
+        $authTerminal = $paymentAuthSelect->select();
+
+        $this->assertEquals($expectedTerminal, $authTerminal);
+    }
+
     protected function createGatewayRules($rules)
     {
         foreach ($rules as $rule)

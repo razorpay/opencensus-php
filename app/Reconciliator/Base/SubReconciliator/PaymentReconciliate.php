@@ -32,6 +32,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_ALLAHABAD,
         RequestProcessor\Base::NETBANKING_CANARA,
         RequestProcessor\Base::NETBANKING_IDFC,
+        RequestProcessor\Base::NETBANKING_SIB,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -208,6 +209,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             // Record gateway fee and service tax for reconciled payments
             //
             $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
+
+            $this->createGatewayCapturedEntityIfApplicable($row);
         }
         else
         {
@@ -215,7 +218,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             if ($validate === true)
             {
-                $persistSuccess = $this->persistReconciliationData($rowDetails);
+                $persistSuccess = $this->persistReconciliationData($rowDetails, $row);
 
                 if ($persistSuccess === false)
                 {
@@ -235,7 +238,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         // from markGatewayCapturedAsTrue after validation, for both cases we are
         // saving payment entity here from single location to save update queries
         //
+
         $this->repo->saveOrFail($this->payment);
+
     }
 
     public function resetRowProcessingAttributes()
@@ -607,12 +612,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         return $success;
     }
 
-    protected function persistReconciliationData($rowDetails)
+    protected function persistReconciliationData($rowDetails, $row)
     {
         //
         // If the row reaches this part of the code, that means that it is captured on the gateway's end.
         //
         $this->markGatewayCapturedAsTrue();
+
+        $this->createGatewayCapturedEntityIfApplicable($row);
 
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
 
@@ -1363,11 +1370,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $dbReference2 = $this->payment->getReference2();
 
         $trimmedDbReference2 = ltrim($dbReference2, '0');
+        $trimmedReconReference2 = ltrim($reference2, '0');
 
         if ((empty($dbReference2) === false) and
             ($dbReference2 !== '00') and
             ($dbReference2 !== $reference2) and
-            ($trimmedDbReference2 !== $reference2) and
+            ($trimmedDbReference2 !== $trimmedReconReference2) and
             (strtolower($dbReference2) !== strtolower($reference2)) and
             ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_AUTH_CODE) === false))
         {
@@ -2087,5 +2095,19 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         // Enabling slack messages for further alerts.
         $this->messenger->setSkipSlack(false);
+    }
+
+
+    /**
+     * Currently being done only for HDFC, as the capture request is getting timeout,
+     * so we want to create gateway entity via recon using the MIS row data.
+     *
+     * It has been overridden in HDFC
+     *
+     * @param array $row
+     */
+    protected function createGatewayCapturedEntityIfApplicable(array $row)
+    {
+        return;
     }
 }

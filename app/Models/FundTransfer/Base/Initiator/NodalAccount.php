@@ -245,6 +245,8 @@ abstract class NodalAccount extends Base\Core
         $this->batchFundTransfer->setTotalCount($this->count);
 
         $this->batchFundTransfer->setTransactionCount($this->txnsCount);
+
+        $this->repo->saveOrFail($this->batchFundTransfer);
     }
 
     protected function getTransactionsCount(Attempt\Entity $attempt): int

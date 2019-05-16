@@ -21,10 +21,11 @@ class Constants
     const TXN_AMOUNT_CONTRIBUTION_PERCENTAGE    = 'txn_amount_contribution_%';
 
     // constants for input params to get recon summary
-    const TO        = 'to';
-    const FROM      = 'from';
-    const EMAILS    = 'emails';
-    const ATTACH    = 'attach';
+    const TO                    = 'to';
+    const FROM                  = 'from';
+    const EMAILS                = 'emails';
+    const UNRECON_DATA_FILE     = 'unrecon_data_file';
+    const RECON_SUMMARY_FILE    = 'recon_summary_file';
 
     // Payment Params sent in excel attachment
     const PAYMENT_PARAMS = [

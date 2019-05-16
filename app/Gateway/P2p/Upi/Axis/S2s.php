@@ -31,13 +31,15 @@ class S2s
         return $this->actionMap[Actions\Action::SOURCE];
     }
 
-    public function setActionMap(string $action, $map)
+    public function setActionMap(string $action, array $map, string $id)
     {
         $this->action = $action;
 
         $this->actionMap = $map;
 
-        $this->udf = [];
+        $this->udf = [
+            Fields::RID => $id,
+        ];
     }
 
     public function setConfig(array $config)

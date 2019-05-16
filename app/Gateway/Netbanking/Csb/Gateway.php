@@ -65,6 +65,11 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'content' => $content,
+            ]);
+
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::BANK_REF_NUM]);
 
         $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);

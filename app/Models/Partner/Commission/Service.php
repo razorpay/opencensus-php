@@ -3,6 +3,9 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\Repository as BaseRepository;
 
 class Service extends Base\Service
@@ -36,5 +39,48 @@ class Service extends Base\Service
         $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner, $input);
 
         return $commission->toArrayPublic();
+    }
+
+    public function fetchAnalytics(array $input): array
+    {
+        (new Merchant\Validator)->validateIsPartner($this->merchant);
+
+        (new Validator)->validateInput('analytics', $input);
+
+        $showAggregateCommReport = $this->core()->shouldShowAggregateCommissionReportForPartner($this->merchant);
+
+        // if partner is not allowed to see report, then he should not see aggregate analytics
+        if ($showAggregateCommReport === false)
+        {
+            return [
+                'limit' => Constants::RESELLER_SUBMERCHANT_LIMIT,
+            ];
+        }
+
+        $queryType = $input[Constants::QUERY_TYPE];
+
+        $func = 'fetchAnalyticsFor' . studly_case($queryType) . 'Query';
+
+        $commissionAnalytics = new Analytics;
+
+        if (method_exists($commissionAnalytics, $func) === false)
+        {
+            throw new LogicException('Invalid Query type');
+        }
+
+        $query = $commissionAnalytics->$func($input);
+
+        // send mode in query if its only test
+        if ($this->mode === Mode::TEST)
+        {
+            foreach ($query['aggregations'] as $aggregateType => $aggregateQuery)
+            {
+                $query['aggregations'][$aggregateType]['details']['mode'] = Mode::TEST;
+            }
+        }
+
+        $query = (new Merchant\Core)->processMerchantAnalyticsQuery($this->merchant->getId(), $query);
+
+        return $this->app['eventManager']->query($query);
     }
 }

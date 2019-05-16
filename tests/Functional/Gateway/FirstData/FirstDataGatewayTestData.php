@@ -32,7 +32,7 @@ return [
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         ],
     ],
 
@@ -95,7 +95,7 @@ return [
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         ],
     ],
 

@@ -4,10 +4,13 @@ namespace RZP\Models\Batch;
 
 use App;
 use RZP\Base;
+use Carbon\Carbon;
 use RZP\Models\User;
 use RZP\Models\Invoice;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Entity as ME;
@@ -82,6 +85,13 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'filled|array',
     ];
 
+    protected static $linkedAccountReversalCreateRules = [
+        Entity::TYPE                    => 'required|in:linked_account_reversal',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+    ];
+
     protected static $directDebitCreateRules = [
         Entity::TYPE            => 'required|in:direct_debit',
         Entity::FILE            => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
@@ -123,7 +133,7 @@ class Validator extends Base\Validator
 
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici,netbanking_hdfc,upi_mindgate',
+        Entity::SUB_TYPE             => 'required|string|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
@@ -295,6 +305,11 @@ class Validator extends Base\Validator
         Type::validateType($value);
     }
 
+    protected function validateSubType($attribute, $value)
+    {
+        Type::validateSubType($value);
+    }
+
     protected function validatePayoutMode($attribute, $value)
     {
         FundTransfer\Mode::validateMode($value);
@@ -314,11 +329,43 @@ class Validator extends Base\Validator
         }
         else if ($this->entity->isProcessing() === true)
         {
+            if ($this->shouldRetryInProcessingBatch() === true)
+            {
+                return;
+            }
+
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
                 Entity::STATUS,
                 $this->entity->toArray());
         }
+    }
+
+    protected function shouldRetryInProcessingBatch()
+    {
+        // For stuck batches, we want to enable retry based on some conditions.
+        $time = Carbon::now()->getTimestamp();
+
+        $type = $this->entity->getType();
+
+        if ((isset(Type::$retryInProcessingBatchTypes[$type]) === true) and
+            ($this->entity->getUpdatedAt() < ($time - Type::$retryInProcessingBatchTypes[$type])))
+        {
+            $updatedAt = $this->entity->getUpdatedAt();
+
+            $this->getTrace()->info(
+                TraceCode::RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH,
+                [
+                    'batch_id'          => $this->entity->getId(),
+                    'type'              => $this->entity->getType(),
+                    'processed_count'   => $this->entity->getProcessedCount(),
+                    'last_updated_at'   => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->format('M d,Y h:i:s A'),
+                ]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -839,5 +886,49 @@ class Validator extends Base\Validator
         ];
 
         (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser());
+    }
+
+    protected function validateLinkedAccountReversalEntries(array & $entries, array $params, ME $merchant)
+    {
+        $existingTransferIds = [];
+
+        if ($merchant->isFeatureEnabled(Feature::ALLOW_REVERSALS_FROM_LA) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Refunds are not allowed on this linked account',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        foreach ($entries as $entry)
+        {
+            $amount      = $entry[Header::AMOUNT_IN_PAISE];
+            $transferId  = $entry[Header::TRANSFER_ID];
+
+            if (empty($transferId) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TRANSFER_ID);
+            }
+
+            if ((empty($amount) === true) or (is_numeric($amount) === false) or ($amount < 100))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+            }
+
+            // Batch File should not contain multiple entries for the same
+            // transfer id
+
+            if (in_array($transferId, $existingTransferIds))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_TRANSFER_ID);
+            }
+
+            $existingTransferIds[] = $transferId;
+        }
     }
 }

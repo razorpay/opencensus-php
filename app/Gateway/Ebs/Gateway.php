@@ -124,7 +124,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            ['gateway' => $input['gateway']]);
+            ['content' => $input['gateway']]);
 
         $this->verifySecureHash($input['gateway']);
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
+use RZP\Models\Bank\Bank;
 use RZP\Models\Card\Network;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
@@ -16,6 +17,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING        = 'netbanking';
     const AMEX              = 'amex';
     const DISABLED_BANKS    = 'disabled_banks';
+    const ENABLED_BANKS     = 'enabled_banks';
     const BANKS             = 'banks';
     const MOBIKWIK          = 'mobikwik';
     const OLAMONEY          = 'olamoney';
@@ -154,7 +156,7 @@ class Entity extends Base\PublicEntity
         self::SBIBUDDY       => false,
         self::OPENWALLET     => false,
         self::MPESA          => false,
-        self::DISABLED_BANKS => [],
+        self::DISABLED_BANKS => NetbankingProcessor::DEFAULT_DISABLED_BANKS,
         self::BANKS          => '[]',
         self::EMI            => false,
         self::UPI            => true,

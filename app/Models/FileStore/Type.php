@@ -64,6 +64,8 @@ class Type
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
 
+    const SIB_NETBANKING_REFUND             = 'sib_netbanking_refund';
+
     const VIJAYA_NETBANKING_REFUND          = 'vijaya_netbanking_refund';
 
     const VIJAYA_NETBANKING_CLAIM           = 'vijaya_netbanking_claim';
@@ -104,6 +106,7 @@ class Type
     const BATCH_OUTPUT                      = 'batch_output';
     const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
+    const BATCH_SERVICE                     = 'batch_service';
 
     const BLANK                             = 'blank';
 
@@ -128,7 +131,8 @@ class Type
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
-    const CITI_EMI_FILE                      = 'citi_emi_file';
+    const CITI_EMI_FILE                     = 'citi_emi_file';
+    const BOB_EMI_FILE                      = 'bob_emi_file';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -150,6 +154,7 @@ class Type
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
+    const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -182,6 +187,7 @@ class Type
             self::EQUITAS_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
+            self::SIB_NETBANKING_REFUND,
             self::VIJAYA_NETBANKING_REFUND,
             self::VIJAYA_NETBANKING_CLAIM,
             self::IDFC_NETBANKING_REFUND,
@@ -205,6 +211,7 @@ class Type
             self::SBI_EMI_FILE,
             self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
+            self::BOB_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::YES_EMI_FILE_SFTP,
             self::ICICI_EMI_FILE_MAIL,
@@ -274,6 +281,7 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SBI_EMI_FILE,
+        self::BOB_EMI_FILE,
         self::CITI_EMI_FILE,
         self::SCBL_EMI_FILE,
         self::YES_EMI_FILE_MAIL,
@@ -305,6 +313,7 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
+        self::SIB_NETBANKING_REFUND,
         self::VIJAYA_NETBANKING_REFUND,
         self::VIJAYA_NETBANKING_CLAIM,
         self::AXIS_NETBANKING_CLAIMS,
@@ -419,6 +428,10 @@ class Type
 
         self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
+        ],
+
+        self::BATCH_SERVICE_BUCKET_CONFIG => [
+            self::BATCH_SERVICE,
         ],
     ];
 

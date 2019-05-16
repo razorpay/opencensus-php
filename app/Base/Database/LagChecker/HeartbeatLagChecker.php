@@ -129,6 +129,11 @@ class HeartbeatLagChecker implements LagChecker
      */
     protected $mode;
 
+    /**
+     * @var int
+     */
+    protected $connectionId;
+
     public function __construct(array $config)
     {
         $this->config = $config;
@@ -187,9 +192,7 @@ class HeartbeatLagChecker implements LagChecker
         }
 
         // If should skip slave, return null so master connection is used, else resolve $readPdo and return
-        return $useSlave === true ?
-            ($readPdo instanceof Closure ? call_user_func($readPdo) : $readPdo) :
-            null;
+        return $useSlave === true ? $readPdo : null;
     }
 
     /**
@@ -273,7 +276,7 @@ class HeartbeatLagChecker implements LagChecker
         $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - ( 
                         UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
                         SUBSTR(ts, 21, 6) ) 
-                     ) / 1000) AS replica_lag_milli, ts 
+                     ) / 1000) AS replica_lag_milli, ts, CONNECTION_ID() as connection_id
                 FROM   heartbeat.heartbeat
                 LIMIT  1';
 
@@ -298,6 +301,8 @@ class HeartbeatLagChecker implements LagChecker
         }
 
         $this->lag = $result['replica_lag_milli'];
+
+        $this->connectionId = $result['connection_id'];
 
         $this->trace->histogram(Metric::HEARTBEAT_REPLICA_LAG, $this->lag);
 
@@ -361,6 +366,7 @@ class HeartbeatLagChecker implements LagChecker
                 'lag'                       => $this->lag,
                 'mock'                      => $this->mock,
                 'connection'                => $connection,
+                'connection_id'             => $this->connectionId,
                 'traffic_percentage'        => $this->trafficPercent,
                 'random_traffic_percentage' => $this->randomTrafficPercent,
             ] + $extra);

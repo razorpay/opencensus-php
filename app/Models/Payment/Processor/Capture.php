@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -38,6 +39,14 @@ trait Capture
             ]
         );
 
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_CAPTURE_INITIATED, 
+            $payment, 
+            null, 
+            [
+                'input'  => $input
+            ]);
+
         $this->setPayment($payment);
 
         // set the input currency if missing and payment currency is INR
@@ -61,7 +70,15 @@ trait Capture
      */
     public function autoCapturePayment($payment)
     {
-        $this->payment = $payment;
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_CAPTURE_INITIATED, 
+            $payment, 
+            null,
+            [
+                'auto_capture' => 1
+            ]);
+
+        $this->setPayment($payment);
 
         $amount = $payment->getAmount();
 
@@ -324,10 +341,14 @@ trait Capture
 
             $this->captureOnGateway($data, $autoCaptured);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
+
             return $payment;
         }
         catch (\Throwable $e)
         {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment, $e);
+
             (new Payment\Metric)->pushExceptionMetrics($e, Payment\Metric::PAYMENT_CAPTURE_FAILED);
 
             throw $e;
@@ -567,9 +588,9 @@ trait Capture
             {
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
-
-            $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
+
+        $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)

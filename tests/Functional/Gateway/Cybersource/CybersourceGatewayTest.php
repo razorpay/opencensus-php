@@ -12,6 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Cybersource\Fields;
 use RZP\Jobs\CorePaymentServiceSync;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 
@@ -19,6 +20,7 @@ class CybersourceGatewayTest extends TestCase
 {
     use PaymentTrait;
     use TransactionTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -664,6 +666,37 @@ class CybersourceGatewayTest extends TestCase
         $this->assertTestResponse($cybersource);
     }
 
+    public function testGatewayTimeOutAtCapture()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'capture')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'GATEWAY_ERROR_TIMED_OUT';
+                $content['data'] = null;
+            }
+        });
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->doAuthAndCapturePayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('cybersource', $payment['gateway']);
+
+        $this->assertEquals(2, count($this->getDbEntities('cybersource')));
+
+        $cybs = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($payment['id'], 'pay_'.$cybs['payment_id']);
+        $this->assertEquals('capture', $cybs['action']);
+        $this->assertEquals('created', $cybs['status']);
+    }
+
     public function testGatewayPaymentXidMisMatch()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -772,6 +805,63 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals($cybersource['status'], 'created');
 
         $gatewayData['gateway_transaction']['status'] = 'authenticated';
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($cybersource['status'], 'authenticated');
+    }
+
+    public function testCpsGatewayEntitySyncReverseOrder()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+
+        $gatewayData = [
+            'mode'       => 'test',
+            'timestamp'  => 1556616468,
+            'payment_id' => $payment->getId(),
+            'gateway'    => 'cybersource',
+            'input'      => [
+                'payment'       => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                ],
+                'terminal'      => [
+                    'gateway_acquirer' => 'hdfc',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction'       => [
+                'payment_id'    => $payment->getId(),
+                'acquirer'      => 'hdfc',
+                'action'        => 'authorize',
+                'received'      => false,
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'status'        => 'authenticated',
+                'xid'           => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
+                'veresEnrolled' => 'Y',
+                'ref'           => '466146845543214129700',
+                'reason_code'   => 475,
+            ],
+        ];
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($cybersource['status'], 'authenticated');
+
+        // This message entity shouldn't get updated 'cause
+        // timestamp is less than previous one
+        $gatewayData['gateway_transaction']['status'] = 'created';
+        $gatewayData['timestamp'] = 1556616460;
 
         $cpsSync = new CorePaymentServiceSync($gatewayData);
 

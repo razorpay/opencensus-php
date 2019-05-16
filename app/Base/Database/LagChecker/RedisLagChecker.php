@@ -71,7 +71,7 @@ class RedisLagChecker implements LagChecker
         }
 
         // If should skip slave, return null so master connection is used, else resolve $readPdo and return
-        return $useMaster === true ? null : ($readPdo instanceof Closure ? call_user_func($readPdo) : $readPdo);
+        return $useMaster === true ? null : $readPdo;
     }
 
     protected function canRouteToMaster(): bool

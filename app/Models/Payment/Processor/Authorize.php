@@ -13,6 +13,7 @@ use Lib\PhoneBook;
 
 use RZP\Jobs;
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -40,6 +41,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Jobs\RunShieldCheck;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
@@ -72,6 +74,8 @@ trait Authorize
     public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
     {
         $this->verifyMerchantIsLiveForLiveRequest();
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_PROCESSED, $payment);
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
@@ -111,27 +115,45 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_TERMINAL_SELECTION_INITIATED, $payment);
+
         // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
+        try
+        {
+            if (empty($gatewayInput['selected_terminals_ids']) === false)
+            {
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
+            }
+            else if (($payment->isPushPaymentMethod() === true) and
+                ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
+            {
+                $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
+            }
+            else
+            {
+                $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+            }
 
-        if (empty($gatewayInput['selected_terminals_ids']) === false)
-        {
-            $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
-        }
-        else if (($payment->isPushPaymentMethod() === true) and
-            ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
-        {
-            $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
-        }
-        else
-        {
-            $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
-        }
+            $this->trace->info(
+                TraceCode::SELECTED_TERMINAL_IDS,
+                [
+                    'selected_terminals_ids'  => array_pluck($this->selectedTerminals, Terminal\Entity::ID),
+                ]);
 
-        $this->trace->info(
-            TraceCode::SELECTED_TERMINAL_IDS,
-            [
-                'selected_terminals_ids'  => array_pluck($this->selectedTerminals,Terminal\Entity::ID),
-            ]);
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_TERMINAL_SELECTION_PROCESSED,
+                $payment,
+                null,
+                [
+                    'terminal_count' => count($this->selectedTerminals)
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_TERMINAL_SELECTION_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
     }
 
     protected function setAuthenticationGatewayViaGatewayRules(Payment\Entity $payment, array & $gatewayInput)
@@ -154,6 +176,9 @@ trait Authorize
         // using this instance variable.
         //
         $this->setSelectedTerminals($payment, $gatewayInput);
+
+        // we are doing this after terminal selection since we might reject payemnt if there are no terminals found
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_PROCESSED, $payment);
 
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
@@ -227,6 +252,16 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_INITIATED,
+                $payment,
+                null,
+                [
+                    'attempt'     => $retryAttempts,
+                    'terminal_id' => $payment->getTerminalId(),
+                    'gateway'     => $payment->getGateway()
+                ]);
+
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
@@ -250,18 +285,18 @@ trait Authorize
             {
                 if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
                 {
-                    $request = $this->callGatewayFunction(Action::OTP_GENERATE, $terminalGatewayInput);
+                    $request = $this->runOtpPaymentFlow($payment, $terminalGatewayInput);
                 }
                 else
                 {
-                    $request = $this->callGatewayAuthorize($terminalGatewayInput);
+                    $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
 
                 $retry = false;
 
                 if ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true)
                 {
-                    $request = $this->openHeadlessBrowser($payment, $request);
+                    $request = $this->runHeadlessOtpFlow($payment, $request);
                 }
 
                 break;
@@ -285,8 +320,13 @@ trait Authorize
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))
                 {
+
+                    $this->preProcessAuthBeforeRetry($payment);
+
                     continue;
                 }
+
+                $this->migrateCardDataIfApplicable($payment);
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
@@ -301,6 +341,43 @@ trait Authorize
         }
 
         return $request;
+    }
+
+    protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
+    {
+        try
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED, $payment);
+
+            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED, $payment);
+
+            return $request;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
+    }
+
+    protected function preProcessAuthBeforeRetry($payment)
+    {
+        $isPreferredAuthEmpty = (empty($payment->getMetadata(Payment\Entity::PREFERRED_AUTH)) === true);
+
+        if ($isPreferredAuthEmpty === false)
+        {
+            $payment->setAuthType(null);
+            return;
+        }
+
+        if (($payment->getAuthType() !== null) and
+            (in_array($payment->getAuthType(), Payment\AuthType::$otpAuthTypes, true) === true))
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
+        }
     }
 
     protected function logAndCheckForAuthRetry($e, $payment): bool
@@ -331,6 +408,8 @@ trait Authorize
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
 
         $this->runShieldCheck($this->payment);
     }
@@ -645,32 +724,46 @@ trait Authorize
 
     protected function runPaymentInputValidations(Payment\Entity $payment, array $input)
     {
-        $this->validateCardAndCvv($payment, $input);
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_INITIATED, $payment);
+        
+        try
+        {
+            $this->validateCardAndCvv($payment, $input);
 
-        $this->validateRecurringIfApplicable($payment, $input);
+            $this->validateRecurringIfApplicable($payment, $input);
 
-        $this->validateCardAuthenticationIfApplicable($payment, $input);
+            $this->validateCardAuthenticationIfApplicable($payment, $input);
 
-        $this->validateS2SIfApplicable($payment);
+            $this->validateS2SIfApplicable($payment);
 
-        $this->validateSubscriptionInputIfPresent($payment, $input);
+            $this->validateSubscriptionInputIfPresent($payment, $input);
 
-        $this->verifyPaymentMethodEnabled($payment);
+            $this->verifyPaymentMethodEnabled($payment);
 
-        $this->validatePaymentNetworkSupported($payment);
+            $this->validatePaymentNetworkSupported($payment);
 
-        $this->runInternationalChecks($payment);
+            $this->runInternationalChecks($payment);
 
-        $this->runFraudChecksIfApplicable($payment);
+            $this->runFraudChecksIfApplicable($payment);
 
-        // Fees validation can only happen after international validation has gone through
-        // otherwise can cause issues with international pricing rule being not available when
-        // international is not enabled.
-        $this->verifyFeesLessThanAmount($payment);
+            // Fees validation can only happen after international validation has gone through
+            // otherwise can cause issues with international pricing rule being not available when
+            // international is not enabled.
+            $this->verifyFeesLessThanAmount($payment);
 
-        $this->validateOfferIfApplicable($payment, $input);
+            $this->validateOfferIfApplicable($payment, $input);
 
-        $this->validateCardlessEmiIfApplicable($payment, $input);
+            $this->validateCardlessEmiIfApplicable($payment, $input);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment, $ex);
+
+            throw $ex;
+        }
+
     }
 
     protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)
@@ -1487,6 +1580,7 @@ trait Authorize
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
+
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
 
         //
@@ -1496,6 +1590,10 @@ trait Authorize
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
         $gatewayInput['payment_analytics'] = $payment->getMetadata('payment_analytics');
+
+        // Bank such as Netbanking Canara enforces to send fee in request.
+        // Adding fee calculation as part of gateway input only if applicable
+        $this->addFeeIfApplicable($payment, $gatewayInput);
 
         if ($payment->hasOrder())
         {
@@ -1747,6 +1845,40 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->processCurrencyConversions($payment);
+
+        $this->attachEntityOrigin($payment);
+    }
+
+    /**
+     * When calculating commission, we proceed only if there is an entity origin associated with the payment.
+     * Here we fetch the entity origin for the current request and associate with the payment so that
+     * explicit fees can be shown as a part of fee breakup to the customer if applicable
+     *
+     * @param $payment
+     */
+    protected function attachEntityOrigin($payment)
+    {
+        try
+        {
+            // Fetch origin entity for the payment based on the auth used to initiate the payment.
+            $entityOrigin = (new EntityOrigin\Core)->fetchEntityOrigin($payment);
+
+            if (empty($entityOrigin) === false)
+            {
+                // associate origin entity to payment relation
+                $payment->setRelation('entityOrigin', $entityOrigin);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // The payment should not be blocked even if the origin cannot be fetched. Log an error and proceed.
+            $this->trace->critical(TraceCode::ORIGIN_SET_FAILED,
+                [
+                    'message'     => $e->getMessage(),
+                    'entity_type' => $payment->getEntity(),
+                    'entity_id'   => $payment->getId(),
+                ]);
+        }
     }
 
     protected function parseContact(string $contact): PhoneBook
@@ -1774,18 +1906,50 @@ trait Authorize
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
-        if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
-            ($payment->shouldRunShieldChecks() === true))
+        try 
         {
-            $this->validateFraudDetectionV2($payment);
-        }
-        else if ($payment->shouldRunFraudChecks() === true)
-        {
-            $this->validateEmailTld($payment);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
 
-            $this->validateFraudDetection($payment, $this->merchant);
+            $riskSource = Risk\Source::INTERNAL;
 
+            // for now use api only for bin based blocking until shield is not live 100%
             $this->validateBlockedCard($payment);
+
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true) and
+                ($payment->shouldRunShieldChecks() === true))
+            {
+                $riskSource = Risk\Source::SHIELD;
+
+                $this->validateFraudDetectionV2($payment);
+            }
+            else if ($payment->shouldRunFraudChecks() === true)
+            {
+                $this->validateEmailTld($payment);
+
+                $riskSource = Risk\Source::MAXMIND;
+
+                $this->validateFraudDetection($payment, $this->merchant);
+            }
+
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_RISKCHECK_PROCESSED, 
+                $payment,
+                null,
+                [
+                    'risk_source'   => $riskSource
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_RISKCHECK_PROCESSED,
+                $payment,
+                $ex,
+                [
+                    'riskSource' => $riskSource
+                ]);
+
+            throw $ex;
         }
     }
 
@@ -1878,7 +2042,7 @@ trait Authorize
             $this->updatePaymentAuthFailed($e);
 
             $riskData = [
-                Risk\Entity::REASON => Risk\RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
+                Risk\Entity::REASON     => Risk\RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
                 Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
             ];
 
@@ -2885,6 +3049,8 @@ trait Authorize
             $this->trace->traceException($e);
         }
         // @codingStandardsIgnoreEnd
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CARDSAVING_PROCESSED, $payment);
 
         return $token;
     }
@@ -4036,6 +4202,8 @@ trait Authorize
             $this->fillReturnRequestDataForMerchant($payment, $returnData);
         }
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RESPONSE_SENT, $payment);
+
         return $returnData;
     }
 
@@ -4262,9 +4430,15 @@ trait Authorize
         }
     }
 
-    protected function callGatewayAuthorize(array $data)
+    protected function callGatewayAuthorize(Payment\Entity $payment, array $data)
     {
-        return $this->callGatewayFunction(Action::AUTHORIZE, $data);
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $payment);
+        
+        $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT, $payment);
+
+        return $response;
     }
 
     /**
@@ -4484,7 +4658,30 @@ trait Authorize
      */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant, array $input = [])
     {
-        // temp change.
+        $this->setRzpVaultForPayment($cardInput, $vault, $merchant, $input);
+
+        $cardCore = new Card\Core;
+
+        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
+
+        $card = $cardCore->getCard();
+
+        if ($card->isUnsupported())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+        }
+
+        $this->payment->card()->associate($card);
+
+        $this->repo->saveOrFail($card);
+
+        return $cardData;
+
+    }
+
+    protected function setRzpVaultForPayment(array &$cardInput, bool $vault, Merchant\Entity $merchant, array $input = [])
+    {
         $merchantIds = [
             '8S0i1kWYyF2woQ', // swiggy
         ];
@@ -4510,28 +4707,14 @@ trait Authorize
 
             if (strtolower($response) === 'on')
             {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
+                $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
             }
         }
 
-        $cardCore = new Card\Core;
-
-        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
-
-        $card = $cardCore->getCard();
-
-        if ($card->isUnsupported())
+        if (isset($cardInput[Card\Entity::VAULT]) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CARDSAVING_INITIATED, $this->payment);
         }
-
-        $this->payment->card()->associate($card);
-
-        $this->repo->saveOrFail($card);
-
-        return $cardData;
-
     }
 
     /**
@@ -4924,6 +5107,8 @@ trait Authorize
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
+
             return true;
         });
 
@@ -5178,7 +5363,7 @@ trait Authorize
         if ($type === 'fallback')
         {
             $key = $payment->getCacheInputKey();
-            $ttl = static::CACHE_TTL;
+            $ttl = static::CARD_CACHE_TTL;
         }
         else
         {
@@ -5277,12 +5462,16 @@ trait Authorize
             $payload
         );
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_RESPONSE_SENT , $payment);
+
         return $data;
     }
 
-    public function processRedirectToAuthorize(string $paymentId, string $trackId)
+    public function processRedirectToAuthorize(Payment\Entity $payment, string $trackId)
     {
-        $payment = $this->retrieve($paymentId);
+        $this->setPayment($payment);
+
+        $this->checkForMerchantCallbackUrl($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT,
@@ -5318,8 +5507,6 @@ trait Authorize
             $this->setCardNumberAndCvv($inputDetails);
         }
 
-        $this->setPreferredAuthIfApplicable($payment);
-
         $resource = $this->getCallbackMutexResource($payment);
 
         $response = $this->mutex->acquireAndRelease(
@@ -5334,9 +5521,38 @@ trait Authorize
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
 
-                $this->repo->saveOrFail($payment);
+                // if payment is already processed and failed we will throw an error
+                if ($payment->isFailed() === true)
+                {
+                    return $this->rethrowFailedPaymentErrorException($payment);
+                }
 
                 $gatewayInput = $inputDetails['gateway_input'];
+
+                /*
+                 * In double redirect scenario terminal will be set
+                 * we will use the same terminal and set auth type as null
+                 * since in first request authtype might have set to
+                 * headless_otp,otp,ivr
+                 */
+                if ($payment->hasTerminal() === true)
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_SECOND_REDIRECT_TO_AUTHORIZE_REQUEST,
+                        [
+                            'payment_id'   => $payment->getId(),
+                            'auth_type'    => $payment->getAuthType(),
+                            'terminal_id'  => $payment->getTerminalId(),
+                        ]);
+
+                    $gatewayInput['selected_terminals_ids'] = [$payment->getTerminalId()];
+
+                    $payment->setAuthType(null);
+                }
+
+                $this->repo->saveOrFail($payment);
+
+                $this->setPreferredAuthIfApplicable($payment);
 
                 unset($inputDetails['gatewayInput']);
 
@@ -5392,5 +5608,20 @@ trait Authorize
         }
 
         return $emiPlans[0];
+    }
+
+    protected function addFeeIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    {
+        if (in_array($payment->getGateway(), Payment\Gateway::FEE_IN_AUTHORIZE_GATEWAYS, true) === false)
+        {
+            return;
+        }
+
+        list($fee, $tax, $feesSplit) = $this->repo->useSlave(function () use ($payment)
+        {
+            return (new Pricing\Fee)->calculateMerchantFees($payment);
+        });
+
+        $gatewayInput['payment_fee'] = $fee;
     }
 }

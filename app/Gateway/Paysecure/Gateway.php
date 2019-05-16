@@ -26,7 +26,7 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'paysecure_%s_card_details';
-    const CACHE_TTL = 0;
+    const CARD_CACHE_TTL = 0;
 
     protected $gatewayPayment = null;
 
@@ -79,6 +79,8 @@ class Gateway extends Base\Gateway
 
         $this->handleFailure($checkBin2Response, 'checkbin2');
 
+        // We do not persist card details here, because Hitachi persists it anyways
+
         // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
@@ -91,9 +93,6 @@ class Gateway extends Base\Gateway
             $request = $this->getRedirectRequest($response);
 
             $this->traceGatewayPaymentRequest($request, $input);
-
-            // This will be used in the capture flow, to be passed to Hitachi for advice message call.
-            $this->persistCardDetailsTemporarily($input);
 
             return $request;
         }
@@ -111,8 +110,6 @@ class Gateway extends Base\Gateway
             ];
 
             $this->traceGatewayPaymentRequest($request, $input);
-
-            $this->persistCardDetailsTemporarily($input);
 
             $request['content'] = View::make('gateway.paysecurePinpadForm')
                                       ->with('data', $this->getPinpadData($response))
@@ -148,7 +145,8 @@ class Gateway extends Base\Gateway
         }
 
         // Check payment status
-        if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE], [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
+        if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE],
+                [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
         {
             $traceData = [
                 'gateway'    => $this->gateway,
@@ -201,7 +199,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $internalErrorCode,
                 $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_MESSAGE] ?? null,
                 $traceData
             );
         }
@@ -491,14 +489,15 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_MESSAGE] ?? null,
                 [
                     'gateway'    => $this->gateway,
                     'payment_id' => $this->input['payment']['id'],
                     'command'    => $action,
                 ],
                 null,
-                Action::AUTHENTICATE
+                Action::AUTHENTICATE,
+                true
             );
         }
     }

@@ -47,6 +47,7 @@ class Header
     const PAYMENT_LINK_ID          = 'Payment Link Id';
     const SHORT_URL                = 'Payment Link Short URL';
     const FIRST_PAYMENT_MIN_AMOUNT = 'First Payment Min Amount (In Paise)';
+    const CURRENCY                 = 'Currency';
 
     //
     // IRCTC Headers
@@ -284,7 +285,7 @@ class Header
     //
     const ENACH_NPCI_NETBANKING_REGISTER_UMRN              = 'UMRN';
     const ENACH_NPCI_NETBANKING_REGISTER_STATUS            = 'STATUS';
-    const ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID        = 'MESSAGE_ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_MESSAGE_ID        = 'MESSAGE_ID';
     const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE      = 'MANDATE_DATE';
     const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID        = 'MANDATE_ID';
     const ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO       = 'CUST_REF_NO';
@@ -458,6 +459,69 @@ class Header
     const UPI_MINDGATE_COLLECT              = 'Collect';
     const UPI_MINDGATE_PAY                  = 'Pay';
 
+    //
+    //  Zest Money bulk terminal creation headers
+    //
+    const ZESTMONEY_MERCHANT_ID          = 'Merchant ID';
+    const ZESTMONEY_GATEWAY_MERCHANT_ID  = 'Gateway Merchant ID';
+    const ZESTMONEY_CATEGORY             = 'Terminal Category';
+    const ZESTMONEY_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant ID2';
+    const ZESTMONEY_TERMINAL_PASSWORD    = 'Gateway Terminal Password';
+    const ZESTMONEY_TERMINAL_ID          = 'Terminal ID';
+
+    //
+    // Flex Money bulk terminal creation headers
+    //
+    const FLEXMONEY_MERCHANT_ID          = 'Merchant ID';
+    const FLEXMONEY_GATEWAY_MERCHANT_ID  = 'Gateway Merchant ID';
+    const FLEXMONEY_CATEGORY             = 'Terminal Category';
+    const FLEXMONEY_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant ID2';
+    const FLEXMONEY_TERMINAL_PASSWORD    = 'Gateway Terminal Password';
+    const FLEXMONEY_TERMINAL_ID          = 'Terminal ID';
+
+
+    //
+    // Early Salary bulk terminal creation headers
+    //
+    const EARLYSALARY_MERCHANT_ID          = 'Merchant ID';
+    const EARLYSALARY_GATEWAY_MERCHANT_ID  = 'Gateway Merchant ID';
+    const EARLYSALARY_CATEGORY             = 'Terminal Category';
+    const EARLYSALARY_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant ID2';
+    const EARLYSALARY_TERMINAL_PASSWORD    = 'Gateway Terminal Password';
+    const EARLYSALARY_TERMINAL_ID          = 'Terminal ID';
+
+    //
+    // Billdesk bulk terminal creation headers
+    //
+    const BILLDESK_MERCHANT_ID         = 'Merchant ID';
+    const BILLDESK_GATEWAY_MERCHANT_ID = 'Gateway Merchant ID';
+    const BILLDESK_CATEGORY            = 'Terminal Category';
+    const BILLDESK_TERMINAL_ID         = 'Terminal ID';
+    const BILLDESK_NON_RECURRING       = 'Non Recurring';
+
+    //
+    // Netbanking Axis bulk terminal creation headers
+    //
+    const AXIS_NB_MERCHANT_ID         = 'Merchant ID';
+    const AXIS_NB_GATEWAY_MERCHANT_ID = 'Gateway Merchant ID';
+    const AXIS_NB_CATEGORY            = 'Terminal Category';
+    const AXIS_NB_TERMINAL_ID         = 'Terminal ID';
+    const AXIS_NB_TPV                 = 'Tpv';
+    const AXIS_NB_NON_RECURRING       = 'Non Recurring';
+
+    //
+    // Atom bulk terminal creation headers
+    //
+    const ATOM_MERCHANT_ID         = 'Merchant ID';
+    const ATOM_GATEWAY_MERCHANT_ID = 'Gateway Merchant ID';
+    const ATOM_CATEGORY            = 'Terminal Category';
+    const ATOM_TERMINAL_PASSWORD   = 'Gateway Terminal Password';
+    const ATOM_TERMINAL_PASSWORD2  = 'Gateway Terminal Password 2';
+    const ATOM_ACCESS_CODE         = 'Access Code';
+    const ATOM_SECURE_SECRET       = 'Secure Secret';
+    const ATOM_SECURE_SECRET2      = 'Secure Secret 2';
+    const ATOM_NON_RECURRING       = 'Non Recurring';
+    const ATOM_TERMINAL_ID         = 'Terminal ID';
 
     // Contact Headers
     const CONTACT_ID                  = 'Contact Id';
@@ -485,6 +549,11 @@ class Header
     const PAYOUT_NARRATION         = 'Payout Narration';
     const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
     const PAYOUT_ID                = 'Payout Id';
+
+    // Linked Account Reversal Headers
+    const TRANSFER_ID              = 'Transfer Id';
+    const REVERSAL_ID              = 'Reversal Id';
+    const INITIATOR_ID             = 'Initiator Id';
 
     /**
      * Input and output file headers
@@ -786,7 +855,7 @@ class Header
                 self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
                 self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
                 self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
-                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MESSAGE_ID,
             ],
             self::OUTPUT => [
                 self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE,
@@ -817,10 +886,11 @@ class Header
                 self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
                 self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
                 self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
-                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MESSAGE_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+                self::PAYMENT_ID
             ],
         ],
 
@@ -1373,6 +1443,122 @@ class Header
             ]
         ],
 
+        'terminal_earlysalary' => [
+            self::INPUT => [
+                self::EARLYSALARY_MERCHANT_ID,
+                self::EARLYSALARY_GATEWAY_MERCHANT_ID,
+                self::EARLYSALARY_GATEWAY_MERCHANT_ID2,
+                self::EARLYSALARY_TERMINAL_PASSWORD,
+                self::EARLYSALARY_CATEGORY,
+            ],
+            self::OUTPUT => [
+                self::EARLYSALARY_MERCHANT_ID,
+                self::EARLYSALARY_TERMINAL_ID,
+                self::EARLYSALARY_GATEWAY_MERCHANT_ID,
+                self::EARLYSALARY_GATEWAY_MERCHANT_ID2,
+                self::EARLYSALARY_CATEGORY,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ],
+        ],
+        'terminal_flexmoney' => [
+            self::INPUT => [
+                self::FLEXMONEY_MERCHANT_ID,
+                self::FLEXMONEY_GATEWAY_MERCHANT_ID,
+                self::FLEXMONEY_GATEWAY_MERCHANT_ID2,
+                self::FLEXMONEY_TERMINAL_PASSWORD,
+                self::FLEXMONEY_CATEGORY,
+            ],
+            self::OUTPUT => [
+                self::FLEXMONEY_MERCHANT_ID,
+                self::FLEXMONEY_TERMINAL_ID,
+                self::FLEXMONEY_GATEWAY_MERCHANT_ID,
+                self::FLEXMONEY_GATEWAY_MERCHANT_ID2,
+                self::FLEXMONEY_CATEGORY,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ],
+        ],
+        'terminal_zestmoney' => [
+            self::INPUT => [
+                self::ZESTMONEY_MERCHANT_ID,
+                self::ZESTMONEY_GATEWAY_MERCHANT_ID,
+                self::ZESTMONEY_GATEWAY_MERCHANT_ID2,
+                self::ZESTMONEY_TERMINAL_PASSWORD,
+                self::ZESTMONEY_CATEGORY,
+            ],
+            self::OUTPUT => [
+                self::ZESTMONEY_MERCHANT_ID,
+                self::ZESTMONEY_TERMINAL_ID,
+                self::ZESTMONEY_GATEWAY_MERCHANT_ID,
+                self::ZESTMONEY_GATEWAY_MERCHANT_ID2,
+                self::ZESTMONEY_CATEGORY,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ],
+        ],
+        'terminal_netbanking_axis' => [
+            self::INPUT => [
+                self::AXIS_NB_MERCHANT_ID,
+                self::AXIS_NB_GATEWAY_MERCHANT_ID,
+                self::AXIS_NB_CATEGORY,
+                self::AXIS_NB_TPV,
+                self::AXIS_NB_NON_RECURRING,
+            ],
+            self::OUTPUT => [
+                self::AXIS_NB_MERCHANT_ID,
+                self::AXIS_NB_TERMINAL_ID,
+                self::AXIS_NB_GATEWAY_MERCHANT_ID,
+                self::AXIS_NB_CATEGORY,
+                self::AXIS_NB_TPV,
+                self::AXIS_NB_NON_RECURRING,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ],
+        ],
+
+        'terminal_atom' => [
+            self::INPUT => [
+                self::ATOM_MERCHANT_ID,
+                self::ATOM_GATEWAY_MERCHANT_ID,
+                self::ATOM_CATEGORY,
+                self::ATOM_TERMINAL_PASSWORD,
+                self::ATOM_TERMINAL_PASSWORD2,
+                self::ATOM_ACCESS_CODE,
+                self::ATOM_SECURE_SECRET,
+                self::ATOM_SECURE_SECRET2,
+                self::ATOM_NON_RECURRING,
+            ],
+            self::OUTPUT => [
+                self::ATOM_MERCHANT_ID,
+                self::ATOM_GATEWAY_MERCHANT_ID,
+                self::ATOM_CATEGORY,
+                self::ATOM_ACCESS_CODE,
+                self::ATOM_NON_RECURRING,
+                self::ATOM_TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ],
+        ],
+
+        'terminal_billdesk' => [
+            self::INPUT => [
+                self::BILLDESK_MERCHANT_ID,
+                self::BILLDESK_GATEWAY_MERCHANT_ID,
+                self::BILLDESK_CATEGORY,
+                self::BILLDESK_NON_RECURRING,
+            ],
+            self::OUTPUT => [
+                self::BILLDESK_MERCHANT_ID,
+                self::BILLDESK_TERMINAL_ID,
+                self::BILLDESK_GATEWAY_MERCHANT_ID,
+                self::BILLDESK_CATEGORY,
+                self::BILLDESK_NON_RECURRING,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ],
+        ],
+
         'terminal_hitachi' => [
             self::INPUT => [
                 self::HITACHI_RID,
@@ -1526,6 +1712,23 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+
+        Type::LINKED_ACCOUNT_REVERSAL => [
+            self::INPUT => [
+                self::TRANSFER_ID,
+                self::AMOUNT_IN_PAISE,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::REVERSAL_ID,
+                self::TRANSFER_ID,
+                self::AMOUNT_IN_PAISE,
+                self::INITIATOR_ID,
+                self::REFUND_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**
@@ -1569,12 +1772,19 @@ class Header
             $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
         }
 
+        if (($type === Type::PAYMENT_LINK) and
+            ((in_array(self::CURRENCY, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::CURRENCY;
+        }
+
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
 
         // Todo: Fix this hack!
         if (($valid === false) and ($type === Type::PAYMENT_LINK))
         {
             $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
+
             $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
         }
 

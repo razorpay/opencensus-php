@@ -522,6 +522,27 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($content['comment'], 'SOME_COMMENT');
     }
 
+    public function testGatewayDowntimeDelete()
+    {
+        $content = $this->createGatewayDowntime();
+
+        $url = '/gateway/downtimes/'. $content['id'];
+
+        $lastEntity = $this->getLastEntity('gateway_downtime', true);
+
+        $response = $this->makeRequestAndGetContent([
+            'content' => [],
+            'method'  => 'DELETE',
+            'url'     => $url
+        ]);
+
+        $this->assertEquals($lastEntity['id'], $response['id']);
+
+        $newLastEntity = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertNotEquals($newLastEntity['id'], $lastEntity['id']);
+    }
+
     // statuscake tests
     public function testStatusCakeWebHookNB()
     {

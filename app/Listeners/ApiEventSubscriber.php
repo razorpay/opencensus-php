@@ -203,14 +203,9 @@ class ApiEventSubscriber extends Base\Core
 
         if ($payment->hasSubscription() === true)
         {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
+            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            if (strtolower($response) === 'on')
-            {
-                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
-            }
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
         }
 
         $this->prepareAndDispatchWebhook($payload);
@@ -224,14 +219,9 @@ class ApiEventSubscriber extends Base\Core
 
         if ($payment->hasSubscription() === true)
         {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
+            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
-            if (strtolower($response) === 'on')
-            {
-                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-
-                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
-            }
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
         }
 
         $this->prepareAndDispatchWebhook($payload);
@@ -778,7 +768,9 @@ class ApiEventSubscriber extends Base\Core
             'mode'       => $this->getMode(),
             'event'      => json_encode($event->toArrayPublic()),
             'event_name' => $eventFired,
-            'webhook_id' => $webhook->getId()
+            'webhook_id' => $webhook->getId(),
+            // Refer Inferno's eventQueuedAt.
+            'queued_at'  => millitime(),
         ];
 
         return $data;
