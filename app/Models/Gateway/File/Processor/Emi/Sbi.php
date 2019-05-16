@@ -21,6 +21,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
@@ -350,11 +351,11 @@ class Sbi extends Base
         $bucketConfig = $this->getBucketConfig();
 
         $data =  [
-            Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
-            Service::BEAM_PUSH_BUCKET_NAME => $bucketConfig['name'],
+            Service::BEAM_PUSH_FILES         => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME       => BeamConstants::SBI_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
             Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
-            Service::BEAM_PUSH_DECRYPTION => [
+            Service::BEAM_PUSH_DECRYPTION    => [
                 Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
                 Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
                 Service::BEAM_PUSH_DECRYPTION_KEY  => bin2hex($data['password']),
@@ -368,11 +369,25 @@ class Sbi extends Base
             'fileInfo'  => $fileInfo,
             'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'File Send failure',
+            'subject'   => 'SBI EMI - File Send failure',
             'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ($beamResponse['failed'] !== 'null')
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->file->id,
+                    'gateway'       => 'sbi_emi',
+                ]
+            );
+        }
 
         $this->sendConfirmationMail();
     }

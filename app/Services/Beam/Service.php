@@ -63,8 +63,36 @@ class Service
      * @param array $pushData
      * @param array $intervalInfo
      * @param array $mailInfo
+     * @param bool $synchronous
+     * @return array
      */
-    public function beamPush(array $pushData, array $intervalInfo, array $mailInfo)
+    public function beamPush(array $pushData, array $intervalInfo, array $mailInfo, $synchronous = false)
+    {
+        $request = $this->getBeamRequest($pushData, $intervalInfo, $mailInfo);
+
+        if ($synchronous === true)
+        {
+            $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
+
+            return $beam->handleRequest();
+        }
+
+        BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
+
+        return [];
+    }
+
+    /**
+     * Get URL
+     * @param $route
+     * @return string
+     */
+    protected function getUrl($route)
+    {
+        return trim($this->config['url']) . '/' . $route;
+    }
+
+    protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo)
     {
         $this->trace->info(
             TraceCode::BEAM_METHOD_CALL,
@@ -106,9 +134,9 @@ class Service
 
         if ($this->mode === Mode::TEST)
         {
-           $route = self::TEST_ROUTE;
+            $route = self::TEST_ROUTE;
 
-           $data[self::BEAM_PUSH_JOBNAME] = self::BEAM_TEST_JOBNAME;
+            $data[self::BEAM_PUSH_JOBNAME] = self::BEAM_TEST_JOBNAME;
         }
 
         $data = json_encode($data);
@@ -138,16 +166,6 @@ class Service
             ]
         );
 
-        BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
-    }
-
-    /**
-     * Get URL
-     * @param $route
-     * @return string
-     */
-    protected function getUrl($route)
-    {
-        return trim($this->config['url']) . '/' . $route;
+        return $request;
     }
 }
