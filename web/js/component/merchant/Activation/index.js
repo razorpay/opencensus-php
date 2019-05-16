@@ -206,6 +206,7 @@ export default class ActivationWizard extends React.Component {
 
     if (this.props.data.activated == 0) {
       trackFb('KYC_start');
+      updateHubSpotContactsProperties({ started: true });
     }
   }
 
