@@ -178,7 +178,8 @@ trait HeadlessOtp
         {
             $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_FAILURE;
 
-            if (in_array($response['error']['reason'], OtpElf::$otpElfErrors, true) === true)
+            if ((isset($response['error']['fatal']) === true) and
+                ($response['error']['fatal'] === true))
             {
                 $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
 

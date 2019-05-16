@@ -1618,7 +1618,8 @@ class OtpPaymentTest extends TestCase
                     return [
                         'success' => false,
                         'error'   => [
-                            'reason' => $otpElfError
+                            'reason' => $otpElfError,
+                            'fatal'  => true,
                         ],
                     ];
                 });
@@ -2676,7 +2677,8 @@ class OtpPaymentTest extends TestCase
                         return [
                             'success' => false,
                             'error'   => [
-                                'reason' => $otpElfError
+                                'reason' => $otpElfError,
+                                'fatal'  => true,
                             ],
                         ];
                     });
