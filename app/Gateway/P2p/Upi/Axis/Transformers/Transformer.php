@@ -8,11 +8,14 @@ abstract class Transformer
 {
     public $input;
 
+    public $action;
+
     abstract public function transform(): array;
 
-    public function __construct(array $input)
+    public function __construct(array $input, string $action = null)
     {
-        $this->input = $input;
+        $this->input  = $input;
+        $this->action = $action;
     }
 
     public function put(string $key, $value)
@@ -38,7 +41,7 @@ abstract class Transformer
 
     public function toPaisa($value)
     {
-        return round(floatval($value) * 100);
+        return intval(round(floatval($value) * 100));
     }
 
     public function toUsernameHandle($value)

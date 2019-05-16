@@ -79,6 +79,7 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
             'transaction' => [
                 'id'                     => $this->input->get('transaction')->get('id'),
                 'internal_status'        => 'completed',
+                'amount'                 => $this->input->get('transaction')->get('amount'),
             ],
             'upi' => [
                 'transaction_id'         => $this->input->get('upi')->get('transaction_id'),

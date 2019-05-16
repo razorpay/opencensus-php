@@ -9,4 +9,6 @@ class UpiAction extends Action
     const COLLECT_REQUEST_RECEIVED                  = 'COLLECT_REQUEST_RECEIVED';
 
     const CUSTOMER_CREDITED_VIA_PAY                 = 'CUSTOMER_CREDITED_VIA_PAY';
+
+    const CUSTOMER_CREDITED_VIA_COLLECT             = 'CUSTOMER_CREDITED_VIA_COLLECT';
 }

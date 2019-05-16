@@ -200,16 +200,20 @@ class Processor
 
     public function handleGatewaySuccess()
     {
-        $method = $this->action . 'Success';
+        $action = $this->action . 'Success';
 
-        if (method_exists($this, $method))
+        return $this->processAction($action, $this->gatewayResponse->data()->toArray());
+    }
+
+    public function processAction(string $action, array $input): array
+    {
+        if (method_exists($this, $action))
         {
-            return $this->{$method}($this->gatewayResponse->data()->toArray());
+            return $this->{$action}($input);
         }
 
         throw new LogicException('Gateway response processor not found.', null , [
-            'entity'    => $this->entity,
-            'action'    => $this->action,
+            'action'    => $action,
             'suffix'    => 'Success',
         ]);
     }

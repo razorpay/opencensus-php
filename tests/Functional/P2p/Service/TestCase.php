@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\P2p\Service;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional;
+use RZP\Models\P2p\Base\MorphMap;
 use RZP\Tests\P2p\Service\Base\Traits;
 
 class TestCase extends Functional\TestCase
@@ -43,6 +45,8 @@ class TestCase extends Functional\TestCase
         $this->fixtures = new Base\Fixtures\Fixtures($this->deviceSetMap);
 
         $this->resetMockServer();
+
+        MorphMap::boot();
     }
 
     public function tearDown()
@@ -91,5 +95,12 @@ class TestCase extends Functional\TestCase
             {
                 return $this->exceptionHandler;
             });
+    }
+
+    protected function now(string $now = null): Carbon
+    {
+        Carbon::setTestNow($now);
+
+        return Carbon::now();
     }
 }

@@ -37,18 +37,18 @@ class BeneficiaryHelper extends P2pHelper
 
     public function create(array $content = [])
     {
-        $this->validationJsonSchemaPath = 'beneficiary/create';
+        $this->validationJsonSchemaPath = 'beneficiary/validate';
 
         $request = $this->request('beneficiaries');
 
-        $default = [
-            'type'             => 'vpa',
-            'beneficiary_name' => 'beneficiary_1',
-            'address'          => 'beneficiary_1@example',
-            'save'             => true
-        ];
+        $default = array_only($content, [
+            'validated',
+            'type',
+            'id',
+            'name',
+        ]);
 
-        $this->content($request, $default, $content);
+        $this->content($request, $default, []);
 
         return $this->post($request);
     }

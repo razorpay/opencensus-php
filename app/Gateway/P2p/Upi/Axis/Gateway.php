@@ -96,21 +96,21 @@ class Gateway extends Upi\Gateway
         return $this->input->get(Fields::CALLBACK);
     }
 
-    protected function handleGatewayResponseCode()
+    protected function handleGatewayResponseCode($response)
     {
-        if ($this->isGatewayResponseFailure() === true)
+        if (array_get($response, Fields::GATEWAY_RESPONSE_CODE) === '00')
         {
-            $gatewayCode = $this->inputSdk()->get(Fields::GATEWAY_RESPONSE_CODE, ErrorMap::NOT_AVAILABLE);
-            $gatewayDesc = $this->inputSdk()->get(Fields::GATEWAY_RESPONSE_MESSAGE,
-                                            ErrorMap::NOT_AVAILABLE);
-
-            throw $this->p2pGatewayException(
-                $gatewayCode,
-                [
-                    Fields::SDK => $this->inputSdk()
-                ],
-                $gatewayDesc);
+            return;
         }
+
+        $gatewayCode = array_get($response, Fields::GATEWAY_RESPONSE_CODE, ErrorMap::NOT_AVAILABLE);
+        $gatewayDesc = array_get($response, Fields::GATEWAY_RESPONSE_MESSAGE, ErrorMap::NOT_AVAILABLE);
+
+        $data = [
+            'response'  => $response,
+        ];
+
+        throw $this->p2pGatewayException($gatewayCode, $data, $gatewayDesc);
     }
 
     protected function inputSdk(): ArrayBag
@@ -187,6 +187,9 @@ class Gateway extends Upi\Gateway
         string $gatewayDesc = null)
     {
         $code = ErrorMap::map($gatewayCode);
+
+        $data['entity'] = $this->getEntity();
+        $data['action'] = $this->getAction();
 
         return new GatewayErrorException($code, $gatewayCode, $gatewayDesc, $data);
     }
