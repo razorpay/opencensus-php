@@ -79,8 +79,8 @@ class TransactionFailureTest extends TestCase
         $response = $helper->authorizeTransaction($coproto['callback'], $content);
 
         $this->assertSame('pending', $response['status']);
-        $this->assertNull($response['error_code']);
-        $this->assertNull($response['error_description']);
+        $this->assertSame('GATEWAY_ERROR', $response['error_code']);
+        $this->assertSame('Transaction is in pending state', $response['error_description']);
         $this->assertSame('BT', $response['upi']['gateway_error_code']);
         $this->assertSame('Transaction pending', $response['upi']['gateway_error_description']);
     }
@@ -201,7 +201,7 @@ class TransactionFailureTest extends TestCase
             Fields::PAYEE_VPA                   => $this->fixtures->vpa->getAddress(),
             Fields::UPI_REQUEST_ID              => 'RZP' . str_random(32),
             Fields::REMARKS                     => 'SomeTransaction',
-            Fields::GATEWAY_RESPONSE_CODE       => 'BT',
+            Fields::GATEWAY_RESPONSE_CODE       => '01',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Transaction pending',
             Fields::MERCHANT_CUSTOMER_ID        => $this->fixtures->deviceToken(self::DEVICE_1)
                                                         ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID],
@@ -217,6 +217,8 @@ class TransactionFailureTest extends TestCase
             Entity::CUSTOMER_ID       => $this->fixtures->device->getCustomerId(),
             Entity::STATUS            => Status::PENDING,
             Entity::INTERNAL_STATUS   => Status::PENDING,
+            Entity::ERROR_CODE        => 'GATEWAY_ERROR',
+            Entity::ERROR_DESCRIPTION => 'Transaction is in pending state',
             Entity::PAYEE_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
         ], $transaction->reload()->toArray());

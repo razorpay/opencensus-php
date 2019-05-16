@@ -269,6 +269,11 @@ class Processor extends Base\Processor
         else if ($input[Entity::INTERNAL_STATUS] === Status::PENDING)
         {
             $transaction->setInternalStatus(Status::PENDING);
+
+            $error = new Error(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING);
+
+            $transaction->setErrorCode($error->getPublicErrorCode());
+            $transaction->setErrorDescription($error->getDescription());
         }
 
         return $actions;

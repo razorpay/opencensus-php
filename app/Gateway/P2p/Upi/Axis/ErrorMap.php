@@ -28,6 +28,7 @@ class ErrorMap
 
     public static $pendingErrors = [
         'BT',
+        '01',
     ];
 
     public static $expiredErrors = [
