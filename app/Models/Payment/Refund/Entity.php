@@ -842,7 +842,9 @@ class Entity extends Base\PublicEntity
 
         $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
-        if (($response[self::STATUS] === Status::PENDING) and ($isScrooge === true))
+        if (($response[self::STATUS] === Status::PENDING) and
+            ($isScrooge === true) and
+            (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true))
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
