@@ -73,6 +73,7 @@ export default class ItemsListContainer extends ListContainer {
           onMount={this.itemFormOnMount}
           onUnmount={this.itemFormOnUnmount}
           showTaxes={showTaxes}
+          currency={(item && item.currency) || 'INR'}
         />
       ),
     });
