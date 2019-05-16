@@ -730,7 +730,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if (empty($input[self::NOTES]) === false)
         {
-            $this->setIntegrationUsingNotes($input);
+            $this->setIntegrationMetadataUsingNotes($input[self::NOTES]);
         }
 
         // We should only set referer if input['referer'] is defined
@@ -752,8 +752,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
      * Ideally, we should recognise integrations from the '_' metadata sent
      * in the payment request. Until all the plugins can be updated,
      * however, we use the notes values to set integration in database.
+     *
+     * Notes from the order entity can also be used to identify integration.
      */
-    protected function setIntegrationUsingNotes(array $input)
+    public function setIntegrationMetadataUsingNotes(array $notes)
     {
         // If integration is already set by some other flow, don't overwrite it.
         if (empty($this->metadata[Analytics\Entity::INTEGRATION]) === false)
@@ -766,7 +768,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $integrationOrderId = $integration . '_order_id';
 
-            if (empty($input[self::NOTES][$integrationOrderId]) === false)
+            if (empty($notes[$integrationOrderId]) === false)
             {
                 $this->metadata[Analytics\Entity::INTEGRATION] = $integration;
 
@@ -775,7 +777,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         // Some version of magento have magento_trans_id and not magento_order_id
-        if (empty($input[self::NOTES]['magento_trans_id']) === false)
+        if (empty($notes['magento_trans_id']) === false)
         {
             $this->metadata[Analytics\Entity::INTEGRATION] = Metadata::MAGENTO;
 
@@ -784,8 +786,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         // Shopify has its own format, sending the
         // name of the integration under notes[platform].
-        if ((empty($input[self::NOTES]['platform']) === false) and
-            ($input[self::NOTES]['platform'] === Metadata::SHOPIFY))
+        if ((empty($notes['platform']) === false) and
+            ($notes['platform'] === Metadata::SHOPIFY))
         {
             $this->metadata[Analytics\Entity::INTEGRATION] = Metadata::SHOPIFY;
 

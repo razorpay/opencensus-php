@@ -1910,6 +1910,10 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        $orderNotes = $this->order->getNotes()->toArray();
+
+        $payment->setIntegrationMetadataUsingNotes($orderNotes);
     }
 
     protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)

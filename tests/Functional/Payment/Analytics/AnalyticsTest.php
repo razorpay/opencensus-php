@@ -79,8 +79,14 @@ class AnalyticsTest extends TestCase
 
     public function testIntegrationForShopify()
     {
+        $order = $this->createOrder([
+            'notes' => [
+                'platform' => 'shopify',
+            ],
+        ]);
+
         $payment = $this->getDefaultPaymentArray();
-        $payment['notes']['platform'] = 'shopify';
+        $payment['order_id'] = $order['id'];
 
         $payment = $this->doAuthPayment($payment);
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
