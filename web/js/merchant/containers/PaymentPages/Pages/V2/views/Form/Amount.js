@@ -11,12 +11,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
 
-  let amountToDisplay;
   if (isAmountEntitySet) {
-    amountToDisplay = getFormattedAmount(
-      Number(paymentPageEntity.amount || 0) * 100
-    );
-
     if (!paymentPageEntity.amount) {
       cls += ' Field--small';
     }
@@ -37,7 +32,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                   <span>
                     <Amount
                       currency={paymentPageEntity.currency}
-                      value={Number(amountToDisplay) * 100}
+                      value={Number(paymentPageEntity.amount || 0) * 100}
                     />
                   </span>
                   {paymentPageEntity.settings &&
