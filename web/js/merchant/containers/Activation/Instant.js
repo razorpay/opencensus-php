@@ -341,7 +341,6 @@ export default class ActivationWizard extends React.Component {
 
     trackFb('activation_start');
 
-    // updating contact propteries of hubspot contact
     updateHubSpotContactsProperties({
       started: true,
     });
