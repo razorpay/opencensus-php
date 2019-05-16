@@ -2923,6 +2923,11 @@ final class Route
         'subscription_view_test',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
+        'subscription_item_create',
+        'subscription_item_fetch',
+        'subscription_item_fetch_multiple',
+        'subscription_item_update',
+        'subscription_item_delete'
     ];
 
     // These routes are redirected after a feature check
