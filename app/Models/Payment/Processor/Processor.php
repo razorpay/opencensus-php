@@ -1563,7 +1563,7 @@ class Processor
             }
         }
 
-        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->getByMerchantId($this->payment->merchant['id']);
+        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->fetchForMerchant($this->payment->merchant);
 
         //
         // This data was earlier picked up from env by gateways themselves.

@@ -1561,6 +1561,8 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
+        $this->setRelation('merchantDetail', $this->merchantDetail);
+
         return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
     }
 

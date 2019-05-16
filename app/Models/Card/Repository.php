@@ -61,13 +61,18 @@ class Repository extends Base\Repository
         return Card\IIN\Entity::find($iin);
     }
 
-    public function getByParams($params, $limit = 1)
+    public function getByParams($params, $relations = [], $limit = 1)
     {
         $query = $this->newQuery();
 
         foreach ($params as $key => $value)
         {
             $query = $query->where($key, '=', $value);
+        }
+
+        if (count($relations) > 0)
+        {
+            $query->with(...$relations);
         }
 
         $query->limit($limit);

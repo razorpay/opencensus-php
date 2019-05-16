@@ -45,6 +45,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
  * @property Transaction\Entity     $transaction
+ * @property Emi\Entity             $emiPlan
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {

@@ -25,7 +25,12 @@ class Core extends Base\Core
 
         $this->card = $card;
 
-        $this->fillNetworkDetails($card, $input);
+        $iin = $this->fillNetworkDetails($card, $input);
+
+        if (empty($iin) === false)
+        {
+            $card->iinRelation()->associate($iin);
+        }
 
         $card->saveOrFail();
 
@@ -114,13 +119,13 @@ class Core extends Base\Core
         $card->setNetwork($networkName);
 
         // Get details for this iin from card repository
-        $details = $this->repo->card->retrieveIinDetails($card->getIin());
+        $iin = $this->repo->card->retrieveIinDetails($card->getIin());
 
         $type = null;
 
-        if ($details)
+        if ($iin)
         {
-            $iinNetwork = $details->getNetwork();
+            $iinNetwork = $iin->getNetwork();
 
             if (Card\Network::isValidNetwork($iinNetwork))
             {
@@ -133,25 +138,25 @@ class Core extends Base\Core
                     ['network' => $iinNetwork, 'iin' => $card->getIin()]);
             }
 
-            $type = $details['type'];
+            $type = $iin['type'];
 
-            $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
+            $emi = IIN\IIN::isEmiAvailableForCard($iin, $input['number']);
 
             // Since AMEX is handled as a different case,
             // mark all amex cards as non international
-            $isInternational = $details->isInternational();
+            $isInternational = $iin->isInternational();
 
             if ($network === Card\Network::AMEX)
             {
                 $isInternational = false;
             }
 
-            $arr = array(
-                Entity::ISSUER          => $details['issuer'],
-                Entity::COUNTRY         => $details['country'],
+            $arr = [
+                Entity::ISSUER          => $iin['issuer'],
+                Entity::COUNTRY         => $iin['country'],
                 Entity::INTERNATIONAL   => $isInternational,
                 Entity::EMI             => $emi,
-            );
+            ];
 
             $card->fill($arr);
         }
@@ -170,6 +175,8 @@ class Core extends Base\Core
         $card->setType($type);
 
         $this->checkCvvLength($card, $input);
+
+        return $iin;
     }
 
     protected function traceMissingIin($card)
@@ -248,7 +255,7 @@ class Core extends Base\Core
             Card\Entity::VAULT           => $newCard->getVault(),
         );
 
-        $cards = $this->repo->card->getByParams($params, $limit);
+        $cards = $this->repo->card->getByParams($params, ['iinRelation'], $limit);
 
         if ($cards->count() > 0)
         {
