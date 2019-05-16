@@ -440,7 +440,7 @@ class Selector extends Base\Core
 
             $paymentData = $payment->toArray();
 
-            if ($payment->getCardId() !== null)
+            if ($payment->hasCard() !== null)
             {
                 $paymentData['card'] = $this->repo->card->findOrFail($payment->getCardId())->toArray();
             }
@@ -449,8 +449,8 @@ class Selector extends Base\Core
             {
                 $paymentData['emi'] = $payment->emiPlan();
             }
-            $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
+            $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
             $downtimes = $this->repo->useSlave(function () use ($filteredTerminals)
             {
