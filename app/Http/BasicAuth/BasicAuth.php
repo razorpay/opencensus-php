@@ -379,6 +379,37 @@ class BasicAuth
         return $this->authCreds->validateAndSetKeyId($key);
     }
 
+    public function setAuthDetailsUsingPublicKey($publicKey)
+    {
+        $this->setPublicKey($publicKey);
+
+        $this->authCreds->setPublicKey($publicKey);
+
+        $this->authCreds->validateAndSetKeyId($publicKey);
+
+        $this->setKeyEntityFromKeyId();
+    }
+
+    public function setAccountId($accountId)
+    {
+        $this->authCreds->creds[self::ACCOUNT_ID] = $payload[self::ACCOUNT_ID];
+    }
+
+    protected function setKeyEntityFromKeyId()
+    {
+        $keyId =  $this->authCreds->creds[self::KEY_ID];
+
+        if (empty($keyId) === false)
+        {
+            $key = $this->repo->key->findNotExpired($keyId);
+
+            if ($key !== null)
+            {
+                $this->authCreds->setKeyEntity($key);
+            }
+        }
+    }
+
     /**
      * This function checks if it's API key auth or client auth
      * and sets the context and initializes authCreds accordingly

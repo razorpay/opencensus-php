@@ -330,9 +330,7 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        $this->app['basicauth']->setPublicKey($payload['public_key']);
-
-        $this->app['basicauth']->authCreds->setPublicKey($payload['public_key']);
+        $this->app['basicauth']->setAuthDetailsUsingPublicKey($payload['public_key']);
 
         if (empty($payload['account_id']) === false)
         {

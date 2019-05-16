@@ -642,6 +642,100 @@ class OtpPaymentTest extends TestCase
         assertTrue($this->otpFlow);
     }
 
+    public function testHeadlessOtpAuthenticationPaymentS2SRedirectFlowGetSecretBugFix()
+    {
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        TerminalOptions::setTestChance(500);
+
+        $this->app->razorx->method('getTreatment')
+                        ->will($this->returnCallback(
+                            function ($mid, $feature, $mode) {
+                                if ($feature === 'redirect_terminal_cache')
+                                {
+                                    return 'on';
+                                }
+                                return 'off';
+                            }));
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'amount' => 50000]);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['order_id'] = 'order_100000000order';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $key = $payment->getCacheRedirectInputKey();
+
+        $data = Cache::get($key);
+
+        $this->assertArrayHasKey('gateway_input', $data);
+
+        $gatewayInput =  $data['gateway_input'];
+
+        $this->assertArrayHasKey('selected_terminals_ids', $gatewayInput);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+
+        $targetUrl = $response->getTargetUrl();
+
+        $response = $this->makeRedirectToAuthorize($targetUrl);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('authorized', $payment['status']);
+        assertTrue($this->otpFlow);
+
+        $response = $this->makeRedirectToAuthorize($targetUrl);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+    }
+
     public function testHeadlessOtpAuthenticationPaymentS2SDoubleRedirectOtp()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
