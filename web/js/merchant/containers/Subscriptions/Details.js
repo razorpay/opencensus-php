@@ -307,7 +307,7 @@ export default class SubscriptionDetailsContainer extends Component {
   }
 
   // Manual Attempt to invoice charge
-  onManualAttempt = (invoiceId, subscriptionId) => {
+  onManualAttempt = (invoiceId, subscriptionId = this.props.id) => {
     this.context.confirm({
       header: 'Are you sure you want to manually charge it?',
       message: null,

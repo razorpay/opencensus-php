@@ -237,7 +237,9 @@ export default class InvoiceDetail extends Component {
                                 class="btn btn-default m-t"
                                 text=" Attempt Charge"
                                 pendingText="Attempting..."
-                                onClick={() => onManualAttempt(invoice.id)}
+                                onClick={() =>
+                                  onManualAttempt(invoice.id, subscription.id)
+                                }
                               />;
                             }
                           }}
