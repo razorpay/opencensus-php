@@ -10,7 +10,7 @@ export default function NewSubscriptionLinkReview({
 }) {
   const selectedPlan = props.plans.find(({ id }) => id === fields.plan_id);
 
-  const { amount: planAmount } = selectedPlan.item;
+  const { amount: planAmount, currency } = selectedPlan.item;
   const planQuantity = fields.quantity;
 
   const addOnAmount = fields.addons.reduce(
@@ -21,7 +21,8 @@ export default function NewSubscriptionLinkReview({
   const authorizationAmount = getAuthorizationAmount(
     subscriptioAmount,
     addOnAmount,
-    internals._startsImmediately
+    internals._startsImmediately,
+    currency
   );
 
   const intervalCycle = getIntervalCycle(
@@ -104,12 +105,15 @@ export default function NewSubscriptionLinkReview({
 /**
  * refer https://razorpay.com/docs/subscriptions/create/#possible-scenarios to understand logic
  */
-function getAuthorizationAmount(subAmt, addonAmt, immediate) {
+function getAuthorizationAmount(subAmt, addonAmt, immediate, currency) {
   if (immediate) {
     // in case of addons not present addonAmt will be zero. so no effect on subscription Amount
     return subAmt + addonAmt;
   } else {
-    // in case of future subscriptions it is either addon amount (if addons present) else Rs. 5
-    return addonAmt || 500; //Rs. 5
+    // in case of future subscriptions it is either addon amount (if addons present) else Current currency min auth ammount
+    return (
+      addonAmt ||
+      (window.currencyList && window.currencyList[currency].min_auth_value)
+    );
   }
 }
