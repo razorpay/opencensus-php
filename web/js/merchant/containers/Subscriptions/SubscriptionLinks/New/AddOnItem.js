@@ -15,7 +15,7 @@ import QuantitySelector from './QuantitySelector';
 @connect(null, { openModal, closeModal })
 export default class AddOnItem extends Component {
   addNewItem = () => {
-    const { closeModal, currency, disableCurrencySelect } = this.props;
+    const { closeModal, currency } = this.props;
 
     this.props.openModal({
       size: 'small',
@@ -25,7 +25,6 @@ export default class AddOnItem extends Component {
           closeModal={closeModal}
           onSave={closeModal}
           currency={currency}
-          disableCurrencySelect={disableCurrencySelect}
         />
       ),
     });

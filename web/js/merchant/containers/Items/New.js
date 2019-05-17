@@ -96,7 +96,7 @@ export default class AddItem extends Component {
     });
 
     if (this.props.item) {
-      this._initialize(this.props.item);
+      this._initialize(this.props.item, this.props.currency); // In GST invoice, creating New item actually has this.props.items = {name: null}
     } else {
       this.props.initialize({ currency: this.props.currency });
     }
@@ -134,7 +134,7 @@ export default class AddItem extends Component {
    * Processes taxes and stuff.
    * @param {Item} item
    */
-  _initialize(item) {
+  _initialize(item, currency) {
     item = new Item(deepCopy(item));
 
     let showCessForm = false;
@@ -176,7 +176,10 @@ export default class AddItem extends Component {
     }
 
     // Initialize and set state.
-    this.props.initialize(item);
+    this.props.initialize({
+      ...item,
+      currency: this.props.currency,
+    });
 
     this.setState({
       showCessForm,
@@ -386,9 +389,7 @@ export default class AddItem extends Component {
       cess,
       showTaxes = false,
       currency,
-      disableCurrencySelect,
     } = this.props;
-
     const { showCessForm, editingItem, showTaxRadios } = this.state;
 
     const gstRates = this.getGSTRates();
