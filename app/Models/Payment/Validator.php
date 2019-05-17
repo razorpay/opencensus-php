@@ -189,6 +189,10 @@ class Validator extends Base\Validator
         Entity::NOTES => 'sometimes|notes',
     ];
 
+    protected static $paymentCardMigrateRules = [
+        'limit' => 'sometimes|integer',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',

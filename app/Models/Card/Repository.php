@@ -176,6 +176,27 @@ class Repository extends Base\Repository
                     })->pluck(Entity::ID)->toArray();
     }
 
+    public function findCardsWithVaultAndNoPayments(string $vault, int $limit)
+    {
+        $paymentRepo = $this->repo->payment;
+
+        $paymentTable = $paymentRepo->getTableName();
+
+        $paymentCardIdColumn = $paymentRepo->dbColumn(Payment\Entity::CARD_ID);
+
+        $cardData = $this->dbColumn('*');
+
+        $IdColumn = $this->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+                    ->leftJoin($paymentTable, $IdColumn, $paymentCardIdColumn)
+                    ->whereNull($paymentCardIdColumn)
+                    ->where(Entity::VAULT, '=', $vault)
+                    ->limit($limit)
+                    ->select($cardData)
+                    ->get();
+    }
+
     protected function addQueryParamInternational($query, $params)
     {
         $international = $this->dbColumn(Entity::INTERNATIONAL);

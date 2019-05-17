@@ -64,8 +64,10 @@ class CardVaultMigrationJob extends Job
             $updated = (new PaymentService)->migrateCardVaultToken($cardId, $paymentId);
 
             $this->trace->info(
-                TraceCode::VAULT_TOKEN_MIGRATION_SUCCESSFULL,
-                ['token_migrated' => $updated]);
+                TraceCode::VAULT_TOKEN_MIGRATION_SUCCESSFULL,[
+                    'token_migrated' => $updated,
+                    'input'          => $this->input
+                ]);
 
             $this->delete();
         }

@@ -275,6 +275,7 @@ final class Route
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
         'bank_transfer_payment_terminal_backfill'  => ['post',     'payment/bank_transfer_terminal_backfill',        'PaymentController@updateBankTransferTerminal'                      ],
+        'payment_card_vault_migrate'               => ['post',     'payments/cards',                                 'PaymentController@paymentCardVaultMigrate'                         ],
         'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
         'refund_reference1_backfill'               => ['post',     'refunds/reference1_backfill',                    'RefundController@backfillUpiMindgateReference1'                    ],
         'refund_reference1_bulk_update'            => ['post',     'refunds/reference1_bulk_update',                 'RefundController@bulkUpdateRefundsReference1'                      ],
@@ -1448,6 +1449,7 @@ final class Route
         'scrooge_tagging_backfill',
         'downtime_trigger_cron',
         'entity_origin_create',
+        'payment_card_vault_migrate',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2413,6 +2415,7 @@ final class Route
 
         'merchant_partners_fetch'                  => '*',
         'webhook_fire'                             => Permission::MAKE_API_CALL,
+        'payment_card_vault_migrate'               => '*',
     ];
 
     public static $direct = [
@@ -2633,6 +2636,7 @@ final class Route
             'payouts_process_queued',
             'scrooge_tagging_backfill',
             'downtime_trigger_cron',
+            'payment_card_vault_migrate',
         ],
 
         'subscriptions' => [

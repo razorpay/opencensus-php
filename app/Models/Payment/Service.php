@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 
+use RZP\Jobs;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Error;
@@ -1703,7 +1704,7 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function migrateCardVaultToken(string $cardId, string $paymentId)
+    public function migrateCardVaultToken(string $cardId, string $paymentId = null)
     {
         $updated = null;
 
@@ -1779,5 +1780,96 @@ class Service extends Base\Service
         }
 
         return Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+    }
+
+    public function paymentCardVaultMigrate($input)
+    {
+        (new Payment\Validator)->validateInput('payment_card_migrate', $input);
+
+        $limit = $input['limit'] ?? 1000;
+
+        $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+
+        $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+
+        $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+
+        $this->trace->info(
+            TraceCode::VAULT_TOKEN_MIGRATION_CRON_REQUEST,
+            [
+                'payments_count' => count($payments),
+                'cards_count'    => count($cards),
+            ]);
+
+        $result = [
+            'payments_count' => count($payments),
+            'cards_count'    => count($cards),
+            'payment_failed' => [],
+            'card_failed'    => [],
+        ];
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $this->migrateCardDataIfApplicable($payment, $payment->card);
+            }
+            catch (\Throwable $e)
+            {
+                $result['payment_failed'][] = $payment->getId();
+            }
+        }
+
+        foreach ($cards as $card)
+        {
+            try
+            {
+                $this->migrateCardDataIfApplicable(null, $card);
+            }
+            catch (\Throwable $e)
+            {
+                $result['card_failed'][] = $card->getId();
+            }
+        }
+
+        return $result;
+    }
+
+    public function migrateCardDataIfApplicable($payment, $card)
+    {
+        $payload = [];
+
+        try
+        {
+            $payload = [
+                'card_id'    => $card->getId(),
+                'token'      => $card->getVaultToken(),
+                'mode'       => $this->mode,
+            ];
+
+            if ($payment !== null)
+            {
+                $payload['payment_id'] = $payment->getId();
+            }
+
+            $this->trace->info(
+                TraceCode::VAULT_TOKEN_MIGRATION_CRON_REQUEST_INIT,
+                [
+                    'payload' => $payload,
+                ]);
+
+            Jobs\CardVaultMigrationJob::dispatch($payload, $this->mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED,
+                ['payment_id' => $payment->getId()]
+            );
+
+            throw $e;
+        }
     }
 }

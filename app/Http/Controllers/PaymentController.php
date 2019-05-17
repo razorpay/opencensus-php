@@ -459,4 +459,13 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function paymentCardVaultMigrate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->paymentCardVaultMigrate($input);
+
+        return ApiResponse::json($data);
+    }
 }

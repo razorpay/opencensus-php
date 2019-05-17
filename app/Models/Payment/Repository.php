@@ -1624,6 +1624,33 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findPaymentsWithCardVault(string $vault, int $limit)
+    {
+        $cardRepo = $this->repo->card;
+
+        $cardTableName = $cardRepo->getTableName();
+
+        $cardIdColumn = $cardRepo->dbColumn(Card\Entity::ID);
+
+        $cardVaultColumn = $cardRepo->dbColumn(Card\Entity::VAULT);
+
+        $paymentData = $this->dbColumn('*');
+
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
+
+        $createdAt  = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentCardIdColumn  = $this->dbColumn(Entity::CARD_ID);
+
+        return $this->newQuery()
+                    ->join($cardTableName, $paymentCardIdColumn, '=', $cardIdColumn)
+                    ->where($cardVaultColumn, '=', $vault)
+                    ->where($createdAt, '<=', $timestamp)
+                    ->select($paymentData)
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function determineLiveOrTestModeForEntityWithGateway($id, $gateway)
     {
         $obj = $this->connection(Mode::LIVE)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);

@@ -3494,7 +3494,6 @@ trait Authorize
 
     protected function migrateCardDataIfApplicable($payment)
     {
-
         try
         {
             if (($payment->isMethodCardOrEmi() === false) or
