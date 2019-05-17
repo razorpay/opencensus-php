@@ -334,8 +334,8 @@ export default class User {
     return this.getExpStatus('international_currencies');
   }
 
-  getCurrencyList(type) {
-    return window.currencyList && window.currencyList[type];
+  get getCurrencyList() {
+    return window.currencyList;
   }
 }
 
