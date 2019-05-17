@@ -333,6 +333,10 @@ export default class User {
   get isInttCurrenciesEnabled() {
     return this.getExpStatus('international_currencies');
   }
+
+  getCurrencyList(type) {
+    return window.currencyList && window.currencyList[type];
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
