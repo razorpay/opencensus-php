@@ -5,6 +5,7 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Request\Service as MerchantRequestService;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -154,5 +155,21 @@ class Service extends Base\Service
 
         $merchantRequestService = new MerchantRequestService();
         $merchantRequestService->consumeOneTimeToken($token);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function sendMail(array $input): array
+    {
+        $this->trace->info(TraceCode::BATCH_SEND_MAIL_REQUEST, $input);
+
+        $validator = new Validator();
+
+        $validator->validateInput('sendMail', $input);
+
+        return $this->core()->sendMail($input);
     }
 }

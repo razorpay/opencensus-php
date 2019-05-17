@@ -77,6 +77,7 @@ final class Route
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
+        'batch_send_mail'                          => ['post',     'batch/sendmail',                                 'BatchController@sendMail'                                          ],
         'batch_upload_form_get'                    => ['get',      'batches/upload',                                 'BatchController@renderBatchUploadForm'                             ],
         'batch_upload_form_validate_file'          => ['post',     'batches/upload/validate',                        'BatchController@validateBatchFile'                                 ],
         'batch_fetch_multiple'                     => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
@@ -1450,6 +1451,7 @@ final class Route
         'downtime_trigger_cron',
         'entity_origin_create',
         'payment_card_vault_migrate',
+        'batch_send_mail',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2736,7 +2738,8 @@ final class Route
         ],
 
         'batch' => [
-            'invoice_create'
+            'invoice_create',
+            'batch_send_mail',
         ],
     ];
 

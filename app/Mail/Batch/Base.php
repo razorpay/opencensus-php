@@ -68,7 +68,7 @@ class Base extends Mailable
     public function __construct(
         array $batch,
         array $merchant,
-        string $outputFileLocalPath,
+        string $outputFileLocalPath = null,
         array $batchSettings = [])
     {
         parent::__construct();
@@ -125,7 +125,10 @@ class Base extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->outputFileLocalPath);
+        if ($this->outputFileLocalPath !== null)
+        {
+            $this->attach($this->outputFileLocalPath);
+        }
 
         return $this;
     }

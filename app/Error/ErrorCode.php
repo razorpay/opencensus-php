@@ -884,6 +884,7 @@ class ErrorCode
     const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                                 = 'SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE';
     const SERVER_ERROR_BATCH_SERVICE_NOT_CALLED                                     = 'SERVER_ERROR_BATCH_SERVICE_NOT_CALLED';
     const SERVER_ERROR_BATCH_SERVICE_NOT_FOUND                                      = 'SERVER_ERROR_BATCH_SERVICE_NOT_FOUND';
+    const SERVER_ERROR_FILE_NOT_FOUND                                               = 'SERVER_ERROR_FILE_NOT_FOUND';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';

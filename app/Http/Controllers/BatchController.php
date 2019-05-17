@@ -106,4 +106,22 @@ class BatchController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * @param Request $request
+     *
+     * After Batch is processed, Batch Service will
+     * call batch/sendmail route to trigger mail
+     * to merchant about batch completion.
+     *
+     * @return mixed
+     */
+    public function sendMail(Request $request)
+    {
+        $input = $request->all();
+
+        $response = $this->service()->sendMail($input);
+
+        return ApiResponse::json($response);
+    }
 }
