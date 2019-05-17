@@ -725,7 +725,7 @@ trait Authorize
     protected function runPaymentInputValidations(Payment\Entity $payment, array $input)
     {
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_INITIATED, $payment);
-        
+
         try
         {
             $this->validateCardAndCvv($payment, $input);
@@ -1906,7 +1906,7 @@ trait Authorize
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment)
     {
-        try 
+        try
         {
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
 
@@ -1932,7 +1932,7 @@ trait Authorize
             }
 
             $this->app['diag']->trackPaymentEvent(
-                EventCode::PAYMENT_RISKCHECK_PROCESSED, 
+                EventCode::PAYMENT_RISKCHECK_PROCESSED,
                 $payment,
                 null,
                 [
@@ -4433,7 +4433,7 @@ trait Authorize
     protected function callGatewayAuthorize(Payment\Entity $payment, array $data)
     {
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $payment);
-        
+
         $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
 
         $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT, $payment);
@@ -5422,6 +5422,7 @@ trait Authorize
             'mode'  => $this->mode,
             'public_key' => $this->app['basicauth']->getPublicKey(),
             'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
+            'oauth_client_id' => $this->app['basicauth']->getOAuthClientId(),
         ];
 
         $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'redirect_terminal_cache', $this->mode);

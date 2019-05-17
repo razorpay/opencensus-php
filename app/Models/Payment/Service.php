@@ -337,6 +337,11 @@ class Service extends Base\Service
             $this->app['basicauth']->authCreds->creds['account_id'] = $payload['account_id'];
         }
 
+        if (empty($payload['oauth_client_id']) === false)
+        {
+            $this->app['basicauth']->setOAuthClientId($payload['oauth_client_id']);
+        }
+
         $payment = $this->core->retrieveById($payload['payment_id']);
 
         return [$merchant, $payment];
