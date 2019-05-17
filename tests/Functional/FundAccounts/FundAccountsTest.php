@@ -3,11 +3,11 @@
 namespace RZP\Tests\Functional\Contacts;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FundAccountsTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -82,6 +82,8 @@ class FundAccountsTest extends TestCase
     public function testCreateCard()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockCardVault();
 
         $this->startTest();
 

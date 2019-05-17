@@ -2001,8 +2001,8 @@ trait PaymentTrait
         };
 
         $cardVault->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing($callable);
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
     }
