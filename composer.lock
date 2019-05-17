@@ -5785,16 +5785,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.4.0",
+            "version": "1.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "6ffdfd6e15767aaf614065a10c2de555f05f20b2"
+                "reference": "ad6c5b3ef73a71ceef8cf5c8da55ea5defdfb435"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/6ffdfd6e15767aaf614065a10c2de555f05f20b2",
-                "reference": "6ffdfd6e15767aaf614065a10c2de555f05f20b2",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/ad6c5b3ef73a71ceef8cf5c8da55ea5defdfb435",
+                "reference": "ad6c5b3ef73a71ceef8cf5c8da55ea5defdfb435",
                 "shasum": ""
             },
             "require": {
@@ -5828,7 +5828,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2019-04-19T10:11:24+00:00"
+            "time": "2019-05-16T11:46:14+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -6127,7 +6127,7 @@
                 "source": "https://github.com/razorpay/spine/tree/0.1.2",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2019-03-21T13:56:02+00:00"
+            "time": "2019-03-23T07:20:42+00:00"
         },
         {
             "name": "razorpay/trace",
