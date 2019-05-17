@@ -569,7 +569,8 @@ class Creator extends Base\Core
     {
         $bucketConfig = $this->storageHandler->getBucketConfig(
             $this->file->getType(),
-            $this->env);
+            $this->env,
+            $this->s3BucketConfigForExternalServices);
 
         $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation(), $duration);
 
