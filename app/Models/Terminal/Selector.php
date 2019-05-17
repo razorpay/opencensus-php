@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
+use RZP\Services\SmartRouting;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime;
@@ -440,7 +441,7 @@ class Selector extends Base\Core
 
             $paymentData = $payment->toArray();
 
-            if ($payment->hasCard() !== null)
+            if ($payment->hasCard() === true)
             {
                 $paymentData['card'] = $this->repo->card->findOrFail($payment->getCardId())->toArray();
             }
@@ -473,12 +474,19 @@ class Selector extends Base\Core
                 'chance'              => $this->options->getChance(),
             ];
 
-            $this->app->smartRouting->sendNonBlockingRequest('/route', $data);
+            // this log is for testing in beta, will be removed before merge to master
+            $this->trace->info(
+                TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
+                [
+                    'data'     => $data,
+                ]);
+
+            $this->app->smartRouting->sendNonBlockingRequest(SmartRouting::SEND_PAYMENT_DATA, $data);
         }
         catch (\Throwable $e)
         {
             $this->trace->error(
-                TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
+                TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
                 [
                     'error'     => $e->getMessage(),
                 ]);
@@ -499,7 +507,7 @@ class Selector extends Base\Core
             return false;
         }
 
-        $response = $this->app->razorx->getTreatment($merchantId, 'payment_hit_routing_service', $this->mode);
+        $response = $this->app->razorx->getTreatment($merchantId, 'payments_hit_routing_service', $this->mode);
 
         if (($response === 'control') or ($response === 'off'))
         {

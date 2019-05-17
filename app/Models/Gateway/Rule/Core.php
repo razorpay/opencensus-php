@@ -6,7 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Account;
+use RZP\Services\SmartRouting;
 use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
@@ -29,9 +29,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $endpoint  = '/rule';
-
-        $this->app->smartRouting->sendRequest($endpoint, 'post', $rule->toArray());
+        $this->app->smartRouting->sendRequest(SmartRouting::CREATE_GATEWAY_RULE, $rule->toArray());
 
         return $rule;
     }
@@ -57,9 +55,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $endpoint  = '/rule/' . $id;
-
-        $this->app->smartRouting->sendRequest($endpoint, 'put', $rule->toArray());
+        $this->app->smartRouting->sendRequest(SmartRouting::UPDATE_GATEWAY_RULE, $rule->toArray());
 
         return $rule;
     }

@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\Rule;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Services\SmartRouting;
 
 class Service extends Base\Service
 {
@@ -26,9 +27,7 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($rule);
 
-        $endpoint  = '/rule/' . $id;
-
-        $this->app->smartRouting->sendRequest($endpoint, 'delete');
+        $this->app->smartRouting->sendRequest(SmartRouting::DELETE_GATEWAY_RULE, null, $id);
 
         return $rule->toArrayDeleted();
     }

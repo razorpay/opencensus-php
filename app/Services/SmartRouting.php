@@ -28,6 +28,26 @@ class SmartRouting
 
     protected $app;
 
+    const CREATE_GATEWAY_RULE  = [
+        'url'       =>  "/rule",
+        'method'    =>  "POST",
+    ];
+
+    const UPDATE_GATEWAY_RULE  = [
+        'url'       =>  "/rule",
+        'method'    =>  "PUT",
+    ];
+
+    const DELETE_GATEWAY_RULE  = [
+        'url'       =>  "/rule/:id",
+        'method'    =>  "DELETE",
+    ];
+
+    const SEND_PAYMENT_DATA  = [
+        'url'       =>  "/route",
+        'method'    =>  "POST",
+    ];
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -41,12 +61,14 @@ class SmartRouting
         $this->request = $app['request'];
     }
 
-    public function sendNonBlockingRequest($url, $data = null)
+    public function sendNonBlockingRequest($action, $data = null, $namespace = null)
     {
-        $url = $this->baseUrl . $url;
+        $url = $this->getUrl($action, $namespace);
 
         if ($data === null)
+        {
             $data = '';
+        }
 
         $headers['Content-Type'] = 'application/json';
 
@@ -61,14 +83,16 @@ class SmartRouting
         $this->app->nonBlockingHttp->postRequest($url, $data, $headers, $username, $password);
     }
 
-    public function sendRequest($url, $method, $data = null)
+    public function sendRequest($action, $data = null, $id = null)
     {
         try
         {
-            $url = $this->baseUrl . $url;
+            $url = $this->getUrl($action, $id);
 
             if ($data === null)
+            {
                 $data = '';
+            }
 
             $headers['Content-Type'] = 'application/json';
 
@@ -89,7 +113,7 @@ class SmartRouting
 
             $request = [
                 'url'     => $url,
-                'method'  => $method,
+                'method'  => $action['method'],
                 'headers' => $headers,
                 'options' => $options,
                 'content' => $data
@@ -181,5 +205,12 @@ class SmartRouting
 
             throw new Exception\RuntimeException('smart routing request failed', $data);
         }
+    }
+
+    private function getUrl($action, $id) : string
+    {
+        $url = $this->baseUrl . str_replace_first(':id', $id, $action['url']);
+
+        return $url;
     }
 }

@@ -1781,6 +1781,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
     const PAYMENTS_DATA_PUSH_ROUTING_SERVICE                    = "PAYMENTS_DATA_PUSH_ROUTING_SERVICE";
+    const PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR              = "PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR";
 
     // Core Payment Service tracecodes
     const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
