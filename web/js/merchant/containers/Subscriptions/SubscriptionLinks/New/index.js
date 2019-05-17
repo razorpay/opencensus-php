@@ -25,6 +25,7 @@ import Review from './Review';
   state => ({
     plans: state.plans,
     items: state.items,
+    user: state.session.user,
   }),
   { fetchPlans, fetchItems, saveSubscription, showNotification }
 )
@@ -262,6 +263,7 @@ export default class NewSubscriptionLink extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             plans={this.props.plans.items}
+            getCurrencyList={this.props.user.getCurrencyList}
           />
         );
     }
