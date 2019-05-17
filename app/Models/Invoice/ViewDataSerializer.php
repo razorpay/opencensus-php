@@ -136,6 +136,13 @@ class ViewDataSerializer extends Base\Core
                 ];
 
                 break;
+
+            case Preferences::MID_RBLLENDING:
+                $customLabels = [
+                    'hide_issued_to' => true,
+                ];
+
+                break;
         }
 
         return $customLabels;
