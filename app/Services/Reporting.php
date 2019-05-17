@@ -20,6 +20,7 @@ use RZP\Models\Partner\Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Base\PublicCollection;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
@@ -46,6 +47,7 @@ class Reporting implements ExternalService
 
     // REPORT_TYPE constants
     const MERCHANT      = 'merchant';
+    const PARTNER       = 'partner';
 
     // Headers
     const CONSUMER_HEADER       = 'X-Consumer';
@@ -117,14 +119,16 @@ class Reporting implements ExternalService
                 // If SHARED_ACCOUNT, use headers sent
                 // Useful for creating schedules for non-merchants
                 $headers[self::REPORT_TYPE_HEADER] = $reportType ?: self::MERCHANT;
-                $headers[self::CONSUMER_HEADER] = $consumer ?: Account::SHARED_ACCOUNT;
+                $headers[self::CONSUMER_HEADER]    = $consumer ?: Account::SHARED_ACCOUNT;
             }
             else
             {
                 // MERCHANT Reports
                 // Proxy Auth used here
-                $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
-                $headers[self::CONSUMER_HEADER] = $merchantId;
+                $this->validateMerchantReportType($reportType);
+
+                $headers[self::REPORT_TYPE_HEADER] = $reportType ?: self::MERCHANT;
+                $headers[self::CONSUMER_HEADER]    = $merchantId;
             }
 
             if (empty($linkedAccountParentId) === false)
@@ -693,6 +697,25 @@ class Reporting implements ExternalService
         return $items;
     }
 
+    protected function getPartnerConfigs(Merchant\Entity $merchant)
+    {
+        $partnerConfigs = (new Config\Core)->fetchAllConfigsByPartner($merchant);
+
+        $partnerConfigs = $partnerConfigs->filter(function ($partnerConfig) {
+            return ($partnerConfig->isCommissionsEnabled() === true);
+        });
+
+        $commissionConfigs = $partnerConfigs->filter(function ($partnerConfig) {
+            return ($partnerConfig->getCommissionModel() === Config\CommissionModel::COMMISSION);
+        });
+
+        $subventionConfigs = $partnerConfigs->filter(function ($partnerConfig) {
+            return ($partnerConfig->getCommissionModel() === Config\CommissionModel::SUBVENTION);
+        });
+
+        return [$commissionConfigs, $subventionConfigs];
+    }
+
     protected function filterOnReportTypeAndNameAndConsumer(Merchant\Entity $merchant, $items)
     {
         $features = $merchant->getEnabledFeatures();
@@ -701,28 +724,30 @@ class Reporting implements ExternalService
         $hasGenericNotesTag = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
         $showTxnCommissionReport          = false;
-        $showAggregateCommissionReports   = false;
+        $showAggregateCommissionReport    = false;
+        $showSubventionReports            = false;
 
         if ($merchant->isPartner() === true)
         {
-            $partnerConfigs = (new Config\Core)->fetchAllConfigsByPartner($merchant);
+            list($commissionConfigs, $subventionConfigs) = $this->getPartnerConfigs($merchant);
 
-            $partnerConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-                return ($partnerConfig->isCommissionsEnabled() === true);
-            });
-
-            // if at least one partner config is enabled, we show commission reports
-            if ($partnerConfigs->isNotEmpty() === true)
+            // if at least one commission config is enabled, we show commission reports
+            if ($commissionConfigs->isNotEmpty() === true)
             {
                 if ($merchant->isResellerPartner() === false)
                 {
                     $showTxnCommissionReport        = true;
-                    $showAggregateCommissionReports = true;
+                    $showAggregateCommissionReport  = true;
                 }
                 else
                 {
-                    $showAggregateCommissionReports = (new Commission\Core)->shouldShowAggregateCommissionReportForPartner($merchant);
+                    $showAggregateCommissionReport  = (new Commission\Core)->shouldShowAggregateCommissionReportForPartner($merchant);
                 }
+            }
+
+            if ($subventionConfigs->isNotEmpty() === true)
+            {
+                $showSubventionReports = true;
             }
         }
 
@@ -761,7 +786,31 @@ class Reporting implements ExternalService
                 'name'      => 'Aggregate Transaction Commission Report',
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showAggregateCommissionReports,
+                'condition' => $showAggregateCommissionReport,
+            ],
+            [
+                'name'      => 'Daily Earnings Report',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showAggregateCommissionReport,
+            ],
+            [
+                'name'      => 'Per Transaction Earnings Report',
+                'type'      => Table::COMMISSION,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showTxnCommissionReport,
+            ],
+            [
+                'name'      => 'Daily Subvention Report',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showSubventionReports,
+            ],
+            [
+                'name'      => 'Per Transaction Subvention Report',
+                'type'      => Table::COMMISSION,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showSubventionReports,
             ],
         ];
 
@@ -838,6 +887,25 @@ class Reporting implements ExternalService
             $payload['body'] = $response->body;
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, null, $payload);
+        }
+    }
+
+    protected function validateMerchantReportType($reportType)
+    {
+        if ((empty($reportType) === false))
+        {
+            if (($reportType !== self::MERCHANT) and ($reportType !== self::PARTNER))
+            {
+                throw new Exception\BadRequestValidationFailureException('Invalid report type');
+            }
+
+            $merchant = $this->ba->getMerchant();
+
+            if ((empty($merchant) === false) and ($reportType === self::PARTNER) and ($merchant->isPartner() === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+            }
         }
     }
 
