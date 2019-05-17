@@ -224,7 +224,7 @@ class Entity
     const P2P_BENEFICIARY        = 'p2p_beneficiary';
     const P2P_TRANSACTION        = 'p2p_transaction';
     const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
-    const P2P_CONCERN            = 'p2p_concerns';
+    const P2P_CONCERN            = 'p2p_concern';
 
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';

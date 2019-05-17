@@ -106,4 +106,13 @@ class TransactionController extends Controller
 
         return $this->response($response);
     }
+
+    public function fetchAllConcerns()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->fetchAllConcerns($input);
+
+        return $this->response($response);
+    }
 }

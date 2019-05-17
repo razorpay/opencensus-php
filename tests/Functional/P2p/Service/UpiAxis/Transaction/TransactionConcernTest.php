@@ -59,5 +59,30 @@ class TransactionConcernTest extends TestCase
         $helper->withSchemaValidated();
 
         $response = $helper->concernStatus($transaction->getPublicId());
+
+        $this->assertSame('success', $response['response_code']);
+        $this->assertSame('Beneficiary account has already been credited.', $response['response_description']);
+    }
+
+    public function testFetchAllConcerns()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createCollectTransaction();
+
+        $helper->raiseConcern($transaction->getPublicId());
+
+        $helper->concernStatus($transaction->getPublicId());
+
+        $helper->raiseConcern($transaction->getPublicId());
+
+        //TODO: Fix json schema
+        //$helper->withSchemaValidated();
+
+        $response = $helper->fetchAllConcerns();
+
+        $this->assertCount(2, $response['items']);
+        $this->assertSame('pending', $response['items'][0]['response_code']);
+        $this->assertSame('success', $response['items'][1]['response_code']);
     }
 }

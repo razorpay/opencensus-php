@@ -185,14 +185,33 @@ class Processor extends Base\Processor
 
         $transaction = $this->core->fetch($this->input->pull(Entity::ID));
 
-        $concern = $transaction->concern;
-        //TODO: Validate concern status
+        if ($transaction->concern instanceof Concern\Entity)
+        {
+            if ($transaction->concern->isClosed() === true)
+            {
+                return $transaction->concern->toArrayPublic();
+            }
+        }
+        else
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+        }
 
         $this->gatewayInput->put(Entity::TRANSACTION, $transaction);
-        $this->gatewayInput->put(Entity::CONCERN, $concern);
+        $this->gatewayInput->put(Entity::CONCERN, $transaction->concern);
         $this->gatewayInput->put(Entity::UPI, $transaction->upi);
 
         return $this->callGateway();
+    }
+
+    public function fetchAllConcerns(array $input): array
+    {
+        return (new Concern\Core)->fetchAll($input)->toArrayPublic();
+    }
+
+    public function concernStatusSuccess(array $input): array
+    {
+        return $this->raiseConcernSuccess($input);
     }
 
     protected function initiateCallGateway(Entity $transaction)

@@ -30,6 +30,8 @@ class Core extends Base\Core
 
         $concern->edit($input);
 
+        $this->repo->saveOrFail($concern);
+
         return $concern;
     }
 
