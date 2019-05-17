@@ -243,7 +243,10 @@ export default class AddPlan extends Component {
                 )}
               />
 
-              <Alert type="error" message={this.state.errors} />
+              <div>
+                <Alert type="error" message={this.state.errors} />
+              </div>
+
               <div class="btn-toolbar text-center">
                 <AsyncButton
                   type="submit"
