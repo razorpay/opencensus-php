@@ -615,6 +615,7 @@
     border-bottom: 1px solid #efefef
 
     & > div:not(.dropdown-options)
+      width: 50%
       display: inline-block
       padding: 0
       margin: 0
@@ -627,8 +628,9 @@
         overflow-y: scroll
 
   form[name="form_creator_generic"]
-    & > div:not(.dropdown-options)
-      width: 50%
+    .section-1
+      & > div:not(.dropdown-options)
+        width: 50%
 
     .Input:not(.Input--checkbox) .Input-content
       margin-top: 8px
