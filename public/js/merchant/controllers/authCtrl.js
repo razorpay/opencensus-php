@@ -339,11 +339,6 @@ app
                 'Click - Create Account (Success)'
               );
 
-            window.rzpAnalytics({
-              name: 'facebook',
-              event: 'signup_complete',
-            });
-
             window.trackHubs({
               id: 'SIGNUP_COMPLETE',
             });
@@ -475,6 +470,11 @@ app
             pushToDrip();
             window.ga &&
               window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
+
+            window.rzpAnalytics({
+              name: 'facebook',
+              event: 'signup_complete',
+            });
 
             updateHubSpotContactProperty();
 
