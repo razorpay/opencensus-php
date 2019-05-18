@@ -340,7 +340,7 @@ class Entity extends Base\PublicEntity
             return 'Razorpay';
         }
 
-        return IFSC::getBankName($ifsc);
+        return IFSC::getBankName(strtoupper($ifsc));
     }
 
     public function getPayerName()
