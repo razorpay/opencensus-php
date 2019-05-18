@@ -68,21 +68,40 @@ class TransactionConcernTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
-        $transaction = $this->createCollectTransaction();
+        $ctxn = $this->createCollectTransaction();
 
-        $helper->raiseConcern($transaction->getPublicId());
+        $helper->raiseConcern($ctxn->getPublicId());
 
-        $helper->concernStatus($transaction->getPublicId());
+        $helper->concernStatus($ctxn->getPublicId());
 
-        $helper->raiseConcern($transaction->getPublicId());
+        $ctxn2 = $this->createCollectTransaction();
+
+        $helper->raiseConcern($ctxn2->getPublicId());
+
+        $helper->raiseConcern($ctxn->getPublicId());
 
         //TODO: Fix json schema
         //$helper->withSchemaValidated();
 
-        $response = $helper->fetchAllConcerns();
+        $response = $helper->fetchAllConcerns([
+            'expand' => ['transaction.payee', 'transaction.payer', 'transaction.upi']
+        ]);
 
-        $this->assertCount(2, $response['items']);
+        $this->assertCount(3, $response['items']);
+
         $this->assertSame('pending', $response['items'][0]['response_code']);
-        $this->assertSame('success', $response['items'][1]['response_code']);
+        $this->assertSame($ctxn->upi->getRrn(), $response['items'][0]['transaction']['upi']['rrn']);
+        $this->assertSame($ctxn->payer->getAddress(), $response['items'][0]['transaction']['payer']['address']);
+        $this->assertSame($ctxn->payer->getAddress(), $response['items'][0]['transaction']['payer']['address']);
+
+        $this->assertSame('pending', $response['items'][1]['response_code']);
+        $this->assertSame($ctxn2->upi->getRrn(), $response['items'][1]['transaction']['upi']['rrn']);
+        $this->assertSame($ctxn2->payer->getAddress(), $response['items'][1]['transaction']['payer']['address']);
+        $this->assertSame($ctxn2->payer->getAddress(), $response['items'][1]['transaction']['payer']['address']);
+
+        $this->assertSame('success', $response['items'][2]['response_code']);
+        $this->assertSame($ctxn->upi->getRrn(), $response['items'][2]['transaction']['upi']['rrn']);
+        $this->assertSame($ctxn->payer->getAddress(), $response['items'][2]['transaction']['payer']['address']);
+        $this->assertSame($ctxn->payer->getAddress(), $response['items'][2]['transaction']['payer']['address']);
     }
 }

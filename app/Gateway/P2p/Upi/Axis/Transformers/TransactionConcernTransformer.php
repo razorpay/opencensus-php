@@ -59,7 +59,7 @@ class TransactionConcernTransformer extends Transformer
             ],
             '01'   => [
                 Entity::RESPONSE_CODE   => ResponseCode::PENDING,
-                Entity::INTERNAL_STATUS => Status::CLOSED,
+                Entity::INTERNAL_STATUS => Status::PENDING,
             ],
             '102'  => [
                 Entity::RESPONSE_CODE   => ResponseCode::FAILED,

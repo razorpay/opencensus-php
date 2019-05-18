@@ -265,7 +265,7 @@ class Sdk
                 $callback = [
                     Fields::AMOUNT                      => $input[Fields::AMOUNT],
                     Fields::CUSTOME_RESPONSE            => '{}',
-                    Fields::EXPIRY                      => '2019-04-25T16:11:22+05:30',
+                    Fields::EXPIRY                      => $input[Fields::EXPIRY] ?? '2019-04-25T16:11:22+05:30',
                     Fields::GATEWAY_REFERENCE_ID        => $input[Fields::GATEWAY_REFERENCE_ID] ?? '911416196085',
                     Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
                     Fields::IS_VERIFIED_PAYEE           => 'false',
