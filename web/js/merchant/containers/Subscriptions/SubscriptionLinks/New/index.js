@@ -79,12 +79,26 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleChangeInPlan = ({ option }) => {
+    const { validTabs, fields, internals } = this.state;
+
     this.setState({
       currencyOfSelectedPlan: option.currency,
       fields: {
-        ...this.state.fields,
+        ...fields,
         plan_id: option.id,
+        addons: [],
       },
+      internals: {
+        ...internals,
+        _addOnPresent: false,
+      },
+      validTabs: validTabs.map((currState, i) => {
+        if (i === 0) {
+          return false;
+        }
+
+        return currState;
+      }),
     });
   };
 
