@@ -76,6 +76,9 @@ export default class UpdateSubscription extends Component {
           previousSubscription: {
             ...resp,
           },
+          internals: {
+            _startsImmediately: !resp.start_at,
+          },
           loading: false,
         });
       })
@@ -102,6 +105,7 @@ export default class UpdateSubscription extends Component {
   isFormValid = () => {
     const { fields, internals } = this.state;
     const validateTotalCount = (this.planDetailsForm || {}).validateTotalCount;
+
     return isFormValid(fields, internals, validateTotalCount);
   };
 
