@@ -872,3 +872,24 @@ export const loadImage = (src, onLoad, onError) => {
 
   image.src = src;
 };
+
+/*
+* Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
+*
+* This is helper fn. as a work around for dispatching manual events on native elements.
+*
+* */
+export function setNativeValue(element, value) {
+  const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
+  const prototype = Object.getPrototypeOf(element);
+  const prototypeValueSetter = Object.getOwnPropertyDescriptor(
+    prototype,
+    'value'
+  ).set;
+
+  if (valueSetter && valueSetter !== prototypeValueSetter) {
+    prototypeValueSetter.call(element, value);
+  } else {
+    valueSetter.call(element, value);
+  }
+}

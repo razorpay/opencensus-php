@@ -91,7 +91,7 @@ export default class TestMode extends Component {
               <a
                 target="_blank"
                 className="btn-link"
-                href="https://docs.razorpay.com/"
+                href="https://razorpay.com/docs"
               >
                 documentation
               </a>{' '}

@@ -206,6 +206,7 @@ export default class ActivationWizard extends React.Component {
 
     if (this.props.data.activated == 0) {
       trackFb('KYC_start');
+      updateHubSpotContactsProperties({ started: true });
     }
   }
 
@@ -610,7 +611,14 @@ export default class ActivationWizard extends React.Component {
       } else {
         trackFb(`KYC_complete_${data.data.activation_flow}`);
 
-        updateHubSpotContactsProperties({ l2_final_submission: true });
+        updateHubSpotContactsProperties(
+          {
+            final_submission: true,
+          },
+          {
+            account_status: data.data.activation_status,
+          }
+        );
 
         onAction &&
           onAction.trackSubmit({
@@ -1399,11 +1407,12 @@ class SubmitForm extends React.Component {
   }
 }
 
-function updateHubSpotContactsProperties(data) {
+function updateHubSpotContactsProperties(data, extra) {
   const hbsData = addPrefixToObjectKeys('l2_', data);
 
   const trackData = {
     ...hbsData,
+    ...extra,
   };
 
   if (data.business_type) {
@@ -1417,7 +1426,7 @@ function updateHubSpotContactsProperties(data) {
   }
 
   if (data.gstin) {
-    trackData.l2_gstin = !!trackData;
+    trackData.l2_gstin = !!trackData.l2_gstin;
   }
 
   trackhubsContactUpdate(trackData);

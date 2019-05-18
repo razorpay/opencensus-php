@@ -37,7 +37,6 @@ const editableFieldsInIssuedState = [
 ];
 
 export default class Invoice extends GenericEntity {
-  currency = 'INR';
   resourceUrl = 'invoices';
 
   getRouteName() {

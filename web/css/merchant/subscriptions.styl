@@ -1,22 +1,23 @@
-.plan-create {
-  .billing-frequency {
-    display: table;
+.plan-fields-wrapper
+  .Field-amount-wrapper
+    .Input--Currency
+      display: inline-block
 
-    > * {
-      display: table-cell;
-      padding-right: 8px;
-    }
+      .value
+        height: 34px
 
-    .InputField {
-      width: 50px;
+      .PowerSelect__Trigger
+        height: 32px
 
-      .form-control {
-        padding-left: 8px;
-        padding-right: 8px;
-      }
-    }
-  }
-}
+        &_Status, &_Label
+          height: 32px
+
+      .Input--Currency-dropdown
+        border: 1px solid #cfdadd
+
+    .InputField
+      display: inline-block
+      width: calc(100% - 70px)
 
 
 .Modal-container

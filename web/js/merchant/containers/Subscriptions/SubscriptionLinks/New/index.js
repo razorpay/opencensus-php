@@ -25,6 +25,7 @@ import Review from './Review';
   state => ({
     plans: state.plans,
     items: state.items,
+    user: state.session.user,
   }),
   { fetchPlans, fetchItems, saveSubscription, showNotification }
 )
@@ -79,6 +80,7 @@ export default class NewSubscriptionLink extends Component {
 
   handleChangeInPlan = ({ option }) => {
     this.setState({
+      currencyOfSelectedPlan: option.currency,
       fields: {
         ...this.state.fields,
         plan_id: option.id,
@@ -243,6 +245,7 @@ export default class NewSubscriptionLink extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             removeAddOn={this.handleRemoveBtn}
+            currency={this.state.currencyOfSelectedPlan}
           />
         );
       case 2:
@@ -260,6 +263,7 @@ export default class NewSubscriptionLink extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             plans={this.props.plans.items}
+            getCurrencyList={this.props.user.getCurrencyList}
           />
         );
     }

@@ -15,7 +15,6 @@ export default class Item extends GenericEntity {
     'tax_inclusive',
     'tax_id',
   ];
-  currency = 'INR';
   resourceUrl = 'items';
 
   getRouteName() {

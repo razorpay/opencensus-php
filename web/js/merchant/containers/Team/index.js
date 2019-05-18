@@ -32,7 +32,7 @@ export default class TeamContainer extends Component {
     let invitations = this.props.invitations;
     let users = this.props.users;
     let otherUsers = users.filter(
-      user => user.email !== this.props.merchant.email
+      user => user.email !== this.props.merchant.user.email
     );
 
     return (
@@ -46,7 +46,7 @@ export default class TeamContainer extends Component {
             >
               <a
                 class="btn btn-link"
-                href="https://docs.razorpay.com/v1/page/team-support"
+                href="https://razorpay.com/docs/team-support/"
                 target="_blank"
               >
                 Documentation &nbsp;

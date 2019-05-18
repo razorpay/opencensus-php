@@ -3,7 +3,6 @@ import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const ItemsListItem = ({ item, onEdit, onDelete }) => {
-  console.log('..ITEM.....', item);
   return (
     <EntityItemRow id={item.id}>
       <td>

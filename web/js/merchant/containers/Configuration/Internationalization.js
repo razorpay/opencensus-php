@@ -26,7 +26,7 @@ const CUSTOM_MSG = {
     </span>
   ),
   generic_msg:
-    'Settlement cycle and transaction fee is higher for International payments. \n International card payments is currently available only for payment gateway and not for payment pages, payment links & invoices.',
+    'Settlement cycle and transaction fee is higher for International payments.',
 };
 
 @connect(

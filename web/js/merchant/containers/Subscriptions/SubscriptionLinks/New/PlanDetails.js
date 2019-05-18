@@ -61,7 +61,9 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
             </div>
             {fields.plan_id && (
               <QuantitySelector
+                currency={selectedPlan.currency}
                 rate={selectedPlan.amount}
+                currency={selectedPlan.currency}
                 quantity={fields.quantity}
                 informativeMessage={getInformativeMessage(selectedPlan)}
               />

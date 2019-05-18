@@ -21,6 +21,8 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { Modal, ModalContent } from 'component/Modal';
 
+import { AmountTooltip } from 'rzp/ui/Amount';
+
 const mandatoryFields = [
   'description',
   'mandateMethod',
@@ -134,6 +136,7 @@ export default class CreateNewAuthLinkContainer extends Component {
       description: data.description,
       receipt: data.receipt,
       expire_by: !Number(data.hasNoExpiry) ? data.expireAt : undefined,
+      currency: data.currency,
       amount:
         data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
@@ -283,7 +286,6 @@ export default class CreateNewAuthLinkContainer extends Component {
                 placement="topLeft"
                 size="half_big"
                 addonAfter={<i class="i i-date-range" />}
-                description="On this date link is expired"
                 disabled={!!Number(this.state.hasNoExpiry)}
                 onChange={this.handleDateChange('expireAt')}
                 description="Expiry of Authentication Link"
@@ -367,25 +369,35 @@ export default class CreateNewAuthLinkContainer extends Component {
                   name="mandateMaxAmount"
                   placeholder="100000"
                   label="Token Max Amount"
-                  addonBefore="₹"
+                  addonBefore={
+                    <AmountTooltip
+                      currency={'INR'}
+                      parentQuerySelector=".Modal"
+                    />
+                  }
                   size="half_big"
                   validator={checkIfAmount}
                   description="Max Amount for Mandate"
+                  class="Input--Amount"
                 />
               </Fragment>
             )}
 
             {method === 'card' && (
-              <Input
-                name="amount"
-                label="Amount"
-                type="tel"
-                placeholder="0.00"
-                addonBefore="₹"
-                description="Amount of Authorization Link Payment"
-                required
-                validator={checkIfAmount}
-              />
+              <Input.Group class="InputGroup--inline" label="Amount">
+                <div class="Input-content">
+                  <Input.CurrencySelect name="currency" />
+
+                  <Input
+                    name="amount"
+                    type="tel"
+                    placeholder="0.00"
+                    description="Amount of Authorization Link Payment"
+                    validator={checkIfAmount}
+                    required
+                  />
+                </div>
+              </Input.Group>
             )}
 
             <Input.PairList

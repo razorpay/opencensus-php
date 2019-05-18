@@ -49,6 +49,7 @@ export default class InvoiceLineItem extends React.Component {
           }}
           isNew
           showTaxes={showTaxes}
+          currency={'INR'}
         />
       ),
     });
@@ -545,7 +546,10 @@ export default class InvoiceLineItem extends React.Component {
 
         <td class="text-right lineItem__total">
           <div class="item-total">
-            <Amount value={lineItemTotal * 100} currency={'INR'} />
+            <Amount
+              value={lineItemTotal * 100}
+              currency={selectedOption.currency}
+            />
           </div>
           {selectedOption.item_id &&
             applyTaxes && (
@@ -564,7 +568,7 @@ export default class InvoiceLineItem extends React.Component {
                           100 /
                           gstSlab.groups.length
                         }
-                        currency={'INR'}
+                        currency={selectedOption.currency}
                       />
                     </p>
                   ))}
@@ -579,7 +583,7 @@ export default class InvoiceLineItem extends React.Component {
                           selectedOption.tax_inclusive
                         ) * 100
                       }
-                      currency={'INR'}
+                      currency={selectedOption.currency}
                     />
                   </p>
                 )}

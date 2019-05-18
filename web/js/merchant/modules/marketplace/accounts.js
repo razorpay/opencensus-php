@@ -2,8 +2,8 @@ import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge, unshift } from 'rzp/utils/immutable';
 
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
-const ACCOUNT_FETCH = 'ACCOUNT_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
+const ACCOUNT_UPDATE = 'ACCOUNT_UPDATE';
 const UPDATE_EMAIL = 'UPDATE_EMAIL';
 const ACCOUNT_DASHBOARD_ACCESS = 'ACCOUNT_DASHBOARD_ACCESS';
 const ACCOUNT_REFUNDS_ACCESS = 'ACCOUNT_REFUNDS_ACCESS';
@@ -46,6 +46,13 @@ export const saveAccount = data => {
       appendModeInQueryParam: true,
       data,
     }).then(response => response.data),
+  };
+};
+
+export const updateAccount = data => {
+  return {
+    type: ACCOUNT_UPDATE,
+    payload: data,
   };
 };
 
@@ -128,6 +135,17 @@ export default function(state = initialState, action) {
 
     case `${ACCOUNT_CREATE}::SUCCESS`:
       return set(state, 'accounts', unshift(state.accounts, action.payload));
+
+    case ACCOUNT_UPDATE:
+      return set(
+        state,
+        'accounts',
+        state.accounts.map(acc => {
+          if (acc.id === action.payload.id) return action.payload;
+
+          return acc;
+        })
+      );
 
     default:
       return state;

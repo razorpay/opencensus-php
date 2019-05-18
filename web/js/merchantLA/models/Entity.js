@@ -15,7 +15,6 @@ export default class Entity extends Base {
     `fetchAll` returns a collection of the instances of the resource. This is a static method & should be invoked as [Class].fetchAll(params).
   */
   fetchAll(params = {}) {
-    console.log('here...');
     const Klass = this.constructor;
     let { id, appendModeInURL, appendModeInQueryParam, ...data } = params;
 

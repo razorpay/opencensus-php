@@ -53,7 +53,7 @@ export default class WebhooksContainer extends ListContainer {
             >
               <a
                 class="btn btn-link"
-                href="https://docs.razorpay.com/v1/page/webhooks"
+                href="https://razorpay.com/docs/webhooks/"
                 target="_blank"
               >
                 Documentation &nbsp;

@@ -16,6 +16,9 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import { deepCopy } from 'rzp/utils/immutable';
 import Item from 'merchant/models/Item';
 import { isTaxOfTypeCess } from 'rzp/utils/rzp-utils';
+import { AmountTooltip } from 'rzp/ui/Amount';
+import Input from 'component/Input';
+import { classList } from 'common/util';
 
 const selector = formValueSelector('newItem');
 
@@ -93,7 +96,9 @@ export default class AddItem extends Component {
     });
 
     if (this.props.item) {
-      this._initialize(this.props.item);
+      this._initialize(this.props.item, this.props.currency); // In GST invoice, creating New item actually has this.props.items = {name: null}
+    } else {
+      this.props.initialize({ currency: this.props.currency });
     }
 
     Promise.all(promises)
@@ -129,7 +134,7 @@ export default class AddItem extends Component {
    * Processes taxes and stuff.
    * @param {Item} item
    */
-  _initialize(item) {
+  _initialize(item, currency) {
     item = new Item(deepCopy(item));
 
     let showCessForm = false;
@@ -171,7 +176,10 @@ export default class AddItem extends Component {
     }
 
     // Initialize and set state.
-    this.props.initialize(item);
+    this.props.initialize({
+      ...item,
+      currency: this.props.currency,
+    });
 
     this.setState({
       showCessForm,
@@ -366,6 +374,10 @@ export default class AddItem extends Component {
     return setTimeout(() => this.props.change('cess', val), 0);
   };
 
+  onCurrencyChange = option => {
+    this.props.change('currency', option.name);
+  };
+
   render() {
     const {
       handleSubmit,
@@ -376,8 +388,8 @@ export default class AddItem extends Component {
       taxInclusive,
       cess,
       showTaxes = false,
+      currency,
     } = this.props;
-
     const { showCessForm, editingItem, showTaxRadios } = this.state;
 
     const gstRates = this.getGSTRates();
@@ -443,8 +455,14 @@ export default class AddItem extends Component {
                 <div class="form-group">
                   <label class="label-required">Rate</label>
                   <div>
-                    <div class="input-group">
-                      <span class="input-group-addon">₹</span>
+                    <div class="input-group input-group--amount">
+                      <Input.CurrencySelect
+                        name="currency"
+                        onChange={this.onCurrencyChange}
+                        parentQuerySelector=".ReactModal__Content"
+                        defaultValue={currency}
+                        disabled
+                      />
                       <Field
                         placeholder="Amount"
                         name="amountInINR"

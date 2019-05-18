@@ -16,8 +16,9 @@ import * as ModalActions from 'rzp/modules/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { ModalMask } from 'component/Modal';
 import Button from 'component/Button';
-
 import Amount from 'ui/Amount';
+
+import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
 
 @connect(
   state => {
@@ -45,36 +46,15 @@ export default class Details extends Component {
     };
   }
 
-  onToggleDashboardAccess = (checked, cb) => {
-    const { account } = this.state;
-    let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
-      message = `Are you sure you want to ${
-        checked ? 'Enable' : 'Disable'
-      } dashboard access for this linked account`,
-      data = {
-        dashboard_access: checked,
-        accountId: account.id,
-      };
-
-    if (account.allow_reversals && !checked) {
-      header = 'Also Disable Customer Refunds?';
-      (message =
-        'Disabling Dashboard Access will also disable the refund to customer to the Linked Account'),
-        (data = {
-          accountId: account.id,
-          dashboard_access: checked,
-          allow_reversals: checked,
-        });
-    }
+  onToggleDashboardAccess = (isChecked, cb) => {
+    const { account } = this.state,
+      checked = !account.dashboard_access,
+      { header, message, data } = validateDashboardAccess(account, checked);
 
     return this.context
       .confirm({
-        header: header,
-        message: () => (
-          <div class="text-semi-muted">
-            <p>{message}</p>
-          </div>
-        ),
+        header,
+        message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
@@ -92,7 +72,20 @@ export default class Details extends Component {
                   } for merchant "${account.name}"`,
                 });
 
-                this.fetchData();
+                this.setState(
+                  {
+                    account: {
+                      ...account,
+                      ...data,
+                    },
+                  },
+                  () => {
+                    this.props.updateAccount({
+                      ...account,
+                      ...data,
+                    });
+                  }
+                );
 
                 return resp;
               } else {
@@ -124,43 +117,18 @@ export default class Details extends Component {
       }); // dummy catch to handle confirm abort rejection
   };
 
-  onToggleAllowRefunds = (checked, cb) => {
-    const { account } = this.state;
-    let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
-      message = (
-        <div class="text-semi-muted">
-          <p>
-            {`Are you sure you want to ${
-              checked ? 'Enable' : 'Disable'
-            } allow refunds for this linked account`}
-          </p>
-        </div>
-      ),
-      data = {
-        allow_reversals: checked,
-        accountId: account.id,
-      };
-
-    if (!account.dashboard_access && checked) {
-      header = 'Also enable Dashboard Access?';
-      message = (
-        <div class="text-semi-muted">
-          <p>
-            Enabling Refund to customer will also enable Dashboard access to the
-            Linked Account.
-          </p>
-        </div>
+  onToggleAllowRefunds = (isChecked, cb) => {
+    const { account } = this.state,
+      checked = !account.allow_reversals,
+      { header, message, data } = validateAllowRefundsMessages(
+        account,
+        checked
       );
-      data = {
-        allow_reversals: checked,
-        accountId: account.id,
-        dashboard_access: checked,
-      };
-    }
+
     return this.context
       .confirm({
-        header: header,
-        message: () => message,
+        header,
+        message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
@@ -178,8 +146,20 @@ export default class Details extends Component {
                   } for merchant "${account.name}"`,
                 });
 
-                this.fetchData();
-
+                this.setState(
+                  {
+                    account: {
+                      ...account,
+                      ...data,
+                    },
+                  },
+                  () => {
+                    this.props.updateAccount({
+                      ...account,
+                      ...data,
+                    });
+                  }
+                );
                 return resp;
               } else {
                 throw 'Some network error has occurred';
@@ -330,7 +310,7 @@ export default class Details extends Component {
                   </span>{' '}
                   {account.activation_details &&
                   account.activation_details.status == 'activated' ? (
-                    <a class="m-l" link onClick={this.showActivationForm}>
+                    <a class="m-l" onClick={this.showActivationForm}>
                       Show Activation Form
                     </a>
                   ) : (
@@ -354,7 +334,7 @@ export default class Details extends Component {
                       isDisabled={noLAEmail}
                     >
                       <SwitchField
-                        defaultChecked={!!account.dashboard_access}
+                        checked={!!account.dashboard_access}
                         onChange={this.onToggleDashboardAccess}
                         disabled={noLAEmail}
                         type="prime"
@@ -389,7 +369,7 @@ export default class Details extends Component {
                       isDisabled={noLAEmail}
                     >
                       <SwitchField
-                        defaultChecked={!!account.allow_reversals}
+                        checked={!!account.allow_reversals}
                         onChange={this.onToggleAllowRefunds}
                         disabled={noLAEmail}
                         type="prime"

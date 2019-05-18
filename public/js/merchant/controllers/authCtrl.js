@@ -277,6 +277,18 @@ app
           event: 'signup_start',
         });
 
+        window.trackHubs({
+          name: 'create_contact',
+          data: {
+            email: $scope.signup.data.email,
+            signup_start: true,
+          },
+        });
+
+        window.trackHubs({
+          id: 'SIGNUP_START',
+        });
+
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
@@ -327,16 +339,8 @@ app
                 'Click - Create Account (Success)'
               );
 
-            window.rzpAnalytics({
-              name: 'facebook',
-              event: 'signup_complete',
-            });
-
             window.trackHubs({
-              name: 'create_contact',
-              data: {
-                email: $scope.signup.data.email,
-              },
+              id: 'SIGNUP_COMPLETE',
             });
 
             $scope.isLoggedIn = true;
@@ -367,6 +371,12 @@ app
             });
           } else {
             hideSpinner();
+
+            window.trackHubs({
+              id: 'SIGNUP_FAILED',
+              value: data.errors[0],
+            });
+
             if (
               data.errors &&
               data.errors[0] &&
@@ -460,6 +470,11 @@ app
             pushToDrip();
             window.ga &&
               window.ga('send', 'event', 'Signup - Steps', 'Click - Finish');
+
+            window.rzpAnalytics({
+              name: 'facebook',
+              event: 'signup_complete',
+            });
 
             updateHubSpotContactProperty();
 
