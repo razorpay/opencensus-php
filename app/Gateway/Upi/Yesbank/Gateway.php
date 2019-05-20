@@ -382,11 +382,12 @@ class Gateway extends Mindgate\Gateway
     protected function checkAndUpdateForVerifyStatus(array $input)
     {
         if ((empty($input[Fields::RESPCODE]) === false) and
-            (in_array(strtoupper($input[Fields::RESPCODE]),
-             $this->verifyStatusToCheck, true) === true) and
+            (in_array($input[Fields::RESPCODE], $this->verifyStatusToCheck, true) === true) and
             (empty($input[Fields::TIMED_OUT_TXN_STATUS]) === false))
             {
-                $input[Fields::RESPCODE] .=  '_' . $input[Fields::TIMED_OUT_TXN_STATUS];
+                $derivedRespCode =  $input[Fields::RESPCODE] . '_' . $input[Fields::TIMED_OUT_TXN_STATUS];
+
+                $input[Fields::RESPCODE] = strtoupper($derivedRespCode);
             }
 
          return $input;
