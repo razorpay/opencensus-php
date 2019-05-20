@@ -72,7 +72,15 @@ class Service
 
         if ($synchronous === true)
         {
-            $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
+            /**
+             * If it's synchronous, we don't need to set mock here, since the Mock/BeamService
+             * would be used which would return the value required here.
+             *
+             * If it's not synchronous, we would be dispatching the job with mock set to true,
+             * so that it does not send the request, but we can still assert that the beam job
+             * was queued in tests.
+             */
+            $beam = new BeamJob($request, $intervalInfo, $mailInfo, false);
 
             return dispatch_now($beam);
         }

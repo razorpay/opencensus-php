@@ -88,14 +88,18 @@ class BeamJob extends Job
     {
         try
         {
+            $return = [];
+
             parent::handle();
 
             if ($this->mock === false)
             {
-                $this->handleRequest();
+                $return = $this->handleRequest();
             }
 
             $this->checkRetryOrDelete();
+
+            return $return;
 
         }
         catch (\Throwable $e)

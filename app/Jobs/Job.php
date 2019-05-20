@@ -133,7 +133,7 @@ class Job implements ShouldQueue
      * message. Additionally that throws error in most of the cases as not all
      * services are serialized expectedly.
      */
-    public function init()
+    protected function init()
     {
         $app = App::getFacadeRoot();
 
