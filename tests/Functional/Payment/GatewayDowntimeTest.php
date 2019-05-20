@@ -352,6 +352,11 @@ class GatewayDowntimeTest extends TestCase
         }
     }
 
+    public function testGatewayDowntimeWithoutBegin()
+    {
+        $this->startTest();
+    }
+
     public function testGatewayDowntimeWithDifferentCardNetworks()
     {
         $begin = Carbon::now()->subMinutes(60)->timestamp;
