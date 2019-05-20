@@ -267,6 +267,43 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testHdfcCyberSourceTerminalIdentify()
+    {
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
+
+        $this->assertNull($payment1['reference1']);
+        $this->assertNull($payment1['reference2']);
+
+        $row = $this->overrideHdfcPayment($gatewayPayment1,[],'cybersource');
+
+        //
+        // Set below field so that if the terminal not identified as cybersource then
+        // in the next if condition it will get identified as BharatQR and thus this test
+        // should fail as payment could not get identified correctly.
+        //
+        $row['card_type'] = 'BHARAT QR';
+
+        $entries[] = $row;
+
+        $file = $this->writeToExcelFile($entries, 'cybersource');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+
+        $updatedTransaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment1['reference1']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testAxisMigsForceAuthorizePayment()
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
