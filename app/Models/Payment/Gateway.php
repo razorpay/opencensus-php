@@ -62,6 +62,7 @@ class Gateway
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
+    const NETBANKING_YESB        = 'netbanking_yesb';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -629,6 +630,7 @@ class Gateway
             self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
+            self::NETBANKING_YESB,
         ],
 
         //
@@ -1259,6 +1261,7 @@ class Gateway
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
+        IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];

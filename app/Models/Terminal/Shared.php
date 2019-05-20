@@ -50,6 +50,7 @@ class Shared
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
     const NETBANKING_SIB_TERMINAL            = '1000NbSibTrmnl';
     const NETBANKING_SBI_TERMINAL            = '100NbSbinTrmnl';
+    const NETBANKING_YESB_TERMINAL           = '100NbYesbTrmnl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';

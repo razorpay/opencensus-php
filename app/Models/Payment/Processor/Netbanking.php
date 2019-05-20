@@ -80,6 +80,7 @@ class Netbanking
         IFSC::ESFB,
         IFSC::SBIN,
         IFSC::VIJB,
+        IFSC::YESB,
         IFSC::SIBL,
         self::PUNB_R,
         self::BARB_R,
@@ -311,6 +312,11 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::ICIC
+            ]
+        ],
+        Gateway::NETBANKING_YESB => [
+            'retail' => [
+                IFSC::YESB,
             ]
         ],
         Gateway::NETBANKING_AXIS => [

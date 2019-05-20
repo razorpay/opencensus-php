@@ -51,6 +51,7 @@ return [
         'netbanking_canara',
         'netbanking_equitas',
         'netbanking_sbi',
+        'netbanking_yesb',
         'paytm',
         'sharp',
         'upi_airtel',
@@ -118,6 +119,7 @@ return [
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
+    'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -728,9 +730,12 @@ return [
     ],
 
     'mozart' => [
-        'upi_airtel' => [
+        'upi_airtel'     => [
             'test_hash_secret' => env('UPI_AIRTEL_TEST_HASH_SECRET')
         ],
+        'netbanking_yesb' => [
+            'gateway_secure_secret' => env('NETBANKING_YESB_GATEWAY_SECURE_SECRET')
+        ]
     ],
 
     'sharp' => [

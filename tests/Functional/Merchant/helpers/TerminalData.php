@@ -1891,4 +1891,21 @@ return [
             ]
         ]
     ],
+
+    'testCreateNetbankingYesbTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_yesb',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
 ];

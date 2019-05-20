@@ -179,6 +179,24 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    protected function netbanking_yesb($input)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'gateway_payment_callback_yesb_post',
+            [
+                'paymentId' => $input['paymentId'],
+                'amount'    => number_format($input['amount'] / 100, 2, '.', '')
+            ]);
+
+        $request = [
+            'url'     => $url,
+            'content' => ['encdata' => 'dummy_response_data'],
+            'method'  => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');
