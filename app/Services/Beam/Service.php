@@ -74,9 +74,7 @@ class Service
         {
             $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
 
-            $beam->init();
-
-            return $beam->handleRequest();
+            return dispatch_now($beam);
         }
 
         BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
