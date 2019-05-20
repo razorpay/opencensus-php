@@ -14,7 +14,8 @@ export default function NewSubscriptionLinkReview({
   const planQuantity = fields.quantity;
 
   const addOnAmount = fields.addons.reduce(
-    (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
+    (totalAmount, { item, quantity }) =>
+      totalAmount + (item ? item.amount * quantity : 0),
     0
   );
   const subscriptioAmount = planAmount * planQuantity;

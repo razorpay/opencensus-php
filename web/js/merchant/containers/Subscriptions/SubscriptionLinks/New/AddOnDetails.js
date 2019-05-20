@@ -10,7 +10,6 @@ export default function NewSubscriptionLinkAddOnDetails({
   fields: { addons },
   internals,
   currency,
-  onIsAddonPresentChange,
   ...props
 }) {
   const filteredAddOns = items.items.filter(item => item.currency === currency);
@@ -22,7 +21,6 @@ export default function NewSubscriptionLinkAddOnDetails({
         fieldLabel="I want to add an upfront amount"
         class="Input--noMarginLeft"
         checked={internals._addOnPresent}
-        onChange={e => onIsAddonPresentChange(e)}
       />
       <ol class="list">
         {addons.map((addon, index) => (
