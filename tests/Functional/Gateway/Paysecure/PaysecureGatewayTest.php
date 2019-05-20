@@ -2,10 +2,15 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use Mail;
+use Queue;
+
 use RZP\Gateway\Hitachi;
 use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\Capture as CaptureJob;
 use RZP\Exception\GatewayTimeoutException;
+use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -414,6 +419,38 @@ class PaysecureGatewayTest extends TestCase
             ],
             $hitachi
         );
+    }
+
+    public function testCaptureDispatchedOnFailure()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $authResponse = $this->testPaymentAuthViaRedirect();
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                // Hitachi's advice uses the same action response as that of callback
+                if ($action === 'callback')
+                {
+                    throw new GatewayTimeoutException('Timed out');
+                }
+            },
+            'hitachi'
+        );
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Mail::assertQueued(CapturedMail::class);
     }
 
     public function testPaymentRefundViaHitachi()

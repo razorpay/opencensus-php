@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Diag\EventCode;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
@@ -481,15 +482,8 @@ trait Capture
         }
         else
         {
-            //
-            // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
-            // to a queue. We then try to capture on HDFC.
-            // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
-            // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
-            // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
-            //
             if ((($ex instanceof Exception\GatewayTimeoutException) === true) and
-                ($this->payment->getGateway() === Payment\Gateway::HDFC))
+                ($this->shouldDispatchCapture() === true))
             {
                 $this->dispatchCaptureFailure($ex, $data);
             }
@@ -498,6 +492,31 @@ trait Capture
                 throw $ex;
             }
         }
+    }
+
+    protected function shouldDispatchCapture()
+    {
+        //
+        // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
+        // to a queue. We then try to capture on HDFC.
+        // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
+        // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
+        // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
+        //
+        // For PaySecure, if we don't capture the payment, the amount would not be settled to NPCI and hence it would
+        // not be settled to us.
+        //
+        if (($this->payment->getGateway() === Payment\Gateway::HDFC) or
+            (
+                ($this->payment->getGateway() === Payment\Gateway::HITACHI) or
+                ($this->payment->card->getNetworkCode() === Card\Network::RUPAY)
+            )
+        )
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function dispatchCaptureFailure(\Throwable $ex, array $data)
