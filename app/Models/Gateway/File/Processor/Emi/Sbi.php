@@ -187,6 +187,7 @@ class Sbi extends Base
                         null,
                         [
                             'gateway'       => 'emi_sbi',
+                            'gateway_file'  => $this->gatewayFile->getId(),
                             'payment_id'    => $emiPayment['id'],
                             'merchant_id'   => $merchantDetail[Detail\Entity::MERCHANT_ID],
                         ]);
@@ -342,6 +343,10 @@ class Sbi extends Base
         ];
     }
 
+    /**
+     * @param $data
+     * @throws GatewayErrorException
+     */
     protected function sendEmiFile($data)
     {
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
@@ -375,7 +380,8 @@ class Sbi extends Base
 
         $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
 
-        if ($beamResponse['failed'] !== 'null')
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -383,7 +389,8 @@ class Sbi extends Base
                 null,
                 [
                     'beam_response' => $beamResponse,
-                    'filestore_id'  => $this->file->id,
+                    'filestore_id'  => $this->file->getId(),
+                    'gateway_file'  => $this->gatewayFile->getId(),
                     'gateway'       => 'sbi_emi',
                 ]
             );
