@@ -28,7 +28,7 @@ class Url
 
     // Flex Money Urls
     const TEST_DOMAIN_FLEXMONEY      = 'https://staging.instacred.me/app';
-    const LIVE_DOMAIN_FLEXMONEY      = 'https://app.flexmoney.in/PaymentGateway/RazorPay';
+    const LIVE_DOMAIN_FLEXMONEY      = 'https://instacred.me/app';
 
     const CHECK_ACCOUNT_FLEXMONEY    = '/users/check-account';
     const AUTHORIZE_FLEXMONEY        = '/payments/authorize';
