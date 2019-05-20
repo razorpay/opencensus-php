@@ -49,6 +49,10 @@ class Gateway extends Mindgate\Gateway
         Fields::STATUSCODE              => Entity::STATUS_CODE,
     ];
 
+    protected $verifyStatusToCheck = [
+      'BT'
+    ];
+
     /**
      * @param array $input
      * @return array|void
@@ -301,6 +305,8 @@ class Gateway extends Mindgate\Gateway
 
             $this->updateGatewayPaymentEntity($gatewayPayment, $responseArray);
 
+            $responseArray = $this->checkAndUpdateForVerifyStatus($responseArray);
+
             $formattedResponse = $this->generateResponse($responseArray, $gatewayPayment);
         }
         catch (Exception\GatewayTimeoutException $e)
@@ -371,6 +377,18 @@ class Gateway extends Mindgate\Gateway
         }
 
         return $formattedResponse;
+    }
+
+    protected function checkAndUpdateForVerifyStatus(array $input)
+    {
+        if ((empty($input[Fields::RESPONSE_CODE]) === false) and
+            (empty($input[Fields::TIMED_OUT_TXN_STATUS]) === false) and
+            (in_array($input[Fields::RESPONSE_CODE], $this->verifyStatusToCheck, true) === true))
+            {
+                $input[Fields::RESPONSE_CODE] .=  '_' . $input[Fields::TIMED_OUT_TXN_STATUS];
+            }
+
+         return $input;
     }
 
     protected function getPayoutRequest(array $input)

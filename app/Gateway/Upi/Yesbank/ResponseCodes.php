@@ -240,6 +240,12 @@ class ResponseCodes
         '90296'       => 'To Account Number is Invalid',
         '90188'       => 'Voucher entry not allowed for this GL account.',
 
+        // Below are timed out statuses sent by Yesbank in payout verify response in case of BT response code
+        'BT_TCC'      => 'Transaction Credit Confirmation',
+        'BT_REC'      => 'Return has been initiated by Beneficiary Bank',
+        'BT_RET'      => 'Return has been posted in the remitter’s account',
+
+
         // razorpay custom error codes for transfer request
         'RZP_DUPLICATE_PAYOUT'              => 'RZP: A payout with given reference Id already exists',
         'RZP_FTA_REQUEST_INVALID'           => 'RZP: payout fta request is invalid',
