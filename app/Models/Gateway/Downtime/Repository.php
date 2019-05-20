@@ -42,6 +42,7 @@ class Repository extends Base\Repository
         Entity::METHOD      => '=',
         Entity::SOURCE      => '=',
         Entity::TERMINAL_ID => '=',
+        Entity::NETWORK     => '=',
     ];
 
     const UNIQUE_KEYS = [
@@ -49,6 +50,7 @@ class Repository extends Base\Repository
         Entity::ISSUER,
         Entity::METHOD,
         Entity::SOURCE,
+        Entity::NETWORK,
     ];
 
     public function saveOrFail($entity, array $options = [])

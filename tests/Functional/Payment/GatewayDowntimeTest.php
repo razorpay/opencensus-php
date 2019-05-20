@@ -201,6 +201,7 @@ class GatewayDowntimeTest extends TestCase
                 'method'      => 'card',
                 'source'      => 'other',
                 'acquirer'    => 'axis',
+                'network'     => 'VISA',
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
@@ -349,6 +350,40 @@ class GatewayDowntimeTest extends TestCase
         {
             $this->assertExceptionClass($e, Exception\BadRequestException::class);
         }
+    }
+
+    public function testGatewayDowntimeWithDifferentCardNetworks()
+    {
+        $begin = Carbon::now()->subMinutes(60)->timestamp;
+        $end   = Carbon::now()->addMinutes(60)->timestamp;
+
+        $request = [
+            'content' => [
+                'begin'       => $begin,
+                'end'         => $end,
+                'gateway'     => 'axis_migs',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'card',
+                'source'      => 'other',
+                'acquirer'    => 'axis',
+                'network'     => 'VISA',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['network'], 'VISA');
+        $this->assertEquals($response['begin'], $begin);
+        $this->assertEquals($response['end'], $end);
+
+        $request['content']['network'] = 'MC';
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['network'], 'MC');
+        $this->assertEquals($response['begin'], $begin);
+        $this->assertEquals($response['end'], $end);
     }
 
     // netbanking
