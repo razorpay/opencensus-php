@@ -120,7 +120,7 @@ export default class NewSubscriptionLink extends Component {
     this.setState({
       currencyOfSelectedPlan: option.currency,
       fields: {
-        ...this.state.fields,
+        ...fields,
         plan_id: option.id,
       },
     });
