@@ -80,18 +80,17 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleChangeInPlan = ({ option }) => {
-    const { validTabs, fields, internals } = this.state;
+    const { currencyOfSelectedPlan, fields, internals } = this.state;
 
     const prevSelectedPlan = findBy(
-        this.props.plans.items,
-        'id',
-        fields.plan_id
-      ),
-      currentSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
+      this.props.plans.items,
+      'id',
+      fields.plan_id
+    );
 
     if (
       prevSelectedPlan &&
-      prevSelectedPlan.item.currency !== currentSelectedPlan.item.currency
+      prevSelectedPlan.item.currency !== currencyOfSelectedPlan
     ) {
       if (internals._addOnPresent) {
         this.props.showNotification({
