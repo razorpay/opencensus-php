@@ -64,6 +64,13 @@ class ScroogeController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function setRefundDark(string $id, string $action)
+    {
+        $response = $this->app['scrooge']->setRefundDark($id, $action, $this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function downloadGatewayRefundsFile()
     {
         $response = $this->app['scrooge']->downloadGatewayRefundsFile($this->input);

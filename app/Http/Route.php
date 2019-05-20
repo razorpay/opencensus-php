@@ -850,6 +850,7 @@ final class Route
         'scrooge_refunds_download'                 => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                                 ],
         'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
         'scrooge_refunds_download_gateway_file'    => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                      ],
+        'set_scrooge_refund_dark'                  => ['post',     'scrooge/refunds/{id}/dark/{action}',             'ScroogeController@setRefundDark'                                   ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -1709,6 +1710,7 @@ final class Route
         'auditlog_search',
         'refund_edit_status',
         'refund_mark_processed_bulk',
+        'set_scrooge_refund_dark',
         'admin_logout',
         'schedule_create',
         'schedule_delete',
@@ -2338,6 +2340,7 @@ final class Route
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
+        'set_scrooge_refund_dark'                  => Permission::EDIT_REFUND,
         'batch_create'                             => '*',
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'file_upload_admin'                        => Permission::ADMIN_FILE_UPLOAD,
