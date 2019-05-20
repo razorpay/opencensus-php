@@ -521,4 +521,22 @@ class Core extends Base\Core
             throw $e;
         }
     }
+
+    public function healthCheck(string $channel): array
+    {
+        $validChannels = Settlement\Channel::getChannelsWithHealthCheck();
+
+        if (in_array($channel, $validChannels, true) !== true)
+        {
+            return [
+                'message' => 'channel does\'nt have health check implemented',
+            ];
+        }
+
+        $nodalAccountClass = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\NodalAccount';
+
+        $response = (new $nodalAccountClass)->healthCheck();
+
+        return $response;
+    }
 }

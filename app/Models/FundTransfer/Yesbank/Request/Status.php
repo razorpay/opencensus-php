@@ -305,6 +305,28 @@ class Status extends Base
                 ],
             ]);
         }
+
+        $source = $this->entity->source;
+
+        $amount = ($source->getAmount() / 100);
+
+        return json_encode([
+            $this->responseIdentifier => [
+                Constants::VERSION                => "2.0",
+                Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
+                Constants::TRANSFER_AMOUNT        => $amount,
+                Constants::TRANSFER_CURRENCY_CODE => Constants::DEFAULT_CURRENCY,
+                Constants::TRANSACTION_STATUS     => [
+                    Constants::STATUS_CODE              => ValidStatus::FAILED,
+                    Constants::SUB_STATUS_CODE          => 'ns:E404',
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => PublicEntity::generateUniqueId(),
+                ],
+            ],
+        ]);
+
         return json_encode([
             Constants::FAULT_RESPONSE_IDENTIFIER => [
                 Constants::CODE   => [

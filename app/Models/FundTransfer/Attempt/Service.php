@@ -268,4 +268,9 @@ class Service extends Base\Service
 
         return $this->core()->updateFundTransfer($input);
     }
+
+    public function healthCheck(string $channel): array
+    {
+        return $this->core()->healthCheck($channel);
+    }
 }

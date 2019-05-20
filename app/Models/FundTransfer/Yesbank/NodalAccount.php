@@ -19,6 +19,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
+use RZP\Models\FundTransfer\Yesbank\Request\HealthCheck;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
 
 class NodalAccount extends NodalBase\NodalAccount
@@ -162,6 +163,16 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->updateTransferStatus($processedCount);
 
         return $this->transferStatus;
+    }
+
+    public function healthCheck(array $input = []): array
+    {
+        $gateway = ((isset($input['gateway']) === true) and
+            ($input['gateway'] === true));
+
+        $healthCheck = new HealthCheck(Attempt\Purpose::SETTLEMENT, Attempt\Type::BANKING);
+
+        return $healthCheck->makeRequest($gateway);
     }
 
     /**

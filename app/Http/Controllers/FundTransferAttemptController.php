@@ -64,4 +64,11 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function healthCheck(string $channel)
+    {
+        $response =  $this->service()->healthCheck($channel);
+
+        return ApiResponse::json($response);
+    }
 }

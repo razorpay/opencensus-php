@@ -301,6 +301,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_TRANSFER_REQUEST_FAILED                         = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                          = 'NODAL_PAYMENT_STATUS_REQUEST';
     const NODAL_PAYMENT_STATUS_RESPONSE                         = 'NODAL_PAYMENT_STATUS_RESPONSE';
+    const NODAL_HEALTH_CHECK_REQUEST                            = 'NODAL_HEALTH_CHECK_REQUEST';
+    const NODAL_HEALTH_CHECK_RESPONSE                           = 'NODAL_HEALTH_CHECK_RESPONSE';
     const NODAL_REQUEST_FAILED                                  = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED                   = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
     const FTA_SOURCE_PROCESSING_FAILED                          = 'FTA_SOURCE_PROCESSING_FAILED';
