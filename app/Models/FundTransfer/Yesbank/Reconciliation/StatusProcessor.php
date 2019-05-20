@@ -3,10 +3,11 @@
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Base\Reconciliation\Constants;
@@ -174,8 +175,6 @@ class StatusProcessor extends BaseRowProcessor
         {
             $this->reconEntity->setBankStatusCode($currentStatus);
         }
-
-        s($this->parsedData[Constants::BANK_RESPONSE_CODE]);
 
         $this->reconEntity->setBankResponseCode($this->parsedData[Constants::STATUS_CODE]);
 

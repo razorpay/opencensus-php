@@ -7,15 +7,15 @@ use RZP\Models\Payment;
 
 class Channel
 {
-    const KOTAK = 'kotak';
-    const ATOM = 'atom';
-    const ICICI = 'icici';
-    const AXIS = 'axis';
-    const YESBANK = 'yesbank';
-    const HDFC = 'hdfc';
-    const RBL = 'rbl';
-    const AXIS2 = 'axis2';
-    const ICICI2 = 'icici2';
+    const KOTAK     = 'kotak';
+    const ATOM      = 'atom';
+    const ICICI     = 'icici';
+    const AXIS      = 'axis';
+    const YESBANK   = 'yesbank';
+    const HDFC      = 'hdfc';
+    const RBL       = 'rbl';
+    const AXIS2     = 'axis2';
+    const ICICI2    = 'icici2';
 
     public static $gateways = [
         self::KOTAK => [

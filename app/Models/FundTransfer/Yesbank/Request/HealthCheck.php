@@ -7,8 +7,9 @@ use RZP\Models\Payment\Gateway;
 
 class HealthCheck extends Status
 {
+    // will be checking status on these FTA is for corresponding health check requests
     const IMPS_REQ_REF_NO = 'CXgFVqAShnGM7S';
-    const VPA_REQ_REF_NO = 'CXg9IY5FfnveVz';
+    const VPA_REQ_REF_NO  = 'CXg9IY5FfnveVz';
 
     protected $requestTraceCode = TraceCode::NODAL_HEALTH_CHECK_REQUEST;
 

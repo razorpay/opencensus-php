@@ -40,7 +40,6 @@ class StatusProcessor extends BaseRowProcessor
             ReconConstants::BANK_STATUS_CODE      => $response[ReconConstants::BANK_STATUS_CODE],
             ReconConstants::REMARKS               => $response[ReconConstants::REMARKS],
             ReconConstants::PAYMENT_DATE          => $response[ReconConstants::PAYMENT_DATE],
-            ReconConstants::BANK_RESPONSE_CODE    => $response[ReconConstants::BANK_RESPONSE_CODE],
             // Won't be present in case of success response
             ReconConstants::PUBLIC_FAILURE_REASON => $response[ReconConstants::PUBLIC_FAILURE_REASON] ?? null,
             ReconConstants::NAME_WITH_BENE_BANK   => null,
