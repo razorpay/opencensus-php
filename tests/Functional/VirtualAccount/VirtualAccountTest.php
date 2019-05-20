@@ -180,6 +180,11 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateVirtualAccountWithBankAccountNameOption()
+    {
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountValidationFailure()
     {
         // This is to check that validation rules on receiver attribute should stop after the first validation failure.

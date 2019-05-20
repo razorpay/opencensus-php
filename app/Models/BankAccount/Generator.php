@@ -208,7 +208,7 @@ class Generator extends Base\Core
 
         $merchantDetails = [
             Entity::ACCOUNT_NUMBER     => $accountNumber,
-            Entity::BENEFICIARY_NAME   => $virtualAccount->getName(),
+            Entity::BENEFICIARY_NAME   => $this->options[Entity::NAME] ?? $virtualAccount->getName(),
         ];
 
         return array_merge($bankAccountInput, $merchantDetails);

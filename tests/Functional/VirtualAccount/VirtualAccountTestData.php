@@ -98,6 +98,34 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountWithBankAccountNameOption' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                    'bank_account' => [
+                        'name' => 'lalala_what'
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'receivers' => [
+                    [
+                        'entity' => 'bank_account',
+                        'name'   => 'lalala_what'
+                    ]
+                ],
+            ],
+        ]
+    ],
+
     'testCreateVirtualAccountValidationFailure' => [
         'request' => [
             'url' => '/virtual_accounts',
