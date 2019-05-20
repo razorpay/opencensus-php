@@ -105,7 +105,7 @@ class Processor extends Base\Processor
 
     protected function resolveDeviceFromUpi(array $input)
     {
-        $upis = (new Transaction\Core)->findAllUpi($input[Transaction\Entity::ACTION], $input);
+        $upis = (new Transaction\Core)->findAllUpi($input);
 
         if ($upis->count() === 1)
         {

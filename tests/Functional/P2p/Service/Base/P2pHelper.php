@@ -229,7 +229,13 @@ class P2pHelper
 
         $this->exceptionHandler->setThrowExceptionInTesting(false);
 
-        $this->registerResponseCallback($callback);
+        $this->registerResponseCallback(function(TestResponse $response) use ($callback)
+        {
+            if ($this->expectFailureInResponse === true)
+            {
+                return $callback($response);
+            }
+        });
 
         return $this;
     }

@@ -52,20 +52,43 @@ class Core extends Base\Core
         return $upi;
     }
 
-    public function updateUpi(Entity $transaction, array $input)
+    public function buildUpi(Entity $transaction, string $action, array $input): UpiTransaction\Entity
     {
-        $cleaned = $this->cleanUpiInput($input);
+        $refId                = $this->context()->getRequestId();
+        $networkTransactionId = $this->context()->handlePrefix() . $this->app['request']->getId();
 
-        $upi = (new UpiTransaction\Core)->update($transaction, $cleaned);
+        $default = [
+            UpiTransaction\Entity::NETWORK_TRANSACTION_ID   => $networkTransactionId,
+            UpiTransaction\Entity::REF_ID                   => $refId,
+        ];
+
+        $cleaned = $this->cleanUpiInput(array_merge($default, $input));
+
+        $defined = [
+            UpiTransaction\Entity::STATUS                   => $transaction->getInternalStatus(),
+            UpiTransaction\Entity::ACTION                   => $action,
+        ];
+
+        $upi = (new UpiTransaction\Core)->build(array_merge($cleaned, $defined));
 
         return $upi;
     }
 
-    public function findAllUpi(string $action, array $input = [])
+    public function updateUpi(UpiTransaction\Entity $upi, array $input)
     {
-        $defined = [
-            UpiTransaction\Entity::ACTION                   => $action,
-        ];
+        $cleaned = $this->cleanUpiInput($input);
+
+        $upi = (new UpiTransaction\Core)->update($upi, $cleaned);
+
+        return $upi;
+    }
+
+    public function findAllUpi(array $input)
+    {
+        if (isset($input[UpiTransaction\Entity::ACTION]) === false)
+        {
+            throw $this->logicException('Action is required', $input);
+        }
 
         $transactionId = $input[UpiTransaction\Entity::TRANSACTION_ID] ?? null;
         $networkTransactionId = $input[UpiTransaction\Entity::NETWORK_TRANSACTION_ID] ?? null;

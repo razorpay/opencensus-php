@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\P2p\Transaction\UpiTransaction;
+namespace RZP\Models\P2p\Transaction\Concern;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
@@ -21,18 +21,18 @@ class Core extends Base\Core
 
         $this->repo->save($entity);
 
-        $transaction->upi()->setModel($entity);
-
         return $entity;
     }
 
-    public function update(Entity $upi, array $input): Entity
+    public function update(Entity $concern, array $input): Entity
     {
-        $upi->edit($input);
+        unset($input[Entity::ID], $input[Entity::TRANSACTION_ID]);
 
-        $this->repo->save($upi);
+        $concern->edit($input);
 
-        return $upi;
+        $this->repo->saveOrFail($concern);
+
+        return $concern;
     }
 
     public function findAll(array $input)

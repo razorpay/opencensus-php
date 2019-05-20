@@ -1,0 +1,59 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.razorpay.com/v1/p2p/json_schema/transaction/upi_transaction/entity.json",
+    "type": "object",
+    "required": [],
+    "properties": {
+        "id" : {
+            "type" : "string",
+            "maxLength": "14"
+        },
+        "transaction_id": {
+            "type": "string",
+            "maxLength" : 14
+        },
+        "device_id": {
+            "type": "string",
+            "maxLength" : 14
+        },
+        "handle": {
+            "type": "string",
+            "maxLength" : 50
+        },
+        "gateway_data": {
+            "type": "object"
+        },
+        "status": {
+            "type": "string",
+            "maxLength" : 50
+        },
+        "comment": {
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "gateway_reference_id": {
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "response_code": {
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "response_description": {
+            "type": ["string", "null"],
+            "maxLength" : 255
+        },
+        "created_at": {
+            "type": "integer"
+        },
+        "updated_at": {
+            "type": "integer"
+        }
+    },
+    "actions": [
+        "raise",
+        "query",
+        "update"
+    ]
+}

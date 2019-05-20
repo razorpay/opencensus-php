@@ -84,4 +84,35 @@ class TransactionController extends Controller
 
         return $this->response($response);
     }
+
+    public function raiseConcern()
+    {
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('transaction_id');
+
+        $response = $this->service->raiseConcern($input);
+
+        return $this->response($response);
+    }
+
+    public function concernStatus()
+    {
+        $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('transaction_id');
+
+        $response = $this->service->concernStatus($input);
+
+        return $this->response($response);
+    }
+
+    public function fetchAllConcerns()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->fetchAllConcerns($input);
+
+        return $this->response($response);
+    }
 }

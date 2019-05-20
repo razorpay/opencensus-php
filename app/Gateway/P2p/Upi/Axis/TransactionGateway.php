@@ -4,14 +4,16 @@ namespace RZP\Gateway\P2p\Upi\Axis;
 
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\BankAccount;
-use RZP\Models\P2p\Transaction;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Models\P2p\Transaction\Mode;
 use RZP\Models\P2p\Transaction\Entity;
+use RZP\Models\P2p\Transaction\Concern;
+use RZP\Models\P2p\Transaction\UpiTransaction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionTransformer;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\UpiTransactionTransformer;
+use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionConcernTransformer;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionRequestTransformer;
 
 
@@ -119,6 +121,59 @@ class TransactionGateway extends Gateway implements Contracts\TransactionGateway
     public function reject(Response $response)
     {
 
+    }
+
+    public function raiseConcern(Response $response)
+    {
+        $request = $this->initiateS2sRequest(TransactionAction::RAISE_QUERY);
+
+        $upi = $this->input->get(Entity::UPI);
+        $concern = $this->input->get(Entity::CONCERN);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+            Fields::UPI_REQUEST_ID          => $upi[UpiTransaction\Entity::NETWORK_TRANSACTION_ID],
+            Fields::UPI_RESPONSE_ID         => $upi[UpiTransaction\Entity::RRN],
+            Fields::QUERY_COMMENT           => $concern[Concern\Entity::COMMENT],
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $this->handleGatewayResponseCode($s2s[Fields::PAYLOAD]);
+
+        $transformer = new TransactionConcernTransformer($s2s[Fields::PAYLOAD], $this->action);
+
+        $transformer->put(Entity::ID, $concern[Entity::ID]);
+        $transformer->put(Concern\Entity::TRANSACTION_ID, $concern[Concern\Entity::TRANSACTION_ID]);
+
+        $response->setData([
+            Entity::CONCERN => $transformer->transform(),
+        ]);
+    }
+
+    public function concernStatus(Response $response)
+    {
+        $request = $this->initiateS2sRequest(TransactionAction::QUERY_STATUS);
+
+        $upi = $this->input->get(Entity::UPI);
+        $concern = $this->input->get(Entity::CONCERN);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+            Fields::UPI_REQUEST_ID          => $upi[UpiTransaction\Entity::NETWORK_TRANSACTION_ID],
+            Fields::UPI_RESPONSE_ID         => $upi[UpiTransaction\Entity::RRN],
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $transformer = new TransactionConcernTransformer($s2s[Fields::PAYLOAD], $this->action);
+
+        $transformer->put(Entity::ID, $concern[Entity::ID]);
+        $transformer->put(Concern\Entity::TRANSACTION_ID, $concern[Concern\Entity::TRANSACTION_ID]);
+
+        $response->setData([
+            Entity::CONCERN => $transformer->transform(),
+        ]);
     }
 
     protected function getTransactionRequestId()
