@@ -309,6 +309,7 @@ class Entity
         Entity::PAYOUT,
         Entity::BANK_TRANSFER,
         Entity::REFUND,
+        Entity::FUND_ACCOUNT_VALIDATION,
     ];
 
     public static $namespace = [
