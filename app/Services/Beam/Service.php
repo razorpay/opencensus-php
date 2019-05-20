@@ -74,6 +74,8 @@ class Service
         {
             $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
 
+            $beam->init();
+
             return $beam->handleRequest();
         }
 
