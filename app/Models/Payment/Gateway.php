@@ -288,8 +288,10 @@ class Gateway
         IFSC::KKBK,
         IFSC::INDB,
         IFSC::ICIC,
+        IFSC::USFB,
+        IFSC::IBKL,
         Netbanking::PUNB_R,
-        Netbanking::BARB_R
+        Netbanking::BARB_R,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
