@@ -70,6 +70,10 @@ class Type
 
     const VIJAYA_NETBANKING_CLAIM           = 'vijaya_netbanking_claim';
 
+    const YESB_NETBANKING_CLAIM             = 'yesb_netbanking_claim';
+
+    const YESB_NETBANKING_REFUND            = 'yesb_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -190,6 +194,8 @@ class Type
             self::SIB_NETBANKING_REFUND,
             self::VIJAYA_NETBANKING_REFUND,
             self::VIJAYA_NETBANKING_CLAIM,
+            self::YESB_NETBANKING_CLAIM,
+            self::YESB_NETBANKING_REFUND,
             self::IDFC_NETBANKING_REFUND,
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
@@ -316,6 +322,8 @@ class Type
         self::SIB_NETBANKING_REFUND,
         self::VIJAYA_NETBANKING_REFUND,
         self::VIJAYA_NETBANKING_CLAIM,
+        self::YESB_NETBANKING_CLAIM,
+        self::YESB_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::RBL_NETBANKING_CLAIM,
         self::AIRTELMONEY_WALLET_REFUND,

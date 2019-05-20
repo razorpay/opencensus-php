@@ -164,7 +164,6 @@ class Server extends Base\Mock\Server
 
     protected function netbanking_sib($input)
     {
-
         // this encrypted value is never used as the pay_verify response from mozart is mocked
         $content = [
               'ENC_STR' => 'random_encrypted_string'

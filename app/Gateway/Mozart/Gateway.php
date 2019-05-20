@@ -109,16 +109,15 @@ class Gateway extends Base\Gateway
             $response = json_decode($input['gateway']['preProcessServerCallbackResponse'], true);
         }
 
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->gatewayPayment = $this->updateGatewayPaymentEntityWithAction(
-            $gatewayPayment,
-            $response,
-            true,
-            Action::AUTHORIZE
-        );
+                                                   $gatewayPayment,
+                                                   $response,
+                                                   true,
+                                                   Action::AUTHORIZE
+                                             );
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
