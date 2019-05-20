@@ -380,7 +380,8 @@ class Sbi extends Base
 
         $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
 
-        if ($beamResponse['success'] === null)
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
