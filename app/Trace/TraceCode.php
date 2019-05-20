@@ -1799,6 +1799,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
+    const NON_BLOCKING_HTTP_DATA                                = 'NON_BLOCKING_HTTP_DATA';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

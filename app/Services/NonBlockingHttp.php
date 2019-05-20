@@ -28,6 +28,15 @@ class NonBlockingHttp
 
             $encodedData = json_encode($payload);
 
+            $this->trace->info(
+                TraceCode::NON_BLOCKING_HTTP_DATA,
+                [
+                    'url'      => $url,
+                    'username' => $username,
+                    'password' => $password,
+                    'payload'  => $payload
+                ]);
+
             curl_setopt($curl_handler, CURLOPT_FRESH_CONNECT, true);
 
             curl_setopt($curl_handler, CURLOPT_CUSTOMREQUEST, "POST");
