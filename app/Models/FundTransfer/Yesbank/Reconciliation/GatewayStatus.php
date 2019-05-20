@@ -68,7 +68,7 @@ class GatewayStatus extends BaseStatus
     const ERSP8088 = '8088'; const ERSP9007 = '9007'; const ERSP9008 = '9008'; const ERSP9015 = '9015';
     const ERSP9030 = '9030'; const ERSP9093 = '9093'; const ERSP80002 = '80002'; const ERSP80004 = '80004';
     const ERSP80016 = '80016'; const ERSP90152 = '90152'; const ERSP90185 = '90185'; const ERSP90290 = '90290';
-    const ERSP90296 = '90296'; const ERSP90188 = '90188';
+    const ERSP90296 = '90296'; const ERSP90188 = '90188'; const ERSP8014 = '8014';
 
     // We get this error code in Verify response. Mostly it should be failed only. Anyway, will be
     // removing this soon. Not going to rely on Verify later except in timeout or pending cases.
@@ -84,6 +84,14 @@ class GatewayStatus extends BaseStatus
     const RZP_PAYOUT_REQUEST_FAILURE        = 'RZP_PAYOUT_REQUEST_FAILURE';
     const RZP_PAYOUT_UNKNOWN_ERROR          = 'RZP_PAYOUT_UNKNOWN_ERROR';
     const RZP_RESPONSE_DECRYPTION_FAILED    = 'RZP_RESPONSE_DECRYPTION_FAILED';
+
+    // Custom codes based on response code BT
+    // In case of timeout we have to check time_out_status field to derive the result
+    // here we have collectively with BT and time_out_status created a status
+    // which can be used to determine the status of transaction
+    const BT_TCC      = 'BT_TCC';
+    const BT_REC      = 'BT_REC';
+    const BT_RET      = 'BT_RET';
 
     // verify related status codes
     const RZP_REF_ID_MISMATCH               = 'RZP_REF_ID_MISMATCH';
@@ -323,12 +331,15 @@ class GatewayStatus extends BaseStatus
         self::ERSP90290                         => 'Payout failed. Contact support for help.',
         self::ERSP90296                         => 'Payout failed. Contact support for help.',
         self::ERSP90188                         => 'Payout failed. Contact support for help.',
+        self::ERSP8014                          => 'Payout failed. Contact support for help.',
         self::RZP_DUPLICATE_PAYOUT              => 'Duplicate reference id passed. Reference id needs to be unique',
         self::RZP_FTA_REQUEST_INVALID           => 'Payout failed. Contact support for help.',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'Payout failed. Contact support for help.',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'Payout request timed out. Try again later',
         self::RZP_REF_ID_MISMATCH               => 'Payout failed. Contact support for help.',
         self::RZP_AMOUNT_MISMATCH               => 'Payout failed. Contact support for help.',
+        self::BT_REC                            => 'Payout request timed out. Try again later',
+        self::BT_RET                            => 'Payout request timed out. Try again later',
     ];
 
     const FAILURE_CODE_INTERNAL_MAPPING = [
@@ -563,12 +574,15 @@ class GatewayStatus extends BaseStatus
         self::ERSP90290                         => 'Funds Transfer Not Allowed from NRE product.',
         self::ERSP90296                         => 'To Account Number is Invalid',
         self::ERSP90188                         => 'Voucher entry not allowed for this GL account.',
+        self::ERSP8014                          => 'Failed to debit from remitter’s account',
         self::RZP_DUPLICATE_PAYOUT              => 'RZP: A payout with given reference Id already exists',
         self::RZP_FTA_REQUEST_INVALID           => 'RZP: payout fta request is invalid',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'RZP: request encryption failure',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'RZP: payout request failed',
         self::RZP_REF_ID_MISMATCH               => 'RZP: Validation error, ref id mismatch',
         self::RZP_AMOUNT_MISMATCH               => 'RZP: amount mismatch',
+        self::BT_REC                            => 'Return has been initiated by Beneficiary Bank',
+        self::BT_RET                            => 'Return has been posted in the remitter’s account',
     ];
 
     public static function getSuccessfulStatus(): array
