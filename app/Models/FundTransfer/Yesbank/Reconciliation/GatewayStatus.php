@@ -590,6 +590,7 @@ class GatewayStatus extends BaseStatus
         return [
             self::COMPLETED,
             self::COMPLETED2,
+            self::BT_TCC,
         ];
     }
 
