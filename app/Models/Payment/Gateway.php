@@ -992,11 +992,14 @@ class Gateway
         self::UPI_MINDGATE,
         self::UPI_ICICI,
         self::BAJAJ,
+        self::AMEX,
+        self::ISG,
     ];
 
     public static $captureVerifyQREnabledGateways = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::ISG
     ];
 
     /**

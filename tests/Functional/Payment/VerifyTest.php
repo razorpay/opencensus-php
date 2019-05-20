@@ -152,22 +152,20 @@ class VerifyTest extends TestCase
         $this->startTest();
     }
 
-    public function testIciciUpiVerify()
+    public function testIciciBqrVerify()
     {
         $createdAt = time() - 180;
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460opVt',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_icici',
-                'gateway_merchant_id' => '250000002',
-                'gateway_merchant_id2' => 'abc@icici',
-                'enabled' => 1,
-            ]);
+        $this->fixtures->create('terminal', [
+            'id'                   => 'AqdfGh5460opVt',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'upi_icici',
+            'gateway_merchant_id'  => '250000002',
+            'gateway_merchant_id2' => 'abc@icici',
+            'enabled'              => 1,
+        ]);
 
         $payment = $this->fixtures->create('payment', [
             'method'        => 'upi',
@@ -183,14 +181,105 @@ class VerifyTest extends TestCase
             'receiver_type' => 'qr_code',
         ]);
 
-        $this->fixtures->create('upi',
+        $this->fixtures->create('upi', [
+            'id'            => 1,
+            'payment_id'    => $payment->getId(),
+            'amount'        => 100,
+            'gateway'       => 'upi_icici',
+            'action'        => 'authorize',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testIsgBqrVerify()
+    {
+        $createdAt = time() - 180;
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create('terminal', [
+            'id'                   => 'AqdfGh5460opVt',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'upi_icici',
+            'gateway_merchant_id'  => '250000002',
+            'gateway_terminal_id'  => '12345678',
+            'enabled'              => 1,
+        ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'method'        => 'upi',
+            'gateway'       => 'isg',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'created_at'    => $createdAt,
+            'authorized_at' => $createdAt,
+            'verify_at'     => $createdAt,
+            'captured_at'   => $createdAt,
+            'amount'        => 100,
+            'status'        => 'authorized',
+            'receiver_type' => 'qr_code',
+        ]);
+
+        $this->fixtures->create('isg', [
+            'id'                    => 1,
+            'payment_id'            => $payment->getId(),
+            'amount'                => 100,
+            'action'                => 'authorize',
+            'merchant_pan'          => 'test_pan',
+            'merchant_reference'    =>'testRef',
+            'bank_reference_no'     => '1234abc',
+            'transaction_date_time' => '2019-05-16 08:19:38',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAmexVerify()
+    {
+        $createdAt = time() - 180;
+
+        $this->setMockGatewayTrue();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $this->fixtures->create(
+            'terminal',
             [
-                'id'                => 1,
-                'payment_id'        => $payment->getId(),
-                'amount'            => 100,
-                'gateway'           => 'upi_icici',
-                'action'            => 'authorize',
+                'id'                    => 'AqdfGh5460opVt',
+                'merchant_id'           => '10000000000000',
+                'gateway'               => 'amex',
+                'gateway_merchant_id'   => '250000002',
+                'gateway_secure_secret' => 'abckjicici',
+                'gateway_access_code'   => 'abcdef',
+                'gateway_terminal_id'   => '12345',
+                'enabled'               => 1,
             ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'method'        => 'card',
+            'gateway'       => 'amex',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'card_id'       => $card->getId(),
+            'created_at'    => $createdAt,
+            'authorized_at' => $createdAt,
+            'verify_at'     => $createdAt,
+            'captured_at'   => $createdAt,
+            'amount'        => 100,
+            'status'        => 'authorized',
+        ]);
+
+        $this->fixtures->create('axis_migs', [
+            'id'                  => 1,
+            'payment_id'          => $payment->getId(),
+            'vpc_amount'          => 100,
+            'vpc_command'         => 'pay',
+            'vpc_MerchTxnRef'     => $payment->getId(),
+            'vpc_TxnResponseCode' => 0,
+            'amex'                => true,
+            'action'              => 'authorize',
+        ]);
 
         $this->startTest();
     }

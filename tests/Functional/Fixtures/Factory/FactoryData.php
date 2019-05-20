@@ -1059,5 +1059,19 @@ final class FactoryData
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Gateway\AxisMigs\Entity::class, [
+            'id'                => 12345,
+            'payment_id'        => 'factory:RZP\Models\Payment\Entity',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Gateway\Isg\Entity::class, [
+            'id'                => 12345,
+            'payment_id'        => 'factory:RZP\Models\Payment\Entity',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
     }
 }
