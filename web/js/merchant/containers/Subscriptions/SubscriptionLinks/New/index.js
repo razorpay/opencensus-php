@@ -81,15 +81,11 @@ export default class NewSubscriptionLink extends Component {
   handleChangeInPlan = ({ option }) => {
     const { currencyOfSelectedPlan, fields, internals } = this.state;
 
-    const prevSelectedPlan = findBy(
-      this.props.plans.items,
-      'id',
-      fields.plan_id
-    );
+    const currSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
 
     if (
-      prevSelectedPlan &&
-      prevSelectedPlan.item.currency !== currencyOfSelectedPlan
+      currSelectedPlan &&
+      currSelectedPlan.item.currency !== currencyOfSelectedPlan
     ) {
       if (internals._addOnPresent) {
         this.props.showNotification({
@@ -98,6 +94,17 @@ export default class NewSubscriptionLink extends Component {
             'Currency of Plan is changed. Please select the Add Ons again',
           closeTimeout: 8000,
         });
+
+        this.setState({
+          currencyOfSelectedPlan: option.currency,
+          fields: {
+            ...fields,
+            plan_id: option.id,
+            addons: [{}],
+          },
+        });
+
+        return;
       }
 
       this.setState({
@@ -105,11 +112,6 @@ export default class NewSubscriptionLink extends Component {
         fields: {
           ...fields,
           plan_id: option.id,
-          addons: [],
-        },
-        internals: {
-          ...internals,
-          _addOnPresent: false,
         },
       });
 
