@@ -24,10 +24,6 @@ class NonBlockingHttp
     {
         try
         {
-            $curl_handler = curl_init($url);
-
-            $encodedData = json_encode($payload);
-
             $this->trace->info(
                 TraceCode::NON_BLOCKING_HTTP_DATA,
                 [
@@ -36,6 +32,10 @@ class NonBlockingHttp
                     'password' => $password,
                     'payload'  => $payload
                 ]);
+
+            $curl_handler = curl_init($url);
+
+            $encodedData = json_encode($payload);
 
             curl_setopt($curl_handler, CURLOPT_FRESH_CONNECT, true);
 

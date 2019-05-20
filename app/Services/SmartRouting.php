@@ -193,6 +193,12 @@ class SmartRouting
 
     protected function checkErrors($response)
     {
+        $this->trace->info(
+            TraceCode::SMART_ROUTING_RESPONSE,
+            [
+                'response' => $response
+            ]);
+
         $success = $response[self::SUCCESS];
 
         if ($success === false)

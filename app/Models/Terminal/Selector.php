@@ -474,13 +474,6 @@ class Selector extends Base\Core
                 'chance'              => $this->options->getChance(),
             ];
 
-            // this log is for testing in beta, will be removed before merge to master
-            $this->trace->info(
-                TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
-                [
-                    'data'     => $data,
-                ]);
-
             $this->app->smartRouting->sendNonBlockingRequest(SmartRouting::SEND_PAYMENT_DATA, $data);
         }
         catch (\Throwable $e)
