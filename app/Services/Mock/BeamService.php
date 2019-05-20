@@ -28,7 +28,8 @@ class BeamService extends Services\Beam\Service
         if ($synchronous === true)
         {
             $content = [
-                'failed' => null
+                'failed' => null,
+                'success' => [],
             ];
 
             $this->content($content, 'beam_push_sync');
