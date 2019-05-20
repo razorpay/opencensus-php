@@ -85,11 +85,6 @@ class ResponseCodeMap
         'U69' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED,
         'DT'  => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT,
 
-        // Below are timed out statuses sent by Yesbank in payout verify response in case of BT response code
-        'BT_TCC'      => 'Transaction Credit Confirmation',
-        'BT_REC'      => 'Return has been initiated by Beneficiary Bank',
-        'BT_RET'      => 'Return has been posted in the remitter’s account',
-
         // Razorpay custom error codes
         'RZP_DUPLICATE_PAYOUT'              => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT,
         'RZP_REF_ID_MISMATCH'               => ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
