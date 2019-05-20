@@ -628,6 +628,12 @@ class Converter extends Base\Core
     {
         foreach ($results as $row)
         {
+            // this deals with the empty rows
+            if (count(array_filter($row->all())) === 0)
+            {
+                continue;
+            }
+
             // Currently, since it returns an array of rows, there's no
             // way to get the sheet names. And we cannot let it return
             // an array of sheets because chunk works only on a
@@ -640,6 +646,12 @@ class Converter extends Base\Core
     {
         foreach ($results as $index => $row)
         {
+            // this deals with the empty rows
+            if (count(array_filter($row->all())) === 0)
+            {
+                continue;
+            }
+
             // for each row, check if it is a recon row or header
             if ($this->setColumnHeaderIfApplicable($row->all(), $sheetContent) === true)
             {
