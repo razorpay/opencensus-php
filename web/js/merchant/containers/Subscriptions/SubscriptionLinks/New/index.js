@@ -38,6 +38,7 @@ export default class NewSubscriptionLink extends Component {
       addons: [],
     },
     internals: {},
+    extraDisabledTabs: [],
   };
 
   componentWillMount() {
@@ -92,6 +93,15 @@ export default class NewSubscriptionLink extends Component {
       prevSelectedPlan &&
       prevSelectedPlan.item.currency !== currentSelectedPlan.item.currency
     ) {
+      if (internals._addOnPresent) {
+        this.props.showNotification({
+          type: 'neutral',
+          message:
+            'Currency of Plan is changed. Please select the Add Ons again',
+          closeTimeout: 8000,
+        });
+      }
+
       this.setState({
         currencyOfSelectedPlan: option.currency,
         fields: {
@@ -103,13 +113,6 @@ export default class NewSubscriptionLink extends Component {
           ...internals,
           _addOnPresent: false,
         },
-        validTabs: validTabs.map((currState, i) => {
-          if (i === 0) {
-            return false;
-          }
-
-          return currState;
-        }),
       });
 
       return;
@@ -135,7 +138,28 @@ export default class NewSubscriptionLink extends Component {
       },
       quantity: 1,
     };
-    this.setState({ fields });
+    this.setState({
+      fields,
+      extraDisabledTabs: this.state.extraDisabledTabs.filter(idx => idx !== 3),
+    });
+  };
+
+  onIsAddonPresentChange = e => {
+    if (Number(e.target.value)) {
+      this.setState({
+        extraDisabledTabs: [3],
+      });
+
+      return;
+    }
+
+    if (this.state.extraDisabledTabs.length) {
+      this.setState({
+        extraDisabledTabs: this.state.extraDisabledTabs.filter(
+          idx => idx !== 3
+        ),
+      });
+    }
   };
 
   handleDateChange = fieldName => selectedDate => {
@@ -282,6 +306,7 @@ export default class NewSubscriptionLink extends Component {
             internals={this.state.internals}
             removeAddOn={this.handleRemoveBtn}
             currency={this.state.currencyOfSelectedPlan}
+            onIsAddonPresentChange={this.onIsAddonPresentChange}
           />
         );
       case 2:
@@ -320,7 +345,8 @@ export default class NewSubscriptionLink extends Component {
           activeTab={currentTab}
           tabsValidity={this.state.validTabs}
           disableTabCondition={tabIndex =>
-            tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
+            (tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]) ||
+            this.state.extraDisabledTabs.includes(tabIndex)
           }
         />
         <main class="form-container">
