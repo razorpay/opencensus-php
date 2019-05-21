@@ -107,7 +107,6 @@ export default class extends React.Component {
     /* Embed Button */
 
     const scriptURL = 'https://cdn.razorpay.com/static/embed_btn/bundle.js';
-    // const scriptURL = 'http://static.razorpay.in/static/embed_btn/bundle.js';
     const buttonClass = 'razorpay-embed-btn';
     const scriptTagID = 'razorpay-embed-btn-js';
 
@@ -121,7 +120,8 @@ export default class extends React.Component {
           (function(){
             var d=document; var x=!d.getElementById('${scriptTagID}')
             if(x){ var s=d.createElement('script'); s.defer=!0;s.id='${scriptTagID}';
-            s.src='${scriptURL}';d.body.appendChild(s);}})();
+            s.src='${scriptURL}';d.body.appendChild(s);} else{var rzp=window['__rzp__'];
+            rzp && rzp.init && rzp.init()}})();
           </script>
       </div>
     `;
