@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Feature;
 
 /**
  * Class Validator
@@ -25,7 +26,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_TYPE => 'required|string|custom',
         Entity::VPA          => 'sometimes|associative_array',
         Entity::BANK_ACCOUNT => 'sometimes|associative_array',
-        Entity::CARD         => 'sometimes|associative_array',
+        Entity::CARD         => 'sometimes|associative_array|custom',
     ];
 
     protected static $beforeCreateRules = [
@@ -62,6 +63,26 @@ class Validator extends Base\Validator
                 [
                     'input' => $input,
                 ]);
+        }
+    }
+
+    protected function validateCard($attribute, $value)
+    {
+        if (empty($value) === true)
+        {
+            return;
+        }
+
+        /** @var Entity $fundAccount */
+        $fundAccount = $this->entity;
+
+        $merchant = $fundAccount->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT_TO_CARDS) === false)
+        {
+            // Not logging the value since card details will be present.
+            throw new Exception\BadRequestValidationFailureException(
+                'card is/are not required and should not be sent');
         }
     }
 }

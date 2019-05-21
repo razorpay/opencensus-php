@@ -116,6 +116,7 @@ class Constants
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
     const OVERRIDE_SUB_CONFIG             = 'override_sub_config';
     const DOWNTIME_ROUTING                = 'downtime_routing';
+    const PAYOUT_TO_CARDS                 = 'payout_to_cards';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -344,6 +345,7 @@ class Constants
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
         self::OVERRIDE_SUB_CONFIG             => true,
         self::DOWNTIME_ROUTING                => true,
+        self::PAYOUT_TO_CARDS                 => true,
     ];
 
     // Entity type constants
@@ -451,6 +453,11 @@ class Constants
         self::QUEUED_PAYOUTS            => [
             'feature'       => self::QUEUED_PAYOUTS,
             'display_name'  => 'Queued payouts',
+            'documentation' => '',
+        ],
+        self::PAYOUT_TO_CARDS           => [
+            'feature'       => self::PAYOUT_TO_CARDS,
+            'display_name'  => 'Payout to cards',
             'documentation' => '',
         ],
     ];

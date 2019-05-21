@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -82,6 +83,8 @@ class FundAccountsTest extends TestCase
     public function testCreateCard()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS]);
 
         $this->mockCardVault();
 

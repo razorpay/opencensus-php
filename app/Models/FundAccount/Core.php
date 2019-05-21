@@ -34,14 +34,18 @@ class Core extends Base\Core
     {
         $this->modifyRequestForBackwardCompatibility($input);
 
-        $fundAccount = (new Entity)->build($input);
+        $fundAccount = (new Entity);
+
+        // This needs to be done before the build since validator
+        // uses the merchant association to check for a feature.
+        $fundAccount->merchant()->associate($merchant);
+
+        $fundAccount = $fundAccount->build($input);
 
         $this->repo->transaction(
             function() use ($input, $merchant, $source, $fundAccount, $batch)
             {
                 $account = $this->createAccount($input, $merchant, $source);
-
-                $fundAccount->merchant()->associate($merchant);
 
                 $fundAccount->source()->associate($source);
 
@@ -77,8 +81,8 @@ class Core extends Base\Core
         }
 
         //
-        // `account_type` is a required field, so if unset we just return and let this fail at the Entity
-        // build validation stage.
+        // `account_type` is a required field, so if unset we just return
+        // and let this fail at the Entity build validation stage.
         //
         if (isset($input[Entity::ACCOUNT_TYPE]) === false)
         {
