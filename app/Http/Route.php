@@ -2350,7 +2350,7 @@ final class Route
         'user_fetch_admin'                         => '*',
         'refund_edit_status'                       => Permission::EDIT_REFUND,
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
-        'set_scrooge_refund_dark'                  => Permission::EDIT_REFUND,
+        'set_scrooge_refund_dark'                  => Permission::EDIT_SCROOGE_REDIS_CONFIG,
         'batch_create'                             => '*',
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'file_upload_admin'                        => Permission::ADMIN_FILE_UPLOAD,

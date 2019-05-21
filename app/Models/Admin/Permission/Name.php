@@ -231,6 +231,7 @@ class Name
     const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
     const SETTLEMENT_RELEASE_HOLD_PAYMENT     = 'settlement_release_hold_payment';
     const BATCH_API_CALL                      = 'batch_api_call';
+    const EDIT_SCROOGE_REDIS_CONFIG           = 'edit_scrooge_redis_config';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

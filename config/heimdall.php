@@ -229,6 +229,10 @@ return [
                 'description' => 'update_scrooge_refund_reference1_permission',
                 'assignable'  => true,
             ],
+            Permission::EDIT_SCROOGE_REDIS_CONFIG                         => [
+                'description' => 'edit_scrooge_redis_config_permission',
+                'assignable'  => true,
+            ],
             Permission::RETRY_REFUND                        => [
                 'description' => 'Retry refunds',
                 'assignable'  => true,
