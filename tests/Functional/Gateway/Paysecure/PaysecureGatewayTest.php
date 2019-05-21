@@ -421,7 +421,7 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
-    public function testCaptureDispatchedOnFailure()
+    public function testCaptureDispatchedOnTimeout()
     {
         Mail::fake();
         Queue::fake();
@@ -435,6 +435,42 @@ class PaysecureGatewayTest extends TestCase
                 if ($action === 'callback')
                 {
                     throw new GatewayTimeoutException('Timed out');
+                }
+            },
+            'hitachi'
+        );
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureDispatchedOnFailure()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $authResponse = $this->testPaymentAuthViaRedirect();
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                // Hitachi's advice uses the same action response as that of callback
+                if ($action === 'callback')
+                {
+                    $decoded = json_decode($content, true);
+
+                    $decoded['pRespCode'] = 'Z3';
+
+                    $content = json_encode($decoded);
                 }
             },
             'hitachi'

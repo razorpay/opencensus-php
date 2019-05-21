@@ -482,8 +482,7 @@ trait Capture
         }
         else
         {
-            if ((($ex instanceof Exception\GatewayTimeoutException) === true) and
-                ($this->shouldDispatchCapture() === true))
+            if ($this->shouldDispatchCapture($ex) === true)
             {
                 $this->dispatchCaptureFailure($ex, $data);
             }
@@ -494,7 +493,7 @@ trait Capture
         }
     }
 
-    protected function shouldDispatchCapture()
+    protected function shouldDispatchCapture(\Throwable $ex)
     {
         //
         // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
@@ -504,9 +503,16 @@ trait Capture
         // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
         //
         // For PaySecure, if we don't capture the payment, the amount would not be settled to NPCI and hence it would
-        // not be settled to us.
+        // not be settled to us. So, for every exceptions, we should dispatch to capture job for PaySecure.
         //
-        if (($this->payment->getGateway() === Payment\Gateway::HDFC) or
+
+        if (
+            // For HDFC
+            (
+                (($ex instanceof Exception\GatewayTimeoutException) === true) and
+                ($this->payment->getGateway() === Payment\Gateway::HDFC)
+            ) or
+            // For PaySecure
             (
                 ($this->payment->getGateway() === Payment\Gateway::HITACHI) or
                 ($this->payment->card->getNetworkCode() === Card\Network::RUPAY)
