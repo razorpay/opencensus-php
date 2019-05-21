@@ -756,6 +756,7 @@ final class Route
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
 
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
+        'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
 
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'              => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
@@ -2029,6 +2030,7 @@ final class Route
         'subscription_skip_cycle',
 
         'merchant_partners_fetch',
+        'payment_on_hold_bulk_update',
     ];
 
     public static $routePermission = [
@@ -2429,6 +2431,7 @@ final class Route
 
         'merchant_partners_fetch'                  => '*',
         'webhook_fire'                             => Permission::MAKE_API_CALL,
+        'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
     ];
 

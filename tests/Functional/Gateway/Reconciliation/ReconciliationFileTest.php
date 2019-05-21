@@ -2134,6 +2134,46 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals(1, $batch['failure_count']);
     }
 
+    public function testOnHoldToggle()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('payment_onhold');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment = $this->getDbLastEntityToArray('first_data');
+
+        $this->fixtures->edit('payment', $payment['id'], [
+            'on_hold' => true
+        ]);
+
+        $this->fixtures->edit('transaction', $payment['transaction_id'], [
+            'on_hold' => true
+        ]);
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($payment['id'], 'pay_' . $paymentEntity->getId());
+
+        $this->assertTrue($paymentEntity->getOnHold());
+
+        $this->assertTrue($paymentEntity->transaction->getOnHold());
+
+        $entries[] = $this->overrideFirstDataPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData');
+
+        $updatedPayment = $this->getDbEntityById('payment' ,$payment['id']);
+
+        $this->assertFalse($updatedPayment->getOnHold());
+
+        $this->assertFalse($updatedPayment->transaction->getOnHold());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     private function overrideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
     {
         $facade = $this->testData['facades']['testFssBobRecon'];

@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
 class CaptureVerify extends Verify
@@ -169,5 +170,12 @@ class CaptureVerify extends Verify
                 'channel' => $this->slackChannel,
             ]
         );
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->canHoldPayment() === true)
+        {
+            (new Payment\Core)->updatePaymentOnHold($payment, true);
+        }
     }
 }

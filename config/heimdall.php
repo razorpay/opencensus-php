@@ -364,6 +364,10 @@ return [
         PermissionCategory::SETTLEMENT => [
             Permission::SETTLEMENT_BULK_UPDATE        => '',
             Permission::CREATE_NODAL_ACCOUNT_TRANSFER => '',
+            Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT => [
+                'description' => 'Settlement relese payments on hold',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::DISPUTE => [

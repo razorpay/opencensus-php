@@ -1510,6 +1510,59 @@ class Service extends Base\Service
         ];
     }
 
+    public function updateOnHoldBulkUpdate(array $input)
+    {
+       (new Payment\Validator)->validateInput('payment_onhold_bulk_update', $input);
+
+       $onHold = $input['on_hold'];
+
+       $paymentsToUpdate = $this->repo->payment->findManyByPublicIds($input['payment_ids']);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ON_HOLD_TOGGLE,
+            [
+                'payment_ids'   => $paymentsToUpdate->getIds(),
+                'on_hold'       => $onHold,
+            ]
+        );
+
+        $result = [
+            'count' => $paymentsToUpdate->count(),
+            'failed_ids' => [],
+            'successful' => 0,
+        ];
+
+        $paymentCore = new Payment\Core;
+
+        foreach ($paymentsToUpdate as $payment)
+        {
+            try
+            {
+                $merchant = $payment->merchant;
+
+                $paymentCore->updatePaymentOnHold($payment, $onHold);
+
+                $result['successful'] += 1;
+            }
+            catch (\Exception $e)
+            {
+                $result['failed_ids'][] = $payment->getId();
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_ON_HOLD_TOGGLE_FAILED,
+                    [
+                        'step'  => 'update_failed',
+                        'id'    => $payment->getId()
+                    ]
+                );
+            }
+        }
+
+        return $result;
+    }
+
     /**
      * Marks the payment as acknowledged, if not already acknowledged.
      * Also, updates payments.notes field with acknowledged data if any.

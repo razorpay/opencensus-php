@@ -1111,6 +1111,80 @@ class VerifyTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testCaptureVerifyHoldPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['payment_onhold']);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $transaction = $payment->transaction;
+
+        $this->assertFalse($payment->getOnHold());
+        $this->assertFalse($transaction->getOnHold());
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(5);
+
+        Carbon::setTestNow($time);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = [
+                    'error_code_tag' => 'GW00201',
+                    'error_service_tag' => 'null',
+                    'result' => '!ERROR!-GW00201-Transaction not found.',
+                ];
+            }
+
+            return $content;
+        }, 'hdfc');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment->reload();
+
+        $transaction->reload();
+
+        $this->assertTrue($payment->getOnHold());
+        $this->assertTrue($transaction->getOnHold());
+
+        // unset hold Payment
+        $this->ba->adminAuth();
+
+        $request = [
+            'url' => '/payments/on_hold/bulk_update',
+            'method' => 'POST',
+            'content' => [
+                'payment_ids' => [$payment->getPublicId()],
+                'on_hold'     => 0,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payment->reload();
+
+        $transaction->reload();
+
+        $this->assertFalse($payment->getOnHold());
+        $this->assertFalse($transaction->getOnHold());
+
+    }
+
     protected function setupRedisMock($paymentArray = [])
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex', 'client'])

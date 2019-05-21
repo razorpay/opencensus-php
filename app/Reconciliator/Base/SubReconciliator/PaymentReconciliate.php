@@ -620,6 +620,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
         $this->markGatewayCapturedAsTrue();
 
+        $this->updatePaymentHoldIfApplicable();
+
         $this->createGatewayCapturedEntityIfApplicable($row);
 
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
@@ -636,6 +638,17 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
         return $recordSuccess;
+    }
+
+    protected function updatePaymentHoldIfApplicable()
+    {
+        if (($this->payment->getOnHold() === false) or
+            ($this->payment->merchant->canHoldPayment() === false))
+        {
+            return;
+        }
+
+        (new Payment\Core)->updatePaymentOnHold($this->payment, false);
     }
 
     protected function getRowDetailsStructured($row)

@@ -229,6 +229,7 @@ class Name
     const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';
     const VIEW_OPERATIONS_REPORT              = 'view_operations_report';
     const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
+    const SETTLEMENT_RELEASE_HOLD_PAYMENT     = 'settlement_release_hold_payment';
     const BATCH_API_CALL                      = 'batch_api_call';
 
     public static $actionMap = [
