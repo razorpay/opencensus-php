@@ -47,6 +47,12 @@ class Inferno
      */
     protected $eventQueuedAt;
 
+    /**
+     * @see getEventContainedIds() method.
+     * @var null|array
+     */
+    protected $eventContainedIds;
+
     protected $client = null;
 
     const HASH_ALGO = 'sha256';
@@ -86,6 +92,7 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
+        $this->eventContainedIds = $this->getEventContainedIds();
 
         // TODO: Remove backward compatible code in few days having guaranteed
         // no old formatted job payload exists in queue.
@@ -262,6 +269,7 @@ class Inferno
                 'merchant_id' => $webhook->merchant->getId(),
                 'request'     => $request,
                 'attempt'     => $this->job->attempts(),
+                'contained_ids' => $this->eventContainedIds,
             ]);
 
         $this->pushQueuedToFiredLatencyMetrics();
@@ -351,6 +359,7 @@ class Inferno
                     'response_code'     => $statusCode,
                     'response_headers'  => $response->getHeaders(),
                     'response_time'     => $requestDuration,
+                    'contained_ids'     => $this->eventContainedIds,
                 ]);
 
             $clientError = false;
@@ -421,6 +430,7 @@ class Inferno
         $webhookData = [
             'webhook_id'        => $webhook->getId(),
             'merchant_id'       => $webhook->merchant->getId()
+            'contained_ids'     => $this->eventContainedIds,
         ];
 
         $responseData = $this->getResponseData($msgPrefix, $response);
@@ -619,5 +629,26 @@ class Inferno
         }
 
         return $webhook;
+    }
+
+    /**
+     * Returns pairs of (entity-name, id) for the entities webhook event contains.
+     * @return array
+     */
+    protected function getEventContainedIds(): array
+    {
+        if ($this->eventContainedIds === null)
+        {
+            foreach ($this->event['contains'] as $k)
+            {
+                $id = $this->event['payload'][$k]['entity']['id'] ? null;
+                if ($id !== null)
+                {
+                    $this->eventContainedIds[$k] = $id;
+                }
+            }
+        }
+
+        return $this->eventContainedIds;
     }
 }
