@@ -764,7 +764,7 @@ class BasicAuth
     {
         $this->setType(Type::PRIVILEGE_AUTH);
 
-        $this->setAppTrue();
+        $this->setAppAuth(true);
 
         $res = $this->setCredentials();
 
@@ -1449,6 +1449,11 @@ class BasicAuth
         \Database\DefaultConnection::set($mode);
     }
 
+    public function setBasicAppAuth(bool $value)
+    {
+        $this->setAppAuth($value);
+    }
+
     public function setAccessTokenId(string $tokenId)
     {
         $this->accessTokenId = $tokenId;
@@ -1526,12 +1531,12 @@ class BasicAuth
     {
         $this->proxy = true;
 
-        $this->setAppTrue();
+        $this->setAppAuth(true);
     }
 
-    protected function setAppTrue()
+    protected function setAppAuth(bool $value)
     {
-        $this->appAuth = true;
+        $this->appAuth = $value;
     }
 
     // --------------------- Setters Ends ---------------------

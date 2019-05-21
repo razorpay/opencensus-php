@@ -4,7 +4,6 @@ namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
-use Razorpay\Trace\Logger as Trace;
 
 /**
  * Represents asynchronous Batch job.
