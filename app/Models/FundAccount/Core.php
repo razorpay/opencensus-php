@@ -115,7 +115,10 @@ class Core extends Base\Core
             case Type::CARD:
                 // cvv needs to be passed otherwise card creation will fail if it's
                 // not present, hence passing a dummy value. It's not stored anyways.
-                $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::DUMMY_CVV;
+                $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv();
+                $accountInput[Card\Entity::EXPIRY_YEAR] = $accountInput[Card\Entity::EXPIRY_YEAR] ?? Card\Entity::DUMMY_EXPIRY_YEAR;
+                $accountInput[Card\Entity::EXPIRY_MONTH] = $accountInput[Card\Entity::EXPIRY_MONTH] ?? Card\Entity::DUMMY_EXPIRY_MONTH;
+
                 $account = (new Card\Core)->createForFundAccount($accountInput, $merchant);
                 break;
 
