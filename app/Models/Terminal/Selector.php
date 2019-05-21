@@ -518,7 +518,7 @@ class Selector extends Base\Core
             'mcc_filter_gateways'                 => Gateway::MCC_FILTER_GATEWAYS,
             'only_authorization_gateway'          => Gateway::$onlyAuthorizationGateway,
             'bit_position'                        => Terminal\Type::getBitPositions(),
-            'gateway_acquirer_ifsc_mapping'       => Gateway::$gatewaysEmandateBanksMap,
+            'gateway_acquirer_ifsc_mapping'       => Gateway::$gatewayAcquirerIfscMapping,
             'bharat_qr_card_network'              => Gateway::$bharatQrCardNetwork,
             'card_network_map'                    => Gateway::$cardNetworkMap,
             'card_network_recurring_map'          => Gateway::$cardNetworkRecurringMap,
