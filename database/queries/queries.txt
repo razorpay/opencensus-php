@@ -4930,3 +4930,7 @@ ALTER TABLE commissions
 ALTER TABLE fund_account_validations
     ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER batch_fund_transfer_id,
     ADD INDEX fund_account_validations_balance_id_index (balance_id);
+
+ALTER TABLE refunds
+    CHANGE COLUMN reference6 reversed_at INT(11) UNSIGNED DEFAULT NULL,
+    ADD INDEX refunds_reversed_at_index (`reversed_at`);
