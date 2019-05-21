@@ -92,6 +92,20 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchRawAPIGetAllBatches()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBatchRawAPIUpdateSettings()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     protected function getDefaultFileEntries()
     {
         return [

@@ -257,6 +257,7 @@ return [
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
             Permission::CREATE_RECONCILIATE                 => '',
             Permission::CREATE_PROMOTION_COUPON             => '',
+            Permission::BATCH_API_CALL                      => '',
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],

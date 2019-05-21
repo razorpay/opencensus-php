@@ -954,6 +954,9 @@ final class Route
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
         'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
 
+        // batch service
+        'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
+
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -1961,6 +1964,9 @@ final class Route
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
 
+        // batch Service
+        'batch_service_route',
+
         'merchant_bulk_edit_attributes',
 
         // Partners
@@ -2369,6 +2375,7 @@ final class Route
         'reporting_schedule_list_admin'            => '*',
         'reporting_proxy'                          => '*',
         'reporting_proxy_admin'                    => '*',
+        'batch_service_route'                      => Permission::BATCH_API_CALL,
         'ufh_get_file_signed_url'                  => '*',
         'ufh_get_file_signed_url_admin'            => '*',
         'merchant_requests_create'                 => '*',
