@@ -55,9 +55,14 @@ const updateLog = (data, accountId) => {
   });
 };
 
-export const getConfigs = () => {
+export const getConfigs = shouldFetchPartnerConfigs => {
   return merchantFetch({
     url: 'reporting/configs',
+    headers: shouldFetchPartnerConfigs
+      ? {
+          'x-report-type': 'partner',
+        }
+      : undefined,
   });
 };
 

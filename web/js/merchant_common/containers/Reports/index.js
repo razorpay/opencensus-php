@@ -43,7 +43,14 @@ const requestFailedFunc = () => {
   };
 
 export default function Reports(store, opts) {
-  const { data, modelActions, fetchAccountsApi, ga } = opts;
+  const {
+    data,
+    modelActions,
+    fetchAccountsApi,
+    ga,
+    shouldFetchPartnerConfigs,
+    linkToReports = '/reports',
+  } = opts;
   const { getCustomConfig, marketplaceConfigTypes, rzpConfigOrder } = data;
 
   const {
@@ -107,7 +114,9 @@ export default function Reports(store, opts) {
         tags = user.tags.map(tag => tag.toLowerCase()),
         configs = [],
         accounts = [],
-        configRequest = getConfigs().catch(requestFailedFunc),
+        configRequest = getConfigs(shouldFetchPartnerConfigs).catch(
+          requestFailedFunc
+        ),
         promises = [configRequest];
 
       const monthlyInvoiceConfig = getCustomConfig('monthlyInvoice');
@@ -805,7 +814,7 @@ export default function Reports(store, opts) {
         <div>
           <tabbed-container>
             <header>
-              <NavLink to="/reports">Download Reports</NavLink>
+              <NavLink to={linkToReports}>Download Reports</NavLink>
             </header>
             <TestModeBanner />
             <content>{content}</content>

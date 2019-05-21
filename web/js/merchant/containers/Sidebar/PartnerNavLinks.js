@@ -46,6 +46,13 @@ export default function PartnerNavLinks() {
         }
         exact
       />
+
+      <MainNavLink
+        label="Reports"
+        icon="i i-books text-danger"
+        to="/partners/reports"
+        isPending={false}
+      />
     </>
   );
 }
