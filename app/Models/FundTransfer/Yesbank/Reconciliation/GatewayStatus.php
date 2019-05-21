@@ -90,7 +90,7 @@ class GatewayStatus extends BaseStatus
     // here we have collectively with BT and time_out_status created a status
     // which can be used to determine the status of transaction
     const BT_TCC      = 'BT_TCC';
-    const BT_REC      = 'BT_REC';
+    const BT_RRC      = 'BT_RRC';
     const BT_RET      = 'BT_RET';
 
     // verify related status codes
@@ -338,7 +338,7 @@ class GatewayStatus extends BaseStatus
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'Payout request timed out. Try again later',
         self::RZP_REF_ID_MISMATCH               => 'Payout failed. Contact support for help.',
         self::RZP_AMOUNT_MISMATCH               => 'Payout failed. Contact support for help.',
-        self::BT_REC                            => 'Payout request timed out. Try again later',
+        self::BT_RRC                            => 'Payout request timed out. Try again later',
         self::BT_RET                            => 'Payout request timed out. Try again later',
     ];
 
@@ -581,7 +581,7 @@ class GatewayStatus extends BaseStatus
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'RZP: payout request failed',
         self::RZP_REF_ID_MISMATCH               => 'RZP: Validation error, ref id mismatch',
         self::RZP_AMOUNT_MISMATCH               => 'RZP: amount mismatch',
-        self::BT_REC                            => 'Return has been initiated by Beneficiary Bank',
+        self::BT_RRC                            => 'Return has been initiated by Beneficiary Bank',
         self::BT_RET                            => 'Return has been posted in the remitter’s account',
     ];
 

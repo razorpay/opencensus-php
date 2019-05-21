@@ -238,13 +238,16 @@ abstract class EntityProcessor extends Base\Core
         // In these cases, since we anyway don't know the status, it does not make
         // sense for us to reconcile these, or check the error codes and stuff.
         //
+        // 21-May 2019 : Allowing timeout cases as well for reconcillation since
+        // we have added, BT_TCC, BT_RET, BT_RRC as final status
         if (($this->fta->getChannel() === Channel::YESBANK) and
             ($this->fta->shouldUseGateway() === true))
         {
             $statusCode = $this->fta->getBankResponseCode();
 
             if (($statusCode !== GatewayStatus::STATUS_CODE_SUCCESS) and
-                ($statusCode !== GatewayStatus::STATUS_CODE_FAILURE))
+                ($statusCode !== GatewayStatus::STATUS_CODE_FAILURE) and
+                ($statusCode !== GatewayStatus::STATUS_CODE_TIMEOUT))
             {
                 return [$status, $failureReason];
             }
