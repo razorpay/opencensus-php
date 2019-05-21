@@ -154,6 +154,36 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         return $response;
     }
 
+    public function blockVpa(Response $response)
+    {
+        $device = $this->getContextDevice();
+        $deviceToken = $this->getContextDeviceToken();
+
+        // Merchant Customer Id needs to be picked from Gateway Data
+        $merchantCustomerId = $deviceToken->get(Entity::GATEWAY_DATA)[Fields::MERCHANT_CUSTOMER_ID];
+
+        $payee = $this->input->get('payee');
+
+        $vpa = $payee['vpa'];
+
+        $request = $this->initiateS2sRequest(VpaAction::BLOCK_VPA);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID => $merchantCustomerId,
+            Fields::PAYEE_VPA            => $vpa,
+            Fields::SHOULD_BLOCK         => true,
+            Fields::SHOULD_SPAM          => false
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $response->setData([
+
+        ]);
+
+        return $response;
+    }
+
     protected function handleVpaAvailability(
         Response $response,
         array $linkAccount = null,

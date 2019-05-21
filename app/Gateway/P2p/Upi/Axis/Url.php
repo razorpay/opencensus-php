@@ -13,4 +13,6 @@ class Url
     const RAISE_QUERY          = '/api/b2/merchants/transactions/query/raise';
 
     const QUERY_STATUS         = '/api/b2/merchants/transactions/query/status';
+
+    const BLOCK_VPA            = '/api/b2/merchants/vpas/blockAndSpam';
 }

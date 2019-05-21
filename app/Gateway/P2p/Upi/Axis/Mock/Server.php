@@ -115,6 +115,30 @@ class Server extends Mock\Server
         return $response;
     }
 
+    public function vpaBlockVpa($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD      => [
+                Fields::MERCHANT_ID                 => 'MERCHANT',
+                Fields::MERCHANT_CHANNEL_ID         => 'MERCHANTAPP',
+                Fields::MERCHANT_CUSTOMER_ID        => $request[Fields::MERCHANT_CUSTOMER_ID],
+                Fields::PAYEE_VPA                   => $request[Fields::PAYEE_VPA],
+                Fields::GATEWAY_RESPONSE_CODE       => '00',
+                Fields::GATEWAY_RESPONSE_MESSAGE    => 'Vpa blocked/spammed successfully',
+            ],
+            Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'block_vpa');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
     protected function makeResponse($input)
     {
         $response = new \Requests_Response();

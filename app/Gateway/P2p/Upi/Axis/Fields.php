@@ -73,6 +73,8 @@ class Fields
     const AVAILABLE                     = 'available';
     const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
     const CUSTOMER_NAME                 = 'customerName';
+    const SHOULD_BLOCK                  = 'shouldBlock';
+    const SHOULD_SPAM                   = 'shouldSpam';
 
     // ------------------- TRANSACTION ------------- //
     const MERCHANT_REQUEST_ID           = 'merchantRequestId';

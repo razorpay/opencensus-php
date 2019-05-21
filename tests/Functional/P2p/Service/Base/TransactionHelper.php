@@ -185,4 +185,22 @@ class TransactionHelper extends P2pHelper
 
         return $this->get($request);
     }
+
+    public function blockVpa(string $id, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'transaction/initiate_authorize';
+
+        $request = $this->request('transactions/%s/reject/initiate', [$id]);
+
+        $default = [
+            'payee' => [
+                'vpa'   => 'random@psp',
+                'block' => true,
+            ]
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
 }

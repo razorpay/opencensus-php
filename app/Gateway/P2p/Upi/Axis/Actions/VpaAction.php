@@ -13,6 +13,8 @@ class VpaAction extends Action
 
     const VALIDATE_VPA                      = 'VALIDATE_VPA';
 
+    const BLOCK_VPA                         = 'BLOCK_VPA';
+
     const MAP = [
         self::VPA_AVAILABILITY => [
             self::VALIDATOR => [
@@ -28,6 +30,12 @@ class VpaAction extends Action
         self::VALIDATE_VPA  => [
             self::SOURCE    => self::DIRECT,
             self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
+        self::BLOCK_VPA  => [
+            self::SOURCE  => self::DIRECT,
+            self::DIRECT  => [
                 S2sDirect::METHOD => 'post'
             ],
         ]
