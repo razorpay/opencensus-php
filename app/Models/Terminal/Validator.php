@@ -707,6 +707,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'required',
         Entity::GATEWAY_ACCESS_CODE        => 'required',
         Entity::GATEWAY_MERCHANT_ID        => 'required',
+        Entity::GATEWAY_SECURE_SECRET      => 'required',
         Entity::TYPE                       => 'sometimes',
     ];
 
