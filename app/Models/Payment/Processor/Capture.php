@@ -505,7 +505,6 @@ trait Capture
         // For PaySecure, if we don't capture the payment, the amount would not be settled to NPCI and hence it would
         // not be settled to us. So, for every exceptions, we should dispatch to capture job for PaySecure.
         //
-
         if (
             // For HDFC
             (
@@ -514,7 +513,7 @@ trait Capture
             ) or
             // For PaySecure
             (
-                ($this->payment->getGateway() === Payment\Gateway::HITACHI) or
+                ($this->payment->getGateway() === Payment\Gateway::HITACHI) and
                 ($this->payment->card->getNetworkCode() === Card\Network::RUPAY)
             )
         )
