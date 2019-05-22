@@ -149,4 +149,32 @@ class Server extends Mock\Server
 
         return $response;
     }
+
+    public function vpaGetBlocked($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD      => [
+                Fields::MERCHANT_ID           => 'MERCHANT',
+                Fields::MERCHANT_CHANNEL_ID   => 'MERCHANTAPP',
+                Fields::MERCHANT_CUSTOMER_ID  => $request[Fields::MERCHANT_CUSTOMER_ID],
+                Fields::BLOCKED_VPAS          => [
+                    [
+                        Fields::PAYEE_VPA  => 'abc@handle',
+                        Fields::NAME       => 'abc',
+                        Fields::BLOCKED_AT => '2017-06-09T10:46:45+00:00',
+                    ]
+                ]
+            ],
+            Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'get_blocked');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
 }

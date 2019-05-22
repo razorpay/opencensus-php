@@ -60,7 +60,9 @@ class Service extends Base\Service
     {
         if (isset($input[Beneficiary\Entity::BENEFICIARY]))
         {
-            return (new Beneficiary\Processor())->handleBeneficiary($input[Beneficiary\Entity::BENEFICIARY]);
+            (new Beneficiary\Processor())->handleBeneficiary($input[Beneficiary\Entity::BENEFICIARY]);
+
+            unset($input[Beneficiary\Entity::BENEFICIARY]);
         }
 
         $response = $this->processor->initiateReject($input);

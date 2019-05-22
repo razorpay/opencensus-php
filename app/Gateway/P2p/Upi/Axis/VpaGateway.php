@@ -194,6 +194,23 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         $response->setData($output);
     }
 
+    public function getBlocked(Response $response)
+    {
+        $request = $this->initiateS2sRequest(VpaAction::GET_BLOCKED);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
+            Fields::LIMIT                => 100,
+            Fields::OFFSET               => 0,
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $output[Fields::BLOCKED_VPAS] = $s2s[Fields::PAYLOAD][Fields::BLOCKED_VPAs];
+
+        $response->setData($output);
+    }
+
     protected function handleVpaAvailability(
         Response $response,
         array $linkAccount = null,

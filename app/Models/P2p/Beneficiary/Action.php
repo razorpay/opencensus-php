@@ -17,4 +17,8 @@ class Action extends Base\Action
     const HANDLE_BENEFICIARY    = 'handleBeneficiary';
 
     const HANDLE_BENEFICIARY_SUCCESS = 'handleBeneficiarySuccess';
+
+    const GET_BLOCKED  = 'getBlocked';
+
+    const GET_BLOCKED_SUCCESS  = 'getBlockedSuccess';
 }

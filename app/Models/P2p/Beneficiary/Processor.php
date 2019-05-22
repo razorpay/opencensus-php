@@ -106,6 +106,20 @@ class Processor extends Base\Processor
         return $response;
     }
 
+    public function getBlocked(array $input): array
+    {
+        $this->initialize(Action::GET_BLOCKED, $input, true);
+
+        $this->input->put(Entity::TYPE, 'vpa');
+
+        return $this->callGateway();
+    }
+
+    protected function getBlockedSuccess(array $input): array
+    {
+        return $input;
+    }
+
     protected function getEntity()
     {
         return $this->input->get(Entity::TYPE);

@@ -15,4 +15,8 @@ class Url
     const QUERY_STATUS         = '/api/b2/merchants/transactions/query/status';
 
     const BLOCK_VPA            = '/api/b2/merchants/vpas/blockAndSpam';
+
+    const UNBLOCK_VPA          = '/api/b2/merchants/vpas/unblock';
+
+    const GET_BLOCKED          = '/api/b2/merchants/vpas/block/list';
 }

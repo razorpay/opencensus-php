@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis\Actions;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Gateway\P2p\Upi\Axis\S2s;
 use RZP\Gateway\P2p\Upi\Axis\S2sDirect;
 
 class VpaAction extends Action
@@ -16,6 +17,8 @@ class VpaAction extends Action
     const BLOCK_VPA                         = 'BLOCK_VPA';
 
     const UNBLOCK_VPA                       = 'UNBLOCK_VPA';
+
+    const GET_BLOCKED                       = 'GET_BLOCKED';
 
     const MAP = [
         self::VPA_AVAILABILITY => [
@@ -36,6 +39,18 @@ class VpaAction extends Action
             ],
         ],
         self::BLOCK_VPA  => [
+            self::SOURCE  => self::DIRECT,
+            self::DIRECT  => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
+        self::UNBLOCK_VPA => [
+            self::SOURCE  => self::DIRECT,
+            self::DIRECT  => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
+        self::GET_BLOCKED => [
             self::SOURCE  => self::DIRECT,
             self::DIRECT  => [
                 S2sDirect::METHOD => 'post'

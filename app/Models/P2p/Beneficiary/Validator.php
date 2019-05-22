@@ -15,6 +15,7 @@ class Validator extends Base\Validator
     protected static $fetchAllRules;
     protected static $handleBeneficiaryRules;
     protected static $handleBeneficiarySuccessRules;
+    protected static $getBlockedRules;
 
     public function rules()
     {
@@ -122,6 +123,13 @@ class Validator extends Base\Validator
     }
 
     public function makeFetchAllRules()
+    {
+        $rules = $this->makeRules([]);
+
+        return $rules;
+    }
+
+    public function makeGetBlockedRules()
     {
         $rules = $this->makeRules([]);
 

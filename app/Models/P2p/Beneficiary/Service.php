@@ -4,7 +4,7 @@ namespace RZP\Models\P2p\Beneficiary;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
-
+use RZP\Models\P2p\Beneficiary;
 /**
  * @property  Core          $core
  * @property  Validator     $validator
@@ -29,6 +29,20 @@ class Service extends Base\Service
     public function fetchAll(array $input): array
     {
         $response = $this->processor->fetchAll($input);
+
+        return $response;
+    }
+
+    public function handle(array $input): array
+    {
+        $response = $this->processor->handleBeneficiary($input[Beneficiary\Entity::BENEFICIARY]);
+
+        return $response;
+    }
+
+    public function getBlocked(array $input): array
+    {
+        $response = $this->processor->getBlocked($input);
 
         return $response;
     }
