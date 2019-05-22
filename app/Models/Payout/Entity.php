@@ -512,6 +512,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getInitiatedAt()
+    {
+        return $this->getAttribute(self::INITIATED_AT);
+    }
+
     public function getProcessedAt()
     {
         return $this->getAttribute(self::PROCESSED_AT);
@@ -1175,6 +1180,23 @@ class Entity extends Base\PublicEntity
         $this->removeRecursiveRelation();
 
         return parent::toArray();
+    }
+
+    /**
+     * Gets default dimensions for payout metrics
+     *
+     * @param array $extra
+     *
+     * @return array
+     */
+    public function getMetricDimensions(array $extra = []): array
+    {
+        $dimensions = $extra + [
+                'channel' => $this->getChannel(),
+                'mode'    => $this->getMode(),
+            ];
+
+        return $dimensions;
     }
 
     public function scopeStatus(BuilderEx $query, string $status)

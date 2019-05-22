@@ -131,12 +131,7 @@ abstract class Base extends BaseCore
                     'payout'      => $payout->toArray(),
                 ]);
 
-            $metricDimensions = [
-                'channel' => $payout->getChannel(),
-                'mode'    => $payout->getMode(),
-            ];
-
-            $this->trace->count(Metric::PAYOUT_CREATED, $metricDimensions, 1);
+            $this->trace->count(Metric::PAYOUT_CREATED, $payout->getMetricDimensions(), 1);
 
             return $payout;
         });
