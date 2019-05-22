@@ -335,7 +335,13 @@ trait RequestHandlerTrait
                     }
                 }
 
-                throw new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
+                $ex = new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
+
+                if ($command !== Command::AUTHORIZE)
+                {
+                    $ex->markSafeRetryTrue();
+                }
+                throw $ex;
             }
             else
             {

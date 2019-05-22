@@ -111,12 +111,12 @@ class ErrorCodes
         // Check BIN error code mappings
         self::EC_01   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_02   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
-        self::EC_400  => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
+        self::EC_400  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_401  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_402  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_406  => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
         self::EC_407  => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
-        self::EC_408  => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
+        self::EC_408  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_410  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
         self::EC_412  => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
 

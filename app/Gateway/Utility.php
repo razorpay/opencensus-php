@@ -69,7 +69,8 @@ class Utility
 
         if ((strpos($msg, 'could not connect to host') !== false) or
             (strpos($msg, 'connection timed out') !== false) or
-            (strpos($msg, 'error fetching http headers') !== false)
+            (strpos($msg, 'error fetching http headers') !== false) or
+            (strpos($msg, 'connection reset by peer') !== false)
         )
         {
             return true;
