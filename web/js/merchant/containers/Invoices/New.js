@@ -1565,7 +1565,7 @@ export default class InvoicesNewContainer extends Component {
                                 selected={this.props.customer.id}
                                 optionLabelPath="displayName"
                                 selectedOptionLabelPath="selectedDisplayName"
-                                placeholder="Select a customer"
+                                placeholder="Search for customers"
                                 onQuickAdd={this.quickCreateCustomer}
                                 disabled={isDisabled}
                                 labelWhenSearchTermBlank="Create new Customer"

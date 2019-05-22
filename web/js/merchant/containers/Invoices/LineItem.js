@@ -484,7 +484,7 @@ export default class InvoiceLineItem extends React.Component {
                 maxSearchTermLength="12"
                 selected={selectedOption}
                 optionLabelPath="name"
-                placeholder="Select an item"
+                placeholder="Search for items"
                 showClear={false}
                 onOptionChange={this.updateLineItemRow}
                 onQuickAdd={this.quickCreateItem}
