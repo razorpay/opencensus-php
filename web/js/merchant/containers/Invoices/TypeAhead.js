@@ -9,7 +9,6 @@ export default class _default extends React.Component {
     super(props);
 
     this.state = {
-      loading: false,
       options: [],
     };
 
@@ -17,19 +16,11 @@ export default class _default extends React.Component {
   }
 
   onSearch = searchTerm => {
-    this.props
-      .searchMethod(searchTerm)
-      .then(res => {
-        this.setState({
-          options: res.data.items,
-          loading: false,
-        });
-      })
-      .catch(e => {
-        this.setState({
-          loading: false,
-        });
+    this.props.searchMethod(searchTerm).then(res => {
+      this.setState({
+        options: res.data.items,
       });
+    });
   };
 
   handleKeyDown = e => {
