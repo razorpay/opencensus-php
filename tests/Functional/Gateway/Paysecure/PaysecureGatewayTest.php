@@ -447,7 +447,7 @@ class PaysecureGatewayTest extends TestCase
         {
             $data = $job->getData();
 
-            return $payment['id'] === $data['payment']['public_id'];
+            return ($payment['id'] === $data['payment']['public_id']);
         });
 
         Mail::assertQueued(CapturedMail::class);
@@ -483,7 +483,7 @@ class PaysecureGatewayTest extends TestCase
         {
             $data = $job->getData();
 
-            return $payment['id'] === $data['payment']['public_id'];
+            return ($payment['id'] === $data['payment']['public_id']);
         });
 
         Mail::assertQueued(CapturedMail::class);
