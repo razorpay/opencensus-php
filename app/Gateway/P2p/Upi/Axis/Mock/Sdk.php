@@ -67,8 +67,8 @@ class Sdk
         ];
 
         $response[Fields::ACCOUNTS] = [
-            $this->createMockBankAccount(),
-            $this->createMockBankAccount(),
+            $this->createMockBankAccount('000001'),
+            $this->createMockBankAccount('000002'),
         ];
 
         return $response;
@@ -266,7 +266,7 @@ class Sdk
                     Fields::AMOUNT                      => $input[Fields::AMOUNT],
                     Fields::CUSTOME_RESPONSE            => '{}',
                     Fields::EXPIRY                      => '2019-04-25T16:11:22+05:30',
-                    Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::GATEWAY_REFERENCE_ID        => $input[Fields::GATEWAY_REFERENCE_ID] ?? '911416196085',
                     Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
                     Fields::IS_VERIFIED_PAYEE           => 'false',
                     Fields::IS_MARKED_SPAM              => 'false',
@@ -329,14 +329,14 @@ class Sdk
         $this->callbacks[] = $callback;
     }
 
-    private function createMockBankAccount()
+    private function createMockBankAccount($mask)
     {
         $code = $this->input[Fields::BANK_CODE];
 
         return [
             Fields::BANK_CODE               => $code,
             Fields::BANK_NAME               => 'Bank ' . $code,
-            Fields::MASKED_ACCOUNT_NUMBER   => 'xxxxxxxxxxxx' . $code,
+            Fields::MASKED_ACCOUNT_NUMBER   => 'xxxxxxxxxxxx' . $mask,
             Fields::MPIN_SET                => 'false',
             Fields::MPIN_LENGTH             => '6',
             Fields::REFERENCE_ID            => str_random(16),

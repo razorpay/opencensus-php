@@ -20,13 +20,15 @@ class Core extends Base\Core
 
         // Then we will check if there are devices already created for customer
         $existing = $this->repo->findByDeviceProperties([
-            Entity::CUSTOMER_ID => $customer->getId(),
             Entity::CONTACT     => $input[Entity::CONTACT],
         ]);
 
         if ($existing)
         {
             $existing->edit($input);
+
+            // We are going to change the customer here
+            $existing->customer()->associate($customer);
 
             // This will make sure older device doesn't work
             $existing->generateAuthToken();

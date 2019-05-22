@@ -36,6 +36,11 @@ class TestCase extends Functional\TestCase
      */
     protected $exceptionHandler;
 
+    /**
+     * @var Carbon
+     */
+    protected $testCurrentTime;
+
     public function setUp()
     {
         parent::setUp();
@@ -46,11 +51,15 @@ class TestCase extends Functional\TestCase
 
         $this->resetMockServer();
 
+        $this->testCurrentTime = Carbon::now();
+
         MorphMap::boot();
     }
 
     public function tearDown()
     {
+        $this->now($this->testCurrentTime);
+
         $this->checkForMockedActions();
 
         parent::tearDown();
@@ -97,7 +106,7 @@ class TestCase extends Functional\TestCase
             });
     }
 
-    protected function now(string $now = null): Carbon
+    protected function now($now = null): Carbon
     {
         Carbon::setTestNow($now);
 

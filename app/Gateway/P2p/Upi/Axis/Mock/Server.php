@@ -25,7 +25,6 @@ class Server extends Mock\Server
             Fields::PAYLOAD      => [
                 Fields::MERCHANT_ID => 'MERCHANT',
                 Fields::MERCHANT_CHANNEL_ID     => 'MERCHANTAPP',
-                Fields::MERCHANT_CUSTOMER_ID    => $request[Fields::MERCHANT_CUSTOMER_ID],
                 Fields::CUSTOMER_MOBILE_NUMBER  => $request[Fields::CUSTOMER_MOBILE_NUMBER],
             ],
             Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],

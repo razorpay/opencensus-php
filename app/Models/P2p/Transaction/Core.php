@@ -90,6 +90,8 @@ class Core extends Base\Core
             throw $this->logicException('Action is required', $input);
         }
 
+        $defined = array_only($input, UpiTransaction\Entity::ACTION);
+
         $transactionId = $input[UpiTransaction\Entity::TRANSACTION_ID] ?? null;
         $networkTransactionId = $input[UpiTransaction\Entity::NETWORK_TRANSACTION_ID] ?? null;
 
