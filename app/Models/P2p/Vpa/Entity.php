@@ -93,6 +93,7 @@ class Entity extends Base\Entity
         Entity::ADDRESS,
         Entity::HANDLE,
         Entity::USERNAME,
+        Entity::BENEFICIARY_NAME,
         Entity::BANK_ACCOUNT,
         Entity::ACTIVE,
         Entity::VALIDATED,

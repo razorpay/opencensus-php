@@ -83,6 +83,7 @@ class TransactionTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
+        $expiry = (clone $this->testCurrentTime)->timezone('Asia/Kolkata')->addDay(1);
         $gatewayTransactionId = str_random(35);
         $this->mockSdk()->setCallback('COLLECT_REQUEST_RECEIVED', [
             Fields::AMOUNT                  => '1.00',
@@ -91,6 +92,7 @@ class TransactionTest extends TestCase
             Fields::UPI_REQUEST_ID          => 'RZP' . str_random(32),
             Fields::REMARKS                 => 'SomeTransaction',
             Fields::GATEWAY_TRANSACTION_ID  => $gatewayTransactionId,
+            Fields::EXPIRY                  => $expiry->toIso8601String(),
             Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_1)
                                                               ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID]
         ]);
@@ -107,6 +109,7 @@ class TransactionTest extends TestCase
             Entity::INTERNAL_STATUS   => Status::CREATED,
             Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
+            Entity::EXPIRE_AT         => $expiry->getTimestamp(),
         ], $transaction->toArray());
 
         $this->assertArraySubset([

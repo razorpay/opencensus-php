@@ -69,6 +69,7 @@ class Entity extends Base\Entity
         Entity::RESPONSE_CODE,
         Entity::RESPONSE_DESCRIPTION,
         Entity::CREATED_AT,
+        Transaction\Entity::TRANSACTION,
     ];
 
     protected $defaults = [
