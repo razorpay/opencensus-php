@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Transaction;
 
 class Validator extends Base\Validator
 {
@@ -100,11 +101,12 @@ class Validator extends Base\Validator
     public function makeHandleBeneficiaryRules()
     {
         $rules = $this->makeRules([
-            Vpa\Entity::USERNAME => 'required',
-            Vpa\Entity::HANDLE   => 'required',
-            Entity::TYPE         => 'required|in:vpa',
-            Entity::SPAMMED      => 'required',
-            Entity::BLOCKED      => 'required',
+            Vpa\Entity::USERNAME    => 'required',
+            Vpa\Entity::HANDLE      => 'required',
+            Entity::TYPE            => 'required|in:vpa',
+            Entity::SPAMMED         => 'required',
+            Entity::BLOCKED         => 'required',
+            Transaction\Entity::UPI => 'required|array',
         ]);
 
         return $rules;

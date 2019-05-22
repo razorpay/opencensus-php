@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Beneficiary;
 use RZP\Models\P2p\Base\Upi\Txn;
 use RZP\Models\P2p\BankAccount\Credentials;
 

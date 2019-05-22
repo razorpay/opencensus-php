@@ -81,12 +81,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::HANDLE_BENEFICIARY, $input, true);
 
-        $this->gatewayInput->put(Vpa\Entity::USERNAME, $this->input->get(Vpa\Entity::USERNAME));
-
-        $this->gatewayInput->put(Vpa\Entity::HANDLE, $this->input->get(Vpa\Entity::HANDLE));
-
-        $this->gatewayInput->put(Entity::BLOCKED, $this->input->get(Entity::BLOCKED));
-        $this->gatewayInput->put(Entity::SPAMMED, $this->input->get(Entity::SPAMMED));
+        $this->gatewayInput = $this->input;
 
         return $this->callGateway();
     }

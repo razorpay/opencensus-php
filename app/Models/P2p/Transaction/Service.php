@@ -60,6 +60,10 @@ class Service extends Base\Service
     {
         if (isset($input[Beneficiary\Entity::BENEFICIARY]))
         {
+            $transaction = $this->processor->fetch(array_only($input, Entity::ID));
+
+            $input[Beneficiary\Entity::BENEFICIARY][Entity::UPI] = $transaction[Entity::UPI];
+
             (new Beneficiary\Processor())->handleBeneficiary($input[Beneficiary\Entity::BENEFICIARY]);
 
             unset($input[Beneficiary\Entity::BENEFICIARY]);

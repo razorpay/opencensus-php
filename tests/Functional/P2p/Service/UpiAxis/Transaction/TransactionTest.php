@@ -345,4 +345,56 @@ class TransactionTest extends TestCase
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
         ], $transaction2->reload()->toArray());
     }
+
+    public function testCollectRejectWithBlock()
+    {
+        $transaction = $this->createCollectIncomingTransaction();
+
+        $helper = $this->getTransactionHelper();
+
+        $content = [
+            'beneficiary' => [
+                'username'  => $transaction->payee->getUsername(),
+                'handle'    => $transaction->payee->getHandle(),
+                'type'      => $transaction->payee->getP2pEntityName(),
+                'blocked'   => true,
+                'spammed'   => false,
+            ],
+        ];
+
+        $this->mockActionRequestFunction(['vpaHandleBeneficiary' => function($content) use ($transaction)
+        {
+            $this->assertSame($transaction->upi->getNetworkTransactionId(), $content['upiRequestId']);
+            $this->assertSame('true', $content['shouldBlock']);
+            $this->assertSame('false', $content['shouldSpam']);
+        }]);
+
+        $helper->initiateReject($transaction->getPublicId(), $content);
+    }
+
+    public function testCollectRejectWithBlockAndSpam()
+    {
+        $transaction = $this->createCollectIncomingTransaction();
+
+        $helper = $this->getTransactionHelper();
+
+        $content = [
+            'beneficiary' => [
+                'username'  => $transaction->payee->getUsername(),
+                'handle'    => $transaction->payee->getHandle(),
+                'type'      => $transaction->payee->getP2pEntityName(),
+                'blocked'   => true,
+                'spammed'   => true,
+            ],
+        ];
+
+        $this->mockActionRequestFunction(['vpaHandleBeneficiary' => function($content) use ($transaction)
+        {
+            $this->assertSame($transaction->upi->getNetworkTransactionId(), $content['upiRequestId']);
+            $this->assertSame('true', $content['shouldBlock']);
+            $this->assertSame('true', $content['shouldSpam']);
+        }]);
+
+        $helper->initiateReject($transaction->getPublicId(), $content);
+    }
 }

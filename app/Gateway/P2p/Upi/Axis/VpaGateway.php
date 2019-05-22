@@ -4,6 +4,7 @@ namespace RZP\Gateway\P2p\Upi\Axis;
 
 use RZP\Models\P2p\Vpa\Bank;
 use RZP\Models\P2p\Vpa\Entity;
+use RZP\Models\P2p\Transaction;
 use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
@@ -156,20 +157,22 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
     public function handleBeneficiary(Response $response)
     {
-        $payeeVpa = $this->input->get(Entity::USERNAME) . '@' . $this->input->get(Entity::HANDLE);
+        $payeeVpa = $this->usernameToAddress($this->input->get(Entity::USERNAME), $this->input->get(Entity::HANDLE));
 
         if (($this->input->get(Beneficiary::BLOCKED) === true) or
             ($this->input->get(Beneficiary::SPAMMED) === true))
         {
             $request = $this->initiateS2sRequest(VpaAction::BLOCK_VPA);
 
-            $request->merge([
-                Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
-                Fields::PAYEE_VPA            => $payeeVpa,
-                Fields::SHOULD_BLOCK         => $this->input->get(Beneficiary::BLOCKED),
-                Fields::SHOULD_SPAM          => $this->input->get(Beneficiary::SPAMMED),
-            ]);
+            $upi = $this->input->get(Transaction\Entity::UPI);
 
+            $request->merge([
+                Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                Fields::PAYEE_VPA               => $payeeVpa,
+                Fields::SHOULD_BLOCK            => $this->input->get(Beneficiary::BLOCKED) ? 'true' : 'false',
+                Fields::SHOULD_SPAM             => $this->input->get(Beneficiary::SPAMMED) ? 'true' : 'false',
+                Fields::UPI_REQUEST_ID          => $upi[Transaction\UpiTransaction\Entity::NETWORK_TRANSACTION_ID],
+            ]);
         }
         else
         {

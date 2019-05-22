@@ -207,6 +207,10 @@ class Entity extends Base\Entity
         Entity::UPDATED_AT           => 'int',
     ];
 
+    protected $with = [
+        Entity::UPI,
+    ];
+
     /***************** SETTERS *****************/
 
     /**

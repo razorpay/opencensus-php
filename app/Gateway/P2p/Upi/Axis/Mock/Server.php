@@ -132,7 +132,7 @@ class Server extends Mock\Server
             Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
         ];
 
-        $this->content($response, 'block_vpa');
+        $this->content($response, 'handle_beneficiary');
 
         $response = $this->makeResponse($response);
 
