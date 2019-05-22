@@ -264,11 +264,11 @@ class Inferno
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
             [
-                'webhook_id'  => $webhook->getId(),
-                'event_name'  => $this->eventName,
-                'merchant_id' => $webhook->merchant->getId(),
-                'request'     => $request,
-                'attempt'     => $this->job->attempts(),
+                'webhook_id'    => $webhook->getId(),
+                'event_name'    => $this->eventName,
+                'merchant_id'   => $webhook->merchant->getId(),
+                'request'       => $request,
+                'attempt'       => $this->job->attempts(),
                 'contained_ids' => $this->eventContainedIds,
             ]);
 
@@ -429,7 +429,7 @@ class Inferno
     {
         $webhookData = [
             'webhook_id'        => $webhook->getId(),
-            'merchant_id'       => $webhook->merchant->getId()
+            'merchant_id'       => $webhook->merchant->getId(),
             'contained_ids'     => $this->eventContainedIds,
         ];
 
@@ -639,9 +639,10 @@ class Inferno
     {
         if ($this->eventContainedIds === null)
         {
-            foreach ($this->event['contains'] as $k)
+            $event = json_decode($this->event, true);
+            foreach ($event['contains'] as $k)
             {
-                $id = $this->event['payload'][$k]['entity']['id'] ? null;
+                $id = $event['payload'][$k]['entity']['id'] ?: null;
                 if ($id !== null)
                 {
                     $this->eventContainedIds[$k] = $id;
