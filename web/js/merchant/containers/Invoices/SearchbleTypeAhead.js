@@ -4,7 +4,7 @@ import debounce from 'rzp/utils/debounce';
 
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 
-export default class _default extends React.Component {
+export default class SearchbleTypeAhead extends React.Component {
   static getDerivedStateFromProps(nextProps, state) {
     if (nextProps.options) {
       return {
