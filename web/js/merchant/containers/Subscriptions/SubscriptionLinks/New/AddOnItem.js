@@ -25,6 +25,7 @@ export default class AddOnItem extends Component {
           closeModal={closeModal}
           onSave={closeModal}
           currency={currency}
+          type="addon"
         />
       ),
     });
