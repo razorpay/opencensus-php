@@ -478,7 +478,8 @@ export default class InvoicesNewContainer extends Component {
    */
   selectCustomerAndCloseModal = (
     updateAddress = false,
-    selectShippingAddress = false
+    selectShippingAddress = false,
+    updateSelectedCustomers = false
   ) => (customer, shippingSameAsBilling = false) => {
     this.setCustomerInProps(customer);
     this.props.closeModal();
@@ -491,6 +492,12 @@ export default class InvoicesNewContainer extends Component {
         selectShippingAddress,
         shippingSameAsBilling
       );
+    }
+
+    if (updateSelectedCustomers) {
+      this.setState({
+        selectedCustomers: [customer],
+      });
     }
 
     track({
@@ -605,7 +612,7 @@ export default class InvoicesNewContainer extends Component {
       component: (
         <CustomerCreation
           saveLabel="Create Customer"
-          onSave={this.selectCustomerAndCloseModal(true, true)}
+          onSave={this.selectCustomerAndCloseModal(true, true, true)}
           customer={{
             name: searchTerm,
           }}
@@ -626,7 +633,7 @@ export default class InvoicesNewContainer extends Component {
       component: (
         <CustomerCreation
           saveLabel="Update Customer"
-          onSave={this.selectCustomerAndCloseModal()}
+          onSave={this.selectCustomerAndCloseModal(false, false, true)}
           customer={this.props.customer}
         />
       ),

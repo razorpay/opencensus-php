@@ -5,11 +5,22 @@ import debounce from 'rzp/utils/debounce';
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 
 export default class _default extends React.Component {
+  static getDerivedStateFromProps(nextProps, state) {
+    if (nextProps.options) {
+      return {
+        ...state,
+        options: Array.from(new Set([...nextProps.options, ...state.options])),
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super(props);
 
     this.state = {
-      options: [],
+      options: props.options || [],
     };
 
     this.debounceSearch = debounce(this.onSearch, 50);
@@ -44,7 +55,7 @@ export default class _default extends React.Component {
     return (
       <TypeAhead
         {...props}
-        options={this.props.options || this.state.options}
+        options={this.state.options}
         onKeyDown={this.handleKeyDown}
       />
     );

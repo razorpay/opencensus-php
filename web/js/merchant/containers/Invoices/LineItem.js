@@ -27,9 +27,32 @@ export default class InvoiceLineItem extends React.Component {
     confirm: PropTypes.func,
   };
 
+  static getDerivedStateFromProps(nextProps, state) {
+    if (nextProps.selectedItems && state.selectedItems) {
+      return {
+        ...state,
+        selectedItems: Array.from(
+          new Set([nextProps.selectedItems, ...state.selectedItems])
+        ),
+      };
+    }
+
+    if (nextProps.selectedItems) {
+      return {
+        ...state,
+        selectedItems: [...nextProps.selectedItems],
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super(props);
-    this.state = {};
+
+    this.state = {
+      selectedItems: props.selectedItems,
+    };
   }
 
   quickCreateItem = ({ searchTerm = '' }) => {
@@ -124,6 +147,10 @@ export default class InvoiceLineItem extends React.Component {
     } else {
       this.updateItem(item);
     }
+
+    this.setState({
+      selectedItems: [item],
+    });
   };
 
   /**
@@ -411,14 +438,7 @@ export default class InvoiceLineItem extends React.Component {
   };
 
   render() {
-    let {
-      fieldName,
-      gstSlabs,
-      index,
-      disabled,
-      applyTaxes,
-      selectedItems,
-    } = this.props;
+    let { fieldName, gstSlabs, index, disabled, applyTaxes } = this.props;
     let selectedOption = this.props.invoice_line_items[index];
     let isEmptyRow = !(
       (selectedOption.item_id && selectedOption.item_id !== 'NULL') ||
@@ -490,7 +510,7 @@ export default class InvoiceLineItem extends React.Component {
                 onQuickAdd={this.quickCreateItem}
                 disabled={disabled}
                 searchMethod={this.searchItems}
-                options={selectedItems}
+                options={this.state.selectedItems}
               />
             </div>
             <p class="lineItem__description">{selectedOption.description}</p>
