@@ -85,12 +85,12 @@ export default class InvoiceLineItem extends React.Component {
    * @return {Item}
    */
   getItemFromLineItem = () => {
-    const { invoice_line_items, index, selectedItems } = this.props;
+    const { invoice_line_items, index } = this.props;
 
     const lineItemID = invoice_line_items[index].item_id;
     if (!lineItemID) return;
 
-    return findBy(selectedItems, 'id', lineItemID);
+    return findBy(this.state.selectedItems, 'id', lineItemID);
   };
 
   /**
@@ -183,6 +183,10 @@ export default class InvoiceLineItem extends React.Component {
     this.props.change(`${fieldName}.description`, item.description || '');
     this.props.change(`${fieldName}.amount`, item.amount || 0);
     this.props.change(`${fieldName}.amountInINR`, item.amountInINR || '0.00');
+
+    this.setState({
+      selectedItems: [item],
+    });
 
     // The tax-related details in the line item if taxes are to be shown.
     if (showTaxes) {

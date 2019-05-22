@@ -1365,6 +1365,10 @@ export default class InvoicesNewContainer extends Component {
       false,
       autoselectPlaceOfSupply
     );
+
+    this.setState({
+      selectedCustomers: [selectedCustomer],
+    });
   };
 
   showGSTModal = () => {
