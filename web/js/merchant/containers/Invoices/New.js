@@ -8,7 +8,7 @@ import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
 import Alert from 'rzp/ui/Forms/Alert';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import TypeAhead from 'rzp/ui/Select/TypeAhead';
+import TypeAhead from './TypeAhead';
 import Spinner from 'rzp/ui/Spinner';
 import InlineField from 'rzp/ui/Forms/InlineField';
 import {
