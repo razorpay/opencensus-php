@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
 use Excel;
+use Mockery;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
@@ -267,6 +269,15 @@ class UpiSbiGatewayTest extends TestCase
     {
         Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
         
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountVpaGatewayError()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
         $this->ba->publicAuth();
 
         $this->startTest();
