@@ -168,7 +168,7 @@ class NodalAccount extends NodalBase\NodalAccount
     public function healthCheck(array $input = []): array
     {
         $gateway = ((isset($input['gateway']) === true) and
-            ($input['gateway'] === true));
+                    ($input['gateway'] === true));
 
         $healthCheck = new HealthCheck(Attempt\Purpose::SETTLEMENT, Attempt\Type::BANKING);
 

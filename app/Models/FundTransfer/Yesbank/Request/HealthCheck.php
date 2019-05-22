@@ -19,7 +19,7 @@ class HealthCheck extends Status
 
     public function __construct(string $type = null, $useCurrentAccount = false)
     {
-        parent::__construct($type);
+        parent::__construct($type, $useCurrentAccount);
     }
 
     /**
@@ -64,7 +64,7 @@ class HealthCheck extends Status
     public function processResponse(\Requests_Response $response): array
     {
         return [
-            'HTTP_status_code' => $response->status_code,
+            'http_status_code' => $response->status_code,
             'body'             => json_decode($response->body, true),
         ];
     }
