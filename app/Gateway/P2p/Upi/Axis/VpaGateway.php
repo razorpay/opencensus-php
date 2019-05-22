@@ -206,7 +206,7 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
         $s2s = $this->sendS2sRequest($request);
 
-        $output[Fields::BLOCKED_VPAS] = $s2s[Fields::PAYLOAD][Fields::BLOCKED_VPAs];
+        $output[Fields::BLOCKED_VPAS] = $s2s[Fields::PAYLOAD][Fields::BLOCKED_VPAS];
 
         $response->setData($output);
     }
