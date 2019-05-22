@@ -5,7 +5,7 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import { groupBy } from 'rzp/utils/rzp-utils';
 import CreditDetails from './CreditDetails';
 import CreditDetailsNew from './CreditDetailsNew';
-import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
 
 export default props => {
   let {
@@ -27,20 +27,7 @@ export default props => {
       {showDocumentation && (
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
-            >
-              <a
-                class="btn btn-link"
-                href="https://docs.razorpay.com/v1/page/credits"
-                target="_blank"
-              >
-                Documentation &nbsp;
-                <i class="i i-external-link" />
-              </a>
-            </ShowWhen>
+            <DocsLink url="https://razorpay.com/docs/payment-gateway/dashboard-guide/my-account/#credits"/>
           </div>
         </HeaderAction>
       )}

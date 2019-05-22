@@ -8,7 +8,7 @@ import WebhookCreation from 'merchant/containers/Webhooks/New';
 import * as WebhookActions from 'merchant/modules/webhooks';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
-import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
 
 @connect(
   state => {
@@ -46,20 +46,7 @@ export default class WebhooksContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
-            >
-              <a
-                class="btn btn-link"
-                href="https://razorpay.com/docs/webhooks/"
-                target="_blank"
-              >
-                Documentation &nbsp;
-                <i class="i i-external-link" />
-              </a>
-            </ShowWhen>
+            <DocsLink url="https://razorpay.com/docs/webhooks/"/>
           </div>
         </HeaderAction>
 

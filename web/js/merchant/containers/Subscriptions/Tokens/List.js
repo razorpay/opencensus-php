@@ -47,7 +47,7 @@ export default class TokensList extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <NavLink class="btn btn-link hidden-xs" to="https://razropay.com/">
+            <NavLink class="btn btn-link hidden-xs" to="https://razorpay.com/docs/recurring-payments/token/">
               Documentation&nbsp;
               <i class="i i-external-link" />
             </NavLink>
