@@ -8,7 +8,7 @@ import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
 import Alert from 'rzp/ui/Forms/Alert';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import TypeAhead from './TypeAhead';
+import SearchbleTypeAhead from './SearchbleTypeAhead';
 import Spinner from 'rzp/ui/Spinner';
 import InlineField from 'rzp/ui/Forms/InlineField';
 import {
@@ -1566,7 +1566,7 @@ export default class InvoicesNewContainer extends Component {
                                 formName="newInvoice"
                                 name="customer.id"
                                 class="material-input"
-                                component={TypeAhead}
+                                component={SearchbleTypeAhead}
                                 selected={this.props.customer.id}
                                 optionLabelPath="displayName"
                                 selectedOptionLabelPath="selectedDisplayName"

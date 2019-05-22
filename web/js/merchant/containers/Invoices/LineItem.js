@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import InlineField from 'rzp/ui/Forms/InlineField';
 import InputField from 'rzp/ui/Forms/InputField';
-import TypeAhead from './TypeAhead';
+import SearchbleTypeAhead from './SearchbleTypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
 import Amount from 'rzp/ui/Amount';
 import * as ModalActions from 'rzp/modules/modals';
@@ -478,7 +478,7 @@ export default class InvoiceLineItem extends React.Component {
                 name={`${fieldName}.item_id`}
                 class="material-input"
                 disabled={disabled}
-                component={TypeAhead}
+                component={SearchbleTypeAhead}
                 labelWhenSearchTermBlank="Create new Item"
                 labelWhenSearchTermValid="Add ':_searchTerm_:' as an Item"
                 maxSearchTermLength="12"
