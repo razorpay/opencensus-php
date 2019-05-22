@@ -13,6 +13,8 @@ class Validator extends Base\Validator
     protected static $validateRules;
     protected static $validateSuccessRules;
     protected static $fetchAllRules;
+    protected static $handleBeneficiaryRules;
+    protected static $handleBeneficiarySuccessRules;
 
     public function rules()
     {
@@ -90,6 +92,31 @@ class Validator extends Base\Validator
             BankAccount\Entity::IFSC                => 'required_if:type,bank_account',
             BankAccount\Entity::BENEFICIARY_NAME    => 'required_if:type,bank_account',
         ]));
+
+        return $rules;
+    }
+
+    public function makeHandleBeneficiaryRules()
+    {
+        $rules = $this->makeRules([
+            Vpa\Entity::USERNAME => 'required',
+            Vpa\Entity::HANDLE   => 'required',
+            Entity::TYPE         => 'required|in:vpa',
+            Entity::SPAMMED      => 'required',
+            Entity::BLOCKED      => 'required',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeHandleBeneficiarySuccessRules()
+    {
+        $rules = $this->makeRules([
+            Vpa\Entity::USERNAME => 'required',
+            Vpa\Entity::HANDLE   => 'required',
+            Entity::SPAMMED      => 'required',
+            Entity::BLOCKED      => 'required',
+        ]);
 
         return $rules;
     }

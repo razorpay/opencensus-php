@@ -115,7 +115,7 @@ class Server extends Mock\Server
         return $response;
     }
 
-    public function vpaBlockVpa($request)
+    public function vpaHandleBeneficiary($request)
     {
         $response = [
             Fields::STATUS           => 'SUCCESS',

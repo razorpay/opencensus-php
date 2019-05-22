@@ -157,17 +157,6 @@ class Processor extends Base\Processor
         ]);
     }
 
-    public function blockVpa(array $input): array
-    {
-        $this->initialize(Action::BLOCK_VPA, $input, true);
-
-        $payee = $this->input->get('payee');
-
-        $this->gatewayInput->put('payee', $payee);
-
-        return $this->callGateway();
-    }
-
     public function delete(array $input): array
     {
         $this->initialize(Action::DELETE, $input, true);

@@ -154,34 +154,44 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         return $response;
     }
 
-    public function blockVpa(Response $response)
+    public function handleBeneficiary(Response $response)
     {
-        $device = $this->getContextDevice();
-        $deviceToken = $this->getContextDeviceToken();
+        $payeeVpa = $this->input->get(Entity::USERNAME) . '@' . $this->input->get(Entity::HANDLE);
 
-        // Merchant Customer Id needs to be picked from Gateway Data
-        $merchantCustomerId = $deviceToken->get(Entity::GATEWAY_DATA)[Fields::MERCHANT_CUSTOMER_ID];
+        if (($this->input->get(Beneficiary::BLOCKED) === true) or
+            ($this->input->get(Beneficiary::SPAMMED) === true))
+        {
+            $request = $this->initiateS2sRequest(VpaAction::BLOCK_VPA);
 
-        $payee = $this->input->get('payee');
+            $request->merge([
+                Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
+                Fields::PAYEE_VPA            => $payeeVpa,
+                Fields::SHOULD_BLOCK         => $this->input->get(Beneficiary::BLOCKED),
+                Fields::SHOULD_SPAM          => $this->input->get(Beneficiary::SPAMMED),
+            ]);
 
-        $vpa = $payee['vpa'];
+        }
+        else
+        {
+            $request = $this->initiateS2sRequest(VpaAction::UNBLOCK_VPA);
 
-        $request = $this->initiateS2sRequest(VpaAction::BLOCK_VPA);
+            $request->merge([
+                Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
+                Fields::PAYEE_VPA            => $payeeVpa,
+            ]);
 
-        $request->merge([
-            Fields::MERCHANT_CUSTOMER_ID => $merchantCustomerId,
-            Fields::PAYEE_VPA            => $vpa,
-            Fields::SHOULD_BLOCK         => true,
-            Fields::SHOULD_SPAM          => false
-        ]);
+        }
 
         $s2s = $this->sendS2sRequest($request);
 
-        $response->setData([
+        $this->handleGatewayResponseCode($s2s[Fields::PAYLOAD]);
 
-        ]);
+        $output[Entity::USERNAME] = $this->input->get(Entity::USERNAME);
+        $output[Entity::HANDLE] = $this->input->get(Entity::HANDLE);
+        $output[Beneficiary::BLOCKED] = $this->input->get(Beneficiary::BLOCKED);
+        $output[Beneficiary::SPAMMED] = $this->input->get(Beneficiary::SPAMMED);
 
-        return $response;
+        $response->setData($output);
     }
 
     protected function handleVpaAvailability(

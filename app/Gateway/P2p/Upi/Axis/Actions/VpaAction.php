@@ -15,6 +15,8 @@ class VpaAction extends Action
 
     const BLOCK_VPA                         = 'BLOCK_VPA';
 
+    const UNBLOCK_VPA                       = 'UNBLOCK_VPA';
+
     const MAP = [
         self::VPA_AVAILABILITY => [
             self::VALIDATOR => [

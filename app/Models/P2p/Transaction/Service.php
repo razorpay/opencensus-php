@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Transaction;
 use RZP\Exception;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Vpa;
+use RZP\Models\P2p\Beneficiary;
 
 /**
  * @property  Core          $core
@@ -57,11 +58,9 @@ class Service extends Base\Service
 
     public function initiateReject(array $input): array
     {
-        if ((isset($input['payee']['block']) === true) and $input['payee']['block'] === true)
+        if (isset($input[Beneficiary\Entity::BENEFICIARY]))
         {
-            $vpaProcessor = new Vpa\Processor();
-
-            $response = $vpaProcessor->blockVpa($input);
+            return (new Beneficiary\Processor())->handleBeneficiary($input[Beneficiary\Entity::BENEFICIARY]);
         }
 
         $response = $this->processor->initiateReject($input);

@@ -15,5 +15,5 @@ interface VpaGateway extends GatewayInterface
 
     public function delete(Response $response);
 
-    public function blockVpa(Response $response);
+    public function handleBeneficiary(Response $response);
 }

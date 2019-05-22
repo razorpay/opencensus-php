@@ -13,4 +13,8 @@ class Action extends Base\Action
     const VALIDATE_SUCCESS      = 'validateSuccess';
 
     const FETCH_ALL             = 'fetchAll';
+
+    const HANDLE_BENEFICIARY    = 'handleBeneficiary';
+
+    const HANDLE_BENEFICIARY_SUCCESS = 'handleBeneficiarySuccess';
 }

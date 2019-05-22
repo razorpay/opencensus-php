@@ -77,6 +77,35 @@ class Processor extends Base\Processor
         return $beneficiary->toArrayBeneficiary();
     }
 
+    public function handleBeneficiary(array $input): array
+    {
+        $this->initialize(Action::HANDLE_BENEFICIARY, $input, true);
+
+        $this->gatewayInput->put(Vpa\Entity::USERNAME, $this->input->get(Vpa\Entity::USERNAME));
+
+        $this->gatewayInput->put(Vpa\Entity::HANDLE, $this->input->get(Vpa\Entity::HANDLE));
+
+        $this->gatewayInput->put(Entity::BLOCKED, $this->input->get(Entity::BLOCKED));
+        $this->gatewayInput->put(Entity::SPAMMED, $this->input->get(Entity::SPAMMED));
+
+        return $this->callGateway();
+    }
+
+    protected function handleBeneficiarySuccess(array $input): array
+    {
+        $this->initialize(Action::HANDLE_BENEFICIARY_SUCCESS, $input, true);
+
+        $response = [
+            'username' => $input[Vpa\Entity::USERNAME],
+            'handle'   => $input[Vpa\Entity::HANDLE],
+            'type'     => 'vpa',
+            'blocked'  => $input[Entity::BLOCKED],
+            'spammed'  => $input[Entity::SPAMMED],
+        ];
+
+        return $response;
+    }
+
     protected function getEntity()
     {
         return $this->input->get(Entity::TYPE);

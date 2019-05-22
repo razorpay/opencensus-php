@@ -18,7 +18,6 @@ class Validator extends Base\Validator
     protected static $deleteRules;
     protected static $deleteSuccessRules;
     protected static $initiateCheckAvailabilityRules;
-    protected static $blockVpaRules;
 
     public function rules()
     {
@@ -177,15 +176,4 @@ class Validator extends Base\Validator
 
         return $rules;
     }
-
-    public function makeBlockVpaRules()
-    {
-        $rules = $this->makeRules([
-            'payee' => 'required',
-            'id' => 'required',
-        ]);
-
-        return $rules;
-    }
-
 }

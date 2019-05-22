@@ -28,8 +28,6 @@ class Action extends Base\Action
     const DELETE                        = 'delete';
     const DELETE_SUCCESS                = 'deleteSuccess';
 
-    const BLOCK_VPA                     = 'blockVpa';
-
     protected $actionToRoute = [
         self::INITIATE_ADD                      => Requests::P2P_CUSTOMER_VPA_CREATE,
         self::INITIATE_ADD_SUCCESS              => Requests::P2P_CUSTOMER_VPA_CREATE,
