@@ -50,6 +50,12 @@ export default class _default extends React.Component {
   render() {
     const props = this.props;
 
-    return <TypeAhead {...props} onKeyDown={this.handleKeyDown} />;
+    return (
+      <TypeAhead
+        {...props}
+        options={this.props.options || this.state.options}
+        onKeyDown={this.handleKeyDown}
+      />
+    );
   }
 }

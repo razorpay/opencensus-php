@@ -32,6 +32,7 @@ import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo';
 import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes';
 import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import {
+  searchCustomers,
   fetchCustomersForAutocomplete,
   fetchCustomerAddresses,
 } from 'merchant/modules/customers';
@@ -95,12 +96,11 @@ const selector = formValueSelector('newInvoice');
 @withRouter
 @connect(
   state => {
-    let customers = state.customers.items;
     return {
       session: state.session,
       customers,
       items: state.items.items,
-      customer: findBy(customers, 'id', selector(state, 'customer.id')),
+      customer: selector(state, 'customer'),
       invoice: state.invoice.invoice,
       invoice_line_items: selector(state, 'line_items'),
       state_of_supply: selector(state, 'state_of_supply'),
@@ -1358,6 +1358,10 @@ export default class InvoicesNewContainer extends Component {
     });
   };
 
+  searchCustomers = searchTerm => {
+    return searchCustomers({ q: searchTerm });
+  };
+
   render() {
     const { handleSubmit, customer, invoice, session: { user } } = this.props;
 
@@ -1552,7 +1556,6 @@ export default class InvoicesNewContainer extends Component {
                                 name="customer.id"
                                 class="material-input"
                                 component={TypeAhead}
-                                options={this.props.customers}
                                 selected={this.props.customer.id}
                                 optionLabelPath="displayName"
                                 selectedOptionLabelPath="selectedDisplayName"
@@ -1564,6 +1567,7 @@ export default class InvoicesNewContainer extends Component {
                                 maxSearchTermLength="12"
                                 keepValueInBG={false}
                                 onOptionChange={this.onSelectCustomer}
+                                searchMethod={this.searchCustomers}
                                 normalizeValue={value => {
                                   let selected = findBy(
                                     this.props.customers || [],
