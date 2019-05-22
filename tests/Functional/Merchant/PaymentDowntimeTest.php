@@ -252,6 +252,47 @@ class PaymentDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testGatewayDowntimeCardNetworkAllGateway()
+    {
+        $this->ba->adminAuth();
+
+        $begin = Carbon::now()->subMinutes(60)->timestamp;
+        $end   = Carbon::now()->addMinutes(60)->timestamp;
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => $begin,
+                'end'         => $end,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'card',
+                'source'      => 'BANK',
+                'acquirer'    => 'axis',
+                'network'     => 'MC',
+                'card_type'   => 'debit',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $this->ba->privateAuth();
+
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method' => 'GET',
+            'url' => '/methods/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($fetchDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($downtime['method'], 'card');
+        $this->assertEquals($downtime['status'], 'scheduled');
+    }
+
     public function testGetNoCardDowntimeForSingleGateway()
     {
         $request = [

@@ -88,6 +88,10 @@ class NetbankingProcessor extends BaseProcessor
     {
         $supportingGateways = (new NetbankingIssuerMapping)->getGatewaysSupportingBank($bank);
 
+        // Gateway downtime can also be created as gateway = ALL which
+        // gets skipped while filtering affectingGatewayDowntimes
+        $supportingGateways = array_merge($supportingGateways, [GatewayDowntime::ALL]);
+
         $affectingGatewayDowntimes = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, $supportingGateways);
 
         $gatewayDowntimeMaxStart = $affectingGatewayDowntimes->max(GatewayDowntime::BEGIN);
