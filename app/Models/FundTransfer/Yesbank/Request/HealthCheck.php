@@ -17,9 +17,9 @@ class HealthCheck extends Status
 
     protected $responseIdentifier = Constants::STATUS_RESPONSE_IDENTIFIER;
 
-    public function __construct(string $type = null, $useCurrentAccount = false)
+    public function __construct(string $type = null)
     {
-        parent::__construct($type, $useCurrentAccount);
+        parent::__construct($type);
     }
 
     /**

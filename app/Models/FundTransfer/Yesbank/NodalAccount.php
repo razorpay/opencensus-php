@@ -170,7 +170,7 @@ class NodalAccount extends NodalBase\NodalAccount
         $gateway = ((isset($input['gateway']) === true) and
                     ($input['gateway'] === true));
 
-        $healthCheck = new HealthCheck(Attempt\Purpose::SETTLEMENT, Attempt\Type::BANKING);
+        $healthCheck = new HealthCheck(Attempt\Purpose::SETTLEMENT);
 
         return $healthCheck->makeRequest($gateway);
     }

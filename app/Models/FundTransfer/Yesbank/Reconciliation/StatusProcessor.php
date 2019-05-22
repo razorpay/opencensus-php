@@ -184,8 +184,6 @@ class StatusProcessor extends BaseRowProcessor
 
         $this->reconEntity->setMode($this->parsedData[Constants::MODE]);
 
-        $this->reconEntity->setBankResponseCode($this->parsedData[Constants::BANK_RESPONSE_CODE]);
-
         if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatus)
         {
             $this->reconEntity->setStatus(AttemptStatus::INITIATED);
