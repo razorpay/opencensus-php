@@ -102,6 +102,8 @@ class BatchMicroService
 
         $batchResponse['status'] = $this->statusClusterMapping($batchResponse['status']);
 
+        $batchResponse[Batch\Entity::TYPE] = $input[Batch\Entity::TYPE];
+
         return $batchResponse;
     }
 
