@@ -187,24 +187,6 @@ export default class InvoicesNewContainer extends Component {
       this.pickExpiryDate(moment(invoice.expire_by * 1000), false);
     }
 
-    // Set Customer.
-    let customerDetails = invoice.customer;
-
-    if (customerDetails) {
-      let customer =
-        this.props.customers &&
-        this.props.customers.find(c => c.id == customerDetails.id);
-
-      if (customer) {
-        let billingAddress, shippingAddress;
-
-        billingAddress = customerDetails.billing_address_id;
-        shippingAddress = customerDetails.shipping_address_id;
-
-        this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
-      }
-    }
-
     // Set State of Supply
     if (invoice.supply_state_code && this.state.states) {
       this.changeStateOfSupply({
@@ -317,8 +299,45 @@ export default class InvoicesNewContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.match.params.id !== nextProps.match.params.id) {
-      this.initInvoice(nextProps.match.params.id);
+    const invoiceID = nextProps.match.params.id;
+    if (this.props.match.params.id !== invoiceID) {
+      this.setState({
+        isLoading: true,
+      });
+
+      if (!invoiceID) {
+        this.props.initializeInvoice();
+
+        this.setState({
+          isLoading: false,
+          selectedItems: null,
+          selectedCustomers: null,
+          selectedShippingAddress: null,
+          selectedBillingAddress: null,
+        });
+
+        return;
+      }
+
+      this.props
+        .fetchInvoice(invoiceID)
+        .then(invoice => {
+          if (this.isPaymentLink(invoice)) {
+            return;
+          }
+          return this._customerAndItemsFetch(invoice);
+        })
+        .then(invoice => {
+          this.setState({
+            isLoading: false,
+          });
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
     }
   }
 
