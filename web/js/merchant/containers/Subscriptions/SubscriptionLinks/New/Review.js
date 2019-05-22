@@ -20,7 +20,10 @@ export default function NewSubscriptionLinkReview({
       0
     );
   const subscriptioAmount = planAmount * planQuantity;
-  const minAuthAmount = (props.getCurrencyList[currency] || {}).min_auth_value;
+  const minAuthAmount =
+    currency === 'INR'
+      ? 500
+      : (props.getCurrencyList[currency] || {}).min_auth_value;
   const authorizationAmount = getAuthorizationAmount(
     subscriptioAmount,
     addOnAmount,
