@@ -41,9 +41,9 @@ trait Capture
         );
 
         $this->app['diag']->trackPaymentEvent(
-            EventCode::PAYMENT_CAPTURE_INITIATED, 
-            $payment, 
-            null, 
+            EventCode::PAYMENT_CAPTURE_INITIATED,
+            $payment,
+            null,
             [
                 'input'  => $input
             ]);
@@ -72,8 +72,8 @@ trait Capture
     public function autoCapturePayment($payment)
     {
         $this->app['diag']->trackPaymentEvent(
-            EventCode::PAYMENT_CAPTURE_INITIATED, 
-            $payment, 
+            EventCode::PAYMENT_CAPTURE_INITIATED,
+            $payment,
             null,
             [
                 'auto_capture' => 1
@@ -482,7 +482,7 @@ trait Capture
         }
         else
         {
-            if ($this->shouldDispatchCapture($ex) === true)
+            if ($this->shouldDispatchCaptureOnFailure($ex) === true)
             {
                 $this->dispatchCaptureFailure($ex, $data);
             }
@@ -493,8 +493,9 @@ trait Capture
         }
     }
 
-    protected function shouldDispatchCapture(\Throwable $ex)
+    protected function shouldDispatchCaptureOnFailure(\Throwable $ex)
     {
+        $payment = $this->payment;
         //
         // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
         // to a queue. We then try to capture on HDFC.
@@ -505,20 +506,12 @@ trait Capture
         // For PaySecure, if we don't capture the payment, the amount would not be settled to NPCI and hence it would
         // not be settled to us. So, for every exceptions, we should dispatch to capture job for PaySecure.
         //
-        if (
-            // For HDFC
-            (
-                (($ex instanceof Exception\GatewayTimeoutException) === true) and
-                ($this->payment->getGateway() === Payment\Gateway::HDFC)
-            ) or
-            // For PaySecure
-            (
-                ($this->payment->getGateway() === Payment\Gateway::HITACHI) and
-                ($this->payment->card->getNetworkCode() === Card\Network::RUPAY)
-            )
-        )
+        switch ($payment->getGateway())
         {
-            return true;
+            case Payment\Gateway::HDFC:
+                return (($ex instanceof Exception\GatewayTimeoutException) === true);
+            case Payment\Gateway::HITACHI:
+                return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
         }
 
         return false;
