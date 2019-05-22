@@ -12,6 +12,12 @@ const ITEM_CREATE = 'ITEM_CREATE';
 const ITEM_EDIT = 'ITEM_EDIT';
 const ITEM_DELETE = 'ITEM_DELETE';
 
+export const searchItems = data => {
+  let item = new Item();
+
+  return item.search(data);
+};
+
 export const fetchItems = params => {
   let item = new Item();
 

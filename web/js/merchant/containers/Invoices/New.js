@@ -98,7 +98,6 @@ const selector = formValueSelector('newInvoice');
   state => {
     return {
       session: state.session,
-      customers,
       items: state.items.items,
       customer: selector(state, 'customer'),
       invoice: state.invoice.invoice,

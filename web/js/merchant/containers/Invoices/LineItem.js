@@ -2,12 +2,13 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import InlineField from 'rzp/ui/Forms/InlineField';
 import InputField from 'rzp/ui/Forms/InputField';
-import TypeAhead from 'rzp/ui/Select/TypeAhead';
+import TypeAhead from './TypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
 import Amount from 'rzp/ui/Amount';
 import * as ModalActions from 'rzp/modules/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'rzp/utils/rzp-utils';
 import Item from 'merchant/models/Item';
+import { searchItems } from 'merchant/modules/items';
 import { track } from './ga';
 
 const selector = formValueSelector('newInvoice');
@@ -404,6 +405,14 @@ export default class InvoiceLineItem extends React.Component {
     }
   }
 
+  searchItems = searchTerm => {
+    return searchItems({
+      type: 'invoice',
+      'expand[]': 'tax',
+      q: searchTerm,
+    });
+  };
+
   render() {
     let {
       fieldName,
@@ -476,7 +485,6 @@ export default class InvoiceLineItem extends React.Component {
                 labelWhenSearchTermBlank="Create new Item"
                 labelWhenSearchTermValid="Add ':_searchTerm_:' as an Item"
                 maxSearchTermLength="12"
-                options={items}
                 selected={selectedOption}
                 optionLabelPath="name"
                 placeholder="Select an item"
@@ -484,6 +492,7 @@ export default class InvoiceLineItem extends React.Component {
                 onOptionChange={this.updateLineItemRow}
                 onQuickAdd={this.quickCreateItem}
                 disabled={disabled}
+                searchMethod={this.searchItems}
                 normalizeValue={value => {
                   let selected =
                     findBy(items || [], 'id', value) || selectedOption;
