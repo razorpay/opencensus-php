@@ -305,20 +305,6 @@ export default class InvoicesNewContainer extends Component {
         isLoading: true,
       });
 
-      if (!invoiceID) {
-        this.props.initializeInvoice();
-
-        this.setState({
-          isLoading: false,
-          selectedItems: null,
-          selectedCustomers: null,
-          selectedShippingAddress: null,
-          selectedBillingAddress: null,
-        });
-
-        return;
-      }
-
       this.props
         .fetchInvoice(invoiceID)
         .then(invoice => {
