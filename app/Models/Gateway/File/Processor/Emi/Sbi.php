@@ -375,7 +375,7 @@ class Sbi extends Base
             'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'SBI EMI - File Send failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::GATEWAY_POD]
         ];
 
         $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
