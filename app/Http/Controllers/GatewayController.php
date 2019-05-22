@@ -84,7 +84,7 @@ class GatewayController extends Controller
 
         $paymentRepo = $this->app['repo']->payment;
 
-        // This is hackish, we find mode based on searchin in both DB's
+        // This is hackish, we find mode based on searching in both DB's
         $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
 
         if ($mode === null)
