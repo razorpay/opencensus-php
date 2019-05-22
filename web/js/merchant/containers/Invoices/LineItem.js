@@ -62,15 +62,12 @@ export default class InvoiceLineItem extends React.Component {
    * @return {Item}
    */
   getItemFromLineItem = () => {
-    const { invoice_line_items, index, items } = this.props;
+    const { invoice_line_items, index, selectedItems } = this.props;
 
     const lineItemID = invoice_line_items[index].item_id;
     if (!lineItemID) return;
 
-    const item = items.filter(item => item.id === lineItemID);
-    if (item.length === 1) {
-      return item[0];
-    }
+    return findBy(selectedItems, 'id', lineItemID);
   };
 
   /**
@@ -419,8 +416,8 @@ export default class InvoiceLineItem extends React.Component {
       gstSlabs,
       index,
       disabled,
-      items,
       applyTaxes,
+      selectedItems,
     } = this.props;
     let selectedOption = this.props.invoice_line_items[index];
     let isEmptyRow = !(
@@ -493,14 +490,7 @@ export default class InvoiceLineItem extends React.Component {
                 onQuickAdd={this.quickCreateItem}
                 disabled={disabled}
                 searchMethod={this.searchItems}
-                normalizeValue={value => {
-                  let selected =
-                    findBy(items || [], 'id', value) || selectedOption;
-                  if (selected) {
-                    return selected.name;
-                  }
-                  return value;
-                }}
+                options={selectedItems}
               />
             </div>
             <p class="lineItem__description">{selectedOption.description}</p>

@@ -10,6 +10,7 @@ const ITEMS_FETCH = 'ITEMS_FETCH';
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH';
 const ITEM_CREATE = 'ITEM_CREATE';
 const ITEM_EDIT = 'ITEM_EDIT';
+const ITEM_FETCH = 'ITEM_FETCH';
 const ITEM_DELETE = 'ITEM_DELETE';
 
 export const searchItems = data => {
@@ -33,6 +34,15 @@ export const fetchItemsForAutocomplete = data => {
   return {
     type: ITEMS_AUTOCOMPLETE_FETCH,
     payload: item.fetchForAutocomplete(data),
+  };
+};
+
+export const fetchItem = id => {
+  let item = new Item();
+
+  return {
+    type: ITEM_FETCH,
+    payload: item.fetch(id),
   };
 };
 

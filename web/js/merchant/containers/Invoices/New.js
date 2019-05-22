@@ -33,10 +33,10 @@ import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes';
 import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import {
   searchCustomers,
-  fetchCustomersForAutocomplete,
+  fetchCustomer,
   fetchCustomerAddresses,
 } from 'merchant/modules/customers';
-import { fetchItemsForAutocomplete } from 'merchant/modules/items';
+import { fetchItem } from 'merchant/modules/items';
 import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
 import { fetchStates } from 'merchant/modules/states';
 import { fetchGSTTaxes } from 'merchant/modules/taxes';
@@ -109,8 +109,8 @@ const selector = formValueSelector('newInvoice');
   },
   {
     luminateRow,
-    fetchCustomersForAutocomplete,
-    fetchItemsForAutocomplete,
+    fetchCustomer,
+    fetchItem,
     fetchCustomerAddresses,
     saveInvoice,
     deleteInvoice,
@@ -150,10 +150,13 @@ export default class InvoicesNewContainer extends Component {
     super(...arguments);
     const issue_date = moment().startOf('day');
     this.state = {
+      isLoading: true,
       status: {},
       issue_date,
       today: issue_date,
       isFetchingAddresses: false,
+      selectedCustomers: null,
+      selectedItems: null,
     };
   }
 
@@ -215,50 +218,68 @@ export default class InvoicesNewContainer extends Component {
     // Refresh merchant info.
     setTimeout(() => this.getMerchantInfo());
   }
+  _customerAndItemsFetch = async invoice => {
+    const lineItemsPromisesList = invoice.line_items
+        .filter(e => e.item_id)
+        .map(item => {
+          return this.props.fetchItem(item.item_id);
+        }),
+      selectedItems = await Promise.all(lineItemsPromisesList);
 
-  componentWillMount() {
-    let promises = [];
+    if (invoice.customer) {
+      const customer = await this.props.fetchCustomer(invoice.customer.id),
+        customerDetails = invoice.customer,
+        billingAddress = customerDetails.billing_address_id,
+        shippingAddress = customerDetails.shipping_address_id;
 
-    let invoiceId = this.props.match.params.id;
+      this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
 
-    if (invoiceId) {
-      promises.push(
-        this.props.fetchInvoice(invoiceId).then(invoice => {
-          if (this.isPaymentLink(invoice)) {
-            return;
-          }
+      this.setState({
+        selectedCustomers: [customer],
+        selectedItems,
+      });
 
-          if (invoice.partial_payment) {
-            this.props.fetchInvoicePayments(invoiceId);
-          }
-          return invoice;
-        })
-      );
-    } else {
-      this.props.initializeInvoice();
+      return;
     }
 
-    promises = [
-      this.props.fetchCustomersForAutocomplete(),
-      this.props.fetchItemsForAutocomplete({
-        type: 'invoice',
-        'expand[]': 'tax',
-      }),
+    this.setState({
+      selectedItems,
+    });
+  };
+
+  handleFetchInvoice = async (invoiceId = this.props.match.params.id) => {
+    if (!invoiceId) return this.props.initializeInvoice();
+
+    const invoice = await this.props.fetchInvoice(invoiceId);
+
+    if (this.isPaymentLink(invoice)) {
+      return;
+    }
+
+    if (invoice.partial_payment) {
+      this.props.fetchInvoicePayments(invoiceId);
+    }
+
+    this._initialize(invoice);
+
+    await this._customerAndItemsFetch(invoice);
+  };
+
+  initInvoice = invoiceID => {
+    if (!this.state.isLoading) {
+      this.setState({
+        isLoading: true,
+      });
+    }
+
+    const promises = [
       this.props.fetchStates(),
       this.props.fetchGSTTaxes(),
-      ...promises,
+      this.handleFetchInvoice(invoiceID),
     ];
 
-    this.setState({
-      isLoading: true,
-    });
-
     Promise.all(promises)
-      .then(([customers, items, states, gst, invoice]) => {
-        if (invoice) {
-          this._initialize(invoice);
-        }
-
+      .then(([states, gst]) => {
         let statesList = states && states.data && states.data.items;
 
         this.setState({
@@ -287,33 +308,17 @@ export default class InvoicesNewContainer extends Component {
           message: errors,
         });
       });
+  };
+
+  componentWillMount() {
+    this.initInvoice(this.props.match.params.id);
 
     this.handleWindowClose();
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.match.params.id !== nextProps.match.params.id) {
-      this.setState({
-        isLoading: true,
-      });
-
-      this.props
-        .fetchInvoice(nextProps.match.params.id)
-        .then(invoice => {
-          this.setState({
-            isLoading: false,
-          });
-
-          if (this.isPaymentLink(invoice)) {
-            return;
-          }
-        })
-        .catch(({ errors }) => {
-          this.props.showNotification({
-            type: 'error',
-            message: errors,
-          });
-        });
+      this.initInvoice(nextProps.match.params.id);
     }
   }
 
@@ -1397,6 +1402,8 @@ export default class InvoicesNewContainer extends Component {
       selectedBillingAddress,
       selectedShippingAddress,
       isFetchingAddresses,
+      selectedCustomers,
+      selectedItems,
     } = this.state;
 
     /**
@@ -1567,17 +1574,7 @@ export default class InvoicesNewContainer extends Component {
                                 keepValueInBG={false}
                                 onOptionChange={this.onSelectCustomer}
                                 searchMethod={this.searchCustomers}
-                                normalizeValue={value => {
-                                  let selected = findBy(
-                                    this.props.customers || [],
-                                    'id',
-                                    value
-                                  );
-                                  if (selected) {
-                                    return selected.selectedDisplayName;
-                                  }
-                                  return value;
-                                }}
+                                options={selectedCustomers}
                               />
                             </div>
                             {customer &&
@@ -1956,11 +1953,11 @@ export default class InvoicesNewContainer extends Component {
                       <FieldArray
                         name="line_items"
                         component={LineItemTable}
-                        items={this.props.items}
                         disabled={isDisabled}
                         invoice={invoice}
                         invoiceTotal={invoiceTotal}
                         gstSlabs={gstSlabs}
+                        selectedItems={selectedItems}
                         applyTaxes={
                           Boolean(merchantGSTIN) && this.props.state_of_supply
                         }
