@@ -12,6 +12,9 @@ import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
 import { isAddressValid, capitalize } from 'rzp/utils/rzp-utils';
 import { track } from '../../ga';
+import Countries from 'common/countries.json';
+
+const CountryNames = Object.keys(Countries);
 
 @connect(state => ({}), {
   fetchStates,
@@ -82,8 +85,14 @@ export default class New extends Component {
 
   constructor() {
     super(...arguments);
+    this.DEFAULT_COUNTRY = 'INDIA';
+
     this.state = {
       errors: null,
+      editedAddress: {
+        country: this.DEFAULT_COUNTRY,
+      },
+      states: Countries[this.DEFAULT_COUNTRY],
     };
   }
 
@@ -96,28 +105,7 @@ export default class New extends Component {
   }
 
   componentWillMount() {
-    // Fetch states.
-    let promises = [this.props.fetchStates()];
-    this.setState({
-      isLoading: true,
-    });
-
-    Promise.all(promises)
-      .then(([states]) => {
-        // Set address type.
-        this.props.change('type', this.props.type);
-
-        this.setState({
-          isLoading: false,
-          states: states && states.data && states.data.items,
-        });
-      })
-      .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
-        });
-      });
+    this.props.change('type', this.props.type);
   }
 
   /**
@@ -154,6 +142,7 @@ export default class New extends Component {
   onAddressUpdate = address => {
     this.setState({
       editedAddress: address,
+      states: Countries[address.country] || [],
     });
   };
 
@@ -204,9 +193,10 @@ export default class New extends Component {
             <AddressEntry
               onChange={this.onAddressUpdate}
               states={states}
-              hideCountry={true}
+              countries={CountryNames}
               address={editedAddress}
               showDisabledCountry={true}
+              validateZipcode={false}
             />
 
             <div class="row">
