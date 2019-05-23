@@ -8,6 +8,7 @@ use RZP\Error\P2p\Error;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Base\Upi;
+use RZP\Models\P2p\Beneficiary;
 use RZP\Http\Controllers\P2p\Requests;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 

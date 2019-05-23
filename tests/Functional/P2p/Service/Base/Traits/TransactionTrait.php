@@ -79,6 +79,30 @@ trait TransactionTrait
         return $this->createTransaction(array_merge($defaults, $attributes), array_merge($upiDefaults, $upi));
     }
 
+    public function createCollectIncomingTransaction(array $attributes = [], array $upi = []): Entity
+    {
+        $defaults = [
+            Entity::TYPE                => Type::COLLECT,
+            Entity::FLOW                => Flow::DEBIT,
+            Entity::PAYER_TYPE          => Vpa\Entity::VPA,
+            Entity::PAYER_ID            => $this->fixtures->vpa(self::DEVICE_1)->getId(),
+            Entity::PAYEE_TYPE          => Vpa\Entity::VPA,
+            Entity::PAYEE_ID            => $this->fixtures->vpa(self::DEVICE_2)->getId(),
+            Entity::BANK_ACCOUNT_ID     => $this->fixtures->vpa(self::DEVICE_1)->getBankAccountId(),
+            Entity::STATUS              => Status::CREATED,
+            Entity::INTERNAL_STATUS     => Status::CREATED,
+        ];
+
+        $upiDefaults = [
+            UpiTransaction\Entity::ACTION                   => Action::INCOMING_COLLECT,
+            UpiTransaction\Entity::STATUS                   => Status::COMPLETED,
+            UpiTransaction\Entity::NETWORK_TRANSACTION_ID   => str_random(35),
+            UpiTransaction\Entity::RRN                      => random_integer(11),
+        ];
+
+        return $this->createTransaction(array_merge($defaults, $attributes), array_merge($upiDefaults, $upi));
+    }
+
     public function createTransaction(array $attributes = [], array $upi = []): Entity
     {
         $defaults = [

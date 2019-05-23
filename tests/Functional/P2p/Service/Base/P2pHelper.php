@@ -269,7 +269,10 @@ class P2pHelper
         array $content = [],
         array $override = []): P2pRequest
     {
-        $content = array_filter(array_replace_recursive($content, $override));
+        $content = array_filter(array_replace_recursive($content, $override), function($value)
+        {
+            return $value !== null;
+        });
 
         return $request->data($content);
     }

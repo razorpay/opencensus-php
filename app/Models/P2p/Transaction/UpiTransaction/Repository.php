@@ -9,6 +9,11 @@ class Repository extends Base\Repository
 {
     protected $entity = 'p2p_upi_transaction';
 
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Entity::TRANSACTION_ID, 'desc');
+    }
+
     public function findAll(array $input)
     {
         $query =  $this->newQuery()->where($input);

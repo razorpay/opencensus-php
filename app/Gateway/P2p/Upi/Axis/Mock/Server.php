@@ -25,7 +25,6 @@ class Server extends Mock\Server
             Fields::PAYLOAD      => [
                 Fields::MERCHANT_ID => 'MERCHANT',
                 Fields::MERCHANT_CHANNEL_ID     => 'MERCHANTAPP',
-                Fields::MERCHANT_CUSTOMER_ID    => $request[Fields::MERCHANT_CUSTOMER_ID],
                 Fields::CUSTOMER_MOBILE_NUMBER  => $request[Fields::CUSTOMER_MOBILE_NUMBER],
             ],
             Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
@@ -116,6 +115,30 @@ class Server extends Mock\Server
         return $response;
     }
 
+    public function vpaHandleBeneficiary($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD      => [
+                Fields::MERCHANT_ID                 => 'MERCHANT',
+                Fields::MERCHANT_CHANNEL_ID         => 'MERCHANTAPP',
+                Fields::MERCHANT_CUSTOMER_ID        => $request[Fields::MERCHANT_CUSTOMER_ID],
+                Fields::PAYEE_VPA                   => $request[Fields::PAYEE_VPA],
+                Fields::GATEWAY_RESPONSE_CODE       => '00',
+                Fields::GATEWAY_RESPONSE_MESSAGE    => 'Vpa blocked/spammed successfully',
+            ],
+            Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'handle_beneficiary');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
     protected function makeResponse($input)
     {
         $response = new \Requests_Response();
@@ -123,6 +146,39 @@ class Server extends Mock\Server
         $response->headers = ['content-type' => 'application/json'];
 
         $response->body = json_encode($input);
+
+        return $response;
+    }
+
+    public function vpaFetchAll($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD      => [
+                Fields::MERCHANT_ID           => 'MERCHANT',
+                Fields::MERCHANT_CHANNEL_ID   => 'MERCHANTAPP',
+                Fields::MERCHANT_CUSTOMER_ID  => $request[Fields::MERCHANT_CUSTOMER_ID],
+                Fields::BLOCKED_VPAS          => [
+                    [
+                        Fields::PAYEE_VPA  => 'abc@handle',
+                        Fields::NAME       => 'abc',
+                        Fields::BLOCKED_AT => '2017-06-09T10:46:45+00:00',
+                    ],
+                    [
+                        Fields::PAYEE_VPA  => 'efg@handle',
+                        Fields::NAME       => 'efg',
+                        Fields::BLOCKED_AT => '2018-06-09T10:46:45+00:00',
+                    ]
+                ]
+            ],
+            Fields::UDF_PARAMETERS          => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'get_blocked');
+
+        $response = $this->makeResponse($response);
 
         return $response;
     }

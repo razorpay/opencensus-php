@@ -5,31 +5,19 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
-        "id",
         "entity",
         "address",
         "username",
         "handle",
-        "bank_account",
-        "beneficiary_name",
-        "active",
-        "validated",
-        "verified",
-        "default",
-        "created_at"
+        "blocked",
+        "blocked_at"
     ],
     "properties": {
-        "id": {
-            "type": "string",
-            "default": null,
-            "pattern": "^vpa_[\\w]{14}$"
-        },
         "entity": {
             "type": "string",
             "enum": [
                 "vpa"
-            ],
-            "pattern": "^(.*)$"
+            ]
         },
         "address": {
             "type": "string",
@@ -40,31 +28,18 @@
             "type": "string",
             "pattern": "^(.*)$"
         },
-        "beneficiary_name": {
-            "type": "string",
-            "pattern": "^(.*)$"
-        },
         "handle": {
             "type": "string",
             "pattern": "^(.*)$"
         },
-        "bank_account": {
-            "type": ["object", "null"]
-        },
-        "active": {
+        "blocked": {
             "type": "boolean"
         },
-        "validated": {
+        "spammed": {
             "type": "boolean"
         },
-        "verified": {
-            "type": "boolean"
-        },
-        "default": {
-            "type": "boolean"
-        },
-        "created_at": {
-            "type": "integer"
+        "blocked_at": {
+            "type": ["integer", "null"]
         }
     }
 }

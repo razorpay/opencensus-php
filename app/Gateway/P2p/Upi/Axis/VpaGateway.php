@@ -2,8 +2,10 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
+use RZP\Gateway\Upi\Base\Vpa;
 use RZP\Models\P2p\Vpa\Bank;
 use RZP\Models\P2p\Vpa\Entity;
+use RZP\Models\P2p\Transaction;
 use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
@@ -152,6 +154,83 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         ]);
 
         return $response;
+    }
+
+    public function handleBeneficiary(Response $response)
+    {
+        $payeeVpa = $this->usernameToAddress($this->input->get(Entity::USERNAME), $this->input->get(Entity::HANDLE));
+
+        if (($this->input->get(Beneficiary::BLOCKED) === true) or
+            ($this->input->get(Beneficiary::SPAMMED) === true))
+        {
+            $request = $this->initiateS2sRequest(VpaAction::BLOCK_VPA);
+
+            $upi = $this->input->get(Transaction\Entity::UPI);
+
+            $request->merge([
+                Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                Fields::PAYEE_VPA               => $payeeVpa,
+                Fields::SHOULD_BLOCK            => $this->input->get(Beneficiary::BLOCKED) ? 'true' : 'false',
+                Fields::SHOULD_SPAM             => $this->input->get(Beneficiary::SPAMMED) ? 'true' : 'false',
+                Fields::UPI_REQUEST_ID          => $upi[Transaction\UpiTransaction\Entity::NETWORK_TRANSACTION_ID],
+            ]);
+        }
+        else
+        {
+            $request = $this->initiateS2sRequest(VpaAction::UNBLOCK_VPA);
+
+            $request->merge([
+                Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
+                Fields::PAYEE_VPA            => $payeeVpa,
+            ]);
+        }
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $this->handleGatewayResponseCode($s2s[Fields::PAYLOAD]);
+
+        $transformer = new VpaTransformer($s2s[Fields::PAYLOAD]);
+        $transformer->put(Fields::CUSTOMER_VPA, $payeeVpa);
+        $transformer->put(Beneficiary::BLOCKED, $this->input->get(Beneficiary::BLOCKED));
+        $transformer->put(Beneficiary::SPAMMED, $this->input->get(Beneficiary::SPAMMED));
+
+        $output = $transformer->transformBeneficiary();
+
+        $response->setData($output);
+    }
+
+    public function fetchAll(Response $response)
+    {
+        if (empty($this->input->get(Beneficiary::BLOCKED)) === true)
+        {
+            throw $this->p2pGatewayException(ErrorMap::NOT_AVAILABLE);
+        }
+
+        $request = $this->initiateS2sRequest(VpaAction::LIST_BLOCKED);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
+            Fields::LIMIT                => 100,
+            Fields::OFFSET               => 0,
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $output[Entity::DATA] = [];
+
+        foreach ($s2s[Fields::PAYLOAD][Fields::BLOCKED_VPAS] as $blockedVpa)
+        {
+            $payeeVpa = $blockedVpa[Fields::PAYEE_VPA];
+
+            $transformer = new VpaTransformer($blockedVpa);
+            $transformer->put(Fields::CUSTOMER_VPA, $payeeVpa);
+            $transformer->put(Beneficiary::BLOCKED, true);
+            $transformer->put(Beneficiary::SPAMMED, null);
+
+            $output[Entity::DATA][] = $transformer->transformBeneficiary();
+        }
+
+        $response->setData($output);
     }
 
     protected function handleVpaAvailability(

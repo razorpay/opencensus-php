@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis\Transformers;
 
+use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\Transaction;
@@ -225,6 +226,8 @@ class UpiTransactionTransformer extends Transformer
                 $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
                 $payee[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYEE_NAME];
 
+                $expiryAt = $this->transformExpireAt();
+
                 break;
 
             case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
@@ -246,6 +249,20 @@ class UpiTransactionTransformer extends Transformer
             Transaction\Entity::PAYEE            => $payee,
         ];
 
+        if (isset($expiryAt) === true)
+        {
+            $output[Transaction\Entity::EXPIRE_AT] = $expiryAt;
+        }
+
         return $output;
+    }
+
+    public function transformExpireAt()
+    {
+        switch ($this->action)
+        {
+            case UpiAction::COLLECT_REQUEST_RECEIVED:
+                return Carbon::parse($this->input[Fields::EXPIRY])->getTimestamp();
+        }
     }
 }
