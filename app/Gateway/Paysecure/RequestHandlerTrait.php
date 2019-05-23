@@ -135,6 +135,10 @@ trait RequestHandlerTrait
 
         $ownerName = $this->input['merchant']->getBillingLabel() ?? 'Razorpay';
 
+        // The owner name should be of type ANS(1-23)
+        // Removing the invalid characters here
+        $ownerName = preg_replace('/[^a-zA-Z0-9\s\-\.]/i', '', $ownerName);
+
         $ownerName = substr($ownerName, 0, 23);
 
         $requestArray = [
