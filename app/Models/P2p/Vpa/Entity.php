@@ -353,6 +353,17 @@ class Entity extends Base\Entity
 
     public function getAddressAttribute()
     {
-        return implode(self::AEROBASE, [$this->getUsername(), $this->getHandle()]);
+        return self::toAddress([
+            self::USERNAME  => $this->getUsername(),
+            self::HANDLE    => $this->getHandle()
+        ]);
+    }
+
+    public static function toAddress(array $input)
+    {
+        return implode(self::AEROBASE, [
+            array_get($input, self::USERNAME),
+            array_get($input, self::HANDLE)
+        ]);
     }
 }

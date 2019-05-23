@@ -133,8 +133,7 @@ class BankAccountFailureTest extends TestCase
         {
             $this->assertArraySubset([
                 'code'          => 'GATEWAY_ERROR',
-                'description'   => 'Token is invalid or expired',
-                'action'        => 'initiateGetToken',
+                'description'   => 'Action could not be completed at bank',
             ], $error);
         }, 502);
 

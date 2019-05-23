@@ -14,8 +14,12 @@ class Entity extends Base\Entity
     const NAME         = 'name';
 
     /***************** Input Keys ****************/
+    const BENEFICIARY  = 'beneficiary';
     const TYPE         = 'type';
     const VALIDATED    = 'validated';
+    const BLOCKED      = 'blocked';
+    const SPAMMED      = 'spammed';
+    const BLOCKED_AT   = 'blocked_at';
 
     /************** Entity Properties ************/
 

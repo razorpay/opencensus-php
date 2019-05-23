@@ -177,6 +177,12 @@ final class P2pRoute
                 'customer/beneficiaries',
                 'BeneficiaryController@fetchAll'
             ],
+        Requests::P2P_CUSTOMER_BENEFICIARIES_HANDLE =>
+            [
+                'post',
+                'customer/beneficiaries/handle',
+                'BeneficiaryController@handle'
+            ],
 
         /************* Transactions **************/
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_PAY =>
@@ -288,6 +294,7 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_BENEFICIARIES,
         Requests::P2P_CUSTOMER_BENEFICIARIES_VALIDATE,
         Requests::P2P_CUSTOMER_BENEFICIARIES_FETCH_ALL,
+        Requests::P2P_CUSTOMER_BENEFICIARIES_HANDLE,
 
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_PAY,
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_COLLECT,

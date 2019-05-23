@@ -91,4 +91,29 @@ class BeneficiaryTest extends TestCase
             'beneficiary_name'  => $vpa->getBeneficiaryName(),
         ], $response);
     }
+
+    public function testUnblockBeneficiary()
+    {
+        $helper = $this->getBeneficiaryHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->handle();
+    }
+
+    public function testFetchBlockedBeneficiaries()
+    {
+        $helper = $this->getBeneficiaryHelper();
+
+        $response = $helper->fetchBlocked();
+
+        $this->assertCollection($response, 2, [
+            [
+                'blocked_at' => '1497005205',
+            ],
+            [
+                'blocked_at' => '1528541205',
+            ]
+        ]);
+    }
 }
