@@ -10,12 +10,11 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import { fetchStates } from 'merchant/modules/states';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
-import { isAddressValid, capitalize } from 'rzp/utils/rzp-utils';
+import { capitalize } from 'rzp/utils/rzp-utils';
 import { track } from '../../ga';
 import Countries from 'common/countries.json';
 
 const CountryNames = Object.keys(Countries);
-
 @connect(state => ({}), {
   fetchStates,
   ...CustomerActions,
@@ -85,7 +84,7 @@ export default class New extends Component {
 
   constructor() {
     super(...arguments);
-    this.DEFAULT_COUNTRY = 'INDIA';
+    this.DEFAULT_COUNTRY = 'India';
 
     this.state = {
       errors: null,
@@ -140,9 +139,21 @@ export default class New extends Component {
    * @param {Object} address
    */
   onAddressUpdate = address => {
+    if (!address.country) {
+      this.setState({
+        editedAddress: {
+          ...address,
+          state: null,
+        },
+        states: [],
+      });
+
+      return;
+    }
+
     this.setState({
       editedAddress: address,
-      states: Countries[address.country] || [],
+      states: Countries[address.country],
     });
   };
 
@@ -219,3 +230,53 @@ export default class New extends Component {
     );
   }
 }
+
+const validateZipcode = (country, zipcode) => {
+  if (country === 'India') {
+    return zipcode.length === 6;
+  }
+
+  return zipcode <= 8 && zipcode >= 3;
+};
+
+const isAddressValid = address => {
+  const allKeys = Boolean(
+    address &&
+      address.line1 &&
+      address.city &&
+      address.state &&
+      address.country &&
+      address.zipcode
+  );
+
+  if (!allKeys) {
+    return false;
+  }
+
+  const { line1, line2, city, state, country, zipcode } = address;
+
+  const requiredFieldsLengthCheck = Boolean(
+    line1.length >= 10 &&
+      line1.length <= 255 &&
+      city.length >= 2 &&
+      city.length <= 32 &&
+      validateZipcode(country, zipcode) &&
+      state.length >= 2 &&
+      state.length <= 32 &&
+      country.length >= 2 &&
+      country.length <= 64
+  );
+
+  let optionalFieldsLengthCheck = true;
+  if (line2 && !(line2.length >= 5 && line2.length <= 255)) {
+    optionalFieldsLengthCheck = false;
+  }
+
+  const lengthCheck = requiredFieldsLengthCheck && optionalFieldsLengthCheck;
+
+  if (!lengthCheck) {
+    return false;
+  }
+
+  return true;
+};
