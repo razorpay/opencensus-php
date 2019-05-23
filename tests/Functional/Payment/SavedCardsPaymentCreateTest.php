@@ -843,7 +843,12 @@ class SavedCardsPaymentCreateTest extends TestCase
                         }
                         break;
 
-                    case 'delete':
+                    case 'token':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        break;
+
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         break;
 
                     case 'token/migrate':
@@ -936,6 +941,10 @@ class SavedCardsPaymentCreateTest extends TestCase
                     case 'delete':
                         break;
 
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        break;
+
                     case 'token/migrate':
                         $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         $response['token'] = strrev($input['token']);
@@ -1021,6 +1030,10 @@ class SavedCardsPaymentCreateTest extends TestCase
                     case 'delete':
                         break;
 
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        break;
+
                     case 'token/migrate':
                         $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         $response['token'] = strrev($input['token']);
@@ -1099,6 +1112,10 @@ class SavedCardsPaymentCreateTest extends TestCase
                         break;
 
                     case 'delete':
+                        break;
+
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         break;
 
                     case 'token/migrate':
