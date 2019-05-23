@@ -81,7 +81,13 @@ trait RequestHandlerTrait
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
-        $accept = substr($this->app['request']->header('Accept'), 0, 256);
+        $accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+
+        if (empty($this->app['request']->header('Accept')) === false)
+        {
+            $accept = substr($this->app['request']->header('Accept'), 0, 256);
+        }
+
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 512);
         $ip = $this->app['request']->ip();
 
