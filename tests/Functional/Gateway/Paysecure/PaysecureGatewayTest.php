@@ -58,6 +58,8 @@ class PaysecureGatewayTest extends TestCase
             'business_registered_city'    => 'Bangalore',
         ];
 
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Ménage']);
+
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->fixtures->iin->create([
@@ -83,6 +85,17 @@ class PaysecureGatewayTest extends TestCase
 
     public function testPaymentAuthViaRedirect()
     {
+        // Assert that the terminal owner does not contain non-alpha numeric characters
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_terminal_owner_name')
+                {
+                    $this->assertEquals('Mnage', $content);
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
