@@ -2241,32 +2241,33 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </button>
                           )}
-                          {this.props.session.user.isInttCurrenciesEnabled && (
-                            <div class="change-currency-cta">
-                              <button
-                                class="btn btn-default btn-block btn-lg"
-                                onClick={this.openInvoiceCurrencyChangeModal}
-                                type="button"
-                              >
-                                <div class="row">
-                                  <div class="col-xs-10">
-                                    <h3>Change Currency</h3>
-                                    <p>Select different currency</p>
+                          {!invoice.id &&
+                            this.props.session.user.isInttCurrenciesEnabled && (
+                              <div class="change-currency-cta">
+                                <button
+                                  class="btn btn-default btn-block btn-lg"
+                                  onClick={this.openInvoiceCurrencyChangeModal}
+                                  type="button"
+                                >
+                                  <div class="row">
+                                    <div class="col-xs-10">
+                                      <h3>Change Currency</h3>
+                                      <p>Select different currency</p>
+                                    </div>
+                                    <i
+                                      class="col-xs-2 i i-arrow-forward"
+                                      style={{ marginTop: '0.5em' }}
+                                    />
                                   </div>
-                                  <i
-                                    class="col-xs-2 i i-arrow-forward"
-                                    style={{ marginTop: '0.5em' }}
-                                  />
-                                </div>
-                              </button>
-                              <Popover theme="dark" align="bottom">
-                                <PopoverBody>
-                                  Going forward you can change the Invoice
-                                  currency here
-                                </PopoverBody>
-                              </Popover>
-                            </div>
-                          )}
+                                </button>
+                                <Popover theme="dark" align="bottom">
+                                  <PopoverBody>
+                                    Going forward you can change the Invoice
+                                    currency here
+                                  </PopoverBody>
+                                </Popover>
+                              </div>
+                            )}
                         </div>
                       </div>
                     )}
