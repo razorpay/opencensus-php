@@ -4,7 +4,6 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ type, ...otherProps }) => {
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
-
   return (
     <ListFilter {...otherProps}>
       <div class="form-group list-filter-item">
@@ -74,6 +73,15 @@ export default ({ type, ...otherProps }) => {
           class="form-control input-sm"
         />
       </div>
+
+      <div class="form-group list-filter-item count">
+        <label>International</label>
+        <Field component={Checkbox} name="international" defaultValue="0" />
+      </div>
     </ListFilter>
   );
+};
+
+const Checkbox = props => {
+  return <input {...props.input} type="checkbox" />;
 };
