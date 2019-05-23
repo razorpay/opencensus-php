@@ -18,7 +18,7 @@ export default class BatchListContainer extends Component {
     return (
       <BatchList
         form="batchListFilter"
-        docUrl="https://docs.razorpay.com/v1/page/batch-card-payments"
+        docUrl="https://razorpay.com/docs/payment-methods/cards/batch-card-payments/"
         sampleUrl="https://cdn.razorpay.com/dashboard/sample_batch_payments.csv"
         batchType="direct_debit"
         renderUploadModal={this.renderUploadModal}

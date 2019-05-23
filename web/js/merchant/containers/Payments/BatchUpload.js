@@ -139,7 +139,7 @@ export default class BatchUploadContainer extends Component {
                 shouldLoadMore
                 status={this.state.status}
                 notifyMsg={this.state.error}
-                docUrl="https://docs.razorpay.com/v1/page/batch-card-payments"
+                docUrl="https://razorpay.com/docs/payment-methods/cards/batch-card-payments/"
                 sampleUrl="https://cdn.razorpay.com/dashboard/sample_batch_payments.csv"
                 {...this.state}
               />
