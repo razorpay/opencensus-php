@@ -595,6 +595,25 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $virtualAccountArray,
         ];
 
+        $transfer = null;
+
+        if ($payment->isBankTransfer() === true)
+        {
+            $transfer = $payment->bankTransfer;
+        }
+        else if ($payment->isBharatQr() === true)
+        {
+            $transfer = $payment->bharatQr;
+        }
+        else
+        {
+            throw new Exception\LogicException('Invalid method for virtual account');
+        }
+
+        $partialPayload[$transfer->getEntity()] = [
+            'entity' => $transfer->toArrayPublic(),
+        ];
+
         return $partialPayload;
     }
 

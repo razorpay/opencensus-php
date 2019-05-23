@@ -2655,6 +2655,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hasOne('RZP\Models\BankTransfer\Entity');
     }
 
+    public function bharatQr()
+    {
+        return $this->hasOne('RZP\Models\BharatQr\Entity');
+    }
+
     public function batch()
     {
         return $this->belongsTo('RZP\Models\Batch\Entity');

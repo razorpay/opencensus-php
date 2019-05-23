@@ -116,7 +116,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::PAYER_BANK_ACCOUNT,
         self::VIRTUAL_ACCOUNT_ID,
-        self::VIRTUAL_ACCOUNT,
     ];
 
     protected $appends = [
