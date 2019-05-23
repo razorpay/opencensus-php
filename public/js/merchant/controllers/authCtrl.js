@@ -281,7 +281,6 @@ app
           name: 'create_contact',
           data: {
             email: $scope.signup.data.email,
-            signup_start: true,
           },
         });
 
