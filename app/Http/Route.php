@@ -444,6 +444,7 @@ final class Route
         'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'gateway_payment_callback_amazonpay_post'  => ['post',     'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
+        'gateway_payment_callback_upi_airtel'      => ['post',     'gateway/upi_airtel/callback',                    'GatewayController@callbackUpiAirtel'                               ],
 
         // File-based Emandate Routes
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
@@ -2498,6 +2499,7 @@ final class Route
         'payment_redirect_to_authorize',
         'payment_redirect_to_authorize_get',
         'payment_redirect_to_authorize_post',
+        'gateway_payment_callback_upi_airtel',
     ];
 
     /**
