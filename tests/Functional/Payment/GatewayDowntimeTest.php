@@ -85,7 +85,7 @@ class GatewayDowntimeTest extends TestCase
                 'issuer'      => 'HDFC',
                 'comment'     => 'Test Reason',
                 'source'      => 'statuscake',
-                'begin'        => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
@@ -93,9 +93,13 @@ class GatewayDowntimeTest extends TestCase
 
         $this->ba->directAuth();
 
+        $this->updateSignature($request);
+
         $response = $this->makeRequestAndGetContent($request);
 
         $request['content']['reason_code'] = 'ISSUER_DOWN';
+
+        $this->updateSignature($request);
 
         $response2 = $this->makeRequestAndGetContent($request);
 
@@ -114,7 +118,7 @@ class GatewayDowntimeTest extends TestCase
                 'issuer'      => 'HDFC',
                 'comment'     => 'Test Reason',
                 'source'      => 'statuscake',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp),
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
@@ -122,17 +126,21 @@ class GatewayDowntimeTest extends TestCase
 
         $this->ba->directAuth();
 
+        $this->updateSignature($request);
+
         $response = $this->makeRequestAndGetContent($request);
 
         $request['content']['reason_code'] = 'ISSUER_DOWN';
 
-        $request['content']['scheduled'] = true;
+        $request['content']['scheduled'] = '1';
 
         $downtimeTo = Carbon::now()->addMinutes(60)->timestamp;
 
-        $request['content']['end'] = $downtimeTo;
+        $request['content']['end'] = strval($downtimeTo);
 
         unset($request['content']['source']);
+
+        $this->updateSignature($request);
 
         $response2 = $this->makeRequestAndGetContent($request);
 
@@ -158,9 +166,9 @@ class GatewayDowntimeTest extends TestCase
                 'issuer'      => 'HDFC',
                 'comment'     => 'Test Reason',
                 'source'      => 'statuscake',
-                'scheduled'   => true,
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
-                'end'         => Carbon::now()->addMinutes(60)->timestamp
+                'scheduled'   => '1',
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp),
+                'end'         => strval(Carbon::now()->addMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
@@ -168,11 +176,15 @@ class GatewayDowntimeTest extends TestCase
 
         $this->ba->directAuth();
 
+        $this->updateSignature($request);
+
         $response = $this->makeRequestAndGetContent($request);
 
         $request['content']['reason_code'] = 'ISSUER_DOWN';
 
         $request['content']['source'] = 'other';
+
+        $this->updateSignature($request);
 
         $response2 = $this->makeRequestAndGetContent($request);
 
@@ -195,7 +207,7 @@ class GatewayDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp),
                 'gateway'     => 'axis_migs',
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
@@ -209,6 +221,8 @@ class GatewayDowntimeTest extends TestCase
 
         $this->ba->directAuth();
 
+        $this->updateSignature($request);
+
         $response = $this->makeRequestAndGetContent($request);
 
         $request['content']['network'] = 'VISA';
@@ -217,9 +231,11 @@ class GatewayDowntimeTest extends TestCase
 
         $request['content']['reason_code'] = 'OTHER';
 
-        $request['content']['end']  = Carbon::now()->addMinutes(60)->timestamp;
+        $request['content']['end']  = strval(Carbon::now()->addMinutes(60)->timestamp);
 
         unset($request['content']['source']);
+
+        $this->updateSignature($request);
 
         $response2 = $this->makeRequestAndGetContent($request);
 
@@ -1330,5 +1346,16 @@ class GatewayDowntimeTest extends TestCase
             'method' => 'POST',
             'url' => '/gateway/downtimes'
         ];
+    }
+
+    protected function updateSignature(array & $request)
+    {
+        unset($request['content']['signature']);
+
+        $secret = \Config::get('applications.dashboard.secret');
+
+        $signature = hash_hmac('sha256', json_encode($request['content']), $secret);
+
+        $request['content']['signature'] = $signature;
     }
 }

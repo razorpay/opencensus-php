@@ -46,13 +46,14 @@ class PaymentDowntimeTest extends TestCase
                 'method'      => 'upi',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
         $this->ba->appAuth();
+        $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
@@ -67,7 +68,7 @@ class PaymentDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'end' => Carbon::now()->subMinutes(30)->timestamp,
+                'end' => strval(Carbon::now()->subMinutes(30)->timestamp),
             ],
             'method' => 'PUT',
             'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
@@ -101,13 +102,14 @@ class PaymentDowntimeTest extends TestCase
                 'method'      => 'upi',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
         $this->ba->appAuth();
+        $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
@@ -123,13 +125,14 @@ class PaymentDowntimeTest extends TestCase
                 'method'      => 'netbanking',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
         $this->ba->appAuth();
+        $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
@@ -154,7 +157,7 @@ class PaymentDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'end' => Carbon::now()->subMinutes(30)->timestamp,
+                'end' => strval(Carbon::now()->subMinutes(30)->timestamp),
             ],
             'method' => 'PUT',
             'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
@@ -184,13 +187,14 @@ class PaymentDowntimeTest extends TestCase
                 'issuer'      => 'ANDB',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp),
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
         $this->ba->appAuth();
+        $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
@@ -206,14 +210,14 @@ class PaymentDowntimeTest extends TestCase
                 'method'      => 'card',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
         $this->ba->appAuth();
-
+        $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
@@ -229,7 +233,7 @@ class PaymentDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'end' => Carbon::now()->subMinutes(30)->timestamp,
+                'end' => strval(Carbon::now()->subMinutes(30)->timestamp),
             ],
             'method' => 'PUT',
             'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
@@ -302,14 +306,14 @@ class PaymentDowntimeTest extends TestCase
                 'network'     => 'RUPAY',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
         $this->ba->appAuth();
-
+        $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
@@ -325,14 +329,14 @@ class PaymentDowntimeTest extends TestCase
                 'method'      => 'wallet',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
-                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
         $this->ba->appAuth();
-
+        $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
@@ -372,14 +376,14 @@ class PaymentDowntimeTest extends TestCase
                     'method'      => 'upi',
                     'source'      => 'dummy',
                     'reason_code' => 'OTHER',
-                    'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                    'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
                 ],
                 'method' => 'POST',
                 'url' => '/gateway/downtimes/dummy/webhook'
             ];
 
             $this->ba->appAuth();
-
+            $this->updateSignature($request);
             $this->makeRequestAndGetContent($request);
         }
     }
@@ -395,14 +399,14 @@ class PaymentDowntimeTest extends TestCase
                     'issuer'      => 'ANDB',
                     'source'      => 'dummy',
                     'reason_code' => 'OTHER',
-                    'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                    'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
                 ],
                 'method' => 'POST',
                 'url' => '/gateway/downtimes/dummy/webhook'
             ];
 
             $this->ba->appAuth();
-
+            $this->updateSignature($request);
             $this->makeRequestAndGetContent($request);
         }
     }
@@ -418,13 +422,14 @@ class PaymentDowntimeTest extends TestCase
                     'network'     => 'RUPAY',
                     'source'      => 'dummy',
                     'reason_code' => 'OTHER',
-                    'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                    'begin'       => strval(Carbon::now()->subMinutes(60)->timestamp)
                 ],
                 'method' => 'POST',
                 'url' => '/gateway/downtimes/dummy/webhook'
             ];
 
             $this->ba->appAuth();
+            $this->updateSignature($request);
             $this->makeRequestAndGetContent($request);
         }
     }
@@ -438,5 +443,16 @@ class PaymentDowntimeTest extends TestCase
             'method'  => 'POST',
             'content' => [],
         ]);
+    }
+
+    protected function updateSignature(array & $request)
+    {
+        unset($request['content']['signature']);
+
+        $secret = \Config::get('applications.dashboard.secret');
+
+        $signature = hash_hmac('sha256', json_encode($request['content']), $secret);
+
+        $request['content']['signature'] = $signature;
     }
 }
