@@ -34,7 +34,6 @@ class Requests
     const P2P_CUSTOMER_BENEFICIARIES_VALIDATE               = 'p2p_customer_beneficiaries_validate';
     const P2P_CUSTOMER_BENEFICIARIES_FETCH_ALL              = 'p2p_customer_beneficiaries_fetch_all';
     const P2P_CUSTOMER_BENEFICIARIES_HANDLE                 = 'p2p_customer_beneficiaries_handle';
-    const P2P_CUSTOMER_BENEFICIARIES_GET_BLOCKED            = 'p2p_customer_beneficiaries_get_blocked';
 
     const P2P_CUSTOMER_TRANSACTIONS_INITIATE_PAY            = 'p2p_customer_transactions_initiate_pay';
     const P2P_CUSTOMER_TRANSACTIONS_INITIATE_COLLECT        = 'p2p_customer_transactions_initiate_collect';

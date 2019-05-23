@@ -18,7 +18,7 @@ class VpaAction extends Action
 
     const UNBLOCK_VPA                       = 'UNBLOCK_VPA';
 
-    const GET_BLOCKED                       = 'GET_BLOCKED';
+    const LIST_BLOCKED                       = 'GET_BLOCKED';
 
     const MAP = [
         self::VPA_AVAILABILITY => [
@@ -26,31 +26,31 @@ class VpaAction extends Action
                 Fields::CUSTOMER_VPA   => 'required',
             ]
         ],
-        self::LINK_ACCOUNT => [
+        self::LINK_ACCOUNT     => [
             self::VALIDATOR => [
                 Fields::CUSTOMER_VPA            => 'required',
                 Fields::ACCOUNT_REFERENCE_ID    => 'required',
             ]
         ],
-        self::VALIDATE_VPA  => [
+        self::VALIDATE_VPA     => [
             self::SOURCE    => self::DIRECT,
             self::DIRECT    => [
                 S2sDirect::METHOD => 'post'
             ],
         ],
-        self::BLOCK_VPA  => [
+        self::BLOCK_VPA        => [
             self::SOURCE  => self::DIRECT,
             self::DIRECT  => [
                 S2sDirect::METHOD => 'post'
             ],
         ],
-        self::UNBLOCK_VPA => [
+        self::UNBLOCK_VPA      => [
             self::SOURCE  => self::DIRECT,
             self::DIRECT  => [
                 S2sDirect::METHOD => 'post'
             ],
         ],
-        self::GET_BLOCKED => [
+        self::LIST_BLOCKED     => [
             self::SOURCE  => self::DIRECT,
             self::DIRECT  => [
                 S2sDirect::METHOD => 'post'

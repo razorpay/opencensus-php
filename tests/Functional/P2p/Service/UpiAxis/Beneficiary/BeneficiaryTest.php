@@ -96,17 +96,24 @@ class BeneficiaryTest extends TestCase
     {
         $helper = $this->getBeneficiaryHelper();
 
-        // $helper->withSchemaValidated();
+        $helper->withSchemaValidated();
 
-        $coproto = $helper->handle();
+        $helper->handle();
     }
 
-    public function testGetBlockedBeneficiaries()
+    public function testFetchBlockedBeneficiaries()
     {
         $helper = $this->getBeneficiaryHelper();
 
-        // $helper->withSchemaValidated();
+        $response = $helper->fetchBlocked();
 
-        $coproto = $helper->getBlocked();
+        $this->assertCollection($response, 2, [
+            [
+                'blocked_at' => '1497005205',
+            ],
+            [
+                'blocked_at' => '1528541205',
+            ]
+        ]);
     }
 }

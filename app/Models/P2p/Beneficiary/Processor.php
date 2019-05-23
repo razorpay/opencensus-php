@@ -7,6 +7,7 @@ use RZP\Models\P2p\Vpa;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\Base\PublicCollection;
 
 /**
  * @property Core $core
@@ -90,29 +91,43 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::HANDLE_BENEFICIARY_SUCCESS, $input, true);
 
-        $response = [
-            'username' => $input[Vpa\Entity::USERNAME],
-            'handle'   => $input[Vpa\Entity::HANDLE],
-            'type'     => 'vpa',
-            'blocked'  => $input[Entity::BLOCKED],
-            'spammed'  => $input[Entity::SPAMMED],
-        ];
+        $response = $this->toBeneficiaryVpa($this->input->toArray());
 
         return $response;
     }
 
-    public function getBlocked(array $input): array
+    public function fetchAll(array $input): array
     {
-        $this->initialize(Action::GET_BLOCKED, $input, true);
+        $this->initialize(Action::FETCH_ALL, $input);
 
-        $this->input->put(Entity::TYPE, 'vpa');
+        if (empty($this->input->get(Entity::BLOCKED)) === false)
+        {
+            $this->input->put(Entity::TYPE, Vpa\Entity::VPA);
 
-        return $this->callGateway();
+            $this->gatewayInput = $this->input;
+
+            return $this->callGateway();
+        }
+
+        return parent::fetchAll($input);
     }
 
-    protected function getBlockedSuccess(array $input): array
+    public function fetchAllSuccess(array $input): array
     {
-        return $input;
+        $this->initialize(Action::FETCH_ALL_SUCCESS, $input);
+
+        $collection = new PublicCollection();
+
+        foreach ($this->input->get(Entity::DATA) as $beneficiary)
+        {
+            $collection->push($this->toBeneficiaryVpa($beneficiary));
+        }
+
+        $output[PublicCollection::ENTITY]   = 'collection';
+        $output[PublicCollection::COUNT]    = $collection->count();
+        $output[PublicCollection::ITEMS]    = $collection->toArray();
+
+        return $output;
     }
 
     protected function getEntity()
@@ -134,5 +149,21 @@ class Processor extends Base\Processor
         }
 
         return $beneficiary;
+    }
+
+    protected function toBeneficiaryVpa(array $input): array
+    {
+        $response = array_only($input, [
+            Vpa\Entity::USERNAME,
+            Vpa\Entity::HANDLE,
+            Entity::BLOCKED,
+            Entity::SPAMMED,
+            Entity::BLOCKED_AT,
+        ]);
+
+        $response[Vpa\Entity::ENTITY]  = Vpa\Entity::VPA;
+        $response[Vpa\Entity::ADDRESS] = Vpa\Entity::toAddress($input);
+
+        return $response;
     }
 }

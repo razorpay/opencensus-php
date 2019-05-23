@@ -35,14 +35,7 @@ class Service extends Base\Service
 
     public function handle(array $input): array
     {
-        $response = $this->processor->handleBeneficiary($input[Beneficiary\Entity::BENEFICIARY]);
-
-        return $response;
-    }
-
-    public function getBlocked(array $input): array
-    {
-        $response = $this->processor->getBlocked($input);
+        $response = $this->processor->handleBeneficiary($input);
 
         return $response;
     }

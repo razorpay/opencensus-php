@@ -68,6 +68,7 @@ class TransactionController extends Controller
     public function initiateReject()
     {
         $input = $this->request()->all();
+
         $input['id'] = $this->request()->route('transaction_id');
 
         $response = $this->service->initiateReject($input);

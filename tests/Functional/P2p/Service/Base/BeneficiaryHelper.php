@@ -73,18 +73,16 @@ class BeneficiaryHelper extends P2pHelper
 
     public function handle(array $content = [])
     {
-        //$this->validationJsonSchemaPath = 'beneficiary/validate';
+        $this->validationJsonSchemaPath = 'beneficiary/handle';
 
         $request = $this->request('beneficiaries/handle');
 
         $default = [
-            'beneficiary' => [
-                'blocked'  => false,
-                'spammed'  => false,
-                'type'     => 'vpa',
-                'username' => 'customer',
-                'handle'   => 'testpsp',
-            ],
+            'blocked'  => false,
+            'spammed'  => false,
+            'type'     => 'vpa',
+            'username' => 'customer',
+            'handle'   => 'testpsp',
         ];
 
         $this->content($request, $default, []);
@@ -92,10 +90,10 @@ class BeneficiaryHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function getBlocked()
+    public function fetchBlocked()
     {
-        $request = $this->request('beneficiaries/blocked');
+        $request = $this->request('beneficiaries?blocked=1');
 
-        $this->get($request);
+        return $this->get($request);
     }
 }

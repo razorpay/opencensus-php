@@ -150,7 +150,7 @@ class Server extends Mock\Server
         return $response;
     }
 
-    public function vpaGetBlocked($request)
+    public function vpaFetchAll($request)
     {
         $response = [
             Fields::STATUS           => 'SUCCESS',
@@ -165,6 +165,11 @@ class Server extends Mock\Server
                         Fields::PAYEE_VPA  => 'abc@handle',
                         Fields::NAME       => 'abc',
                         Fields::BLOCKED_AT => '2017-06-09T10:46:45+00:00',
+                    ],
+                    [
+                        Fields::PAYEE_VPA  => 'efg@handle',
+                        Fields::NAME       => 'efg',
+                        Fields::BLOCKED_AT => '2018-06-09T10:46:45+00:00',
                     ]
                 ]
             ],

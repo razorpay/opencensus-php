@@ -44,13 +44,4 @@ class BeneficiaryController extends Controller
 
         return $this->response($response);
     }
-
-    public function getBlocked()
-    {
-        $input = $this->request()->all();
-
-        $response = $this->service->getBlocked($input);
-
-        return $this->response($response);
-    }
 }

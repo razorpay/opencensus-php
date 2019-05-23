@@ -19,6 +19,7 @@ class Entity extends Base\Entity
     const VALIDATED    = 'validated';
     const BLOCKED      = 'blocked';
     const SPAMMED      = 'spammed';
+    const BLOCKED_AT   = 'blocked_at';
 
     /************** Entity Properties ************/
 

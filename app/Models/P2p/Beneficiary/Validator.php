@@ -106,7 +106,7 @@ class Validator extends Base\Validator
             Entity::TYPE            => 'required|in:vpa',
             Entity::SPAMMED         => 'required',
             Entity::BLOCKED         => 'required',
-            Transaction\Entity::UPI => 'required|array',
+            Transaction\Entity::UPI => 'sometimes|array',
         ]);
 
         return $rules;
@@ -119,6 +119,8 @@ class Validator extends Base\Validator
             Vpa\Entity::HANDLE   => 'required',
             Entity::SPAMMED      => 'required',
             Entity::BLOCKED      => 'required',
+            Entity::TYPE         => 'required|in:vpa',
+            Entity::BLOCKED_AT   => 'sometimes|nullable|integer',
         ]);
 
         return $rules;

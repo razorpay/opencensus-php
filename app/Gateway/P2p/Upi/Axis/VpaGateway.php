@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
+use RZP\Gateway\Upi\Base\Vpa;
 use RZP\Models\P2p\Vpa\Bank;
 use RZP\Models\P2p\Vpa\Entity;
 use RZP\Models\P2p\Transaction;
@@ -182,24 +183,30 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
                 Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
                 Fields::PAYEE_VPA            => $payeeVpa,
             ]);
-
         }
 
         $s2s = $this->sendS2sRequest($request);
 
         $this->handleGatewayResponseCode($s2s[Fields::PAYLOAD]);
 
-        $output[Entity::USERNAME] = $this->input->get(Entity::USERNAME);
-        $output[Entity::HANDLE] = $this->input->get(Entity::HANDLE);
-        $output[Beneficiary::BLOCKED] = $this->input->get(Beneficiary::BLOCKED);
-        $output[Beneficiary::SPAMMED] = $this->input->get(Beneficiary::SPAMMED);
+        $transformer = new VpaTransformer($s2s[Fields::PAYLOAD]);
+        $transformer->put(Fields::CUSTOMER_VPA, $payeeVpa);
+        $transformer->put(Beneficiary::BLOCKED, $this->input->get(Beneficiary::BLOCKED));
+        $transformer->put(Beneficiary::SPAMMED, $this->input->get(Beneficiary::SPAMMED));
+
+        $output = $transformer->transformBeneficiary();
 
         $response->setData($output);
     }
 
-    public function getBlocked(Response $response)
+    public function fetchAll(Response $response)
     {
-        $request = $this->initiateS2sRequest(VpaAction::GET_BLOCKED);
+        if (empty($this->input->get(Beneficiary::BLOCKED)) === true)
+        {
+            throw $this->p2pGatewayException(ErrorMap::NOT_AVAILABLE);
+        }
+
+        $request = $this->initiateS2sRequest(VpaAction::LIST_BLOCKED);
 
         $request->merge([
             Fields::MERCHANT_CUSTOMER_ID => $this->getMerchantCustomerId(),
@@ -209,7 +216,19 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
         $s2s = $this->sendS2sRequest($request);
 
-        $output[Fields::BLOCKED_VPAS] = $s2s[Fields::PAYLOAD][Fields::BLOCKED_VPAS];
+        $output[Entity::DATA] = [];
+
+        foreach ($s2s[Fields::PAYLOAD][Fields::BLOCKED_VPAS] as $blockedVpa)
+        {
+            $payeeVpa = $blockedVpa[Fields::PAYEE_VPA];
+
+            $transformer = new VpaTransformer($blockedVpa);
+            $transformer->put(Fields::CUSTOMER_VPA, $payeeVpa);
+            $transformer->put(Beneficiary::BLOCKED, true);
+            $transformer->put(Beneficiary::SPAMMED, null);
+
+            $output[Entity::DATA][] = $transformer->transformBeneficiary();
+        }
 
         $response->setData($output);
     }
