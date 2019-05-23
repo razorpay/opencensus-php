@@ -110,20 +110,19 @@ export default class extends React.Component {
     const buttonClass = 'razorpay-embed-btn';
     const scriptTagID = 'razorpay-embed-btn-js';
 
-    const embedBtnCode = `<div class="${buttonClass}"
-        data-url="${shortUrl}"
-        data-text="${this.state.btnLabel}"
-        data-color="${this.color}"
-        data-size="${BTN_SIZES[btnSize].toLowerCase()}"
-      >
-          <script>
-          (function(){
-            var d=document; var x=!d.getElementById('${scriptTagID}')
-            if(x){ var s=d.createElement('script'); s.defer=!0;s.id='${scriptTagID}';
-            s.src='${scriptURL}';d.body.appendChild(s);} else{var rzp=window['__rzp__'];
-            rzp && rzp.init && rzp.init()}})();
-          </script>
-      </div>
+    const embedBtnCode = `<div class="${buttonClass}" data-url="${shortUrl}" data-text="${
+      this.state.btnLabel
+    }" data-color="${this.color}" data-size="${BTN_SIZES[
+      btnSize
+    ].toLowerCase()}">
+  <script>
+    (function(){
+      var d=document; var x=!d.getElementById('${scriptTagID}')
+      if(x){ var s=d.createElement('script'); s.defer=!0;s.id='${scriptTagID}';
+      s.src='${scriptURL}';d.body.appendChild(s);} else{var rzp=window['__rzp__'];
+      rzp && rzp.init && rzp.init()}})();
+  </script>
+</div>
     `;
 
     return (
