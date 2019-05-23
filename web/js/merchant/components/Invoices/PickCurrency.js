@@ -4,6 +4,7 @@ import Input from 'component/Input';
 import { showNotification } from 'rzp/modules/notifications';
 import { closeModal } from 'rzp/modules/modals';
 import Button from 'component/Button';
+import Alert from 'component/Alert';
 
 export default class extends React.PureComponent {
   onSave = data => {
@@ -26,10 +27,15 @@ export default class extends React.PureComponent {
               fullDisplay
             />
 
-            <small className="help-block">
-              GST and tax related details will not show up for invoices with
-              international currency
-            </small>
+            <Alert.Warning>
+              <b>NOTE:</b>
+              <br />
+              1. GST and tax related details will not show up for invoices with
+              international currency.
+              <br />
+              2. The rate of all the items in the current invoice will reset to
+              0.
+            </Alert.Warning>
             <br />
             <Button.Primary class="btn-block">
               Continue to Invoice
