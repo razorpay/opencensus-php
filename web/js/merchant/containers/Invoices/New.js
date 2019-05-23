@@ -54,6 +54,7 @@ import { luminateRow } from 'merchant/modules/app';
 import { track, trackLinkClick } from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import PickCurrency from 'merchant/components/Invoices/PickCurrency';
+import { classList } from 'common/util';
 
 function validate(values) {
   let errors = {
@@ -610,6 +611,24 @@ export default class InvoicesNewContainer extends Component {
     this.setState({
       invoiceCurrency: newCurrency,
     });
+
+    // Show only for first time user
+    if (
+      !this.props.invoice.id &&
+      this.props.config.invoice_label_field === null
+    ) {
+      this.setState({
+        highlightCurrencyChangeCTA: true,
+      });
+
+      const el = document.getElementById('change-currency-cta');
+      el && el.querySelector('.rzp-popover').classList.add('show');
+
+      setTimeout(_ => {
+        this.setState({ highlightCurrencyChangeCTA: false });
+        el && el.querySelector('.rzp-popover').classList.remove('show');
+      }, 4000);
+    }
   };
 
   openInvoiceCurrencyChangeModal = ({ showCross = true }) => {
@@ -1302,7 +1321,7 @@ export default class InvoicesNewContainer extends Component {
      */
     const { invoice_label_field } = this.props.config;
 
-    if (true || invoice_label_field === null) {
+    if (invoice_label_field === null) {
       this.showOnboardingModal();
     }
   }
@@ -2257,7 +2276,15 @@ export default class InvoicesNewContainer extends Component {
                           )}
                           {!invoice.id &&
                             this.props.session.user.isInttCurrenciesEnabled && (
-                              <div class="change-currency-cta">
+                              <div
+                                id="change-currency-cta"
+                                class={classList(
+                                  'change-currency-cta',
+                                  this.state.highlightCurrencyChangeCTA &&
+                                    'highlight'
+                                )}
+                                tabIndex="0"
+                              >
                                 <button
                                   class="btn btn-default btn-block btn-lg"
                                   onClick={this.openInvoiceCurrencyChangeModal}
