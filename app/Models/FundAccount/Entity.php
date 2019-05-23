@@ -215,17 +215,13 @@ class Entity extends Base\PublicEntity
 
     public function setPublicDetailsAttribute(array & $array)
     {
-        // Expose the account relation in the 'details' attribute.
-        $publicAttributes = $this->account->toArrayPublic();
-
-        // For now, don't expose the public id and entity attributes from any of the related entities
-        array_forget($publicAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
-
-        $array[self::DETAILS] = $publicAttributes;
-
         $accountType = array_get($array, self::ACCOUNT_TYPE);
 
-        $array[$accountType] = $publicAttributes;
+        $accountAttributes = $this->getAccountDetails($accountType);
+
+        $array[self::DETAILS] = $accountAttributes;
+
+        $array[$accountType] = $accountAttributes;
     }
 
     public function setPublicBatchIdAttribute(array & $attributes)
@@ -307,4 +303,19 @@ class Entity extends Base\PublicEntity
     // -------------- Accessors --------------
 
     // ------------ End Accessors ------------
+
+    protected function getAccountDetails(string $accountType)
+    {
+        $accountAttributes = $this->account->toArrayPublic();
+
+        if ($accountType === Type::CARD)
+        {
+            $accountAttributes = $this->account->toArrayFundAccount();
+        }
+
+        // For now, don't expose the public id and entity attributes from any of the related entities
+        array_forget($accountAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
+
+        return $accountAttributes;
+    }
 }
