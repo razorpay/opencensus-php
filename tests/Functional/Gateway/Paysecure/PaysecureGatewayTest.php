@@ -6,6 +6,7 @@ use Mail;
 use Queue;
 
 use RZP\Gateway\Hitachi;
+use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
@@ -186,7 +187,15 @@ class PaysecureGatewayTest extends TestCase
 
         $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
 
-        $this->assertNotEmpty($gatewayPayment);
+        $this->assertArraySelectiveEquals(
+            [
+                Entity::STATUS        => 'failure',
+                Entity::ACTION        => 'authorize',
+                Entity::ERROR_CODE    => '406',
+                Entity::ERROR_MESSAGE => 'Not Authenticated',
+            ],
+            $gatewayPayment
+        );
     }
 
     public function testCallbackFailure()
