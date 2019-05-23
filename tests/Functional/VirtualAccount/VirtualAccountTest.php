@@ -1179,6 +1179,10 @@ class VirtualAccountTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $data);
 
+            // Virtual account credited webhook contains bank_tranfer
+            // entity if applicable, but never bharat_qr entity.
+            $this->assertArrayNotHasKey('bharat_qr', $data['event']['payload']);
+
             return true;
         });
 

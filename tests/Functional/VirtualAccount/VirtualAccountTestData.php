@@ -358,7 +358,7 @@ return [
                         'entity'          => 'virtual_account',
                         'status'          => 'active',
                         'description'     => 'VA for tests',
-                        'amount_expected' => NULL,
+                        'amount_expected' => null,
                         'notes' => [
                             'a' => 'b',
                         ],
@@ -393,7 +393,6 @@ return [
             'contains' => [
                 'payment',
                 'virtual_account',
-                'bharat_qr',
             ],
             'payload' => [
                 'payment' => [
@@ -421,7 +420,7 @@ return [
                         'entity'          => 'virtual_account',
                         'status'          => 'active',
                         'description'     => 'VA for tests',
-                        'amount_expected' => NULL,
+                        'amount_expected' => null,
                         'notes' => [
                             'a' => 'b',
                         ],
@@ -432,14 +431,6 @@ return [
                                 'entity'    => 'qr_code',
                             ],
                         ],
-                    ],
-                ],
-                'bharat_qr' => [
-                    'entity' => [
-                        'entity'         => 'bharat_qr',
-                        'method'         => 'card',
-                        'amount'         => 200,
-                        'bank_reference' => 'somethingabc',
                     ],
                 ],
             ],
