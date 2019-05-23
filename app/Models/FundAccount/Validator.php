@@ -78,11 +78,27 @@ class Validator extends Base\Validator
 
         $merchant = $fundAccount->merchant;
 
+        // The merchant needs to be PCI-DSS compliant to send card information.
+        if ($merchant->isFeatureEnabled(Feature\Constants::S2S) === false)
+        {
+            // Not logging the value since card details will be present.
+            throw new Exception\BadRequestValidationFailureException(
+                'card is/are not required and should not be sent',
+                null,
+                [
+                    'message' => 's2s feature not enabled',
+                ]);
+        }
+
         if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT_TO_CARDS) === false)
         {
             // Not logging the value since card details will be present.
             throw new Exception\BadRequestValidationFailureException(
-                'card is/are not required and should not be sent');
+                'card is/are not required and should not be sent',
+                null,
+                [
+                    'message' => 'payout_to_cards feature not enabled',
+                ]);
         }
     }
 }

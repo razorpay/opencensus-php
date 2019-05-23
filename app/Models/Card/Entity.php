@@ -155,8 +155,6 @@ class Entity extends Base\PublicEntity
         Card\Entity::TYPE,
         Card\Entity::ISSUER,
         Card\Entity::IIN,
-        Card\Entity::EXPIRY_MONTH,
-        Card\Entity::EXPIRY_YEAR,
     ];
 
     protected $appends = [self::NETWORK_CODE];

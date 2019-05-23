@@ -121,10 +121,16 @@ class Core extends Base\Core
                 // not present, hence passing a dummy value. It's not stored anyways.
                 $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv();
 
-                // Expiry month and year are required to be passed always for validations. We cannot put dummy for them.
+                // If the expiry is sent, we use that to validate and such.
+                // If the expiry is not sent, we use a dummy expiry.
+                // We do not expose expiry in either way.
+                // Expiry is mandatory for card creation.
+                $accountInput[Card\Entity::EXPIRY_MONTH] = $accountInput[Card\Entity::EXPIRY_MONTH] ?? Card\Entity::DUMMY_EXPIRY_MONTH;
+                $accountInput[Card\Entity::EXPIRY_YEAR] = $accountInput[Card\Entity::EXPIRY_YEAR] ?? Card\Entity::DUMMY_EXPIRY_YEAR;
 
-                // If name is not sent, we set it to dummy name and we do not expose
-                // it in the response. Name is mandatory for card creation.
+                // If name is sent, we use that. We also expose it.
+                // If name is not sent, we use a dummy name. We do not expose it.
+                // Name is mandatory for card creation.
                 $accountInput[Card\Entity::NAME] = $accountInput[Card\Entity::NAME] ?? Card\Entity::DUMMY_NAME;
 
                 $account = (new Card\Core)->createForFundAccount($accountInput, $merchant);
