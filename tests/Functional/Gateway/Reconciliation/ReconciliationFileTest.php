@@ -2021,7 +2021,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
 
-        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['amex']);
 
         $this->payment = $this->getDefaultPaymentArray();
 
@@ -2082,7 +2082,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
 
-        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['amex']);
 
         $this->payment = $this->getDefaultPaymentArray();
 
