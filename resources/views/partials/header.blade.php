@@ -141,11 +141,12 @@
                 case 'create_contact': {
                     _hsq.push(['identify', {
                         email: data.data.email,
-                        id: 'new_signup'
+                        id: 'new_signup',
+                        signup_start: true
                     }]);
 
                     _hsq.push(['trackEvent', {
-                        id: 'CREATEING_CONTACT'
+                        id: 'CREATING_CONTACT'
                     }]);
                     break;
                 }
