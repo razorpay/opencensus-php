@@ -163,6 +163,11 @@ class Server extends Base\Mock\Server
 
                 $encryptedText = $crypto->encryptString($tranData);
                 break;
+            case Fss\Acquirer::SBI:
+                $crypto = new Fss\SbiAesCrypto(Fss\SbiAesCrypto::MODE_ECB, $secretKey, $secretKey);
+
+                return $crypto->encryptString($tranData);
+                break;
             default:
                 break;
         }
@@ -191,6 +196,11 @@ class Server extends Base\Mock\Server
                 break;
             case Fss\Acquirer::FSS:
                 $crypto = new Fss\AesCrypto(Fss\AesCrypto::MODE_CBC, $secretKey, $secretKey);
+
+                $decryptedString = $crypto->decryptString($str);
+                break;
+            case Fss\Acquirer::SBI:
+                $crypto = new Fss\SbiAesCrypto(Fss\SbiAesCrypto::MODE_ECB, $secretKey);
 
                 $decryptedString = $crypto->decryptString($str);
                 break;

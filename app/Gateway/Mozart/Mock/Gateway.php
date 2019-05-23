@@ -2,8 +2,8 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
-use RZP\Gateway\Mozart;
 use RZP\Gateway\Base;
+use RZP\Gateway\Mozart;
 
 class Gateway extends Mozart\Gateway
 {
@@ -25,3 +25,4 @@ class Gateway extends Mozart\Gateway
         return $this->jsonToArray($response->body, true);
     }
 }
+

@@ -53,4 +53,19 @@ class Error extends \RZP\Error\Error
         }
     }
 
+    public function setGatewayErrorCodeAndDesc($code, $desc)
+    {
+        parent::setGatewayErrorCodeAndDesc($code, $desc);
+
+        $internalErrorCode = $this->getInternalErrorCode();
+
+        switch($internalErrorCode)
+        {
+            case ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE:
+                $this->setDesc($code . '. ' . $desc);
+
+                break;
+        }
+    }
+
 }

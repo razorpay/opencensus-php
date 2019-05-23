@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Mozart;
 
 class VerifyData extends Base\Mock\Server
 {
@@ -20,7 +19,7 @@ class VerifyData extends Base\Mock\Server
                     'hdnOrderID' => $entities['payment']['id'],
                     'amount' => $entities['payment']['amount'],
                     'hash' => 'abcd',
-                    '_raw' => "{\"rrn\":\"910501000856\",\"txnStatus\":\"SUCCESS\",\"hdnOrderID\":\"ablxasaasbajahskajkg\",\"hash\":\"6256e8a43ba4e56eac1ef8c1faaad0c7236595e3638d74dd7c30e787dc00235624a5d2920230cf5478c88d616474abd1185c236b3c30107f7c931fb7070e20d9\",\"messageText\":\"\",\"code\":\"0\",\"errorCode\":\"000\",\"txnId\":\"ablxasaasbajahskajkg\"}",
+                    '_raw' => '{\"rrn\":\"910501000856\",\"txnStatus\":\"SUCCESS\",\"hdnOrderID\":\"ablxasaasbajahskajkg\",\"hash\":\"6256e8a43ba4e56eac1ef8c1faaad0c7236595e3638d74dd7c30e787dc00235624a5d2920230cf5478c88d616474abd1185c236b3c30107f7c931fb7070e20d9\",\"messageText\":\"\",\"code\":\"0\",\"errorCode\":\"000\",\"txnId\":\"ablxasaasbajahskajkg\"',
                 ],
             'error'             => null,
             'success'           => true,
@@ -33,12 +32,48 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_yesb($entities)
+    {
+        $response = [
+            'error'             => null,
+            'next'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw'            => 'dummy_raw_value',
+                'bank_payment_id' => $entities['gateway']['pay_verify']['bank_payment_id'],
+                'status'          => 'verification_successful',
+                'paymentId'       => $entities['payment']['id'],
+                'amount'          => $entities['payment']['amount']
+            ],
+        ];
+
+        return $response;
+    }
+
+    public function netbanking_sib($entities)
+    {
+        $response = [
+            'error' => null,
+            'next' => [],
+            'success' => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'data' => [
+                '_raw' => ['BODY' => 'Transaction Completed Successfully']
+            ],
+        ];
+
+        return $response;
+    }
+
     public static function bajajfinserv($entities)
     {
         $response = [
             'data' =>
                 [
-                    'enqinfo' =>[
+                    'enqinfo' => [
                         '0' => [
                             'DEALID' => 'CS905114097404',
                             'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
@@ -71,28 +106,28 @@ class VerifyData extends Base\Mock\Server
     public static function wallet_phonepe($entities)
     {
         $response = [
-            'data'=>
+            'data' =>
                 [
-                    '_raw'=> '',
-                    'code'=> 'PAYMENT_SUCCESS',
-                    'data'=> [
-                        'amount'=> $entities['payment']['amount'],
-                        'merchantId'=> 'abc',
-                        'payResponseCode'=> 'SUCCESS',
-                        'paymentState'=> 'COMPLETED',
-                        'providerReferenceId'=> 'phonepeProviderRefId',
-                        'transactionId'=> $entities['payment']['id'],
+                    '_raw ' => '',
+                    'code' => 'PAYMENT_SUCCESS',
+                    'data' => [
+                        'amount' => $entities['payment']['amount'],
+                        'merchantId' => 'abc',
+                        'payResponseCode' => 'SUCCESS',
+                        'paymentState' => 'COMPLETED',
+                        'providerReferenceId' => 'phonepeProviderRefId',
+                        'transactionId' => $entities['payment']['id'],
                     ],
-                    'message'=> 'Your payment is successful.',
-                    'received'=> true,
-                    'status'=> 'verification_successful',
-                    'success'=> true
+                    'message' => 'Your payment is successful.',
+                    'received' => true,
+                    'status' => 'verification_successful',
+                    'success' => true
                 ],
-            'error'=> null,
-            'external_trace_id'=> '',
-            'mozart_id'=> '',
-            'next'=> [],
-            'success'=> true,
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [],
+            'success' => true,
         ];
 
         return $response;

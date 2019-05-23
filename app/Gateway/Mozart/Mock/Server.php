@@ -9,29 +9,20 @@ use RZP\Constants\HashAlgo;
 
 class Server extends Base\Mock\Server
 {
+    protected $gateway;
+
+    public function setGateway($gateway)
+    {
+        $this->gateway = $gateway;
+    }
+
     public function authorize($input)
     {
         parent::authorize($input);
 
-        $content = $input;
+        $gateway = $this->gateway;
 
-        $content['checksum'] = 'randomHash';
-
-        $paymentId = $content['paymentId'];
-
-        $this->content($content);
-
-        $publicId = $this->getSignedPaymentId($paymentId);
-
-        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
-
-        $request = [
-            'url'          => $url,
-            'content'      => $content,
-            'method'       => 'post',
-        ];
-
-        return $this->makePostResponse($request);
+        return $this->$gateway($input);
     }
 
     public function payInit($input)
@@ -72,7 +63,9 @@ class Server extends Base\Mock\Server
     protected function makeResponseJson($body)
     {
         $response = \Response::make($body);
+
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
@@ -88,6 +81,8 @@ class Server extends Base\Mock\Server
 
         $response = $actionClass->$gateway($entities);
 
+        $this->content($response, $action);
+
         $response = json_encode($response);
 
         $response = $this->makeResponseJson($response);
@@ -98,8 +93,8 @@ class Server extends Base\Mock\Server
     public function getAsyncCallbackContent(array $payment)
     {
         $response = [
-            'code'      => "0",
-            'errorCode' => "000",
+            'code'      => '0',
+            'errorCode' => '000',
             'messageText' => 'success',
             'rrn' => '987654321',
             'txnStatus' => 'SUCCESS',
@@ -143,12 +138,66 @@ class Server extends Base\Mock\Server
         $response['hash'] = $hash;
 
         return [json_encode($response)];
+    }
 
+    protected function wallet_phonepe($input)
+    {
+        $content = $input;
+
+        $content['checksum'] = 'randomHash';
+
+        $paymentId = $content['paymentId'];
+
+        $this->content($content, 'authorize');
+
+        $publicId = $this->getSignedPaymentId($paymentId);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+        $request = [
+            'url'          => $url,
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_sib($input)
+    {
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+              'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_yesb($input)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'gateway_payment_callback_yesb_post',
+            [
+                'paymentId' => $input['paymentId'],
+                'amount'    => number_format($input['amount'] / 100, 2, '.', '')
+            ]);
+
+        $request = [
+            'url'     => $url,
+            'content' => ['encdata' => 'dummy_response_data'],
+            'method'  => 'post',
+        ];
+
+        return $this->makePostResponse($request);
     }
 
     protected function getUpiAirtelSecret()
     {
-        return 'u9FDS3hNIQBPVNfb';
+        return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');
     }
-
 }

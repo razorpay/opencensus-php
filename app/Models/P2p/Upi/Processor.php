@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Upi;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Transaction;
+use RZP\Models\P2p\Transaction\UpiTransaction;
 
 /**
  * Class Processor
@@ -81,6 +82,14 @@ class Processor extends Base\Processor
                 $device = $this->resolveDeviceFromVpa($payee);
 
                 break;
+
+            case Transaction\Action::AUTHORIZE_TRANSACTION_SUCCESS:
+
+                $upi = $this->input->get(Transaction\Entity::UPI);
+
+                $this->context()->setHandleAndMode($upi[Vpa\Entity::HANDLE]);
+
+                $device = $this->resolveDeviceFromUpi($this->input->get(Transaction\Entity::UPI));
         }
 
         $this->context()->setMerchant($device->merchant);
@@ -92,6 +101,18 @@ class Processor extends Base\Processor
         $vpa = (new Vpa\Core)->findByUsernameHandle($input);
 
         return $vpa->device;
+    }
+
+    protected function resolveDeviceFromUpi(array $input)
+    {
+        $upis = (new Transaction\Core)->findAllUpi($input);
+
+        if ($upis->count() === 1)
+        {
+            return $upis->first()->device;
+        }
+
+        throw $this->logicException('Count of UPI should be exactly one', $input);
     }
 
     public function fetchVpaFromTransaction(string $type)

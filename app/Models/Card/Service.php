@@ -70,6 +70,8 @@ class Service extends Base\Service
 
     public function updateVaultToken(Entity $card)
     {
+        $cardVault = new CardVault;
+
         $token = $card->getVaultToken();
         $vault = $card->getVault();
 
@@ -79,7 +81,7 @@ class Service extends Base\Service
             return;
         }
 
-        $vaultResponse = (new CardVault)->getVaultTokenFromTempToken($token);
+        $vaultResponse = $cardVault->getVaultTokenFromTempToken($token);
 
         $vaultToken = $vaultResponse['token'];
 
@@ -92,5 +94,8 @@ class Service extends Base\Service
         $card->setGlobalFingerPrint($fingerprint);
 
         $this->repo->saveOrFail($card);
+
+        //deleting data from cache.
+        $cardVault->deleteToken($token);
     }
 }

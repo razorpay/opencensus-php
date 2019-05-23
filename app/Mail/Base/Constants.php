@@ -25,6 +25,7 @@ class Constants
     const NOREPLY                   = 'noreply';
     const RECON                     = 'recon';
     const MERCHANT_ONBOARDING       = 'merchant_onboarding';
+    const GATEWAY_POD               = 'gateway_pod';
     const SETTLEMENT_ALERTS         = 'settlement_alert';
     const BEAM_FAILURE              = 'beam_failure';
     const CREDITS_ALERTS            = 'credit_alerts';
@@ -62,7 +63,8 @@ class Constants
         self::APPROVALS_OAUTH           => 'approvals.oauth@razorpay.com',
         self::BANK_DISPUTE_FILE         => 'chargebacks@razorpay.com',
         self::MERCHANT_ONBOARDING       => 'support@razorpay.com',
-        self::LINKED_ACCOUNT_REVERSAL   => 'refunds@razorpay.com'
+        self::LINKED_ACCOUNT_REVERSAL   => 'refunds@razorpay.com',
+        self::GATEWAY_POD               => 'pod.gateway@razorpay.com',
     ];
 
     const HEADERS = [

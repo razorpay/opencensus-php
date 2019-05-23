@@ -5,15 +5,13 @@ namespace RZP\Models\Admin\AdminLead;
 use Carbon\Carbon;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-use RZP\Models\Admin\Org;
+use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
     public function sendInvitation($orgId, $input)
     {
-        $errors = [];
         $data = null;
 
         $admin = $this->app['basicauth']->getAdmin();
@@ -61,8 +59,7 @@ class Service extends Base\Service
 
     public function editInvitation(string $orgId, string $id, array $input)
     {
-        $adminLead = $this->repo->admin_lead->findByPublicIdAndOrgId(
-            $id, $orgId);
+        $adminLead = $this->repo->admin_lead->findByPublicIdAndOrgId($id, $orgId);
 
         if (empty($input[Entity::SIGNED_UP]) === false)
         {

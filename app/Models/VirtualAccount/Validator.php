@@ -31,6 +31,7 @@ class Validator extends Base\Validator
     protected static $bankAccountReceiverOptionRules = [
         Entity::NUMERIC    => 'sometimes|boolean',
         Entity::DESCRIPTOR => 'sometimes|alpha_num|max:10',
+        Entity::NAME       => 'filled|string|max:40',
     ];
 
     protected function validateReceivers(string $key, array $value, array $data)

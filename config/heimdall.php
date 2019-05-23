@@ -229,6 +229,10 @@ return [
                 'description' => 'update_scrooge_refund_reference1_permission',
                 'assignable'  => true,
             ],
+            Permission::EDIT_SCROOGE_REDIS_CONFIG                         => [
+                'description' => 'edit_scrooge_redis_config_permission',
+                'assignable'  => true,
+            ],
             Permission::RETRY_REFUND                        => [
                 'description' => 'Retry refunds',
                 'assignable'  => true,
@@ -257,6 +261,7 @@ return [
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
             Permission::CREATE_RECONCILIATE                 => '',
             Permission::CREATE_PROMOTION_COUPON             => '',
+            Permission::BATCH_API_CALL                      => '',
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],
@@ -363,6 +368,10 @@ return [
         PermissionCategory::SETTLEMENT => [
             Permission::SETTLEMENT_BULK_UPDATE        => '',
             Permission::CREATE_NODAL_ACCOUNT_TRANSFER => '',
+            Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT => [
+                'description' => 'Settlement relese payments on hold',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::DISPUTE => [

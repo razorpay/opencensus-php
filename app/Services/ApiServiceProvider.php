@@ -225,6 +225,13 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('beam', function($app)
         {
+            $beamServiceMock = $app['config']->get('applications.beam.mock');
+
+            if ($beamServiceMock === true)
+            {
+                return new Mock\BeamService($app);
+            }
+
             return new BeamService($app);
         });
 

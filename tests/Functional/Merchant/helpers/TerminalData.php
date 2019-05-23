@@ -802,6 +802,7 @@ return [
                 'gateway_terminal_id'      => '12344',
                 'gateway_access_code'      => '12344',
                 'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
             ],
             'method' => 'POST'
         ],
@@ -1864,6 +1865,56 @@ return [
                 'gateway_merchant_id'       => 'merchant_id',
                 'gateway_secure_secret'     => 'secure_secret',
                 'gateway_access_code'       => 'access_code',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateNetbankingSibTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_sib',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateNetbankingYesbTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_yesb',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateNetbankingCanaraTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_canara',
+                'gateway_merchant_id'       => 'merchant_id',
             ],
             'method' => 'POST'
         ],

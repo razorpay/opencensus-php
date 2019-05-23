@@ -305,6 +305,7 @@ class Status extends Base
                 ],
             ]);
         }
+
         return json_encode([
             Constants::FAULT_RESPONSE_IDENTIFIER => [
                 Constants::CODE   => [

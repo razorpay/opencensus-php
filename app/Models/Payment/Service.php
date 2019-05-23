@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 
+use RZP\Jobs;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
@@ -260,16 +262,21 @@ class Service extends Base\Service
 
     public function redirectToAuthorize($id)
     {
+        $traceData = ['track_id' => $id];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, null, null, $traceData);
+
         try
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST,
-                ['track_id' => $id]
-            );
+            $this->trace->info(TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST, $traceData);
 
-            list($merchant, $paymentId) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+            list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
 
-            return $this->getNewProcessor($merchant)->processRedirectToAuthorize($paymentId, $id);
+            $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, null, $traceData);
+
+            return $response;
         }
         catch (\Throwable $e)
         {
@@ -277,9 +284,11 @@ class Service extends Base\Service
                 $e,
                 Trace::CRITICAL,
                 TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE,
-                ['track_id' => $id]
+                $traceData
             );
-            // add metrics
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, null, $e, $traceData);
+
             throw $e;
         }
     }
@@ -322,16 +331,21 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        $this->app['basicauth']->setPublicKey($payload['public_key']);
-
-        $this->app['basicauth']->authCreds->setPublicKey($payload['public_key']);
+        $this->app['basicauth']->setAuthDetailsUsingPublicKey($payload['public_key']);
 
         if (empty($payload['account_id']) === false)
         {
             $this->app['basicauth']->authCreds->creds['account_id'] = $payload['account_id'];
         }
 
-        return [$merchant, $payload['payment_id']];
+        if (empty($payload['oauth_client_id']) === false)
+        {
+            $this->app['basicauth']->setOAuthClientId($payload['oauth_client_id']);
+        }
+
+        $payment = $this->core->retrieveById($payload['payment_id']);
+
+        return [$merchant, $payment];
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -1202,6 +1216,8 @@ class Service extends Base\Service
                              ->setPayment($payment)
                              ->timeoutPayment();
 
+                        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
+
                         $count++;
                     }
                     catch (\Throwable $e)
@@ -1494,6 +1510,59 @@ class Service extends Base\Service
         ];
     }
 
+    public function updateOnHoldBulkUpdate(array $input)
+    {
+       (new Payment\Validator)->validateInput('payment_onhold_bulk_update', $input);
+
+       $onHold = $input['on_hold'];
+
+       $paymentsToUpdate = $this->repo->payment->findManyByPublicIds($input['payment_ids']);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ON_HOLD_TOGGLE,
+            [
+                'payment_ids'   => $paymentsToUpdate->getIds(),
+                'on_hold'       => $onHold,
+            ]
+        );
+
+        $result = [
+            'count' => $paymentsToUpdate->count(),
+            'failed_ids' => [],
+            'successful' => 0,
+        ];
+
+        $paymentCore = new Payment\Core;
+
+        foreach ($paymentsToUpdate as $payment)
+        {
+            try
+            {
+                $merchant = $payment->merchant;
+
+                $paymentCore->updatePaymentOnHold($payment, $onHold);
+
+                $result['successful'] += 1;
+            }
+            catch (\Exception $e)
+            {
+                $result['failed_ids'][] = $payment->getId();
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_ON_HOLD_TOGGLE_FAILED,
+                    [
+                        'step'  => 'update_failed',
+                        'id'    => $payment->getId()
+                    ]
+                );
+            }
+        }
+
+        return $result;
+    }
+
     /**
      * Marks the payment as acknowledged, if not already acknowledged.
      * Also, updates payments.notes field with acknowledged data if any.
@@ -1688,7 +1757,7 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function migrateCardVaultToken(string $cardId, string $paymentId)
+    public function migrateCardVaultToken(string $cardId, string $paymentId = null)
     {
         $updated = null;
 
@@ -1764,5 +1833,96 @@ class Service extends Base\Service
         }
 
         return Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+    }
+
+    public function paymentCardVaultMigrate($input)
+    {
+        (new Payment\Validator)->validateInput('payment_card_migrate', $input);
+
+        $limit = $input['limit'] ?? 1000;
+
+        $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+
+        $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
+
+        $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+
+        $this->trace->info(
+            TraceCode::VAULT_TOKEN_MIGRATION_CRON_REQUEST,
+            [
+                'payments_count' => count($payments),
+                'cards_count'    => count($cards),
+            ]);
+
+        $result = [
+            'payments_count' => count($payments),
+            'cards_count'    => count($cards),
+            'payment_failed' => [],
+            'card_failed'    => [],
+        ];
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $this->migrateCardDataIfApplicable($payment, $payment->card);
+            }
+            catch (\Throwable $e)
+            {
+                $result['payment_failed'][] = $payment->getId();
+            }
+        }
+
+        foreach ($cards as $card)
+        {
+            try
+            {
+                $this->migrateCardDataIfApplicable(null, $card);
+            }
+            catch (\Throwable $e)
+            {
+                $result['card_failed'][] = $card->getId();
+            }
+        }
+
+        return $result;
+    }
+
+    public function migrateCardDataIfApplicable($payment, $card)
+    {
+        $payload = [];
+
+        try
+        {
+            $payload = [
+                'card_id'    => $card->getId(),
+                'token'      => $card->getVaultToken(),
+                'mode'       => $this->mode,
+            ];
+
+            if ($payment !== null)
+            {
+                $payload['payment_id'] = $payment->getId();
+            }
+
+            $this->trace->info(
+                TraceCode::VAULT_TOKEN_MIGRATION_CRON_REQUEST_INIT,
+                [
+                    'payload' => $payload,
+                ]);
+
+            Jobs\CardVaultMigrationJob::dispatch($payload, $this->mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED,
+                ['payment_id' => $payment->getId()]
+            );
+
+            throw $e;
+        }
     }
 }

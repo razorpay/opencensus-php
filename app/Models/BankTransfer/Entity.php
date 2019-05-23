@@ -116,7 +116,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::PAYER_BANK_ACCOUNT,
         self::VIRTUAL_ACCOUNT_ID,
-        self::VIRTUAL_ACCOUNT,
     ];
 
     protected $appends = [
@@ -340,7 +339,7 @@ class Entity extends Base\PublicEntity
             return 'Razorpay';
         }
 
-        return IFSC::getBankName($ifsc);
+        return IFSC::getBankName(strtoupper($ifsc));
     }
 
     public function getPayerName()

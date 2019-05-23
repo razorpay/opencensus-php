@@ -26,6 +26,16 @@ class Entity extends Base\PublicEntity
     const CREATOR_TYPE              = 'creator_type';
 
     /**
+     * Fields below are used for accepting payload
+     * from Batch Service to send mail after batch completion.
+     */
+    const BATCH                     = 'batch';
+    const BUCKET_TYPE               = 'bucket_type';
+    const OUTPUT_FILE_PATH          = 'output_file_path';
+    const DOWNLOAD_FILE             = 'download_file';
+    const SETTINGS                  = 'settings';
+
+    /**
      * Fields amount and processed_amount represent the total amounnt across
      * entities present in the batch input file, for batches like refund.
      */

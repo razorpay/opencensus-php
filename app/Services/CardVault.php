@@ -111,10 +111,15 @@ class CardVault
         return $response;
     }
 
-    public function deleteToken($token)
+    public function deleteToken($tempVaultToken)
     {
-        // need to implement this
-        return [];
+        $input = [
+            self::TOKEN  => $tempVaultToken,
+        ];
+
+        $response = $this->sendRequest('token/delete', 'post', $input);
+
+        return $response;
     }
 
     public function sendRequest($url, $method, $data = null)

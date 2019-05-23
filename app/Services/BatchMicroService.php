@@ -11,7 +11,11 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use GuzzleHttp\RequestOptions;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Exception\BadResponseException;
 
 class BatchMicroService
 {
@@ -98,6 +102,8 @@ class BatchMicroService
 
         $batchResponse['status'] = $this->statusClusterMapping($batchResponse['status']);
 
+        $batchResponse[Batch\Entity::TYPE] = $input[Batch\Entity::TYPE];
+
         return $batchResponse;
     }
 
@@ -132,6 +138,8 @@ class BatchMicroService
         }
         catch (ConnectException $connectException)
         {
+            $this->trace->traceException($connectException, Trace::CRITICAL);
+
             throw new Exception\ServerErrorException(
                 'Error uploading the batch request',
                 ErrorCode::SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE
@@ -183,30 +191,65 @@ class BatchMicroService
         }
         catch (\Exception $exception)
         {
+            $this->trace->traceException($exception, Trace::INFO);
+
             throw new Exception\ServerNotFoundException("Batch Id Not found",ErrorCode::SERVER_ERROR_BATCH_SERVICE_NOT_FOUND);
         }
 
         return $response;
     }
 
-    public function getResponseFromBatchService(string $relativeUrl)
+    public function getResponseFromBatchService(string $relativeUrl, string $method, array $options, array $input = null): array
     {
         if ($this->shouldBatchServiceBeCalled() === false)
         {
             throw new Exception\ServerNotFoundException("BatchService is not called",ErrorCode::SERVER_ERROR_BATCH_SERVICE_NOT_CALLED);
         }
 
-        $response = $this->client->request('GET', $relativeUrl, [
-            'auth' => [
+        $requestOptions = [
+            'auth'    => [
                 $this->username,
                 $this->secret,
             ],
             'headers' => [
-                'mode' => $this->mode,
+                'mode' => $options['mode'],
             ],
-        ]);
+        ];
 
-        return $response;
+        if ($input != null)
+        {
+            if($method === "GET")
+            {
+                $relativeUrl = $relativeUrl . '?' . http_build_query($input);
+            }
+            else
+            {
+                $requestOptions[RequestOptions::JSON] = $input;
+            }
+        }
+
+        try
+        {
+            $response = $this->client->request($method, $relativeUrl, $requestOptions);
+        }
+        catch (BadResponseException $exception)
+        {
+            $this->trace->traceException($exception, Trace::INFO);
+
+            throw new Exception\ServerNotFoundException(PublicErrorDescription::BAD_REQUEST_BATCH_SERVICE_ERROR,
+                                                        ErrorCode::BAD_REQUEST_BATCH_SERVICE_ERROR,
+                                                        $exception->getMessage());
+        }
+        catch (TransferException $exception)
+        {
+            $this->trace->traceException($exception, Trace::CRITICAL);
+
+            throw new Exception\ServerNotFoundException(PublicErrorDescription::SERVER_ERROR_BATCH_SERVICE_NOT_FOUND,
+                                                        ErrorCode::SERVER_ERROR_BATCH_SERVICE_NOT_FOUND,
+                                                        $exception->getMessage());
+        }
+
+        return ((array) json_decode($response->getBody()));
     }
 
     public function formAndGetMultipartPayload(array $input, Merchant\Entity $merchant)
@@ -394,7 +437,9 @@ class BatchMicroService
 
         try
         {
-            $response = $this->getResponseFromBatchService($relativeUrl . '?' . http_build_query($queryParams));
+            $options['mode'] = $this->mode;
+
+            $response = $this->getResponseFromBatchService($relativeUrl, 'GET', $options, $queryParams);
         }
         catch (\Exception $exception)
         {
@@ -406,7 +451,7 @@ class BatchMicroService
             return null;
         }
 
-        return ((array) json_decode($response->getBody()));
+        return $response;
     }
 
     public function isMigratedBatchType(string $type): bool
@@ -436,14 +481,16 @@ class BatchMicroService
 
         try
         {
-            $response = $this->getResponseFromBatchService($relativeUrl);
+            $options['mode'] = $this->mode;
+
+            $response = $this->getResponseFromBatchService($relativeUrl, 'GET', $options);
         }
         catch(\Exception $exception)
         {
             throw new Exception\ServerNotFoundException("Batch Id Not found",ErrorCode::SERVER_ERROR_BATCH_SERVICE_NOT_FOUND);
         }
 
-        return  json_decode($response->getBody());
+        return $response;
     }
 
     public function getFileStores(array $fetchResult, array $input, string $merchantId = null): array
@@ -479,18 +526,18 @@ class BatchMicroService
     {
         $relativeUrl = ($id != null ) ? self::BATCH_URLS['filestore'] . '/' . FileStore\Entity::verifyIdAndStripSign($id) : self::BATCH_URLS['filestore'];
 
-        $relativeUrl = $relativeUrl . '?' . http_build_query($input);
-
         try
         {
-            $response = $this->getResponseFromBatchService($relativeUrl);
+            $options['mode'] = $this->mode;
+
+            $response = $this->getResponseFromBatchService($relativeUrl, 'GET', $options, $input);
         }
         catch (\Exception $ex)
         {
             return null;
         }
 
-        return ((array)json_decode($response->getBody()));
+        return $response;
     }
 
     public function fetchMultiple(string $entity, array $input)
@@ -541,6 +588,11 @@ class BatchMicroService
 
     public function shouldBatchServiceBeCalled(): bool
     {
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            return true;
+        }
+
         $requestId = $this->app['request']->getId();
 
         $variant = $this->app->razorx->getTreatment(

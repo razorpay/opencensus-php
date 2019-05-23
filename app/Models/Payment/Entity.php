@@ -33,6 +33,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
@@ -45,6 +46,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
  * @property Transaction\Entity     $transaction
+ * @property Emi\Entity             $emiPlan
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -726,6 +728,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
         $this->metadata['preferred_auth'] = $input['preferred_auth'] ?? null;
 
+        if (empty($input[self::NOTES]) === false)
+        {
+            $this->setIntegrationMetadataUsingNotes($input[self::NOTES]);
+        }
+
         // We should only set referer if input['referer'] is defined
         // and metadata['referer'] is false because checkout also
         // sends us the referer info and we don't want to override it
@@ -733,6 +740,58 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             (isset($this->metadata['referer']) === false))
         {
             $this->metadata['referer'] = $input['referer'];
+        }
+    }
+
+    /**
+     * A lot of our plugins make their payments recognizable by sending
+     * their own order id in the payment notes, eg. prestashop_order_id.
+     * This is not a great way of identifying payments, since notes should
+     * be a merchant-controlled field, and not used for our own logic.
+     *
+     * Ideally, we should recognise integrations from the '_' metadata sent
+     * in the payment request. Until all the plugins can be updated,
+     * however, we use the notes values to set integration in database.
+     *
+     * Notes from the order entity can also be used to identify integration.
+     */
+    public function setIntegrationMetadataUsingNotes(array $notes)
+    {
+        // If integration is already set by some other flow, don't overwrite it.
+        if (empty($this->metadata[Analytics\Entity::INTEGRATION]) === false)
+        {
+            return;
+        }
+
+        // Check for presence of integration_order_id in notes
+        foreach (Metadata::INTEGRATION_VALUES as $integration => $index)
+        {
+            $integrationOrderId = $integration . '_order_id';
+
+            if (empty($notes[$integrationOrderId]) === false)
+            {
+                $this->metadata[Analytics\Entity::INTEGRATION] = $integration;
+
+                return;
+            }
+        }
+
+        // Some version of magento have magento_trans_id and not magento_order_id
+        if (empty($notes['magento_trans_id']) === false)
+        {
+            $this->metadata[Analytics\Entity::INTEGRATION] = Metadata::MAGENTO;
+
+            return;
+        }
+
+        // Shopify has its own format, sending the
+        // name of the integration under notes[platform].
+        if ((empty($notes['platform']) === false) and
+            ($notes['platform'] === Metadata::SHOPIFY))
+        {
+            $this->metadata[Analytics\Entity::INTEGRATION] = Metadata::SHOPIFY;
+
+            return;
         }
     }
 
@@ -2063,7 +2122,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         switch($this->getMethod())
         {
             case Method::CARD:
-                return [$method, $this->getFormattedCard()];
             case Method::EMI:
                 return [$method, $this->getFormattedCard()];
             case Method::NETBANKING:
@@ -2078,6 +2136,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, ''];
             case Method::EMANDATE:
                 return [$method, $this->getBankName()];
+            case Method::CARDLESS_EMI:
+                return [$method, Processor\CardlessEmi::getName($this->getWallet())];
         }
     }
 
@@ -2593,6 +2653,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function bankTransfer()
     {
         return $this->hasOne('RZP\Models\BankTransfer\Entity');
+    }
+
+    public function bharatQr()
+    {
+        return $this->hasOne('RZP\Models\BharatQr\Entity');
     }
 
     public function batch()

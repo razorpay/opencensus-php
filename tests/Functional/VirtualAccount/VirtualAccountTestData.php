@@ -98,6 +98,34 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountWithBankAccountNameOption' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                    'bank_account' => [
+                        'name' => 'lalala_what'
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'receivers' => [
+                    [
+                        'entity' => 'bank_account',
+                        'name'   => 'lalala_what'
+                    ]
+                ],
+            ],
+        ]
+    ],
+
     'testCreateVirtualAccountValidationFailure' => [
         'request' => [
             'url' => '/virtual_accounts',
@@ -302,6 +330,7 @@ return [
             'contains' => [
                 'payment',
                 'virtual_account',
+                'bank_transfer',
             ],
             'payload' => [
                 'payment' => [
@@ -329,7 +358,7 @@ return [
                         'entity'          => 'virtual_account',
                         'status'          => 'active',
                         'description'     => 'VA for tests',
-                        'amount_expected' => NULL,
+                        'amount_expected' => null,
                         'notes' => [
                             'a' => 'b',
                         ],
@@ -341,6 +370,65 @@ return [
                                 'entity'    => 'bank_account',
                                 'ifsc'      => 'RAZR0000001',
                                 'bank_name' => null,
+                            ],
+                        ],
+                    ],
+                ],
+                'bank_transfer' => [
+                    'entity' => [
+                        'entity'             => 'bank_transfer',
+                        'mode'               => 'NEFT',
+                        'amount'             => 10000,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testWebhookVirtualAccountCreditedForBharatQr' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'virtual_account.credited',
+            'contains' => [
+                'payment',
+                'virtual_account',
+            ],
+            'payload' => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 200,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'Bharat Qr Payment',
+                        'email'             => null,
+                        'contact'           => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+                'virtual_account' => [
+                    'entity' => [
+                        'name'            => 'Test virtual account',
+                        'entity'          => 'virtual_account',
+                        'status'          => 'active',
+                        'description'     => 'VA for tests',
+                        'amount_expected' => null,
+                        'notes' => [
+                            'a' => 'b',
+                        ],
+                        'amount_paid' => 200,
+                        'customer_id' => null,
+                        'receivers' => [
+                            [
+                                'entity'    => 'qr_code',
                             ],
                         ],
                     ],

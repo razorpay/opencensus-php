@@ -19,6 +19,12 @@ class CardType
             Type::DEBIT     => 'DP',
             Type::UNKNOWN   => 'CP',
         ],
+        Acquirer::SBI => [
+            Type::CREDIT        => 'C',
+            Type::DEBIT         => 'D',
+            Type::RUBAY_DEBIT   => 'RDC',
+            Type::UNKNOWN       => 'C',
+        ],
     ];
 
     /**

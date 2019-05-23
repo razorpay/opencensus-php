@@ -3043,3 +3043,18 @@ delete from `api_test`.`merchant_users` where merchant_id = 'CHUiMuqkZAgpiI' and
 delete from `api_test`.`merchant_users` where merchant_id = 'CHrDxlagXGuFNa' and user_id = 'C8ncZIM2VgAH7d' and product = 'primary' and role='owner';
 delete from `api_test`.`merchant_users` where merchant_id = 'CHssVhl5ADmDVc' and user_id = 'C8ncZIM2VgAH7d' and product = 'primary' and role='owner';
 delete from `api_test`.`merchant_users` where merchant_id = 'CIe68TYBYeCndd' and user_id = 'C8ncZIM2VgAH7d' and product = 'primary' and role='owner';
+
+
+UPDATE enach
+SET gateway_reference_id = "3c44d4d8b29f4f588b6e33ce8378b52a",
+gateway_reference_id2 = "1972",
+updated_at = UNIX_TIMESTAMP()
+WHERE id = 351857
+LIMIT 1;
+
+UPDATE enach
+SET gateway_reference_id = "d5d6081d1c604addb9286cb0edd28d4d",
+gateway_reference_id2 = "TM00000227",
+updated_at = UNIX_TIMESTAMP()
+WHERE id = 350987
+LIMIT 1;

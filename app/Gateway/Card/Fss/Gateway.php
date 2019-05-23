@@ -323,6 +323,22 @@ class Gateway extends Base\Gateway
                 }
 
                 break;
+            case Acquirer::SBI:
+                $requestContent[Fields::UDF1]       = strtolower(Constants::UDF1);
+                $requestContent[Fields::UDF2]       = strtolower(Constants::UDF2);
+                $requestContent[Fields::UDF3]       = $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID];
+                $requestContent[Fields::UDF4]       = strtolower(Constants::UDF4);
+                $requestContent[Fields::UDF5]       = strtolower(Constants::TRACK_ID);
+                $requestContent[Fields::PASSWORD]   = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+
+                if ($this->mode === Mode::TEST)
+                {
+                    $requestContent[Fields::ID]         = $this->config['sbin']['merchant_id'];
+                    $requestContent[Fields::UDF3]       = $this->config['sbin']['merchant_id'];
+                    $requestContent[Fields::PASSWORD]   = $this->config['sbin']['terminal_password'];
+                }
+
+                break;
         }
     }
 
@@ -403,6 +419,11 @@ class Gateway extends Base\Gateway
 
                 return $crypto->encryptString($str);
                 break;
+            case Acquirer::SBI:
+                $crypto = new SbiAesCrypto(SbiAesCrypto::MODE_ECB, $secretKey, $secretKey);
+
+                return $crypto->encryptString($str);
+                break;
             default:
                 break;
         }
@@ -430,6 +451,11 @@ class Gateway extends Base\Gateway
                 break;
             case Acquirer::BOB:
                 $crypto = new TripleDESCrypto(TripleDESCrypto::MODE_ECB, $secretKey, false);
+
+                $decryptedString = $crypto->decryptString($str);
+                break;
+            case Acquirer::SBI:
+                $crypto = new SbiAesCrypto(SbiAesCrypto::MODE_ECB, $secretKey);
 
                 $decryptedString = $crypto->decryptString($str);
                 break;

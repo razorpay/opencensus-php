@@ -80,6 +80,8 @@ class Netbanking
         IFSC::ESFB,
         IFSC::SBIN,
         IFSC::VIJB,
+        IFSC::YESB,
+        IFSC::SIBL,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -312,6 +314,11 @@ class Netbanking
                 IFSC::ICIC
             ]
         ],
+        Gateway::NETBANKING_YESB => [
+            'retail' => [
+                IFSC::YESB,
+            ]
+        ],
         Gateway::NETBANKING_AXIS => [
             'retail' => [
                 IFSC::UTIB
@@ -329,6 +336,11 @@ class Netbanking
             ],
             'corp' => [
                 self::BARB_C
+            ]
+        ],
+        Gateway::NETBANKING_SIB => [
+            'retail' => [
+                IFSC::SIBL
             ]
         ],
         Gateway::NETBANKING_IDFC => [

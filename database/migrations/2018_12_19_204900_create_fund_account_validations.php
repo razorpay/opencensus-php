@@ -60,6 +60,9 @@ class CreateFundAccountValidations extends Migration
             $table->char(E::BATCH_FUND_TRANSFER_ID, E::ID_LENGTH)
                   ->nullable();
 
+            $table->char(E::BALANCE_ID, E::ID_LENGTH)
+                  ->nullable();
+
             $table->string(E::ERROR_CODE, 255)
                   ->nullable();
 

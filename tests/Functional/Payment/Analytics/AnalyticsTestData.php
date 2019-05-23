@@ -17,7 +17,7 @@ return [
         'library_version' => '3846fgjb',
         'platform' => 'browser',
         'platform_version' => '52.0.2743.116',
-        'integration' => 'woo_commerce',
+        'integration' => 'woocommerce',
         'integration_version' => '0.1.2',
         'ip' => '10.0.123.123'
     ],
@@ -33,7 +33,7 @@ return [
         'library_version' => '3846fgjb',
         'platform' => null,
         'platform_version' => null,
-        'integration' => 'woo_commerce',
+        'integration' => 'woocommerce',
         'integration_version' => '0.1.2',
         'ip' => '10.0.123.123'
     ],

@@ -23,6 +23,6 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     {
         $transactionType = $row[self::COLUMN_TRANSACTION_TYPE];
 
-        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? 'NA';
+        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? self::NA;
     }
 }

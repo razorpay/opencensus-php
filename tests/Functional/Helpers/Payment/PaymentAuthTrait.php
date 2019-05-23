@@ -63,6 +63,8 @@ trait PaymentAuthTrait
                ->andReturnUsing($callback ?: $defaultCallback);
 
         $this->app->instance('card.otpelf', $otpelf);
+
+        return $otpelf;
     }
 
     protected function mockOtpElfForRupay()

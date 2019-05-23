@@ -25,6 +25,7 @@ class ErrorCodes
         'OTP_INVALID'                      => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
         'INV_AMT'                          => ErrorCode::BAD_REQUEST_INVALID_TRANSACTION_AMOUNT,
         'REFUND_FAILED'                    => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+        'CREDIT_LMT_EXHAUSTED'             => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED,
     ];
 
     public static function getInternalErrorCode($errorCode, $defaultErrorCode)

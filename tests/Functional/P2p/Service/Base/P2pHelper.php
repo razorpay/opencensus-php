@@ -229,7 +229,13 @@ class P2pHelper
 
         $this->exceptionHandler->setThrowExceptionInTesting(false);
 
-        $this->registerResponseCallback($callback);
+        $this->registerResponseCallback(function(TestResponse $response) use ($callback)
+        {
+            if ($this->expectFailureInResponse === true)
+            {
+                return $callback($response);
+            }
+        });
 
         return $this;
     }
@@ -263,7 +269,10 @@ class P2pHelper
         array $content = [],
         array $override = []): P2pRequest
     {
-        $content = array_filter(array_replace_recursive($content, $override));
+        $content = array_filter(array_replace_recursive($content, $override), function($value)
+        {
+            return $value !== null;
+        });
 
         return $request->data($content);
     }

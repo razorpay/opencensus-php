@@ -351,6 +351,21 @@ class Context extends ArrayObject
     }
 
     /**
+     * Return UPI Prefix in Handle from the context
+     *
+     * @return string
+     */
+    public function handlePrefix()
+    {
+        $map = [
+            'bajaj'     => 'BJJ',
+            'razoraxis' => 'RRA',
+        ];
+
+        return array_get($map, $this->handleCode(), 'TST');
+    }
+
+    /**
      * Request id will be set in options at the time of loading
      *
      * @return string

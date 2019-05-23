@@ -400,7 +400,7 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->merchant->editCategory2('govt_education');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
-        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['amex']);
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
@@ -444,7 +444,7 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->merchant->editCategory2('corporate');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
-        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['amex']);
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
@@ -523,7 +523,7 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->merchant->editCategory2('grocery');
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
-        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['amex']);
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_terminal');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
@@ -559,7 +559,7 @@ class TerminalSelectionTest extends TestCase
     public function testTerminalDefaultCategoryChoiceForAmexNonCategoryMerchant()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
-        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['amex']);
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
 

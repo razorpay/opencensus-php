@@ -301,6 +301,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_TRANSFER_REQUEST_FAILED                         = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                          = 'NODAL_PAYMENT_STATUS_REQUEST';
     const NODAL_PAYMENT_STATUS_RESPONSE                         = 'NODAL_PAYMENT_STATUS_RESPONSE';
+    const NODAL_HEALTH_CHECK_REQUEST                            = 'NODAL_HEALTH_CHECK_REQUEST';
+    const NODAL_HEALTH_CHECK_RESPONSE                           = 'NODAL_HEALTH_CHECK_RESPONSE';
     const NODAL_REQUEST_FAILED                                  = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED                   = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
     const FTA_SOURCE_PROCESSING_FAILED                          = 'FTA_SOURCE_PROCESSING_FAILED';
@@ -1715,7 +1717,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_INVALID_CHANNEL                                   = 'FTS_INVALID_CHANNEL';
     const FTS_FAILURE_EXCEPTION                                 = 'FTS_FAILURE_EXCEPTION';
     const FTS_FUND_TRANSFER_INIT                                = 'FTS_FUND_TRANSFER_INIT';
-    const FTS_HEALTH_CHECK_FAILED                               = 'FTS_HEALTH_CHECK_FAILED';
     const FTS_CREATE_ACCOUNT_INIT                               = 'FTS_CREATE_ACCOUNT_INIT';
     const FTS_FUND_TRANSFER_FAILED                              = 'FTS_FUND_TRANSFER_FAILED';
     const FTS_REGISTER_ACCOUNT_INIT                             = 'FTS_REGISTER_ACCOUNT_INIT';
@@ -1762,11 +1763,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
     const VAULT_TOKEN_MIGRATION_REQUEST_INIT  = 'VAULT_TOKEN_MIGRATION_REQUEST_INIT';
+    const VAULT_TOKEN_MIGRATION_CRON_FAILURE  = 'VAULT_TOKEN_MIGRATION_CRON_FAILURE';
     const VAULT_TOKEN_MIGRATION_REQUEST       = 'VAULT_TOKEN_MIGRATION_REQUEST';
     const VAULT_TOKEN_MIGRATION_SUCCESSFULL   = 'VAULT_TOKEN_MIGRATION_SUCCESSFULL';
     const VAULT_TOKEN_MIGRATION_TOKEN         = 'VAULT_TOKEN_MIGRATION_TOKEN';
     const VAULT_TOKEN_MIGRATION_ERROR         = 'VAULT_TOKEN_MIGRATION_ERROR';
+    const VAULT_TOKEN_MIGRATION_CRON_REQUEST  = 'VAULT_TOKEN_MIGRATION_CRON_REQUEST';
+
     const VAULT_TOKEN_MIGRATION_DISPATCH_FAILED  = 'VAULT_TOKEN_MIGRATION_DISPATCH_FAILED';
+    const VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED  = 'VAULT_TOKEN_MIGRATION_CRON_DISPATCH_FAILED';
+    const VAULT_TOKEN_MIGRATION_CRON_REQUEST_INIT  = 'VAULT_TOKEN_MIGRATION_CRON_REQUEST_INIT';
+
 
     const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC     = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
 
@@ -1792,6 +1799,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';
     const BATCH_SERVICE_MULTIPART_PAYLOAD                       = 'BATCH_SERVICE_MULTIPART_PAYLOAD';
+    const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
+    const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
+
+    const PAYMENT_ON_HOLD                                       = 'PAYMENT_ON_HOLD';
+    const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
+    const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

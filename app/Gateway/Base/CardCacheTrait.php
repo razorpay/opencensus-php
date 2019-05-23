@@ -32,6 +32,7 @@ trait CardCacheTrait
         }
         else
         {
+
             $tempInput['card'] = $input['card']['number'];
 
             $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);

@@ -42,7 +42,8 @@ class Core extends Base\Core
 
         try
         {
-            $validation = $this->createValidationEntity($input, $merchant, function ($fundAccountValidation) {
+            $validation = $this->createValidationEntity($input, $merchant, function($fundAccountValidation)
+            {
                 $processor = Processor\Factory::get($fundAccountValidation);
 
                 $processor->preProcessValidation();
@@ -100,7 +101,6 @@ class Core extends Base\Core
     /**
      * @param $favId
      * @return bool
-     * @throws Exception\BaseException
      */
     protected function retryFundAccountValidation($favId): bool
     {
@@ -135,6 +135,8 @@ class Core extends Base\Core
         $validation->build($input);
 
         $validation->merchant()->associate($merchant);
+
+        $this->associateBalance($validation, $input);
 
         return $validation;
     }
@@ -269,7 +271,6 @@ class Core extends Base\Core
      *
      * @param Entity $validation
      * @param array $input
-     * @throws Exception\LogicException
      */
     public function updateStatusAfterFtaRecon(Entity $validation, array $input)
     {
@@ -318,5 +319,21 @@ class Core extends Base\Core
         $entity->setFTSTransferId($ftsTransferId);
 
         $this->repo->saveOrFail($entity);
+    }
+
+    protected function associateBalance(Entity $fundAccValidation, array $input)
+    {
+        $balanceId = $input[Entity::BALANCE_ID] ?? null;
+
+        if (empty($balanceId) === true)
+        {
+            $balance = $this->merchant->primaryBalance;
+        }
+        else
+        {
+            $balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+        }
+
+        $fundAccValidation->balance()->associate($balance);
     }
 }

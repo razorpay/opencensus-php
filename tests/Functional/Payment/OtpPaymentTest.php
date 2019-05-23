@@ -642,6 +642,100 @@ class OtpPaymentTest extends TestCase
         assertTrue($this->otpFlow);
     }
 
+    public function testHeadlessOtpAuthenticationPaymentS2SRedirectFlowGetSecretBugFix()
+    {
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        TerminalOptions::setTestChance(500);
+
+        $this->app->razorx->method('getTreatment')
+                        ->will($this->returnCallback(
+                            function ($mid, $feature, $mode) {
+                                if ($feature === 'redirect_terminal_cache')
+                                {
+                                    return 'on';
+                                }
+                                return 'off';
+                            }));
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $order = $this->fixtures->create('order', ['id' => '100000000order', 'amount' => 50000]);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['order_id'] = 'order_100000000order';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $key = $payment->getCacheRedirectInputKey();
+
+        $data = Cache::get($key);
+
+        $this->assertArrayHasKey('gateway_input', $data);
+
+        $gatewayInput =  $data['gateway_input'];
+
+        $this->assertArrayHasKey('selected_terminals_ids', $gatewayInput);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+
+        $targetUrl = $response->getTargetUrl();
+
+        $response = $this->makeRedirectToAuthorize($targetUrl);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('authorized', $payment['status']);
+        assertTrue($this->otpFlow);
+
+        $response = $this->makeRedirectToAuthorize($targetUrl);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+    }
+
     public function testHeadlessOtpAuthenticationPaymentS2SDoubleRedirectOtp()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -1618,7 +1712,8 @@ class OtpPaymentTest extends TestCase
                     return [
                         'success' => false,
                         'error'   => [
-                            'reason' => $otpElfError
+                            'reason' => $otpElfError,
+                            'fatal'  => true,
                         ],
                     ];
                 });
@@ -1646,6 +1741,181 @@ class OtpPaymentTest extends TestCase
 
             self::assertNotContains('headless_otp', $iin['flows']);
         }
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentFailedDisableIinSubmitOtp()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockCardVault();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'magic'        => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSubmit')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => false,
+                    'error'   => [
+                        'reason' => "PAGE_UNKNOWN",
+                        'fatal'  => true,
+                    ],
+                ];
+            });
+
+        $this->fixtures->edit('iin', 556763, ['flows' => $flows]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $this->makeRequestAndCatchException(
+        function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        },
+        GatewayErrorException::class);
+
+        $iin = $this->getEntityById('iin', 556763, true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
+
+        self::assertNotContains('headless_otp', $iin['flows']);
+
+        // preferred auth
+        $this->fixtures->edit('iin', 556763, ['flows' => $flows]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $this->makeRequestAndCatchException(
+        function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        },
+        GatewayErrorException::class);
+
+        $iin = $this->getEntityById('iin', 556763, true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
+
+        self::assertNotContains('headless_otp', $iin['flows']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentFailedDisableIinResendOtp()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->mockCardVault();
+
+        $otpelf = $this->mockOtpElf();
+
+        $otpelf->shouldReceive('otpResend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => false,
+                    'error'   => [
+                        'reason' => "PAGE_UNKNOWN",
+                        'fatal'  => true,
+                    ],
+                ];
+            });
+
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertArrayHasKey('next', $content);
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('created', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        $this->makeRequestAndCatchException(
+        function() use ($content)
+        {
+            $response = $this->doS2SOtpResend($content);
+        },
+        GatewayErrorException::class);
+
+        $iin = $this->getEntityById('iin', 556763, true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
+
+        self::assertNotContains('headless_otp', $iin['flows']);
     }
 
     public function testHeadlessOtpAuthenticationPaymentS2SInvalidOtp()
@@ -2676,7 +2946,8 @@ class OtpPaymentTest extends TestCase
                         return [
                             'success' => false,
                             'error'   => [
-                                'reason' => $otpElfError
+                                'reason' => $otpElfError,
+                                'fatal'  => true,
                             ],
                         ];
                     });
@@ -2689,6 +2960,99 @@ class OtpPaymentTest extends TestCase
             $iin = $this->getEntityById('iin', 556763, true);
             self::assertNotContains('headless_otp', $iin['flows']);
         }
+    }
+
+    public function testOtpPreferredAuthPaymentWithRetryCheck()
+    {
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'hitachi',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'load'          => 100,
+            'group'         => null,
+            'currency'      => 'INR',
+            'step'          => 'authorization',
+        ]);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->create('terminal:direct_first_data_recurring_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin' => '556763',
+            'country' => 'IN',
+            'issuer' => 'ICIC',
+            'network' => 'MasterCard',
+            'flows' => [
+                '3ds' => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $this->otpFlow = false;
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        TerminalOptions::setTestChance(500);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $otpelf = $this->mockOtpElf();
+        $this->count = 0;
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function ()
+            {
+                if ($this->count === 0)
+                {
+                    $this->count = 1;
+                    return [
+                        'success' => false,
+                        'error'   => [
+                            'reason' => 'UNSERVICEABLE_PAGE'
+                        ],
+                    ];
+                }
+
+                return [
+                        'success' => true,
+                        'data' => [
+                            'action' => 'page_resolved',
+                            'data' => [
+                                'next' => ['submit_otp', 'resend_otp'],
+                                'type' => 'otp'
+                            ]]
+                        ];
+            });
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
     // @codingStandardsIgnoreLine

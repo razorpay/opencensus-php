@@ -49,6 +49,20 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchForMerchant(Merchant\Entity $merchant)
+    {
+        if ($merchant->hasRelation('merchantDetail'))
+        {
+            return $merchant->merchantDetail;
+        }
+
+        $merchantDetail = $this->getByMerchantId($merchant->getId());
+
+        $merchant->setRelation('merchantDetail', $merchantDetail);
+
+        return $merchantDetail;
+    }
+
     public function getMerchantDetailsToBeMigrated($count = 1000, $skip = 0)
     {
         return $this->newQuery()

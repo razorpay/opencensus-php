@@ -53,9 +53,8 @@ class EntityTest extends TestCase
         $this->assertEquals('prestashop_123', $payment->getOrderId());
     }
 
-    function testGetOrderIdForCsCart()
+    public function testGetOrderIdForCsCart()
     {
-
         $payment = $this->payment;
         $payment->setNotes([
             'cs_order_id' => 'cascart_123'
@@ -63,9 +62,8 @@ class EntityTest extends TestCase
         $this->assertEquals('cascart_123', $payment->getOrderId());
     }
 
-    function testGetOrderIdForWooCommerce()
+    public function testGetOrderIdForWooCommerce()
     {
-
         $payment = $this->payment;
         $payment->setNotes([
             'woocommerce_order_id' => 'wc_123'

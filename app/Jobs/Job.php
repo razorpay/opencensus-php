@@ -29,6 +29,11 @@ class Job implements ShouldQueue
     protected $mode;
 
     /**
+     * @var bool|null Whether application's http auth type was app when job was pushed
+     */
+    protected $appAuth;
+
+    /**
      * This is a name of the current job which is being executed.
      *
      * Can be set in the child classes.
@@ -88,6 +93,7 @@ class Job implements ShouldQueue
 
         $this->taskId       = $app['request']->getTaskId();
         $this->jobName      = $this->jobName ?? snake_case(class_basename($this));
+        $this->appAuth      = $app['basicauth']->isAppAuth();
     }
 
     public function handle()
@@ -157,6 +163,15 @@ class Job implements ShouldQueue
         {
             $app['basicauth']->setModeAndDbConnection($this->mode);
         }
+
+        //
+        // We need to set the appAuth, if it was set when this job was pushed to the queue.
+        // This is needed when we want to create child recon batches while processing a
+        // recon batch (inside queue, e.g. VAS Hdfc Reconciliation). If this appAuth is not
+        // set here, Auth validation will fail and child recon batch can not be created.
+        // (Refer API PR : 11827)
+        //
+        $app['basicauth']->setBasicAppAuth($this->appAuth ?: false);
 
         $this->repoManager->resetConnectionAttributes();
 

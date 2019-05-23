@@ -125,17 +125,17 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::SERVER_ERROR,
-                    //'description' => 'Gateway [UNKNOWN_GATEWAY] does not exist',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                 ]
             ],
-            'status_code'   => 500,
+            'status_code'   => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
     'testCreateDowntimeNBInvalidIssuer' => [
         'request' => [
             'content' => [
@@ -153,6 +153,32 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     //'description' => 'Bank: SOME BANK is not a valid Bank Name',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testGatewayDowntimeWithoutBegin' => [
+        'request' => [
+            'content' => [
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'netbanking',
+                'source'      => 'BANK',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The begin field is required.',
                 ]
             ],
             'status_code'   => 400,

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Batch;
 
+use Mail;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
@@ -11,7 +13,9 @@ use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\Batch as BatchJob;
+use RZP\Models\FileStore\Utility;
 use RZP\Exception\BadRequestException;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 
 class Core extends Base\Core
 {
@@ -244,5 +248,95 @@ class Core extends Base\Core
 
             BatchJob::dispatch($this->mode, $batch->getId(), $input);
         }
+    }
+
+    /**
+     * @param string $outputFilePath
+     * @param string $bucketType
+     * @param bool   $downloadFile
+     *
+     *  Download the file from S3 bucket and return the downloaded local filePath
+     * @return string
+     * @throws \Exception
+     */
+    private function downloadAndGetFilePath(string $outputFilePath, string $bucketType, bool $downloadFile): string
+    {
+        if ($downloadFile === false)
+        {
+            return null;
+        }
+
+        $outputFileNameArray = explode('/', $outputFilePath);
+        $outputFileName      = end($outputFileNameArray);
+
+        $dir = Utility::getStorageDir('files/filestore/batch/download/');
+
+        $filePath = $dir . $outputFileName;
+
+        $env = $this->app['env'];
+
+        $handler = new Handler();
+
+        $bucketConfig = $handler->getBucketConfig($bucketType, $env);
+
+        $handler->saveAs($bucketConfig, $outputFilePath, $filePath);
+
+        $this->trace->info(TraceCode::BATCH_SEND_MAIL_CONFIG,
+                           ['bucketConfig'   => $bucketConfig,
+                            'filePath'       => $filePath,
+                            'outputFilePath' => $outputFilePath]);
+
+        if(!is_readable($filePath))
+        {
+            throw new Exception\ServerNotFoundException("File Not Found",
+                                                        ErrorCode::SERVER_ERROR_FILE_NOT_FOUND);
+        }
+        
+        return $filePath;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\ServerNotFoundException
+     */
+    public function sendMail(array $input): array
+    {
+        $batch = $input[Entity::BATCH];
+
+        $bucketType = $input[Entity::BUCKET_TYPE];
+
+        $outputFilePath = $input[Entity::OUTPUT_FILE_PATH];
+
+        $downloadFile = $input[Entity::DOWNLOAD_FILE];
+
+        $settings = $input[Entity::SETTINGS];
+
+        $type = $batch[Entity::TYPE];
+        $type = studly_case($type);
+
+        if ($settings == null)
+        {
+            $settings = [];
+        }
+
+        $merchantId = $batch['merchant_id'];
+        $merchant   = $this->repo->merchant->findOrFailPublic($merchantId)->toArray();
+
+        $filePath = $this->downloadAndGetFilePath($outputFilePath, $bucketType, $downloadFile);
+
+        $mailerClass = "\\RZP\\Mail\\Batch\\$type";
+
+        $mail = new $mailerClass(
+            $batch,
+            $merchant,
+            $filePath,
+            $settings);
+
+
+        Mail::send($mail);
+
+        return ['success' => true];
     }
 }

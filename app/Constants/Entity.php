@@ -177,6 +177,7 @@ class Entity
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
+    const NETBANKING_SIB         = 'netbanking_sib';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
@@ -196,6 +197,7 @@ class Entity
     const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_SBI         = 'netbanking_sbi';
+    const NETBANKING_YESB        = 'netbanking_yesb';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -223,6 +225,7 @@ class Entity
     const P2P_BENEFICIARY        = 'p2p_beneficiary';
     const P2P_TRANSACTION        = 'p2p_transaction';
     const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
+    const P2P_CONCERN            = 'p2p_concern';
 
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
@@ -307,6 +310,7 @@ class Entity
         Entity::PAYOUT,
         Entity::BANK_TRANSFER,
         Entity::REFUND,
+        Entity::FUND_ACCOUNT_VALIDATION,
     ];
 
     public static $namespace = [
@@ -419,6 +423,7 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
+        self::NETBANKING_SIB         => \RZP\Gateway\Mozart::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Idfc::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
@@ -438,6 +443,7 @@ class Entity
         self::NETBANKING_CANARA      => \RZP\Gateway\Netbanking\Canara::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
         self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Sbi::class,
+        self::NETBANKING_YESB        => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
@@ -483,6 +489,8 @@ class Entity
         self::P2P_HANDLE            => \RZP\Models\P2p\Vpa\Handle::class,
         self::P2P_BENEFICIARY       => \RZP\Models\P2p\Beneficiary::class,
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
+        self::P2P_UPI_TRANSACTION   => \RZP\Models\P2p\Transaction\UpiTransaction::class,
+        self::P2P_CONCERN           => \RZP\Models\P2p\Transaction\Concern::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,

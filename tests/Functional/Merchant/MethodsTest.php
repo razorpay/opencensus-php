@@ -6,6 +6,7 @@ use Event;
 
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
+use RZP\Models\Card\Network;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Cache\Events\CacheHit;
@@ -359,11 +360,11 @@ class MethodsTest extends TestCase
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
-        $this->assertTrue($merchantMethods->isAmexCardEnabled());
+        $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
 
-        $this->assertFalse($merchantMethods->isJcbEnabled());
+        $this->assertFalse($merchantMethods->isCardNetworkEnabled(Network::JCB));
 
-        $this->assertFalse($merchantMethods->isDinersEnabled());
+        $this->assertFalse($merchantMethods->isCardNetworkEnabled(Network::DICL));
     }
 
     public function testQueryCacheHitForMethods()

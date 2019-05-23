@@ -3,7 +3,9 @@
 namespace RZP\Gateway\Upi\Sbi\Mock;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Gateway\Upi\Sbi\Status;
@@ -142,6 +144,12 @@ class Server extends Base\Mock\Server
         {
             $response[ResponseFields::STATUS] = Status::UNAVAILABLE_VPA;
             $response[ResponseFields::STATUS_DESCRIPTION] = 'VPA is invalid';
+        }
+
+        if ($vpa === 'exception@sbi')
+        {
+            $response[ResponseFields::STATUS] = 'T';
+            $response[ResponseFields::STATUS_DESCRIPTION] = 'Timeout';
         }
 
         return $response;

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis\Actions;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Gateway\P2p\Upi\Axis\S2sDirect;
 
 class TransactionAction extends Action
 {
@@ -13,6 +14,10 @@ class TransactionAction extends Action
     const PAY_COLLECT                               = 'PAY_COLLECT';
 
     const DECLINE_COLLECT                           = 'DECLINE_COLLECT';
+
+    const RAISE_QUERY                               = 'RAISE_QUERY';
+
+    const QUERY_STATUS                              = 'QUERY_STATUS';
 
     const MAP = [
         self::SEND_MONEY => [
@@ -70,6 +75,7 @@ class TransactionAction extends Action
                 ],
             ],
         ],
+
         self::REQUEST_MONEY => [
             self::VALIDATOR => [
                 Fields::MERCHANT_REQUEST_ID     => 'required',
@@ -119,6 +125,7 @@ class TransactionAction extends Action
                 ],
             ],
         ],
+
         self::PAY_COLLECT => [
             self::VALIDATOR => [
                 Fields::MERCHANT_REQUEST_ID     => 'required',
@@ -161,6 +168,65 @@ class TransactionAction extends Action
                     Fields::TRANSACTION_TIME_STAMP,
                     Fields::UDF_PARAMETERS,
                 ],
+            ],
+        ],
+
+        self::DECLINE_COLLECT => [
+            self::VALIDATOR => [
+                Fields::MERCHANT_REQUEST_ID     => 'required',
+                Fields::MERCHANT_CUSTOMER_ID    => 'required',
+                Fields::CUSTOMER_VPA            => 'required',
+                Fields::PAYEE_VPA               => 'required',
+                Fields::AMOUNT                  => 'required',
+                Fields::ACCOUNT_REFERENCE_ID    => 'required',
+                Fields::REMARKS                 => 'sometimes',
+                Fields::UPI_REQUEST_ID          => 'required',
+                Fields::TIME_STAMP              => 'required',
+            ],
+            self::SIGNATURE => [
+                Fields::ACCOUNT_REFERENCE_ID,
+                Fields::AMOUNT,
+                Fields::CUSTOMER_VPA,
+                Fields::MERCHANT_CUSTOMER_ID,
+                Fields::MERCHANT_REQUEST_ID,
+                Fields::PAYEE_VPA,
+                Fields::TIME_STAMP,
+                Fields::UDF_PARAMETERS,
+                Fields::UPI_REQUEST_ID,
+            ],
+
+            self::RESPONSE => [
+
+                self::SIGNATURE => [
+                    Fields::AMOUNT,
+                    Fields::BANK_ACCOUNT_UNIQUE_ID,
+                    Fields::BANK_CODE,
+                    Fields::CUSTOMER_MOBILE_NUMBER,
+                    Fields::CUSTOMER_VPA,
+                    Fields::GATEWAY_REFERENCE_ID,
+                    Fields::GATEWAY_RESPONSE_CODE,
+                    Fields::GATEWAY_RESPONSE_MESSAGE,
+                    Fields::GATEWAY_TRANSACTION_ID,
+                    Fields::MASKED_ACCOUNT_NUMBER,
+                    Fields::MERCHANT_REQUEST_ID,
+                    Fields::PAY_TYPE,
+                    Fields::TRANSACTION_TIME_STAMP,
+                    Fields::UDF_PARAMETERS,
+                ],
+            ],
+        ],
+
+        self::RAISE_QUERY => [
+            self::SOURCE    => self::DIRECT,
+            self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
+
+        self::QUERY_STATUS => [
+            self::SOURCE    => self::DIRECT,
+            self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
             ],
         ],
     ];

@@ -18,7 +18,7 @@ class DiagClient extends EventTrackerClient
             'event_type'    => $eventType,
             'event_version' => $eventVersion,
             'event'         => $eventName,
-            'timestamp'     => (int)(microtime(true) * 1000),
+            'timestamp'     => (int)(microtime(true) * 1000000),
             'properties'    => $properties,
         ];
 

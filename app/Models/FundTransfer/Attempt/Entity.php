@@ -495,7 +495,9 @@ class Entity extends Base\PublicEntity
     {
         $source = $this->source;
 
-        if ($source->hasAttribute(self::BALANCE_ID) === true)
+        if (($source->hasAttribute(self::BALANCE_ID) === true) and
+            (method_exists($source, 'hasBalance') === true) and
+            ($source->hasBalance() === true))
         {
             return $source->isBalanceTypeBanking();
         }

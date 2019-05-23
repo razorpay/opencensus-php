@@ -19,4 +19,17 @@ trait PaymentEvent
 
         $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $code, $properties);
     }
+
+    public function trackVerifyPaymentEvent(
+        string $code, 
+        Payment\Entity $payment = null, 
+        \Throwable $ex = null)
+    {
+        $customProperties = [
+            'status'    => $payment->getStatus(),
+            'bucket'    => $payment->getVerifyBucket()
+        ];
+
+        $this->trackPaymentEvent($code, $payment, $ex, $customProperties);
+    }
 }

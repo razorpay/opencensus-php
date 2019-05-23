@@ -224,6 +224,10 @@ class AdminFetch
             ],
             Entity::BATCH_FILE_STORE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'batch_id'    => [
+                    Fetch::LABEL  => 'Batch Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
         ];

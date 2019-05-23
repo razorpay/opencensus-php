@@ -36,7 +36,9 @@ class Constants
     const ISG              = 'isg';
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
+    const YESB             = 'yesb';
     const CITI             = 'citi';
+    const SIB              = 'sib';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
@@ -77,9 +79,11 @@ class Constants
             self::ALLA,
             self::CANARA,
             self::EQUITAS,
+            self::YESB,
             self::IDFC,
             self::VIJAYA,
             self::CORPORATION,
+            self::SIB,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -138,7 +142,10 @@ class Constants
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
             self::ALLA        => ['settlements@razorpay.com','imps.recon@allahabadbank.in'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
-            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
+            self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com'],
+            //TODO add this value
+            self::YESB        => ['yesb.netbanking.refunds@razorpay.com'],
+            self::SIB         => ['sib.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

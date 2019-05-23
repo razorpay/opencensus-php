@@ -489,6 +489,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
     }
 
+    public function canHoldPayment(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
+    }
+
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
@@ -1560,6 +1565,8 @@ class Entity extends Base\PublicEntity
         {
             return null;
         }
+
+        $this->setRelation('merchantDetail', $this->merchantDetail);
 
         return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
     }

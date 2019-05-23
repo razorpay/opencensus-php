@@ -28,9 +28,11 @@ class BeneficiaryTest extends TestCase
     {
         $helper = $this->getBeneficiaryHelper();
 
+        $vpa = $helper->validateVpa();
+
         $helper->withSchemaValidated();
 
-        $helper->create();
+        $helper->create($vpa);
     }
 
     public function testFetch()
