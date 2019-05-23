@@ -133,7 +133,7 @@ export default class AddressEntry extends Component {
     s[fieldName] = event.target.value;
 
     // Zipcode can be of 6 chars at most.
-    if (fieldName === 'zipcode') {
+    if (this.props.validateZipcode && fieldName === 'zipcode') {
       if (s[fieldName]) {
         s[fieldName] = s[fieldName].slice(0, 6);
       }
@@ -281,4 +281,5 @@ AddressEntry.defaultProps = {
   hideCountry: false,
   onChange: () => {},
   showDisabledCountry: false,
+  validateZipcode: true,
 };
