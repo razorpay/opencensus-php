@@ -789,6 +789,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+            Network::RUPAY,
         ],
         self::HDFC => [
             Network::MC,
