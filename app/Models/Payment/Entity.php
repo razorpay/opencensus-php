@@ -2122,7 +2122,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         switch($this->getMethod())
         {
             case Method::CARD:
-                return [$method, $this->getFormattedCard()];
             case Method::EMI:
                 return [$method, $this->getFormattedCard()];
             case Method::NETBANKING:
@@ -2137,6 +2136,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, ''];
             case Method::EMANDATE:
                 return [$method, $this->getBankName()];
+            case Method::CARDLESS_EMI:
+                return [$method, Processor\CardlessEmi::getName($this->getWallet())];
         }
     }
 
