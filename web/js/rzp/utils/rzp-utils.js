@@ -722,13 +722,29 @@ export const pluralize = (str, length) => {
 export const capitalize = input =>
   !!input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
 
+export const isValidZipcodeCountryWise = (country, zipcode) => {
+  let isValid = false;
+
+  if (!country) {
+    return false;
+  }
+
+  if (country.toLowerCase() === 'india') {
+    isValid = zipcode.length === 6;
+  } else {
+    isValid = zipcode <= 8 && zipcode >= 3;
+  }
+
+  return isValid;
+};
+
 /**
  * Checks the validity of an address.
  * Line1, City, State, Country, Zipcode are required fields in an address.
  * @param {Object} address
  * @return {Bool}
  */
-export const isAddressValid = address => {
+export const isAddressValid = (address, customValidator = {}) => {
   const allKeys = Boolean(
     address &&
       address.line1 &&
@@ -749,7 +765,9 @@ export const isAddressValid = address => {
       line1.length <= 255 &&
       city.length >= 2 &&
       city.length <= 32 &&
-      zipcode.length === 6 &&
+      (customValidator.zipcode
+        ? customValidator.zipcode(country, zipcode)
+        : zipcode.length === 6) &&
       state.length >= 2 &&
       state.length <= 32 &&
       country.length >= 2 &&
