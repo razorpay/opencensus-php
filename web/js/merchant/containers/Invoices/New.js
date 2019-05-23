@@ -240,6 +240,7 @@ export default class InvoicesNewContainer extends Component {
       );
     } else {
       this.props.initializeInvoice();
+      this.openInvoiceCurrencyChangeModal({ showCross: false });
     }
 
     promises = [
@@ -269,6 +270,7 @@ export default class InvoicesNewContainer extends Component {
           isLoading: false,
           gst: gst && gst.data,
           states: statesList,
+          invoiceCurrency: (invoice && invoice.currency) || 'INR',
         });
 
         // Set state of supply.
@@ -296,29 +298,39 @@ export default class InvoicesNewContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.match.params.id !== nextProps.match.params.id) {
-      this.setState({
-        isLoading: true,
-      });
+    const invoiceId = nextProps.match.params.id;
 
-      this.props
-        .fetchInvoice(nextProps.match.params.id)
-        .then(invoice => {
-          this.setState({
-            isLoading: false,
-            invoiceCurrency: invoice.currency,
-          });
+    if (this.props.match.params.id !== invoiceId) {
+      this.props.closeModal();
 
-          if (this.isPaymentLink(invoice)) {
-            return;
-          }
-        })
-        .catch(({ errors }) => {
-          this.props.showNotification({
-            type: 'error',
-            message: errors,
-          });
+      if (invoiceId) {
+        this.setState({
+          isLoading: true,
         });
+
+        this.props
+          .fetchInvoice(nextProps.match.params.id)
+          .then(invoice => {
+            this.setState({
+              isLoading: false,
+              invoiceCurrency: invoice.currency || 'INR',
+            });
+
+            if (this.isPaymentLink(invoice)) {
+              return;
+            }
+          })
+          .catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+            });
+          });
+      } else {
+        this.props.initializeInvoice();
+        this.props.initialize(this.props.initialValues);
+        this.openInvoiceCurrencyChangeModal({ showCross: false });
+      }
     }
   }
 
@@ -600,7 +612,7 @@ export default class InvoicesNewContainer extends Component {
     });
   };
 
-  openInvoiceCurrencyChangeModal = () => {
+  openInvoiceCurrencyChangeModal = ({ showCross = true }) => {
     this.props.openModal({
       size: 'small',
       component: (
@@ -608,6 +620,7 @@ export default class InvoicesNewContainer extends Component {
           currency={this.state.invoiceCurrency}
           onSave={this.setInvoiceCurrency}
           closeModal={this.props.closeModal}
+          showCross={showCross}
           alerts={
             this.props.invoice.id
               ? [
@@ -663,6 +676,8 @@ export default class InvoicesNewContainer extends Component {
         eventAction: 'Click - Start Creating Invoices',
       });
       this.getMerchantInfo();
+
+      this.openInvoiceCurrencyChangeModal({ showCross: false });
     };
 
     const onCloseClick = () => {
@@ -1247,6 +1262,8 @@ export default class InvoicesNewContainer extends Component {
   };
 
   componentWillUnmount() {
+    this.props.closeModal();
+
     let action;
     if (!this.props.match.params.id) {
       action = 'Close Form - New Invoice';
@@ -1285,7 +1302,7 @@ export default class InvoicesNewContainer extends Component {
      */
     const { invoice_label_field } = this.props.config;
 
-    if (invoice_label_field === null) {
+    if (true || invoice_label_field === null) {
       this.showOnboardingModal();
     }
   }
@@ -1393,7 +1410,7 @@ export default class InvoicesNewContainer extends Component {
 
   render() {
     const { handleSubmit, customer, invoice, session: { user } } = this.props;
-    console.log('INVOICE...', invoice);
+    // console.log('INVOICE...', invoice);
 
     let isTestMode = this.props.session.mode === 'test';
     let isNew = !invoice.id;

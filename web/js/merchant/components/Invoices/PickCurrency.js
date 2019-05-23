@@ -22,7 +22,9 @@ export default class extends React.PureComponent {
       <div class="PickCurrency-Modal">
         <ModalHeader
           title="Choose the Invoice Currency"
-          onCloseClick={this.props.closeModal}
+          onCloseClick={
+            this.props.showCross ? this.props.closeModal : undefined
+          }
         />
         <div className="modal-body">
           <Form onSubmit={this.onSave}>
