@@ -157,6 +157,7 @@ export default class InvoicesNewContainer extends Component {
       issue_date,
       today: issue_date,
       isFetchingAddresses: false,
+      invoiceCurrency: this.props.invoice.currency || 'INR',
     };
   }
 
@@ -1552,18 +1553,12 @@ export default class InvoicesNewContainer extends Component {
                                 {invoice.amount_due ? (
                                   <Amount
                                     value={invoice.amount_due}
-                                    currency={
-                                      invoice.currency ||
-                                      this.state.invoiceCurrency
-                                    }
+                                    currency={this.state.invoiceCurrency}
                                   />
                                 ) : (
                                   <Amount
                                     value={invoiceTotal.total * 100}
-                                    currency={
-                                      invoice.currency ||
-                                      this.state.invoiceCurrency
-                                    }
+                                    currency={this.state.invoiceCurrency}
                                   />
                                 )}
                               </h3>
