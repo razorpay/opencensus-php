@@ -2206,7 +2206,7 @@ export default class InvoicesNewContainer extends Component {
                             </button>
                           )}
                           {showChangeCurrency && (
-                            <div class="change-currency-cta">
+                            <div class="change-currency">
                               <button
                                 class="btn btn-default btn-block btn-lg"
                                 onClick={this.handleChangeCurrency}
