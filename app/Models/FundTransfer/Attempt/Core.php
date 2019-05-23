@@ -7,19 +7,19 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
-use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Card\Issuer as CardIssuer;
-use RZP\Models\FundTransfer\Base\Initiator;
+use RZP\Models\Transaction\ReconciledType;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -493,16 +493,16 @@ class Core extends Base\Core
 
             $fta->fill($input);
 
-            $fta->source->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
-
-            $fta->source->fill($input);
-
-            $this->repo->transaction(function() use ($fta)
+            if (method_exists($fta->source, 'setFTSTransferId') === true)
             {
-                $this->repo->fund_transfer_attempt->saveOrFail($fta);
+                $fta->source->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+            }
 
-                $this->repo->saveOrFail($fta->source);
-            });
+            $this->repo->fund_transfer_attempt->saveOrFail($fta);
+
+            $this->updateSourceEntity($fta);
+
+            $this->updateMerchantEntity($fta);
 
             return [
               'message' => 'FTA and source updated succesfully',
@@ -519,6 +519,113 @@ class Core extends Base\Core
                 ]);
 
             throw $e;
+        }
+    }
+
+    public function getStatusClass(Entity $fta)
+    {
+        $channel = $fta->getChannel();
+
+        if ($fta->shouldUseGateway() === true)
+        {
+            return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
+        return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
+    }
+
+    public function updateTransactionEntity($source, $reconciledType = ReconciledType::MIS)
+    {
+        // Source entity might update the transaction but because we would have already fetched
+        // the transaction from source earlier. Then if we try to access $this->source->transaction now,
+        // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
+        $source->load(EntityConstant::TRANSACTION);
+
+        $currentTime = Carbon::now(Timezone::IST)->timestamp;
+
+        $source->transaction->setReconciledAt($currentTime);
+
+        $source->transaction->setReconciledType($reconciledType);
+
+        $source->transaction->saveOrFail();
+    }
+
+    public function updateMerchantEntity(Entity $fta, bool $holdFunds = false)
+    {
+        if ($holdFunds === true)
+        {
+            $fta->merchant->setHoldFunds(true);
+
+            $this->repo->saveOrFail($fta->merchant);
+        }
+    }
+
+    public function updateSourceEntity(Entity $fta)
+    {
+        $statusNamespace = $this->getStatusClass($fta);
+
+        $statusClass = new $statusNamespace;
+
+        $isInternalError = $statusClass::isInternalError($fta);
+
+        $bankStatusCode = $fta->getBankStatusCode();
+
+        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode);
+
+        $ftaData = [
+            'bank_account_id'   => $fta->getBankAccountId(),
+            'vpa_id'            => $fta->getVpaId(),
+            'merchant_id'       => $fta->getMerchantId(),
+            'fta_id'            => $fta->getId(),
+            'source_id'         => $fta->source->getId(),
+            'beneficiary_name'  => null,
+            'utr'               => $fta->getUtr(),
+            'mode'              => $fta->getMode(),
+            'remarks'           => $fta->getRemarks(),
+            'fta_status'        => $fta->getStatus(),
+            'bank_status_code'  => $bankStatusCode,
+            'internal_error'    => $isInternalError,
+            'failure_reason'    => $publicErrorMessage,
+        ];
+
+        $this->postFtaRecon($fta->source, $ftaData);
+
+        $this->updateTransactionEntity($fta->source);
+    }
+
+    /**
+     * @param       $source
+     * @param array $ftaData
+     */
+    protected function postFtaRecon($source, array $ftaData)
+    {
+        $this->trace->info(
+            TraceCode::FTA_SOURCE_PROCESSING_DATA,
+            $ftaData);
+
+        try
+        {
+            $entityType = $source->getEntity();
+
+            $sourceCoreClass = EntityConstant::getEntityNamespace($entityType) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateStatusAfterFtaRecon') === false)
+            {
+                return;
+            }
+
+            $sourceCore->updateStatusAfterFtaRecon($source, $ftaData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
+                $ftaData
+            );
         }
     }
 
