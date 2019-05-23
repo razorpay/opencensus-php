@@ -133,13 +133,7 @@ trait RequestHandlerTrait
             $messageType = $this->input['card']['message_type'];
         }
 
-        $ownerName = $this->input['merchant']->getBillingLabel() ?? 'Razorpay';
-
-        // The owner name should be of type ANS(1-23)
-        // Removing the invalid characters here
-        $ownerName = preg_replace('/[^a-z0-9\s\.]/i', '', $ownerName);
-
-        $ownerName = substr($ownerName, 0, 23);
+        $ownerName = $this->getDynamicMerchantName($this->input['merchant'], 23);
 
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
