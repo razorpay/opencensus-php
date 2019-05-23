@@ -594,8 +594,6 @@ export default class InvoicesNewContainer extends Component {
   };
 
   setInvoiceCurrency = newCurrency => {
-    console.log('NEW CURRENCY...', newCurrency);
-
     this.setState({
       invoiceCurrency: newCurrency,
     });
@@ -1387,6 +1385,7 @@ export default class InvoicesNewContainer extends Component {
 
   render() {
     const { handleSubmit, customer, invoice, session: { user } } = this.props;
+    console.log('INVOICE...', invoice);
 
     let isTestMode = this.props.session.mode === 'test';
     let isNew = !invoice.id;
@@ -1545,12 +1544,18 @@ export default class InvoicesNewContainer extends Component {
                                 {invoice.amount_due ? (
                                   <Amount
                                     value={invoice.amount_due}
-                                    currency={invoice.currency}
+                                    currency={
+                                      invoice.currency ||
+                                      this.state.invoiceCurrency
+                                    }
                                   />
                                 ) : (
                                   <Amount
                                     value={invoiceTotal.total * 100}
-                                    currency={invoice.currency}
+                                    currency={
+                                      invoice.currency ||
+                                      this.state.invoiceCurrency
+                                    }
                                   />
                                 )}
                               </h3>

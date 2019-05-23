@@ -9,6 +9,7 @@ import Alert from 'component/Alert';
 export default class extends React.PureComponent {
   onSave = data => {
     this.props.onSave(data.currency);
+    this.props.closeModal();
   };
 
   render() {
