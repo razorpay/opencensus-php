@@ -732,7 +732,7 @@ export const isValidZipcodeCountryWise = (country, zipcode) => {
   if (country.toLowerCase() === 'india') {
     isValid = zipcode.length === 6;
   } else {
-    isValid = zipcode <= 8 && zipcode >= 3;
+    isValid = zipcode.length <= 8 && zipcode.length >= 3;
   }
 
   return isValid;

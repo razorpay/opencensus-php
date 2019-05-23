@@ -91,13 +91,19 @@ export default class New extends Component {
     super(...arguments);
     this.DEFAULT_COUNTRY = 'India';
 
-    this.state = {
-      errors: null,
-      editedAddress: {
-        country: this.DEFAULT_COUNTRY,
-      },
-      states: Countries[this.DEFAULT_COUNTRY],
-    };
+    if (this.props.isInttCurrenciesEnabled) {
+      this.state = {
+        errors: null,
+        editedAddress: {
+          country: this.DEFAULT_COUNTRY,
+        },
+        states: Countries[this.DEFAULT_COUNTRY],
+      };
+    } else {
+      this.state = {
+        errors: null,
+      };
+    }
   }
 
   componentWillUnmount() {
@@ -109,6 +115,33 @@ export default class New extends Component {
   }
 
   componentWillMount() {
+    if (!this.props.isInttCurrenciesEnabled) {
+      let promises = [this.props.fetchStates()];
+      this.setState({
+        isLoading: true,
+      });
+
+      Promise.all(promises)
+        .then(([states]) => {
+          // Set address type.
+          this.props.change('type', this.props.type);
+
+          this.setState({
+            isLoading: false,
+            states: states && states.data && states.data.items,
+          });
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
+
+      return;
+    }
+
+    // Set address type.
     this.props.change('type', this.props.type);
   }
 
@@ -144,13 +177,22 @@ export default class New extends Component {
    * @param {Object} address
    */
   onAddressUpdate = address => {
-    if (!address.country) {
+    if (this.props.isInttCurrenciesEnabled) {
+      if (!address.country) {
+        this.setState({
+          editedAddress: {
+            ...address,
+            state: null,
+          },
+          states: [],
+        });
+
+        return;
+      }
+
       this.setState({
-        editedAddress: {
-          ...address,
-          state: null,
-        },
-        states: [],
+        editedAddress: address,
+        states: Countries[address.country],
       });
 
       return;
@@ -158,7 +200,6 @@ export default class New extends Component {
 
     this.setState({
       editedAddress: address,
-      states: Countries[address.country],
     });
   };
 
@@ -172,6 +213,7 @@ export default class New extends Component {
       backLabel,
       onBackClick,
       hideBack,
+      isInttCurrenciesEnabled,
     } = this.props;
 
     const { states, editedAddress } = this.state;
@@ -180,6 +222,15 @@ export default class New extends Component {
     const invalid = !isAddressValid(editedAddress, {
       zipcode: isValidZipcodeCountryWise,
     });
+
+    let extraProps = {};
+
+    if (isInttCurrenciesEnabled) {
+      extraProps = {
+        countries: CountryNames,
+        maxLengthZipcode: 8,
+      };
+    }
 
     return (
       <div id="add-address-modal">
@@ -211,10 +262,10 @@ export default class New extends Component {
             <AddressEntry
               onChange={this.onAddressUpdate}
               states={states}
-              countries={CountryNames}
               address={editedAddress}
               showDisabledCountry={true}
-              maxLengthZipcode={8}
+              hideCountry={!isInttCurrenciesEnabled}
+              {...extraProps}
             />
 
             <div class="row">

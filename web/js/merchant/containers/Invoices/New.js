@@ -813,6 +813,9 @@ export default class InvoicesNewContainer extends Component {
           header={`${actionText} ${capitalize(type)} Address`}
           customer={customer}
           addresses={addresses}
+          isInttCurrenciesEnabled={
+            this.props.session.user.isInttCurrenciesEnabled
+          }
           selected={
             type === 'billing'
               ? selectedBillingAddress
