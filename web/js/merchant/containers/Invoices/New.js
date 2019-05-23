@@ -53,6 +53,7 @@ import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
 import { track, trackLinkClick } from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
+import PickCurrency from 'merchant/components/Invoices/PickCurrency';
 
 function validate(values) {
   let errors = {
@@ -304,6 +305,7 @@ export default class InvoicesNewContainer extends Component {
         .then(invoice => {
           this.setState({
             isLoading: false,
+            invoiceCurrency: invoice.currency,
           });
 
           if (this.isPaymentLink(invoice)) {
@@ -589,6 +591,27 @@ export default class InvoicesNewContainer extends Component {
         });
         throw error;
       });
+  };
+
+  setInvoiceCurrency = newCurrency => {
+    console.log('NEW CURRENCY...', newCurrency);
+
+    this.setState({
+      invoiceCurrency: newCurrency,
+    });
+  };
+
+  openInvoiceCurrencyChangeModal = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <PickCurrency
+          currency={this.state.invoiceCurrency}
+          onSave={this.setInvoiceCurrency}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
   };
 
   quickCreateCustomer = ({ searchTerm = '' }) => {
@@ -1424,8 +1447,6 @@ export default class InvoicesNewContainer extends Component {
       !isFetchingAddresses &&
       !isDisabled;
 
-    const showChangeCurrency = true;
-
     return (
       <div class="react-root">
         {this.state.isLoading ? (
@@ -2205,11 +2226,11 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </button>
                           )}
-                          {showChangeCurrency && (
+                          {this.props.session.user.isInttCurrenciesEnabled && (
                             <div class="change-currency-cta">
                               <button
                                 class="btn btn-default btn-block btn-lg"
-                                onClick={this.handleChangeCurrency}
+                                onClick={this.openInvoiceCurrencyChangeModal}
                                 type="button"
                               >
                                 <div class="row">

@@ -6,7 +6,7 @@ import { classList } from 'common/util';
 
 const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
 
-function CurrencyOption({ option }) {
+function CurrencyOption({ option }, noTick = false) {
   return (
     <div>
       <span>
@@ -14,7 +14,7 @@ function CurrencyOption({ option }) {
           option.name
         })
       </span>
-      <i className="i-check text-success" />
+      {noTick && <i className="i-check text-success" />}
     </div>
   );
 }
@@ -45,7 +45,8 @@ export default class extends React.Component {
       currency,
       isDisabled = this.props.disabled;
 
-    if (this.props.user.international) {
+    // TODO: Only for dev mode
+    if (true || this.props.user.international) {
       const defaultValue = this.props.defaultValue;
 
       Object.keys(window.currencyList).forEach(c => {
@@ -101,7 +102,9 @@ export default class extends React.Component {
   };
 
   getSelectedCurrencyOption = ({ option }) => {
-    const optionContent = SelectedCurrencyOption(option);
+    const optionContent = this.props.fullDisplay
+      ? CurrencyOption({ option }, false)
+      : SelectedCurrencyOption(option);
 
     return this.state.disabled ? (
       <AmountTooltip
@@ -118,13 +121,13 @@ export default class extends React.Component {
   render() {
     const props = this.props;
 
-    const isInternationalEnabled =
-      this.props.user.international && this.props.user.isInttCurrenciesEnabled;
+    const isInternationalEnabled = this.props.user.isInttCurrenciesEnabled;
 
     return (
       <div
         class={classList(
           'Input Input--Currency',
+          this.props.fullDisplay && 'Input--Currency--fullDisplay',
           (!isInternationalEnabled || this.props.disabled) && 'Input--noMargin'
         )}
       >
