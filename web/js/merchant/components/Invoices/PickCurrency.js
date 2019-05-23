@@ -38,7 +38,7 @@ export default class extends React.PureComponent {
               {alerts.length > 1 && <br />}
 
               {alerts.map((msg, ix) => (
-                <span>
+                <span key={ix}>
                   {ix > 0 && <br />}
                   {alerts.length > 1 ? ix + 1 + '. ' : ''} {msg}
                 </span>
