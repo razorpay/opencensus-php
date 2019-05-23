@@ -312,7 +312,7 @@ class Entity extends Base\PublicEntity
 
     public function isAmexEnabled()
     {
-        return $this->getAttribute(self::AMEX);
+        return ((bool) $this->getCardNetworks()[Network::AMEX]);
     }
 
     public function isPaytmEnabled()
@@ -433,7 +433,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmex()
     {
-        return $this->getAttribute(self::AMEX);
+        return ((bool) $this->getCardNetworks()[Network::AMEX]);
     }
 
     public function getCardNetworks(): array
