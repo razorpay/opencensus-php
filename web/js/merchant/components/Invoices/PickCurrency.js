@@ -13,6 +13,11 @@ export default class extends React.PureComponent {
   };
 
   render() {
+    const alerts = [
+      'GST and tax related details will not show up for invoices with international currency.',
+      ...(this.props.alerts || []),
+    ];
+
     return (
       <div class="PickCurrency-Modal">
         <ModalHeader
@@ -29,13 +34,17 @@ export default class extends React.PureComponent {
             />
 
             <Alert.Warning>
-              <b>NOTE:</b>
+              <b>NOTE: </b>
+              {alerts.length > 1 && <br />}
+
+              {alerts.map((msg, ix) => (
+                <span>
+                  {ix > 0 && <br />}
+                  {alerts.length > 1 ? ix + 1 + '. ' : ''} {msg}
+                </span>
+              ))}
+
               <br />
-              1. GST and tax related details will not show up for invoices with
-              international currency.
-              <br />
-              2. The rate of all the items in the current invoice will reset to
-              0.
             </Alert.Warning>
             <br />
             <Button.Primary class="btn-block">

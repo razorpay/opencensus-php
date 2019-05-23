@@ -607,6 +607,13 @@ export default class InvoicesNewContainer extends Component {
           currency={this.state.invoiceCurrency}
           onSave={this.setInvoiceCurrency}
           closeModal={this.props.closeModal}
+          alerts={
+            this.props.invoice.id
+              ? [
+                  'The rate of all the items in the current invoice will reset to 0.',
+                ]
+              : null
+          }
         />
       ),
     });
