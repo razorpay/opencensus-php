@@ -43,6 +43,7 @@ export default class InvoiceLineItemTable extends Component {
       invoice,
       invoiceTotal,
       applyTaxes,
+      invoiceCurrency,
     } = this.props;
 
     return (
@@ -71,6 +72,7 @@ export default class InvoiceLineItemTable extends Component {
                         gstSlabs={gstSlabs}
                         onRemove={this.onRemove}
                         applyTaxes={applyTaxes}
+                        invoiceCurrency={invoiceCurrency}
                       />
                     ))}
                     <tr class="addline">
@@ -129,7 +131,7 @@ export default class InvoiceLineItemTable extends Component {
                         <b>
                           <Amount
                             value={invoiceTotal.total * 100}
-                            currency={invoice.currency}
+                            currency={invoiceCurrency}
                           />
                         </b>
                       </td>

@@ -404,6 +404,12 @@ export default class InvoiceLineItem extends React.Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.invoiceCurrency !== this.props.invoiceCurrency) {
+      this.props.change(`${this.props.fieldName}.amountInINR`, 0);
+    }
+  }
+
   render() {
     let {
       fieldName,
@@ -412,6 +418,7 @@ export default class InvoiceLineItem extends React.Component {
       disabled,
       items,
       applyTaxes,
+      invoiceCurrency,
     } = this.props;
     let selectedOption = this.props.invoice_line_items[index];
     let isEmptyRow = !(
@@ -546,10 +553,7 @@ export default class InvoiceLineItem extends React.Component {
 
         <td class="text-right lineItem__total">
           <div class="item-total">
-            <Amount
-              value={lineItemTotal * 100}
-              currency={selectedOption.currency}
-            />
+            <Amount value={lineItemTotal * 100} currency={invoiceCurrency} />
           </div>
           {selectedOption.item_id &&
             applyTaxes && (
@@ -568,7 +572,7 @@ export default class InvoiceLineItem extends React.Component {
                           100 /
                           gstSlab.groups.length
                         }
-                        currency={selectedOption.currency}
+                        currency={invoiceCurrency}
                       />
                     </p>
                   ))}
@@ -583,7 +587,7 @@ export default class InvoiceLineItem extends React.Component {
                           selectedOption.tax_inclusive
                         ) * 100
                       }
-                      currency={selectedOption.currency}
+                      currency={invoiceCurrency}
                     />
                   </p>
                 )}

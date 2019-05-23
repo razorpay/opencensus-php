@@ -1427,6 +1427,7 @@ export default class InvoicesNewContainer extends Component {
       selectedBillingAddress,
       selectedShippingAddress,
       isFetchingAddresses,
+      invoiceCurrency,
     } = this.state;
 
     /**
@@ -1995,6 +1996,7 @@ export default class InvoicesNewContainer extends Component {
                         items={this.props.items}
                         disabled={isDisabled}
                         invoice={invoice}
+                        invoiceCurrency={invoiceCurrency}
                         invoiceTotal={invoiceTotal}
                         gstSlabs={gstSlabs}
                         applyTaxes={
