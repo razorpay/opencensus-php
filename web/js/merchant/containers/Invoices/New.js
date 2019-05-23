@@ -11,6 +11,7 @@ import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 import Spinner from 'rzp/ui/Spinner';
 import InlineField from 'rzp/ui/Forms/InlineField';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import {
   findBy,
   getKeysSeparatedByPipe,
@@ -1423,6 +1424,8 @@ export default class InvoicesNewContainer extends Component {
       !isFetchingAddresses &&
       !isDisabled;
 
+    const showChangeCurrency = true;
+
     return (
       <div class="react-root">
         {this.state.isLoading ? (
@@ -2201,6 +2204,32 @@ export default class InvoicesNewContainer extends Component {
                                 />
                               </div>
                             </button>
+                          )}
+                          {showChangeCurrency && (
+                            <div class="change-currency-cta">
+                              <button
+                                class="btn btn-default btn-block btn-lg"
+                                onClick={this.handleChangeCurrency}
+                                type="button"
+                              >
+                                <div class="row">
+                                  <div class="col-xs-10">
+                                    <h3>Change Currency</h3>
+                                    <p>Select different currency</p>
+                                  </div>
+                                  <i
+                                    class="col-xs-2 i i-arrow-forward"
+                                    style={{ marginTop: '0.5em' }}
+                                  />
+                                </div>
+                              </button>
+                              <Popover theme="dark" align="bottom">
+                                <PopoverBody>
+                                  Going forward you can change the Invoice
+                                  currency here
+                                </PopoverBody>
+                              </Popover>
+                            </div>
                           )}
                         </div>
                       </div>
