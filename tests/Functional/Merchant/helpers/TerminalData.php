@@ -1909,4 +1909,20 @@ return [
             ]
         ]
     ],
+
+    'testCreateNetbankingCanaraTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_canara',
+                'gateway_merchant_id'       => 'merchant_id',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
 ];

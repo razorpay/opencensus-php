@@ -571,7 +571,6 @@ return [
 
     'netbanking_canara' => [
         'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
-        //TODO add these values for live mode
         'key'                    => env('NETBANKING_CANARA_GATEWAY_KEY'),
         'IV'                     => env('NETBANKING_CANARA_GATEWAY_IV'),
     ],
