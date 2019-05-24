@@ -947,6 +947,8 @@ export default class InvoicesNewContainer extends Component {
   }
 
   save = props => {
+    props = removeTaxForNonINRItems(props, this.state.invoiceCurrency);
+
     return this._save(props).then(invoice => {
       track({
         eventAction: 'Save - Invoice',
@@ -972,34 +974,13 @@ export default class InvoicesNewContainer extends Component {
     }
 
     return this.showIssueConfirmModal(notifyProps => {
-      const updatedProps = {
-        ...props,
-        ...notifyProps,
-      };
-
-      if (this.state.invoiceCurrency !== 'INR') {
-        const { invoiceCurrency } = this.state;
-
-        updatedProps.currency = invoiceCurrency;
-
-        updatedProps.line_items = updatedProps.line_items.map(item => {
-          if (this.state.invoiceCurrency !== item.selectedItem.currency) {
-            delete item.taxes;
-            delete item.tax_ids;
-            delete item.tax_inclusive;
-            delete item.tax_rate;
-
-            delete item.item_id;
-
-            return {
-              ...item,
-              currency: invoiceCurrency,
-            };
-          }
-
-          return item;
-        });
-      }
+      const updatedProps = removeTaxForNonINRItems(
+        {
+          ...props,
+          ...notifyProps,
+        },
+        this.state.invoiceCurrency
+      );
 
       return this._save(updatedProps).then(invoice => {
         track({
@@ -2357,3 +2338,31 @@ export default class InvoicesNewContainer extends Component {
     );
   }
 }
+
+const removeTaxForNonINRItems = (props, invoiceCurrency) => {
+  const updatedProps = { ...props };
+
+  if (invoiceCurrency !== 'INR') {
+    updatedProps.currency = invoiceCurrency;
+
+    updatedProps.line_items = updatedProps.line_items.map(item => {
+      if (invoiceCurrency !== item.selectedItem.currency) {
+        delete item.taxes;
+        delete item.tax_ids;
+        delete item.tax_inclusive;
+        delete item.tax_rate;
+        delete item.item_id;
+
+        return {
+          ...item,
+          currency: invoiceCurrency,
+          deleteTaxId: true,
+        };
+      }
+
+      return item;
+    });
+  }
+
+  return updatedProps;
+};

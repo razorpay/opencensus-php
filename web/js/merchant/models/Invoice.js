@@ -171,6 +171,10 @@ export default class Invoice extends GenericEntity {
               lineItem.tax_id = null;
             }
 
+            if (item.deleteTaxId) {
+              delete lineItem.tax_id;
+            }
+
             return lineItem;
           });
       }
