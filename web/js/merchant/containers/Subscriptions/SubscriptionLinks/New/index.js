@@ -135,6 +135,7 @@ export default class NewSubscriptionLink extends Component {
         description: option.description,
         amount: option.amount,
         currency: option.currency,
+        type: 'addon',
       },
       quantity: 1,
     };
@@ -196,6 +197,10 @@ export default class NewSubscriptionLink extends Component {
 
     if (internals._isNonExpiringLink) {
       delete data.expire_by;
+    }
+
+    if (!data.customer_notify) {
+      delete data.customer_notify;
     }
 
     // formatting notes, from [key: key1, value: value1] => {key1: value1}
