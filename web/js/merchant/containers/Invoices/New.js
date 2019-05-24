@@ -971,10 +971,24 @@ export default class InvoicesNewContainer extends Component {
     }
 
     return this.showIssueConfirmModal(notifyProps => {
-      return this._save({
+      const updatedProps = {
         ...props,
         ...notifyProps,
-      }).then(invoice => {
+      };
+
+      if (this.state.invoiceCurrency !== 'INR') {
+        const { invoiceCurrency } = this.state;
+
+        updatedProps.currency = invoiceCurrency;
+        updatedProps.line_items = updatedProps.line_items.map(item => {
+          return {
+            ...item,
+            currency: invoiceCurrency,
+          };
+        });
+      }
+
+      return this._save(updatedProps).then(invoice => {
         track({
           eventAction: 'Issue - Invoice',
           eventLabel: getKeysSeparatedByPipe(props),
