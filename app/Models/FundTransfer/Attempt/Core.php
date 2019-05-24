@@ -486,9 +486,19 @@ class Core extends Base\Core
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
             }
 
-            if(empty($input[Entity::UTR]) === false)
+            if (empty($input[Entity::UTR]) === false)
             {
                 $fta->setUtr($input[Entity::UTR]);
+            }
+
+            if (empty($input[Entity::MODE]) === false)
+            {
+                $fta->setMode($input[Entity::MODE]);
+            }
+
+            if (empty($input[AttemptConstants::BANK_PROCESSED_TIME]) === false)
+            {
+                $fta->setDateTime($input[AttemptConstants::BANK_PROCESSED_TIME]);
             }
 
             $fta->fill($input);
