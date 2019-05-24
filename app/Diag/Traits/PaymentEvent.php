@@ -8,21 +8,21 @@ use RZP\Models\Payment;
 trait PaymentEvent
 {
     public function trackPaymentEvent(
-        string $code, 
-        Payment\Entity $payment = null, 
-        \Throwable $ex = null, 
+        array $event,
+        Payment\Entity $payment = null,
+        \Throwable $ex = null,
         array $customProperties = [])
     {
         $event = new PE($payment, $ex, $customProperties);
 
         $properties = $event->getProperties();
 
-        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $code, $properties);
+        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $event, $properties);
     }
 
     public function trackVerifyPaymentEvent(
-        string $code, 
-        Payment\Entity $payment = null, 
+        array $event,
+        Payment\Entity $payment = null,
         \Throwable $ex = null)
     {
         $customProperties = [
@@ -30,6 +30,6 @@ trait PaymentEvent
             'bucket'    => $payment->getVerifyBucket()
         ];
 
-        $this->trackPaymentEvent($code, $payment, $ex, $customProperties);
+        $this->trackPaymentEvent($event, $payment, $ex, $customProperties);
     }
 }
