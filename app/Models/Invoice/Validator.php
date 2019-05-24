@@ -965,6 +965,14 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateCancelInvoicesOfBatch(Batch\Entity $batch)
+    {
+        if ($batch->getStatus() !== Batch\Status::PROCESSED)
+        {
+            throw new BadRequestValidationFailureException('batch should be in processed status to cancel');
+        }
+    }
+
     protected function validateInvoiceIssueForInvoiceType(Entity $invoice)
     {
         $lineItemsCount = $invoice->lineItems()->count();

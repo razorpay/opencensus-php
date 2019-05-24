@@ -84,6 +84,13 @@ class InvoiceController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function cancelInvoicesOfBatch(string $batchId)
+    {
+        $this->service()->cancelInvoicesOfBatch($batchId);
+
+        return ApiResponse::json([]);
+    }
+
     public function deleteInvoice(string $id)
     {
         $response = $this->service()->delete($id);
