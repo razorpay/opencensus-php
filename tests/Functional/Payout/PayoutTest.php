@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature\Constants;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
@@ -21,6 +22,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PayoutTest extends TestCase
 {
+    use TestsMetrics;
     use PaymentTrait;
     use SettlementTrait;
     use DbEntityFetchTrait;
@@ -48,6 +50,27 @@ class PayoutTest extends TestCase
     public function testCreatePayout(): array
     {
         $this->ba->privateAuth();
+
+        // Test for Metrics
+        $metricsMock = $this->createMetricsMock();
+
+        $metricsMock->expects($this->at(10))
+                    ->method('count')
+                    ->withConsecutive(
+                        [
+                            'payout_created_total',
+                            1,
+                            ['mode' => 'NEFT', 'channel' => 'yesbank']
+                        ]);
+
+        //$metricsMock->expects($this->atLeast(1))
+        //            ->method('histogram')
+        //            ->withConsecutive(
+        //                [
+        //                    'payout_created_to_initiated_duration_millseconds.histogram',
+        //                    $this->greaterThanOrEqual(0),
+        //                    [],
+        //                ]);
 
         $this->startTest();
 

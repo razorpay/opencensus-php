@@ -5,12 +5,12 @@ namespace RZP\Models\Payout;
 final class Metric
 {
     // Counters
-    const PAYOUT_CREATED = 'payout_created';
+    const PAYOUT_CREATED_TOTAL = 'payout_created_total';
 
     // Histograms
-    const PAYOUT_CREATED_TO_INITIATED_DURATION_MILLISECONDS   = 'payout_created_to_initiated_duration_millseconds';
-    const PAYOUT_CREATED_TO_PROCESSED_DURATION_MILLISECONDS   = 'payout_created_to_processed_duration_millseconds';
-    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_MILLISECONDS = 'payout_initiated_to_processed_duration_millseconds';
-    const PAYOUT_CREATED_TO_REVERSED_DURATION_MILLISECONDS    = 'payout_created_to_reversed_duration_millseconds';
-    const PAYOUT_PROCESSED_TO_REVERSED_DURATION_MILLISECONDS  = 'payout_processed_to_reversed_duration_millseconds';
+    const PAYOUT_CREATED_TO_INITIATED_DURATION_MILLISECONDS   = 'payout_created_to_initiated_duration_millseconds.histogram';
+    const PAYOUT_CREATED_TO_PROCESSED_DURATION_MILLISECONDS   = 'payout_created_to_processed_duration_millseconds.histogram';
+    const PAYOUT_INITIATED_TO_PROCESSED_DURATION_MILLISECONDS = 'payout_initiated_to_processed_duration_millseconds.histogram';
+    const PAYOUT_CREATED_TO_REVERSED_DURATION_MILLISECONDS    = 'payout_created_to_reversed_duration_millseconds.histogram';
+    const PAYOUT_PROCESSED_TO_REVERSED_DURATION_MILLISECONDS  = 'payout_processed_to_reversed_duration_millseconds.histogram';
 }
