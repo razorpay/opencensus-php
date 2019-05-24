@@ -1342,6 +1342,7 @@ app
         window.trackHubs({
           name: 'update_property',
           data: {
+            email: $scope.signup.data.email,
             signup_business_type: business_type,
             signup_transaction_volume: transaction_volume,
             signup_department: department,
