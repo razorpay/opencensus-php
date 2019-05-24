@@ -102,11 +102,6 @@ export default class InvoicesListContainer extends ListContainer {
     }
   };
 
-  onSubmit = data => {
-    data.international = data.international ? '1' : '0';
-    this.search(data);
-  };
-
   render() {
     let { loading, invoices, user, mode } = this.props;
     let { loadingAllList, totalInvoicesLength, status } = this.state;
@@ -127,7 +122,7 @@ export default class InvoicesListContainer extends ListContainer {
           <InvoiceListFilter
             form="InvoiceListFilter"
             count={this.state.count}
-            onSubmit={this.onSubmit}
+            onSubmit={this.search}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
           />

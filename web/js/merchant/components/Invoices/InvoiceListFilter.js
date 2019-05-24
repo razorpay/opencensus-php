@@ -1,9 +1,11 @@
+import React from 'react';
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ type, ...otherProps }) => {
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
+
   return (
     <ListFilter {...otherProps}>
       <div class="form-group list-filter-item">
@@ -74,14 +76,18 @@ export default ({ type, ...otherProps }) => {
         />
       </div>
 
-      <div class="form-group list-filter-item count">
-        <label>International</label>
-        <Field component={Checkbox} name="international" defaultValue="0" />
+      <div class="form-group list-filter-item">
+        <label>Currency Type</label>
+        <Field
+          name="international"
+          component="select"
+          class="form-control input-sm"
+        >
+          <option value="">All Currencies</option>
+          <option value="0">Indian</option>
+          <option value="1">International</option>
+        </Field>
       </div>
     </ListFilter>
   );
-};
-
-const Checkbox = props => {
-  return <input {...props.input} type="checkbox" />;
 };
