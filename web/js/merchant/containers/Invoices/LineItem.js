@@ -502,12 +502,13 @@ export default class InvoiceLineItem extends React.Component {
               />
             </div>
             <p class="lineItem__description">{selectedOption.description}</p>
-            {itemHSNSAC && (
-              <p>
-                <span class="light">{HSNSACLabel} - </span>
-                <strong>{itemHSNSAC}</strong>
-              </p>
-            )}
+            {itemHSNSAC &&
+              applyTaxes && (
+                <p>
+                  <span class="light">{HSNSACLabel} - </span>
+                  <strong>{itemHSNSAC}</strong>
+                </p>
+              )}
           </div>
         </td>
 

@@ -980,11 +980,23 @@ export default class InvoicesNewContainer extends Component {
         const { invoiceCurrency } = this.state;
 
         updatedProps.currency = invoiceCurrency;
+
         updatedProps.line_items = updatedProps.line_items.map(item => {
-          return {
-            ...item,
-            currency: invoiceCurrency,
-          };
+          if (this.state.invoiceCurrency !== item.selectedItem.currency) {
+            delete item.taxes;
+            delete item.tax_ids;
+            delete item.tax_inclusive;
+            delete item.tax_rate;
+
+            delete item.item_id;
+
+            return {
+              ...item,
+              currency: invoiceCurrency,
+            };
+          }
+
+          return item;
         });
       }
 
@@ -2045,7 +2057,9 @@ export default class InvoicesNewContainer extends Component {
                         invoiceTotal={invoiceTotal}
                         gstSlabs={gstSlabs}
                         applyTaxes={
-                          Boolean(merchantGSTIN) && this.props.state_of_supply
+                          Boolean(merchantGSTIN) &&
+                          this.props.state_of_supply &&
+                          invoiceCurrency === 'INR'
                         }
                       />
 

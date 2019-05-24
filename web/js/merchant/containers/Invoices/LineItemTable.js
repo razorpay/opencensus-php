@@ -110,16 +110,18 @@ export default class InvoiceLineItemTable extends Component {
                             />
                           </td>
                         </tr>
-                        <tr class="total sub-total">
-                          <td />
-                          <td class="text-right">Total Tax</td>
-                          <td class="text-right" width="30%">
-                            <Amount
-                              value={invoiceTotal.tax * 100}
-                              currency={invoice.currency}
-                            />
-                          </td>
-                        </tr>
+                        {invoiceCurrency === 'INR' && (
+                          <tr class="total sub-total">
+                            <td />
+                            <td class="text-right">Total Tax</td>
+                            <td class="text-right" width="30%">
+                              <Amount
+                                value={invoiceTotal.tax * 100}
+                                currency={invoice.currency}
+                              />
+                            </td>
+                          </tr>
+                        )}
                       </Fragment>
                     )}
                     <tr class="total">
