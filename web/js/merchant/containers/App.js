@@ -23,11 +23,11 @@ import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
-import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { isPresent } from 'rzp/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';
@@ -54,8 +54,6 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
-
-    const { user } = props;
 
     const oldModeToken = 'rzp_mode',
       oldModeValue = LocalStorageService.getItem(oldModeToken);
@@ -122,8 +120,13 @@ export default class App extends Component {
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
-    this.props.fetchGST();
-    this.props.fetchConfig();
+    if (isPresent(this.props.user.merchants)) {
+      this.props.fetchGST();
+      this.props.fetchConfig();
+      this.fetchSupportedCurrencies().then(({ data }) => {
+        window.currencyList = data;
+      });
+    }
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
@@ -149,9 +152,6 @@ export default class App extends Component {
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(orgCode);
         }
-      }),
-      this.fetchSupportedCurrencies().then(({ data }) => {
-        window.currencyList = data;
       }),
     ]).then(response => {
       if (response[0].showInstantActivation) {
