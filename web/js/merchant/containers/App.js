@@ -120,15 +120,7 @@ export default class App extends Component {
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
-    if (isPresent(this.props.user.merchants)) {
-      this.props.fetchGST();
-      this.props.fetchConfig();
-      this.fetchSupportedCurrencies().then(({ data }) => {
-        window.currencyList = data;
-      });
-    }
-
-    Promise.all([
+    const promises = [
       this.fetchUser().then(({ data }) => {
         let user = data;
         let role = user.userRole;
@@ -153,7 +145,23 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
-    ]).then(response => {
+      this.fetchSupportedCurrencies().then(({ data }) => {
+        window.currencyList = data;
+      }),
+    ];
+
+    if (isPresent(this.props.user.merchants)) {
+      this.props.fetchGST();
+      this.props.fetchConfig();
+
+      promises.push(
+        this.fetchSupportedCurrencies().then(({ data }) => {
+          window.currencyList = data;
+        })
+      );
+    }
+
+    Promise.all(promises).then(response => {
       if (response[0].showInstantActivation) {
         setTrackData({
           eventCategory: 'Dashboard - Instant Activations',
