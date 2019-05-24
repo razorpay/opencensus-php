@@ -69,6 +69,7 @@ class Base
         'wallet'            => \RZP\Gateway\Wallet\Base\Entity::class,
         'axis_migs'         => \RZP\Gateway\AxisMigs\Entity::class,
         'billdesk'          => \RZP\Gateway\Billdesk\Entity::class,
+        'cardless_emi'      => \RZP\Gateway\CardlessEmi\Entity::class,
     ];
 
     protected static $liveAndTest = [
