@@ -216,7 +216,8 @@ class CardlessEmiReconciliationTest extends TestCase
             'base_amount'       => $this->payment['amount'],
             'amount_authorized' => $this->payment['amount'],
             'status'            => 'authorized',
-            'gateway'           => $this->gateway
+            'gateway'           => $this->gateway,
+            'wallet'            => $this->provider,
         ];
 
         $payment = $this->fixtures->create('payment', $attributes);
