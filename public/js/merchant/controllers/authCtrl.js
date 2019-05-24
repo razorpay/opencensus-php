@@ -284,10 +284,6 @@ app
           },
         });
 
-        window.trackHubs({
-          id: 'SIGNUP_START',
-        });
-
         if (!$valid) {
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
