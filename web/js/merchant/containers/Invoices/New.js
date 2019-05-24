@@ -641,7 +641,8 @@ export default class InvoicesNewContainer extends Component {
           closeModal={this.props.closeModal}
           showCross={showCross}
           alerts={
-            this.props.invoice.id
+            this.props.invoice_line_items &&
+            this.props.invoice_line_items.length
               ? [
                   'The rate of all the items in the current invoice will reset to 0.',
                 ]
@@ -2311,7 +2312,6 @@ export default class InvoicesNewContainer extends Component {
                                   this.state.highlightCurrencyChangeCTA &&
                                     'highlight'
                                 )}
-                                tabIndex="0"
                               >
                                 <button
                                   class="btn btn-default btn-block btn-lg"
