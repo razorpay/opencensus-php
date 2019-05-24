@@ -17,7 +17,7 @@ class PayVerifyData extends Base\Mock\Server
                     'rrn' => '09321',
                     'txnStatus' => 'SUCCESS',
                     'paymentId' => $entities['payment']['id'],
-                    'amount' => $entities['payment']['amount'],
+                    'amount' => $entities['payment']['amount'] / 100,
                     'hash' => 'abcd',
                     '_raw' => '',
                 ],

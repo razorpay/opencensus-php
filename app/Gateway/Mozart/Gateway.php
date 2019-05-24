@@ -682,6 +682,7 @@ class Gateway extends Base\Gateway
         $formattedAmountGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::UPI_AIRTEL,
         ];
 
         return in_array($gateway, $formattedAmountGateways, true);
