@@ -191,6 +191,13 @@ class Constants
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
+    /*
+     * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
+     * decide to upgrade his account to x_pro. This feature gives flexibility initially
+     * to have a controlled roll out of x_pro might be removed going forward.
+     */
+    const X_PRO_INVITE  = 'x_pro_invite';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -346,6 +353,7 @@ class Constants
         self::OVERRIDE_SUB_CONFIG             => true,
         self::DOWNTIME_ROUTING                => true,
         self::PAYMENT_ONHOLD                  => true,
+        self::X_PRO_INVITE                    => true,
     ];
 
     // Entity type constants
@@ -453,6 +461,11 @@ class Constants
         self::QUEUED_PAYOUTS            => [
             'feature'       => self::QUEUED_PAYOUTS,
             'display_name'  => 'Queued payouts',
+            'documentation' => '',
+        ],
+        self::X_PRO_INVITE              => [
+            'feature'       => self::X_PRO_INVITE,
+            'display_name'  => 'Razorpay X Pro Invite',
             'documentation' => '',
         ],
     ];
