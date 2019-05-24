@@ -1192,8 +1192,8 @@ class Entity extends Base\PublicEntity
     public function getMetricDimensions(array $extra = []): array
     {
         $dimensions = $extra + [
-                'channel' => $this->getChannel(),
-                'mode'    => $this->getMode(),
+                Metric::CHANNEL => $this->getChannel(),
+                Metric::MODE    => $this->getMode(),
             ];
 
         return $dimensions;
