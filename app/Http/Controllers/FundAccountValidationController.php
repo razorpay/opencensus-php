@@ -17,13 +17,4 @@ class FundAccountValidationController extends Controller
 
         return ApiResponse::json($entities);
     }
-
-    public function retryAllFundAccountValidations()
-    {
-        $input = Request::all();
-
-        $entities = $this->service()->retryAllFundAccountValidations($input);
-
-        return ApiResponse::json($entities);
-    }
 }

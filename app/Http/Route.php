@@ -1050,10 +1050,9 @@ final class Route
 
         // Fund Account Validation
         'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
-        'fund_account_validation_retry'            => ['post',     'fund_accounts/validations/retry',                'FundAccountValidationController@retry'                             ],
+        'fund_account_validation_retry'            => ['post',     'fund_accounts/validations/retry',                'FundAccountValidationController@retry'                            ],
         'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
         'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
-        'fund_account_validate_retry_all'          => ['post',     'fund_accounts/validations/retry/all',            'FundAccountValidationController@retryAllFundAccountValidations'    ],
 
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
@@ -1464,7 +1463,6 @@ final class Route
         'entity_origin_create',
         'payment_card_vault_migrate',
         'batch_send_mail',
-        'fund_account_validate_retry_all',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2664,7 +2662,6 @@ final class Route
             'scrooge_tagging_backfill',
             'downtime_trigger_cron',
             'payment_card_vault_migrate',
-            'fund_account_validate_retry_all',
         ],
 
         'subscriptions' => [

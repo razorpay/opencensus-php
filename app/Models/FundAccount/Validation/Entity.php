@@ -39,8 +39,6 @@ class Entity extends Base\PublicEntity
     const NOTES                  = 'notes';
     const RESULTS                = 'results';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
-    const RETRY_AT               = 'retry_at';
-    const ATTEMPTS               = 'attempts';
 
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
@@ -68,15 +66,13 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FUND_ACCOUNT_ID,
         self::STATUS,
-        self::ATTEMPTS,
-        self::RETRY_AT,
         self::FEES,
         self::TAX,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
-        self::BALANCE_ID,
         self::ERROR_CODE,
+        self::BALANCE_ID,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::CREATED_AT,
@@ -184,16 +180,6 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setAttempts(int $attempts)
-    {
-        return $this->setAttribute(self::ATTEMPTS, $attempts);
-    }
-
-    public function setRetryAt($retryAt)
-    {
-        $this->setAttribute(self::RETRY_AT, $retryAt);
-    }
-
     public function setAccountStatus(string $status = null)
     {
         return $this->setAttribute(self::ACCOUNT_STATUS, $status);
@@ -244,11 +230,6 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
-    }
-
-    public function getAttempts(): int
-    {
-        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function getFees()

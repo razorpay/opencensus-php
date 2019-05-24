@@ -60,14 +60,6 @@ class CreateFundAccountValidations extends Migration
             $table->char(E::BATCH_FUND_TRANSFER_ID, E::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(E::RETRY_AT)
-                  ->unsigned()
-                  ->nullable();
-
-            $table->tinyInteger(E::ATTEMPTS)
-                  ->default(1)
-                  ->nullable();
-
             $table->char(E::BALANCE_ID, E::ID_LENGTH)
                   ->nullable();
 
@@ -92,7 +84,6 @@ class CreateFundAccountValidations extends Migration
             $table->index([E::FUND_ACCOUNT_ID, E::MERCHANT_ID]);
             $table->index([E::CREATED_AT, E::MERCHANT_ID]);
             $table->index(E::FTS_TRANSFER_ID);
-            $table->index(E::RETRY_AT);
         });
     }
 

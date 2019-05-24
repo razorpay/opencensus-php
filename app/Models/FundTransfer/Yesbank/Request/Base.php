@@ -42,17 +42,6 @@ abstract class Base extends ApiProcessor
 
     protected $isRequestFailure = false;
 
-    const FAILED_RESPONSE                           = 'failed_response';
-    const FAILED_RESPONSE_INSUFFICIENT_FUNDS        = 'failed_response_insufficient_funds';
-    const FAILED_RESPONSE_BENEFICIARY_NOT_ACCEPTED  = 'failed_response_beneficiary_not_accepted';
-
-    const MOCK_FAILURE_RESPONSE_TYPE =
-        [
-            self::FAILED_RESPONSE,
-            self::FAILED_RESPONSE_INSUFFICIENT_FUNDS,
-            self::FAILED_RESPONSE_BENEFICIARY_NOT_ACCEPTED,
-        ];
-
     public function __construct(string $type = null)
     {
         parent::__construct();
@@ -265,13 +254,13 @@ abstract class Base extends ApiProcessor
      */
     protected function mockResponseGenerator(array $input): string
     {
-        if ((isset($input[self::FAILED_RESPONSE]) === true) and
-            ($input[self::FAILED_RESPONSE] === '1'))
+        if ((isset($input['failed_response']) === true) and
+            ($input['failed_response'] === '1'))
         {
             return $this->mockGenerateFailedResponse();
         }
 
-        $possibleFailureReceipts = self::MOCK_FAILURE_RESPONSE_TYPE;
+        $possibleFailureReceipts = ['failed_response', 'failed_response_insufficient_funds'];
 
         if (($this->entity->source instanceof Entity) and
             (in_array($this->entity->source->getReceipt(), $possibleFailureReceipts) === true))
@@ -284,8 +273,8 @@ abstract class Base extends ApiProcessor
 
     protected function mockResponseGeneratorForGateway(array $input): array
     {
-        if ((isset($input[self::FAILED_RESPONSE]) === true) and
-            ($input[self::FAILED_RESPONSE] === '1'))
+        if ((isset($input['failed_response']) === true) and
+            ($input['failed_response'] === '1'))
         {
             return $this->mockGenerateFailedResponseForGateway();
         }
