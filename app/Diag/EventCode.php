@@ -6,217 +6,217 @@ class EventCode
 {
     // order events
     const ORDER_CREATION_INITIATED                      = [
-        'group' = 'initiation',
-        'name'  = 'order.creation.initiated'
+        'group' => 'initiation',
+        'name'  => 'order.creation.initiated'
     ];
 
     const ORDER_CREATION_PROCESSED                      = [
-        'group' = 'initiation',
-        'name'  = 'order.creation.processed'
+        'group' => 'initiation',
+        'name'  => 'order.creation.processed'
     ];
 
 
     // payment flow events
     const PAYMENT_CREATION_INITIATED                    = [
-        'group' = 'initiation',
-        'name'  = 'payment.creation.initiated'
+        'group' => 'initiation',
+        'name'  => 'payment.creation.initiated'
     ];
 
     const PAYMENT_INPUT_VALIDATIONS_INITIATED           = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.input.validations.initiated'
+        'group' => 'internal_checks',
+        'name'  => 'payment.input.validations.initiated'
     ];
 
     const PAYMENT_INPUT_VALIDATIONS_PROCESSED           = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.input.validations.processed'
+        'group' => 'internal_checks',
+        'name'  => 'payment.input.validations.processed'
     ];
 
     const PAYMENT_CARDSAVING_INITIATED                  = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.cardsaving.initiated'
+        'group' => 'internal_checks',
+        'name'  => 'payment.cardsaving.initiated'
     ];
 
     const PAYMENT_CARDSAVING_PROCESSED                  = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.cardsaving.processed'
+        'group' => 'internal_checks',
+        'name'  => 'payment.cardsaving.processed'
     ];
 
     const PAYMENT_INPUT_VALIDATIONS2_INITIATED          = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.input.validations2.initiated'
+        'group' => 'internal_checks',
+        'name'  => 'payment.input.validations2.initiated'
     ];
 
     const PAYMENT_INPUT_VALIDATIONS2_PROCESSED          = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.input.validations2.processed'
+        'group' => 'internal_checks',
+        'name'  => 'payment.input.validations2.processed'
     ];
 
     const PAYMENT_RISKCHECK_INITIATED                   = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.riskcheck.initiated'
+        'group' => 'internal_checks',
+        'name'  => 'payment.riskcheck.initiated'
     ];
 
     const PAYMENT_RISKCHECK_PROCESSED                   = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.riskcheck.processed'
+        'group' => 'internal_checks',
+        'name'  => 'payment.riskcheck.processed'
     ];
 
     const PAYMENT_TERMINAL_SELECTION_INITIATED          = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.terminal.selection.initiated'
+        'group' => 'internal_checks',
+        'name'  => 'payment.terminal.selection.initiated'
     ];
 
     const PAYMENT_TERMINAL_SELECTION_PROCESSED          = [
-        'group' = 'internal_checks',
-        'name'  = 'payment.terminal.selection.processed'
+        'group' => 'internal_checks',
+        'name'  => 'payment.terminal.selection.processed'
     ];
 
     const PAYMENT_CREATION_PROCESSED                    = [
-        'group' = 'payment_creation',
-        'name'  = 'payment.creation.processed'
+        'group' => 'payment_creation',
+        'name'  => 'payment.creation.processed'
     ];
 
     const PAYMENT_CREATE_REDIRECT_RESPONSE_SENT         = [
-        'group' = 'payment_creation',
-        'name'  = 'payment.create.redirect.response.sent'
+        'group' => 'payment_creation',
+        'name'  => 'payment.create.redirect.response.sent'
     ];
 
     const PAYMENT_CREATE_REDIRECT_INITIATED             = [
-        'group' = 'payment_creation',
-        'name'  = 'payment.create.redirect.initiated'
+        'group' => 'payment_creation',
+        'name'  => 'payment.create.redirect.initiated'
     ];
 
     const PAYMENT_CREATE_REDIRECT_PROCESSED             = [
-        'group' = 'authentication',
-        'name'  = 'payment.create.redirect.processed'
+        'group' => 'authentication',
+        'name'  => 'payment.create.redirect.processed'
     ];
 
     const PAYMENT_AUTHENTICATION_INITIATED              = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.initiated'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.initiated'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.otp.generate.initiated'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.otp.generate.initiated'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.otp.generate.processed'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.otp.generate.processed'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED   = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.otp.resend.initiated'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.otp.resend.initiated'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_RESEND_PROCESSED   = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.otp.resend.processed'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.otp.resend.processed'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_SUBMIT_INITIATED   = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.otp.submit.initiated'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.otp.submit.initiated'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_SUBMIT_PROCESSED   = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.otp.submit.processed'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.otp.submit.processed'
     ];
 
     const PAYMENT_AUTHENTICATION_HEADLESS_INITIATED     = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.headless.initiated'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.headless.initiated'
     ];
 
     const PAYMENT_AUTHENTICATION_HEADLESS_PROCESSED     = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.headless.processed'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.headless.processed'
     ];
 
     const PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.3ds.redirect.initiated'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.3ds.redirect.initiated'
     ];
 
     const PAYMENT_AUTHORIZATION_INITIATED               = [
-        'group' = 'authorization',
-        'name'  = 'payment.authorization.initiated'
+        'group' => 'authorization',
+        'name'  => 'payment.authorization.initiated'
     ];
 
     const PAYMENT_AUTHENTICATION_2FA_URL_SENT           = [
-        'group' = 'authentication',
-        'name'  = 'payment.authentication.2fa.url.sent'
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.2fa.url.sent'
     ];
 
     const PAYMENT_AUTHORIZATION_DROPPED                 = [
-        'group' = 'authorization',
-        'name'  = 'payment.authorization.dropped'
+        'group' => 'authorization',
+        'name'  => 'payment.authorization.dropped'
     ];
 
     const PAYMENT_AUTHORIZATION_PROCESSED               = [
-        'group' = 'authorization',
-        'name'  = 'payment.authorization.processed'
+        'group' => 'authorization',
+        'name'  => 'payment.authorization.processed'
     ];
 
     const PAYMENT_CALLBACK_INITIATED                    = [
-        'group' = 'authorization',
-        'name'  = 'payment.callback.initiated'
+        'group' => 'authorization',
+        'name'  => 'payment.callback.initiated'
     ];
 
     const PAYMENT_S2S_CALLBACK_INITIATED                = [
-        'group' = 'authorization',
-        'name'  = 'payment.s2s.callback.initiated'
+        'group' => 'authorization',
+        'name'  => 'payment.s2s.callback.initiated'
     ];
 
     const PAYMENT_REDIRECT_CALLBACK_INITIATED           = [
-        'group' = 'authorization',
-        'name'  = 'payment.redirect.callback.initiated'
+        'group' => 'authorization',
+        'name'  => 'payment.redirect.callback.initiated'
     ];
 
     const PAYMENT_CAPTURE_INITIATED                     = [
-        'group' = 'capture',
-        'name'  = 'payment.capture.initiated'
+        'group' => 'capture',
+        'name'  => 'payment.capture.initiated'
     ];
 
     const PAYMENT_PRICING_CALCULATIONS_INITIATED        = [
-        'group' = 'capture',
-        'name'  = 'payment.pricing.calculations.initiated'
+        'group' => 'capture',
+        'name'  => 'payment.pricing.calculations.initiated'
     ];
 
     const PAYMENT_PRICING_CALCULATIONS_PROCESSED        = [
-        'group' = 'capture',
-        'name'  = 'payment.pricing.calculations.processed'
+        'group' => 'capture',
+        'name'  => 'payment.pricing.calculations.processed'
     ];
 
     const PAYMENT_CAPTURE_PROCESSED                     = [
-        'group' = 'capture',
-        'name'  = 'payment.capture.processed'
+        'group' => 'capture',
+        'name'  => 'payment.capture.processed'
     ];
 
     const PAYMENT_CREATE_REQUEST_PROCESSED              = [
-        'group' = 'payment_create_response',
-        'name'  = 'payment.create.request.processed'
+        'group' => 'payment_create_response',
+        'name'  => 'payment.create.request.processed'
     ];
 
     const PAYMENT_RESPONSE_SENT                         = [
-        'group' = 'payment_response',
-        'name'  = 'payment.response.sent'
+        'group' => 'payment_response',
+        'name'  => 'payment.response.sent'
     ];
 
 
     // payment verification
     const PAYMENT_VERIFICATION_INITIATED                = [
-        'group' = 'verification',
-        'name'  = 'payment.verification.initiated'
+        'group' => 'verification',
+        'name'  => 'payment.verification.initiated'
     ];
 
     const PAYMENT_VERIFICATION_PROCESSED                = [
-        'group' = 'verification',
-        'name'  = 'payment.verification.processed'
+        'group' => 'verification',
+        'name'  => 'payment.verification.processed'
     ];
 
 }

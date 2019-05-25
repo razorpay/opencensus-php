@@ -8,7 +8,7 @@ use RZP\Models\Order;
 trait OrderEvent
 {
     public function trackOrderEvent(
-        array $event,
+        array $eventDetails,
         Order\Entity $order = null,
         \Throwable $ex = null,
         array $customProperties = [])
@@ -17,6 +17,6 @@ trait OrderEvent
 
         $properties = $event->getProperties();
 
-        $this->trackEvent(OE::EVENT_TYPE, OE::EVENT_VERSION, $event, $properties);
+        $this->trackEvent(OE::EVENT_TYPE, OE::EVENT_VERSION, $eventDetails, $properties);
     }
 }

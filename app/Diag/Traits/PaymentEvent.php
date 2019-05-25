@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 trait PaymentEvent
 {
     public function trackPaymentEvent(
-        array $event,
+        array $eventData,
         Payment\Entity $payment = null,
         \Throwable $ex = null,
         array $customProperties = [])
@@ -17,7 +17,7 @@ trait PaymentEvent
 
         $properties = $event->getProperties();
 
-        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $event, $properties);
+        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
     }
 
     public function trackVerifyPaymentEvent(
