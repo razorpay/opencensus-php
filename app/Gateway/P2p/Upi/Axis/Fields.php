@@ -32,6 +32,7 @@ class Fields
     const MERCHANT_SIGNATURE            = 'merchantSignature';
     const VPA_ACCOUNTS                  = 'vpaAccounts';
     const TIMESTAMP                     = 'timestamp';
+    const ACCOUNT                       = 'account';
     const ACCOUNTS                      = 'accounts';
     const VPA_SUGGESTIONS               = 'vpaSuggestions';
     const DEVICE_DATA                   = 'device_data';
@@ -69,9 +70,12 @@ class Fields
     const BALANCE                       = 'balance';
 
     // --------------------- VPA -------------------- //
+    const VPA                           = 'vpa';
     const CUSTOMER_VPA                  = 'customerVpa';
+    const CUSTOMER_PRIMARY_VPA          = 'customerPrimaryVpa';
     const AVAILABLE                     = 'available';
     const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
+    const IS_DEFAULT                    = 'isDefault';
     const CUSTOMER_NAME                 = 'customerName';
     const SHOULD_BLOCK                  = 'shouldBlock';
     const SHOULD_SPAM                   = 'shouldSpam';

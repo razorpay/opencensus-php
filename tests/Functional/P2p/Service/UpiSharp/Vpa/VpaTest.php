@@ -97,12 +97,14 @@ class VpaTest extends TestCase
 
     public function testDeleteVpa()
     {
-        $vpaId = $this->fixtures->vpa->getPublicId();
+        $vpa = $this->fixtures->createVpa([
+            'default' => false,
+        ]);
 
         $helper = $this->getVpaHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->deleteVpa($vpaId);
+        $helper->deleteVpa($vpa->getPublicId());
     }
 }

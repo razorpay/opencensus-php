@@ -14,14 +14,14 @@ use RZP\Models\P2p\BankAccount\Bank;
 trait HasBank
 {
 
-    public function associateBank(Bank\Entity $handle)
+    public function associateBank(Bank\Entity $bank)
     {
-        return $this->parentBank()->associate($handle);
+        return $this->parentBank()->associate($bank);
     }
 
-    public function scopeBank(BuilderEx $query, Bank\Entity $handle)
+    public function scopeBank(BuilderEx $query, Bank\Entity $bank)
     {
-        return $query->where(self::BANK_ID, $handle->getCode());
+        return $query->where(self::BANK_ID, $bank->getId());
     }
 
     public function bank()
@@ -31,7 +31,7 @@ trait HasBank
 
     public function setPublicBankAttribute(array & $array)
     {
-        if (empty($array[self::BANK_ID]) === true)
+        if (empty($this->bank) === true)
         {
             return;
         }
