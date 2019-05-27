@@ -379,6 +379,9 @@ return [
                         'entity'             => 'bank_transfer',
                         'mode'               => 'NEFT',
                         'amount'             => 10000,
+                        'payer_bank_account' => [
+                            'entity' => 'bank_account',
+                        ],
                     ],
                 ],
             ],
