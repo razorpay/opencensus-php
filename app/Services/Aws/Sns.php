@@ -14,6 +14,11 @@ class Sns
     protected $client;
 
     /**
+    * @var Razorpay Logger
+    */
+    protected $trace;
+
+    /**
      * @var array
      */
     protected $awsConfig;
@@ -31,14 +36,20 @@ class Sns
         ];
 
         $this->client = $sdk->createClient('sns', $args);
+
+        $this->trace = $app['trace'];
     }
 
     public function publish($message, $messageTarget = 'sms')
     {
-        $this->client->publish(
+        $result = $this->client->publish(
             [
                 'Message'   => $message,
                 'TargetArn' => $this->awsConfig['sns_target_arn'][$messageTarget],
-            ]);
+            ])->toArray();
+
+        $this->trace->info(TraceCode::AWS_SNS_PUBLISH_RESPONSE, $result);
+
+        return $result;
     }
 }
