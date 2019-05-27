@@ -10,7 +10,6 @@ class Validator extends Base\Validator
 {
     protected static $availabilityRules = [
         Entity::BANK              => 'required',
-        Entity::MERCHANT_ID       => 'required',
         Entity::PINCODE           => 'required|custom',
     ];
 

@@ -1686,6 +1686,7 @@ final class Route
         'commissions_analytics',
         'invoice_update_billing_period',
         'bulk_invoice_create',
+        'merchant_account_create',
     ];
 
     // These will run on internal auth with the assurance
@@ -2514,7 +2515,6 @@ final class Route
         'payment_redirect_to_authorize_get',
         'payment_redirect_to_authorize_post',
         'gateway_payment_callback_upi_airtel',
-        'merchant_account_create',
     ];
 
     /**
