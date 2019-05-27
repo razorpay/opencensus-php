@@ -337,7 +337,10 @@ class Reporting implements ExternalService
 
     public function fetchScheduleMultiple(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+        $response = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+
+        return $this->mergeScheduledTasks($response);
+
     }
 
     public function fetchScheduleById(string $id): array
@@ -940,5 +943,28 @@ class Reporting implements ExternalService
         }
 
         return $parentId;
+    }
+
+    protected function mergeScheduledTasks(array $response)
+    {
+        if (isset($response['error']) === false)
+        {
+            if (isset($response['items']) === true)
+            {
+                foreach ($response['items'] as &$item)
+                {
+                    $entityId = $this->generateEntityId($item['id']);
+
+                    $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
+
+                    if ($scheduleTask !== null)
+                    {
+                        $item['schedule'] = $scheduleTask->schedule;
+                    }
+                }
+            }
+        }
+
+        return $response;
     }
 }
