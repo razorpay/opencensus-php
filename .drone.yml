@@ -301,6 +301,8 @@ pipeline:
   deploy-zeta:
     image: razorpay/drone-kubernetes
     pull: true
+    environment:
+      - CDN_DASHBOARD_URL=https://cdn.razorpay.com/dashboard
     secrets:
       - docker_username
       - docker_password
