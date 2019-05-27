@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Hitachi\SubReconciliator;
 
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Hitachi;
 use RZP\Reconciliator\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -216,6 +217,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[self::COLUMN_ARN];
     }
 
+    protected function getReconRrn($row)
+    {
+        return $row[self::COLUMN_RRN] ?? null;
+    }
+
     protected function getAuthCode($row)
     {
         if (empty($row[self::COLUMN_AUTH_CODE]) === true)
@@ -300,5 +306,20 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return true;
+    }
+
+    /**
+     * This returns the array of attributes to be saved while force authorizing the payment.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            Hitachi\Entity::RRN                 => $this->getReconRrn($row),
+            Hitachi\Entity::AUTH_ID             => $this->getAuthCode($row),
+            Hitachi\Entity::MERCHANT_REFERENCE  => $this->payment->getId(),
+        ];
     }
 }
