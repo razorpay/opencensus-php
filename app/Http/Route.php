@@ -1078,6 +1078,7 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+        'merchant_account_create'                  => ['post',     'merchant_account/create',                        'MerchantAccountController@createMerchantAccount'                   ],
     ];
 
     public static $public = [
@@ -2513,6 +2514,7 @@ final class Route
         'payment_redirect_to_authorize_get',
         'payment_redirect_to_authorize_post',
         'gateway_payment_callback_upi_airtel',
+        'merchant_account_create',
     ];
 
     /**
