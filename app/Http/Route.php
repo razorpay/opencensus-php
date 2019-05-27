@@ -1078,7 +1078,7 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
-        'merchant_account_create'                  => ['post',     'merchant_account/create',                        'MerchantAccountController@createMerchantAccount'                   ],
+        'banking_account_create'                   => ['post',     'banking_account',                                'BankingAccountController@create'                                   ],
     ];
 
     public static $public = [
@@ -1686,7 +1686,7 @@ final class Route
         'commissions_analytics',
         'invoice_update_billing_period',
         'bulk_invoice_create',
-        'merchant_account_create',
+        'banking_account_create',
     ];
 
     // These will run on internal auth with the assurance

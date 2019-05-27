@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\MerchantAccount;
+namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 
@@ -15,17 +15,17 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function createMerchantAccount(array $input)
+    public function create(array $input)
     {
         (new Validator)->validateInput('availability', $input);
 
-        $this->core->validateBankAccountForMerchant($input);
+        $this->core->validateBankAvailabilityForMerchant($input);
 
         $mid = $this->merchant->getMerchantId();
 
         $input[Entity::MERCHANT_ID] = $mid;
 
-        $data = $this->core->createMerchantAccount($input);
+        $data = $this->core->createBankingAccount($input);
 
         return $data;
     }

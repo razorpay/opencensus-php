@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\MerchantAccount;
+namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 
@@ -25,8 +25,8 @@ class Entity extends Base\PublicEntity
     protected $entity = 'merchant_account';
 
     protected $validStatus = [
-        Constant::CREATED,
-        Constant::INITIATED,
+        Status::CREATED,
+        Status::INITIATED,
     ];
 
     protected $fillable = [

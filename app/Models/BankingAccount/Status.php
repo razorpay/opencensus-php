@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Models\MerchantAccount;
+namespace RZP\Models\BankingAccount;
 
-class Constant
+class Status
 {
     const CREATED   = 'created';
     const INITIATED = 'initiated';

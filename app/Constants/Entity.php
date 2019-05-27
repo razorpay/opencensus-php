@@ -111,7 +111,7 @@ class Entity
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
-    const MERCHANT_ACCOUNT          = 'merchant_account';
+    const BANKING_ACCOUNT           = 'banking_account';
 
     // heimdall
     const ORG                   = 'org';

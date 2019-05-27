@@ -1,29 +1,29 @@
 <?php
 
-namespace RZP\Models\MerchantAccount;
+namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function createMerchantAccount(array $input)
+    public function createBankingAccount(array $input)
     {
         $merchantAccount = new Entity();
 
         $merchantAccount->build($input);
 
-        $merchantAccount->setStatus(Constant::CREATED);
+        $merchantAccount->setStatus(Status::CREATED);
 
         $data = $merchantAccount->toArrayPublic();
 
         return $data;
     }
 
-    public function validateBankAccountForMerchant(array $input)
+    public function validateBankAvailabilityForMerchant(array $input)
     {
         $bankCore = $this->getBankCore($input);
 
-        $bankCore->validateBankAccountForMerchant($input);
+        $bankCore->validateAvailability($input);
     }
 
     protected function getBankCore(array $input)
