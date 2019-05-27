@@ -102,6 +102,10 @@ export default class SubscriptionsController extends Component {
       );
     }
 
+    let ClonedPlanList = (props) => (
+      <PlansList docUrl="https://razorpay.com/docs/subscriptions/" {...props}/>
+    )
+
     return (
       <div>
         {this.props.mode === 'test' &&
@@ -148,7 +152,7 @@ export default class SubscriptionsController extends Component {
                 component={SubscriptionsList}
                 additionalCondition={user => !user.isChargeAtWillEnabled}
               />
-              <Route path="/plans" component={PlansList} />
+              <Route path="/plans" component={ClonedPlanList} />
               <Route path="/tokens" component={TokensList} />
               <Route path="/recurring_payments" component={RecurringPayments} />
               <Route path="/authlinks" component={AuthLinksList} />

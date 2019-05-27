@@ -141,12 +141,26 @@
                 case 'create_contact': {
                     _hsq.push(['identify', {
                         email: data.data.email,
-                        id: 'new_signup'
+                        id: 'new_signup',
+                        signup_start: true
                     }]);
 
                     _hsq.push(['trackEvent', {
-                        id: 'CREATEING_CONTACT'
+                        id: 'CREATING_CONTACT'
                     }]);
+
+                    setTimeout(function() {
+                        _hsq.push(['identify', {
+                            email: data.data.email,
+                            id: 'new_signup',
+                            signup_start: true
+                        }]);
+
+                        _hsq.push(['trackEvent', {
+                            id: 'SIGNUP_START'
+                        }]);
+                    }, 5000);
+
                     break;
                 }
                 case 'update_property': {

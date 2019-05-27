@@ -1,11 +1,10 @@
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
-
+import DocsLink from 'merchant/components/DocsLink';
 import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 
 import { titleCase } from 'common/util';
@@ -47,10 +46,10 @@ export default class TokensList extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <NavLink class="btn btn-link hidden-xs" to="https://razropay.com/">
-              Documentation&nbsp;
-              <i class="i i-external-link" />
-            </NavLink>
+            <DocsLink
+              title="Documentation"
+              url="https://razorpay.com/docs/recurring-payments/token/"
+            />
           </div>
         </HeaderAction>
 

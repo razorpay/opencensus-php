@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import PaymentsTable from 'merchant/components/Payments/PaymentsTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import DocsLink from 'merchant/components/DocsLink';
+
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 export default class PaymentsListContainer extends ListContainer {
@@ -47,8 +50,17 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   render() {
+    const { docUrl } = this.props;
+
     return (
       <div class="content-wrapper">
+        <HeaderAction>
+          {docUrl && (
+            <div class="btn-toolbar pull-right">
+              <DocsLink url={docUrl} />
+            </div>
+          )}
+        </HeaderAction>
         <PaymentsListFilter
           form="paymentListFilter"
           count={this.state.count}

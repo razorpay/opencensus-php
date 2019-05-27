@@ -8,6 +8,8 @@ import { fetchPlans as fetchAll } from 'merchant/modules/plans';
 import * as ModalActions from 'rzp/modules/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { NavLink } from 'react-router-dom';
+import DocsLink from 'merchant/components/DocsLink';
+
 import {
   planId,
   planName,
@@ -45,23 +47,26 @@ export default class PlansListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, error } = this.props;
+    let { docUrl } = this.props;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen
-            additionalCondition={user => user.isAllowedEdit('subscriptions')}
-          >
-            <div class="btn-toolbar">
-              <NavLink to="/plans/new">
-                <button class="pull-right btn btn-primary">
-                  <i class="i i-plus" />
-                  <span>New Plan</span>
-                </button>
-              </NavLink>
+          <div class="btn-toolbar pull-right">
+            {
+              docUrl && <DocsLink url={docUrl}/>
+            }
+            <ShowWhen
+              additionalCondition={user => user.isAllowedEdit('subscriptions')}
+            >
+                <NavLink to="/plans/new">
+                  <button class="pull-right btn btn-primary">
+                    <i class="i i-plus" />
+                    <span>New Plan</span>
+                  </button>
+                </NavLink>
+              </ShowWhen>
             </div>
-          </ShowWhen>
         </HeaderAction>
 
         <PlansListFilter

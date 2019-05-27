@@ -2,8 +2,8 @@
 
 The production dashboard uses the following:
 
-- PHP 7.1
-- Alpine Linux 3.7
+* PHP 7.1
+* Alpine Linux 3.7
 
 Builds are done using Drone. See the `.drone.yml` file for details on these.
 
@@ -13,7 +13,7 @@ Builds are done using Drone. See the `.drone.yml` file for details on these.
 * Install [`node`](https://github.com/creationix/nvm) (`v6` or above)
 * Install [`yarn`](https://yarnpkg.com/en/docs/install)
 
-Note - Install node version 9.11 if you get problems while running npm build. 
+Note - Install node version 8.16 if you get problems while running npm build.
 
 # Setup instructions with Docker (for local development)
 
@@ -23,10 +23,11 @@ Note - Install node version 9.11 if you get problems while running npm build.
 * Once set up, ensure `Docker for mac` is running.
 
 #### Setup docker env vars
-create environment/env.php based on environment/env.sample.php
-It should return 'dev_docker', for which should be created as environement/.env.dev\_docker (use .env.defaults as template)
 
-Note - if you are going to be using RazorpayX, then configure BANKING\_SERVICE\_URL with the URL of your local RazorpayX  to the env to allow CORS.
+* Create `environment/env.php` based on `environment/env.sample.php` making it return 'dev_docker'
+* Create `enviroment/.env.dev_docker` using `environment/.env.defaults` as the template
+
+Note - if you are going to be using RazorpayX, then configure BANKING_SERVICE_URL with the URL of your local RazorpayX to the env to allow CORS.
 
 #### Setup Dashboard/Building Container
 
@@ -40,7 +41,7 @@ The above will take care of building a `Containerized dashboard app` from your
 local file-system, spin up `mysql:5.6` container and establish connection
 to run the app locally.
 
-Once this is done, run `npm install` in the main folder followed by `npm run build`. 
+Once this is done, run `npm install` in the main folder followed by `npm run build`.
 
 You should be able to access the app at:
 `http://dashboard.razorpay.in:38080/`
@@ -70,12 +71,15 @@ $ make clean-all
 ```
 
 #### Notes on running tests
+
 On a vanilla mode, to run all the tests do the following:
+
 ```
 $ make test
 ```
 
 If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-failure etc), do the following:
+
 ```
 $ make test AT="--filter <mytestname> --stop-on-failure"
 ```
@@ -85,6 +89,7 @@ $ make test AT="--filter <mytestname> --stop-on-failure"
 You need to connect to the API DB and not dashboard DB. Either SSH into the API DB container or connect externally. If you are SSHing, the port is 3306
 
 Available Databases:
+
 * dashboard
 
 ```
@@ -111,8 +116,9 @@ mysql>update admins set email = 'someemail@razorpay.com', name = 'Some Name', us
 mysql>use api_test;
 ...
 mysql>update admins set email = 'someemail@razorpay.com', name = 'Some Name', username='someusername' where id = 'some_id';
-
 ```
+
+Look at the value `MYSQL_PASSWORD` inside `docker-compose-dev.yml` in API's repository to get the password.
 
 * Login to the dashboard `http://dashboard.razorpay.in:38080/admin`
 

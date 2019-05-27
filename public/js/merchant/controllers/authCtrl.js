@@ -281,12 +281,7 @@ app
           name: 'create_contact',
           data: {
             email: $scope.signup.data.email,
-            signup_start: true,
           },
-        });
-
-        window.trackHubs({
-          id: 'SIGNUP_START',
         });
 
         if (!$valid) {
@@ -1347,6 +1342,7 @@ app
         window.trackHubs({
           name: 'update_property',
           data: {
+            email: $scope.signup.data.email,
             signup_business_type: business_type,
             signup_transaction_volume: transaction_volume,
             signup_department: department,
