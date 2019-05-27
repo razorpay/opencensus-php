@@ -39,4 +39,15 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function retryAllFundAccountValidations(array $input): array
+    {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_RETRY_REQUEST, [
+            'input' => $input
+        ]);
+
+        $response = $this->core->retryAllFundAccountValidations($input);
+
+        return $response;
+    }
 }

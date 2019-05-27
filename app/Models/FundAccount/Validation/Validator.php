@@ -16,6 +16,6 @@ class Validator extends Base\Validator
 
     protected static $retryRules = [
         Entity::FUND_ACCOUNT_VALIDATION_IDS              => 'required|array|min:1',
-        Entity::FUND_ACCOUNT_VALIDATION_IDS.".*"         => 'required|public_id',
+        Entity::FUND_ACCOUNT_VALIDATION_IDS.".*"         => 'required|string',
     ];
 }
