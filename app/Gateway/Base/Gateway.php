@@ -1262,7 +1262,7 @@ class Gateway
             $label = 'Razorpay Payments';
         }
 
-        return str_limit($label, $limit);
+        return str_limit($label, $limit, '');
     }
 
     protected function verifyOtpAttempts($payment, $limit = null)

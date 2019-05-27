@@ -139,7 +139,7 @@ trait RequestHandlerTrait
             $messageType = $this->input['card']['message_type'];
         }
 
-        $ownerName = $this->getDynamicMerchantName($this->input['merchant'], 19);
+        $ownerName = $this->getDynamicMerchantName($this->input['merchant'], 22);
 
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],

@@ -58,7 +58,7 @@ class PaysecureGatewayTest extends TestCase
             'business_registered_city'    => 'Bangalore',
         ];
 
-        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Ménage']);
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Ménage12345678901234567890']);
 
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
@@ -91,7 +91,9 @@ class PaysecureGatewayTest extends TestCase
             {
                 if ($action === 'validate_terminal_owner_name')
                 {
-                    $this->assertEquals('Mnage', $content);
+                    $this->assertEquals('Mnage12345678901234567', $content);
+
+                    $this->assertLessThanOrEqual(23, strlen($content));
                 }
             }
         );
