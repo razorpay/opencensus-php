@@ -583,6 +583,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ATTEMPTS, $attempts + 1);
     }
 
+    public function incrementFailureCount(int $failureCount = 1)
+    {
+        $this->increment(self::FAILURE_COUNT, $failureCount);
+    }
+
+    public function incrementSuccessCount(int $successCount = 1)
+    {
+        $this->increment(self::SUCCESS_COUNT, $successCount);
+    }
+
     public function incrementProcessedCount()
     {
         $this->increment(self::PROCESSED_COUNT);

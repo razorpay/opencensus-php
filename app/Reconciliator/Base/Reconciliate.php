@@ -153,11 +153,13 @@ class Reconciliate extends Base\Core
      * pass the batch entity to the individual subreconciliators
      *
      * @param array $allFilesContents
-     * @param Batch\Entity $batch
+     * @param Batch\Processor\Base $batchProcessor
      * @param string $source
      */
-    public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch, string $source)
+    public function startReconciliationV2(array $allFilesContents, Batch\Processor\Base $batchProcessor, string $source)
     {
+        $batch = $batchProcessor->batch;
+
         foreach ($allFilesContents as $fileContents)
         {
             $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
@@ -179,7 +181,7 @@ class Reconciliate extends Base\Core
 
             try
             {
-                $this->subReconciliator->startReconciliationV2($fileContents, $batch);
+                $this->subReconciliator->startReconciliationV2($fileContents, $batchProcessor);
             }
             catch (\Throwable $e)
             {

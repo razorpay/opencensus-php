@@ -154,6 +154,7 @@ class UpiHdfcReconTest extends TestCase
                 'amount'      => $amount,
                 'base_amount' => $amount,
                 'gateway'     => 'upi_mindgate',
+                'is_scrooge'  => 1
             ]);
 
         $transaction = $this->fixtures->create(

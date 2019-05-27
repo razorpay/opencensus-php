@@ -224,14 +224,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
                 if ($persistSuccess === false)
                 {
-                    // Increment the failure count for the summary.
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                    $this->handlePersistReconciliationDataFailure($paymentId);
                 }
             }
             else
             {
-                // Increment the failure count for the summary.
-                $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                $this->handleFailedValidation($paymentId);
             }
         }
 

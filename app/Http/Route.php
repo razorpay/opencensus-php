@@ -450,6 +450,7 @@ final class Route
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
+        'refunds_reconcile_bulk'                   => ['post',     'reconciliate/refunds/bulk',                      'ReconciliatorController@postBulkRefundsReconciliation'             ],
         'dummy_return_callback'                    => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                     => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
         'set_config_keys'                          => ['put',      'config/keys',                                    'AdminController@setConfigKeys'                                     ],
@@ -1449,6 +1450,7 @@ final class Route
         'setl_verify',
         'apspdcl_bridge',
         'billdesk_reconcile_cancelled',
+        'refunds_reconcile_bulk',
         'setl_notify_h2h',
         'entity_balance_id_update',
         'merchant_es_sync_cron',
@@ -2723,6 +2725,7 @@ final class Route
             'refund_update_status',
             'refund_gateway_call',
             'scrooge_refund_create',
+            'refunds_reconcile_bulk',
             'scrooge_refund_create_bulk',
             'refund_verify_call',
             'refund_fetch_status',

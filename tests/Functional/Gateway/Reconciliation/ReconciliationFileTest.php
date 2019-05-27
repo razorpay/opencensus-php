@@ -107,6 +107,44 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testFirstdataReconRefundFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $refund1 = $this->getNewRefundEntity(true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
+
+        $this->assertNull($refund1['acquirer_data']['arn']);
+
+        $entries[] = $this->overrideFirstDataRefund($gatewayPayment1);
+
+        // Recurring authorised payment
+        $refund2 = $this->getNewRefundEntity(true);
+        $gatewayPayment2 = $this->getDbLastEntityToArray('first_data');
+
+        $this->assertNull($refund2['acquirer_data']['arn']);
+
+        $entries[] = $this->overrideFirstDataRefund($gatewayPayment2);
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+
+        $this->runForFiles([$file], 'FirstData');
+
+        $updatedTransaction1 = $this->getDbEntityById('transaction', $refund1['transaction_id'])->toArrayAdmin();
+
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+
+        $updatedTransaction2 = $this->getDbEntityById('transaction', $refund2['transaction_id'])->toArrayAdmin();
+
+        $this->assertNotNull($updatedTransaction2['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testFirstDataForceAuthorizePayment()
     {
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
@@ -841,7 +879,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['reference1']);
 
-        // Test for for update ARN
+        // Test for force update ARN
         $entries[0][HDFCPaymentRecon::COLUMN_ARN] .= str_random(2);
 
         $file = $this->writeToExcelFile($entries, 'fss');
@@ -1182,6 +1220,8 @@ class ReconciliationFileTest extends TestCase
     {
         $payment = $this->getNewPaymentEntity(false, $captured);
 
+        $this->gateway = $payment['gateway'];
+
         $this->refundPayment($payment['id']);
 
         return $this->getDbLastRefund()->toArrayAdmin();
@@ -1192,7 +1232,6 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->testData['facades']['first_data'];
 
         $facade[FDPaymentRecon::COLUMN_CAPS_PAYMENT_ID] = $payment['payment_id'];
-        $facade[FDPaymentRecon::COLUMN_PAYMENT_AMOUNT]  = intval($payment['amount'] / 100);
         $facade[FDPaymentRecon::COLUMN_AUTH_CODE]       = random_integer(6);
         $facade[FDPaymentRecon::COLUMN_ARN]             = str_random(24);
 
@@ -1258,6 +1297,19 @@ class ReconciliationFileTest extends TestCase
         $facade['rec_fmt'] = 'CVD';
         $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = $payment['refund_id'];
         $facade[HdfcRefundRecon::COLUMN_GATEWAY_TRANSACTION_ID] = $payment['gateway_transaction_id'];
+
+        return $facade;
+    }
+
+    private function overrideFirstDataRefund(array $payment, array $forceOverride = [], $gateway = 'fss')
+    {
+        $facade = $this->overrideFirstDataPayment($payment, $forceOverride, $gateway);
+
+        $facade['transaction_type'] = 'REFUND (CREDIT)';
+
+        $facade['session_id_aspd'] = $payment['caps_payment_id'];
+
+        $facade['ft_no'] = $payment['gateway_transaction_id'];
 
         return $facade;
     }
@@ -2020,7 +2072,7 @@ class ReconciliationFileTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-         $this->doAuthAndCapturePayment($payment);
+        $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getDbLastEntity('payment');
 

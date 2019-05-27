@@ -15,6 +15,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Reconciliator\Converter;
 use RZP\Reconciliator\FileProcessor;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class Reconciliation extends Base
 {
@@ -43,6 +44,76 @@ class Reconciliation extends Base
         $this->converter = new Converter;
 
         $this->registerMimeTypeGuesser();
+    }
+
+    public function process()
+    {
+        parent::process();
+
+        $this->scroogeDispatch();
+    }
+
+    public function setScroogeDispatchData(array $data)
+    {
+        $this->scroogeDispatchData = $data;
+    }
+
+    public function setStatusAfterSuccessfulProcessing()
+    {
+        // Update status only if there are no scrooge refunds in the batch
+        if ($this->hasScroogeRefunds() === false)
+        {
+            parent::setStatusAfterSuccessfulProcessing();
+        }
+
+        // Else ignore, we will be updating it post dispatch
+    }
+
+    protected function postProcess()
+    {
+        // Check if we have any scrooge refunds to process,
+        // If yes, we will skip updating `is_processing` & `processed_at`
+        // If not, we will update `is_processing` to false & `processed_at` to current timestamp,
+        // as there will not be any async dispatch process
+        if ($this->hasScroogeRefunds() === false)
+        {
+            $this->updateStatusPostProcess();
+        }
+
+        $this->repo->saveOrFail($this->batch);
+
+        //
+        // For reconciliation batch we don't need to send any mail,
+        // hence not sending any email here (which is present in parent)
+        //
+
+        $this->deleteLocalFiles();
+    }
+
+    protected function hasScroogeRefunds()
+    {
+        return (empty($this->scroogeDispatchData['data']) === false);
+    }
+
+    protected function scroogeDispatch()
+    {
+        if ($this->hasScroogeRefunds() === false)
+        {
+            return;
+        }
+
+        $data = $this->scroogeDispatchData['data'] ?? [];
+
+        $forceUpdateArn = $this->scroogeDispatchData['force_update_arn'] ?? false;
+
+        $source = $this->scroogeDispatchData['source'] ?? 'unknown';
+
+        (new ScroogeReconciliate)->callRefundReconcileFunctionOnScrooge(
+                                                                            $data,
+                                                                            $forceUpdateArn,
+                                                                            $this->batch,
+                                                                            $source
+                                                                        );
     }
 
     /**
@@ -148,7 +219,7 @@ class Reconciliation extends Base
 
         $source = $this->settingsAccessor->get(RequestProcessor\Base::SOURCE);
 
-        $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch, $source);
+        $this->gatewayReconciliator->startReconciliationV2($entries, $this, $source);
 
         $processingTime = (time() - $start);
 
@@ -370,15 +441,6 @@ class Reconciliation extends Base
             FileProcessor::FILE_PATH => $filePath,
             FileProcessor::FILE_TYPE => $fileType,
         ];
-    }
-
-    protected function sendProcessedMail()
-    {
-        //
-        // For reconciliation batch we don't need to send any mail,
-        // hence not doing anything inside this function
-        //
-        return;
     }
 
     protected function increaseAllowedSystemLimits()

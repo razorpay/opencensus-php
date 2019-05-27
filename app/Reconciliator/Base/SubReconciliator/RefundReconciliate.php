@@ -6,13 +6,13 @@ use App;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Core;
 use RZP\Reconciliator\Base;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -97,20 +97,21 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
                 if ($persistSuccess === false)
                 {
-                    // Increment the failure count for the summary.
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, $refundId);
+                    $this->handlePersistReconciliationDataFailure($refundId);
                 }
             }
             else
             {
-                // Increment the failure count for the summary.
-                $this->setSummaryCount(self::FAILURES_SUMMARY, $refundId);
+                $this->handleFailedValidation($refundId);
             }
         }
         catch (\Exception $ex)
         {
             // Ideally, there shouldn't be any exceptions thrown. They should be handled
             // in the respective reconciliation steps.
+
+            // Remove from scrooge request when exception is thrown
+            $this->removeFromScroogeRequest();
 
             // Increment the failure count for the summary.
             $this->setSummaryCount(self::FAILURES_SUMMARY, $refundId);
@@ -140,6 +141,63 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         $this->refund  = null;
 
         parent::resetRowProcessingAttributes();
+    }
+
+    protected function isScroogeRefund()
+    {
+        return empty(static::$scroogeReconciliate[$this->refund->getId()]) === false;
+    }
+
+    protected function handleAlreadyReconciled(string $entityId)
+    {
+        // If this is a scrooge refund, do not count it for success or failure counts,
+        // as this will be done during dispatch processing
+        if ($this->isScroogeRefund() === true)
+        {
+            return;
+        }
+
+        parent::handleAlreadyReconciled($entityId);
+    }
+
+    protected function handleUnprocessedRow(array $row)
+    {
+        $this->removeFromScroogeRequest();
+
+        parent::handleUnprocessedRow($row);
+    }
+
+    protected function handleFailedValidation(string $refundId)
+    {
+        $this->removeFromScroogeRequest();
+
+        parent::handleFailedValidation($refundId);
+    }
+
+    protected function handlePersistReconciliationDataFailure(string $refundId)
+    {
+        $this->removeFromScroogeRequest();
+
+        parent::handlePersistReconciliationDataFailure($refundId);
+    }
+
+    protected function removeFromScroogeRequest()
+    {
+        // As validation failed, removing this refund from the array
+        // so as not to send it to scrooge for processing
+        if (empty($this->refund) === false)
+        {
+            $refundId = $this->refund->getId();
+
+            //
+            // Here we need not check if the gateway falls under scroogeGateway list,
+            // if $scroogeReconciliate[$refundId] is set, that is sufficient condition.
+            //
+            if ($this->isScroogeRefund() === true)
+            {
+                unset(static::$scroogeReconciliate[$refundId]);
+            }
+        }
     }
 
     protected function getReconRefundAmount(array $row)
@@ -228,7 +286,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if ($refundTransaction === null)
         {
-            $createTransactionSuccess = $this->attemptToCreateMissingRefundTransaction();
+            $createTransactionSuccess = $this->core->attemptToCreateMissingRefundTransaction($this->refund);
 
             if ($createTransactionSuccess === false)
             {
@@ -269,86 +327,19 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         if (($refund->isProcessed() === false) and
             (in_array($this->gateway, self::GATEWAYS_PROCESSED_WO_ARN, true) === true))
         {
-            $this->refund->setStatusProcessed();
-
-            $this->repo->saveOrFail($refund);
-
-            $this->pushRefundProcessedMetric($refund);
-        }
-    }
-
-    /**
-     * pushes the metric for refund getting marked as processed
-     * @param $refund
-     */
-    protected function pushRefundProcessedMetric(RefundEntity $refund)
-    {
-        $this->trace->histogram(
-            Metric::RECON_REFUND_CREATED_TO_PROCESSED_TIME_MINUTES,
-            $refund->getTimeFromCreatedInMinutes(),
-            Metric::getRefundMetricDimensions($refund, $this->source));
-    }
-
-    protected function attemptToCreateMissingRefundTransaction()
-    {
-        $paymentTransaction = $this->payment->transaction;
-
-        if ($paymentTransaction === null)
-        {
-            return false;
-        }
-
-        try
-        {
-            $txn = $this->createMissingRefundTransaction();
-
-            if ($txn === null)
+            if ($this->refund->isScrooge() === false)
             {
-                return false;
+                $this->refund->setStatusProcessed();
+
+                $this->repo->saveOrFail($refund);
+
+                $this->core->pushRefundProcessedMetric($refund, $this->source);
             }
-
-            return true;
+            else
+            {
+                static::$scroogeReconciliate[$this->refund->getId()]->setStatus(Refund\Status::PROCESSED);
+            }
         }
-        catch (\Exception $ex)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_FAILURE,
-                    'failure_code'  => 'REFUND_TRANSACTION_CREATE_FAIL',
-                    'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
-                    'payment_id'    => $this->payment->getId(),
-                    'refund_id'     => $this->refund->getId(),
-                    'gateway'       => $this->gateway,
-                ]);
-
-            $this->trace->traceException($ex);
-
-            return false;
-        }
-    }
-
-    protected function createMissingRefundTransaction()
-    {
-        assertTrue($this->refund->transaction === null);
-
-        $this->trace->info(
-            TraceCode::RECON_INFO_ALERT,
-            [
-                'info_code'     => 'REFUND_TRANSACTION_CREATE_RECON',
-                'message'       => 'Attempting to create refund transaction in recon',
-                'payment_id'    => $this->payment->getId(),
-                'refund_id'     => $this->refund->getId(),
-                'gateway'       => $this->gateway
-            ]);
-
-        $processor = new Payment\Processor\Processor($this->refund->merchant);
-
-        $txn = $processor->createTransactionForRefund($this->refund, $this->payment);
-
-        // This is required to save the association of the transaction with the refund.
-        $this->repo->saveOrFail($this->refund);
-
-        return $txn;
     }
 
     protected function getRowDetailsStructured($row)
@@ -451,6 +442,13 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 ]);
 
             return null;
+        }
+
+        if ($this->refund->isScrooge() === true)
+        {
+            // This will be unset if `validateRefundDetails` fails later in the flow.
+            // However, cannot remove it here as this variable is being used in between the flow
+            static::$scroogeReconciliate[$this->refund->getId()] = new Base\Foundation\ScroogeReconciliate;
         }
 
         return $this->refund;
@@ -578,6 +576,16 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             //
             if ($currentArn === $reconArn)
             {
+                //
+                // We do not know about refund's arn and status in
+                // scrooge, So need to send this refund to scrooge.
+                //
+                if ($this->isScroogeRefund() === true)
+                {
+                    static::$scroogeReconciliate[$this->refund->getId()]->setArn($reconArn);
+                    static::$scroogeReconciliate[$this->refund->getId()]->setStatus(Refund\Status::PROCESSED);
+                }
+
                 return;
             }
             else if ($currentArn !== 'NA')
@@ -597,13 +605,14 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'    => TraceCode::RECON_MISMATCH,
-                            'info_code'     => 'DUPLICATE_ROW',
+                            'info_code'     => Base\InfoCode::DUPLICATE_ROW,
                             'message'       => 'Arn number for the refund entity does not match',
-                            'row'           => $rowDetails,
                             'refund_id'     => $refund->getId(),
                             'amount'        => $refund->getAmount(),
-                            'gateway'       => $this->gateway,
                             'refund_arn'    => $currentArn,
+                            'recon_arn'     => $reconArn,
+                            'row'           => $rowDetails,
+                            'gateway'       => $this->gateway,
                         ]);
 
                     return;
@@ -611,14 +620,22 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             }
         }
 
-        $refund->setReference1($reconArn);
-        $refund->setStatusProcessed();
+        if ($this->isScroogeRefund() === true)
+        {
+            static::$scroogeReconciliate[$this->refund->getId()]->setArn($reconArn);
+            static::$scroogeReconciliate[$this->refund->getId()]->setStatus(Refund\Status::PROCESSED);
+        }
+        else
+        {
+            $refund->setReference1($reconArn);
+            $refund->setStatusProcessed();
 
-        // This needs to be present here and not in the calling function,
-        // to ensure that if any failure happens, arn still gets saved.
-        $this->repo->saveOrFail($refund);
+            // This needs to be present here and not in the calling function,
+            // to ensure that if any failure happens, arn still gets saved.
+            $this->repo->saveOrFail($refund);
 
-        $this->pushRefundProcessedMetric($refund);
+            $this->core->pushRefundProcessedMetric($refund, $this->source);
+        }
     }
 
     protected function persistGatewayData(array $rowDetails)
@@ -635,6 +652,14 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         $this->persistReferenceNumber($rowDetails, $gatewayRefund);
 
         $this->persistGatewayTransactionId($rowDetails, $gatewayRefund);
+
+        if ($this->isScroogeRefund() === true)
+        {
+            //
+            // getDirty() gets the attributes that have been changed since last sync.
+            //
+            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys($gatewayRefund->getDirty());
+        }
 
         $this->repo->saveOrFail($gatewayRefund);
     }
