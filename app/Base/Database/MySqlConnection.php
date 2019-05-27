@@ -119,19 +119,15 @@ class MySqlConnection extends BaseMySqlConnection
                         //
                         static::$callParent = true;
 
-                        app('db')->purge($mode);
-
-                        $connection = app('db')->connection($mode);
-
-                        $readPdo = $connection->getReadPdo();
+                        $connection = app('db')->reconnect($mode);
 
                         $this->trace->info(TraceCode::DATABASE_RECONNECT, [
                             'mode'      => $mode,
                             'exception' => $e->getMessage(),
-                            'connected' => ($readPdo !== null),
+                            'connected' => ($connection->readPdo !== null),
                         ]);
 
-                        return $readPdo;
+                        return $connection->readPdo;
                     }
 
                     return null;
@@ -199,6 +195,7 @@ class MySqlConnection extends BaseMySqlConnection
 
                     return parent::getReadPdo();
                 }
+
 
                 $result = $this->shouldUseSlave($this->readPdo);
 
