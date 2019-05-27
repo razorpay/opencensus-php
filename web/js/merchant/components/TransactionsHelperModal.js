@@ -36,7 +36,7 @@ export default class InstantActivationSuccess extends Component {
           </modal-header>
           <modal-body>
             <Group>
-              {!isKLA && (
+              {isKLA && (
                 <Fragment>
                   <GroupItem>
                     <p>
