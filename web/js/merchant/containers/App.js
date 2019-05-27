@@ -23,11 +23,11 @@ import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
-import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList } from 'common/util';
 import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { isPresent } from 'rzp/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import initChat from 'merchant/chat';
@@ -54,8 +54,6 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
-
-    const { user } = props;
 
     const oldModeToken = 'rzp_mode',
       oldModeValue = LocalStorageService.getItem(oldModeToken);
@@ -122,10 +120,7 @@ export default class App extends Component {
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
-    this.props.fetchGST();
-    this.props.fetchConfig();
-
-    Promise.all([
+    const fetchFnsKeepingLoadingStateTrue = [
       this.fetchUser().then(({ data }) => {
         let user = data;
         let role = user.userRole;
@@ -150,10 +145,21 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
-      this.fetchSupportedCurrencies().then(({ data }) => {
-        window.currencyList = data;
-      }),
-    ]).then(response => {
+    ];
+
+    // gst,config & currencies can only be fetched when user has merchants
+    if (isPresent(this.props.user.merchants)) {
+      this.props.fetchGST();
+      this.props.fetchConfig();
+
+      fetchFnsKeepingLoadingStateTrue.push(
+        this.fetchSupportedCurrencies().then(({ data }) => {
+          window.currencyList = data;
+        })
+      );
+    }
+
+    Promise.all(fetchFnsKeepingLoadingStateTrue).then(response => {
       if (response[0].showInstantActivation) {
         setTrackData({
           eventCategory: 'Dashboard - Instant Activations',
