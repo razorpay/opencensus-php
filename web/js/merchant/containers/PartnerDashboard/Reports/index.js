@@ -1,5 +1,4 @@
 import Reportsx from 'merchant_common/containers/Reports';
-import EmailReportx from 'merchant_common/components/Reports/EmailReport';
 import store from 'merchant/store';
 import * as data from 'merchant/containers/Reports/data';
 import * as modelActions from 'merchant/modules/reports';
@@ -14,14 +13,7 @@ const Reports = Reportsx(store, {
   modelActions,
   fetchAccountsApi,
   ga,
-  shouldFetchPartnerConfigs: true,
-  linkToReports: '/partners/reports',
-});
-
-export const EmailReport = EmailReportx({
-  emailReportV2: modelActions.emailReportV2,
-  marketplaceConfigTypes: data.marketplaceConfigTypes,
-  ga,
+  isPartnerReport: true,
 });
 
 export default Reports;

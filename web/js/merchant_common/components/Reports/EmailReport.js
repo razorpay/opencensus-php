@@ -9,7 +9,7 @@ import { pluralize } from 'rzp/utils/rzp-utils';
 import moment from 'moment';
 
 export default function Reports(opts) {
-  const { ga, emailReportV2, marketplaceConfigTypes } = opts;
+  const { ga, emailReportV2, marketplaceConfigTypes, isPartnerReport } = opts;
 
   const { trackTimeLapse, trackReportActions, trackReportGenericActions } = ga;
 
@@ -158,7 +158,12 @@ export default function Reports(opts) {
         );
       }
 
-      return emailReportV2(reqData, isMerchantAccount, shouldUpdate)
+      return emailReportV2(
+        reqData,
+        isMerchantAccount,
+        shouldUpdate,
+        isPartnerReport
+      )
         .then(data => {
           if (data.error) {
             return this.props.showNotification({

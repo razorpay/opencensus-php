@@ -19,7 +19,7 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import SelectConfig from 'merchant_common/components/Reports/SelectConfig';
 import ReportLoader from 'merchant_common/components/Reports/ReportLoader';
-import { EmailReport } from 'merchant/containers/Reports';
+import EmailReportx from 'merchant_common/components/Reports/EmailReport';
 
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
@@ -43,14 +43,7 @@ const requestFailedFunc = () => {
   };
 
 export default function Reports(store, opts) {
-  const {
-    data,
-    modelActions,
-    fetchAccountsApi,
-    ga,
-    shouldFetchPartnerConfigs,
-    linkToReports = '/reports',
-  } = opts;
+  const { data, modelActions, fetchAccountsApi, ga, isPartnerReport } = opts;
   const { getCustomConfig, marketplaceConfigTypes, rzpConfigOrder } = data;
 
   const {
@@ -71,6 +64,13 @@ export default function Reports(store, opts) {
     trackReportActions,
     trackTimeLapse,
   } = ga;
+
+  const EmailReport = EmailReportx({
+    emailReportV2: modelActions.emailReportV2,
+    marketplaceConfigTypes,
+    isPartnerReport,
+    ga,
+  });
 
   @connect(
     state => {
@@ -114,9 +114,7 @@ export default function Reports(store, opts) {
         tags = user.tags.map(tag => tag.toLowerCase()),
         configs = [],
         accounts = [],
-        configRequest = getConfigs(shouldFetchPartnerConfigs).catch(
-          requestFailedFunc
-        ),
+        configRequest = getConfigs(isPartnerReport).catch(requestFailedFunc),
         promises = [configRequest];
 
       const monthlyInvoiceConfig = getCustomConfig('monthlyInvoice');
@@ -413,7 +411,8 @@ export default function Reports(store, opts) {
             reqData,
             isMerchantAccount,
             this.updateStore,
-            this.saveLongPollInstances
+            this.saveLongPollInstances,
+            isPartnerReport
           ).then(data => {
             if (data.error) {
               return this.props.showNotification({
@@ -490,7 +489,7 @@ export default function Reports(store, opts) {
         transactionReportEmail = this.props.config.transaction_report_email;
       }
 
-      const { user, type, date } = this.props;
+      const { user, type, date, ga } = this.props;
       const { accounts, selectedAccount, selectedConfig } = this.state;
       const reportId = e.target.dataset.reportid;
 
@@ -827,7 +826,9 @@ export default function Reports(store, opts) {
         <div>
           <tabbed-container>
             <header>
-              <NavLink to={linkToReports}>Download Reports</NavLink>
+              <NavLink to={isPartnerReport ? '/partners/reports' : '/reports'}>
+                Download Reports
+              </NavLink>
             </header>
             <TestModeBanner />
             <content>{content}</content>
