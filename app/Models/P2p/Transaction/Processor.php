@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
+use RZP\Events\P2p;
 use RZP\Models\P2p\Vpa;
 use RZP\Error\P2p\Error;
 use RZP\Models\P2p\Base;
@@ -244,7 +245,7 @@ class Processor extends Base\Processor
 
         $this->core->update($transaction, $input->toArray());
 
-        $this->dispatchEventIfRequired($actions, $transaction);
+        return $actions;
     }
 
     protected function setTransactionCompleted(Entity $transaction, ArrayBag $input): Actions
@@ -277,6 +278,8 @@ class Processor extends Base\Processor
 
         $transaction->markCompleted();
 
+        $actions->setEvent(new P2p\TransactionCompleted($this->context(), $transaction));
+
         return $actions;
     }
 
@@ -305,6 +308,8 @@ class Processor extends Base\Processor
 
         $transaction->setErrorCode($error->getPublicErrorCode());
         $transaction->setErrorDescription($error->getDescription());
+
+        $actions->setEvent(new P2p\TransactionFailed($this->context(), $transaction));
 
         return $actions;
     }
@@ -354,15 +359,9 @@ class Processor extends Base\Processor
 
         $transaction->setInternalStatus(Status::CREATED);
 
-        return $actions;
-    }
+        $actions->setEvent(new P2p\TransactionCreated($this->context(), $transaction));
 
-    protected function dispatchEventIfRequired(Actions $actions, Entity $transaction)
-    {
-        if ($actions->hasEvent() === true)
-        {
-            event($actions->getEvent());
-        }
+        return $actions;
     }
 
     protected function createTransaction(string $action, ArrayBag $input, ArrayBag $upiInput): Entity
@@ -386,11 +385,13 @@ class Processor extends Base\Processor
                 {
                     $this->checkForDuplicate($upi);
 
-                    $this->updateTransactionStatus($transaction, $input);
+                    $actions = $this->updateTransactionStatus($transaction, $input);
 
                     $upi->associateTransaction($transaction);
 
                     $this->core->updateUpi($upi, []);
+
+                    $this->performTransactionActions($actions, $transaction);
 
                     return $transaction;
                 });
@@ -420,12 +421,22 @@ class Processor extends Base\Processor
 
                 return $this->repo()->transaction(function() use ($transaction, $input, $upiInput)
                 {
-                    $this->updateTransactionStatus($transaction, $input);
+                    $actions = $this->updateTransactionStatus($transaction, $input);
 
                     $this->core->updateUpi($transaction->upi, $upiInput->toArray());
+
+                    $this->performTransactionActions($actions, $transaction);
 
                     return $transaction;
                 });
             });
+    }
+
+    protected function performTransactionActions(Actions $actions, Entity $transaction)
+    {
+        if ($actions->hasEvent() === true)
+        {
+            $this->app['events']->fire($actions->getEvent());
+        }
     }
 }

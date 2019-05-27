@@ -238,6 +238,11 @@ class Context extends ArrayObject
     {
         \Database\DefaultConnection::set($mode);
 
+        // Just to keep things rolling in API Example: Event Handling
+        app()->instance('rzp.mode', $mode);
+
+        app()->get('basicauth')->setMode($mode);
+
         $this->mode = $mode;
     }
 

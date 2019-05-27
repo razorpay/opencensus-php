@@ -664,6 +664,14 @@ class Entity extends Base\Entity
         return in_array($this->getInternalStatus(), [Status::CREATED]);
     }
 
+    public function isPendingCollect(): bool
+    {
+        return (
+            ($this->getFlow() === Flow::DEBIT) and
+            ($this->getType() === Type::COLLECT) and
+            ($this->getStatus() === Status::CREATED));
+    }
+
     /***************** RELATIONS *****************/
 
     public function customer()
@@ -704,5 +712,17 @@ class Entity extends Base\Entity
     public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = 'customer.transaction';
+    }
+
+    public function toArrayPartner(): array
+    {
+        $array = $this->toArrayPublic();
+
+        $array[self::UPI] = $this->upi->toArrayPublic();
+        $array[self::PAYER] = $this->payer->toArrayPublic();
+        $array[self::PAYEE] = $this->payee->toArrayPublic();
+        $array[self::BANK_ACCOUNT] = $this->bankAccount->toArrayPublic();
+
+        return $array;
     }
 }
