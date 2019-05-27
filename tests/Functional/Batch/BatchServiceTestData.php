@@ -193,4 +193,17 @@ return [
         ],
     ],
 
+    'testBatchAdminFetchNoResult' => [
+        'request'  => [
+            'url'    => '/admin/batch.service?merchant_id=CWIYz6Yfu8tqZv',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => []
+            ],
+        ],
+    ],
 ];
