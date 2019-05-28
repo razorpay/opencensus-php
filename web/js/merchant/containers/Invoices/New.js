@@ -2357,6 +2357,7 @@ const removeTaxForNonINRItems = (props, invoiceCurrency) => {
           ...item,
           currency: invoiceCurrency,
           deleteTaxId: true,
+          addName: true,
         };
       }
 

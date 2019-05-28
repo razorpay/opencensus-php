@@ -163,6 +163,10 @@ export default class Invoice extends GenericEntity {
               lineItem.currency = item.currency;
             }
 
+            if (item.addName) {
+              lineItem.name = item.name;
+            }
+
             /**
              * `tax_id` being `null` specifies that no taxes are to be applied
              * on this line item. Need to explicitly send this to the API.
