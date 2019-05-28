@@ -14,6 +14,8 @@ class Core extends Base\Core
 
         $merchantAccount->setStatus(Status::CREATED);
 
+        $this->repo->saveOrFail($merchantAccount);
+
         $data = $merchantAccount->toArrayPublic();
 
         return $data;

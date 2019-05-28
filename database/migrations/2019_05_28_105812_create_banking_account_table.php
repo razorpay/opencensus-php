@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Models\BankingAccount\Entity;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -14,6 +15,7 @@ class CreateBankingAccountTable extends Migration
     public function up()
     {
         Schema::create('banking_account', function (Blueprint $table) {
+
             $table->char(Entity::ID, Entity::ID_LENGTH)
                 ->primary();
 
@@ -37,6 +39,8 @@ class CreateBankingAccountTable extends Migration
 
             $table->char(Entity::BALANCE_ID, Entity::ID_LENGTH)
                 ->nullable();
+
+            $table->char(Entity::BANK_REFERENCE_NUMBER, 5);
 
             $table->integer(Entity::CREATED_AT);
 

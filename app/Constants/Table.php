@@ -189,6 +189,8 @@ class Table
 
     const SETTING               = 'settings';
 
+    const BANKING_ACCOUNT       = 'banking_account';
+
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';
     const P2P_DEVICE_TOKEN      = 'p2p_device_tokens';

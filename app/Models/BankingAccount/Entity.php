@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
 
     const MERCHANT_DATA = 'merchant_data';
 
-    protected $entity = 'merchant_account';
+    protected $entity = 'banking_account';
 
     protected $validStatus = [
         Status::CREATED,
