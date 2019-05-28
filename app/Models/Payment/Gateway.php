@@ -760,6 +760,7 @@ class Gateway
         self::AMEX,
         self::WALLET_OPENWALLET,
         self::HITACHI,
+        self::CARDLESS_EMI,
     ];
 
     /**
