@@ -1411,8 +1411,8 @@ class Repository extends Base\Repository
 
     protected function addQueryParamAcquirerData($query, $params)
     {
-        $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
-        $bankAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::NETBANKING . "', " . Entity::REFERENCE1 . "=?, '')";
+        $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . Method::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
+        $bankAcqDataSql = "IF(" . Entity::METHOD . " = '" . Method::NETBANKING . "', " . Entity::REFERENCE1 . "=?, '')";
 
         // Acquirer data column is picked based on method
         $query->where(function ($q) use ($cardAcqDataSql, $bankAcqDataSql, $params)

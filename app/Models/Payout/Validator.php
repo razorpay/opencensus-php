@@ -116,9 +116,18 @@ class Validator extends Base\Validator
 
         $mode = $input[Entity::MODE];
 
-        $accountType = $payout->fundAccount->getAccountType();
+        $fundAccount = $payout->fundAccount;
+
+        $accountType = $fundAccount->getAccountType();
 
         Mode::validateModeOfAccountType($mode, $accountType);
+
+        if ($accountType === FundAccount\Type::CARD)
+        {
+            $cardIssuer = $fundAccount->account->getIssuer();
+
+            Mode::validateModeOfIssuer($mode, $cardIssuer);
+        }
 
         $amount = $input[Entity::AMOUNT];
 

@@ -148,6 +148,15 @@ class Entity extends Base\PublicEntity
         self::FLOWS,
     ];
 
+    protected $fundAccount = [
+        Card\Entity::NAME,
+        Card\Entity::LAST4,
+        Card\Entity::NETWORK,
+        Card\Entity::TYPE,
+        Card\Entity::ISSUER,
+        Card\Entity::IIN,
+    ];
+
     protected $appends = [self::NETWORK_CODE];
 
     protected $publicSetters = [
@@ -501,7 +510,7 @@ class Entity extends Base\PublicEntity
     {
         $iin = $this->iinRelation;
 
-        // Allowing for Admin and App Auth(Priviledge)
+        // Allowing for Admin and App Auth(Privilege)
         $app  = \App::getFacadeRoot();
 
         $auth = $app['basicauth'];
@@ -510,7 +519,7 @@ class Entity extends Base\PublicEntity
         // saved via global card saving, hence use basic auth merchant
         $merchant = $auth->getMerchant();
 
-        // if tokens are fetch on a auth where merchant context is not availale
+        // if tokens are fetch on a auth where merchant context is not available
         // tokens are being fetched on admin auth use card merchant
         if ($merchant === null)
         {
@@ -538,7 +547,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicIinAttribute(array & $array)
     {
-        // Allowing for Admin and App Auth(Priviledge)
+        // Allowing for Admin and App Auth(Privilege)
         $app  = \App::getFacadeRoot();
         $auth = $app['basicauth'];
 
@@ -582,8 +591,6 @@ class Entity extends Base\PublicEntity
 
     protected function isPublicExpiryAllowed()
     {
-        $cardMerchant = $this->getMerchantId();
-
         $app = \App::getFacadeRoot();
 
         $auth = $app['basicauth'];
@@ -770,6 +777,19 @@ class Entity extends Base\PublicEntity
         unset($attributes[self::ID]);
 
         return $attributes;
+    }
+
+    public function toArrayFundAccount()
+    {
+        $attributes = $this->toArrayPublic();
+
+        if ((isset($attributes[self::NAME]) === true) and
+            ($attributes[self::NAME] === self::DUMMY_NAME))
+        {
+            unset($attributes[self::NAME]);
+        }
+
+        return array_only($attributes, $this->fundAccount);
     }
 
     public static function getDummyCvv(string $network = null)

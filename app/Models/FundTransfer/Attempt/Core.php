@@ -30,7 +30,7 @@ use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 class Core extends Base\Core
 {
     public function createWithBankAccount(
-        Base\Entity $source,
+        Base\PublicEntity $source,
         BankAccountEntity $bankAccount,
         array $values = [],
         $instantDispatch = false): Entity
@@ -63,15 +63,18 @@ class Core extends Base\Core
         return $fundTransferAttempt;
     }
 
-    public function createWithCard(Base\Entity $source, CardEntity $card, array $values = []): Entity
+    public function createWithCard(
+        Base\PublicEntity $source,
+        CardEntity $card,
+        array $values = []): Entity
     {
         $fundTransferAttempt = $this->create($source, $values, $card);
 
-        // TODO: Make this polymorphic instead of having bankAccount and vpa separately
+        // TODO: Make this polymorphic instead of having bankAccount, vpa and card separately
         $fundTransferAttempt->card()->associate($card);
 
         // This needs to be done after filling FTA since it uses getters on the entity.
-        // Also, this needs to be done after associating vpa or bank_account only
+        // Also, this needs to be done after associating destination only
         // because it needs the association to figure out the destination type.
         $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
@@ -103,7 +106,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createWithVpa(Base\Entity $source, VpaEntity $vpa, array $values = []): Entity
+    public function createWithVpa(Base\PublicEntity $source, VpaEntity $vpa, array $values = []): Entity
     {
         $fundTransferAttempt = $this->create($source, $values);
 
@@ -129,7 +132,6 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return array
-     * @throws LogicException
      */
     public function nodalFileUploadThroughBeam(array $input): array
     {
@@ -290,13 +292,13 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Base\Entity     $source - currently refund entity
-     * @param array           $values Attributes of the created FTA
-     * @param CardEntity|null $card
+     * @param Base\PublicEntity $source - refund/payout/fa-validation/etc entity
+     * @param array             $values Attributes of the created FTA
+     * @param CardEntity|null   $card
      *
      * @return Entity
      */
-    protected function create(Base\Entity $source, array $values = [], CardEntity $card = null)
+    protected function create(Base\PublicEntity $source, array $values = [], CardEntity $card = null)
     {
         $fundTransferAttempt = new Entity;
 

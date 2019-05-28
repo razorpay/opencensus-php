@@ -4921,6 +4921,9 @@ ALTER TABLE merchant_banks
     ADD COLUMN phonepe TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
     ADD INDEX merchant_banks_phonepe_index (phonepe);
 
+ALTER TABLE fund_transfer_attempts
+    ADD INDEX fund_transfer_attempts_card_id_index (card_id);
+
 ALTER TABLE partner_configs
     ADD COLUMN `commission_model` varchar(255) not null default 'commission' after `explicit_should_charge`;
 
