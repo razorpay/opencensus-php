@@ -284,6 +284,8 @@ export default class AddCustomer extends Component {
       shipping_same_as_billing,
       add_customer_address: address,
       add_shipping_address,
+
+      showGSTN,
     } = this.props;
 
     const {
@@ -361,18 +363,20 @@ export default class AddCustomer extends Component {
                   />
                 </div>
               </div>
-              <div class="form-group">
-                <label>GSTIN</label>
-                <div>
-                  <Field
-                    name="gstin"
-                    placeholder="e.g 22AAAAA0000A1Z5"
-                    component={InputField}
-                    class="form-control"
-                    validate={[validateGSTIN]}
-                  />
+              {showGSTN && (
+                <div class="form-group">
+                  <label>GSTIN</label>
+                  <div>
+                    <Field
+                      name="gstin"
+                      placeholder="e.g 22AAAAA0000A1Z5"
+                      component={InputField}
+                      class="form-control"
+                      validate={[validateGSTIN]}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
               {askAddress && (
                 <div class="form-group">
                   <div class="rzpCheckbox" style={{ marginTop: '4px' }}>
@@ -579,4 +583,5 @@ export default class AddCustomer extends Component {
 AddCustomer.defaultProps = {
   onSave: () => {},
   saveLabel: 'Save',
+  showGSTN: true,
 };

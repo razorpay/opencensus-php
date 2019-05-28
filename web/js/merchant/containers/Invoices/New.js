@@ -682,6 +682,7 @@ export default class InvoicesNewContainer extends Component {
           saveLabel="Update Customer"
           onSave={this.selectCustomerAndCloseModal()}
           customer={this.props.customer}
+          showGSTN={this.state.invoiceCurrency === 'INR'}
         />
       ),
     });
