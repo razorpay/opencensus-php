@@ -100,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::UTR,
         self::IS_FTS,
+        self::FTS_TRANSFER_ID,
         self::NARRATION,
         self::REMARKS,
         self::DATE_TIME,
