@@ -772,6 +772,8 @@ pipeline:
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
+        - api-sqs-cps-sync-test
+        - api-sqs-cps-sync-live
       repo: razorpay/api
       namespace: api
       tag:
@@ -815,6 +817,8 @@ pipeline:
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
+        - api-sqs-cps-sync-test
+        - api-sqs-cps-sync-live
       repo: razorpay/api
       namespace: api
       tag:
