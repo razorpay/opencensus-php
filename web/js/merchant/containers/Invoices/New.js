@@ -1502,6 +1502,8 @@ export default class InvoicesNewContainer extends Component {
       !isFetchingAddresses &&
       !isDisabled;
 
+    const showGstn = invoiceCurrency === 'INR';
+
     return (
       <div class="react-root">
         {this.state.isLoading ? (
@@ -1534,8 +1536,8 @@ export default class InvoicesNewContainer extends Component {
                       <InvoiceLogo
                         logo={this.state.merchantLogoUrl}
                         name={this.state.merchantAltBillingLabel}
-                        gstin={merchantGSTIN}
-                        cin={merchantCIN}
+                        gstin={showGstn && merchantGSTIN}
+                        cin={showGstn && merchantCIN}
                       />
 
                       <div class="row">
@@ -1904,40 +1906,45 @@ export default class InvoicesNewContainer extends Component {
                                   )}
                                 </div>
                               </div>
-                              {merchantGSTIN && (
-                                <div class="inv__place-of-supply-container">
-                                  <label class="text-uppercase">
-                                    Place of Supply
-                                  </label>
-                                  {!isDisabled ? (
-                                    <Fragment>
-                                      <div>
-                                        <PowerSelect
-                                          class="inv__state-of-delivery-list material-input"
-                                          placeholder="Select from Dropdown"
-                                          options={this.state.states || []}
-                                          selected={this.props.state_of_supply}
-                                          optionLabelPath="name"
-                                          onChange={this.changeStateOfSupply}
-                                          disabled={isDisabled}
-                                        />
-                                      </div>
-                                      {!this.props.state_of_supply && (
-                                        <div class="alert-sm alert-warning">
-                                          <i class="i i-info-circle" />
-                                          Add a Place of Supply to apply taxes
+                              {merchantGSTIN &&
+                                showGstn && (
+                                  <div class="inv__place-of-supply-container">
+                                    <label class="text-uppercase">
+                                      Place of Supply
+                                    </label>
+                                    {!isDisabled ? (
+                                      <Fragment>
+                                        <div>
+                                          <PowerSelect
+                                            class="inv__state-of-delivery-list material-input"
+                                            placeholder="Select from Dropdown"
+                                            options={this.state.states || []}
+                                            selected={
+                                              this.props.state_of_supply
+                                            }
+                                            optionLabelPath="name"
+                                            onChange={this.changeStateOfSupply}
+                                            disabled={isDisabled}
+                                          />
                                         </div>
-                                      )}
-                                    </Fragment>
-                                  ) : this.props.state_of_supply ? (
-                                    <div>{this.props.state_of_supply.name}</div>
-                                  ) : (
-                                    <div class="light-placeholder">
-                                      Place of Supply not applicable.
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+                                        {!this.props.state_of_supply && (
+                                          <div class="alert-sm alert-warning">
+                                            <i class="i i-info-circle" />
+                                            Add a Place of Supply to apply taxes
+                                          </div>
+                                        )}
+                                      </Fragment>
+                                    ) : this.props.state_of_supply ? (
+                                      <div>
+                                        {this.props.state_of_supply.name}
+                                      </div>
+                                    ) : (
+                                      <div class="light-placeholder">
+                                        Place of Supply not applicable.
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                             </div>
                             <div class="col-md-12 hidden-md visible-sm-block">
                               <div class="inv__dates-container">
@@ -2346,24 +2353,28 @@ const removeTaxForNonINRItems = (props, invoiceCurrency) => {
     updatedProps.currency = invoiceCurrency;
 
     updatedProps.line_items = updatedProps.line_items.map(item => {
-      if (invoiceCurrency !== item.selectedItem.currency) {
-        delete item.taxes;
-        delete item.tax_ids;
-        delete item.tax_inclusive;
-        delete item.tax_rate;
-        delete item.item_id;
-
-        return {
-          ...item,
-          currency: invoiceCurrency,
-          deleteTaxId: true,
-          addName: true,
-        };
-      }
+      delete item.taxes;
+      delete item.tax_ids;
+      delete item.tax_inclusive;
+      delete item.tax_rate;
 
       return item;
     });
   }
+
+  updatedProps.line_items = updatedProps.line_items.map(item => {
+    if (invoiceCurrency !== item.selectedItem.currency) {
+      delete item.item_id;
+
+      return {
+        ...item,
+        currency: invoiceCurrency,
+        deleteTaxId: true,
+        addName: true,
+      };
+    }
+    return item;
+  });
 
   return updatedProps;
 };
