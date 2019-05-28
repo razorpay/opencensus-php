@@ -63,6 +63,7 @@ const sacLengthValidator = (sac, all) => {
     taxRate: selector(state, 'tax_rate'),
     taxInclusive: selector(state, 'tax_inclusive'),
     cess: selector(state, 'cess'),
+    user: state.session.user,
   }),
   {
     fetchTaxes,
@@ -389,6 +390,7 @@ export default class AddItem extends Component {
       cess,
       showTaxes = false,
       currency,
+      user,
     } = this.props;
     const { showCessForm, editingItem, showTaxRadios } = this.state;
 
@@ -461,7 +463,7 @@ export default class AddItem extends Component {
                         onChange={this.onCurrencyChange}
                         parentQuerySelector=".ReactModal__Content"
                         defaultValue={currency}
-                        disabled
+                        disabled={!user.isInttCurrenciesEnabled}
                       />
                       <Field
                         placeholder="Amount"
