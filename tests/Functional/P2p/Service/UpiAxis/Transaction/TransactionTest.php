@@ -3,6 +3,7 @@
 namespace RZP\Tests\P2p\Service\UpiAxis\Transaction;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Models\P2p\Transaction\Mode;
 use RZP\Models\P2p\Transaction\Type;
 use RZP\Models\P2p\Transaction\Flow;
 use RZP\Models\P2p\Transaction\Entity;
@@ -396,5 +397,135 @@ class TransactionTest extends TestCase
         }]);
 
         $helper->initiateReject($transaction->getPublicId(), $content);
+    }
+
+    public function testInitiatePayIntent()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->withSchemaValidated();
+
+        $upi = [
+            'mcc'       => '1208',
+            'ref_url'   => 'https::example.com',
+            'ref_id'    => 'XrefId'
+        ];
+
+        $coproto = $helper->initiatePay([
+            'mode'  => 'intent',
+            'upi'   => $upi,
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Mode::INTENT, $transaction->getMode());
+        $this->assertSame($upi['mcc'], $transaction->upi->getMcc());
+        $this->assertSame($upi['ref_url'], $transaction->upi->getRefUrl());
+        $this->assertSame($upi['ref_id'], $transaction->upi->getRefId());
+
+        $content = $coproto['request']['content'];
+
+        $this->assertSame($upi['mcc'], $content['mcc']);
+        $this->assertSame($upi['ref_url'], $content['refUrl']);
+        $this->assertSame($upi['ref_id'], $content['transactionReference']);
+    }
+
+    public function testInitiatePayQrCode()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $helper->withSchemaValidated();
+
+        $upi = [
+            'mcc'       => '1208',
+            'ref_url'   => 'https::example.com',
+            'ref_id'    => 'XrefId'
+        ];
+
+        $coproto = $helper->initiatePay([
+            'mode'  => 'qr_code',
+            'upi'   => $upi,
+        ]);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Mode::QR_CODE, $transaction->getMode());
+        $this->assertSame($upi['mcc'], $transaction->upi->getMcc());
+        $this->assertSame($upi['ref_url'], $transaction->upi->getRefUrl());
+        $this->assertSame($upi['ref_id'], $transaction->upi->getRefId());
+
+        $content = $coproto['request']['content'];
+
+        $this->assertSame($upi['mcc'], $content['mcc']);
+        $this->assertSame($upi['ref_url'], $content['refUrl']);
+        $this->assertSame($upi['ref_id'], $content['transactionReference']);
+    }
+
+    public function testPayAuthorizeCallback()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createPayTransaction();
+
+        $this->mockSdk()->setCallback('CUSTOMER_DEBITED_VIA_PAY', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID              => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertTrue($transaction->isCompleted());
+        $this->assertArraySubset([
+            Entity::STATUS            => Status::COMPLETED,
+            Entity::INTERNAL_STATUS   => Status::COMPLETED,
+        ], $transaction->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE           => '00',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved'
+        ], $transaction->upi->toArrayPublic());
+    }
+
+    public function testCollectAuthorizeCallback()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createCollectIncomingTransaction();
+
+        $this->mockSdk()->setCallback('CUSTOMER_DEBITED_VIA_COLLECT', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID              => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertTrue($transaction->isCompleted());
+        $this->assertArraySubset([
+            Entity::STATUS            => Status::COMPLETED,
+            Entity::INTERNAL_STATUS   => Status::COMPLETED,
+        ], $transaction->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE           => '00',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved'
+        ], $transaction->upi->toArrayPublic());
     }
 }

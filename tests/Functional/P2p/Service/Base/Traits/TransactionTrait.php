@@ -114,6 +114,8 @@ trait TransactionTrait
             Entity::MODE                => Mode::DEFAULT,
             Entity::MERCHANT_ID         => $this->fixtures->device(self::DEVICE_1)->getMerchantId(),
             Entity::CUSTOMER_ID         => $this->fixtures->device(self::DEVICE_1)->getCustomerId(),
+            Entity::DEVICE_ID           => $this->fixtures->device(self::DEVICE_1)->getId(),
+            Entity::HANDLE              => $this->fixtures->handle->getCode(),
         ];
 
         $entity = new Entity();

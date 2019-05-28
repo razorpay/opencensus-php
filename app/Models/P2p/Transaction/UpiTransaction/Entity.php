@@ -21,6 +21,8 @@ class Entity extends Base\Entity
     const GATEWAY_REFERENCE_ID         = 'gateway_reference_id';
     const RRN                          = 'rrn';
     const REF_ID                       = 'ref_id';
+    const REF_URL                      = 'ref_url';
+    const MCC                          = 'mcc';
     const GATEWAY_ERROR_CODE           = 'gateway_error_code';
     const GATEWAY_ERROR_DESCRIPTION    = 'gateway_error_description';
     const RISK_SCORES                  = 'risk_scores';
@@ -55,6 +57,8 @@ class Entity extends Base\Entity
         Entity::GATEWAY_REFERENCE_ID,
         Entity::RRN,
         Entity::REF_ID,
+        Entity::REF_URL,
+        Entity::MCC,
         Entity::GATEWAY_ERROR_CODE,
         Entity::GATEWAY_ERROR_DESCRIPTION,
         Entity::RISK_SCORES,
@@ -76,6 +80,8 @@ class Entity extends Base\Entity
         Entity::GATEWAY_REFERENCE_ID,
         Entity::RRN,
         Entity::REF_ID,
+        Entity::REF_URL,
+        Entity::MCC,
         Entity::GATEWAY_ERROR_CODE,
         Entity::GATEWAY_ERROR_DESCRIPTION,
         Entity::RISK_SCORES,
@@ -91,6 +97,9 @@ class Entity extends Base\Entity
         Entity::DEVICE_ID,
         Entity::HANDLE,
         Entity::RRN,
+        Entity::REF_ID,
+        Entity::REF_URL,
+        Entity::MCC,
         Entity::NETWORK_TRANSACTION_ID,
         Entity::GATEWAY_ERROR_CODE,
         Entity::GATEWAY_ERROR_DESCRIPTION,
@@ -248,6 +257,22 @@ class Entity extends Base\Entity
     /**
      * @return $this
      */
+    public function setRefUrl(string $refUrl)
+    {
+        return $this->setAttribute(self::REF_URL, $refUrl);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setMcc(string $mcc)
+    {
+        return $this->setAttribute(self::MCC, $mcc);
+    }
+
+    /**
+     * @return $this
+     */
     public function setGatewayErrorCode(string $gatewayErrorCode)
     {
         return $this->setAttribute(self::GATEWAY_ERROR_CODE, $gatewayErrorCode);
@@ -389,6 +414,22 @@ class Entity extends Base\Entity
     public function getRefId()
     {
         return $this->getAttribute(self::REF_ID);
+    }
+
+    /**
+     * @return string self::REF_URL
+     */
+    public function getRefUrl()
+    {
+        return $this->getAttribute(self::REF_URL);
+    }
+
+    /**
+     * @return string self::MCC
+     */
+    public function getMcc()
+    {
+        return $this->getAttribute(self::MCC);
     }
 
     /**

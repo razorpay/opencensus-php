@@ -26,7 +26,7 @@ class Processor extends Base\Processor
 
         $this->input->put(Entity::INTERNAL_STATUS, Status::CREATED);
 
-        $transaction = $this->createTransaction($this->action, $this->input, new ArrayBag());
+        $transaction = $this->createTransaction($this->action, $this->input, $this->input->bag(Entity::UPI));
 
         $this->initiateCallGateway($transaction);
 

@@ -130,6 +130,10 @@ class Entity extends Base\Entity
         Entity::ADDRESS,
     ];
 
+    protected $with = [
+        Entity::BANK,
+    ];
+
     /***************** SETTERS *****************/
 
     /**

@@ -13,6 +13,17 @@ class Mode
     const BLE               = 'ble';
     const UHF               = 'uhf';
 
+    public static $allowed = [
+        self::DEFAULT,
+        self::QR_CODE,
+        self::SECURE_QR_CODE,
+        self::INTENT,
+        self::SECURE_INTENT,
+        self::NFC,
+        self::BLE,
+        self::UHF,
+    ];
+
     public static function isValid(string $key): bool
     {
         return (defined(static::class.'::'.strtoupper($key)));

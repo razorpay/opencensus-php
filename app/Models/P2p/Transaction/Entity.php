@@ -3,8 +3,10 @@
 namespace RZP\Models\P2p\Transaction;
 
 use Carbon\Carbon;
-use RZP\Models\P2p\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Vpa;
+use RZP\Models\Customer;
+use RZP\Models\P2p\Base;
 
 /**
  * @property Vpa\Entity $payer
@@ -18,34 +20,38 @@ use RZP\Models\P2p\Vpa;
 class Entity extends Base\Entity
 {
     use Base\Traits\HasMerchant;
-    use Base\Traits\HasCustomer;
+    use Base\Traits\HasDevice;
+    use Base\Traits\HasHandle;
+    use Base\Traits\SoftDeletes;
     use Base\Traits\HasBankAccount;
 
-    const MERCHANT_ID          = 'merchant_id';
-    const CUSTOMER_ID          = 'customer_id';
-    const PAYER_TYPE           = 'payer_type';
-    const PAYER_ID             = 'payer_id';
-    const PAYEE_TYPE           = 'payee_type';
-    const PAYEE_ID             = 'payee_id';
-    const BANK_ACCOUNT_ID      = 'bank_account_id';
-    const METHOD               = 'method';
-    const TYPE                 = 'type';
-    const FLOW                 = 'flow';
-    const MODE                 = 'mode';
-    const AMOUNT               = 'amount';
-    const CURRENCY             = 'currency';
-    const DESCRIPTION          = 'description';
-    const GATEWAY              = 'gateway';
-    const STATUS               = 'status';
-    const INTERNAL_STATUS      = 'internal_status';
-    const ERROR_CODE           = 'error_code';
-    const ERROR_DESCRIPTION    = 'error_description';
-    const INTERNAL_ERROR_CODE  = 'internal_error_code';
-    const PAYER_APPROVAL_CODE  = 'payer_approval_code';
-    const PAYEE_APPROVAL_CODE  = 'payee_approval_code';
-    const INITIATED_AT         = 'initiated_at';
-    const EXPIRE_AT            = 'expire_at';
-    const COMPLETED_AT         = 'completed_at';
+    const MERCHANT_ID                   = 'merchant_id';
+    const CUSTOMER_ID                   = 'customer_id';
+    const PAYER_TYPE                    = 'payer_type';
+    const PAYER_ID                      = 'payer_id';
+    const PAYEE_TYPE                    = 'payee_type';
+    const PAYEE_ID                      = 'payee_id';
+    const BANK_ACCOUNT_ID               = 'bank_account_id';
+    const METHOD                        = 'method';
+    const TYPE                          = 'type';
+    const FLOW                          = 'flow';
+    const MODE                          = 'mode';
+    const AMOUNT                        = 'amount';
+    const AMOUNT_MINIMUM                = 'amount_minimum';
+    const AMOUNT_AUTHORIZED             = 'amount_authorized';
+    const CURRENCY                      = 'currency';
+    const DESCRIPTION                   = 'description';
+    const GATEWAY                       = 'gateway';
+    const STATUS                        = 'status';
+    const INTERNAL_STATUS               = 'internal_status';
+    const ERROR_CODE                    = 'error_code';
+    const ERROR_DESCRIPTION             = 'error_description';
+    const INTERNAL_ERROR_CODE           = 'internal_error_code';
+    const PAYER_APPROVAL_CODE           = 'payer_approval_code';
+    const PAYEE_APPROVAL_CODE           = 'payee_approval_code';
+    const INITIATED_AT                  = 'initiated_at';
+    const EXPIRE_AT                     = 'expire_at';
+    const COMPLETED_AT                  = 'completed_at';
 
     /************** Input  Properties ************/
 
@@ -659,6 +665,16 @@ class Entity extends Base\Entity
     }
 
     /***************** RELATIONS *****************/
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer\Entity::class);
+    }
+
+    public function associateCustomer(Customer\Entity $handle)
+    {
+        return $this->customer()->associate($handle);
+    }
 
     public function payer()
     {

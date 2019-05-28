@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Transaction;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Beneficiary;
@@ -30,6 +31,11 @@ class Validator extends Base\Validator
 
     public function rules()
     {
+        $expiryAt = 'min:' . Carbon::now()->addMinute()->getTimestamp() .
+                    'max:' . Carbon::now()->addDays(45)->getTimestamp();
+
+        $modes    = 'in:' . implode(',', Mode::$allowed);
+
         $rules = [
             Entity::MERCHANT_ID          => 'string',
             Entity::CUSTOMER_ID          => 'string',
@@ -41,10 +47,10 @@ class Validator extends Base\Validator
             Entity::METHOD               => 'string',
             Entity::TYPE                 => 'string',
             Entity::FLOW                 => 'string',
-            Entity::MODE                 => 'string',
-            Entity::AMOUNT               => 'integer',
-            Entity::CURRENCY             => 'string',
-            Entity::DESCRIPTION          => 'string',
+            Entity::MODE                 => 'string|' . $modes,
+            Entity::AMOUNT               => 'integer|min:1|max:100000',
+            Entity::CURRENCY             => 'string|in:INR',
+            Entity::DESCRIPTION          => 'string|regex:/^[a-zA-Z0-9\.\ ]{1,}$/',
             Entity::GATEWAY              => 'string',
             Entity::STATUS               => 'string',
             Entity::INTERNAL_STATUS      => 'string',
@@ -54,7 +60,7 @@ class Validator extends Base\Validator
             Entity::PAYER_APPROVAL_CODE  => 'string',
             Entity::PAYEE_APPROVAL_CODE  => 'string',
             Entity::INITIATED_AT         => 'epoch',
-            Entity::EXPIRE_AT            => 'epoch',
+            Entity::EXPIRE_AT            => 'epoch|' . $expiryAt,
             Entity::COMPLETED_AT         => 'epoch',
             Entity::SUCCESS              => 'boolean',
         ];
@@ -109,9 +115,12 @@ class Validator extends Base\Validator
             Entity::PAYER                => 'required',
             Entity::PAYEE                => 'required',
             Entity::AMOUNT               => 'required',
-            Entity::CURRENCY             => 'sometimes',
-            Entity::DESCRIPTION          => 'required',
+            Entity::CURRENCY             => 'required',
+            Entity::DESCRIPTION          => 'sometimes',
+            Entity::MODE                 => 'sometimes',
         ]);
+
+        $rules->merge($this->makeUpiRules());
 
         return $rules;
     }
@@ -132,7 +141,7 @@ class Validator extends Base\Validator
             Entity::PAYEE                => 'required',
             Entity::AMOUNT               => 'required',
             Entity::CURRENCY             => 'required',
-            Entity::DESCRIPTION          => 'required',
+            Entity::DESCRIPTION          => 'sometimes',
             Entity::EXPIRE_AT            => 'sometimes',
         ]);
 
