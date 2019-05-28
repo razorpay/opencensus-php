@@ -137,6 +137,7 @@ export default class NewSubscriptionLink extends Component {
         currency: option.currency,
         type: 'addon',
       },
+      item_id: option.id,
       quantity: 1,
     };
     this.setState({
@@ -208,6 +209,12 @@ export default class NewSubscriptionLink extends Component {
       (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
       {}
     );
+
+    data.addons = data.addons.map(addon => {
+      delete addon.item;
+
+      return addon;
+    });
 
     return this.props
       .saveSubscription(data)
