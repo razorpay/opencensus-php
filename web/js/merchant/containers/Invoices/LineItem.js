@@ -49,7 +49,8 @@ export default class InvoiceLineItem extends React.Component {
           }}
           isNew
           showTaxes={showTaxes}
-          currency={'INR'}
+          currency={this.props.invoiceCurrency}
+          disableCurrencySelect
         />
       ),
     });
@@ -95,6 +96,8 @@ export default class InvoiceLineItem extends React.Component {
           onSave={this.selectItemAndCloseModal}
           item={item}
           showTaxes={showTaxes}
+          currency={this.props.invoiceCurrency}
+          disableCurrencySelect
         />
       ),
     });

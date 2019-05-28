@@ -63,6 +63,7 @@ const sacLengthValidator = (sac, all) => {
     taxRate: selector(state, 'tax_rate'),
     taxInclusive: selector(state, 'tax_inclusive'),
     cess: selector(state, 'cess'),
+    selected_currency: selector(state, 'currency'),
     user: state.session.user,
   }),
   {
@@ -388,13 +389,17 @@ export default class AddItem extends Component {
       taxRate,
       taxInclusive,
       cess,
-      showTaxes = false,
       currency,
+      selected_currency,
       user,
+      isAddonItem,
     } = this.props;
     const { showCessForm, editingItem, showTaxRadios } = this.state;
 
-    const gstRates = this.getGSTRates();
+    const gstRates = this.getGSTRates(),
+      disableCurrencySelect =
+        this.props.disableCurrencySelect || !user.isInttCurrenciesEnabled,
+      showTaxes = this.props.showTaxes && selected_currency === 'INR';
 
     const cessForm = (
       <div class="row ItemCreationModal__cess-form">
@@ -440,7 +445,7 @@ export default class AddItem extends Component {
 
           <form onSubmit={handleSubmit(this.save)}>
             <div class="row">
-              <div class={`${showTaxes ? 'col-md-6' : 'col-md-12'}`}>
+              <div class={`${isAddonItem ? 'col-md-12' : 'col-md-6'}`}>
                 <div class="form-group">
                   <label class="label-required">Name</label>
                   <div>
@@ -463,7 +468,7 @@ export default class AddItem extends Component {
                         onChange={this.onCurrencyChange}
                         parentQuerySelector=".ReactModal__Content"
                         defaultValue={currency}
-                        disabled={!user.isInttCurrenciesEnabled}
+                        disabled={disableCurrencySelect}
                       />
                       <Field
                         placeholder="Amount"
@@ -478,7 +483,7 @@ export default class AddItem extends Component {
                   </div>
                 </div>
               </div>
-              <div class={`${showTaxes ? 'col-md-6' : 'col-md-12'}`}>
+              <div class={`${isAddonItem ? 'col-md-12' : 'col-md-6'}`}>
                 <div class="form-group">
                   <label>Description</label>
                   <div>
@@ -486,6 +491,7 @@ export default class AddItem extends Component {
                       name="description"
                       component="textarea"
                       class="form-control"
+                      style={{ minHeight: '91px' }}
                     />
                   </div>
                 </div>
