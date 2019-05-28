@@ -1572,6 +1572,7 @@ class Gateway extends Base\Gateway
             Entity::AUTH_ID             =>  $input['gateway'][Entity::AUTH_ID],
             Entity::MERCHANT_REFERENCE  =>  $input['gateway'][Entity::MERCHANT_REFERENCE],
             Entity::RESPONSE_CODE       =>  Status::SUCCESS_CODE,
+            Entity::STATUS              =>  Status::SUCCESS,
         ];
 
         $gatewayPayment->fill($attr);
