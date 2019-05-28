@@ -149,7 +149,7 @@ class Gateway extends Base\Gateway
     {
         switch ($gateway)
         {
-            case 'upi_airtel':
+            case Payment\Gateway::UPI_AIRTEL:
                 return json_decode($input[0], true);
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
@@ -479,6 +479,8 @@ class Gateway extends Base\Gateway
 
         unset($data['data']['_raw']);
 
+        unset($data['_raw']);
+
         return $data;
     }
 
@@ -545,11 +547,17 @@ class Gateway extends Base\Gateway
             $attributes = $this->getMappedAttributes($attributes);
         }
 
+        $raw = $gatewayPayment->getRaw();
+
+        $rawArray = json_decode($raw, true);
+
         $action = $action ?: $this->action;
 
         $redactedRaw = $this->getRedactedData($attributes['raw']);
 
-        $attributes['raw'] = json_encode($redactedRaw);
+        $finalRaw = array_merge($rawArray, $redactedRaw);
+
+        $attributes['raw'] = json_encode($finalRaw);
 
         $gatewayPayment->setAction($action);
 
