@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import ajax from 'merchant/utils/ajax';
 import { isBlank, getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 export default class Customer extends GenericEntity {
@@ -94,17 +94,5 @@ export default class Customer extends GenericEntity {
 
     // This is used as selected display value in the autocomplete
     this.selectedDisplayName = this.name || this.contact || this.email;
-  }
-
-  search(data) {
-    return merchantFetch({
-      url: 'customers',
-      data,
-    }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Customer(item).deserialize()
-      );
-      return response;
-    });
   }
 }
