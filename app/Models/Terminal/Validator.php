@@ -294,6 +294,7 @@ class Validator extends Base\Validator
     protected static $amexEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:' . Gateway::AMEX,
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|alpha_num|min:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
     ];
 
