@@ -43,7 +43,6 @@ export default class InvoiceLineItemTable extends Component {
       invoice,
       invoiceTotal,
       applyTaxes,
-      selectedItems,
     } = this.props;
 
     return (
@@ -72,7 +71,6 @@ export default class InvoiceLineItemTable extends Component {
                         gstSlabs={gstSlabs}
                         onRemove={this.onRemove}
                         applyTaxes={applyTaxes}
-                        selectedItems={selectedItems}
                       />
                     ))}
                     <tr class="addline">
