@@ -618,6 +618,91 @@ class CybersourceGatewayTest extends TestCase
         $this->assertSame($response['gateway']['gatewayPayment']['status'], 'authorize_failed');
     }
 
+    public function testVerifyDataUpdation()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'pay_init')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_FAILED';
+                $content['error']['gateway_error_code'] = 'DONOTHONOUR';
+                $content['error']['gateway_error_description'] = 'Do not honour';
+                $content['data']['gateway_reference_id1']  = '5474993075916772203012';
+            }
+        });
+
+        $this->makeRequestAndCatchException(function()
+        {
+            $this->doAuthPayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('5474993075916772203012', $cybsEntity['ref']);
+
+        $this->mockServerContentFunction(function(&$content, $action)
+        {
+            if ($action === 'verify_content')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_FAILED';
+                $content['error']['gateway_error_code'] = 'DONOTHONOUR';
+                $content['error']['gateway_error_description'] = 'Do not honour';
+                $content['data']['status'] = 'authorize_failed';
+                $content['data']['gateway_reference_id1']  = '5474993075916772203013';
+            }
+        });
+
+        $response = $this->verifyPayment($payment['id']);
+
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+        $this->assertEquals('5474993075916772203013', $cybsEntity['ref']);
+
+        $this->assertSame($response['payment']['verified'], 1);
+        $this->assertSame($response['gateway']['status'], 'status_match');
+    }
+
+    public function testVerifyMisMatch()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'pay_init')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_FAILED';
+                $content['error']['gateway_error_code'] = 'DONOTHONOUR';
+                $content['error']['gateway_error_description'] = 'Do not honour';
+                $content['data']['gateway_reference_id1']  = '5474993075916772203012';
+            }
+        });
+
+        $this->makeRequestAndCatchException(function()
+        {
+            $this->doAuthPayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('5474993075916772203012', $cybsEntity['ref']);
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        },
+        Exception\PaymentVerificationException::class);
+
+
+        $payment = $this->getLastEntity('payment', true);
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('5470653499446597903009', $cybsEntity['ref']);
+
+        $this->assertSame($payment['verified'], 0);
+    }
+
     public function testAuthorizeFailedPayment()
     {
         $enrolledCard = [
