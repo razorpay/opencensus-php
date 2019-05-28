@@ -324,6 +324,9 @@ class Reporting implements ExternalService
             $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
 
             $apiResponse = $this->createScheduleOnApi($scheduleRequest);
+
+            // Link Api schedule with reporting schedule
+            $response = $this->linkSingleScheduledTasks($response);
         }
 
         if (empty($apiResponse) === true)
@@ -332,14 +335,16 @@ class Reporting implements ExternalService
                 'Failed to create schedule');
         }
 
-        return $apiResponse;
+        return $response;
     }
 
     public function fetchScheduleMultiple(array $input): array
     {
-        $response = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+        $scheduleDataList = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
 
-        return $this->mergeScheduledTasks($response);
+        $scheduleTaskData = $this->linkAllScheduledTasks($scheduleDataList);
+
+        return $scheduleTaskData;
 
     }
 
@@ -945,26 +950,59 @@ class Reporting implements ExternalService
         return $parentId;
     }
 
-    protected function mergeScheduledTasks(array $response)
+    /**
+     * Loop through all the reporting schedules and link API schedule object in it.
+     *
+     * @param  array  $scheduleData
+     *
+     * @return array
+     */
+    protected function linkAllScheduledTasks(array $scheduleDataList)
     {
-        if (isset($response['error']) === false)
+
+        if (isset($scheduleDataList['error']) === true)
         {
-            if (isset($response['items']) === true)
-            {
-                foreach ($response['items'] as &$item)
-                {
-                    $entityId = $this->generateEntityId($item['id']);
-
-                    $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
-
-                    if ($scheduleTask !== null)
-                    {
-                        $item['schedule'] = $scheduleTask->schedule;
-                    }
-                }
-            }
+            return $scheduleDataList;
         }
 
-        return $response;
+        if (isset($scheduleDataList['items']) === false)
+        {
+            return $scheduleDataList;
+        }
+
+        foreach ($scheduleDataList['items'] as &$item)
+        {
+            $item = $this->linkSingleScheduledTasks($item);
+        }
+
+        return $scheduleDataList;
+    }
+
+    /**
+     * Linking API schedule object in the passed reporting schedule object so the frontend can show the
+     * schedule details to the users
+     *
+     * @param  array  $scheduleData
+     *
+     * @return array
+     */
+    protected function linkSingleScheduledTasks(array $scheduleData)
+    {
+
+        if (isset($scheduleData['id']) === false)
+        {
+            return $scheduleData;
+        }
+
+        $entityId = $this->generateEntityId($scheduleData['id']);
+
+        $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
+
+        if ($scheduleTask !== null)
+        {
+            $scheduleData['schedule'] = $scheduleTask->schedule;
+        }
+
+        return $scheduleData;
     }
 }
