@@ -15,6 +15,12 @@ export const CUSTOMER_DELETED = 'CUSTOMER_DELETED';
 export const CUSTOMER_ADDRESS_FETCH = 'CUSTOMER_ADDRESS_FETCH';
 export const CUSTOMER_ADDRESS_ADD = 'CUSTOMER_ADDRESS_ADD';
 
+export const searchCustomers = data => {
+  let customer = new Customer();
+
+  return customer.search(data);
+};
+
 export const fetchCustomers = params => {
   let customer = new Customer();
 

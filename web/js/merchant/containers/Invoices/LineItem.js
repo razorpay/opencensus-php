@@ -2,12 +2,13 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import InlineField from 'rzp/ui/Forms/InlineField';
 import InputField from 'rzp/ui/Forms/InputField';
-import TypeAhead from 'rzp/ui/Select/TypeAhead';
+import SearchbleTypeAhead from './SearchbleTypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
 import Amount from 'rzp/ui/Amount';
 import * as ModalActions from 'rzp/modules/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'rzp/utils/rzp-utils';
 import Item from 'merchant/models/Item';
+import { searchItems } from 'merchant/modules/items';
 import { track } from './ga';
 
 const selector = formValueSelector('newInvoice');
@@ -26,9 +27,32 @@ export default class InvoiceLineItem extends React.Component {
     confirm: PropTypes.func,
   };
 
+  static getDerivedStateFromProps(nextProps, state) {
+    if (nextProps.selectedItems && state.selectedItems) {
+      return {
+        ...state,
+        selectedItems: Array.from(
+          new Set([nextProps.selectedItems, ...state.selectedItems])
+        ),
+      };
+    }
+
+    if (nextProps.selectedItems) {
+      return {
+        ...state,
+        selectedItems: [...nextProps.selectedItems],
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super(props);
-    this.state = {};
+
+    this.state = {
+      selectedItems: props.selectedItems,
+    };
   }
 
   quickCreateItem = ({ searchTerm = '' }) => {
@@ -61,15 +85,12 @@ export default class InvoiceLineItem extends React.Component {
    * @return {Item}
    */
   getItemFromLineItem = () => {
-    const { invoice_line_items, index, items } = this.props;
+    const { invoice_line_items, index } = this.props;
 
     const lineItemID = invoice_line_items[index].item_id;
     if (!lineItemID) return;
 
-    const item = items.filter(item => item.id === lineItemID);
-    if (item.length === 1) {
-      return item[0];
-    }
+    return findBy(this.state.selectedItems, 'id', lineItemID);
   };
 
   /**
@@ -126,6 +147,10 @@ export default class InvoiceLineItem extends React.Component {
     } else {
       this.updateItem(item);
     }
+
+    this.setState({
+      selectedItems: [item],
+    });
   };
 
   /**
@@ -158,6 +183,10 @@ export default class InvoiceLineItem extends React.Component {
     this.props.change(`${fieldName}.description`, item.description || '');
     this.props.change(`${fieldName}.amount`, item.amount || 0);
     this.props.change(`${fieldName}.amountInINR`, item.amountInINR || '0.00');
+
+    this.setState({
+      selectedItems: [item],
+    });
 
     // The tax-related details in the line item if taxes are to be shown.
     if (showTaxes) {
@@ -404,15 +433,16 @@ export default class InvoiceLineItem extends React.Component {
     }
   }
 
+  searchItems = searchTerm => {
+    return searchItems({
+      type: 'invoice',
+      'expand[]': 'tax',
+      q: searchTerm,
+    });
+  };
+
   render() {
-    let {
-      fieldName,
-      gstSlabs,
-      index,
-      disabled,
-      items,
-      applyTaxes,
-    } = this.props;
+    let { fieldName, gstSlabs, index, disabled, applyTaxes } = this.props;
     let selectedOption = this.props.invoice_line_items[index];
     let isEmptyRow = !(
       (selectedOption.item_id && selectedOption.item_id !== 'NULL') ||
@@ -472,26 +502,19 @@ export default class InvoiceLineItem extends React.Component {
                 name={`${fieldName}.item_id`}
                 class="material-input"
                 disabled={disabled}
-                component={TypeAhead}
+                component={SearchbleTypeAhead}
                 labelWhenSearchTermBlank="Create new Item"
                 labelWhenSearchTermValid="Add ':_searchTerm_:' as an Item"
                 maxSearchTermLength="12"
-                options={items}
                 selected={selectedOption}
                 optionLabelPath="name"
-                placeholder="Select an item"
+                placeholder="Search for items"
                 showClear={false}
                 onOptionChange={this.updateLineItemRow}
                 onQuickAdd={this.quickCreateItem}
                 disabled={disabled}
-                normalizeValue={value => {
-                  let selected =
-                    findBy(items || [], 'id', value) || selectedOption;
-                  if (selected) {
-                    return selected.name;
-                  }
-                  return value;
-                }}
+                searchMethod={this.searchItems}
+                options={this.state.selectedItems}
               />
             </div>
             <p class="lineItem__description">{selectedOption.description}</p>

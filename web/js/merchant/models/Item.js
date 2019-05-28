@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { getFixedINRAmount, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 export default class Item extends GenericEntity {
@@ -44,5 +44,14 @@ export default class Item extends GenericEntity {
       this.amountInINR = getFixedINRAmount(value);
     }
     return super.deserializeProperty(prop, value);
+  }
+
+  search(data) {
+    return merchantFetch({ url: 'items', data }).then(response => {
+      response.data.items = response.data.items.map(item =>
+        new Item(item).deserialize()
+      );
+      return response;
+    });
   }
 }
