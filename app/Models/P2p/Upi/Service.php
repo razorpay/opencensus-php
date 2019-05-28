@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Upi;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
 
 /**
@@ -40,7 +41,19 @@ class Service extends Base\Service
 
                 $processor = new Transaction\Processor;
 
-                $processor->processAction($context[Base\Entity::ACTION], $callback);
+                try
+                {
+                    $processor->processAction($context[Base\Entity::ACTION], $callback);
+                }
+                catch (Exception\P2p\BadRequestException $e)
+                {
+                    if ($e->getCode() === ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE)
+                    {
+                        continue;
+                    }
+
+                    throw $e;
+                }
         }
     }
 }

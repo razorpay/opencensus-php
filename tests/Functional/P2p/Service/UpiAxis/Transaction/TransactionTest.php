@@ -528,4 +528,28 @@ class TransactionTest extends TestCase
             UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved'
         ], $transaction->upi->toArrayPublic());
     }
+
+    public function testPayCompletedCallback()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createPayTransaction([
+            Entity::STATUS              => Status::COMPLETED,
+            Entity::INTERNAL_STATUS     => Status::COMPLETED,
+        ]);
+
+        $this->mockSdk()->setCallback('CUSTOMER_DEBITED_VIA_PAY', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID              => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+    }
 }
