@@ -42,7 +42,7 @@ export default class NewSubscriptionLink extends Component {
 
   componentWillMount() {
     this.props.fetchPlans({ count: 100 });
-    this.props.fetchItems({ count: 100, type: 'invoice' });
+    this.props.fetchItems({ count: 100, type: 'addon' });
   }
 
   handleTabChange = ({ target }) => {
