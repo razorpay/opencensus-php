@@ -1301,6 +1301,37 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithAmountIntCurrency' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'amount'        => 10,
+                'currency'      => 'USD',
+                'type'          => 'link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount must be atleast USD 0.50',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateInvoiceWithBadExpiredBy' => [
         'request' => [
             'url' => '/invoices',

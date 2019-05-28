@@ -27,6 +27,7 @@ class OrderEvent extends Event
                 'name'      => $merchant->getBillingLabel(),
                 'mcc'       => $merchant->getCategory(),
                 'category'  => $merchant->getCategory2(),
+                'tpv'       => $merchant->isTPVRequired()
         ];
     }
 

@@ -59,8 +59,6 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_LINE_ITEMS = 20;
     const MAX_ALLOWED_LINE_ITEMS_EXPERIMENTAL = 50;
 
-    const MIN_AMOUNT = 100;
-
     /**
      * A minimum of 15 minutes of gap must exist between invoice
      * issue and expired by timestamps.
@@ -79,7 +77,7 @@ class Validator extends Base\Validator
         Entity::DATE                     => 'sometimes|epoch|nullable',
         Entity::TERMS                    => 'sometimes|string|max:2048',
         Entity::NOTES                    => 'sometimes|notes',
-        Entity::COMMENT                  => 'sometimes|string|max:2048',
+        Entity::COMMENT                  => 'sometimes|string|max:2048|utf8',
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INTERNAL_REF             => 'filled|string|min:1|max:64',
         Entity::INVOICE_NUMBER           => 'sometimes|string|min:1|max:40|nullable',
@@ -90,7 +88,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
         Entity::CURRENCY                 => 'filled|currency|custom',
@@ -114,7 +112,7 @@ class Validator extends Base\Validator
         Entity::DATE                     => 'sometimes|epoch|nullable',
         Entity::TERMS                    => 'sometimes|string|max:2048',
         Entity::NOTES                    => 'sometimes|notes',
-        Entity::COMMENT                  => 'sometimes|string|max:2048',
+        Entity::COMMENT                  => 'sometimes|string|max:2048|utf8',
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER           => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS                => 'filled|in:1',
@@ -124,8 +122,8 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
-        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:100',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
+        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min_amount',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
         Entity::CURRENCY                 => 'filled|currency|custom',
         Entity::BILLING_START            => 'filled|epoch',
@@ -143,7 +141,7 @@ class Validator extends Base\Validator
         Entity::DATE                     => 'sometimes|epoch|nullable',
         Entity::TERMS                    => 'sometimes|string|max:2048',
         Entity::NOTES                    => 'sometimes|notes',
-        Entity::COMMENT                  => 'sometimes|string|max:2048',
+        Entity::COMMENT                  => 'sometimes|string|max:2048|utf8',
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INTERNAL_REF             => 'filled|string|min:1|max:64',
         Entity::INVOICE_NUMBER           => 'sometimes|string|min:1|max:40|nullable',
@@ -154,7 +152,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
         Entity::CURRENCY                 => 'filled|currency|custom',
@@ -173,15 +171,15 @@ class Validator extends Base\Validator
         Entity::DATE                     => 'sometimes|epoch|nullable',
         Entity::TERMS                    => 'sometimes|string|max:2048',
         Entity::NOTES                    => 'sometimes|notes',
-        Entity::COMMENT                  => 'sometimes|string|max:2048',
+        Entity::COMMENT                  => 'sometimes|string|max:2048|utf8',
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER           => 'sometimes|string|min:1|max:40|nullable',
         Entity::CUSTOMER                 => 'sometimes|array',
         Entity::CUSTOMER_ID              => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS               => 'sometimes|sequential_array|min:1|custom',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100|nullable',
-        Entity::AMOUNT                   => 'filled|mysql_unsigned_int|min:100',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
+        Entity::AMOUNT                   => 'filled|mysql_unsigned_int',
         Entity::DESCRIPTION              => 'sometimes|string|max:2048',
         Entity::BILLING_START            => 'filled|epoch',
         Entity::BILLING_END              => 'filled|epoch',
@@ -195,11 +193,11 @@ class Validator extends Base\Validator
     protected static $editIssuedRules = [
         Entity::TERMS                    => 'sometimes|string|max:2048',
         Entity::NOTES                    => 'sometimes|notes',
-        Entity::COMMENT                  => 'sometimes|string|max:2048',
+        Entity::COMMENT                  => 'sometimes|string|max:2048|utf8',
         Entity::RECEIPT                  => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::EXPIRE_BY                => 'sometimes|epoch|nullable',
         Entity::PARTIAL_PAYMENT          => 'filled|boolean',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|min:100|nullable',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT => 'sometimes|mysql_unsigned_int|nullable|min_amount',
         Entity::CALLBACK_URL             => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
@@ -256,6 +254,10 @@ class Validator extends Base\Validator
     protected static $invoiceStatsByBatchesRules = [
         Entity::BATCH_IDS           => 'required|array|min:1|max:100',
         Entity::BATCH_IDS . '.*'    => 'required|public_id|size:20',
+    ];
+
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
     //
@@ -441,16 +443,20 @@ class Validator extends Base\Validator
 
         $amount = $input[Entity::AMOUNT];
 
-        if ($amount < self::MIN_AMOUNT)
+        $inputAmount = [
+            Entity::AMOUNT => $amount,
+        ];
+
+        // In edit sometimes currency will not be available when amount is edited but we need to validate amount based
+        // on the existing currency.
+        $currency = $input[Entity::CURRENCY] ?? $invoice->getCurrency();
+
+        if (empty($currency) === false)
         {
-            throw new BadRequestValidationFailureException(
-                'The amount should be atleast ' . self::MIN_AMOUNT,
-                Entity::AMOUNT,
-                [
-                    'id'     => $invoice->getId(),
-                    'amount' => $amount,
-                ]);
+            $inputAmount[Entity::CURRENCY] = $currency;
         }
+
+        $this->validateInputValues('min_amount_check', $inputAmount);
 
         // Amount should always be greater than then first_payment_min_amount
         $firstPaymentMinAmount = array_key_exists(Entity::FIRST_PAYMENT_MIN_AMOUNT, $input) ?
@@ -956,6 +962,14 @@ class Validator extends Base\Validator
                     Entity::BATCH_ID => $batch->getId(),
                     'input'          => $input,
                 ]);
+        }
+    }
+
+    public function validateCancelInvoicesOfBatch(Batch\Entity $batch)
+    {
+        if ($batch->getStatus() !== Batch\Status::PROCESSED)
+        {
+            throw new BadRequestValidationFailureException('batch should be in processed status to cancel');
         }
     }
 

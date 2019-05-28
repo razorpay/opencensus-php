@@ -14,7 +14,7 @@ trait CustomReplacesAttributes
 
         $minAmount = Currency::getMinAmount($currency);
 
-        return str_replace(':min_amount', $minAmount, $message);
+        return str_replace([':min_amount', ':currency'], [amount_format_IN($minAmount),$currency], $message);
     }
 }
 

@@ -37,8 +37,7 @@ class CpsGatewayEntitySync
 
         foreach ($attributes as $key => $value)
         {
-            if ((empty($value) === false) and
-                (isset(self::ENTITY_MAP[$key]) === true))
+            if (isset(self::ENTITY_MAP[$key]) === true)
             {
                 $newKey                    = self::ENTITY_MAP[$key];
                 $mappedAttributes[$newKey] = $value;

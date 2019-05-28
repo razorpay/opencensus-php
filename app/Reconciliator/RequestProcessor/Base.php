@@ -11,6 +11,7 @@ use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Base extends Core
 {
@@ -93,6 +94,7 @@ class Base extends Core
     const UPI_HULK               = 'UpiHulk';
     const UPI_AXIS               = 'UpiAxis';
     const AMEX                   = 'Amex';
+    const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -148,6 +150,7 @@ class Base extends Core
         self::UPI_HULK               => [],
         self::AMEX                   => [],
         self::ISG                    => [],
+        self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -229,6 +232,9 @@ class Base extends Core
         Gateway::WALLET_OLAMONEY        => self::OLAMONEY,
         Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
+        Gateway::CARDLESS_EMI           => [
+            CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
+        ],
     ];
 
     /**

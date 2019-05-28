@@ -146,6 +146,13 @@ class Service extends Base\Service
         }
     }
 
+    public function cancelInvoicesOfBatch(string $batchId)
+    {
+        $batch = $this->repo->batch->findByPublicId($batchId);
+
+        return $this->core->cancelInvoicesOfBatch($batch);
+    }
+
     public function delete(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(

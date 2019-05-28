@@ -49,6 +49,11 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentLinkWithMinAmountIntCurrency()
+    {
+        $this->startTest();
+    }
+
     /**
      * Asserts fail attempt to create payment link with amount greater than max payment amount allowed for merchant
      */

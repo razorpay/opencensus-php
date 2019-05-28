@@ -228,6 +228,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
         self::NETBANKING_CORPORATION,
+        self::HITACHI,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team

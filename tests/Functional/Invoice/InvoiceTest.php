@@ -594,6 +594,11 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithAmountIntCurrency()
+    {
+        $this->startTest();
+    }
+
     public function testCreateInvoiceWithBadExpiredBy()
     {
         $this->startTest();

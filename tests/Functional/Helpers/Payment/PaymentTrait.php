@@ -1020,9 +1020,9 @@ trait PaymentTrait
         $this->ba->scroogeAuth();
 
         $request = array(
-            'method'  => 'PUT',
-            'url'     => '/refunds/'.$input['id'].'/update_status',
-            'content' => $input);
+            'method'    => 'PUT',
+            'url'       => '/refunds/' . $input['id'] . '/update_status',
+            'content'   => $input);
 
         $response = $this->makeRequestAndGetContent($request);
 

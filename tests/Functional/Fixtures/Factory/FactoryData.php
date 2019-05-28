@@ -1073,5 +1073,12 @@ final class FactoryData
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Gateway\CardlessEmi\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'gateway'           => 'cardless_emi',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
     }
 }

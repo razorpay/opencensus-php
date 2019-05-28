@@ -259,7 +259,8 @@ trait Authorize
                 [
                     'attempt'     => $retryAttempts,
                     'terminal_id' => $payment->getTerminalId(),
-                    'gateway'     => $payment->getGateway()
+                    'gateway'     => $payment->getGateway(),
+                    'shared'      => $currentTerminal->isShared()
                 ]);
 
             $terminalGatewayInput = $gatewayInput;
@@ -347,7 +348,12 @@ trait Authorize
     {
         try
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED, $payment);
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED,
+                $payment,
+                null,
+                $gatewayInput['authenticate'] ?? []
+            );
 
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
 
@@ -3050,7 +3056,13 @@ trait Authorize
         }
         // @codingStandardsIgnoreEnd
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CARDSAVING_PROCESSED, $payment);
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_CARDSAVING_PROCESSED,
+            $payment,
+            null,
+            [
+                'local' => $token->isLocal()
+            ]);
 
         return $token;
     }
@@ -4435,7 +4447,13 @@ trait Authorize
 
         $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT, $payment);
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
+            $payment,
+            null,
+            [
+                'url' => $response['url'] ?? ''
+            ]);
 
         return $response;
     }

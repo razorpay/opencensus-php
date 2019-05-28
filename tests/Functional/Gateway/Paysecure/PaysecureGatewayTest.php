@@ -6,6 +6,7 @@ use Mail;
 use Queue;
 
 use RZP\Gateway\Hitachi;
+use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
@@ -57,6 +58,8 @@ class PaysecureGatewayTest extends TestCase
             'business_registered_city'    => 'Bangalore',
         ];
 
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Ménage12345678901234567890']);
+
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->fixtures->iin->create([
@@ -82,6 +85,19 @@ class PaysecureGatewayTest extends TestCase
 
     public function testPaymentAuthViaRedirect()
     {
+        // Assert that the terminal owner does not contain non-alpha numeric characters
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_terminal_owner_name')
+                {
+                    $this->assertEquals('Mnage12345678901234567', $content);
+
+                    $this->assertLessThanOrEqual(23, strlen($content));
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
@@ -186,7 +202,15 @@ class PaysecureGatewayTest extends TestCase
 
         $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
 
-        $this->assertNotEmpty($gatewayPayment);
+        $this->assertArraySelectiveEquals(
+            [
+                Entity::STATUS        => 'failure',
+                Entity::ACTION        => 'authorize',
+                Entity::ERROR_CODE    => '406',
+                Entity::ERROR_MESSAGE => 'Not Authenticated',
+            ],
+            $gatewayPayment
+        );
     }
 
     public function testCallbackFailure()

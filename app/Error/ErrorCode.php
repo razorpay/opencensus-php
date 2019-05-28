@@ -813,6 +813,7 @@ class ErrorCode
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
 
+    const SERVER_ERROR_MOZART_PARALLELIZER_ERROR                                    = 'SERVER_ERROR_MOZART_PARALLELIZER_ERROR';
     const SERVER_ERROR_GATEWAY_NOT_SET                                              = 'SERVER_ERROR_GATEWAY_NOT_SET';
     const SERVER_ERROR_GATEWAY_FIELD_MISMATCH                                       = 'SERVER_ERROR_GATEWAY_FIELD_MISMATCH';
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';

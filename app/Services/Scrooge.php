@@ -38,6 +38,7 @@ class Scrooge
         'retry'                         => 'retry',
         'get_reports'                   => 'reports',
         'bulk_status_update'            => 'bulk-status-update',
+        'bulk_recon'                    => 'bulk-reconcile',
         'bulk_reference1_update'        => 'bulk-reference1-update',
         'get_refunds'                   => 'refunds',
         'get_dashboard_init_data'       => 'init',
@@ -122,6 +123,16 @@ class Scrooge
 
         return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS[$setRefundDark],
             Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     */
+    public function initiateRefundRecon(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_recon'], 'POST', $input, $throwExceptionOnFailure);
     }
 
     /**
@@ -359,7 +370,7 @@ class Scrooge
         }
 
         return [
-            'body' => json_decode($response->body),
+            'body' => json_decode($response->body, true),
             'code' => $code,
         ];
     }

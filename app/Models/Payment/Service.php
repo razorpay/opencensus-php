@@ -264,13 +264,16 @@ class Service extends Base\Service
     {
         $traceData = ['track_id' => $id];
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, null, null, $traceData);
+        $this->trace->info(TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST, $traceData);
+
+        $payment = null;
 
         try
         {
-            $this->trace->info(TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST, $traceData);
-
             list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+
+            // cant do this before as mode is set in above, and mode is required to ensure data goes to write place
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_INITIATED, $payment, null, $traceData);
 
             $response = $this->getNewProcessor($merchant)->processRedirectToAuthorize($payment, $id);
 
@@ -287,7 +290,7 @@ class Service extends Base\Service
                 $traceData
             );
 
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, null, $e, $traceData);
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REDIRECT_PROCESSED, $payment, $e, $traceData);
 
             throw $e;
         }

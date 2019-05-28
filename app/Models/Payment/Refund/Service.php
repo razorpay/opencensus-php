@@ -10,7 +10,6 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -20,6 +19,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\BulkScroogeVerifyRefund;
+use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 

@@ -26,8 +26,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min:100',
-        Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min:100',
+        Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min_amount',
+        Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min_amount',
         Entity::CURRENCY            => 'required|currency|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'filled|string|max:512',
@@ -43,8 +43,8 @@ class Validator extends Base\Validator
         Entity::ACTIVE              => 'filled|boolean',
         Entity::NAME                => 'filled|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
-        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
+        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int',
         Entity::CURRENCY            => 'filled|currency|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
@@ -55,6 +55,10 @@ class Validator extends Base\Validator
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected static $createValidators = [
         self::TAX_INPUTS,
         self::TAX_CODES,
@@ -63,6 +67,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         self::TAX_INPUTS,
         self::TAX_CODES,
+        'min_amount',
     ];
 
     public function validateType($attribute, $value)
@@ -102,6 +107,24 @@ class Validator extends Base\Validator
         if ((empty($hsnCode) === false) and (empty($sacCode) === false))
         {
             throw new BadRequestValidationFailureException('Both hsn_code and sac_code cannot be present');
+        }
+    }
+
+    public function validateMinAmount(array $input)
+    {
+
+        if ((empty($input[Entity::AMOUNT]) === false) or (empty($input[Entity::UNIT_AMOUNT]) === false))
+        {
+            $input[Entity::AMOUNT] = $input[Entity::AMOUNT] ?? $input[Entity::UNIT_AMOUNT];
+
+            $currency = $this->entity->getCurrency();
+
+            $inputAmount = [
+                Entity::AMOUNT   => $input[Entity::AMOUNT],
+                Entity::CURRENCY => $currency,
+            ];
+
+            $this->validateInputValues('min_amount_check', $inputAmount);
         }
     }
 

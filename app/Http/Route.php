@@ -450,6 +450,7 @@ final class Route
         'emandate_debit_reconcile'                 => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
+        'refunds_reconcile_bulk'                   => ['post',     'reconciliate/refunds/bulk',                      'ReconciliatorController@postBulkRefundsReconciliation'             ],
         'dummy_return_callback'                    => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                     => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
         'set_config_keys'                          => ['put',      'config/keys',                                    'AdminController@setConfigKeys'                                     ],
@@ -532,6 +533,7 @@ final class Route
         'invoice_expire_bulk'                      => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
         'invoice_issue_by_batch'                   => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
         'invoice_notify_by_batch'                  => ['put',      'invoices/batch/{batchId}/notify',                'InvoiceController@notifyInvoicesOfBatch'                           ],
+        'invoice_cancel_by_batch'                  => ['post',     'invoices/batch/{batchId}/cancel',                'InvoiceController@cancelInvoicesOfBatch'                           ],
         'invoice_get_stats_by_batch_ids'           => ['get',      'invoices/batches/issuable',                      'InvoiceController@getIssuableByBatchIds'                           ],
         'invoice_view_live_post'                   => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                   => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
@@ -1050,9 +1052,10 @@ final class Route
 
         // Fund Account Validation
         'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
-        'fund_account_validation_retry'            => ['post',     'fund_accounts/validations/retry',                'FundAccountValidationController@retry'                            ],
+        'fund_account_validation_retry'            => ['post',     'fund_accounts/validations/retry',                'FundAccountValidationController@retry'                             ],
         'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
         'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
+        'fund_account_validate_retry_all'          => ['post',     'fund_accounts/validations/retry/all',            'FundAccountValidationController@retryAllFundAccountValidations'    ],
 
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
@@ -1447,6 +1450,7 @@ final class Route
         'setl_verify',
         'apspdcl_bridge',
         'billdesk_reconcile_cancelled',
+        'refunds_reconcile_bulk',
         'setl_notify_h2h',
         'entity_balance_id_update',
         'merchant_es_sync_cron',
@@ -1463,6 +1467,7 @@ final class Route
         'entity_origin_create',
         'payment_card_vault_migrate',
         'batch_send_mail',
+        'fund_account_validate_retry_all',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1735,6 +1740,7 @@ final class Route
         'feature_delete_entity',
         'feature_get',
         'batch_create_admin',
+        'invoice_cancel_by_batch',
         'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
@@ -2401,6 +2407,7 @@ final class Route
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
+        'invoice_cancel_by_batch'                  => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
@@ -2662,6 +2669,7 @@ final class Route
             'scrooge_tagging_backfill',
             'downtime_trigger_cron',
             'payment_card_vault_migrate',
+            'fund_account_validate_retry_all',
         ],
 
         'subscriptions' => [
@@ -2717,6 +2725,7 @@ final class Route
             'refund_update_status',
             'refund_gateway_call',
             'scrooge_refund_create',
+            'refunds_reconcile_bulk',
             'scrooge_refund_create_bulk',
             'refund_verify_call',
             'refund_fetch_status',

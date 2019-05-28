@@ -106,6 +106,15 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchAdminFetchNoResult()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('merchant',['id' => 'CWIYz6Yfu8tqZv']);
+
+        $this->startTest();
+    }
+
     protected function getDefaultFileEntries()
     {
         return [

@@ -1556,4 +1556,28 @@ class Gateway extends Base\Gateway
 
         return static::CARD_CACHE_TTL;
     }
+
+    public function forceAuthorizeFailed(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        if (($gatewayPayment[Entity::RESPONSE_CODE] === Status::SUCCESS_CODE) and
+            ($gatewayPayment[Entity::RECEIVED] === true))
+        {
+            return true;
+        }
+
+        $attr = [
+            Entity::RRN                 =>  $input['gateway'][Entity::RRN],
+            Entity::AUTH_ID             =>  $input['gateway'][Entity::AUTH_ID],
+            Entity::MERCHANT_REFERENCE  =>  $input['gateway'][Entity::MERCHANT_REFERENCE],
+            Entity::RESPONSE_CODE       =>  Status::SUCCESS_CODE,
+        ];
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->saveOrFail();
+
+        return true;
+    }
 }
