@@ -36,7 +36,7 @@ export default class InvoiceLineItem extends React.Component {
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin);
+    let showTaxes = Boolean(this.gstin) && this.props.invoiceCurrency === 'INR';
 
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
@@ -83,7 +83,7 @@ export default class InvoiceLineItem extends React.Component {
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin);
+    let showTaxes = Boolean(this.gstin) && this.props.invoiceCurrency === 'INR';
 
     // Get Item that is to be edited.
     const item = this.props.invoice_line_items[this.props.index].selectedItem;

@@ -663,6 +663,7 @@ export default class InvoicesNewContainer extends Component {
           customer={{
             name: searchTerm,
           }}
+          showGSTN={this.state.invoiceCurrency === 'INR'}
         />
       ),
     });
