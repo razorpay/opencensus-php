@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Base\Libraries;
 
 use RZP\Models\P2p\Device;
 use Illuminate\Http\Request;
+use RZP\Http\Controllers\P2p\Requests;
 
 class ContextMap
 {
@@ -19,6 +20,13 @@ class ContextMap
             Device\Entity::IP        => self::X_RAZORPAY_DEVICE_IP,
             Device\Entity::GEOCODE   => self::X_RAZORPAY_DEVICE_GEOCODE,
         ]
+    ];
+
+    const SKIP_TOKEN_VALIDATION_ROUTES = [
+        Requests::P2P_CUSTOMER_INITIATE_VERIFICATION,
+        Requests::P2P_CUSTOMER_VERIFICATION,
+        Requests::P2P_CUSTOMER_INITIATE_GET_TOKEN,
+        Requests::P2P_CUSTOMER_GET_TOKEN,
     ];
 
     public static function resolveRequestHeaders(Request $request, array $map = self::REQUEST_OPTIONS)

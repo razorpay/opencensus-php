@@ -170,4 +170,30 @@ class BankAccountTest extends TestCase
 
         $this->assertSame(220690, $response[Entity::BALANCE]);
     }
+
+    public function testSetUpiPinTokenExpiry()
+    {
+        $this->setDeviceTokenExpiryValidation(true);
+
+        $this->fixtures->deviceToken(self::DEVICE_1)->generateRefreshedAt()->saveOrFail();
+
+        $helper = $this->getBankAccountHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->initiateSetUpiPin($this->fixtures->bank_account->getPublicId());
+    }
+
+    public function testFetchBalanceTokenExpiry()
+    {
+        $this->setDeviceTokenExpiryValidation(true);
+
+        $this->fixtures->deviceToken(self::DEVICE_1)->generateRefreshedAt()->saveOrFail();
+
+        $helper = $this->getBankAccountHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->initiateFetchBalance($this->fixtures->bank_account->getPublicId());
+    }
 }
