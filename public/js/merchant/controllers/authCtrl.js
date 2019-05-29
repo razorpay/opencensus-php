@@ -281,12 +281,7 @@ app
           name: 'create_contact',
           data: {
             email: $scope.signup.data.email,
-            signup_start: true,
           },
-        });
-
-        window.trackHubs({
-          id: 'SIGNUP_START',
         });
 
         if (!$valid) {
@@ -916,10 +911,15 @@ app
                   var parser = document.createElement('a');
                   parser.href = decodeURIComponent(queryParams.next);
 
-                  var hostname = parser.hostname || window.location.hostname;
+                  var hostname = parser.hostname || location.hostname;
 
                   if (/razorpay\.(com|dev|in)$/.test(hostname)) {
-                    window.location.href = parser.href;
+                    location.href = parser.href;
+                    if (parser.origin === location.origin && parser.hash) {
+                      parser.search = '';
+                      history.push(null, null, parser.href);
+                      location.reload();
+                    }
                     return false;
                   }
                 }
@@ -1347,6 +1347,7 @@ app
         window.trackHubs({
           name: 'update_property',
           data: {
+            email: $scope.signup.data.email,
             signup_business_type: business_type,
             signup_transaction_volume: transaction_volume,
             signup_department: department,

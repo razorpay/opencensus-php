@@ -26,7 +26,7 @@ export default class AddOnItem extends Component {
           onSave={closeModal}
           currency={currency}
           disableCurrencySelect
-          isAddonItem
+          type="addon"
         />
       ),
     });

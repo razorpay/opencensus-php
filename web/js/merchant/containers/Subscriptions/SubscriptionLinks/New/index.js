@@ -42,7 +42,7 @@ export default class NewSubscriptionLink extends Component {
 
   componentWillMount() {
     this.props.fetchPlans({ count: 100 });
-    this.props.fetchItems({ count: 100, type: 'invoice' });
+    this.props.fetchItems({ count: 100, type: 'addon' });
   }
 
   handleTabChange = ({ target }) => {
@@ -135,7 +135,9 @@ export default class NewSubscriptionLink extends Component {
         description: option.description,
         amount: option.amount,
         currency: option.currency,
+        type: 'addon',
       },
+      item_id: option.id,
       quantity: 1,
     };
     this.setState({
@@ -198,11 +200,21 @@ export default class NewSubscriptionLink extends Component {
       delete data.expire_by;
     }
 
+    if (!data.customer_notify) {
+      delete data.customer_notify;
+    }
+
     // formatting notes, from [key: key1, value: value1] => {key1: value1}
     data.notes = (data.notes || []).reduce(
       (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
       {}
     );
+
+    data.addons = data.addons.map(addon => {
+      delete addon.item;
+
+      return addon;
+    });
 
     return this.props
       .saveSubscription(data)

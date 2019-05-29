@@ -14,6 +14,7 @@ export default class Item extends GenericEntity {
     'tax_rate',
     'tax_inclusive',
     'tax_id',
+    'type',
   ];
   resourceUrl = 'items';
 

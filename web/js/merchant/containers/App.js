@@ -153,37 +153,38 @@ export default class App extends Component {
       this.fetchSupportedCurrencies().then(({ data }) => {
         window.currencyList = data;
       }),
-    ]).then(response => {
-      if (response[0].showInstantActivation) {
-        setTrackData({
-          eventCategory: 'Dashboard - Instant Activations',
-          eventAction: 'Show - Instant Activations Flow',
-        })();
+    ])
+      .then(response => {
+        if (response[0].showInstantActivation) {
+          setTrackData({
+            eventCategory: 'Dashboard - Instant Activations',
+            eventAction: 'Show - Instant Activations Flow',
+          })();
 
-        if (typeof window.hj === 'function') {
-          window.hj('trigger', 'instant_activation');
-          window.hj('tagRecording', ['instant_activation']);
-        }
-      }
-
-      // Fetch features before displaying other views
-      fetchFeaturesAjax(response[0].current)
-        .catch(_ => _)
-        .then(data => {
-          let user = new User(response[0]);
-          user.features = setFeatures(data.success ? data.data.features : []);
-
-          this.props.updateSession({ user, mode: currentMode });
-          this.renderFPView = this.getFPView(this.props.location);
-
-          let $splash = document.getElementById('splash');
-          if ($splash) {
-            $splash.parentElement.removeChild($splash);
+          if (typeof window.hj === 'function') {
+            window.hj('trigger', 'instant_activation');
+            window.hj('tagRecording', ['instant_activation']);
           }
+        }
 
-          this.setState({ isLoading: false });
-        });
-    });
+        // Fetch features before displaying other views
+        fetchFeaturesAjax(response[0].current)
+          .catch(_ => _)
+          .then(data => {
+            let user = new User(response[0]);
+            user.features = setFeatures(data.success ? data.data.features : []);
+
+            this.props.updateSession({ user, mode: currentMode });
+            this.renderFPView = this.getFPView(this.props.location);
+
+            removeSplashLoader();
+            this.setState({ isLoading: false });
+          });
+      })
+      .catch(() => {
+        removeSplashLoader();
+        this.setState({ isLoading: false });
+      });
   }
 
   componentDidMount() {
@@ -441,5 +442,12 @@ export default class App extends Component {
         )}
       </div>
     );
+  }
+}
+
+function removeSplashLoader() {
+  let $splash = document.getElementById('splash');
+  if ($splash) {
+    $splash.parentElement.removeChild($splash);
   }
 }

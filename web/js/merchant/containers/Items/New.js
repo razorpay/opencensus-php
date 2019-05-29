@@ -306,6 +306,10 @@ export default class AddItem extends Component {
     // Prepare props for saving and then save.
     return this.prepareForSave({ ..._props })
       .then(props => {
+        if (this.props.type) {
+          props.type = this.props.type;
+        }
+
         return this.props
           .saveItem(props)
           .then(item => {
