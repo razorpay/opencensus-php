@@ -236,6 +236,7 @@ final class Route
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
+        'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
         'merchant_delete_app_access_mapping'       => ['delete',   'merchants/{id}/applications/{appId}',            'MerchantController@deleteMapOAuthApplication'                      ],
         'merchant_tags_bulk'                       => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
@@ -1373,6 +1374,7 @@ final class Route
         'payment_link_expire_cron',
         'merchant_activation_migrate',
         'merchant_admin_lead_put',
+        'merchant_get_app_access_mapping',
         'merchant_create_app_access_mapping',
         'merchant_create_invoice_entities',
         'merchant_invoice_correction',
@@ -2771,6 +2773,12 @@ final class Route
         'batch' => [
             'invoice_create',
             'batch_send_mail',
+        ],
+
+        'stork' => [
+            // Storks needs connected applications against a merchant to fan
+            // out the same event to former entities as well.
+            'merchant_get_app_access_mapping',
         ],
     ];
 

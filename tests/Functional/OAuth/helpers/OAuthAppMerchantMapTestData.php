@@ -126,4 +126,26 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testGetConnectedApplications' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/merchants/10000000000000/applications',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'merchant_id'     => '10000000000000',
+                        'entity_id'       => '10000000000App',
+                        'entity_type'     => 'application',
+                        'entity_owner_id' => '10000000000000',
+                        // 'created_at'      => 1559036401,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];
