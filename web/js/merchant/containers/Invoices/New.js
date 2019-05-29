@@ -241,7 +241,10 @@ export default class InvoicesNewContainer extends Component {
       );
     } else {
       this.props.initializeInvoice();
-      this.openInvoiceCurrencyChangeModal({ showCross: false });
+
+      if (this.props.session.user.isInttCurrenciesEnabled) {
+        this.openInvoiceCurrencyChangeModal({ showCross: false });
+      }
     }
 
     promises = [
@@ -330,7 +333,9 @@ export default class InvoicesNewContainer extends Component {
       } else {
         this.props.initializeInvoice();
         this.props.initialize(this.props.initialValues);
-        this.openInvoiceCurrencyChangeModal({ showCross: false });
+        if (this.props.session.user.isInttCurrenciesEnabled) {
+          this.openInvoiceCurrencyChangeModal({ showCross: false });
+        }
       }
     }
   }
@@ -699,7 +704,9 @@ export default class InvoicesNewContainer extends Component {
       });
       this.getMerchantInfo();
 
-      this.openInvoiceCurrencyChangeModal({ showCross: false });
+      if (this.props.session.user.isInttCurrenciesEnabled) {
+        this.openInvoiceCurrencyChangeModal({ showCross: false });
+      }
     };
 
     const onCloseClick = () => {
