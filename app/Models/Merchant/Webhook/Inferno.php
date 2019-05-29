@@ -5,21 +5,21 @@ namespace RZP\Models\Merchant\Webhook;
 use App;
 use Mail;
 
-use RZP\Models\Feature;
+use RZP\Models\Event;
+use RZP\Trace\TraceCode;
 use RZP\Http\Response\Header;
 use RZP\Http\Response\StatusCode;
+use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
-use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
-use RZP\Trace\TraceCode;
 
 use Http\Client\Common\PluginClient;
-use Http\Client\Common\Plugin\ErrorPlugin;
-use Http\Client\Common\Exception\ClientErrorException;
-use Http\Client\Common\Exception\ServerErrorException;
 use Http\Client\Exception\HttpException;
+use Http\Client\Common\Plugin\ErrorPlugin;
 use Http\Client\Exception\NetworkException;
 use Http\Client\Exception\RequestException;
 use Http\Client\Exception\TransferException;
+use Http\Client\Common\Exception\ServerErrorException;
+use Http\Client\Common\Exception\ClientErrorException;
 
 class Inferno
 {
@@ -46,6 +46,12 @@ class Inferno
      * @var int
      */
     protected $eventQueuedAt;
+
+    /**
+     * @see setEventContainedIds() method.
+     * @var null|array
+     */
+    protected $eventContainedIds;
 
     protected $client = null;
 
@@ -86,6 +92,7 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
+        $this->setEventContainedIds();
 
         // TODO: Remove backward compatible code in few days having guaranteed
         // no old formatted job payload exists in queue.
@@ -257,11 +264,12 @@ class Inferno
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
             [
-                'webhook_id'  => $webhook->getId(),
-                'event_name'  => $this->eventName,
-                'merchant_id' => $webhook->merchant->getId(),
-                'request'     => $request,
-                'attempt'     => $this->job->attempts(),
+                'webhook_id'    => $webhook->getId(),
+                'event_name'    => $this->eventName,
+                'merchant_id'   => $webhook->merchant->getId(),
+                'request'       => $request,
+                'attempt'       => $this->job->attempts(),
+                'contained_ids' => $this->eventContainedIds,
             ]);
 
         $this->pushQueuedToFiredLatencyMetrics();
@@ -336,7 +344,7 @@ class Inferno
 
         $statusCode = $response->getStatusCode();
 
-        $isSuccessStatusCode = $this->isSuccesssfulStatusCode($statusCode);
+        $isSuccessStatusCode = $this->isSuccessfulStatusCode($statusCode);
 
         $requestDuration = millitime() - $requestStartTime;
 
@@ -351,6 +359,7 @@ class Inferno
                     'response_code'     => $statusCode,
                     'response_headers'  => $response->getHeaders(),
                     'response_time'     => $requestDuration,
+                    'contained_ids'     => $this->eventContainedIds,
                 ]);
 
             $clientError = false;
@@ -369,7 +378,7 @@ class Inferno
         return $clientError;
     }
 
-    protected function isSuccesssfulStatusCode($statusCode)
+    protected function isSuccessfulStatusCode($statusCode)
     {
         return (($statusCode >= StatusCode::SUCCESS) and
                 ($statusCode < StatusCode::REDIRECTION));
@@ -380,7 +389,7 @@ class Inferno
         $dimensions = [
             'status_code'            => $statusCode,
             'event'                  => $this->eventName,
-            'is_successs_tatus_code' => $this->isSuccesssfulStatusCode($statusCode),
+            'is_success_status_code' => $this->isSuccessfulStatusCode($statusCode),
         ];
 
         $this->trace->count(Metric::WEBHOOK_REQUEST_COMPLETED_TOTAL, $dimensions);
@@ -420,7 +429,8 @@ class Inferno
     {
         $webhookData = [
             'webhook_id'        => $webhook->getId(),
-            'merchant_id'       => $webhook->merchant->getId()
+            'merchant_id'       => $webhook->merchant->getId(),
+            'contained_ids'     => $this->eventContainedIds,
         ];
 
         $responseData = $this->getResponseData($msgPrefix, $response);
@@ -619,5 +629,22 @@ class Inferno
         }
 
         return $webhook;
+    }
+
+    protected function setEventContainedIds()
+    {
+        // Initialized the default null value with empty array.
+        $this->eventContainedIds = [];
+
+        $event = json_decode($this->event, true);
+
+        foreach ($event[Event\Entity::CONTAINS] as $entityName)
+        {
+            $this->eventContainedIds[$entityName] = $event[Event\Entity::PAYLOAD]
+                                                          [$entityName]
+                                                          [PublicEntity::ENTITY]
+                                                          [PublicEntity::ID] ??
+                                                    null;
+        }
     }
 }
