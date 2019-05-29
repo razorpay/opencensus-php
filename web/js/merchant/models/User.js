@@ -331,7 +331,6 @@ export default class User {
   }
 
   get isInttCurrenciesEnabled() {
-    return true; // TODO: Only for dev mode
     return (
       !!this.international && this.getExpStatus('international_currencies')
     );

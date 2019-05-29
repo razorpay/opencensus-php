@@ -145,6 +145,29 @@ export default class InvoiceLineItem extends React.Component {
     change(`${fieldName}.tax_ids`, null);
   };
 
+  setTaxes = item => {
+    let { fieldName } = this.props;
+
+    // Set HSN Code
+    this.props.change(`${fieldName}.hsn_code`, item.hsn_code || null);
+
+    // Set SAC Code.
+    this.props.change(`${fieldName}.sac_code`, item.sac_code || null);
+
+    // Set tax rate.
+    this.props.change(`${fieldName}.tax_rate`, item.tax_rate || null);
+
+    // Set taxes.
+    let cessTax = this.getCessFromItem(item);
+    this.props.change(`${fieldName}.taxes`, cessTax ? [cessTax] : []);
+
+    // Set whether or not the item is tax-inclusive.
+    this.props.change(
+      `${fieldName}.tax_inclusive`,
+      item.tax_inclusive || false
+    );
+  };
+
   /**
    * When props change to show whether GST will be used or not,
    * update cess and GST, or unset taxes depending on what is passed.
@@ -155,7 +178,7 @@ export default class InvoiceLineItem extends React.Component {
     if (!item) return;
 
     // Determine whether or not taxes are shown.
-    let showTaxes = Boolean(this.gstin) && this.props.invoiceCurrency === 'INR';
+    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     let { fieldName, gstSlabs } = this.props;
 
@@ -168,24 +191,7 @@ export default class InvoiceLineItem extends React.Component {
 
     // The tax-related details in the line item if taxes are to be shown.
     if (showTaxes) {
-      // Set HSN Code
-      this.props.change(`${fieldName}.hsn_code`, item.hsn_code || null);
-
-      // Set SAC Code.
-      this.props.change(`${fieldName}.sac_code`, item.sac_code || null);
-
-      // Set tax rate.
-      this.props.change(`${fieldName}.tax_rate`, item.tax_rate || null);
-
-      // Set taxes.
-      let cessTax = this.getCessFromItem(item);
-      this.props.change(`${fieldName}.taxes`, cessTax ? [cessTax] : []);
-
-      // Set whether or not the item is tax-inclusive.
-      this.props.change(
-        `${fieldName}.tax_inclusive`,
-        item.tax_inclusive || false
-      );
+      this.setTaxes(item);
     }
 
     // Set selected item in state.
@@ -411,9 +417,20 @@ export default class InvoiceLineItem extends React.Component {
     }
   }
 
+  resetSelectedItemForChangingCurrency = props => {
+    props.change(`${props.fieldName}.amountInINR`, 0);
+
+    const selectedOption = props.invoice_line_items[props.index],
+      showTaxes = Boolean(this.gstin) && props.invoiceCurrency === 'INR';
+
+    if (selectedOption.selectedItem && showTaxes) {
+      this.setTaxes(selectedOption.selectedItem);
+    }
+  };
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.invoiceCurrency !== this.props.invoiceCurrency) {
-      this.props.change(`${this.props.fieldName}.amountInINR`, 0);
+      this.resetSelectedItemForChangingCurrency(nextProps);
     }
   }
 
