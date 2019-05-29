@@ -63,7 +63,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 Timezone::IST)->format('d-M-y H:i:s');
 
             $col = [
-                'PGTransaction ID'          => $row['payment']['id'],
+                'PG Transaction ID'          => $row['payment']['id'],
                 'Flexpay Transaction ID'    => $row['cardless_emi']['gateway_reference_id'],
                 'Transaction Amount'        => $this->formatAmount($row['payment']['amount']),
                 'Transaction Date'          => $date,

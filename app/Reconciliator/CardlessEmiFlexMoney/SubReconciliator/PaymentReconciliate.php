@@ -2,7 +2,6 @@
 
 namespace RZP\Reconciliator\CardlessEmiFlexMoney\SubReconciliator;
 
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -10,10 +9,10 @@ use RZP\Models\Base\PublicEntity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const PAYMENT_ID                = 'PG Transaction ID';
-    const GATEWAY_TRANSACTION_ID    = 'Flexpay Transaction ID';
-    const TRANSACTION_AMOUNT        = 'Transaction Amount';
-    const TRANSACTION_DATE          = 'Transaction Date';
+    const PAYMENT_ID                = 'pg_transaction_id';
+    const GATEWAY_TRANSACTION_ID    = 'flexpay_transaction_id';
+    const TRANSACTION_AMOUNT        = 'transaction_amount';
+    const TRANSACTION_DATE          = 'transaction_date';
 
     protected function getPaymentId(array $row)
     {
