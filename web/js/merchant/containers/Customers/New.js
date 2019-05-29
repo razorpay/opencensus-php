@@ -72,9 +72,6 @@ export default class AddCustomer extends Component {
         editedBillingAddress: {
           country: this.DEFAULT_COUNTRY,
         },
-        editedShippingAddress: {
-          country: this.DEFAULT_COUNTRY,
-        },
         states: Countries[this.DEFAULT_COUNTRY],
         billingAddressStates: Countries[this.DEFAULT_COUNTRY],
         shippingAddressStates: Countries[this.DEFAULT_COUNTRY],

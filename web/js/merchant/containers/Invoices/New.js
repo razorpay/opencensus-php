@@ -639,15 +639,12 @@ export default class InvoicesNewContainer extends Component {
     }
   };
 
-  openInvoiceCurrencyChangeModal = ({
-    showCross = true,
-    currency = this.state.invoiceCurrency,
-  }) => {
+  openInvoiceCurrencyChangeModal = ({ showCross = true, currency }) => {
     this.props.openModal({
       size: 'small',
       component: (
         <PickCurrency
-          currency
+          currency={currency || this.state.invoiceCurrency}
           onSave={this.setInvoiceCurrency}
           closeModal={this.props.closeModal}
           showCross={showCross}
