@@ -325,7 +325,8 @@ class Gateway extends Base\Gateway
             (isset($input['gateway']['vpa']) === true))
         {
             $acquirer = [
-                Payment\Entity::VPA => $input['gateway']['vpa']
+                Payment\Entity::VPA => $input['gateway']['vpa'],
+                Payment\Entity::REFERENCE16 => (string) random_integer(12),
             ];
         }
 
