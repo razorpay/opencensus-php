@@ -243,7 +243,10 @@ export default class InvoicesNewContainer extends Component {
       this.props.initializeInvoice();
 
       if (this.props.session.user.isInttCurrenciesEnabled) {
-        this.openInvoiceCurrencyChangeModal({ showCross: false });
+        this.openInvoiceCurrencyChangeModal({
+          showCross: false,
+          currency: 'INR',
+        });
       }
     }
 
@@ -636,12 +639,15 @@ export default class InvoicesNewContainer extends Component {
     }
   };
 
-  openInvoiceCurrencyChangeModal = ({ showCross = true }) => {
+  openInvoiceCurrencyChangeModal = ({
+    showCross = true,
+    currency = this.state.invoiceCurrency,
+  }) => {
     this.props.openModal({
       size: 'small',
       component: (
         <PickCurrency
-          currency={this.state.invoiceCurrency}
+          currency
           onSave={this.setInvoiceCurrency}
           closeModal={this.props.closeModal}
           showCross={showCross}
