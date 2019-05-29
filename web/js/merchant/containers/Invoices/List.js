@@ -125,6 +125,7 @@ export default class InvoicesListContainer extends ListContainer {
             onSubmit={this.search}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
+            isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
           />
 
           <Alert type={status.type} message={status.message} />

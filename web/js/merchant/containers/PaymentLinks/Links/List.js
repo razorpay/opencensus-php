@@ -71,17 +71,17 @@ export default class PaymentLinksContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/payment-links/"/>
+            <DocsLink url="https://razorpay.com/docs/payment-links/" />
             <ShowWhen
               additionalCondition={user =>
                 (mode !== 'live' || !user.isRejected) &&
                 user.isAllowedEdit('payment_links')
               }
             >
-                <NavLink class="btn btn-primary" to="/paymentlinks/new">
-                  <i class="i i-plus" />
-                  <span>Create Payment Link</span>
-                </NavLink>
+              <NavLink class="btn btn-primary" to="/paymentlinks/new">
+                <i class="i i-plus" />
+                <span>Create Payment Link</span>
+              </NavLink>
             </ShowWhen>
           </div>
         </HeaderAction>
@@ -93,6 +93,7 @@ export default class PaymentLinksContainer extends ListContainer {
           onSubmit={this.search}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
+          isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
         />
 
         <Alert type={status.type} message={status.message} />
