@@ -178,22 +178,26 @@ export default class New extends Component {
    */
   onAddressUpdate = address => {
     if (this.props.isInttCurrenciesEnabled) {
+      let updatedAddress = {
+        editedAddress: address,
+        states: Countries[address.country],
+      };
+
       if (!address.country) {
-        this.setState({
+        updatedAddress = {
           editedAddress: {
             ...address,
             state: null,
           },
           states: [],
-        });
-
-        return;
+        };
       }
 
-      this.setState({
-        editedAddress: address,
-        states: Countries[address.country],
-      });
+      if (address.country !== this.state.editedAddress.country) {
+        updatedAddress.editedAddress.state = null;
+      }
+
+      this.setState(updatedAddress);
 
       return;
     }
