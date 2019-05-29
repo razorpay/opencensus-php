@@ -273,7 +273,8 @@ class Gateway
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::ATOM,
-        Payment\Gateway::SHARP
+        Payment\Gateway::SHARP,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.

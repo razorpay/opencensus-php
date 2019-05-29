@@ -229,6 +229,28 @@ class Gateway extends Base\Gateway
         $traceRes = $this->getRedactedData($response);
 
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE);
+
+        if ($response['success'] === true)
+        {
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            if ($gatewayEntity !== null)
+            {
+                $gatewayEntity->setReceived(true);
+
+                $this->repo->saveOrFail($gatewayEntity);
+            }
+            else
+            {
+                $attributes = $this->getMappedAttributes($response);
+
+                $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::REFUND);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function verify(array $input)
