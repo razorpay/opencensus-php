@@ -46,6 +46,7 @@ const CustomInput = props => {
 export default [
   {
     label: 'Amount',
+    required: true,
     inlineFields: [
       {
         name: 'currency',

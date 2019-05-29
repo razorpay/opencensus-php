@@ -90,6 +90,14 @@ export default class MarketplaceContainer extends Component {
       );
     }
 
+    let ClonedPaymentsList = (props) => (
+      <PaymentsList
+        docUrl='https://razorpay.com/docs/route'
+        {...props}
+      />      
+    )
+    
+
     return (
       <div>
         {this.props.mode === 'test' && (
@@ -111,7 +119,7 @@ export default class MarketplaceContainer extends Component {
           <TestModeBanner />
           <content>
             <Switch>
-              <Route path="/route/payments" component={PaymentsList} />
+              <Route path="/route/payments" render={ClonedPaymentsList} />
               <Route path="/route/transfers" component={TransfersList} />
               <Route path="/route/reversals" component={ReversalsList} />
               <Route path="/route/accounts" component={AccountsList} />

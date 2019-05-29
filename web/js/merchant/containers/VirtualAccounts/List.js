@@ -6,6 +6,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
 import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
 import CreateVirtualAccount from './CreateVirtualAccount';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
@@ -202,20 +203,12 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
             <HeaderAction>
               <div class="btn-toolbar">
-                <button
-                  class="btn btn-primary"
-                  onClick={this.showCreateVAModal}
+                <DocsLink url="https://razorpay.com/docs/smart-collect/" />
+                <ShowWhen
+                  additionalCondition={user =>
+                    user.isAllowedEdit('virtual_accounts')
+                  }
                 >
-                  <i class="i i-plus" />
-                  <span>Create Virtual Account</span>
-                </button>
-              </div>
-              <ShowWhen
-                additionalCondition={user =>
-                  user.isAllowedEdit('virtual_accounts')
-                }
-              >
-                <div class="btn-toolbar">
                   <button
                     class="btn btn-primary"
                     onClick={this.showCreateVAModal}
@@ -223,8 +216,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
                     <i class="i i-plus" />
                     <span>Create Virtual Account</span>
                   </button>
-                </div>
-              </ShowWhen>
+                </ShowWhen>
+              </div>
             </HeaderAction>
           </header>
           <TestModeBanner />

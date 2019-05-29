@@ -13,7 +13,7 @@ import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 
 import { stringToObj } from 'common/util';
-import { isPresent } from 'rzp/utils/rzp-utils';
+import { isPresent, findBy } from 'rzp/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
@@ -42,7 +42,7 @@ export default class NewSubscriptionLink extends Component {
 
   componentWillMount() {
     this.props.fetchPlans({ count: 100 });
-    this.props.fetchItems({ count: 100, type: 'invoice' });
+    this.props.fetchItems({ count: 100, type: 'addon' });
   }
 
   handleTabChange = ({ target }) => {
@@ -79,10 +79,49 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleChangeInPlan = ({ option }) => {
+    const { currencyOfSelectedPlan, fields, internals } = this.state;
+
+    const currSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
+
+    if (
+      currSelectedPlan &&
+      currSelectedPlan.item.currency !== currencyOfSelectedPlan
+    ) {
+      if (internals._addOnPresent) {
+        this.props.showNotification({
+          type: 'neutral',
+          message:
+            'Currency of Plan is changed. Please select the Add Ons again',
+          closeTimeout: 8000,
+        });
+
+        this.setState({
+          currencyOfSelectedPlan: option.currency,
+          fields: {
+            ...fields,
+            plan_id: option.id,
+            addons: [{}],
+          },
+        });
+
+        return;
+      }
+
+      this.setState({
+        currencyOfSelectedPlan: option.currency,
+        fields: {
+          ...fields,
+          plan_id: option.id,
+        },
+      });
+
+      return;
+    }
+
     this.setState({
       currencyOfSelectedPlan: option.currency,
       fields: {
-        ...this.state.fields,
+        ...fields,
         plan_id: option.id,
       },
     });
@@ -96,10 +135,14 @@ export default class NewSubscriptionLink extends Component {
         description: option.description,
         amount: option.amount,
         currency: option.currency,
+        type: 'addon',
       },
+      item_id: option.id,
       quantity: 1,
     };
-    this.setState({ fields });
+    this.setState({
+      fields,
+    });
   };
 
   handleDateChange = fieldName => selectedDate => {
@@ -157,11 +200,21 @@ export default class NewSubscriptionLink extends Component {
       delete data.expire_by;
     }
 
+    if (!data.customer_notify) {
+      delete data.customer_notify;
+    }
+
     // formatting notes, from [key: key1, value: value1] => {key1: value1}
     data.notes = (data.notes || []).reduce(
       (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
       {}
     );
+
+    data.addons = data.addons.map(addon => {
+      delete addon.item;
+
+      return addon;
+    });
 
     return this.props
       .saveSubscription(data)

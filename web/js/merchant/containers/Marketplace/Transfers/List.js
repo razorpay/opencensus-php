@@ -11,12 +11,19 @@ import {
   amount,
   createdAt,
 } from 'rzp/ui/item/pair';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import DocsLink from 'merchant/components/DocsLink';
 
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <DocsLink url="https://razorpay.com/docs/route/"/>
+          </div>
+        </HeaderAction>
         <TransfersListFilter
           form="transfersListFilter"
           count={this.state.count}

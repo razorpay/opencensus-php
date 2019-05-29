@@ -13,12 +13,17 @@ export default function NewSubscriptionLinkReview({
   const { amount: planAmount, currency } = selectedPlan.item;
   const planQuantity = fields.quantity;
 
-  const addOnAmount = fields.addons.reduce(
-    (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
-    0
-  );
+  const addOnAmount = fields.addons
+    .filter(addon => !!addon.amount) // Filter out empty addon
+    .reduce(
+      (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
+      0
+    );
   const subscriptioAmount = planAmount * planQuantity;
-  const minAuthAmount = (props.getCurrencyList[currency] || {}).min_auth_value;
+  const minAuthAmount =
+    currency === 'INR'
+      ? 500
+      : (props.getCurrencyList[currency] || {}).min_auth_value;
   const authorizationAmount = getAuthorizationAmount(
     subscriptioAmount,
     addOnAmount,

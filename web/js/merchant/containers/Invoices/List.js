@@ -6,6 +6,7 @@ import Pager from 'rzp/ui/Pager';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
@@ -153,23 +154,24 @@ export default class InvoicesListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
+        <div class="btn-toolbar pull-right">
+          <DocsLink url="https://razorpay.com/docs/invoices/"/>
           <ShowWhen
             additionalCondition={user =>
               (mode !== 'live' || !user.isRejected) &&
               user.isAllowedEdit('invoices')
             }
           >
-            <div class="btn-toolbar pull-right">
-              <NavLink
-                to="/invoices/new"
-                class="btn btn-primary"
-                onClick={this.triggerHotjar}
-              >
-                <i class="i i-plus" />
-                <span>Create Invoice</span>
-              </NavLink>
-            </div>
+            <NavLink
+              to="/invoices/new"
+              class="btn btn-primary"
+              onClick={this.triggerHotjar}
+            >
+              <i class="i i-plus" />
+              <span>Create Invoice</span>
+            </NavLink>
           </ShowWhen>
+        </div>
         </HeaderAction>
 
         {content}
