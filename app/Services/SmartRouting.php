@@ -61,9 +61,29 @@ class SmartRouting
         $this->request = $app['request'];
     }
 
-    public function sendNonBlockingRequest($action, $data = null, $namespace = null)
+    public function sendPaymentData($data)
     {
-        $url = $this->getUrl($action, $namespace);
+        $this->sendNonBlockingRequest(self::SEND_PAYMENT_DATA, $data);
+    }
+
+    public function createGateway($data)
+    {
+        return $this->sendRequest(self::CREATE_GATEWAY_RULE, $data);
+    }
+
+    public function updateGateway($data)
+    {
+        return $this->sendRequest(self::UPDATE_GATEWAY_RULE, $data);
+    }
+
+    public function deleteGateway($id)
+    {
+        return $this->sendRequest(self::DELETE_GATEWAY_RULE, null, $id);
+    }
+
+    protected function sendNonBlockingRequest($action, $data = null, $id = null)
+    {
+        $url = $this->getUrl($action, $id);
 
         if ($data === null)
         {
@@ -83,7 +103,8 @@ class SmartRouting
         $this->app->nonBlockingHttp->postRequest($url, $data, $headers, $username, $password);
     }
 
-    public function sendRequest($action, $data = null, $id = null)
+
+    protected function sendRequest($action, $data = null, $id = null)
     {
         try
         {

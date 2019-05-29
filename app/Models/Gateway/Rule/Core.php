@@ -29,7 +29,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $this->app->smartRouting->sendRequest(SmartRouting::CREATE_GATEWAY_RULE, $rule->toArray());
+        $this->app->smartRouting->createGateway($rule->toArray());
 
         return $rule;
     }
@@ -55,7 +55,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $this->app->smartRouting->sendRequest(SmartRouting::UPDATE_GATEWAY_RULE, $rule->toArray());
+        $this->app->smartRouting->updateGateway($rule->toArray());
 
         return $rule;
     }

@@ -27,7 +27,7 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($rule);
 
-        $this->app->smartRouting->sendRequest(SmartRouting::DELETE_GATEWAY_RULE, null, $id);
+        $this->app->smartRouting->deleteGateway($id);
 
         return $rule->toArrayDeleted();
     }

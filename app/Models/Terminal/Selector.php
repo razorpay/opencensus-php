@@ -474,7 +474,7 @@ class Selector extends Base\Core
                 'chance'              => $this->options->getChance(),
             ];
 
-            $this->app->smartRouting->sendNonBlockingRequest(SmartRouting::SEND_PAYMENT_DATA, $data);
+            $this->app->smartRouting->sendPaymentData($data);
         }
         catch (\Throwable $e)
         {
