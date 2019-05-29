@@ -100,7 +100,7 @@ export default class AddItem extends Component {
     if (this.props.item) {
       this._initialize(this.props.item, this.props.currency); // In GST invoice, creating New item actually has this.props.items = {name: null}
     } else {
-      this.props.initialize({ currency: this.props.currency });
+      this.props.initialize({ currency: this.props.currency || 'INR' });
     }
 
     Promise.all(promises)
@@ -207,12 +207,13 @@ export default class AddItem extends Component {
   prepareForSave = props =>
     new Promise((resolve, reject) => {
       if (!this.props.showTaxes || this.props.selected_currency !== 'INR') {
-        return resolve({
-          amountInINR: props.amountInINR,
-          currency: props.currency,
-          description: props.description,
-          name: props.name,
-        });
+        delete props.tax;
+        delete props.tax_group_id;
+        delete props.tax_id;
+        delete props.tax_inclusive;
+        delete props.tax_rate;
+
+        return resolve(props);
       }
 
       let {
@@ -400,10 +401,10 @@ export default class AddItem extends Component {
       taxRate,
       taxInclusive,
       cess,
-      currency,
       selected_currency,
       user,
       showTaxes,
+      currency,
     } = this.props;
     const { showCessForm, editingItem, showTaxRadios } = this.state;
 
