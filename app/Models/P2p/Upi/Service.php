@@ -41,19 +41,7 @@ class Service extends Base\Service
 
                 $processor = new Transaction\Processor;
 
-                try
-                {
-                    $processor->processAction($context[Base\Entity::ACTION], $callback);
-                }
-                catch (Exception\P2p\BadRequestException $e)
-                {
-                    if ($e->getCode() === ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE)
-                    {
-                        continue;
-                    }
-
-                    throw $e;
-                }
+                $processor->processAction($context[Base\Entity::ACTION], $callback);
         }
     }
 }

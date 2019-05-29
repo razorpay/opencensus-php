@@ -243,7 +243,10 @@ class Processor extends Base\Processor
                 ]);
         }
 
-        $this->core->update($transaction, $input->toArray());
+        if ($actions->shouldUpdate() === true)
+        {
+            $this->core->update($transaction, $input->toArray());
+        }
 
         return $actions;
     }
@@ -261,10 +264,7 @@ class Processor extends Base\Processor
         }
         else if ($transaction->isCompleted() === true)
         {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE, [
-                Entity::TRANSACTION     => $input,
-                Entity::ID              => $transaction->getId(),
-            ]);
+            return $actions->setShouldUpdate(false);
         }
 
         // TODO: Add support for partial payments
@@ -296,10 +296,7 @@ class Processor extends Base\Processor
         }
         else if ($transaction->isFailed() === true)
         {
-            throw $this->badRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_INVALID_STATE, [
-                Entity::TRANSACTION     => $input,
-                Entity::ID              => $transaction->getId(),
-            ]);
+            return $actions->setShouldUpdate(false);
         }
 
         $transaction->setInternalStatus($input[Entity::INTERNAL_STATUS]);
