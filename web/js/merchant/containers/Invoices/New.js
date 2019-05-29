@@ -1671,12 +1671,15 @@ export default class InvoicesNewContainer extends Component {
                                   ) : (
                                     ''
                                   )}
-                                  {customer.gstin && (
-                                    <div>
-                                      <span class="tax-heading">GSTIN - </span>
-                                      {customer.gstin}
-                                    </div>
-                                  )}
+                                  {customer.gstin &&
+                                    showGstn && (
+                                      <div>
+                                        <span class="tax-heading">
+                                          GSTIN -{' '}
+                                        </span>
+                                        {customer.gstin}
+                                      </div>
+                                    )}
                                 </div>
                               )}
                           </div>
@@ -2365,7 +2368,10 @@ const removeTaxForNonINRItems = (props, invoiceCurrency) => {
   }
 
   updatedProps.line_items = updatedProps.line_items.map(item => {
-    if (invoiceCurrency !== item.selectedItem.currency) {
+    const currency =
+      (item.selectedItem && item.selectedItem.currency) || item.currency;
+
+    if (invoiceCurrency !== currency) {
       delete item.item_id;
 
       return {

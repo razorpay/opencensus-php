@@ -141,40 +141,42 @@ export default class AddItem extends Component {
 
     let showCessForm = false;
 
-    // Convert cess
-    if (isTaxOfTypeCess(item.tax)) {
-      item.cess = `${item.tax.rate / 100.0}`;
-      showCessForm = true;
-    } else if (item.cess) {
-      // Else if this is being edited using a Line Item
-      item.cess = item.cess / 100.0;
-      showCessForm = true;
-    }
-
-    // Convert tax rate.
-    if (item.tax_rate) {
-      item.tax_rate = `${item.tax_rate / 100.0}%`;
-    }
-
-    // Set tax inclusive
-    if (item.tax_inclusive) {
-      item.tax_inclusive = '1';
-    } else if (item.tax_inclusive === false) {
-      item.tax_inclusive = '0';
-    } else {
-      item.tax_inclusive = '1';
-    }
-
-    // Set HSN, SAC things.
-    if (item.hsn_code || item.sac_code) {
-      if (item.hsn_code) {
-        item.hsn_sac_code_type = 'hsn';
-      } else if (item.sac_code) {
-        item.hsn_sac_code_type = 'sac';
+    if (this.props.showTaxes) {
+      // Convert cess
+      if (isTaxOfTypeCess(item.tax)) {
+        item.cess = `${item.tax.rate / 100.0}`;
+        showCessForm = true;
+      } else if (item.cess) {
+        // Else if this is being edited using a Line Item
+        item.cess = item.cess / 100.0;
+        showCessForm = true;
       }
-      item.hsn_sac_code = item.hsn_code || item.sac_code;
-    } else {
-      item.hsn_sac_code_type = 'hsn';
+
+      // Convert tax rate.
+      if (item.tax_rate) {
+        item.tax_rate = `${item.tax_rate / 100.0}%`;
+      }
+
+      // Set tax inclusive
+      if (item.tax_inclusive) {
+        item.tax_inclusive = '1';
+      } else if (item.tax_inclusive === false) {
+        item.tax_inclusive = '0';
+      } else {
+        item.tax_inclusive = '1';
+      }
+
+      // Set HSN, SAC things.
+      if (item.hsn_code || item.sac_code) {
+        if (item.hsn_code) {
+          item.hsn_sac_code_type = 'hsn';
+        } else if (item.sac_code) {
+          item.hsn_sac_code_type = 'sac';
+        }
+        item.hsn_sac_code = item.hsn_code || item.sac_code;
+      } else {
+        item.hsn_sac_code_type = 'hsn';
+      }
     }
 
     // Initialize and set state.
@@ -204,8 +206,13 @@ export default class AddItem extends Component {
    */
   prepareForSave = props =>
     new Promise((resolve, reject) => {
-      if (!this.props.showTaxes) {
-        return resolve(props);
+      if (!this.props.showTaxes || this.props.selected_currency !== 'INR') {
+        return resolve({
+          amountInINR: props.amountInINR,
+          currency: props.currency,
+          description: props.description,
+          name: props.name,
+        });
       }
 
       let {
@@ -402,7 +409,9 @@ export default class AddItem extends Component {
 
     const gstRates = this.getGSTRates(),
       disableCurrencySelect =
-        this.props.disableCurrencySelect || !user.isInttCurrenciesEnabled,
+        this.props.disableCurrencySelect ||
+        !user.isInttCurrenciesEnabled ||
+        (item && item.id),
       isNonINR = selected_currency !== 'INR';
 
     let aligenedStyleClass = `${showTaxes ? 'col-md-6' : 'col-md-12'}`;

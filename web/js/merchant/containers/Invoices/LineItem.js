@@ -31,12 +31,16 @@ export default class InvoiceLineItem extends React.Component {
     this.state = {};
   }
 
+  get isCurrencyInr() {
+    return this.props.invoiceCurrency === 'INR';
+  }
+
   quickCreateItem = ({ searchTerm = '' }) => {
     /**
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin) && this.props.invoiceCurrency === 'INR';
+    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
@@ -83,7 +87,7 @@ export default class InvoiceLineItem extends React.Component {
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin) && this.props.invoiceCurrency === 'INR';
+    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     // Get Item that is to be edited.
     const item = this.props.invoice_line_items[this.props.index].selectedItem;
@@ -151,7 +155,7 @@ export default class InvoiceLineItem extends React.Component {
     if (!item) return;
 
     // Determine whether or not taxes are shown.
-    let showTaxes = Boolean(this.gstin);
+    let showTaxes = Boolean(this.gstin) && this.props.invoiceCurrency === 'INR';
 
     let { fieldName, gstSlabs } = this.props;
 
