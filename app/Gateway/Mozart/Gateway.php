@@ -360,8 +360,9 @@ class Gateway extends Base\Gateway
         {
             $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
         }
-
         $content['entities'] = $input;
+
+        $this->checkTpvAndModifyOrder($content, $input);
 
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
@@ -739,5 +740,21 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    protected function checkTpvAndModifyOrder(& $content, $input)
+    {
+        if (($this->action === Action::PAY_INIT) and ($input['merchant']->isTPVRequired() === false))
+        {
+            if (isset($content['entities']['order']['account_number']) === true)
+            {
+                $content['entities']['order']['account_number'] = null;
+            }
+
+            if (isset($content['entities']['order']['bank_account']['account_number']) === true)
+            {
+                $content['entities']['order']['bank_account']['account_number'] = null;
+            }
+        }
     }
 }
