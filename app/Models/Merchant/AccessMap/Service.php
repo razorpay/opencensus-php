@@ -10,18 +10,17 @@ class Service extends Base\Service
     const ADD_APP     = 'add_app';
 
     /**
-     * @see MerchantController's getMapOAuthApplications()
+     * @see MerchantController's getConnectedApplications()
      *
      * @param  string $merchantId
      * @return array
      */
-    public function getMapOAuthApplications(string $merchantId): array
+    public function getConnectedApplications(string $merchantId): array
     {
-        $mappings = $this->repo
-            ->merchant_access_map
-            ->fetchMerchantAccessMapsOnEntityType($merchantId, 'application');
-
-        return $mappings->toArrayPublic();
+        return $this->repo
+                    ->merchant_access_map
+                    ->fetchMerchantAccessMapsOnEntityType($merchantId, 'application')
+                    ->toArrayPublic();
     }
 
     /**
