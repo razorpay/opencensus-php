@@ -335,11 +335,6 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        if ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
-        {
-            $content = $this->updateBankPaymentIdFromResponse($content, $verify->payment);
-        }
-
         $this->updateGatewayPaymentEntityWithAction($verify->payment, $content, true, Action::AUTHORIZE);
 
         return $verify->status;
@@ -589,28 +584,6 @@ class Gateway extends Base\Gateway
         $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
-    }
-
-    protected function updateBankPaymentIdFromResponse($content, $gatewayPayment)
-    {
-        // temporary change - will go after conditional operation implementation on mozart
-        $rawResponse = $content['data']['_raw']['BODY'];
-
-        $gatewayPaymentRaw = json_decode($gatewayPayment['raw'], true);
-
-        if ($rawResponse === 'Transaction Completed Successfully')
-        {
-            $content['data']['bank_payment_id'] = $gatewayPaymentRaw['bank_payment_id'];
-        }
-
-        if (strpos($rawResponse, 'Transaction Completed Successfully. Bank Reference Number is') !== false)
-        {
-            $splitRawResponse = explode(' ', $rawResponse);
-
-            $content['data']['bank_payment_id'] = $splitRawResponse[count($splitRawResponse) - 1];
-        }
-
-        return $content;
     }
 
     protected function getPaymentToVerify(Verify $verify)
