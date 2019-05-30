@@ -11,20 +11,12 @@ export default class EarningsContainer extends Component {
     return (
       <tabbed-container>
         <header>
-          <ShowWhen
-            additionalCondition={user => user.isDailyCommissionsEnabled}
-          >
-            <NavLink exact to="/partners/earnings/daily">
-              Daily Earnings
-            </NavLink>
-          </ShowWhen>
-          <ShowWhen
-            additionalCondition={user => user.isTransactionalCommissionsEnabled}
-          >
-            <NavLink exact to="/partners/earnings/transactional">
-              Transactional Details
-            </NavLink>
-          </ShowWhen>
+          <NavLink exact to="/partners/earnings/daily">
+            Daily Earnings
+          </NavLink>
+          <NavLink exact to="/partners/earnings/transactional">
+            Transactional Details
+          </NavLink>
         </header>
         <content>
           <Switch>
