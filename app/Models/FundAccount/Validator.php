@@ -14,6 +14,7 @@ use RZP\Models\Feature;
 class Validator extends Base\Validator
 {
     const BEFORE_CREATE = 'before_create';
+    const PUBLIC_CREATE = 'public_create';
 
     /**
      * 1lac in paise
@@ -32,6 +33,15 @@ class Validator extends Base\Validator
     protected static $beforeCreateRules = [
         Entity::CONTACT_ID  => 'required_without:customer_id|public_id',
         Entity::CUSTOMER_ID => 'required_without:contact_id|public_id',
+    ];
+
+    /**
+     * We allow only card for public fa creation route
+     *
+     * @var array
+     */
+    protected static $publicCreateRules = [
+        Entity::CARD    => 'required|associative_array'
     ];
 
     protected static $editRules = [
@@ -78,8 +88,16 @@ class Validator extends Base\Validator
 
         $merchant = $fundAccount->merchant;
 
+        //
         // The merchant needs to be PCI-DSS compliant to send card information.
-        if ($merchant->isFeatureEnabled(Feature\Constants::S2S) === false)
+        //
+        // On public auth, it's fine, since the merchant would be sending the card information
+        // through their frontend itself and the card details don't go through their server.
+        // In case of non-public auth, the card details might go through their servers and hence
+        // S2S feature needs to be enabled to ensure that the the merchant is PCI-DSS compliant.
+        //
+        if ((app('basicauth')->isPublicAuth() === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::S2S) === false))
         {
             // Not logging the value since card details will be present.
             throw new Exception\BadRequestValidationFailureException(
