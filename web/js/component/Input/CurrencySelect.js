@@ -45,8 +45,7 @@ export default class extends React.Component {
       currency,
       isDisabled = this.props.disabled;
 
-    // TODO: Only for dev mode
-    if (true || this.props.user.international) {
+    if (this.props.user.international) {
       const defaultValue = this.props.defaultValue;
 
       Object.keys(window.currencyList).forEach(c => {
