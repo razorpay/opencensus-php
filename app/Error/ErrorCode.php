@@ -1162,6 +1162,7 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT                                   = 'BAD_REQUEST_PAYOUT_LESS_THAN_MIN_AMOUNT';
     const GATEWAY_CHARGEBACK_REFUND_FAILURE                                         = 'GATEWAY_CHARGEBACK_REFUND_FAILURE';
     const GATEWAY_ERROR_REFUND_DEEMED                                               = 'GATEWAY_ERROR_REFUND_DEEMED';
+    const GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED                                 = 'GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED';
 
     // cardless emi error codes
     const GATEWAY_ERROR_CARDLESS_EMI_INVALID_TOKEN                                  = 'GATEWAY_ERROR_CARDLESS_EMI_INVALID_TOKEN';
