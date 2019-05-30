@@ -6,6 +6,7 @@ import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
 import Earnings from './Commissions';
 import Applications from './Applications';
+import Reports from './Reports';
 
 export default function PartnerDashboard() {
   return (
@@ -30,6 +31,8 @@ export default function PartnerDashboard() {
         component={Earnings}
         additionalCondition={user => user.isAllowedView('earnings')}
       />
+
+      <ShowWhenRoute path="/partners/reports" component={Reports} />
 
       <Route path="/partners/submerchants" component={SubMerchantList} />
     </Switch>
