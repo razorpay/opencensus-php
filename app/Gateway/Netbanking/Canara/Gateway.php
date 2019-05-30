@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->createRequest($content);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
 
         return $request;
     }
@@ -410,5 +410,21 @@ class Gateway extends Base\Gateway
     public function formatAmount($amount)
     {
         return number_format($amount, 2, '.', '');
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+        array $content = [])
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'data'       => $content
+            ]);
     }
 }
