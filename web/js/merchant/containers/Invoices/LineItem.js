@@ -467,10 +467,7 @@ export default class InvoiceLineItem extends React.Component {
     // Get cess rate.
     let cess = selectedOption.cess;
 
-    const selectedItemCurrency =
-      selectedItem.currency || selectedOption.currency;
-
-    const applyTaxes = this.props.applyTaxes && selectedItemCurrency === 'INR';
+    const applyTaxes = this.props.applyTaxes && selectedItem.currency === 'INR'; // Selected Item won't be exists for non-inr items
 
     return (
       <tr

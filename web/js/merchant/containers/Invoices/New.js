@@ -926,6 +926,10 @@ export default class InvoicesNewContainer extends Component {
         .unix();
     }
 
+    if (this.state.invoiceCurrency !== 'INR') {
+      delete props.supply_state_code;
+    }
+
     return props;
   };
 
