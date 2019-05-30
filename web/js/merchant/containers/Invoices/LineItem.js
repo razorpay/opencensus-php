@@ -89,7 +89,8 @@ export default class InvoiceLineItem extends React.Component {
     let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     // Get Item that is to be edited.
-    const item = this.props.invoice_line_items[this.props.index].selectedItem;
+    const selectedOption = this.props.invoice_line_items[this.props.index];
+    const item = selectedOption.selectedItem || {};
 
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
@@ -99,7 +100,7 @@ export default class InvoiceLineItem extends React.Component {
           onSave={this.selectItemAndCloseModal}
           item={item}
           showTaxes={showTaxes}
-          currency={item.currency}
+          currency={selectedOption.currency || item.currency}
         />
       ),
     });
@@ -467,7 +468,9 @@ export default class InvoiceLineItem extends React.Component {
     // Get cess rate.
     let cess = selectedOption.cess;
 
-    const applyTaxes = this.props.applyTaxes && selectedItem.currency === 'INR'; // Selected Item won't be exists for non-inr items
+    const selectedCurrency = selectedItem.currency || selectedOption.currency;
+
+    const applyTaxes = this.props.applyTaxes && selectedCurrency === 'INR'; // Selected Item won't be exists for non-inr items
 
     return (
       <tr
