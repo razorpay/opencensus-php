@@ -731,10 +731,10 @@ class Service extends Base\Service
             $input
         );
 
-        (new Payment\Validator)->validateInput('bulk_capture', $input);
-
         if (isset($input['payment_ids']) === true)
         {
+            (new Payment\Validator)->validateInput('bulk_capture', $input);
+
             $paymentIds = $input['payment_ids'];
 
             Entity::verifyIdAndStripSignMultiple($paymentIds);
