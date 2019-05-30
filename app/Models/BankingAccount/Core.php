@@ -3,20 +3,23 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function createBankingAccount(array $input)
+    public function createBankingAccount(array $input, Merchant\Entity $merchant)
     {
-        $merchantAccount = new Entity();
+        $bankingAccount = new Entity;
 
-        $merchantAccount->build($input);
+        $bankingAccount->build($input);
 
-        $merchantAccount->setStatus(Status::CREATED);
+        $bankingAccount->setStatus(Status::CREATED);
 
-        $this->repo->saveOrFail($merchantAccount);
+        $bankingAccount->merchant()->associate($merchant);
 
-        $data = $merchantAccount->toArrayPublic();
+        $this->repo->saveOrFail($bankingAccount);
+
+        $data = $bankingAccount->toArrayPublic();
 
         return $data;
     }

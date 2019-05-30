@@ -21,11 +21,7 @@ class Service extends Base\Service
 
         $this->core->validateBankAvailabilityForMerchant($input);
 
-        $mid = $this->merchant->getMerchantId();
-
-        $input[Entity::MERCHANT_ID] = $mid;
-
-        $data = $this->core->createBankingAccount($input);
+        $data = $this->core->createBankingAccount($input, $this->merchant);
 
         return $data;
     }

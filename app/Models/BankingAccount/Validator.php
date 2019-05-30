@@ -14,6 +14,5 @@ class Validator extends Base\Validator
      protected static $createRules = [
          Entity::BANK            => 'required|string|in:rbl',
          Entity::PINCODE         => 'required_if:bank,rbl',
-         Entity::MERCHANT_ID     => 'required|size:14'
      ];
 }

@@ -3,6 +3,8 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Balance;
 
 class Entity extends Base\PublicEntity
 {
@@ -82,5 +84,17 @@ class Entity extends Base\PublicEntity
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    // ------------------------ associations --------------------------------- //
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function balance()
+    {
+        return $this->belongsTo(Balance\Entity::class);
     }
 }
