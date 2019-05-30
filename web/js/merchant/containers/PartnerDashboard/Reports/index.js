@@ -5,6 +5,15 @@ import * as modelActions from 'merchant/modules/reports';
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import * as ga from './ga';
 
-const Reports = Reportsx(store, { data, modelActions, fetchAccountsApi, ga });
+// TODO: need better method for an empty custom configs
+data.getCustomConfig = () => null; // to avoid monthly invoice in partner reports tab
+
+const Reports = Reportsx(store, {
+  data,
+  modelActions,
+  fetchAccountsApi,
+  ga,
+  isPartnerReport: true,
+});
 
 export default Reports;

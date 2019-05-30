@@ -917,7 +917,7 @@ app
                     location.href = parser.href;
                     if (parser.origin === location.origin && parser.hash) {
                       parser.search = '';
-                      history.push(null, null, parser.href);
+                      history.pushState(null, null, parser.href);
                       location.reload();
                     }
                     return false;

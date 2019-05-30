@@ -58,7 +58,7 @@
            if (typeof analytics === 'undefined') {
                 _rzpAQ_fbq.push(data);
                 return false;
-            } 
+            }
 
             clearInterval(_fbqChckr);
             emptyRzpAQ_fbq();
@@ -77,7 +77,7 @@
         window.rzpAnalytics = function (data) {
             // If there's no data, don't track anything
             if (!data) return;
-            
+
             switch (data.name) {
                 case 'set_dimensions': { // Set the dimensions
                     if (!checkGa(data)) return;
@@ -89,7 +89,7 @@
                 }
                 case 'facebook': {
                     if (!checkAnalytics(data)) return;
-                        
+
                     analytics.track('fb', data.event, data.value);
 
                    break;
@@ -111,7 +111,7 @@
                         data.eventLabel || undefined,
                         data.eventValue || undefined
                     )
-                    
+
                     // Sending Ga events to hubspot
                     var hsqData = {
                         id: data.eventCategory + "__" + data.eventAction,
@@ -141,7 +141,6 @@
                 case 'create_contact': {
                     _hsq.push(['identify', {
                         email: data.data.email,
-                        id: 'new_signup',
                         signup_start: true
                     }]);
 
@@ -152,7 +151,6 @@
                     setTimeout(function() {
                         _hsq.push(['identify', {
                             email: data.data.email,
-                            id: 'new_signup',
                             signup_start: true
                         }]);
 
