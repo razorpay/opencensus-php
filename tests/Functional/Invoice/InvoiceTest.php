@@ -117,6 +117,21 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testCreateInvoiceWithInternationalCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithInternationalCurrencyTax()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $this->startTest();
+    }
+
     public function testCreateInvoiceWithDefinedDisplayName()
     {
         $merchantLabel = 'Awesome and Co';

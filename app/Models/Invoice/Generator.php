@@ -205,10 +205,6 @@ class Generator extends Base\Core
             $this->invoice->setSubscriptionId($this->subscriptionId);
         }
 
-        $validator = $this->invoice->getValidator();
-
-        $validator->validateInternational();
-
         if ($this->batchId != null)
         {
             $this->invoice->setBatchId($this->batchId);
@@ -343,7 +339,12 @@ class Generator extends Base\Core
         $this->setInvoiceCreator($invoice);
 
         // Saves merchant specific details in invoice as copy e.g. merchant label & gstin to use
-        $invoice->setMerchantGstin($this->merchant->getGstin());
+
+        if ($invoice->isInternational() === false)
+        {
+            $invoice->setMerchantGstin($this->merchant->getGstin());
+        }
+
         $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
 
         $this->invoice = $invoice;

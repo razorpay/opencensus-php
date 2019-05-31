@@ -372,6 +372,132 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithInternationalCurrencyTax' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'USD',
+                        'tax_rate'      => 120,
+                    ],
+                    [
+                        'name'          => 'Another item',
+                        'description'   => 'Another description',
+                        'unit_amount'   => 200000,
+                        'quantity'      => 2,
+                        'currency'      => 'USD',
+                        'tax_rate'      => 120,
+                    ]
+                ],
+                'currency'    => 'USD',
+                'description' => 'Just an invoice summary',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '1234567890',
+                    'name'    => 'test',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'unit_amount' => 100000,
+                        'quantity'    => 1,
+                        'currency'    => 'USD',
+                        'tax_rate'    => null,
+                    ],
+                    [
+                        'name'        => 'Another item',
+                        'description' => 'Another description',
+                        'amount'      => 200000,
+                        'unit_amount' => 200000,
+                        'quantity'    => 2,
+                        'currency'    => 'USD',
+                        'tax_rate'    => null,
+                    ]
+                ],
+                'currency'     => 'USD',
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 500000,
+                'description'  => 'Just an invoice summary',
+            ],
+        ],
+    ],
+
+    'testCreateInvoiceWithInternationalCurrency' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'USD',
+                    ],
+                    [
+                        'name'          => 'Another item',
+                        'description'   => 'Another description',
+                        'unit_amount'   => 200000,
+                        'quantity'      => 2,
+                        'currency'      => 'USD',
+                    ]
+                ],
+                'currency'    => 'USD',
+                'description' => 'Just an invoice summary',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '1234567890',
+                    'name'    => 'test',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'unit_amount' => 100000,
+                        'quantity'    => 1,
+                        'currency'    => 'USD',
+                    ],
+                    [
+                        'name'        => 'Another item',
+                        'description' => 'Another description',
+                        'amount'      => 200000,
+                        'unit_amount' => 200000,
+                        'quantity'    => 2,
+                        'currency'    => 'USD',
+                    ]
+                ],
+                'currency'     => 'USD',
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 500000,
+                'description'  => 'Just an invoice summary',
+            ],
+        ],
+    ],
+
     'testCreateLinkWithExpiryRequiredFeature' => [
         'request'  => [
             'url' => '/invoices',

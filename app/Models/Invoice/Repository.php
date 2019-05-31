@@ -9,12 +9,13 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Base\BuilderEx;
-use RZP\Base\JitValidator;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
+use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Plan\Subscription;
 
 class Repository extends Base\Repository
@@ -538,4 +539,14 @@ class Repository extends Base\Repository
         $query->whereIn($typeAttribute, $params[Entity::STATUSES]);
     }
 
+    protected function addQueryParamInternational($query, $params)
+    {
+        $currencyAttribute = $this->dbColumn(Entity::CURRENCY);
+
+        $international = $params[Entity::INTERNATIONAL];
+
+        $operator = ($international === '1') ? '!=' : '=';
+
+        $query->where($currencyAttribute, $operator, Currency::INR);
+    }
 }

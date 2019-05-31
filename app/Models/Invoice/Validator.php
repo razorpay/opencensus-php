@@ -1010,24 +1010,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateInternational()
-    {
-        $invoice = $this->entity;
-
-        $type = $invoice->getType();
-
-        $currency = $invoice->getCurrency();
-
-        if (($currency !== Currency::INR) and
-            ((Type::isPaymentLinkType($type) === false) and ($invoice->isOfSubscription() === false)))
-        {
-            throw new BadRequestValidationFailureException(
-                'Currency ' . $currency . ' is not supported',
-                'currency'
-            );
-        }
-    }
-
     public function validateExternalEntity()
     {
         $invoice = $this->entity;

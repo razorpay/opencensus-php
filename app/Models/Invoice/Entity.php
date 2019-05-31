@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE               = 'entity_type';
     const ENTITY_ID                 = 'entity_id';
     const STATUSES                  = 'statuses';
+    const INTERNATIONAL             = 'international';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -1034,7 +1035,10 @@ class Entity extends Base\PublicEntity
 
     public function setCustomerGstin($customerGstin)
     {
-        $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
+        if ($this->isInternational() === false)
+        {
+            $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
+        }
     }
 
     public function setSmsStatus($status)
@@ -1219,6 +1223,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $details;
+    }
+
+    public function isInternational(): bool
+    {
+        return ($this->getCurrency() !== Currency::INR);
     }
 
     /**

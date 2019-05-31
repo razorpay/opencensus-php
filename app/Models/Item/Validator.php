@@ -3,12 +3,10 @@
 namespace RZP\Models\Item;
 
 use RZP\Base;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base as BaseModel;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ExtraFieldsException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -22,6 +20,15 @@ class Validator extends Base\Validator
 {
     const TAX_INPUTS = 'tax_inputs';
     const TAX_CODES  = 'tax_codes';
+
+    const TAX_ATTRIBUTES = [
+        Entity::TAX_INCLUSIVE,
+        Entity::HSN_CODE,
+        Entity::SAC_CODE,
+        Entity::TAX_RATE,
+        Entity::TAX_ID,
+        Entity::TAX_GROUP_ID
+    ];
 
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
@@ -60,11 +67,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
+        'tax_attributes_international',
         self::TAX_INPUTS,
         self::TAX_CODES,
     ];
 
     protected static $editValidators = [
+        'tax_attributes_international',
         self::TAX_INPUTS,
         self::TAX_CODES,
         'min_amount',
@@ -73,6 +82,28 @@ class Validator extends Base\Validator
     public function validateType($attribute, $value)
     {
         Type::checkType($value);
+    }
+
+    /**
+     * For international currency items we should not calculate or allow tax attributes.
+     *
+     * @param array $input
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
+    public function validateTaxAttributesInternational(array $input)
+    {
+        $currency = $input[Entity::CURRENCY] ?? $this->entity->getCurrency();
+
+        if ($currency !== Currency::INR)
+        {
+            $invalidKeys = array_intersect_key($input, array_flip(self::TAX_ATTRIBUTES));
+
+            if (count($invalidKeys) > 0)
+            {
+                throw new ExtraFieldsException(array_keys($invalidKeys));
+            }
+        }
     }
 
     /**
@@ -162,7 +193,7 @@ class Validator extends Base\Validator
         if ($item->lineItems()->count() > 0)
         {
             throw new BadRequestValidationFailureException(
-                'Cannot edit/delete an item with which invoices have been created already',
+                'Cannot delete an item with which invoices have been created already',
                 null,
                 [
                     Entity::ID   => $item->getId(),
