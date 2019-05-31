@@ -5,6 +5,7 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
 import Earnings from './Commissions';
+import Subvention from './Subvention';
 import Applications from './Applications';
 import Reports from './Reports';
 
@@ -29,6 +30,12 @@ export default function PartnerDashboard() {
       <ShowWhenRoute
         path="/partners/earnings"
         component={Earnings}
+        additionalCondition={user => user.isAllowedView('earnings')}
+      />
+
+      <ShowWhenRoute
+        path="/partners/subvention"
+        component={Subvention}
         additionalCondition={user => user.isAllowedView('earnings')}
       />
 

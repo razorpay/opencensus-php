@@ -26,6 +26,13 @@ export default function PartnerNavLinks() {
       />
 
       <MainNavLink
+        label="Subventions"
+        icon="i i-earnings text-warning"
+        to="/partners/subvention/daily"
+        exact
+      />
+
+      <MainNavLink
         label="Settings"
         icon="i i-settings text-warning"
         to="/partners/settings"
