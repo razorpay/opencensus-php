@@ -844,10 +844,12 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        // Check if AuthN gateway is not the AuthZ
+        // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
         if ((empty($gatewayInput['authenticate']['gateway']) === false) and
             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
         {
+            $payment->disableCpsRoute();
+
             return;
         }
 
@@ -871,6 +873,10 @@ class Processor
             if (strtolower($variant) === 'cps')
             {
                 $payment->enableCpsRoute();
+            }
+            else
+            {
+                $payment->disableCpsRoute();
             }
         }
     }
