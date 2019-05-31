@@ -207,7 +207,7 @@ class Validator extends Base\Validator
     protected static $subMerchantCreateRules = [
         Entity::TYPE           => 'required|in:sub_merchant',
         Entity::NAME           => 'filled|string|max:255',
-        Entity::FILE           => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE           => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         ME::AUTO_SUBMIT        => 'filled|boolean',
         ME::AUTOFILL_DETAILS   => 'filled|boolean',
         ME::AUTO_ACTIVATE      => 'filled|boolean',
