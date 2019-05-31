@@ -10,18 +10,6 @@ class Validator extends Base\Validator
 {
     protected static $availabilityRules = [
         Entity::BANK              => 'required',
-        Entity::PINCODE           => 'filled|custom',
+        Entity::PINCODE           => 'required',
     ];
-
-    protected function validatePincode(string $attribute, string $pincode)
-    {
-        if ((new Core)->checkPincodeServiceable($pincode) === false)
-        {
-            throw new BadRequestValidationFailureException("Pincode not serviceable",
-                                                            Entity::PINCODE,
-                                                            [
-                                                                Entity::PINCODE => $pincode,
-                                                            ]);
-        }
-    }
 }

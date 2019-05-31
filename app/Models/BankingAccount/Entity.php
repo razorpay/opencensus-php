@@ -13,12 +13,15 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_IFSC_CODE     = 'account_ifsc_code';
     const PINCODE               = 'pincode';
     const STATUS                = 'status';
+    const BANK_INTERNAL_STATUS  = 'bank_internal_status';
     const BANK                  = 'bank';
     const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
     const BALANCE_ID            = 'balance_id';
     const BANK_REFERENCE_NUMBER = 'bank_reference_number';
 
     const PINCODE_LENGTH    = '6';
+
+    // need to confirm this length
     const ACCOUNT_NUMBER_LENGTH = '40';
     const ACCOUNT_IFSC_CODE_LENGTH  = '11';
 
@@ -42,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
+        self::BANK_INTERNAL_STATUS,
     ];
 
     protected $visible = [

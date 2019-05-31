@@ -19,9 +19,9 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('availability', $input);
 
-        $this->core->validateBankAvailabilityForMerchant($input);
+        $bankStatus = $this->core->getBankAvailabilityStatusForMerchant($input);
 
-        $data = $this->core->createBankingAccount($input, $this->merchant);
+        $data = $this->core->createBankingAccount($bankStatus, $input, $this->merchant);
 
         return $data;
     }

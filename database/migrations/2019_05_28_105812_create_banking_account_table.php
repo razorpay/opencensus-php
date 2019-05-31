@@ -21,16 +21,16 @@ class CreateBankingAccountTable extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::ACCOUNT_IFSC_CODE, 11)
+            $table->char(Entity::ACCOUNT_IFSC_CODE, Entity::ACCOUNT_IFSC_CODE_LENGTH)
                 ->nullable();
 
-            $table->string(Entity::ACCOUNT_NUMBER, 40)
+            $table->string(Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_NUMBER_LENGTH)
                 ->nullable();
 
-            $table->string(Entity::STATUS)
+            $table->string(Entity::STATUS, 255)
                 ->nullable();
 
-            $table->string(Entity::BANK);
+            $table->string(Entity::BANK, 255);
 
             $table->char(Entity::PINCODE, Entity::PINCODE_LENGTH);
 

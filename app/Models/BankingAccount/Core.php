@@ -7,13 +7,13 @@ use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function createBankingAccount(array $input, Merchant\Entity $merchant)
+    public function createBankingAccount(string $bankStatus, array $input, Merchant\Entity $merchant)
     {
         $bankingAccount = new Entity;
 
         $bankingAccount->build($input);
 
-        $bankingAccount->setStatus(Status::CREATED);
+        $bankingAccount->setStatus($bankStatus);
 
         $bankingAccount->merchant()->associate($merchant);
 
@@ -24,11 +24,11 @@ class Core extends Base\Core
         return $data;
     }
 
-    public function validateBankAvailabilityForMerchant(array $input)
+    public function getBankAvailabilityStatusForMerchant(array $input)
     {
         $bankCore = $this->getBankCore($input);
 
-        $bankCore->validateAvailability($input);
+        return $bankCore->getBankAvailabilityStatus($input);
     }
 
     protected function getBankCore(array $input)
