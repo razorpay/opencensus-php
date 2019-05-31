@@ -294,6 +294,7 @@ class Entity
         self::ORDER,
         self::INVOICE,
         self::PAYMENT,
+        self::CONTACT,
         self::CUSTOMER,
         self::SUBSCRIPTION,
         self::PAYMENT_LINK,

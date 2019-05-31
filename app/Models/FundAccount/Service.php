@@ -67,6 +67,15 @@ class Service extends Base\Service
         return $entity->toArrayPublic();
     }
 
+    public function createPublic(array $input): array
+    {
+        $this->traceFundAccountNewRequest($input);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::PUBLIC_CREATE, $input);
+
+        return $this->create($input);
+    }
+
     public function fetch(string $id, array $input): array
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
