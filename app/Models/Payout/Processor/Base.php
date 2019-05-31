@@ -89,9 +89,11 @@ abstract class Base extends BaseCore
 
             $payoutType = $this->getPayoutType();
 
-            $downstreamProcessor = new Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+            $downstreamProcessor = new Payout\Processor\DownstreamProcessor\DownstreamProcessor($payoutType,
+                                                                                                $payout,
+                                                                                                $this->fundTransferDestination);
 
-            $payout = $downstreamProcessor->process($payoutType, $payout, $this->fundTransferDestination);
+            $downstreamProcessor->process();
 
             $this->repo->saveOrFail($payout);
 
@@ -134,9 +136,11 @@ abstract class Base extends BaseCore
 
                         $payoutType = $this->getPayoutType();
 
-                        $downstreamProcessor = new Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+                        $downstreamProcessor = new Payout\Processor\DownstreamProcessor\DownstreamProcessor($payoutType,
+                                                                                                            $payout,
+                                                                                                            $this->fundTransferDestination);
 
-                        $payout = $downstreamProcessor->process($payoutType, $payout, $this->fundTransferDestination);
+                        $downstreamProcessor->process();
 
                         $payout->setStatus(Payout\Status::CREATED);
 

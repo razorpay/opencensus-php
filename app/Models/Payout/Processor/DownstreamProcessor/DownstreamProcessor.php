@@ -2,28 +2,42 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payout\Entity;
 
 class DownstreamProcessor
 {
-    public function process(string $type, Entity $payout, $ftaAccount): Entity
+    protected $type;
+
+    protected $payout;
+
+    protected $ftaAccount;
+
+    public function __construct(string $type, Entity $payout, PublicEntity $ftaAccount)
     {
-        $subProcessor = $this->getSubProcessorClass($type, $payout);
+        $this->type = $type;
 
-        $payout = $subProcessor->process($payout, $ftaAccount);
+        $this->payout = $payout;
 
-        return $payout;
+        $this->ftaAccount = $ftaAccount;
     }
 
-    protected function getSubProcessorClass(string $type, Entity $payout)
+    public function process()
     {
-        $subProcessor = __NAMESPACE__ . '\\' . studly_case($type);
+        $subProcessor = $this->getSubProcessorClass();
 
-        if ($type === 'fund_account')
+        $subProcessor->process($this->payout, $this->ftaAccount);
+    }
+
+    protected function getSubProcessorClass()
+    {
+        $subProcessor = __NAMESPACE__ . '\\' . studly_case($this->type);
+
+        if (snake_case($this->type) === 'fund_account_payout')
         {
-            $accountType = $this->getAccountTypeForFundAccount($payout);
+            $accountType = $this->getAccountTypeForFundAccount();
 
-            $channel = $payout->getChannel();
+            $channel = $this->payout->getChannel();
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
@@ -31,14 +45,9 @@ class DownstreamProcessor
         return new $subProcessor;
     }
 
-    protected function getAccountTypeForFundAccount(Entity $payout)
+    protected function getAccountTypeForFundAccount()
     {
         // TODO: Use constants and add logic once balance and account related changes are done for RBL.
         return 'shared';
-    }
-
-    protected function getBankForFundAccount(Entity $payout)
-    {
-        return $payout->getChannel();
     }
 }
