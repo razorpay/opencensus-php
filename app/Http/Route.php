@@ -2447,6 +2447,7 @@ final class Route
 
         'merchant_partners_fetch'                  => '*',
         'webhook_fire'                             => Permission::MAKE_API_CALL,
+        'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
     ];
