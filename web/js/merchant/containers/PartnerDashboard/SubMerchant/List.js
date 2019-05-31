@@ -35,7 +35,7 @@ const name = isPurePlatform => ({
   ...submerchantColumn,
   ...(isPurePlatform && {
     value: item => (
-      <Link to={`/submerchants/${item.id}/${item.application.id}`}>
+      <Link to={`/partners/submerchants/${item.id}/${item.application.id}`}>
         {item.name}
       </Link>
     ),

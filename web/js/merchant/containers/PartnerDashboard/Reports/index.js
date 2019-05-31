@@ -1,12 +1,16 @@
 import Reportsx from 'merchant_common/containers/Reports';
 import store from 'merchant/store';
-import * as data from 'merchant/containers/Reports/data';
+import * as datax from 'merchant/containers/Reports/data';
 import * as modelActions from 'merchant/modules/reports';
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import * as ga from './ga';
 
 // TODO: need better method for an empty custom configs
-data.getCustomConfig = () => null; // to avoid monthly invoice in partner reports tab
+// to avoid monthly invoice in partner reports tab
+const data = {
+  ...datax,
+  getCustomConfig: () => null,
+};
 
 const Reports = Reportsx(store, {
   data,
