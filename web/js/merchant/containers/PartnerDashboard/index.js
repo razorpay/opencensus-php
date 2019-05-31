@@ -29,7 +29,9 @@ export default function PartnerDashboard() {
       <ShowWhenRoute
         path="/partners/earnings"
         component={Earnings}
-        additionalCondition={user => user.isAllowedView('earnings')}
+        additionalCondition={user =>
+          user.isAllowedView('earnings') && user.isHavingPartnerConfigs
+        }
       />
 
       <ShowWhenRoute path="/partners/reports" component={Reports} />

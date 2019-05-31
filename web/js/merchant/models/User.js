@@ -318,14 +318,6 @@ export default class User {
     return this.getExpStatus('capital_banner');
   }
 
-  get isDailyCommissionsEnabled() {
-    return this.getExpStatus('daily_commissions');
-  }
-
-  get isTransactionalCommissionsEnabled() {
-    return this.getExpStatus('transactional_commissions');
-  }
-
   get isExpireByRequired() {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
   }

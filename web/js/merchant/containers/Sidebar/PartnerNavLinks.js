@@ -18,10 +18,7 @@ export default function PartnerNavLinks() {
         exact
         additionalCondition={user =>
           // these complex conditions are very temporary
-          user.isAllowedView('earnings') &&
-          user.isHavingPartnerConfigs &&
-          (user.isDailyCommissionsEnabled ||
-            user.isTransactionalCommissionsEnabled)
+          user.isAllowedView('earnings') && user.isHavingPartnerConfigs
         }
       />
 
