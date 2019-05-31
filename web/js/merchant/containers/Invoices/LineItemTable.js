@@ -43,6 +43,7 @@ export default class InvoiceLineItemTable extends Component {
       invoice,
       invoiceTotal,
       applyTaxes,
+      invoiceCurrency,
     } = this.props;
 
     return (
@@ -71,6 +72,7 @@ export default class InvoiceLineItemTable extends Component {
                         gstSlabs={gstSlabs}
                         onRemove={this.onRemove}
                         applyTaxes={applyTaxes}
+                        invoiceCurrency={invoiceCurrency}
                       />
                     ))}
                     <tr class="addline">
@@ -108,16 +110,18 @@ export default class InvoiceLineItemTable extends Component {
                             />
                           </td>
                         </tr>
-                        <tr class="total sub-total">
-                          <td />
-                          <td class="text-right">Total Tax</td>
-                          <td class="text-right" width="30%">
-                            <Amount
-                              value={invoiceTotal.tax * 100}
-                              currency={invoice.currency}
-                            />
-                          </td>
-                        </tr>
+                        {invoiceCurrency === 'INR' && (
+                          <tr class="total sub-total">
+                            <td />
+                            <td class="text-right">Total Tax</td>
+                            <td class="text-right" width="30%">
+                              <Amount
+                                value={invoiceTotal.tax * 100}
+                                currency={invoice.currency}
+                              />
+                            </td>
+                          </tr>
+                        )}
                       </Fragment>
                     )}
                     <tr class="total">
@@ -129,22 +133,23 @@ export default class InvoiceLineItemTable extends Component {
                         <b>
                           <Amount
                             value={invoiceTotal.total * 100}
-                            currency={invoice.currency}
+                            currency={invoiceCurrency}
                           />
                         </b>
                       </td>
                     </tr>
-                    {!invoice.subscription_id && (
-                      <tr class="total amount-words">
-                        <td colSpan="3" class="text-right">
-                          <AmountInWords
-                            amount={invoiceTotal.total}
-                            prefix="(In Words)"
-                            suffix="/-"
-                          />
-                        </td>
-                      </tr>
-                    )}
+                    {!invoice.subscription_id &&
+                      invoiceCurrency === 'INR' && (
+                        <tr class="total amount-words">
+                          <td colSpan="3" class="text-right">
+                            <AmountInWords
+                              amount={invoiceTotal.total}
+                              prefix="(In Words)"
+                              suffix="/-"
+                            />
+                          </td>
+                        </tr>
+                      )}
                     {invoice.amount_paid ? (
                       <tr class="text-success amount-paid">
                         <td />
