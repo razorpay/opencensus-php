@@ -558,7 +558,7 @@ export default class InvoiceLineItem extends React.Component {
                       {group} @ {gstSlab.perGroup / 10000.0}%
                     </p>
                   ))}
-                {cess && <p>Cess @ {cess / 10000.0}%</p>}
+                {cess && <p>Cess @ {cess / 100.0}%</p>}
               </div>
             )}
         </td>
