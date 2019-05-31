@@ -512,7 +512,6 @@ final class Route
         'customer_get_wallet_balance'              => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
         'customer_get_wallet_statement'            => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
-        'bulk_invoice_create'                      => ['post',     'invoices/bulk',                                  'InvoiceController@createInvoiceBulk'                               ],
         'invoice_fetch'                            => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
         'invoice_get_count'                        => ['get',      'invoices-count',                                 'InvoiceController@getInvoicesCount'                                ],
         'invoice_fetch_multiple'                   => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
@@ -1684,7 +1683,6 @@ final class Route
         'currency_fetch_all_proxy',
         'commissions_analytics',
         'invoice_update_billing_period',
-        'bulk_invoice_create',
     ];
 
     // These will run on internal auth with the assurance
@@ -2777,7 +2775,6 @@ final class Route
         'batch' => [
             'invoice_create',
             'batch_send_mail',
-            'bulk_invoice_create',
         ],
 
         'stork' => [
