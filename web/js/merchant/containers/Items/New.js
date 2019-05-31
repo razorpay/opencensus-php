@@ -262,7 +262,7 @@ export default class AddItem extends Component {
         let cessPerc = cess;
 
         // Convert to an integer. (5% => 500)
-        cessPerc = parseInt(parseFloat(cessPerc) * 10000);
+        cessPerc = parseInt(parseFloat(cessPerc) * 100);
 
         // Find an existing cess.
         let { taxes } = this.state;
@@ -283,7 +283,7 @@ export default class AddItem extends Component {
           // Create a new tax if one doesn't exist.
           this.props
             .saveTax({
-              name: `Cess @ ${cessPerc / 10000.0}%`,
+              name: `Cess @ ${cessPerc / 100.0}%`,
               rate_type: 'percentage',
               rate: cessPerc,
             })
