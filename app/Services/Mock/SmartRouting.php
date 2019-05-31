@@ -7,12 +7,28 @@ use RZP\Services\SmartRouting as BaseSmartRouting;
 class SmartRouting extends BaseSmartRouting
 {
 
-    public function sendNonBlockingRequest($url, $data = null)
+    public function sendPaymentData($data)
     {
-        return;
-    }
+        return [
+            'error' => '',
+            'success' => true,
+        ];    }
 
-    public function sendRequest($url, $method, $data = null)
+    public function createGateway($data)
+    {
+        return [
+            'error' => '',
+            'success' => true,
+        ];    }
+
+    public function updateGateway($data)
+    {
+        return [
+            'error' => '',
+            'success' => true,
+        ];    }
+
+    public function deleteGateway($id)
     {
         return [
             'error' => '',
