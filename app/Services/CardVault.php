@@ -32,6 +32,8 @@ class CardVault
 
     protected $request;
 
+    protected $cardNumberToToken = [];
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -61,6 +63,11 @@ class CardVault
             $payload[self::SCHEME] = $input[self::SCHEME];
         }
 
+        if (empty($this->cardNumberToToken[$payload[self::SECRET]]) === false)
+        {
+            return $this->cardNumberToToken[$payload[self::SECRET]];
+        }
+
         $response = $this->sendRequest('tokenize', 'post', $payload);
 
         if (empty($response[self::TOKEN]) === true)
@@ -68,6 +75,8 @@ class CardVault
             throw new Exception\RuntimeException(
                 'card vault request failed', ['data' => $response]);
         }
+
+        $this->cardNumberToToken[$payload[self::SECRET]] = $response[self::TOKEN];
 
         return $response[self::TOKEN];
     }
