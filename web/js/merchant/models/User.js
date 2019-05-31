@@ -331,9 +331,7 @@ export default class User {
   }
 
   get isInttCurrenciesEnabled() {
-    return (
-      !!this.international && this.getExpStatus('international_currencies')
-    );
+    return this.getExpStatus('international_currencies');
   }
 
   get getCurrencyList() {
