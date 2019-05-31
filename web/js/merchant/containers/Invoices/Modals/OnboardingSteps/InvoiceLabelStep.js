@@ -86,9 +86,7 @@ export default class InvoiceLabelStep extends Component {
               onChange={this.billingLabelChange}
               label={() => (
                 <span>
-                  <span className="title">
-                    {businessName ? `${businessName} | ` : ''}
-                  </span>
+                  <span class="title">{`${businessName} | `}</span>
                   <span class="description">Registered Name</span>
                 </span>
               )}

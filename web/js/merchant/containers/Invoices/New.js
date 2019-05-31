@@ -11,7 +11,6 @@ import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 import Spinner from 'rzp/ui/Spinner';
 import InlineField from 'rzp/ui/Forms/InlineField';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import {
   findBy,
   getKeysSeparatedByPipe,
@@ -53,8 +52,6 @@ import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
 import { track, trackLinkClick } from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
-import PickCurrency from 'merchant/components/Invoices/PickCurrency';
-import { classList } from 'common/util';
 
 function validate(values) {
   let errors = {
@@ -158,7 +155,6 @@ export default class InvoicesNewContainer extends Component {
       issue_date,
       today: issue_date,
       isFetchingAddresses: false,
-      invoiceCurrency: this.props.invoice.currency || 'INR',
     };
   }
 
@@ -241,13 +237,6 @@ export default class InvoicesNewContainer extends Component {
       );
     } else {
       this.props.initializeInvoice();
-
-      if (this.props.session.user.isInttCurrenciesEnabled) {
-        this.openInvoiceCurrencyChangeModal({
-          showCross: false,
-          currency: 'INR',
-        });
-      }
     }
 
     promises = [
@@ -277,7 +266,6 @@ export default class InvoicesNewContainer extends Component {
           isLoading: false,
           gst: gst && gst.data,
           states: statesList,
-          invoiceCurrency: (invoice && invoice.currency) || 'INR',
         });
 
         // Set state of supply.
@@ -305,41 +293,28 @@ export default class InvoicesNewContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const invoiceId = nextProps.match.params.id;
+    if (this.props.match.params.id !== nextProps.match.params.id) {
+      this.setState({
+        isLoading: true,
+      });
 
-    if (this.props.match.params.id !== invoiceId) {
-      this.props.closeModal();
-
-      if (invoiceId) {
-        this.setState({
-          isLoading: true,
-        });
-
-        this.props
-          .fetchInvoice(nextProps.match.params.id)
-          .then(invoice => {
-            this.setState({
-              isLoading: false,
-              invoiceCurrency: invoice.currency || 'INR',
-            });
-
-            if (this.isPaymentLink(invoice)) {
-              return;
-            }
-          })
-          .catch(({ errors }) => {
-            this.props.showNotification({
-              type: 'error',
-              message: errors,
-            });
+      this.props
+        .fetchInvoice(nextProps.match.params.id)
+        .then(invoice => {
+          this.setState({
+            isLoading: false,
           });
-      } else {
-        this.props.initializeInvoice();
-        this.props.initialize(this.props.initialValues);
-        if (this.props.session.user.isInttCurrenciesEnabled) {
-          this.openInvoiceCurrencyChangeModal({ showCross: false });
-        }
-      }
+
+          if (this.isPaymentLink(invoice)) {
+            return;
+          }
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
     }
   }
 
@@ -615,52 +590,6 @@ export default class InvoicesNewContainer extends Component {
       });
   };
 
-  setInvoiceCurrency = newCurrency => {
-    this.setState({
-      invoiceCurrency: newCurrency,
-    });
-
-    // Show only for first time user
-    if (
-      !this.props.invoice.id &&
-      this.props.config.invoice_label_field === null
-    ) {
-      this.setState({
-        highlightCurrencyChangeCTA: true,
-      });
-
-      const el = document.getElementById('change-currency-cta');
-      el && el.querySelector('.rzp-popover').classList.add('show');
-
-      setTimeout(_ => {
-        this.setState({ highlightCurrencyChangeCTA: false });
-        el && el.querySelector('.rzp-popover').classList.remove('show');
-      }, 4000);
-    }
-  };
-
-  openInvoiceCurrencyChangeModal = ({ showCross = true, currency }) => {
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <PickCurrency
-          currency={currency || this.state.invoiceCurrency}
-          onSave={this.setInvoiceCurrency}
-          closeModal={this.props.closeModal}
-          showCross={showCross}
-          alerts={
-            this.props.invoice_line_items &&
-            this.props.invoice_line_items.length
-              ? [
-                  'The rate of all the items in the current invoice will reset to 0.',
-                ]
-              : null
-          }
-        />
-      ),
-    });
-  };
-
   quickCreateCustomer = ({ searchTerm = '' }) => {
     this.props.openModal({
       size: 'small',
@@ -671,7 +600,6 @@ export default class InvoicesNewContainer extends Component {
           customer={{
             name: searchTerm,
           }}
-          showGSTN={this.state.invoiceCurrency === 'INR'}
         />
       ),
     });
@@ -691,7 +619,6 @@ export default class InvoicesNewContainer extends Component {
           saveLabel="Update Customer"
           onSave={this.selectCustomerAndCloseModal()}
           customer={this.props.customer}
-          showGSTN={this.state.invoiceCurrency === 'INR'}
         />
       ),
     });
@@ -706,10 +633,6 @@ export default class InvoicesNewContainer extends Component {
         eventAction: 'Click - Start Creating Invoices',
       });
       this.getMerchantInfo();
-
-      if (this.props.session.user.isInttCurrenciesEnabled) {
-        this.openInvoiceCurrencyChangeModal({ showCross: false });
-      }
     };
 
     const onCloseClick = () => {
@@ -866,9 +789,6 @@ export default class InvoicesNewContainer extends Component {
           header={`${actionText} ${capitalize(type)} Address`}
           customer={customer}
           addresses={addresses}
-          isInttCurrenciesEnabled={
-            this.props.session.user.isInttCurrenciesEnabled
-          }
           selected={
             type === 'billing'
               ? selectedBillingAddress
@@ -926,10 +846,6 @@ export default class InvoicesNewContainer extends Component {
         .unix();
     }
 
-    if (this.state.invoiceCurrency !== 'INR') {
-      delete props.supply_state_code;
-    }
-
     return props;
   };
 
@@ -963,8 +879,6 @@ export default class InvoicesNewContainer extends Component {
   }
 
   save = props => {
-    props = removeTaxForNonINRItems(props, this.state.invoiceCurrency);
-
     return this._save(props).then(invoice => {
       track({
         eventAction: 'Save - Invoice',
@@ -990,15 +904,10 @@ export default class InvoicesNewContainer extends Component {
     }
 
     return this.showIssueConfirmModal(notifyProps => {
-      const updatedProps = removeTaxForNonINRItems(
-        {
-          ...props,
-          ...notifyProps,
-        },
-        this.state.invoiceCurrency
-      );
-
-      return this._save(updatedProps).then(invoice => {
+      return this._save({
+        ...props,
+        ...notifyProps,
+      }).then(invoice => {
         track({
           eventAction: 'Issue - Invoice',
           eventLabel: getKeysSeparatedByPipe(props),
@@ -1305,8 +1214,6 @@ export default class InvoicesNewContainer extends Component {
   };
 
   componentWillUnmount() {
-    this.props.closeModal();
-
     let action;
     if (!this.props.match.params.id) {
       action = 'Close Form - New Invoice';
@@ -1453,7 +1360,6 @@ export default class InvoicesNewContainer extends Component {
 
   render() {
     const { handleSubmit, customer, invoice, session: { user } } = this.props;
-    // console.log('INVOICE...', invoice);
 
     let isTestMode = this.props.session.mode === 'test';
     let isNew = !invoice.id;
@@ -1488,7 +1394,6 @@ export default class InvoicesNewContainer extends Component {
       selectedBillingAddress,
       selectedShippingAddress,
       isFetchingAddresses,
-      invoiceCurrency,
     } = this.state;
 
     /**
@@ -1517,8 +1422,6 @@ export default class InvoicesNewContainer extends Component {
       customer.id &&
       !isFetchingAddresses &&
       !isDisabled;
-
-    const showGstn = invoiceCurrency === 'INR';
 
     return (
       <div class="react-root">
@@ -1552,8 +1455,8 @@ export default class InvoicesNewContainer extends Component {
                       <InvoiceLogo
                         logo={this.state.merchantLogoUrl}
                         name={this.state.merchantAltBillingLabel}
-                        gstin={showGstn && merchantGSTIN}
-                        cin={showGstn && merchantCIN}
+                        gstin={merchantGSTIN}
+                        cin={merchantCIN}
                       />
 
                       <div class="row">
@@ -1615,12 +1518,12 @@ export default class InvoicesNewContainer extends Component {
                                 {invoice.amount_due ? (
                                   <Amount
                                     value={invoice.amount_due}
-                                    currency={this.state.invoiceCurrency}
+                                    currency={invoice.currency}
                                   />
                                 ) : (
                                   <Amount
                                     value={invoiceTotal.total * 100}
-                                    currency={this.state.invoiceCurrency}
+                                    currency={invoice.currency}
                                   />
                                 )}
                               </h3>
@@ -1685,15 +1588,12 @@ export default class InvoicesNewContainer extends Component {
                                   ) : (
                                     ''
                                   )}
-                                  {customer.gstin &&
-                                    showGstn && (
-                                      <div>
-                                        <span class="tax-heading">
-                                          GSTIN -{' '}
-                                        </span>
-                                        {customer.gstin}
-                                      </div>
-                                    )}
+                                  {customer.gstin && (
+                                    <div>
+                                      <span class="tax-heading">GSTIN - </span>
+                                      {customer.gstin}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                           </div>
@@ -1925,45 +1825,40 @@ export default class InvoicesNewContainer extends Component {
                                   )}
                                 </div>
                               </div>
-                              {merchantGSTIN &&
-                                showGstn && (
-                                  <div class="inv__place-of-supply-container">
-                                    <label class="text-uppercase">
-                                      Place of Supply
-                                    </label>
-                                    {!isDisabled ? (
-                                      <Fragment>
-                                        <div>
-                                          <PowerSelect
-                                            class="inv__state-of-delivery-list material-input"
-                                            placeholder="Select from Dropdown"
-                                            options={this.state.states || []}
-                                            selected={
-                                              this.props.state_of_supply
-                                            }
-                                            optionLabelPath="name"
-                                            onChange={this.changeStateOfSupply}
-                                            disabled={isDisabled}
-                                          />
-                                        </div>
-                                        {!this.props.state_of_supply && (
-                                          <div class="alert-sm alert-warning">
-                                            <i class="i i-info-circle" />
-                                            Add a Place of Supply to apply taxes
-                                          </div>
-                                        )}
-                                      </Fragment>
-                                    ) : this.props.state_of_supply ? (
+                              {merchantGSTIN && (
+                                <div class="inv__place-of-supply-container">
+                                  <label class="text-uppercase">
+                                    Place of Supply
+                                  </label>
+                                  {!isDisabled ? (
+                                    <Fragment>
                                       <div>
-                                        {this.props.state_of_supply.name}
+                                        <PowerSelect
+                                          class="inv__state-of-delivery-list material-input"
+                                          placeholder="Select from Dropdown"
+                                          options={this.state.states || []}
+                                          selected={this.props.state_of_supply}
+                                          optionLabelPath="name"
+                                          onChange={this.changeStateOfSupply}
+                                          disabled={isDisabled}
+                                        />
                                       </div>
-                                    ) : (
-                                      <div class="light-placeholder">
-                                        Place of Supply not applicable.
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
+                                      {!this.props.state_of_supply && (
+                                        <div class="alert-sm alert-warning">
+                                          <i class="i i-info-circle" />
+                                          Add a Place of Supply to apply taxes
+                                        </div>
+                                      )}
+                                    </Fragment>
+                                  ) : this.props.state_of_supply ? (
+                                    <div>{this.props.state_of_supply.name}</div>
+                                  ) : (
+                                    <div class="light-placeholder">
+                                      Place of Supply not applicable.
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <div class="col-md-12 hidden-md visible-sm-block">
                               <div class="inv__dates-container">
@@ -2061,13 +1956,10 @@ export default class InvoicesNewContainer extends Component {
                         items={this.props.items}
                         disabled={isDisabled}
                         invoice={invoice}
-                        invoiceCurrency={invoiceCurrency}
                         invoiceTotal={invoiceTotal}
                         gstSlabs={gstSlabs}
                         applyTaxes={
-                          Boolean(merchantGSTIN) &&
-                          this.props.state_of_supply &&
-                          invoiceCurrency === 'INR'
+                          Boolean(merchantGSTIN) && this.props.state_of_supply
                         }
                       />
 
@@ -2310,40 +2202,6 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </button>
                           )}
-                          {!invoice.id &&
-                            this.props.session.user.isInttCurrenciesEnabled && (
-                              <div
-                                id="change-currency-cta"
-                                class={classList(
-                                  'change-currency-cta',
-                                  this.state.highlightCurrencyChangeCTA &&
-                                    'highlight'
-                                )}
-                              >
-                                <button
-                                  class="btn btn-default btn-block btn-lg"
-                                  onClick={this.openInvoiceCurrencyChangeModal}
-                                  type="button"
-                                >
-                                  <div class="row">
-                                    <div class="col-xs-10">
-                                      <h3>Change Currency</h3>
-                                      <p>Select different currency</p>
-                                    </div>
-                                    <i
-                                      class="col-xs-2 i i-arrow-forward"
-                                      style={{ marginTop: '0.5em' }}
-                                    />
-                                  </div>
-                                </button>
-                                <Popover theme="dark" align="bottom">
-                                  <PopoverBody>
-                                    Going forward you can change the Invoice
-                                    currency here
-                                  </PopoverBody>
-                                </Popover>
-                              </div>
-                            )}
                         </div>
                       </div>
                     )}
@@ -2364,39 +2222,3 @@ export default class InvoicesNewContainer extends Component {
     );
   }
 }
-
-const removeTaxForNonINRItems = (props, invoiceCurrency) => {
-  const updatedProps = { ...props };
-
-  if (invoiceCurrency !== 'INR') {
-    updatedProps.currency = invoiceCurrency;
-
-    updatedProps.line_items = updatedProps.line_items.map(item => {
-      delete item.taxes;
-      delete item.tax_ids;
-      delete item.tax_inclusive;
-      delete item.tax_rate;
-
-      return item;
-    });
-  }
-
-  updatedProps.line_items = updatedProps.line_items.map(item => {
-    const currency =
-      (item.selectedItem && item.selectedItem.currency) || item.currency;
-
-    if (invoiceCurrency !== currency) {
-      delete item.item_id;
-
-      return {
-        ...item,
-        currency: invoiceCurrency,
-        deleteTaxId: true,
-        addName: true,
-      };
-    }
-    return item;
-  });
-
-  return updatedProps;
-};

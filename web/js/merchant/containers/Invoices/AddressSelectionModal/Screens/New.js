@@ -10,15 +10,8 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import { fetchStates } from 'merchant/modules/states';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import PropTypes from 'prop-types';
-import {
-  isAddressValid,
-  isValidZipcodeCountryWise,
-  capitalize,
-} from 'rzp/utils/rzp-utils';
+import { isAddressValid, capitalize } from 'rzp/utils/rzp-utils';
 import { track } from '../../ga';
-import Countries from 'common/countries.json';
-
-const CountryNames = Object.keys(Countries);
 
 @connect(state => ({}), {
   fetchStates,
@@ -89,21 +82,9 @@ export default class New extends Component {
 
   constructor() {
     super(...arguments);
-    this.DEFAULT_COUNTRY = 'India';
-
-    if (this.props.isInttCurrenciesEnabled) {
-      this.state = {
-        errors: null,
-        editedAddress: {
-          country: this.DEFAULT_COUNTRY,
-        },
-        states: Countries[this.DEFAULT_COUNTRY],
-      };
-    } else {
-      this.state = {
-        errors: null,
-      };
-    }
+    this.state = {
+      errors: null,
+    };
   }
 
   componentWillUnmount() {
@@ -115,34 +96,28 @@ export default class New extends Component {
   }
 
   componentWillMount() {
-    if (!this.props.isInttCurrenciesEnabled) {
-      let promises = [this.props.fetchStates()];
-      this.setState({
-        isLoading: true,
-      });
+    // Fetch states.
+    let promises = [this.props.fetchStates()];
+    this.setState({
+      isLoading: true,
+    });
 
-      Promise.all(promises)
-        .then(([states]) => {
-          // Set address type.
-          this.props.change('type', this.props.type);
+    Promise.all(promises)
+      .then(([states]) => {
+        // Set address type.
+        this.props.change('type', this.props.type);
 
-          this.setState({
-            isLoading: false,
-            states: states && states.data && states.data.items,
-          });
-        })
-        .catch(({ errors }) => {
-          this.props.showNotification({
-            type: 'error',
-            message: errors,
-          });
+        this.setState({
+          isLoading: false,
+          states: states && states.data && states.data.items,
         });
-
-      return;
-    }
-
-    // Set address type.
-    this.props.change('type', this.props.type);
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   }
 
   /**
@@ -177,31 +152,6 @@ export default class New extends Component {
    * @param {Object} address
    */
   onAddressUpdate = address => {
-    if (this.props.isInttCurrenciesEnabled) {
-      let updatedAddress = {
-        editedAddress: address,
-        states: Countries[address.country],
-      };
-
-      if (!address.country) {
-        updatedAddress = {
-          editedAddress: {
-            ...address,
-            state: null,
-          },
-          states: [],
-        };
-      }
-
-      if (address.country !== this.state.editedAddress.country) {
-        updatedAddress.editedAddress.state = null;
-      }
-
-      this.setState(updatedAddress);
-
-      return;
-    }
-
     this.setState({
       editedAddress: address,
     });
@@ -217,24 +167,12 @@ export default class New extends Component {
       backLabel,
       onBackClick,
       hideBack,
-      isInttCurrenciesEnabled,
     } = this.props;
 
     const { states, editedAddress } = this.state;
 
     // Boolean that determines if the address is valid or not.
-    const invalid = !isAddressValid(editedAddress, {
-      zipcode: isValidZipcodeCountryWise,
-    });
-
-    let extraProps = {};
-
-    if (isInttCurrenciesEnabled) {
-      extraProps = {
-        countries: CountryNames,
-        maxLengthZipcode: 8,
-      };
-    }
+    const invalid = !isAddressValid(editedAddress);
 
     return (
       <div id="add-address-modal">
@@ -266,10 +204,9 @@ export default class New extends Component {
             <AddressEntry
               onChange={this.onAddressUpdate}
               states={states}
+              hideCountry={true}
               address={editedAddress}
               showDisabledCountry={true}
-              hideCountry={!isInttCurrenciesEnabled}
-              {...extraProps}
             />
 
             <div class="row">

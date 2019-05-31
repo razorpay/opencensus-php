@@ -135,13 +135,7 @@ export default class AddressSelectionModal extends Component {
   };
 
   render() {
-    const {
-      header,
-      type,
-      backLabel,
-      addressType,
-      isInttCurrenciesEnabled,
-    } = this.props;
+    const { header, type, backLabel, addressType } = this.props;
 
     const { customer, selected, showAddAddress, addresses } = this.state;
 
@@ -173,7 +167,6 @@ export default class AddressSelectionModal extends Component {
         onSave={this.onSave}
         hideBack={addresses && addresses.length === 0}
         addressType={addressType}
-        isInttCurrenciesEnabled={isInttCurrenciesEnabled}
       />
     );
 

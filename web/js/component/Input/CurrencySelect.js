@@ -6,7 +6,7 @@ import { classList } from 'common/util';
 
 const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
 
-function CurrencyOption({ option }, noTick = false) {
+function CurrencyOption({ option }) {
   return (
     <div>
       <span>
@@ -14,7 +14,7 @@ function CurrencyOption({ option }, noTick = false) {
           option.name
         })
       </span>
-      {noTick && <i className="i-check text-success" />}
+      <i className="i-check text-success" />
     </div>
   );
 }
@@ -101,9 +101,7 @@ export default class extends React.Component {
   };
 
   getSelectedCurrencyOption = ({ option }) => {
-    const optionContent = this.props.fullDisplay
-      ? CurrencyOption({ option }, false)
-      : SelectedCurrencyOption(option);
+    const optionContent = SelectedCurrencyOption(option);
 
     return this.state.disabled ? (
       <AmountTooltip
@@ -120,13 +118,13 @@ export default class extends React.Component {
   render() {
     const props = this.props;
 
-    const isInternationalEnabled = this.props.user.isInttCurrenciesEnabled;
+    const isInternationalEnabled =
+      this.props.user.international && this.props.user.isInttCurrenciesEnabled;
 
     return (
       <div
         class={classList(
           'Input Input--Currency',
-          this.props.fullDisplay && 'Input--Currency--fullDisplay',
           (!isInternationalEnabled || this.props.disabled) && 'Input--noMargin'
         )}
       >

@@ -14,14 +14,10 @@ import { fetchStates } from 'merchant/modules/states';
 import {
   getKeysSeparatedByPipe,
   isAddressValid,
-  isValidZipcodeCountryWise,
   isValidGSTIN,
 } from 'rzp/utils/rzp-utils';
 import AddressEntry from 'merchant/components/AddressEntry.js';
 import { validateGSTIN } from 'rzp/utils/validators';
-import Countries from 'common/countries.json';
-
-const CountryNames = Object.keys(Countries);
 
 function validate(values) {
   let errors = {};
@@ -46,7 +42,6 @@ const selector = formValueSelector('newCustomer');
       shipping_same_as_billing: selector(state, 'shipping_same_as_billing'),
       add_customer_address: selector(state, 'add_customer_address'),
       add_shipping_address: selector(state, 'add_shipping_address'),
-      user: state.session.user,
     };
   },
   {
@@ -63,26 +58,10 @@ const selector = formValueSelector('newCustomer');
 export default class AddCustomer extends Component {
   constructor() {
     super(...arguments);
-
-    this.DEFAULT_COUNTRY = 'India';
-
-    if (this.props.user.isInttCurrenciesEnabled) {
-      this.state = {
-        errors: null,
-        editedBillingAddress: {
-          country: this.DEFAULT_COUNTRY,
-        },
-        states: Countries[this.DEFAULT_COUNTRY],
-        billingAddressStates: Countries[this.DEFAULT_COUNTRY],
-        shippingAddressStates: Countries[this.DEFAULT_COUNTRY],
-        screenIndex: 0, // Start on screen 1.
-      };
-    } else {
-      this.state = {
-        errors: null,
-        screenIndex: 0, // Start on screen 1.
-      };
-    }
+    this.state = {
+      errors: null,
+      screenIndex: 0, // Start on screen 1.
+    };
   }
 
   componentWillMount() {
@@ -90,26 +69,24 @@ export default class AddCustomer extends Component {
       this.props.initialize(this.props.customer);
     }
 
-    if (!this.props.user.isInttCurrenciesEnabled) {
-      let promises = [this.props.fetchStates()];
-      this.setState({
-        isLoading: true,
-      });
+    let promises = [this.props.fetchStates()];
+    this.setState({
+      isLoading: true,
+    });
 
-      Promise.all(promises)
-        .then(([states]) => {
-          this.setState({
-            isLoading: false,
-            states: states && states.data && states.data.items,
-          });
-        })
-        .catch(({ errors }) => {
-          this.props.showNotification({
-            type: 'error',
-            message: errors,
-          });
+    Promise.all(promises)
+      .then(([states]) => {
+        this.setState({
+          isLoading: false,
+          states: states && states.data && states.data.items,
         });
-    }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   }
 
   componentDidMount() {
@@ -244,7 +221,6 @@ export default class AddCustomer extends Component {
     if (shipping_same_as_billing) {
       this.setState({
         editedShippingAddress: this.state.editedBillingAddress,
-        shippingAddressStates: this.state.billingAddressStates,
       });
     }
   };
@@ -270,31 +246,6 @@ export default class AddCustomer extends Component {
    * @param {Object} address
    */
   onBillingAddressChange = address => {
-    if (this.props.user.isInttCurrenciesEnabled) {
-      let updatedAddress = {
-        editedBillingAddress: address,
-        billingAddressStates: Countries[address.country],
-      };
-
-      if (!address.country) {
-        updatedAddress = {
-          editedBillingAddress: {
-            ...address,
-            state: null,
-          },
-          billingAddressStates: [],
-        };
-      }
-
-      if (address.country !== this.state.editedBillingAddress.country) {
-        updatedAddress.editedBillingAddress.state = null;
-      }
-
-      this.setState(updatedAddress);
-
-      return;
-    }
-
     this.setState({
       editedBillingAddress: address,
     });
@@ -306,32 +257,6 @@ export default class AddCustomer extends Component {
    */
   onShippingAddressChange = address => {
     this.uncheckShippingSameAsBilling();
-
-    if (this.props.user.isInttCurrenciesEnabled) {
-      let updatedAddress = {
-        editedShippingAddress: address,
-        shippingAddressStates: Countries[address.country],
-      };
-
-      if (!address.country) {
-        updatedAddress = {
-          editedShippingAddress: {
-            ...address,
-            state: null,
-          },
-          shippingAddressStates: [],
-        };
-      }
-
-      if (address.country !== this.state.editedShippingAddress.country) {
-        updatedAddress.editedShippingAddress.state = null;
-      }
-
-      this.setState(updatedAddress);
-
-      return;
-    }
-
     this.setState({
       editedShippingAddress: address,
     });
@@ -359,9 +284,6 @@ export default class AddCustomer extends Component {
       shipping_same_as_billing,
       add_customer_address: address,
       add_shipping_address,
-
-      showGSTN,
-      user: { isInttCurrenciesEnabled },
     } = this.props;
 
     const {
@@ -369,8 +291,6 @@ export default class AddCustomer extends Component {
       states = [],
       editedBillingAddress,
       editedShippingAddress,
-      billingAddressStates,
-      shippingAddressStates,
     } = this.state;
 
     let screens = [];
@@ -384,14 +304,10 @@ export default class AddCustomer extends Component {
       !(name || _email || contact),
 
       // Screen 2
-      !isAddressValid(editedBillingAddress, {
-        zipcode: isValidZipcodeCountryWise,
-      }),
+      !isAddressValid(editedBillingAddress),
 
       // Screen 3
-      !isAddressValid(editedShippingAddress, {
-        zipcode: isValidZipcodeCountryWise,
-      }),
+      !isAddressValid(editedShippingAddress),
     ];
 
     // Ask Address only when this is not an Edit Modal or the `add_customer_address` prop is true.
@@ -399,15 +315,6 @@ export default class AddCustomer extends Component {
       typeof this.props.askAddress === 'undefined'
         ? !(customer && customer.id) || address
         : this.props.askAddress;
-
-    let extraProps = {};
-
-    if (isInttCurrenciesEnabled) {
-      extraProps = {
-        countries: CountryNames,
-        maxLengthZipcode: 8,
-      };
-    }
 
     // Add Screen 1
     const screen1 = (
@@ -454,20 +361,18 @@ export default class AddCustomer extends Component {
                   />
                 </div>
               </div>
-              {showGSTN && (
-                <div class="form-group">
-                  <label>GSTIN</label>
-                  <div>
-                    <Field
-                      name="gstin"
-                      placeholder="e.g 22AAAAA0000A1Z5"
-                      component={InputField}
-                      class="form-control"
-                      validate={[validateGSTIN]}
-                    />
-                  </div>
+              <div class="form-group">
+                <label>GSTIN</label>
+                <div>
+                  <Field
+                    name="gstin"
+                    placeholder="e.g 22AAAAA0000A1Z5"
+                    component={InputField}
+                    class="form-control"
+                    validate={[validateGSTIN]}
+                  />
                 </div>
-              )}
+              </div>
               {askAddress && (
                 <div class="form-group">
                   <div class="rzpCheckbox" style={{ marginTop: '4px' }}>
@@ -544,11 +449,10 @@ export default class AddCustomer extends Component {
           </div>
           <AddressEntry
             onChange={this.onBillingAddressChange}
-            states={isInttCurrenciesEnabled ? billingAddressStates : states}
+            states={states}
             address={editedBillingAddress}
+            hideCountry={true}
             showDisabledCountry={true}
-            hideCountry={!isInttCurrenciesEnabled}
-            {...extraProps}
           />
           <div class="row CustomerCreationModal__bottom">
             <div class="col-md-12">
@@ -636,11 +540,10 @@ export default class AddCustomer extends Component {
           </div>
           <AddressEntry
             onChange={this.onShippingAddressChange}
-            states={isInttCurrenciesEnabled ? shippingAddressStates : states}
+            states={states}
             address={editedShippingAddress}
+            hideCountry={true}
             showDisabledCountry={true}
-            hideCountry={!isInttCurrenciesEnabled}
-            {...extraProps}
           />
           <div class="row">
             <div class="col-md-12">
@@ -676,5 +579,4 @@ export default class AddCustomer extends Component {
 AddCustomer.defaultProps = {
   onSave: () => {},
   saveLabel: 'Save',
-  showGSTN: true,
 };

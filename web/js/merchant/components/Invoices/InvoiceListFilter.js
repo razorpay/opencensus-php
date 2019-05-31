@@ -1,9 +1,8 @@
-import React from 'react';
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-export default ({ type, isInttCurrenciesEnabled, ...otherProps }) => {
+export default ({ type, ...otherProps }) => {
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
@@ -75,21 +74,6 @@ export default ({ type, isInttCurrenciesEnabled, ...otherProps }) => {
           class="form-control input-sm"
         />
       </div>
-
-      {isInttCurrenciesEnabled && (
-        <div class="form-group list-filter-item">
-          <label>Currency Type</label>
-          <Field
-            name="international"
-            component="select"
-            class="form-control input-sm"
-          >
-            <option value="">All Currencies</option>
-            <option value="0">Indian</option>
-            <option value="1">International</option>
-          </Field>
-        </div>
-      )}
     </ListFilter>
   );
 };
