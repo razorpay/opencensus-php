@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const SUBSCRIPTION_ID           = 'subscription_id';
     const BATCH_ID                  = 'batch_id';
+    const IDEMPOTENCY_KEY           = 'idempotency_key';
     const CUSTOMER_ID               = 'customer_id';
     const CUSTOMER_NAME             = 'customer_name';
     const CUSTOMER_EMAIL            = 'customer_email';
@@ -311,6 +312,7 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
         self::INTERNAL_REF,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $visible = [
@@ -365,6 +367,7 @@ class Entity extends Base\PublicEntity
         self::TAXABLE_AMOUNT,
         self::USER_ID,
         self::INTERNAL_REF,
+        self::IDEMPOTENCY_KEY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -416,6 +419,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::CREATED_AT,
+        self::IDEMPOTENCY_KEY,
     ];
 
     /**

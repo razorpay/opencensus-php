@@ -103,6 +103,35 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceLinkWithIdempotentId()
+    {
+        $response = $this->startTest();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals('B24Y8gjypHOVOm', $response['idempotency_key']);
+
+        $this->assertEquals('B24Y8gjypHOVOm', $invoice['idempotency_key']);
+    }
+
+    public function testCreateInvoiceLinkWithIdempotentIdAndGetTheResponse()
+    {
+        $attributes = [
+            'receipt'         => '1',
+            'order_id'        => $this->fixtures->create('order')->getId(),
+            'idempotency_key' => 'B24Y8gjypHOVOm',
+            'type'            => 'link'
+        ];
+
+        $this->fixtures->create('invoice', $attributes);
+
+        $response = $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($response['receipt'], $invoice['receipt']);
+    }
+
     public function testCreateInvoiceWithExistingCustomer()
     {
         $response = $this->startTest();

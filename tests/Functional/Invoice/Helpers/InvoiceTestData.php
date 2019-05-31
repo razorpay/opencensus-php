@@ -117,6 +117,88 @@ return [
             ],
         ],
     ],
+
+    'testCreateInvoiceLinkWithIdempotentId' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'        => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                    'gstin'   => '29ABCDE1234L1Z1',
+                ],
+                'type'            => 'link',
+                'view_less'       => 1,
+                'amount'          => 100,
+                'currency'        => "INR",
+                'description'     => 'Any Description about paymentLink',
+                'partial_payment' => "0",
+                'idempotency_key' => 'B24Y8gjypHOVOm'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => null,
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'status'           => 'issued',
+                'sms_status'       => 'pending',
+                'email_status'     => 'pending',
+                'view_less'        => true,
+                'amount'           => 100,
+                'currency'         => 'INR',
+                'payment_id'       => null,
+                'type'             => 'link',
+                'idempotency_key'  => 'B24Y8gjypHOVOm'
+            ],
+        ],
+    ],
+
+    'testCreateInvoiceLinkWithIdempotentIdAndGetTheResponse' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'        => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'type'            => 'link',
+                'view_less'       => 1,
+                'amount'          => 100,
+                'currency'        => "INR",
+                'description'     => 'Any Description about paymentLink',
+                'partial_payment' => "0",
+                'idempotency_key' => 'B24Y8gjypHOVOm'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '1',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '1234567890',
+                    'name'    => 'test',
+                ],
+                'status'           => 'issued',
+                'sms_status'       => 'sent',
+                'email_status'     => 'sent',
+                'view_less'        => true,
+                'amount'           => 100000,
+                'currency'         => 'INR',
+                'payment_id'       => null,
+                'type'             => 'link',
+                'idempotency_key'  => 'B24Y8gjypHOVOm'
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithNewCustomerAndAddress' => [
         'request' => [
             'url' => '/invoices',

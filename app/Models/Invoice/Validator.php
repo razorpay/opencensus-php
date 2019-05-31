@@ -99,6 +99,7 @@ class Validator extends Base\Validator
         Entity::SUPPLY_STATE_CODE        => 'filled|string|custom',
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
+        Entity::IDEMPOTENCY_KEY          => 'sometimes|alpha_num'
     ];
 
     //
@@ -163,6 +164,7 @@ class Validator extends Base\Validator
         Entity::SUPPLY_STATE_CODE        => 'filled|string|custom',
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
+        Entity::IDEMPOTENCY_KEY          => 'sometimes|alpha_num'
     ];
 
     protected static $editDraftRules = [

@@ -54,6 +54,7 @@ class Repository extends Base\Repository
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
         self::EXPAND . '.*'       => 'filled|string|in:payments,payments.card,user',
+        Entity::IDEMPOTENCY_KEY   => 'sometimes|alpha_num',
     ];
 
     protected $appFetchParamRules = [
@@ -386,6 +387,13 @@ class Repository extends Base\Repository
                     ->where(Entity::BATCH_ID, $batchId)
                     ->whereIn(Entity::RECEIPT, $receipts)
                     ->get();
+    }
+
+    public function fetchByIdempotentKey(string $idempotentKey)
+    {
+        return $this->newQuery()
+                    ->where(Entity::IDEMPOTENCY_KEY, '=', $idempotentKey)
+                    ->first();
     }
 
     public function getNonDraftInvoiceCountByBatchId(string $batchId): int
