@@ -141,6 +141,18 @@ class InvoiceTest extends TestCase
         $this->assertEquals('cust_100000customer', $response['customer_id']);
     }
 
+    public function testCreateBulkInvoices()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        // once idempotent PR merges
+        // https://github.com/razorpay/api/pull/11830
+        // then assert with idempotent key
+
+    }
+
     public function testCreateInvoiceWithCustomerIdAndDetails()
     {
         $this->startTest();

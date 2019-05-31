@@ -23,6 +23,19 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoice);
     }
 
+    /**
+     *  Route to create bulk invoices.
+     *  Currently it is used by batch Service
+     */
+    public function createInvoiceBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createBulkInvoice($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getInvoice(string $id)
     {
         $input = Request::all();
