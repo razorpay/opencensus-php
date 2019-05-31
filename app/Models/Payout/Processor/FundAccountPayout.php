@@ -37,14 +37,4 @@ class FundAccountPayout extends Base
     {
         $this->channel = Settlement\Channel::YESBANK;
     }
-
-    protected function handleInsufficientFunds(BadRequestException $ex, Payout\Entity $payout)
-    {
-        if ($payout->toBeQueued() === false)
-        {
-            throw $ex;
-        }
-
-        $payout->setStatus(Payout\Status::QUEUED);
-    }
 }
