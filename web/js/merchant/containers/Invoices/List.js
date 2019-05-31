@@ -125,6 +125,7 @@ export default class InvoicesListContainer extends ListContainer {
             onSubmit={this.search}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
+            isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
           />
 
           <Alert type={status.type} message={status.message} />
@@ -154,24 +155,24 @@ export default class InvoicesListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-        <div class="btn-toolbar pull-right">
-          <DocsLink url="https://razorpay.com/docs/invoices/"/>
-          <ShowWhen
-            additionalCondition={user =>
-              (mode !== 'live' || !user.isRejected) &&
-              user.isAllowedEdit('invoices')
-            }
-          >
-            <NavLink
-              to="/invoices/new"
-              class="btn btn-primary"
-              onClick={this.triggerHotjar}
+          <div class="btn-toolbar pull-right">
+            <DocsLink url="https://razorpay.com/docs/invoices/" />
+            <ShowWhen
+              additionalCondition={user =>
+                (mode !== 'live' || !user.isRejected) &&
+                user.isAllowedEdit('invoices')
+              }
             >
-              <i class="i i-plus" />
-              <span>Create Invoice</span>
-            </NavLink>
-          </ShowWhen>
-        </div>
+              <NavLink
+                to="/invoices/new"
+                class="btn btn-primary"
+                onClick={this.triggerHotjar}
+              >
+                <i class="i i-plus" />
+                <span>Create Invoice</span>
+              </NavLink>
+            </ShowWhen>
+          </div>
         </HeaderAction>
 
         {content}
