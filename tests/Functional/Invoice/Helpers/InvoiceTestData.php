@@ -330,6 +330,111 @@ return [
         ],
     ],
 
+    'testCreateBulkInvoices' => [
+        'request' => [
+            'url'     => '/invoices/bulk',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'receipt'    => '00000000000001',
+                    'customer'   => [
+                        'email'   => 'test1@razorpay.com',
+                        'contact' => '9999999999',
+                        'name'    => 'test1',
+                        'gstin'   => '29ABCDE1234L1Z1',
+                    ],
+                    'line_items' => [
+                        [
+                            'name'        => 'Some item name',
+                            'description' => 'Some item description',
+                            'amount'      => 100000,
+                            'hsn_code'    => '00110022'
+                        ],
+                    ],
+                ],
+                [
+                    'receipt'    => '00000000000002',
+                    'customer'   => [
+                        'email'   => 'test2@razorpay.com',
+                        'contact' => '9999999998',
+                        'name'    => 'test2',
+                        'gstin'   => '29ABCDE1234L1Z2',
+                    ],
+                    'line_items' => [
+                        [
+                            'name'        => 'Some item name',
+                            'description' => 'Some item description',
+                            'amount'      => 100000,
+                            'hsn_code'    => '00110022'
+                        ],
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'receipt'          => '00000000000001',
+                        'customer_details' => [
+                            'email'   => 'test1@razorpay.com',
+                            'contact' => '9999999999',
+                            'name'    => 'test1',
+                            'gstin'   => '29ABCDE1234L1Z1',
+                        ],
+                        'line_items'       => [
+                            [
+                                'name'        => 'Some item name',
+                                'description' => 'Some item description',
+                                'amount'      => 100000,
+                                'quantity'    => 1,
+                                'type'        => 'invoice',
+                                'hsn_code'    => '00110022'
+                            ]
+                        ],
+                        'status'           => 'issued',
+                        'sms_status'       => 'pending',
+                        'email_status'     => 'pending',
+                        'view_less'        => true,
+                        'amount'           => 100000,
+                        'currency'         => 'INR',
+                        'payment_id'       => null,
+                        'type'             => 'invoice',
+                    ],
+                    [
+                        'receipt'          => '00000000000002',
+                        'customer_details' => [
+                            'email'   => 'test2@razorpay.com',
+                            'contact' => '9999999998',
+                            'name'    => 'test2',
+                            'gstin'   => '29ABCDE1234L1Z2',
+                        ],
+                        'line_items'       => [
+                            [
+                                'name'        => 'Some item name',
+                                'description' => 'Some item description',
+                                'amount'      => 100000,
+                                'quantity'    => 1,
+                                'type'        => 'invoice',
+                                'hsn_code'    => '00110022'
+                            ]
+                        ],
+                        'status'           => 'issued',
+                        'sms_status'       => 'pending',
+                        'email_status'     => 'pending',
+                        'view_less'        => true,
+                        'amount'           => 100000,
+                        'currency'         => 'INR',
+                        'payment_id'       => null,
+                        'type'             => 'invoice',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithCustomerIdAndDetails' => [
         'request' => [
             'url' => '/invoices',

@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
     const BATCH_ID                  = 'batch_id';
     const IDEMPOTENCY_KEY           = 'idempotency_key';
     const CUSTOMER_ID               = 'customer_id';
+    const IDEMPOTENCY_KEY           = 'idempotency_key';
     const CUSTOMER_NAME             = 'customer_name';
     const CUSTOMER_EMAIL            = 'customer_email';
     const CUSTOMER_CONTACT          = 'customer_contact';

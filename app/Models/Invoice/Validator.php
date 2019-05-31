@@ -71,6 +71,11 @@ class Validator extends Base\Validator
      */
     const NOTIFY_INVOICES_OF_BATCH = 'notify_invoices_of_batch';
 
+    /**
+     * Rate limit on items sending for bulk invoice create.
+     */
+    const MAX_BULK_INVOICES_LIMIT = 15;
+
     protected static $createRules = [
         Entity::SMS_NOTIFY               => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY             => 'sometimes|boolean',
@@ -1040,6 +1045,24 @@ class Validator extends Base\Validator
                 [
                     'currency' => $currency
                 ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of invoice creation in Bulk Route
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkInvoiceCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_INVOICES_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Max Limit of Bulk Invoice is ' . self::MAX_BULK_INVOICES_LIMIT,
+                null,
+                null
+            );
         }
     }
 }
