@@ -1751,8 +1751,8 @@ class Service extends Base\Service
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($token);
 
         $data = [
-            'contact'   => $input['contact'],
-            'provider'  => $input['provider']
+            Entity::CONTACT   => $input[Entity::CONTACT],
+            Entity::PROVIDER  => $input[Entity::PROVIDER]
         ];
 
         $this->app['cache']->put($key, $data, $cacheTtl);

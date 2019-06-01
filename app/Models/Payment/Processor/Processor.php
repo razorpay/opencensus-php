@@ -447,16 +447,19 @@ class Processor
         $this->verifyCardlessEmiEnabled();
 
         if ((empty($input['ott']) === false) or
-            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
         {
-            return;
+            return null;
         }
 
         $merchant = $payment->merchant;
 
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
-        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+        $terminal = $this->repo
+                         ->terminal
+                         ->getTerminalForProviderAndMerchant($input[Payment\Entity::PROVIDER],
+                                                             $merchant[Merchant\Entity::ID]);
 
         $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
@@ -467,8 +470,8 @@ class Processor
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                'method'   => 'cardless_emi',
-                                'provider' => $input['provider']
+                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
+                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
                             ]),
                 'method'  => 'POST',
                 'content' => $input,

@@ -176,6 +176,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const PROVIDER              = 'provider';
+
     const OFFER_ID              = 'offer_id';
     const SETTLED_BY            = 'settled_by';
 
@@ -815,7 +817,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if ($input[Entity::METHOD] === Method::CARDLESS_EMI)
         {
-            $this->setAttribute(self::WALLET, $input['provider']);
+            $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
         }
     }
 
