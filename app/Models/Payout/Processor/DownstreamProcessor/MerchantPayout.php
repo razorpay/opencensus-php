@@ -3,14 +3,13 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
 use RZP\Models\Payout\Entity;
-use RZP\Models\Base\PublicEntity;
 
 class MerchantPayout extends Foundation\Base
 {
-    public function process(Entity $payout, PublicEntity $ftaAccount)
+    public function setChannel(Entity $payout)
     {
-        $this->createTransaction($payout);
+        $channel = $payout->merchant->getChannel();
 
-        $this->createFundTransferAttempt($payout, $ftaAccount);
+        $payout->setChannel($channel);
     }
 }

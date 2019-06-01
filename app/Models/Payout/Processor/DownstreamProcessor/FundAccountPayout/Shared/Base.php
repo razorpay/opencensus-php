@@ -7,14 +7,16 @@ use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Payout\Processor\DownstreamProcessor\Foundation;
+use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
-class Base extends Foundation\Base
+class Base extends FundAccountPayout\Base
 {
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
         try
         {
+            $this->setChannel($payout);
+
             $this->createTransaction($payout);
 
             //

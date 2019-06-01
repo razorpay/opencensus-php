@@ -29,12 +29,4 @@ class FundAccountPayout extends Base
 
         return $payout;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function setChannel($input = [])
-    {
-        $this->channel = Settlement\Channel::YESBANK;
-    }
 }

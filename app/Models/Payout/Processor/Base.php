@@ -60,11 +60,6 @@ abstract class Base extends BaseCore
     protected $fees = 0;
 
     /**
-     * @var string|null
-     */
-    protected $channel;
-
-    /**
      * @var Balance\Entity
      */
     protected $balance;
@@ -79,8 +74,6 @@ abstract class Base extends BaseCore
         $this->preValidations();
 
         $this->setPayoutBalance($input);
-
-        $this->setChannel($input);
 
         $payout = $this->repo->transaction(function () use ($input)
         {
@@ -140,6 +133,11 @@ abstract class Base extends BaseCore
                                                                                                             $payout,
                                                                                                             $this->fundTransferDestination);
 
+                        // Ensure that the queued flag in the payout entity is not set.
+                        // If it is set, it's going to cause issues since the downstream processor
+                        // doesn't throw an error on insufficient funds if queued flag is set.
+                        // If it doesn't throw an error, we'll mark it created without actually
+                        // creating any transaction or FTA.
                         $downstreamProcessor->process();
 
                         $payout->setStatus(Payout\Status::CREATED);
@@ -250,8 +248,6 @@ abstract class Base extends BaseCore
 
         $payout->customer()->associate($this->customer);
 
-        $payout->setChannel($this->channel);
-
         $this->fetchAndAssociatePayoutAccount($payout, $input);
 
         $this->setMethod($payout);
@@ -291,45 +287,6 @@ abstract class Base extends BaseCore
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
         return $payout;
-    }
-
-    protected function createFundTransferAttemptEntity(Payout\Entity $payout)
-    {
-        $ftaInput = [
-            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
-            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
-            FundTransferAttempt\Entity::MODE      => $payout->getMode(),
-            FundTransferAttempt\Entity::NARRATION => $payout->getNarration(),
-        ];
-
-        $ftaAccount = $this->fundTransferDestination;
-        $ftaCore    = new FundTransferAttempt\Core;
-
-        $ftaAccountEntity = $ftaAccount->getEntity();
-
-        switch ($ftaAccountEntity)
-        {
-            case E::BANK_ACCOUNT:
-                $ftaCore->createWithBankAccount($payout, $ftaAccount, $ftaInput);
-                break;
-
-            case E::VPA:
-                $ftaCore->createWithVpa($payout, $ftaAccount, $ftaInput);
-                break;
-
-            case E::CARD:
-                $ftaCore->createWithCard($payout, $ftaAccount, $ftaInput);
-                break;
-
-            default:
-                throw new Exception\InvalidArgumentException(
-                    'Payout fta destination entity is invalid. '. $ftaAccount->getEntity(),
-                    [
-                        'payout_id'             => $payout->getId(),
-                        'fta_account_id'        => $ftaAccount->getId(),
-                        'fta_account_entity'    => $ftaAccountEntity,
-                    ]);
-        }
     }
 
     protected function preValidations()
@@ -396,6 +353,4 @@ abstract class Base extends BaseCore
 
         $payout->setMethod($method);
     }
-
-    abstract protected function setChannel($input = []);
 }

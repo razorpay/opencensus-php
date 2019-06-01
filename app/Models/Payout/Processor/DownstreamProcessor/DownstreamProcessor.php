@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Settlement\Channel;
 
 class DownstreamProcessor
 {
@@ -35,9 +36,9 @@ class DownstreamProcessor
 
         if (snake_case($this->type) === 'fund_account_payout')
         {
-            $accountType = $this->getAccountTypeForFundAccount();
+            $accountType = $this->getAccountTypeForFundTransfer();
 
-            $channel = $this->payout->getChannel();
+            $channel = $this->getChannelForFundTransfer();
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
@@ -45,9 +46,15 @@ class DownstreamProcessor
         return new $subProcessor;
     }
 
-    protected function getAccountTypeForFundAccount()
+    protected function getAccountTypeForFundTransfer()
     {
         // TODO: Use constants and add logic once balance and account related changes are done for RBL.
         return 'shared';
+    }
+
+    protected function getChannelForFundTransfer()
+    {
+        // TODO: Add logic once balance and account related changes are done for RBL.
+        return Channel::YESBANK;
     }
 }

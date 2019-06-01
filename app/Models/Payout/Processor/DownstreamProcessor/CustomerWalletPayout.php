@@ -7,18 +7,11 @@ use RZP\Models\Pricing;
 use RZP\Models\Customer;
 use RZP\Models\Adjustment;
 use RZP\Models\Payout\Entity;
-use RZP\Models\Base\PublicEntity;
+use RZP\Models\Settlement\Channel;
 
 class CustomerWalletPayout extends Foundation\Base
 {
     const DEBIT_WALLET_FEE_ADJUSTMENT_DESCRIPTION  = 'Debit wallet withdrawal fee amount';
-
-    public function process(Entity $payout, PublicEntity $ftaAccount)
-    {
-        $this->createTransaction($payout);
-
-        $this->createFundTransferAttempt($payout, $ftaAccount);
-    }
 
     public function createTransaction(Entity $payout)
     {
@@ -48,6 +41,13 @@ class CustomerWalletPayout extends Foundation\Base
             // Create merchant adjustment to deduct fee from merchant balance.
             $this->createAdjustmentForFee($payout, $fee);
         }
+    }
+
+    public function setChannel(Entity $payout)
+    {
+        $channel = Channel::YESBANK;
+
+        $payout->setChannel($channel);
     }
 
     protected function getCustomerTransactionData(Entity $payout)

@@ -6,11 +6,21 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Base extends BaseCore
 {
+    public function process(Entity $payout, PublicEntity $ftaAccount)
+    {
+        $this->setChannel($payout);
+
+        $this->createTransaction($payout);
+
+        $this->createFundTransferAttempt($payout, $ftaAccount);
+    }
+
     public function createTransaction(Entity $payout)
     {
         list ($txn, $feeSplit) = (new Transaction\Processor\Payout($payout))->createTransaction();
