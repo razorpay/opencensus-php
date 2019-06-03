@@ -669,10 +669,7 @@ class Service extends Base\Service
     {
         if (empty($token) === true)
         {
-            throw new BadRequestError(
-                'Token context not present in the request',
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
-                400);
+            throw new AuthorizationException('Token context not present in the request');
         }
 
         $token = (new JWTParser())->parse((string) $token);
