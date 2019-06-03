@@ -48,7 +48,7 @@ class Validator extends Base\Validator
             Entity::TYPE                 => 'string',
             Entity::FLOW                 => 'string',
             Entity::MODE                 => 'string|' . $modes,
-            Entity::AMOUNT               => 'integer|min:1|max:100000',
+            Entity::AMOUNT               => 'integer|min:1|max:10000000',
             Entity::CURRENCY             => 'string|in:INR',
             Entity::DESCRIPTION          => 'string|regex:/^[a-zA-Z0-9\.\ ]{1,}$/',
             Entity::GATEWAY              => 'string',

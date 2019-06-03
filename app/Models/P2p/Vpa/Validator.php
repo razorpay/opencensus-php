@@ -23,7 +23,7 @@ class Validator extends Base\Validator
     {
         $rules = [
             Entity::DEVICE_ID            => 'string',
-            Entity::HANDLE               => 'string|regex:/^[a-z0-9]{3,50}$/',
+            Entity::HANDLE               => 'string|regex:/^[a-z0-9\.]{3,50}$/',
             Entity::GATEWAY_DATA         => 'array',
             Entity::USERNAME             => 'string|regex:/^[A-Za-z0-9\.\-]{3,200}$/',
             Entity::BANK_ACCOUNT_ID      => 'string',
