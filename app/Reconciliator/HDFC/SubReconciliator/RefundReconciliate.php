@@ -230,7 +230,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $terminalId = trim(str_replace("'", '', $terminalId));
         }
 
-        $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
+        $isCybersource = Reconciliate::isCybersourceTerminalId($terminalId);
 
         return $isCybersource;
     }

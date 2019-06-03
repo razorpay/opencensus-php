@@ -49,7 +49,7 @@ class DeviceFailureTest extends TestCase
         {
             $this->assertArraySubset([
                 'code'          => 'BAD_REQUEST_ERROR',
-                'description'   => 'The id provided does not exist'
+                'description'   => 'Invalid handle is passed in the request'
             ], $error);
         });
 
@@ -109,6 +109,24 @@ class DeviceFailureTest extends TestCase
                 'action'        => 'initiateVerification'
             ], $error);
         });
+
+        $helper->initiateGetToken();
+    }
+
+    public function testUnauthorizedAuthToken()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $this->fixtures->device->setAuthToken('null');
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'BAD_REQUEST_ERROR',
+                'description'   => 'The api secret provided is invalid',
+                'action'        => 'initiateVerification'
+            ], $error);
+        }, 401);
 
         $helper->initiateGetToken();
     }

@@ -116,7 +116,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::PAYER_BANK_ACCOUNT,
         self::VIRTUAL_ACCOUNT_ID,
-        self::VIRTUAL_ACCOUNT,
     ];
 
     protected $appends = [
@@ -174,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::MODE,
         self::BANK_REFERENCE,
+        self::PAYER_BANK_ACCOUNT,
     ];
 
     protected static $sign = 'bt';
@@ -254,6 +254,14 @@ class Entity extends Base\PublicEntity
     public function setPublicBankReferenceAttribute(array & $array)
     {
         $array[self::BANK_REFERENCE] = $array[self::UTR];
+    }
+
+    public function setPublicPayerBankAccountAttribute(array & $array)
+    {
+        if ($this->getPayerBankAccountId() !== null)
+        {
+            $array[self::PAYER_BANK_ACCOUNT] = $this->payerBankAccount->toArrayPublic();
+        }
     }
 
     // -------------------------- Mutators -------------------------------------
@@ -340,7 +348,7 @@ class Entity extends Base\PublicEntity
             return 'Razorpay';
         }
 
-        return IFSC::getBankName($ifsc);
+        return IFSC::getBankName(strtoupper($ifsc));
     }
 
     public function getPayerName()

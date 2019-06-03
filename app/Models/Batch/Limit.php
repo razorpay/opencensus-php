@@ -32,6 +32,7 @@ class Limit
         Type::ENTITY_MAPPING                        => 10000,
         Type::AUTH_LINK                             => 10000,
         Type::RECURRING_CHARGE                      => 10000,
+        Type::SUB_MERCHANT                          => 5000,
     ];
 
     /**

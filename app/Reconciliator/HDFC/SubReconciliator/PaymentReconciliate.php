@@ -2,12 +2,13 @@
 
 namespace RZP\Reconciliator\HDFC\SubReconciliator;
 
-use RZP\Reconciliator\HDFC\Reconciliate;
+use RZP\Gateway\Hdfc;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Cybersource;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\HDFC\Reconciliate;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
@@ -32,6 +33,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_UTGST                      = 'utgst_amt';
     const COLUMN_ARN                        = 'arn_no';
     const COLUMN_AUTH_CODE                  = 'approv_code';
+    const COLUMN_SEQUENCE_NUMBER            = 'sequence_number';
 
     const COLUMN_TERMINAL_NUMBER            = 'terminal_number';
     const COLUMN_GATEWAY_TRANSACTION_ID     = 'tran_id';
@@ -518,6 +520,40 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return trim(str_replace("'", '', $columnAuthCode));
     }
 
+    protected function getGatewayTransactionId(array $row)
+    {
+        $gatewayPaymentId = null;
+
+        if (empty($row[self::COLUMN_GATEWAY_TRANSACTION_ID]) === false)
+        {
+            $gatewayPaymentId = $row[self::COLUMN_GATEWAY_TRANSACTION_ID];
+        }
+
+        if (empty($gatewayPaymentId) === true)
+        {
+            return null;
+        }
+
+        return trim(str_replace("'", '', $gatewayPaymentId));
+    }
+
+    protected function getSequenceNumber(array $row)
+    {
+        $sequenceNumber = null;
+
+        if (empty($row[self::COLUMN_SEQUENCE_NUMBER]) === false)
+        {
+            $sequenceNumber = $row[self::COLUMN_SEQUENCE_NUMBER];
+        }
+
+        if (empty($sequenceNumber) === true)
+        {
+            return null;
+        }
+
+        return trim(str_replace("'", '', $sequenceNumber));
+    }
+
     protected function isCybersource(array $row)
     {
         $terminalId = null;
@@ -529,7 +565,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $terminalId = trim(str_replace("'", '', $terminalId));
         }
 
-        $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
+        $isCybersource = Reconciliate::isCybersourceTerminalId($terminalId);
 
         return $isCybersource;
     }
@@ -581,5 +617,128 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_DOMESTIC_AMOUNT]);
         }
+    }
+
+    /**
+     * For HDFC, sometimes the capture request getting timed out, so
+     * we need to create a capture entry if it is not present.
+     *
+     * @param array $row
+     */
+    protected function createGatewayCapturedEntityIfApplicable(array $row)
+    {
+        if ($this->shouldCreateGatewayEntity($row) === false)
+        {
+            return;
+        }
+
+        $attributes = [
+            Hdfc\Entity::PAYMENT_ID             => $this->payment->getId(),
+            Hdfc\Entity::ACTION                 => Hdfc\Payment\Action::CAPTURE,
+            Hdfc\Fields::GATEWAY_TRANSACTION_ID => $this->getGatewayTransactionId($row),
+            Hdfc\Fields::AMOUNT_FULL            => $this->getReconPaymentAmount($row) / 100,
+            Hdfc\Fields::STATUS                 => Hdfc\Payment\Status::CAPTURED,
+            Hdfc\Fields::RESULT                 => strtoupper(Hdfc\Payment\Status::CAPTURED),
+            Hdfc\Fields::AUTH                   => $this->getAuthCode($row),
+        ];
+
+        if ($this->isDataAvailableForCaptureEntity($attributes) === false)
+        {
+            return;
+        }
+
+        // 'ref' is optional, that is why added after the previous check
+        $attributes[Hdfc\Fields::REF] = $this->getSequenceNumber($row);
+
+        try
+        {
+            $gatewayPayment = (new Hdfc\Gateway)->createGatewayEntity($attributes);
+
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'info_code'             => Base\InfoCode::RECON_GATEWAY_ENTITY_CREATED,
+                    'payment_id'            => $this->payment->getId(),
+                    'gateway_payment_id'    => $gatewayPayment->getId(),
+                    'gateway'               => $this->gateway,
+                ]);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => Base\InfoCode::RECON_GATEWAY_ENTITY_CREATION_FAILED,
+                    'payment_id'    => $this->payment->getId(),
+                    'attributes'    => $attributes,
+                    'error'         => $ex->getMessage(),
+                    'gateway'       => $this->gateway,
+                ]);
+        }
+    }
+
+    protected function shouldCreateGatewayEntity($row)
+    {
+        if (($this->isCybersource($row) === true) or
+            ($this->isBharatQrIsg($row) === true))
+        {
+            return false;
+        }
+
+        try
+        {
+            // Check if gateway entity already exists
+            $entity = $this->repo->hdfc->retrieveCapturedOrAcceptedCaptureFailures($this->payment->getId());
+
+            if (empty($entity) === false)
+            {
+                // Entity exists
+                return false;
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'   => 'Exception encountered while trying to fetch HDFC captured gateway entity.',
+                    'exception' => $ex->getMessage(),
+                ]);
+
+            //
+            // We do not know if the entity exists or not, so
+            // we should not create new entity in such case.
+            //
+           return false;
+        }
+
+        return true;
+    }
+
+    protected function isDataAvailableForCaptureEntity($attributes)
+    {
+        //
+        // If any attribute value is null/empty, return false
+        // bcoz we need these attributes to create the entity.
+        //
+        foreach ($attributes as $attribute => $value)
+        {
+            if (empty($value) === true)
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'info_code'  => Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_ENTITY_CREATION,
+                        'message'    => 'Required attribute is null. Can not create gateway entity.',
+                        'attribute'  => $attribute,
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => $this->gateway,
+                    ]);
+
+                return false;
+            }
+        }
+
+        return true;
     }
 }

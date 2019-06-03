@@ -13,6 +13,11 @@ use RZP\Models\Customer;
  */
 trait HasCustomer
 {
+    public function hasCustomer(): bool
+    {
+        return true;
+    }
+
     public function associateCustomer(Customer\Entity $handle)
     {
         return $this->customer()->associate($handle);
@@ -20,7 +25,7 @@ trait HasCustomer
 
     public function scopeCustomer(BuilderEx $query, Customer\Entity $customer)
     {
-        return $query->where(self::BANK, $customer->getId());
+        return $query->where(self::CUSTOMER_ID, $customer->getId());
     }
 
     public function customer()

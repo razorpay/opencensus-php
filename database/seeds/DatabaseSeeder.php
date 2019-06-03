@@ -1169,6 +1169,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
         $this->createNetbankingSbiTerminal();
+        $this->createNetbankingYesbTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1178,6 +1179,7 @@ class DatabaseSeeder extends Seeder
         $this->createSbibuddyTerminals();
         $this->createOpenwalletTerminals();
         $this->createVodafoneMpesaTerminal();
+        $this->createNetbankingSibTerminal();
         $this->createNetbankingRblTerminal();
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
@@ -1674,6 +1676,23 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingYesbTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_YESB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_YESB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'RAZORPAY',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
     protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -1756,6 +1775,24 @@ class DatabaseSeeder extends Seeder
                 'recurring'           => 0,
                 'created_at'          => time(),
                 'updated_at'          => time(),
+            )
+        );
+    }
+
+    protected function createNetbankingSibTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_SIB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_SIB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_sib',
+                'gateway_secure_secret' => Crypt::encrypt('test_key'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
             )
         );
     }

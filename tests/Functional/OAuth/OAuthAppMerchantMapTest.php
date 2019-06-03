@@ -121,6 +121,13 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetConnectedApplications()
+    {
+        $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX']);
+
+        $this->startTest();
+    }
+
     protected function getMapping(string $mode)
     {
         return $this->getLastEntity(

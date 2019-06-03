@@ -58,7 +58,7 @@ class Validator extends Base\Core
                                                             "/^Corporation Bank - FEBA - RazorPay Recon File "
                                                             . "(0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}/"
                                                          ],
-
+        RequestProcessor\Base::NETBANKING_SIB     => ["/^Daily Transaction Details/"],
         RequestProcessor\Base::AXIS               => [
                                                         "/^Axis Estatement [0-9]{2}-"
                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
@@ -86,7 +86,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::EMANDATE_AXIS      => ["/axis e[\-]?mandate debit file/i"],
         RequestProcessor\Base::NETBANKING_ALLAHABAD => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
-        ];
+        RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY => ["/^Flexmoney Recon and Refund files/"],
+    ];
 
     const GATEWAY_BODY_REGEX = [
         RequestProcessor\Base::OLAMONEY               => ["/^Please find settlement report for /"],
@@ -95,6 +96,7 @@ class Validator extends Base\Core
                                                             "/Kindly find attached below the MIS for "
                                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
                                                          ],
+        RequestProcessor\Base::NETBANKING_SIB         => ["/^Please find attached the text file which contains the daily transaction details/"],
         RequestProcessor\Base::NETBANKING_ICICI       => ["/Please find below the payment report for the day./"],
         RequestProcessor\Base::NETBANKING_FEDERAL     => [
                                                             "/^MIS Report File Dated "
@@ -128,21 +130,24 @@ class Validator extends Base\Core
                                                             . "for transactions done/"
                                                           ],
         RequestProcessor\Base::UPI_HULK                => ["/PFA transaction details for the date "
-                                                            . "of  [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"]
+                                                            . "of  [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
+        RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY  => ["/Attached are the recon and refund files for [0-9]{2}\/[0-9]{2}\/[0-9]{2}/"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
-        RequestProcessor\Base::OLAMONEY           => 1,
-        RequestProcessor\Base::NETBANKING_AXIS    => 1,
-        RequestProcessor\Base::NETBANKING_FEDERAL => 1,
-        RequestProcessor\Base::AXIS               => 1,
-        RequestProcessor\Base::FIRST_DATA         => 1,
-        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
-        RequestProcessor\Base::HITACHI            => 1,
-        RequestProcessor\Base::UPI_AXIS           => 2,
-        RequestProcessor\Base::UPI_ICICI          => 1,
-        RequestProcessor\Base::PAYZAPP            => 1,
-        RequestProcessor\Base::AIRTEL             => 1,
+        RequestProcessor\Base::OLAMONEY                 => 1,
+        RequestProcessor\Base::NETBANKING_AXIS          => 1,
+        RequestProcessor\Base::NETBANKING_FEDERAL       => 1,
+        RequestProcessor\Base::AXIS                     => 1,
+        RequestProcessor\Base::FIRST_DATA               => 1,
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK        => 1,
+        RequestProcessor\Base::HITACHI                  => 1,
+        RequestProcessor\Base::UPI_AXIS                 => 2,
+        RequestProcessor\Base::UPI_ICICI                => 1,
+        RequestProcessor\Base::PAYZAPP                  => 1,
+        RequestProcessor\Base::AIRTEL                   => 1,
+        RequestProcessor\Base::NETBANKING_SIB           => 1,
+        RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY   => 2,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -279,6 +284,23 @@ class Validator extends Base\Core
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::NETBANKING_AXIS);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingSibEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_SIB);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::NETBANKING_SIB);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_SIB);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
@@ -482,6 +504,19 @@ class Validator extends Base\Core
             RequestProcessor\Base::EMANDATE_AXIS);
 
         return $validSubject;
+    }
+
+    public function validateCardlessEmiEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY);
+
+        return ($validSubject and $validBody);
     }
 
     /**

@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const UPI           = 'upi';
     const ACTION        = 'action';
     const DATA          = 'data';
+    const CONTEXT       = 'context';
 
     /**
      * Generator for refreshed at
@@ -54,12 +55,17 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function hasCustomer(): bool
+    {
+        return false;
+    }
+
     public function toArrayBag()
     {
         return (new ArrayBag($this->attributesToArray()));
     }
 
-    public function setPublicEntityAttribute(array & $array)
+    public function getP2pEntityName()
     {
         $entity = $this->entity;
 
@@ -68,6 +74,11 @@ class Entity extends Base\PublicEntity
             $entity = substr($this->entity, 4);
         }
 
-        $array[self::ENTITY] = $entity;
+        return $entity;
+    }
+
+    public function setPublicEntityAttribute(array & $array)
+    {
+        $array[self::ENTITY] = $this->getP2pEntityName();
     }
 }

@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
 use Excel;
+use Mockery;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
@@ -241,6 +243,42 @@ class UpiSbiGatewayTest extends TestCase
         $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
         $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountVpa()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountVpaFailed()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountInvalidInput()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+        
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateAccountVpaGatewayError()
+    {
+        Gateway::$upiValidateVpaTerminals['test'] = ['100UPIMgateSbi'];
+
+        $this->ba->publicAuth();
 
         $this->startTest();
     }

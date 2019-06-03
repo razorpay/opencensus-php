@@ -29,6 +29,9 @@ class Entity extends Base\Entity
     const PAYEE_ACCOUNT_NUMBER         = 'payee_account_number';
     const PAYEE_IFSC_CODE              = 'payee_ifsc_code';
 
+    /************** Input Properties ************/
+    const TRANSACTION                  = 'transaction';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_upi_transaction';
@@ -87,21 +90,10 @@ class Entity extends Base\Entity
         Entity::TRANSACTION_ID,
         Entity::DEVICE_ID,
         Entity::HANDLE,
-        Entity::GATEWAY_DATA,
-        Entity::ACTION,
-        Entity::STATUS,
-        Entity::NETWORK_TRANSACTION_ID,
-        Entity::GATEWAY_TRANSACTION_ID,
-        Entity::GATEWAY_REFERENCE_ID,
         Entity::RRN,
-        Entity::REF_ID,
+        Entity::NETWORK_TRANSACTION_ID,
         Entity::GATEWAY_ERROR_CODE,
         Entity::GATEWAY_ERROR_DESCRIPTION,
-        Entity::RISK_SCORES,
-        Entity::PAYER_ACCOUNT_NUMBER,
-        Entity::PAYER_IFSC_CODE,
-        Entity::PAYEE_ACCOUNT_NUMBER,
-        Entity::PAYEE_IFSC_CODE,
         Entity::CREATED_AT,
     ];
 
@@ -144,6 +136,18 @@ class Entity extends Base\Entity
         Entity::PAYEE_IFSC_CODE              => 'string',
         Entity::CREATED_AT                   => 'int',
         Entity::UPDATED_AT                   => 'int',
+    ];
+
+    protected static $unsetCreateInput = [
+        Entity::TRANSACTION,
+    ];
+
+    protected static $unsetEditInput = [
+        Entity::DEVICE_ID,
+        Entity::HANDLE,
+        Entity::ACTION,
+        Entity::TRANSACTION,
+        Entity::TRANSACTION_ID,
     ];
 
     protected function generateRefId($input)

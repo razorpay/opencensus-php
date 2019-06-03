@@ -11,6 +11,7 @@ use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Base extends Core
 {
@@ -62,6 +63,8 @@ class Base extends Core
     const NETBANKING_CANARA      = 'NetbankingCanara';
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
+    const NETBANKING_SIB         = 'NetbankingSib';
+    const NETBANKING_YESB        = 'NetbankingYesb';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
     const NETBANKING_IDFC        = 'NetbankingIdfc';
@@ -91,6 +94,7 @@ class Base extends Core
     const UPI_HULK               = 'UpiHulk';
     const UPI_AXIS               = 'UpiAxis';
     const AMEX                   = 'Amex';
+    const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -113,6 +117,8 @@ class Base extends Core
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
+        self::NETBANKING_SIB         => ['epayments@sib.co.in'],
+        self::NETBANKING_YESB        => [''],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
         self::NETBANKING_CANARA      => [],
@@ -144,6 +150,7 @@ class Base extends Core
         self::UPI_HULK               => [],
         self::AMEX                   => [],
         self::ISG                    => [],
+        self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -169,6 +176,8 @@ class Base extends Core
         Gateway::NETBANKING_AXIS        => self::NETBANKING_AXIS,
         Gateway::NETBANKING_IDFC        => self::NETBANKING_IDFC,
         Gateway::NETBANKING_FEDERAL     => self::NETBANKING_FEDERAL,
+        Gateway::NETBANKING_SIB         => self::NETBANKING_SIB,
+        Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
         Gateway::NETBANKING_EQUITAS     => self::NETBANKING_EQUITAS,
         Gateway::NETBANKING_BOB         => self::NETBANKING_BOB,
         Gateway::NETBANKING_VIJAYA      => self::NETBANKING_VIJAYA,
@@ -223,6 +232,9 @@ class Base extends Core
         Gateway::WALLET_OLAMONEY        => self::OLAMONEY,
         Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
+        Gateway::CARDLESS_EMI           => [
+            CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
+        ],
     ];
 
     /**

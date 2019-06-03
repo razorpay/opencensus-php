@@ -2,9 +2,16 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use Mail;
+use Queue;
+
+use RZP\Gateway\Hitachi;
+use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\Capture as CaptureJob;
 use RZP\Exception\GatewayTimeoutException;
+use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -15,6 +22,11 @@ class PaysecureGatewayTest extends TestCase
 
     protected $paymentEntityGateway = 'hitachi';
 
+    const HITACHI_MID = 'sample_hitachi_mid';
+    const HITACHI_TID = 'sample_hitachi_tid';
+
+    protected $terminal;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
@@ -23,15 +35,15 @@ class PaysecureGatewayTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
-        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+        $this->terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' =>
                 [
                     'non_recurring' => '1',
                     'recurring_3ds' => '1',
                     'recurring_non_3ds' => '1'
                 ],
-            'gateway_merchant_id' => 'sample_hitachi_mid',
-            'gateway_terminal_id' => 'sample_hitachi_tid',
+            'gateway_merchant_id' => self::HITACHI_MID,
+            'gateway_terminal_id' => self::HITACHI_TID,
         ]);
 
         $merchantDetailArray = [
@@ -45,6 +57,8 @@ class PaysecureGatewayTest extends TestCase
             'business_name'               => 'rzp_test',
             'business_registered_city'    => 'Bangalore',
         ];
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Ménage12345678901234567890']);
 
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
@@ -71,6 +85,19 @@ class PaysecureGatewayTest extends TestCase
 
     public function testPaymentAuthViaRedirect()
     {
+        // Assert that the terminal owner does not contain non-alpha numeric characters
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_terminal_owner_name')
+                {
+                    $this->assertEquals('Mnage12345678901234567', $content);
+
+                    $this->assertLessThanOrEqual(23, strlen($content));
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
@@ -175,7 +202,15 @@ class PaysecureGatewayTest extends TestCase
 
         $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
 
-        $this->assertNotEmpty($gatewayPayment);
+        $this->assertArraySelectiveEquals(
+            [
+                Entity::STATUS        => 'failure',
+                Entity::ACTION        => 'authorize',
+                Entity::ERROR_CODE    => '406',
+                Entity::ERROR_MESSAGE => 'Not Authenticated',
+            ],
+            $gatewayPayment
+        );
     }
 
     public function testCallbackFailure()
@@ -212,6 +247,51 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testCallbackAutoCapture()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opaI',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'hitachi',
+                'enabled' => 1,
+                'type' =>
+                    [
+                        'non_recurring' => '1',
+                        'recurring_3ds' => '1',
+                        'recurring_non_3ds' => '1'
+                    ],
+                'gateway_merchant_id' => 'sample_hitachi_mid',
+                'gateway_terminal_id' => 'sample_hitachi_tid',
+                'mode'                => 2,
+            ]);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'        => 'captured',
+                'amount'        => 50000,
+                'method'        => 'card',
+                'gateway'       => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertEquals(1, count($this->getDbEntities('hitachi')));
+
+        $this->assertEquals($paysecure['payment_id'], $hitachi['payment_id']);
+
+        $this->assertEquals($payment['terminal_id'], 'AqdfGh5460opaI');
+    }
+
     public function testAuthorizeFailure()
     {
         $this->mockServerContentFunction(
@@ -226,6 +306,44 @@ class PaysecureGatewayTest extends TestCase
                     $content['errorcode'] = '57';
 
                     $content['errormsg'] = 'DECLINED (cardholder not allowed)';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'  => 'failed',
+                'amount'  => 50000,
+                'method'  => 'card',
+                'gateway' => $this->paymentEntityGateway,
+            ],
+            $payment
+        );
+    }
+
+    public function testAuthorizeFailureWithNoErrorMessage()
+    {
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'authorize')
+                {
+                    unset($content['apprcode']);
+
+                    $content['status'] = 'failure';
+
+                    $content['errorcode'] = '57';
+
+                    unset($content['errormsg']);
                 }
             }
         );
@@ -319,7 +437,7 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'action'     => 'authorize',
+                'action'     => 'capture',
                 'pRespCode'  => '00',
                 'payment_id' => substr($authResponse['razorpay_payment_id'],4),
             ],
@@ -327,11 +445,96 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testCaptureDispatchedOnTimeout()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $authResponse = $this->testPaymentAuthViaRedirect();
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                // Hitachi's advice uses the same action response as that of callback
+                if ($action === 'callback')
+                {
+                    throw new GatewayTimeoutException('Timed out');
+                }
+            },
+            'hitachi'
+        );
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return ($payment['id'] === $data['payment']['public_id']);
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureDispatchedOnFailure()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $authResponse = $this->testPaymentAuthViaRedirect();
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                // Hitachi's advice uses the same action response as that of callback
+                if ($action === 'callback')
+                {
+                    $decoded = json_decode($content, true);
+
+                    $decoded['pRespCode'] = 'Z3';
+
+                    $content = json_encode($decoded);
+                }
+            },
+            'hitachi'
+        );
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return ($payment['id'] === $data['payment']['public_id']);
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
     public function testPaymentRefundViaHitachi()
     {
         $this->testPaymentSettledViaHitachi();
 
         $payment = $this->getDbLastEntityToArray('payment');
+
+        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        $this->gateway = 'hitachi';
+
+        $this->mockServerContentFunction(
+            function(& $content, $action)
+            {
+                if ($action === 'validateRefund') {
+                    $sentMid = $content[Hitachi\RequestFields::MERCHANT_ID];
+                    $sentTid = $content[Hitachi\RequestFields::TERMINAL_ID];
+
+                    $this->assertEquals(self::HITACHI_MID, $sentMid);
+
+                    $this->assertEquals(self::HITACHI_TID, $sentTid);
+                }
+            }
+        );
 
         $this->refundPayment('pay_' . $payment['id'], 1000);
 
@@ -345,9 +548,59 @@ class PaysecureGatewayTest extends TestCase
                 'payment_id' => $payment['id'],
                 'gateway'    => 'hitachi',
                 'is_scrooge' => true,
+                'status'     => 'processed',
             ],
             $refund
         );
+
+        //temporary: make gateway paysecure for other testcases
+        $this->gateway = 'paysecure';
+    }
+
+    public function testPaymentRefundWithMissingRrnViaHitachi()
+    {
+        $this->testPaymentSettledViaHitachi();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->clearMockFunction();
+
+        //temporary: make gateway hitachi until paysecure has not been added to scrooge
+        $this->gateway = 'hitachi';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pStatus'] = 'Error';
+            }
+
+            if ($action === 'refund')
+            {
+                unset($content['pRRN']);
+            }
+
+        });
+
+        $this->refundPayment('pay_' . $payment['id'], 1000);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        // Hitachi refunds goes via Scrooge
+        // So, we can only check the refund entity, since the other things are handled at Scrooge
+        $this->assertArraySelectiveEquals(
+            [
+                'amount'     => 1000,
+                'payment_id' => $payment['id'],
+                'gateway'    => 'hitachi',
+                'is_scrooge' => true,
+                'status'     => 'processed',
+            ],
+            $refund
+        );
+
+        //temporary: make gateway paysecure for other testcases
+        $this->gateway = 'paysecure';
     }
 
     public function testSoapFault()
@@ -402,6 +655,61 @@ class PaysecureGatewayTest extends TestCase
                 ]
             ],
             $verify
+        );
+    }
+
+    // For terminal mode "purchase", capture would not be called
+    // And for this payments, we send the advice message for late auth payments
+    // when the verify exception is caught.
+    // This test case covers if this advice message is called. If the advise message is not called,
+    // the hitachi entity would not exist.
+    public function testLateAuthorizedViaPurchaseTerminal()
+    {
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 2,
+
+            ]
+        );
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'authorize')
+                {
+                    throw new GatewayTimeoutException('Timed out');
+                }
+            }
+        );
+
+        $data = $this->testData['testAuthorizeFailed'];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $data = $this->testData['testVerifyFailedPayment'];
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment->getPublicId());
+        });
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertEquals($payment['id'], $hitachi['payment_id']);
+
+        $this->assertNotNull($hitachi['pRRN']);
+
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 3,
+            ]
         );
     }
 

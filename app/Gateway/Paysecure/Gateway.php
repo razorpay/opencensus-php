@@ -93,8 +93,6 @@ class Gateway extends Base\Gateway
             $request = $this->getRedirectRequest($response);
 
             $this->traceGatewayPaymentRequest($request, $input);
-
-            return $request;
         }
         // Iframe flow
         else
@@ -114,9 +112,9 @@ class Gateway extends Base\Gateway
             $request['content'] = View::make('gateway.paysecurePinpadForm')
                                       ->with('data', $this->getPinpadData($response))
                                       ->render();
-
-            return $request;
         }
+
+        return $request;
     }
 
     /**
@@ -145,7 +143,8 @@ class Gateway extends Base\Gateway
         }
 
         // Check payment status
-        if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE], [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
+        if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE],
+                [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
         {
             $traceData = [
                 'gateway'    => $this->gateway,
@@ -198,7 +197,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $internalErrorCode,
                 $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_MESSAGE] ?? null,
                 $traceData
             );
         }
@@ -229,19 +228,18 @@ class Gateway extends Base\Gateway
 
         $parsed = parse_url($redirectUrl);
 
+        $content = $this->getMappedAttributes($response);
+
         if (isset($parsed['query']) === true)
         {
             parse_str($parsed['query'], $parsed);
 
             $hkey = $parsed[Fields::ACCU_HKEY];
 
-            $content = [
-                Entity::GATEWAY_TRANSACTION_ID => $response[Fields::TRAN_ID ],
-                Entity::HKEY                   => $hkey,
-            ];
-
-            $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
+            $content[Entity::HKEY] = $hkey;
         }
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
     }
 
     protected function getRedirectRequest($response)
@@ -488,14 +486,15 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $response[Fields::ERROR_CODE],
-                $response[Fields::ERROR_MESSAGE],
+                $response[Fields::ERROR_MESSAGE] ?? null,
                 [
                     'gateway'    => $this->gateway,
                     'payment_id' => $this->input['payment']['id'],
                     'command'    => $action,
                 ],
                 null,
-                Action::AUTHENTICATE
+                Action::AUTHENTICATE,
+                true
             );
         }
     }

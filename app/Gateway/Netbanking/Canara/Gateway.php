@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->createRequest($content);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
 
         return $request;
     }
@@ -100,11 +100,13 @@ class Gateway extends Base\Gateway
 
     protected function getRequestData($input)
     {
-        $paymentEntity = $input['payment'];
+        $merchantName = substr($input['merchant']->getFilteredDba(), 0, 8);
 
-        $date = $this->getFormatedDate($paymentEntity[Payment\Entity::CREATED_AT]);
+        $date = $this->getFormatedDate($input['payment'][Payment\Entity::CREATED_AT]);
 
-        $amount = $this->formatAmount($paymentEntity[Payment\Entity::AMOUNT] / 100);
+        $amount = $this->formatAmount($input['payment'][Payment\Entity::AMOUNT] / 100);
+
+        $fee = $this->formatAmount($input['payment_fee'] / 100);
 
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
@@ -114,10 +116,12 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY                      => Constants::CURRENCY,
             RequestFields::AMOUNT                        => $amount,
             RequestFields::SERVICE_CHARGE                => 0,
-            RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
+            RequestFields::PAYMENT_ID                    => $input['payment'][Payment\Entity::ID],
             RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::DATE                          => $date,
+            RequestFields::FLDREF1                       => $merchantName,
+            RequestFields::FLDREF2                       => $fee,
         ];
 
         return $data;
@@ -408,5 +412,21 @@ class Gateway extends Base\Gateway
     public function formatAmount($amount)
     {
         return number_format($amount, 2, '.', '');
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+        array $content = [])
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'data'       => $content
+            ]);
     }
 }

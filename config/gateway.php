@@ -31,6 +31,7 @@ return [
         'isg',
         'kotak',
         'mobikwik',
+        'netbanking_sib',
         'netbanking_hdfc',
         'netbanking_idfc',
         'netbanking_bob',
@@ -50,6 +51,7 @@ return [
         'netbanking_canara',
         'netbanking_equitas',
         'netbanking_sbi',
+        'netbanking_yesb',
         'paytm',
         'sharp',
         'upi_airtel',
@@ -96,6 +98,7 @@ return [
     'mock_kotak'                  => env('KOTAK_MOCK'),
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
+    'mock_netbanking_sib'         => env('NETBANKING_SIB_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_vijaya'      => env('NETBANKING_VIJAYA_MOCK'),
@@ -116,6 +119,7 @@ return [
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
+    'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -250,25 +254,31 @@ return [
     ],
 
     'mpi_blade' => [
-        'cert_dir_name'               => env('BLADE_CERT_DIR_NAME'),
+        'cert_dir_name'                         => env('BLADE_CERT_DIR_NAME'),
 
-        'live_visa_certificate'       => env('BLADE_GATEWAY_LIVE_VISA_CERTIFICATE'),
-        'live_visa_key'               => env('BLADE_GATEWAY_LIVE_VISA_PEM'),
+        'live_visa_certificate'                 => env('BLADE_GATEWAY_LIVE_VISA_CERTIFICATE'),
+        'live_visa_key'                         => env('BLADE_GATEWAY_LIVE_VISA_PEM'),
 
-        'live_mastercard_certificate' => env('BLADE_GATEWAY_LIVE_MASTERCARD_CERTIFICATE'),
-        'live_mastercard_key'         => env('BLADE_GATEWAY_LIVE_MASTERCARD_PEM'),
+        'live_mastercard_certificate'           => env('BLADE_GATEWAY_LIVE_MASTERCARD_CERTIFICATE'),
+        'live_mastercard_key'                   => env('BLADE_GATEWAY_LIVE_MASTERCARD_PEM'),
 
-        'live_mastercard_acq_bin'     => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
-        'live_visa_acq_bin'           => env('BLADE_LIVE_VISA_ACQ_BIN'),
+        'live_mastercard_acq_bin'               => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
+        'live_visa_acq_bin'                     => env('BLADE_LIVE_VISA_ACQ_BIN'),
 
-        'live_mastercard_merchant_id' => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID'),
-        'live_visa_merchant_id'       => env('BLADE_LIVE_VISA_MERCHANT_ID'),
+        'first_data' => [
+            'live_mastercard_acq_bin'           => env('BLADE_LIVE_FIRSTDATA_MASTERCARD_ACQ_BIN'),
+            'live_visa_acq_bin'                 => env('BLADE_LIVE_FIRSTDATA_VISA_ACQ_BIN'),
+            'live_merchant_id'                  => env('BLADE_LIVE_FIRSTDATA_MERCHANT_ID'),
+        ],
 
-        'test_acq_bin'                => env('BLADE_TEST_ACQ_BIN'),
-        'test_merchant_id'            => env('BLADE_TEST_MERCHANT_ID'),
-        'gateway_access_code'         => env('BLADE_TEST_ACCESS_CODE'),
-        'gateway_merchant_id2'        => env('BLADE_TEST_MERCHANT_ID2'),
-        'gateway_terminal_password'   => env('BLADE_TEST_TERMINAL_PASSWORD'),
+        'live_mastercard_merchant_id'           => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID'),
+        'live_visa_merchant_id'                 => env('BLADE_LIVE_VISA_MERCHANT_ID'),
+
+        'test_acq_bin'                          => env('BLADE_TEST_ACQ_BIN'),
+        'test_merchant_id'                      => env('BLADE_TEST_MERCHANT_ID'),
+        'gateway_access_code'                   => env('BLADE_TEST_ACCESS_CODE'),
+        'gateway_merchant_id2'                  => env('BLADE_TEST_MERCHANT_ID2'),
+        'gateway_terminal_password'             => env('BLADE_TEST_TERMINAL_PASSWORD'),
     ],
 
     'ebs' => [
@@ -306,6 +316,11 @@ return [
             'test_hash_secret'  => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
             'bank_code'         => env('FSS_GATEWAY_BANK_CODE', '12345678'),
             'terminal_password' => env('FSS_GATEWAY_TERMINAL_PASSWORD', 'password'),
+        ],
+        'sbin' => [
+            'terminal_password' => env('FSS_SBI_TEST_GATEWAY_TERMINAL_PASSWORD', 'password'),
+            'test_hash_secret'  => env('FSS_SBI_TEST_HASH_SECRET', 'secret'),
+            'merchant_id'       => env('FSS_SBI_TEST_GATEWAY_MERCHANT_ID', '123')
         ]
     ],
 
@@ -556,7 +571,6 @@ return [
 
     'netbanking_canara' => [
         'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
-        //TODO add these values for live mode
         'key'                    => env('NETBANKING_CANARA_GATEWAY_KEY'),
         'IV'                     => env('NETBANKING_CANARA_GATEWAY_IV'),
     ],
@@ -715,7 +729,12 @@ return [
     ],
 
     'mozart' => [
-        'upi_airtel_test_hash_secret' => env('UPI_AIRTEL_TEST_HASH_SECRET'),
+        'upi_airtel'     => [
+            'test_hash_secret' => env('UPI_AIRTEL_TEST_HASH_SECRET')
+        ],
+        'netbanking_yesb' => [
+            'gateway_secure_secret' => env('NETBANKING_YESB_GATEWAY_SECURE_SECRET')
+        ]
     ],
 
     'sharp' => [

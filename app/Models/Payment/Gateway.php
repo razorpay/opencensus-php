@@ -42,6 +42,7 @@ class Gateway
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
+    const NETBANKING_SIB         = 'netbanking_sib';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
@@ -61,6 +62,7 @@ class Gateway
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
+    const NETBANKING_YESB        = 'netbanking_yesb';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -99,6 +101,7 @@ class Gateway
     const ACQUIRER_RATN         = 'ratn';
     const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
+    const ACQUIRER_SBIN         = 'sbin';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -144,7 +147,7 @@ class Gateway
         self::FIRST_DATA   => [self::ACQUIRER_ICIC],
         self::AMEX         => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI   => [self::ACQUIRER_ICIC],
-        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
+        self::CARD_FSS     => [self::ACQUIRER_FSS, self::ACQUIRER_BARB, self::ACQUIRER_SBIN],
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
@@ -188,6 +191,7 @@ class Gateway
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
         self::PAYTM             => self::PAYTM,
+        self::AMEX              => self::AMEX,
     ];
 
     /**
@@ -224,6 +228,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
         self::NETBANKING_CORPORATION,
+        self::HITACHI,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -268,18 +273,28 @@ class Gateway
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::ATOM,
-        Payment\Gateway::SHARP
+        Payment\Gateway::SHARP,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
-    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates
+    // Bank such as Netbanking Canara enforces to send fee in request.
+    const FEE_IN_AUTHORIZE_GATEWAYS = [
+      Payment\Gateway::NETBANKING_CANARA
+    ];
+
+    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates-new
     const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::YESB,
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
         IFSC::KKBK,
+        IFSC::INDB,
+        IFSC::ICIC,
+        IFSC::USFB,
+        IFSC::IBKL,
         Netbanking::PUNB_R,
-        Netbanking::BARB_R
+        Netbanking::BARB_R,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -525,6 +540,8 @@ class Gateway
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
+        Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -596,6 +613,7 @@ class Gateway
             self::BILLDESK,
             self::EBS,
             self::ATOM,
+            self::NETBANKING_SIB,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
@@ -615,6 +633,7 @@ class Gateway
             self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
+            self::NETBANKING_YESB,
         ],
 
         //
@@ -743,6 +762,7 @@ class Gateway
         self::AMEX,
         self::WALLET_OPENWALLET,
         self::HITACHI,
+        self::CARDLESS_EMI,
     ];
 
     /**
@@ -773,6 +793,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+            Network::RUPAY,
         ],
         self::HDFC => [
             Network::MC,
@@ -913,6 +934,7 @@ class Gateway
         self::ACQUIRER_AMEX => Network::AMEX,
         self::ACQUIRER_RATN => IFSC::RATN,
         self::ACQUIRER_BARB => IFSC::BARB,
+        self::ACQUIRER_SBIN => IFSC::SBIN,
     ];
 
     /**
@@ -961,6 +983,7 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
+        self::CARDLESS_EMI,
     ];
 
     public static $captureVerifyEnabled = [
@@ -978,11 +1001,14 @@ class Gateway
         self::UPI_MINDGATE,
         self::UPI_ICICI,
         self::BAJAJ,
+        self::AMEX,
+        self::ISG,
     ];
 
     public static $captureVerifyQREnabledGateways = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::ISG
     ];
 
     /**
@@ -1227,6 +1253,7 @@ class Gateway
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
+        IFSC::SIBL         => Gateway::NETBANKING_SIB,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
@@ -1239,6 +1266,7 @@ class Gateway
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
+        IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1291,6 +1319,7 @@ class Gateway
         IFSC::YESB,
         IFSC::CITI,
         IFSC::SBIN,
+        IFSC::BARB,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -1339,7 +1368,6 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
-        Gateway::CYBERSOURCE,
         Gateway::ENACH_RBL,
     ];
 

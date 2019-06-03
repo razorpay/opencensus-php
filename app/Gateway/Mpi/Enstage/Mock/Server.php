@@ -51,7 +51,10 @@ class Server extends Base\Mock\Server
 
         $this->content($response, Action::OTP_GENERATE);
 
-        $response[Field::MESSAGE_HASH] = $this->getOtpSentResponseMessageHash($response);
+        if ($response[Field::RESPONSE_CODE] === '000')
+        {
+            $response[Field::MESSAGE_HASH] = $this->getOtpSentResponseMessageHash($response);
+        }
 
         unset($response[Field::SECRET]);
 

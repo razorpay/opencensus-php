@@ -36,6 +36,10 @@ class Server extends Base\Mock\Server
 
         return $response;
     }
+    public function advice($input)
+    {
+        return $this->callback($input);
+    }
 
     public function getBharatQrCallback($qrCodeId, $ref = null, $input = [])
     {
@@ -94,6 +98,8 @@ class Server extends Base\Mock\Server
         $content = json_decode($input, true);
 
         $this->validateActionInput($content, __FUNCTION__);
+
+        $this->content($content, 'validateRefund');
 
         $response = $this->getRefundResponse($content);
 

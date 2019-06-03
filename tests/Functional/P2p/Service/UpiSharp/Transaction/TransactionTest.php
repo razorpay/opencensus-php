@@ -3,9 +3,12 @@
 namespace RZP\Tests\P2p\Service\UpiSharp\Transaction;
 
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
+use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
 class TransactionTest extends TestCase
 {
+    use TransactionTrait;
+
     public function testInitiatePay()
     {
         $helper = $this->getTransactionHelper();
@@ -62,11 +65,7 @@ class TransactionTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
-        $helper->initiateCollect();
-
-        $transaction = $this->fixtures->getDbLastTransaction();
-
-        $this->fixtures->switchDeviceSet(self::DEVICE_2);
+        $transaction = $this->createCollectIncomingTransaction();
 
         $helper->withSchemaValidated();
 
@@ -77,15 +76,11 @@ class TransactionTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
-        $helper->withSchemaValidated();
-
-        $helper->initiateCollect();
-
-        $transaction = $this->fixtures->getDbLastTransaction();
-
-        $this->fixtures->switchDeviceSet(self::DEVICE_2);
+        $transaction = $this->createCollectIncomingTransaction();
 
         $request = $helper->initiateReject($transaction->getPublicId());
+
+        $helper->withSchemaValidated();
 
         $response = $helper->rejectTransaction($request['callback']);
     }

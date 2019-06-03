@@ -4,17 +4,6 @@ namespace RZP\Models\Tax\Gst;
 
 class Gst
 {
-    const TAX_SLABS = [
-        0,
-        10,
-        25,
-        300,
-        500,
-        1200,
-        1800,
-        2800,
-    ];
-
     /**
      * Tax slabs values multipled by 10000. I.e. tax slab values in UI look like 0.1%, 2.5%, 3% and so on.
      */

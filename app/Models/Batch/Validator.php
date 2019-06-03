@@ -4,12 +4,16 @@ namespace RZP\Models\Batch;
 
 use App;
 use RZP\Base;
+use Carbon\Carbon;
 use RZP\Models\User;
 use RZP\Models\Invoice;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -130,7 +134,7 @@ class Validator extends Base\Validator
 
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici,netbanking_hdfc,upi_mindgate',
+        Entity::SUB_TYPE             => 'required|string|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
@@ -203,7 +207,7 @@ class Validator extends Base\Validator
     protected static $subMerchantCreateRules = [
         Entity::TYPE           => 'required|in:sub_merchant',
         Entity::NAME           => 'filled|string|max:255',
-        Entity::FILE           => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE           => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         ME::AUTO_SUBMIT        => 'filled|boolean',
         ME::AUTOFILL_DETAILS   => 'filled|boolean',
         ME::AUTO_ACTIVATE      => 'filled|boolean',
@@ -297,9 +301,32 @@ class Validator extends Base\Validator
         Header::UPI_MINDGATE_PAY                  => 'sometimes|nullable|in:0,1',
     ];
 
+    protected static $sendMailRules = [
+        Entity::BATCH            => 'required|array|custom',
+        Entity::BUCKET_TYPE      => 'required|string',
+        Entity::OUTPUT_FILE_PATH => 'required|string',
+        Entity::DOWNLOAD_FILE    => 'required|boolean',
+        Entity::SETTINGS         => 'sometimes|array|nullable',
+    ];
+
+    protected static $sendMailBatchRules = [
+        Entity::TYPE        => 'required|custom',
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+    ];
+
+    protected function validateBatch($attribute, $value)
+    {
+        $this->validateInput('sendMailBatch', $value);
+    }
+
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
+    }
+
+    protected function validateSubType($attribute, $value)
+    {
+        Type::validateSubType($value);
     }
 
     protected function validatePayoutMode($attribute, $value)
@@ -321,11 +348,43 @@ class Validator extends Base\Validator
         }
         else if ($this->entity->isProcessing() === true)
         {
+            if ($this->shouldRetryInProcessingBatch() === true)
+            {
+                return;
+            }
+
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
                 Entity::STATUS,
                 $this->entity->toArray());
         }
+    }
+
+    protected function shouldRetryInProcessingBatch()
+    {
+        // For stuck batches, we want to enable retry based on some conditions.
+        $time = Carbon::now()->getTimestamp();
+
+        $type = $this->entity->getType();
+
+        if ((isset(Type::$retryInProcessingBatchTypes[$type]) === true) and
+            ($this->entity->getUpdatedAt() < ($time - Type::$retryInProcessingBatchTypes[$type])))
+        {
+            $updatedAt = $this->entity->getUpdatedAt();
+
+            $this->getTrace()->info(
+                TraceCode::RETRY_ALLOWED_FOR_IN_PROCESSING_BATCH,
+                [
+                    'batch_id'          => $this->entity->getId(),
+                    'type'              => $this->entity->getType(),
+                    'processed_count'   => $this->entity->getProcessedCount(),
+                    'last_updated_at'   => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->format('M d,Y h:i:s A'),
+                ]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

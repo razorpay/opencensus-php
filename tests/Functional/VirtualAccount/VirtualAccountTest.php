@@ -180,6 +180,11 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateVirtualAccountWithBankAccountNameOption()
+    {
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountValidationFailure()
     {
         // This is to check that validation rules on receiver attribute should stop after the first validation failure.
@@ -1153,6 +1158,35 @@ class VirtualAccountTest extends TestCase
         });
 
         $this->payVirtualAccount($virtualAccount['id']);
+    }
+
+    public function testWebhookVirtualAccountCreditedForBharatQr()
+    {
+        $this->createWebhook(
+            [
+                'events' => [
+                    'virtual_account.credited' => '1',
+                ]
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('virtual_account.credited', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            // Virtual account credited webhook contains bank_tranfer
+            // entity if applicable, but never bharat_qr entity.
+            $this->assertArrayNotHasKey('bharat_qr', $data['event']['payload']);
+
+            return true;
+        });
+
+        $this->testFetchPaymentsForVirtualAccountForQrCode();
     }
 
     public function testVirtualAccountMarkedClosed()

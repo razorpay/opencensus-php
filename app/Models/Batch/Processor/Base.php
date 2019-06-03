@@ -24,7 +24,9 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait { parseExcelSheets as parentParseExcelSheets; }
+    use FileHandlerTrait {
+        parseExcelSheets as parentParseExcelSheets;
+    }
 
     /**
      * Lock wait timeout for batch entity
@@ -52,15 +54,15 @@ class Base extends BaseModel\Core
     const SIGNED_URL        = 'signed_url';
 
     /**
-     * The MUTEX instance
-     */
-    protected $mutex;
-
-    /**
      * The batch entity which is being processed
      * @var Batch\Entity
      */
-    protected $batch;
+    public $batch;
+
+    /**
+     * The MUTEX instance
+     */
+    protected $mutex;
 
     /**
      * The merchant instance
@@ -102,6 +104,12 @@ class Base extends BaseModel\Core
      * @var boolean
      */
     protected $useSpreadSheetLibrary = true;
+
+    /**
+     * Holds recon batch data to be sent to Scrooge Service
+     * @var
+     */
+    protected $scroogeDispatchData;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -202,6 +210,13 @@ class Base extends BaseModel\Core
         $this->deleteLocalFiles();
 
         return $response;
+    }
+
+    public function setScroogeDispatchData(array $data)
+    {
+        // Do nothing from Base class. This is handled in Reconciliation.php
+
+        return;
     }
 
     /**
@@ -603,7 +618,7 @@ class Base extends BaseModel\Core
     /**
      * Updates the status of the batch as per the processing
      */
-    protected function updateStatusPostProcess()
+    public function updateStatusPostProcess()
     {
         //
         // Sets processed_at. We override this attribute whether it finally
@@ -616,7 +631,7 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    protected function setStatusAfterSuccessfulProcessing()
+    public function setStatusAfterSuccessfulProcessing()
     {
         //
         // In some cases, we want to mark the batch as partially_processed if there is even 1 failure.
@@ -678,12 +693,7 @@ class Base extends BaseModel\Core
         $formatted = [];
         $headers   = $this->getOutputFileHeadings();
 
-        // Todo: temp
-        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::PL_FIRST_MIN_AMOUNT) === true))
-        {
-            $headers[] = Batch\Header::FIRST_PAYMENT_MIN_AMOUNT;
-        }
+        $this->updateBatchHeadersIfApplicable($headers, $entries);
 
         foreach ($entries as $entry)
         {
@@ -1079,6 +1089,11 @@ class Base extends BaseModel\Core
                 ]);
         }
 
+        if ($this->shouldSendToBatchService())
+        {
+           $ufh->addBucketConfigForBatchService(Batch\Constants::BATCH_SERVICE);
+        }
+
         return $ufh->localFilePath($filePath)
                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
                    ->name($name)
@@ -1387,12 +1402,23 @@ class Base extends BaseModel\Core
 
     public function shouldSendToBatchService(): bool
     {
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
-            $this->mode
-        );
+        $result = false;
 
-        return (($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true) && (strtolower($variant) === 'on'));
+        if ($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true)
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
+                                                        $this->mode
+                                                        );
+
+            $result = (strtolower($variant) === 'on');
+        }
+
+        return $result;
+    }
+
+    protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
+    {
+        return;
     }
 }

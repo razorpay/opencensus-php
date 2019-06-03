@@ -6,6 +6,8 @@
     $meta_description           = $description_meta_text ? $description_meta_text : 'Payment request by '. $data['merchant']['name'];
     $dark_theme_color           = '#383838';
     $light_theme_color          = '#efefef';
+    $is_payment_success_view    = isset($request_params['razorpay_payment_id']);
+    $is_error_view              = isset($request_params['error']['description']);
 ?>
 
 
@@ -24,7 +26,8 @@
         <meta property="og:image:height" content="276px">
         <meta property="og:description" content="{{{ $meta_description }}}">
 
-        <meta name="twitter:title" content="Pay for {{{ $payment_page_data['title'] }}} by {{{ $data['merchant']['name'] }}}">
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Pay for {{{ $payment_page_data['title'] }}} by {{{ $data['merchant']['name'] }}}" />
         <meta name="twitter:description" content="{{{ $meta_description }}}" />
         <meta name="twitter:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}" />
 
@@ -66,7 +69,7 @@
               };
         </script>
 
-        @if (empty($request_params) === true)
+        @if (($is_payment_success_view ===  false) and ($is_error_view === false))
             <script>
                 function renderPaymentPage() {
                     window.RZP.renderApp('paymentpage-container', templateData);
@@ -85,22 +88,19 @@
 
     <body>
         <div id="paymentpage-container">
-            @if (empty($request_params) === false)
-                @if (isset($request_params['razorpay_payment_id']))
-                    @include('hostedpage.partials.success')
-                    <div id="post-msg"><a href="{{{$payment_page_data['short_url']}}}"">Make Another Payment</a></div>
-                @else
-                    @include('hostedpage.partials.success', ['error' => true])
-                    <div id="post-msg">
-                        <div>{{$request_params['description'] ?? 'If any amount is deducted, it will be automatically refunded'}}</div>
-                        <a href="{{{$payment_page_data['short_url']}}}"">Retry Payment</a>
-                    </div>
-                @endif
-
+            @if ($is_payment_success_view === true)
+                @include('hostedpage.partials.success')
+                <div id="post-msg"><a href="{{{$payment_page_data['short_url']}}}"">Make Another Payment</a></div>
+            @elseif ($is_error_view === true)
+                @include('hostedpage.partials.success', ['error' => true])
+                <div id="post-msg">
+                    <div>{{$request_params['error']['description'] ?? 'If any amount is deducted, it will be automatically refunded'}}</div>
+                    <a href="{{{$payment_page_data['short_url']}}}">Retry Payment</a>
+                </div>
             @endif
         </div>
 
-        @if (empty($request_params) === false and isset($request_params['razorpay_payment_id']) === true)
+        @if ($is_payment_success_view === true)
             <script>showSuccessMsg()</script>
         @endif
     </body>

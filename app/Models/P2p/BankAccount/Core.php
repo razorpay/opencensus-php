@@ -17,22 +17,47 @@ class Core extends Base\Core
     {
         $existingBankAccounts = $this->repo->fetchAllForBank($bank->getId());
 
+        $toCreate = [];
+        $toUpdate = [];
+        $toDelete = $existingBankAccounts->keyBy(Entity::ID);
+
         foreach ($bankAccounts as $bankAccount)
         {
             $existing = $this->fetchExistingBankAccount($bankAccount, $existingBankAccounts);
 
-            if (is_null($existing) === false)
+            if ($existing instanceof Entity)
             {
+                $existing->generateRefreshedAt();
                 $existing->setCreds($bankAccount[Entity::CREDS]);
                 $existing->mergeGatewayData($bankAccount[Entity::GATEWAY_DATA]);
 
-                $this->repo->saveOrFail($existing);
+                $toUpdate[] = $existing;
+
+                $toDelete->forget($existing->getId());
             }
             else
             {
-                $this->createForBank($bankAccount, $bank);
+                $toCreate[] = $bankAccount;
             }
         }
+
+        $this->repo->transaction(function() use ($bank, $toCreate, $toUpdate, $toDelete)
+        {
+            foreach ($toCreate as $create)
+            {
+                $this->createForBank($create, $bank);
+            }
+
+            foreach ($toUpdate as $update)
+            {
+                $this->repo->saveOrFail($update);
+            }
+
+            foreach ($toDelete as $delete)
+            {
+                $delete->deleteOrFail();
+            }
+        });
 
         return $this->repo->fetchAllForBank($bank->getId());
     }

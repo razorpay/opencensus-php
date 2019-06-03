@@ -11,6 +11,7 @@
         "username",
         "handle",
         "bank_account",
+        "beneficiary_name",
         "active",
         "validated",
         "verified",
@@ -36,6 +37,10 @@
             "pattern": "^(.*)@(.*)$"
         },
         "username": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "beneficiary_name": {
             "type": "string",
             "pattern": "^(.*)$"
         },

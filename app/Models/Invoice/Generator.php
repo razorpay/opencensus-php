@@ -214,7 +214,6 @@ class Generator extends Base\Core
             $this->invoice->batch()->associate($this->batch);
         }
 
-
         $this->createLineItems($input);
     }
 
@@ -340,7 +339,12 @@ class Generator extends Base\Core
         $this->setInvoiceCreator($invoice);
 
         // Saves merchant specific details in invoice as copy e.g. merchant label & gstin to use
-        $invoice->setMerchantGstin($this->merchant->getGstin());
+
+        if ($invoice->isInternational() === false)
+        {
+            $invoice->setMerchantGstin($this->merchant->getGstin());
+        }
+
         $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
 
         $this->invoice = $invoice;

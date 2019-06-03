@@ -66,6 +66,7 @@ class BeamJob extends Job
      * @param array $request
      * @param array $retryTimeLines
      * @param array $mailInfo
+     * @param bool $mock
      */
     public function __construct(array $request, array $retryTimeLines, array $mailInfo, bool $mock)
     {
@@ -87,14 +88,18 @@ class BeamJob extends Job
     {
         try
         {
+            $return = [];
+
             parent::handle();
 
             if ($this->mock === false)
             {
-                $this->handleRequest();
+                $return = $this->handleRequest();
             }
 
             $this->checkRetryOrDelete();
+
+            return $return;
 
         }
         catch (\Throwable $e)
@@ -150,6 +155,8 @@ class BeamJob extends Job
                 'url'        => $this->request['url'],
             ]
         );
+
+        return json_decode($this->response->body, true);
     }
 
     /**

@@ -18,6 +18,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
+use RZP\Models\Currency\Currency;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const SUBSCRIPTION_ID           = 'subscription_id';
     const BATCH_ID                  = 'batch_id';
+    const IDEMPOTENCY_KEY           = 'idempotency_key';
     const CUSTOMER_ID               = 'customer_id';
     const CUSTOMER_NAME             = 'customer_name';
     const CUSTOMER_EMAIL            = 'customer_email';
@@ -72,6 +74,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE               = 'entity_type';
     const ENTITY_ID                 = 'entity_id';
     const STATUSES                  = 'statuses';
+    const INTERNATIONAL             = 'international';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -113,6 +116,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_PAID              = 'amount_paid';
     const AMOUNT_DUE               = 'amount_due';
     const CURRENCY                 = 'currency';
+    const CURRENCY_SYMBOL          = 'currency_symbol';
     const USER_ID                  = 'user_id';
     const SOURCE                   = 'source';
     const BILLING_START            = 'billing_start';
@@ -308,6 +312,7 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
         self::INTERNAL_REF,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $visible = [
@@ -342,6 +347,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::COMMENT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::SHORT_URL,
         self::VIEW_LESS,
         self::SOURCE,
@@ -361,6 +367,7 @@ class Entity extends Base\PublicEntity
         self::TAXABLE_AMOUNT,
         self::USER_ID,
         self::INTERNAL_REF,
+        self::IDEMPOTENCY_KEY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -397,6 +404,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::DESCRIPTION,
         self::NOTES,
         self::COMMENT,
@@ -411,6 +419,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::CREATED_AT,
+        self::IDEMPOTENCY_KEY,
     ];
 
     /**
@@ -444,6 +453,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
+        self::CURRENCY_SYMBOL,
         self::DESCRIPTION,
         self::COMMENT,
         self::SHORT_URL,
@@ -463,6 +473,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::INVOICE_NUMBER,
         self::TAXABLE_AMOUNT,
+        self::CURRENCY_SYMBOL,
     ];
 
     protected $publicSetters = [
@@ -1028,7 +1039,10 @@ class Entity extends Base\PublicEntity
 
     public function setCustomerGstin($customerGstin)
     {
-        $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
+        if ($this->isInternational() === false)
+        {
+            $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
+        }
     }
 
     public function setSmsStatus($status)
@@ -1213,6 +1227,21 @@ class Entity extends Base\PublicEntity
         }
 
         return $details;
+    }
+
+    public function isInternational(): bool
+    {
+        return ($this->getCurrency() !== Currency::INR);
+    }
+
+    /**
+     * Sets currency symbol as per the currency.
+     */
+    protected function getCurrencySymbolAttribute()
+    {
+        $currency = $this->getCurrency();
+
+        return Currency::getSymbol($currency);
     }
 
     protected function getPaymentIdAttribute()

@@ -17,11 +17,13 @@ class Constants
     const RESELLER_SUBMERCHANT_LIMIT = 3;
 
     // analytics constants
-    const TO               = 'to';
-    const FROM             = 'from';
-    const QUERY_TYPE       = 'query_type';
-    const AGGREGATE_DAILY  = 'aggregate_daily'; // day wise commission aggregates
-    const AGGREGATE_DETAIL = 'aggregate_detail'; // aggregate break up details for given day
+    const TO                  = 'to';
+    const FROM                = 'from';
+    const QUERY_TYPE          = 'query_type';
+    const AGGREGATE_DAILY     = 'aggregate_daily'; // day wise commission aggregates
+    const AGGREGATE_DETAIL    = 'aggregate_detail'; // aggregate break up details for given day
+    const SUBVENTION_DAILY    = 'subvention_daily'; // day wise subvention aggregates
+    const SUBVENTION_DETAIL   = 'subvention_detail'; // subvention break up details for given day
 
     /**
      * List of entities for which the commission can be rolled out.
@@ -41,6 +43,8 @@ class Constants
     public static $analyticsQueryTypes = [
         self::AGGREGATE_DAILY,
         self::AGGREGATE_DETAIL,
+        self::SUBVENTION_DAILY,
+        self::SUBVENTION_DETAIL,
     ];
 
     /**

@@ -8,19 +8,21 @@ final class Constants
 {
     // *** FTA related constants *** //
 
-    const REMARKS           = 'remarks';
+    const REMARKS             = 'remarks';
 
-    const FTA_STATUS        = 'fta_status';
+    const FTA_STATUS          = 'fta_status';
 
-    const FAILURE_REASON    = 'failure_reason';
+    const FAILURE_REASON      = 'failure_reason';
 
-    const VPA_ID            = 'vpa_id';
+    const VPA_ID              = 'vpa_id';
 
-    const MODE              = 'mode';
+    const MODE                = 'mode';
 
-    const UTR               = 'utr';
+    const UTR                 = 'utr';
 
-    const FTA_ID            = 'fta_id';
+    const FTA_ID              = 'fta_id';
+
+    const BANK_PROCESSED_TIME = 'bank_processed_time';
 
     const IMPS_STATUS_CHECK_DISPATCH_TIME = 10;
 

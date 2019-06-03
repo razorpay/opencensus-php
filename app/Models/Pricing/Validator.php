@@ -65,6 +65,8 @@ class Validator extends Base\Validator
         'addPlanRulePricingMethod',
         'addPlanRuleMinAndMaxFee',
         'addPlanRulePayoutFundTransfer',
+        // Skipped for now as it blocks the creation of 0-pricing rules.
+        // 'addPlanRuleBankTransfer',
     ];
 
     protected static $fetchRules = [
@@ -212,6 +214,33 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateAddPlanRuleBankTransfer($input)
+    {
+        // Bank Transfer payments can't be rejected, so
+        // a percent rate rule is always required for the
+        // lowest amounts, since a flat pricing would fail
+        if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::BANK_TRANSFER)
+        {
+            return;
+        }
+
+        // If it's an amount range rule, percentage rate is not mandated,
+        // since the min amount may be high enough to not need it
+        if ((isset($input[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
+            (empty($input[Entity::AMOUNT_RANGE_MIN]) === false) and
+            ($input[Entity::AMOUNT_RANGE_MIN] !== 0))
+        {
+            return;
+        }
+
+        if ((empty($input[Entity::PERCENT_RATE]) === true) or
+            (empty($input[Entity::MAX_FEE]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Bank transfer pricing should include percent rate and max fee');
+        }
+    }
+
     protected function validateAddPlanRulePayoutFundTransfer($input)
     {
         if (($input[Entity::FEATURE] === Pricing\Feature::PAYOUT) and
@@ -233,10 +262,14 @@ class Validator extends Base\Validator
 
             if (in_array($mode, $validModes, true) === false)
             {
-                Exception\BadRequestValidationFailureException(
-                    'Payout mode should be NEFT/IMPS/RTGS/IFT');
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payout mode should be NEFT/IMPS/RTGS/IFT',
+                    'mode',
+                    [
+                        'mode'  => $mode,
+                        'input' => $input,
+                    ]);
             }
-
         }
     }
 

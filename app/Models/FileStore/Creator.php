@@ -141,6 +141,13 @@ class Creator extends Base\Core
      */
     protected $shouldDeleteLocalFile = false;
 
+
+    /**
+     * String to signify to use new S3 Bucket for External Services
+     * @var null
+     */
+    protected $s3BucketConfigForExternalServices = null;
+
     /**
      * The sheet name used when creating an excel file.
      * Sheet 1 is the default name used to generate the excel sheet.
@@ -470,6 +477,17 @@ class Creator extends Base\Core
     }
 
     /**
+     * Add to S3 Bucket Configs for Batch Service MicroService Upload.
+     *
+     * @param string $bucketConfig
+     *
+     */
+    public function addBucketConfigForBatchService(string $bucketConfig)
+    {
+        $this->s3BucketConfigForExternalServices = $bucketConfig;
+    }
+
+    /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
      *
@@ -551,7 +569,8 @@ class Creator extends Base\Core
     {
         $bucketConfig = $this->storageHandler->getBucketConfig(
             $this->file->getType(),
-            $this->env);
+            $this->env,
+            $this->s3BucketConfigForExternalServices);
 
         $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation(), $duration);
 
@@ -649,7 +668,9 @@ class Creator extends Base\Core
     protected function upload()
     {
         $bucketConfig = $this->storageHandler->getBucketConfig(
-            $this->file->getType(), $this->env);
+            $this->file->getType(),
+            $this->env,
+            $this->s3BucketConfigForExternalServices);
 
         $fileName = $this->getFullFileName();
 

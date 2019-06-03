@@ -28,7 +28,7 @@ class RefundData extends Base\Mock\Server
             'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];
 
-        $this->content($response, 'verify');
+        $this->content($response, 'refund');
 
         return $response;
     }
@@ -85,3 +85,4 @@ class RefundData extends Base\Mock\Server
         return $response;
     }
 }
+

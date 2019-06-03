@@ -133,9 +133,9 @@ class Core extends Base\Core
     {
         $response = $user->toArrayPublic();
 
-        $merchants = $user->merchants
-                          ->where(Merchant\Entity::SUSPENDED_AT, null)
-                          ->callOnEveryItem('toArrayUser');
+        $merchantEntities = $user->merchants->where(Merchant\Entity::SUSPENDED_AT, null);
+
+        $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 
         // Prepares unique list of merchants for users out of pivot relations.
         $merchantsUnique = [];

@@ -8,13 +8,12 @@ use RZP\Models\Card\Issuer;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
  * @property mixed batchFundTransfer
  * @property mixed bankAccount
- * @property Card\Entity card
+ * @property Card\Entity $card
  */
 class Entity extends Base\PublicEntity
 {
@@ -101,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::UTR,
         self::IS_FTS,
+        self::FTS_TRANSFER_ID,
         self::NARRATION,
         self::REMARKS,
         self::DATE_TIME,
@@ -314,6 +314,10 @@ class Entity extends Base\PublicEntity
         {
             return E::BANK_ACCOUNT;
         }
+        else if ($this->hasCard() === true)
+        {
+            return E::CARD;
+        }
         else
         {
             return null;
@@ -492,7 +496,9 @@ class Entity extends Base\PublicEntity
     {
         $source = $this->source;
 
-        if ($source->hasAttribute(self::BALANCE_ID) === true)
+        if (($source->hasAttribute(self::BALANCE_ID) === true) and
+            (method_exists($source, 'hasBalance') === true) and
+            ($source->hasBalance() === true))
         {
             return $source->isBalanceTypeBanking();
         }

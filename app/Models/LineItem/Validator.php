@@ -21,15 +21,24 @@ class Validator extends Base\Validator
     const TAX_CODES  = 'tax_codes';
     const TAX_INPUTS = 'tax_inputs';
 
+    const TAX_ATTRIBUTES = [
+        Entity::HSN_CODE,
+        Entity::SAC_CODE,
+        Entity::TAX_RATE,
+        Entity::TAX_ID,
+        Entity::TAX_IDS,
+        Entity::TAX_GROUP_ID
+    ];
+
     protected static $createRules = [
         Entity::QUANTITY            => 'filled|integer|min:1',
         Entity::ITEM_ID             => 'sometimes|nullable|string|max:19',
         Entity::REF                 => 'sometimes',
         Entity::NAME                => 'required_without:item_id|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'required_without:item_id|mysql_unsigned_int|min:100',
-        Entity::UNIT_AMOUNT         => 'required_without_all:amount,item_id|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR|custom',
+        Entity::AMOUNT              => 'required_without:item_id|mysql_unsigned_int|min_amount',
+        Entity::UNIT_AMOUNT         => 'required_without_all:amount,item_id|mysql_unsigned_int|min_amount',
+        Entity::CURRENCY            => 'required_without:item_id|currency|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
@@ -52,9 +61,9 @@ class Validator extends Base\Validator
         Entity::ITEM_ID             => 'sometimes|nullable|string|max:19',
         Entity::NAME                => 'filled|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
-        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'sometimes|nullable|size:3|in:INR|custom',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
+        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int',
+        Entity::CURRENCY            => 'sometimes|nullable|currency|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'sometimes|nullable|boolean',
@@ -71,6 +80,10 @@ class Validator extends Base\Validator
         Entity::IDS                 => 'required|array|min:1|max:10',
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected static $createValidators = [
         self::TAX_CODES,
         self::TAX_INPUTS,
@@ -79,6 +92,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         self::TAX_CODES,
         self::TAX_INPUTS,
+        'min_amount',
     ];
 
     public function validateType($attribute, $type)
@@ -110,6 +124,24 @@ class Validator extends Base\Validator
                 "{$morphEntityType} can only use item of one of following types: " . implode(', ', $allowed),
                 Entity::TYPE,
                 $traceData);
+        }
+    }
+
+    public function validateMinAmount(array $input)
+    {
+
+        if ((empty($input[Entity::AMOUNT]) === false) or (empty($input[Entity::UNIT_AMOUNT]) === false))
+        {
+            $input[Entity::AMOUNT] = $input[Entity::AMOUNT] ?? $input[Entity::UNIT_AMOUNT];
+
+            $currency = $this->entity->getCurrency();
+
+            $inputAmount = [
+                Entity::AMOUNT   => $input[Entity::AMOUNT],
+                Entity::CURRENCY => $currency,
+            ];
+
+            $this->validateInputValues('min_amount_check', $inputAmount);
         }
     }
 

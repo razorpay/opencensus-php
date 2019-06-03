@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Gateway\Utility;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 
 trait RequestHandlerTrait
 {
@@ -80,7 +81,13 @@ trait RequestHandlerTrait
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
-        $accept = substr($this->app['request']->header('Accept'), 0, 256);
+        $accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+
+        if (empty($this->app['request']->header('Accept')) === false)
+        {
+            $accept = substr($this->app['request']->header('Accept'), 0, 256);
+        }
+
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 512);
         $ip = $this->app['request']->ip();
 
@@ -132,9 +139,7 @@ trait RequestHandlerTrait
             $messageType = $this->input['card']['message_type'];
         }
 
-        $ownerName = $this->input['merchant']->getBillingLabel() ?? 'Razorpay';
-
-        $ownerName = substr($ownerName, 0, 23);
+        $ownerName = $this->getDynamicMerchantName($this->input['merchant'], 22);
 
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
@@ -302,6 +307,8 @@ trait RequestHandlerTrait
 
         $soapClient = $this->getSoapClientObject($request);
 
+        $startTime = microtime(true);
+
         try
         {
             $response = $soapClient->__soapCall('CallPaySecure', array('parameters' => $requestBody));
@@ -332,11 +339,47 @@ trait RequestHandlerTrait
                     }
                 }
 
-                throw new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
+                $ex = new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
+
+                if ($command !== Command::AUTHORIZE)
+                {
+                    $ex->markSafeRetryTrue();
+                }
+                throw $ex;
             }
             else
             {
                 throw $sf;
+            }
+        }
+        finally
+        {
+            $completed = microtime(true);
+
+            try
+            {
+                $metricsDriver = app('trace')->metricsDriver(\RZP\Gateway\Base\Metric::DOGSTATSD_DRIVER);
+
+                /**
+                 * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
+                 */
+                $metricsDriver->histogram('gateway_request_total_time_ms',
+                    ($completed - $startTime) * 1000,
+                    [
+                        'gateway' => 'paysecure',
+                        'action'  => $command ?? 'none',
+                    ]);
+            }
+            catch (\Throwable $e)
+            {
+                $this->app['trace']->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
+                    [
+                        'gateway' => 'paysecure',
+                        'action'  => $command ?? 'none',
+                    ]);
             }
         }
 

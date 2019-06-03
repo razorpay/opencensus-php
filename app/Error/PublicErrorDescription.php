@@ -190,6 +190,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
+    const BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH                            = 'Payment currency provided does not match with the currency in the payment page';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
     const BAD_REQUEST_SCROOGE_DASHBOARD_ERROR                                   = 'Scrooge dashboard error';
@@ -299,7 +300,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_LIVE                                         = 'The merchant is not live currently';
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                           = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please contact the site admin regarding the issue.';
     const BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL                            = 'The merchant already has international activated';
-    const BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL                                = 'The merchant doesn\'t have international activated';
+    const BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED                        = 'The merchant doesn\'t have international activated';
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                             = 'The merchant has no pricing assigned';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                              = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
@@ -705,12 +706,13 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
-    const BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF                             = 'Partner cannot add himself as a submerchant';
+    const BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT_TO_ITSELF                   = 'Partner cannot add himself as a submerchant';
     const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                           = 'Reseller partner is not allowed the requested access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
+    const BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT                       = 'Card not supported for fund account creation';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
     const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
     const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Another payout operation is in progress. Please try again later.';
@@ -735,6 +737,8 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DEEMED                                           = 'Refund is in pending status';
 
     const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                             = 'Batch file upload failed due to batch server error';
+    const SERVER_ERROR_BATCH_SERVICE_NOT_FOUND                                  = 'Batch Service is unavailable or cannot connect';
+    const BAD_REQUEST_BATCH_SERVICE_ERROR                                       = 'Bad Request Batch Server Error or Client Error';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 
@@ -814,6 +818,7 @@ class PublicErrorDescription
     const BAD_REQUEST_APPLICATION_ID_OR_PARTNER_ID_MISSING                          = 'Application id or Partner id is required';
     const BAD_REQUEST_APPLICATION_ID_PARTNER_ID_BOTH_PRESENT                        = 'Application id and Partner id both sent in the request';
     const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
+    const BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION                                = 'Expiry date should not be set for subvention model';
 
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
 

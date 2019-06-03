@@ -51,6 +51,11 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateItemWithTaxIdInternational()
+    {
+        $this->startTest();
+    }
+
     public function testCreateItemWithTaxGroupId()
     {
         $this->startTest();
@@ -103,6 +108,20 @@ class ItemTest extends TestCase
 
         $this->fixtures->create('item', ['tax_id' => '00000000000001']);
         $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'A different product']);
+
+        $this->startTest();
+    }
+
+    /**
+     * Tests fetching items by query string i.e. auto complete use case.
+     */
+    public function testGetMultipleItemsViaEs()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('item', ['id' => '1000000001item', 'name' => 'A different product']);
+
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }

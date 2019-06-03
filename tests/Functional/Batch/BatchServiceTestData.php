@@ -93,4 +93,117 @@ return [
             ],
         ],
     ],
+
+    'testBatchRawAPIGetAllBatches' => [
+        'request' => [
+            'url'     => '/service/batch/batch',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'data'  => [
+                    [
+                        'created_at'       => 1557254046,
+                        'updated_at'       => 1557254086,
+                        'id'               => 'CSjjzIz2AGrISq',
+                        'entity_id'        => 'BQXxEcUzUAP0Qr',
+                        'name'             => 'kbkvk',
+                        'batch_type_id'    => 'payment_link',
+                        'mode'             => 'test',
+                        'is_scheduled'     => false,
+                        'upload_count'     => 0,
+                        'processed_count'  => 11,
+                        'failure_count'    => 0,
+                        'total_count'      => 11,
+                        'success_count'    => 11,
+                        'attempts'         => 0,
+                        'status'           => 'COMPLETED',
+                        'settings'         => [
+                            'draft' => '0',
+                            'sms_notify' => '1',
+                            'email_notify' => '0',
+                        ],
+                        'amount'           => 1155,
+                        'processed_amount' => 1155,
+                    ],
+                    [
+                        'created_at'       => 1557254046,
+                        'updated_at'       => 1557254086,
+                        'id'               => 'CSdhEZBIsG02UK',
+                        'entity_id'        => 'BQXxEcUzUAP0Qr',
+                        'name'             => 'kbkvk',
+                        'batch_type_id'    => 'payment_link',
+                        'mode'             => 'test',
+                        'is_scheduled'     => false,
+                        'upload_count'     => 0,
+                        'processed_count'  => 11,
+                        'failure_count'    => 0,
+                        'total_count'      => 11,
+                        'success_count'    => 11,
+                        'attempts'         => 0,
+                        'status'           => 'COMPLETED',
+                        'settings'         => [
+                            'name'     => 'pankaj',
+                            'send_sms' => true
+                        ],
+                        'amount'           => 1155,
+                        'processed_amount' => 1155,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBatchRawAPIUpdateSettings' => [
+        'request' => [
+            'url'     => '/service/batch/batch/CSZx0EmFsgAh8H/settings',
+            'method'  => 'patch',
+            'content' => [
+                    'draft'=> 1,
+                    'sms_notify'=> 0,
+                    'email_notify'=> 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'created_at'=> 1557219569,
+                'updated_at'=> 1557304243,
+                'id'=> 'CSZx0EmFsgAh8H',
+                'entity_id'=> 'BQXxEcUzUAP0Qr',
+                'name'=> 'kbkvk',
+                'batch_type_id'=> 'payment_link',
+                'mode'=> 'test',
+                'is_scheduled'=> false,
+                'upload_count'=> 0,
+                'processed_count'=> 11,
+                'failure_count'=> 0,
+                'total_count'=> 11,
+                'success_count'=> 11,
+                'attempts'=> 0,
+                'status'=> 'COMPLETED',
+                'settings'=> [
+                    'draft'=> 1,
+                    'sms_notify'=> 0,
+                    'email_notify'=> 0
+                ],
+                'amount'=> 1155,
+                'processed_amount'=> 1155
+            ],
+        ],
+    ],
+
+    'testBatchAdminFetchNoResult' => [
+        'request'  => [
+            'url'    => '/admin/batch.service?merchant_id=CWIYz6Yfu8tqZv',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => []
+            ],
+        ],
+    ],
 ];

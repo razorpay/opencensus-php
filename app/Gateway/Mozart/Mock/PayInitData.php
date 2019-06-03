@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Mozart;
 
 class PayInitData extends Base\Mock\Server
 {
@@ -46,16 +45,12 @@ class PayInitData extends Base\Mock\Server
 
     public function wallet_phonepe($entities)
     {
-        $paymentId = $entities['payment']['id'];
-
-        $publicId = $this->getSignedPaymentId($paymentId);
-
         $this->gateway = $entities['payment']['gateway'];
 
         $url = $this->route->getUrlWithPublicAuth(
-            'mock_wallet_payment_get',
+            'mock_mozart_payment_post',
             [
-                'wallet' => $entities['payment']['wallet'],
+                'gateway' => $entities['payment']['gateway'],
                 'paymentId' => $entities['payment']['id']
             ]);
 
@@ -70,23 +65,23 @@ class PayInitData extends Base\Mock\Server
         $response = [
             'data' => [
                 '_raw' => '',
-                'code'=> '',
-                'message'=> '',
-                'received'=> true,
-                'status'=> 'authorization_successfull',
-                'success'=> null
+                'code' => '',
+                'message' => '',
+                'received' => true,
+                'status' => 'authorization_successfull',
+                'success' => null
             ],
-            'error'=> null,
-            'external_trace_id'=> '',
-            'mozart_id'=> '',
-            'next'=> [
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [
                 'redirect' => [
                     'content' => $output,
                     'method' => 'post',
                     'url' => $url,
                 ]
             ],
-            'success'=> true
+            'success' => true
         ];
 
         return $response;
@@ -108,6 +103,63 @@ class PayInitData extends Base\Mock\Server
                 ],
             'error'             => null,
             'success'           => true,
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
+    public function netbanking_yesb($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            [
+                'gateway'   => 'netbanking_yesb',
+                'paymentId' => $entities['payment']['id'],
+                'amount'    => $entities['payment']['amount']
+            ]);
+
+        $response = [
+            'error'             => null,
+            'data'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'next'              => [
+                    'redirect' => [
+                        'method'  => 'post',
+                        'url'     => $url,
+                        'content' => [
+                            'PID'     => 'DUMMY_USER',
+                            'encdata' => 'dummy_request_data',
+                    ],
+                ],
+            ],
+        ];
+
+        return $response;
+    }
+
+    public function netbanking_sib($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+             'mock_mozart_payment_post',
+                       ['gateway' => 'netbanking_sib', 'callbackUrl' => $entities['callbackUrl']]);
+
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
+            'next'              => [
+                            'redirect' => [
+                                'method'  => 'post',
+                                'url'     => $url,
+                                'content' => [
+                                    'QS' => 'random_encrypted_string',
+                                ],
+                            ]
+            ],
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',
         ];

@@ -77,6 +77,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
         $this->createSharedNetbankingEquitasTerminal();
+        $this->createSharedNetbankingYesbTerminal();
         $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
@@ -2115,6 +2116,24 @@ class Terminal extends Base
 
         return $this->create($attributes);
     }
+
+    public function createSharedNetbankingYesbTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_YESB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_YESB,
+            'gateway_merchant_id'   => 'netbanking_yesb_merchant_id',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingSbiTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
@@ -2125,6 +2144,24 @@ class Terminal extends Base
             'gateway'               => Gateway::NETBANKING_SBI,
             'gateway_merchant_id'   => 'netbanking_sbi_merchant_id',
             'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingSibTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_SIB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_SIB,
+            'gateway_merchant_id'   => 'netbanking_sib_merchant_id',
+            'netbanking'            => 1,
+            'gateway_secure_secret' => 'random_secret',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

@@ -321,11 +321,11 @@ class Gateway extends Base\Gateway
             ];
         }
 
-        if (($input['payment']['method'] === Payment\Method::UPI) and
-            (isset($input['gateway']['vpa']) === true))
+        if ($input['payment']['method'] === Payment\Method::UPI)
         {
             $acquirer = [
-                Payment\Entity::VPA => $input['gateway']['vpa']
+                Payment\Entity::VPA => $input['payment']['vpa'] ?? $input['gateway']['vpa'],
+                Payment\Entity::REFERENCE16 => (string) random_integer(12),
             ];
         }
 

@@ -20,6 +20,7 @@ class Entity extends PublicEntity
     const DEFAULT_PLAN_ID         = 'default_plan_id';
     const IMPLICIT_PLAN_ID        = 'implicit_plan_id';
     const EXPLICIT_PLAN_ID        = 'explicit_plan_id';
+    const COMMISSION_MODEL        = 'commission_model';
     const IMPLICIT_EXPIRY_AT      = 'implicit_expiry_at';
     const COMMISSIONS_ENABLED     = 'commissions_enabled';
     const EXPLICIT_REFUND_FEES    = 'explicit_refund_fees';
@@ -33,6 +34,7 @@ class Entity extends PublicEntity
         self::DEFAULT_PLAN_ID,
         self::IMPLICIT_PLAN_ID,
         self::EXPLICIT_PLAN_ID,
+        self::COMMISSION_MODEL,
         self::IMPLICIT_EXPIRY_AT,
         self::COMMISSIONS_ENABLED,
         self::EXPLICIT_REFUND_FEES,
@@ -49,6 +51,7 @@ class Entity extends PublicEntity
         self::DEFAULT_PLAN_ID,
         self::IMPLICIT_PLAN_ID,
         self::EXPLICIT_PLAN_ID,
+        self::COMMISSION_MODEL,
         self::IMPLICIT_EXPIRY_AT,
         self::COMMISSIONS_ENABLED,
         self::EXPLICIT_REFUND_FEES,
@@ -67,6 +70,7 @@ class Entity extends PublicEntity
         self::COMMISSIONS_ENABLED    => 0,
         self::EXPLICIT_REFUND_FEES   => 0,
         self::EXPLICIT_SHOULD_CHARGE => 0,
+        self::COMMISSION_MODEL       => CommissionModel::COMMISSION,
     ];
 
     protected $casts = [
@@ -119,6 +123,11 @@ class Entity extends PublicEntity
     public function getImplicitExpiryAt()
     {
         return $this->getAttribute(self::IMPLICIT_EXPIRY_AT);
+    }
+
+    public function getCommissionModel(): string
+    {
+        return $this->getAttribute(self::COMMISSION_MODEL);
     }
 
     // --------------------- SETTERS ---------------------

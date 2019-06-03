@@ -14,6 +14,7 @@ class Fields
     const RID                       = 'rid';
     const TOKEN                     = 'token';
     const UPI_REQUEST_ID            = 'upiRequestId';
+    const UPI_RESPONSE_ID           = 'upiResponseId';
 
     // --------------------------- DEVICE --------------- //
     const SIM_ID                        = 'simId';
@@ -72,6 +73,10 @@ class Fields
     const AVAILABLE                     = 'available';
     const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
     const CUSTOMER_NAME                 = 'customerName';
+    const SHOULD_BLOCK                  = 'shouldBlock';
+    const SHOULD_SPAM                   = 'shouldSpam';
+    const BLOCKED_VPAS                  = 'blockedVpas';
+    const BLOCKED_AT                    = 'blockedAt';
 
     // ------------------- TRANSACTION ------------- //
     const MERCHANT_REQUEST_ID           = 'merchantRequestId';
@@ -88,6 +93,14 @@ class Fields
     const GATEWAY_REFERENCE_ID          = 'gatewayReferenceId';
     const MERCHANT_PAYLOAD_SIGNATURE    = 'merchantPayloadSignature';
     const COLLECT_REQ_EXPIRY_MINS       = 'collectRequestExpiryMinutes';
+    const CUSTOME_RESPONSE              = 'customResponse';
+    const IS_VERIFIED_PAYEE             = 'isVerifiedPayee';
+    const IS_MARKED_SPAM                = 'isMarkedSpam';
+    const QUERY_COMMENT                 = 'queryComment';
+    const QUERY_REFERENCE_ID            = 'queryReferenceId';
+    const QUERY_CLOSING_TIMESTAMP       = 'queryClosingTimestamp';
+    const LIMIT                         = 'limit';
+    const OFFSET                        = 'offset';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';
@@ -97,4 +110,9 @@ class Fields
     const P2P_PAY                       = 'P2P_PAY';
     const SCAN_PAY                      = 'SCAN_PAY';
     const INTENT_PAY                    = 'INTENT_PAY';
+
+    // ------------------- CALLBACK FIELDS ------------- //
+    const HEADERS                       = 'headers';
+    const X_MERCHANT_PAYLOAD_SIGNATURE  = 'x-merchant-payload-signature';
+    const PAYEE_MOBILE_NUMBER           = 'payeeMobileNumber';
 }

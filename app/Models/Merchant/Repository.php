@@ -80,6 +80,11 @@ class Repository extends Base\Repository
 
     protected function validatePartnerType($attribute, $value)
     {
+        if ($value === 'all')
+        {
+            return true;
+        }
+
         (new Validator)->validatePartnerType($value);
     }
 
@@ -158,7 +163,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$start, $today])
-                    ->whereNotNull(Entity::SUSPENDED_AT);
+                    ->whereNull(Entity::SUSPENDED_AT);
     }
 
     public function getFewMerchantsWithNoCorrespondingScheduleTasks()
@@ -246,7 +251,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::LIVE, '=', 1)
-                    ->whereNotNull(Entity::SUSPENDED_AT);
+                    ->whereNull(Entity::SUSPENDED_AT);
     }
 
     public function fetchMerchantFromEntity($entity)

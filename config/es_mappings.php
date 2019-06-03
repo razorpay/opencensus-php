@@ -30,6 +30,7 @@ return [
                     'tokenizer' => 'edge_ngram_tokenizer',
                     'filter'    => [
                         'lowercase',
+                        'en_stopwords',
                     ],
                 ],
 
@@ -56,6 +57,7 @@ return [
                     'filter'      => [
                         'standard',
                         'lowercase',
+                        'en_stopwords',
                     ],
                 ],
             ],
@@ -71,6 +73,10 @@ return [
                 ],
             ],
             'filter' => [
+                'en_stopwords' => [
+                    'type'      => 'stop',
+                    'stopwords' => '_english_',
+                ],
             ],
             'char_filter' => [
                 'punctuation_remap' => [
@@ -152,6 +158,9 @@ return [
             'user_id' => [
                 'type'            => 'keyword',
             ],
+            'currency' => [
+                'type'            => 'keyword',
+            ],
             'receipt' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -215,6 +224,9 @@ return [
                 'type' => 'keyword',
             ],
             'partner_config_id' => [
+                'type' => 'keyword',
+            ],
+            'model' => [
                 'type' => 'keyword',
             ],
             'merchant' => [
@@ -522,6 +534,79 @@ return [
             ],
             'utr' => [
                 'type'  => 'keyword',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+        ],
+    ],
+
+    'item_mapping' => [
+        '_all' => [
+            'enabled' => false
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'active' => [
+                'type'  => 'boolean',
+            ],
+            'type' => [
+                'type'  => 'keyword',
+            ],
+            'name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'description' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+        ],
+    ],
+
+
+    'customer_mapping' => [
+        '_all' => [
+            'enabled' => false,
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type'  => 'keyword',
+            ],
+            'name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'contact' => [
+                'type'  => 'keyword',
+            ],
+            'email' => [
+                'type'  => 'keyword',
+            ],
+            'gstin' => [
+                'type'  => 'keyword',
+            ],
+            'active' => [
+                'type'  => 'boolean',
             ],
             'created_at' => [
                 'type'   => 'date',

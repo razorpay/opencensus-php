@@ -8,6 +8,7 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Reconciliator\Core;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\InfoCode;
@@ -60,15 +61,25 @@ class SubReconciliate extends Base\Core
     protected $gateway;
 
     /**
+     * @var array array list of refund and corresponding data that
+     * will be dispatched to scrooge for recon processing
+     */
+    protected static $scroogeReconciliate = [];
+
+    /**
      * Indicates whether the Recon file uploaded via mailgun or manual
      */
     protected $source;
+
+    protected $core;
 
     public function __construct(string $gateway = null)
     {
         parent::__construct();
 
         $this->gateway = $gateway;
+
+        $this->core = new Core;
     }
 
     public function getTotal(): array
@@ -133,11 +144,14 @@ class SubReconciliate extends Base\Core
      * Runs the same reconciliation process, though here we always update the batch with recon
      * summary, regardless of any exception thrown during the process.
      *
-     * @param array          $fileContents      file contents to be processed
-     * @param Batch\Entity   $batch             Batch entity for the current run
+     * @param array $fileContents file contents to be processed
+     * @param Batch\Processor\Base $batchProcessor
+     * @throws \Throwable
      */
-    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
+    public function startReconciliationV2(array $fileContents, Batch\Processor\Base $batchProcessor)
     {
+        $batch = $batchProcessor->batch;
+
         $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
@@ -151,6 +165,12 @@ class SubReconciliate extends Base\Core
                         $this->runReconciliate($row);
                     });
                 }
+                catch (\Exception $ex)
+                {
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+
+                    throw $ex;
+                }
                 finally
                 {
                     $batch->incrementProcessedCount();
@@ -159,22 +179,49 @@ class SubReconciliate extends Base\Core
         }
         finally
         {
+            if (count(static::$scroogeReconciliate) > 0)
+            {
+                $forceUpdateArn = $this->shouldForceUpdate(RequestProcessor\Base::REFUND_ARN);
+
+                $batchProcessor->setScroogeDispatchData(
+                    [
+                        'data'              => static::$scroogeReconciliate,
+                        'source'            => $this->source,
+                        'force_update_arn'  => $forceUpdateArn,
+                    ]
+                );
+
+                //
+                // Need to reset it now, else few testcases are failing when we run
+                // ReconciliationFileTest. Though individually the same test passes.
+                // (even the payment recon test, having only payment rows in MIS file
+                // also have this scroogeReconciliate data set and thus scrooge dispatch happened)
+                //
+                static::$scroogeReconciliate = [];
+            }
+
             $this->updateBatchWithSummary($batch);
         }
     }
 
     protected function persistReconciledAt($entity)
     {
-        $transaction = $entity->transaction;
-        $time = time();
-        $transaction->setReconciledAt($time);
-        $transaction->setReconciledType(ReconciledType::MIS);
-        $transaction->saveOrFail();
+        if (($entity->getEntityName() !== Entity::REFUND) or
+            ($entity->isScrooge() === false))
+        {
+            $transaction = $entity->transaction;
 
-        // Increment the success count for the summary.
-        $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entity->getKey());
+            $time = time();
+            $transaction->setReconciledAt($time);
+            $transaction->setReconciledType(ReconciledType::MIS);
 
-        $this->pushSuccessReconMetrics($entity);
+            $transaction->saveOrFail();
+
+            $this->pushSuccessReconMetrics($entity);
+
+            // Increment the success count for the summary.
+            $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entity->getKey());
+        }
     }
 
     /**
@@ -190,11 +237,11 @@ class SubReconciliate extends Base\Core
         switch($entityName)
         {
             case Entity::PAYMENT:
-                $this->pushSuccessPaymentReconMetrics($entity);
+                $this->core->pushSuccessPaymentReconMetrics($entity, $this->source);
 
                 break;
             case Entity::REFUND:
-                $this->pushSuccessRefundReconMetrics($entity);
+                $this->core->pushSuccessRefundReconMetrics($entity, $this->source);
 
                 break;
             default:
@@ -206,24 +253,6 @@ class SubReconciliate extends Base\Core
                         'entity_name'        => $entity->getEntityName(),
                     ]);
         }
-    }
-
-    protected function pushSuccessPaymentReconMetrics(PaymentEntity $payment)
-    {
-        $this->trace->histogram(
-            Metric::RECON_PAYMENT_CREATE_TO_RECONCILED_TIME_MINUTES,
-            $payment->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getPaymentMetricDimensions($payment, $this->source)
-        );
-    }
-
-    protected function pushSuccessRefundReconMetrics(RefundEntity $refund)
-    {
-        $this->trace->histogram(
-            Metric::RECON_REFUND_CREATE_TO_RECONCILED_TIME_MINUTES,
-            $refund->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getRefundMetricDimensions($refund, $this->source)
-        );
     }
 
     protected function persistGatewaySettledAt(Base\Entity $entity, array $rowDetails)
@@ -254,9 +283,17 @@ class SubReconciliate extends Base\Core
             return;
         }
 
-        $transaction->setGatewaySettledAt($gatewaySettledAt);
+        if (($entity->getEntityName() === Entity::REFUND) and
+            ($entity->isScrooge() === true))
+        {
+            static::$scroogeReconciliate[$entity->getId()]->setGatewaySettledAt($gatewaySettledAt);
+        }
+        else
+        {
+            $transaction->setGatewaySettledAt($gatewaySettledAt);
 
-        $this->repo->saveOrFail($transaction);
+            $this->repo->saveOrFail($transaction);
+        }
     }
 
     protected function checkIfAlreadyReconciled($entity)
@@ -378,6 +415,13 @@ class SubReconciliate extends Base\Core
         $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entityId);
     }
 
+    protected function handlePersistReconciliationDataFailure(string $entityId)
+    {
+        // Increment the failure count for the summary.
+        $this->setSummaryCount(self::FAILURES_SUMMARY, $entityId);
+    }
+
+
     protected function setFailUnprocessedRow(bool $failUnprocessedRow)
     {
         $this->failUnprocessedRow = $failUnprocessedRow;
@@ -421,6 +465,12 @@ class SubReconciliate extends Base\Core
         {
             $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
         }
+    }
+
+    protected function handleFailedValidation(string $entityId)
+    {
+        // Increment the failure count for the summary.
+        $this->setSummaryCount(self::FAILURES_SUMMARY, $entityId);
     }
 
     /**

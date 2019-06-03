@@ -4,9 +4,9 @@ namespace RZP\Gateway\Netbanking\Canara;
 
 class Url
 {
-    const LIVE_DOMAIN   = '';
-    const TEST_DOMAIN   = 'https://testepay.canarabank.in';
+    const LIVE_DOMAIN   = 'https://netbanking.canarabank.in/entry';
+    const TEST_DOMAIN   = 'https://testepay.canarabank.in/B001';
 
-    const AUTHORIZE     = '/B001/merchantretailencr';
-    const VERIFY        = '/B001/merchantverify';
+    const AUTHORIZE     = '/merchantretailencr';
+    const VERIFY        = '/merchantverify';
 }

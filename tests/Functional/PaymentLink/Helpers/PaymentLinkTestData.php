@@ -37,30 +37,6 @@ return [
         ],
     ],
 
-    'testCreatePaymentLinkWithCurrencyAndNoAmount' => [
-        'request'   => [
-            'url'     => '/payment_links',
-            'method'  => 'post',
-            'content' => [
-                'currency' => 'INR',
-                'title'    => 'Sample title',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required when currency is present.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testCreatePaymentLinkWithoutAmountOrCurrency' => [
         'request'  => [
             'url'     => '/payment_links',
@@ -76,7 +52,7 @@ return [
                 'user_id'       => User::MERCHANT_USER_ID,
                 'receipt'       => '00000000000001',
                 'amount'        => null,
-                'currency'      => null,
+                'currency'      => 'INR',
                 'title'         => 'Sample title',
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
             ],
@@ -104,6 +80,36 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'expire_by should be at least 15 minutes after current time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentLinkWithMinAmountIntCurrency' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'amount'        => 10,
+                'currency'      => 'USD',
+                'title'         => 'Sample title',
+                'description'   => 'Sample description',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount must be atleast USD 0.50',
                 ],
             ],
             'status_code' => 400,
@@ -196,7 +202,6 @@ return [
             'content' => [
                 'receipt'       => '00000000000002',
                 'amount'        => 4000,
-                'currency'      => 'INR',
                 'title'         => 'Sample test title',
                 'description'   => '[{"insert":"Sample test description"},{"insert":"\\n"}]',
                 'notes'         => [
@@ -209,36 +214,13 @@ return [
                 'id'            => 'pl_100000000000pl',
                 'receipt'       => '00000000000002',
                 'amount'        => 4000,
+                'currency'      => 'INR',
                 'title'         => 'Sample test title',
                 'description'   => '[{"insert":"Sample test description"},{"insert":"\\n"}]',
                 'notes'         => [
                     'sample_key' => 'Sample test notes',
                 ],
             ],
-        ],
-    ],
-
-    'testUpdatePaymentLinkInvalidAmountCurrency' => [
-        'request'  => [
-            'url'     => '/payment_links/pl_100000000000pl',
-            'method'  => 'patch',
-            'content' => [
-                'amount'   => null,
-                'currency' => 'INR',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required when currency is present.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

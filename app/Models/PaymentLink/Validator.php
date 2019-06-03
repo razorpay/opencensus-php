@@ -6,9 +6,10 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -22,13 +23,13 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
-        Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
+        Entity::AMOUNT          => 'sometimes|nullable|mysql_unsigned_int|min_amount|custom',
+        Entity::CURRENCY        => 'filled|string|currency|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'required|string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
+        Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
@@ -45,13 +46,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
-        Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
+        Entity::AMOUNT          => 'nullable|mysql_unsigned_int|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
+        Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
@@ -92,12 +92,17 @@ class Validator extends Base\Validator
         'images.*'   => 'required|image|max:2048',
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected static $createValidators = [
         Entity::SETTINGS,
     ];
 
     protected static $editValidators = [
         Entity::SETTINGS,
+        'min_amount', // Since currency will not be available in edit PP sending currency from custom func.
     ];
 
     /**
@@ -301,13 +306,15 @@ class Validator extends Base\Validator
     /**
      * @param  Payment\Entity $payment
      *
-     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
      */
     public function validatePaymentAmount(Payment\Entity $payment)
     {
         $errorMsg                = null;
         $paymentLink             = $this->entity;
         $paymentAmount           = $payment->getAdjustedAmountWrtCustFeeBearer();
+        // When the merchant is not customer fee bearer the fee will be calcualted at the time of capture so now the
+        // fee will be zero in case of merchant fee bearer.
         $paymentAmountWithoutFee = $payment->getAmount() - $payment->getFee();
         $paymentLinkAmount       = $paymentLink->getAmount();
         $allowMultipleUnits      = (bool) $paymentLink->getSettingsScalarElseNull(Entity::ALLOW_MULTIPLE_UNITS);
@@ -322,7 +329,8 @@ class Validator extends Base\Validator
         {
             $errorMsg = 'Payment amount provided does not match amount expected for the payment link.';
         }
-        // Else if payment for multiple amounts is allowed and payment.notes.units must(if exists) must contain valid integer value.
+        // Else if payment for multiple amounts is allowed and payment.notes.units must(if exists) must
+        // contain valid integer value.
         else if ($allowMultipleUnits === true)
         {
             $paymentUnits = filter_var($payment->getNotes()[Entity::UNITS] ?? '1', FILTER_VALIDATE_INT);
@@ -343,6 +351,49 @@ class Validator extends Base\Validator
                 $errorMsg,
                 Entity::AMOUNT,
                 compact('paymentAmount', 'paymentLinkAmount', 'allowMultipleUnits'));
+        }
+    }
+
+    public function validateCurrency(string $attribute, string $currency)
+    {
+        $paymentLink = $this->entity;
+
+        $international = $paymentLink->merchant->isInternational();
+
+        // Non International accounts should not create PL in other currencies.
+        if (($international !== true) and ($currency !== Currency::INR))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
+                null,
+                [
+                    'currency' => $currency
+                ]);
+        }
+    }
+
+    public function validatePaymentCurrency(Payment\Entity $payment)
+    {
+        $currency = $payment->getCurrency();
+
+        if ($this->entity->getCurrency() !== $currency)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH);
+        }
+    }
+
+    public function validateMinAmount(array $input)
+    {
+        if (empty($input[Entity::AMOUNT]) === false)
+        {
+            $currency = $this->entity->getCurrency();
+
+            $inputAmount = [
+                Entity::AMOUNT   => $input[Entity::AMOUNT],
+                Entity::CURRENCY => $currency,
+            ];
+
+            $this->validateInputValues('min_amount_check', $inputAmount);
         }
     }
 }

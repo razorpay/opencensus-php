@@ -39,21 +39,25 @@ class RecurringCharge extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->trimEntry($entry);
+        try{
+            $this->trimEntry($entry);
 
-        $this->processConvertCase($entry, $this->conversionMap);
+            $this->processConvertCase($entry, $this->conversionMap);
 
-        $this->paymentProcessor->flushPaymentObjects();
+            $this->paymentProcessor->flushPaymentObjects();
 
-        $this->processCurrencyAndAmount($entry);
+            $this->processCurrencyAndAmount($entry);
 
-        $order = $this->createOrder($entry);
+            $order = $this->createOrder($entry);
 
-        $this->processPayment($entry, $order);
+            $this->processPayment($entry, $order);
 
-        $this->processCurrencyAndRevertAmountIfNecessary($entry);
-
-        $entry[Header::STATUS] = Status::SUCCESS;
+            $entry[Header::STATUS] = Status::SUCCESS;
+        }
+        finally
+        {
+            $this->processCurrencyAndRevertAmountIfNecessary($entry);
+        }
     }
 
     protected function createOrder(array & $entry): Order\Entity

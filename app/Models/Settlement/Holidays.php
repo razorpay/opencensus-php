@@ -173,6 +173,7 @@ class Holidays
             ],
             5 => [
                 1  => 'May Day/ Mazdoor Diwas',
+                18 => 'Buddha Purnima',
             ],
             6 => [
                 5 => 'Ramzan Id (Id-Ul-Fitr)',

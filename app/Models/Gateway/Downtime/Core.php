@@ -41,6 +41,7 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function create(array $input, array $uniqueRecordIdentifiers = [])
     {
@@ -111,6 +112,15 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($downtime);
+
+        return $downtime;
+    }
+
+    public function delete(Entity $downtime): Entity
+    {
+        $this->repo->gateway_downtime->deleteOrFail($downtime);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DELETED, $downtime->toArrayPublic());
 
         return $downtime;
     }

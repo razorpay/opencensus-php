@@ -25,13 +25,13 @@ class PhonepeGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->setMockGatewayTrue();
-
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_phonepe_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'wallet_phonepe';
+        $this->gateway = 'mozart';
+
+        $this->setMockGatewayTrue();
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'phonepe');
     }
@@ -56,9 +56,12 @@ class PhonepeGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
-        $this->mockServerContentFunction(function (& $content)
+        $this->mockServerContentFunction(function (& $content, $action)
         {
-            $content['amount'] = 100;
+            if ($action === 'authorize')
+            {
+                $content['amount'] = 100;
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -71,11 +74,12 @@ class PhonepeGatewayTest extends TestCase
 
     public function testCallbackEmptyResponseBody()
     {
-        $this->mockServerContentFunction(function (& $content)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            $content = [];
-
-            return $content;
+            if ($action === 'authorize')
+            {
+                $content = [];
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -128,6 +132,7 @@ class PhonepeGatewayTest extends TestCase
             Mozart\Entity::ACTION       => 'authorize',
             Mozart\Entity::AMOUNT       => 50000,
             Mozart\Entity::PAYMENT_ID   => substr($id,4),
+            Mozart\Entity::RAW          => '{}',
         ]);
 
         $this->runRequestResponseFlow($data, function() use ($id)

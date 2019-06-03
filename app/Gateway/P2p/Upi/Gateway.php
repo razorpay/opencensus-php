@@ -45,6 +45,15 @@ class Gateway extends Base\Gateway
         return $gateway->response();
     }
 
+    public function upi(Context $context)
+    {
+        $gateway = Factory::make($context, Contracts\UpiGateway::class);
+
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
+        return $gateway->response();
+    }
+
     protected function sendGatewayRequest($request)
     {
         if ($this->mock === true)
@@ -82,6 +91,8 @@ class Gateway extends Base\Gateway
         $server->setGatewayServer($gatewayServer);
 
         $action = camel_case($this->entity . '_' . $this->action);
+
+        $gatewayServer->request($content, $action);
 
         $response = $gatewayServer->{$action}($content);
 

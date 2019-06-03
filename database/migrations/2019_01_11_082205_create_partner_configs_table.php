@@ -7,7 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Partner\Config\Entity;
 use RZP\Models\Pricing\Entity as Pricing;
-use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Partner\Config\CommissionModel;
 
 class CreatePartnerConfigsTable extends Migration
 {
@@ -51,6 +51,9 @@ class CreatePartnerConfigsTable extends Migration
 
             $table->tinyInteger(Entity::EXPLICIT_SHOULD_CHARGE)
                   ->default(0);
+
+            $table->string(Entity::COMMISSION_MODEL)
+                  ->default(CommissionModel::COMMISSION);
 
             $table->integer(Entity::REVISIT_AT);
 

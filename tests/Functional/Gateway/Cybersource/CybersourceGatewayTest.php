@@ -12,6 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Cybersource\Fields;
 use RZP\Jobs\CorePaymentServiceSync;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 
@@ -19,6 +20,7 @@ class CybersourceGatewayTest extends TestCase
 {
     use PaymentTrait;
     use TransactionTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -616,6 +618,91 @@ class CybersourceGatewayTest extends TestCase
         $this->assertSame($response['gateway']['gatewayPayment']['status'], 'authorize_failed');
     }
 
+    public function testVerifyDataUpdation()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'pay_init')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_FAILED';
+                $content['error']['gateway_error_code'] = 'DONOTHONOUR';
+                $content['error']['gateway_error_description'] = 'Do not honour';
+                $content['data']['gateway_reference_id1']  = '5474993075916772203012';
+            }
+        });
+
+        $this->makeRequestAndCatchException(function()
+        {
+            $this->doAuthPayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('5474993075916772203012', $cybsEntity['ref']);
+
+        $this->mockServerContentFunction(function(&$content, $action)
+        {
+            if ($action === 'verify_content')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_FAILED';
+                $content['error']['gateway_error_code'] = 'DONOTHONOUR';
+                $content['error']['gateway_error_description'] = 'Do not honour';
+                $content['data']['status'] = 'authorize_failed';
+                $content['data']['gateway_reference_id1']  = '5474993075916772203013';
+            }
+        });
+
+        $response = $this->verifyPayment($payment['id']);
+
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+        $this->assertEquals('5474993075916772203013', $cybsEntity['ref']);
+
+        $this->assertSame($response['payment']['verified'], 1);
+        $this->assertSame($response['gateway']['status'], 'status_match');
+    }
+
+    public function testVerifyMisMatch()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'pay_init')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_FAILED';
+                $content['error']['gateway_error_code'] = 'DONOTHONOUR';
+                $content['error']['gateway_error_description'] = 'Do not honour';
+                $content['data']['gateway_reference_id1']  = '5474993075916772203012';
+            }
+        });
+
+        $this->makeRequestAndCatchException(function()
+        {
+            $this->doAuthPayment();
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('5474993075916772203012', $cybsEntity['ref']);
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        },
+        Exception\PaymentVerificationException::class);
+
+
+        $payment = $this->getLastEntity('payment', true);
+        $cybsEntity = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('5470653499446597903009', $cybsEntity['ref']);
+
+        $this->assertSame($payment['verified'], 0);
+    }
+
     public function testAuthorizeFailedPayment()
     {
         $enrolledCard = [
@@ -664,6 +751,37 @@ class CybersourceGatewayTest extends TestCase
         $this->assertTestResponse($cybersource);
     }
 
+    public function testGatewayTimeOutAtCapture()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'capture')
+            {
+                $content['success'] = false;
+                $content['error']['internal_error_code'] = 'GATEWAY_ERROR_TIMED_OUT';
+                $content['data'] = null;
+            }
+        });
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->doAuthAndCapturePayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('cybersource', $payment['gateway']);
+
+        $this->assertEquals(2, count($this->getDbEntities('cybersource')));
+
+        $cybs = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($payment['id'], 'pay_'.$cybs['payment_id']);
+        $this->assertEquals('capture', $cybs['action']);
+        $this->assertEquals('created', $cybs['status']);
+    }
+
     public function testGatewayPaymentXidMisMatch()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -700,6 +818,138 @@ class CybersourceGatewayTest extends TestCase
             {
                 $content['data']['eci'] = null;
             }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentInternalServerError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Server Error';
+            $content['error']['internal_error_code'] = 'SERVER_ERROR_RUNTIME_ERROR';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentValidationError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Validation Error';
+            $content['error']['internal_error_code'] = 'BAD_REQUEST_VALIDATION_FAILURE';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentRouteNotFoundError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Route Not Found Error';
+            $content['error']['internal_error_code'] = 'BAD_REQUEST_URL_NOT_FOUND';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentGatewayErrorRequestError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Gateway Error';
+            $content['error']['internal_error_code'] = 'GATEWAY_ERROR_REQUEST_ERROR';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentCustomValidationError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Route Not Found Error';
+            $content['error']['internal_error_code'] = 'SERVER_ERROR_LOGICAL_ERROR';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentGatewayErrorChecksumError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Route Not Found Error';
+            $content['error']['internal_error_code'] = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
         });
 
         $data = $this->testData[__FUNCTION__];

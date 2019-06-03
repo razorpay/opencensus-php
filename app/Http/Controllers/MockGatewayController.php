@@ -241,6 +241,24 @@ class MockGatewayController extends Controller
         return $data;
     }
 
+    public function postMozartPayment($gateway)
+    {
+        $input = Request::all();
+
+        $server = $this->gateway->server('mozart');
+
+        $server->setGateway($gateway);
+
+        $data = $server->authorize($input);
+
+        if (filter_var($data, FILTER_VALIDATE_URL))
+        {
+            return Redirect::to($data);
+        }
+
+        return $data;
+    }
+
     public function postCardlessEmiPayment()
     {
         $input = Request::all();

@@ -151,7 +151,7 @@ class EsClient
 
         if ($this->esMock === true)
         {
-            return ['errors' => false];
+            return ['errors' => false, 'took' => '1'];
         }
 
         $response = $this->client->bulk($params);

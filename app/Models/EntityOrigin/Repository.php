@@ -13,7 +13,7 @@ class Repository extends BaseRepository
         Entity::ORIGIN_ID   => 'sometimes|string|size:14',
         Entity::ORIGIN_TYPE => 'sometimes|string|in:merchant,application',
         Entity::ENTITY_ID   => 'sometimes|string|size:14',
-        Entity::ENTITY_TYPE => 'sometimes|string|in:payment',
+        Entity::ENTITY_TYPE => 'sometimes|string',
     ];
 
     public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId)

@@ -15,4 +15,9 @@ class ArrayBag extends Support\Collection
 
         return $this;
     }
+
+    public function bag(string $key)
+    {
+        return new self($this->get($key, []));
+    }
 }

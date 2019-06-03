@@ -419,4 +419,30 @@ return [
     E::FUND_ACCOUNT => [],
 
     E::STATEMENT => [],
+
+    E::MERCHANT_USER => [],
+
+    E::P2P_DEVICE => [],
+
+    E::P2P_DEVICE_TOKEN => [],
+
+    E::P2P_REGISTER_TOKEN => [],
+
+    E::P2P_BANK => [],
+
+    E::P2P_BANK_ACCOUNT => [],
+
+    E::P2P_VPA => [],
+
+    E::P2P_HANDLE => [],
+
+    E::P2P_BENEFICIARY => [],
+
+    E::P2P_TRANSACTION => [],
+
+    E::P2P_UPI_TRANSACTION => [],
+
+    E::P2P_CONCERN => [],
+
+    E::CUSTOMER => [],
 ];

@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Vpa;
+use RZP\Models\Card;
 use RZP\Models\User;
 use RZP\Services\FTS;
 use RZP\Models\Batch;
@@ -197,6 +198,12 @@ class ApiServiceProvider extends BaseServiceProvider
             return new EventTrackerClient($app);
         });
 
+        $this->app->singleton('diag', function($app)
+        {
+            return new DiagClient($app);
+        });
+
+
         $this->app->singleton('eventManager', function($app)
         {
             $harvesterClientMock = $app['config']->get('applications.harvester.mock');
@@ -230,6 +237,13 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('beam', function($app)
         {
+            $beamServiceMock = $app['config']->get('applications.beam.mock');
+
+            if ($beamServiceMock === true)
+            {
+                return new Mock\BeamService($app);
+            }
+
             return new BeamService($app);
         });
 
@@ -324,6 +338,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_create_account',
             'fts_register_account',
             'fts_fund_transfer',
+            'diag',
         ];
     }
 
@@ -487,6 +502,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // transaction
             'adjustment'                => Adjustment\Entity::class,
             'payment'                   => Payment\Entity::class,
+            'card'                      => Card\Entity::class,
             'order'                     => Order\Entity::class,
             'refund'                    => Payment\Refund\Entity::class,
             'settlement'                => Settlement\Entity::class,

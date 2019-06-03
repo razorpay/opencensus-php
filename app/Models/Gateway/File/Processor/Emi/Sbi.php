@@ -21,6 +21,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
@@ -186,6 +187,7 @@ class Sbi extends Base
                         null,
                         [
                             'gateway'       => 'emi_sbi',
+                            'gateway_file'  => $this->gatewayFile->getId(),
                             'payment_id'    => $emiPayment['id'],
                             'merchant_id'   => $merchantDetail[Detail\Entity::MERCHANT_ID],
                         ]);
@@ -341,6 +343,10 @@ class Sbi extends Base
         ];
     }
 
+    /**
+     * @param $data
+     * @throws GatewayErrorException
+     */
     protected function sendEmiFile($data)
     {
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
@@ -350,11 +356,11 @@ class Sbi extends Base
         $bucketConfig = $this->getBucketConfig();
 
         $data =  [
-            Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
-            Service::BEAM_PUSH_BUCKET_NAME => $bucketConfig['name'],
+            Service::BEAM_PUSH_FILES         => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME       => BeamConstants::SBI_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
             Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
-            Service::BEAM_PUSH_DECRYPTION => [
+            Service::BEAM_PUSH_DECRYPTION    => [
                 Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
                 Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
                 Service::BEAM_PUSH_DECRYPTION_KEY  => bin2hex($data['password']),
@@ -368,11 +374,27 @@ class Sbi extends Base
             'fileInfo'  => $fileInfo,
             'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'File Send failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
+            'subject'   => 'SBI EMI - File Send failure',
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::GATEWAY_POD]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
+                [
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->file->getId(),
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'gateway'       => 'sbi_emi',
+                ]
+            );
+        }
 
         $this->sendConfirmationMail();
     }

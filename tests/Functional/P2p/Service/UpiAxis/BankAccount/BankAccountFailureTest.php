@@ -47,4 +47,96 @@ class BankAccountFailureTest extends TestCase
         $helper->retrieve($request['callback'], $content);
 
     }
+
+    public function testRetrieveBankFailure()
+    {
+        $this->fixtures->bank_account->setGatewayData([])->saveOrFail();
+
+        $helper = $this->getBankAccountHelper();
+
+        $request = $helper->initiateRetrieve('bank_' . Base\Constants::ARZP_AXIS);
+
+        $this->mockSdk()->withError('U13', 'Your bank is facing some issue, please try after sometime');
+
+        $content = $this->handleSdkRequest($request);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'GATEWAY_ERROR',
+                'description'   => 'U13. Your bank is facing some issue, please try after sometime',
+            ], $error);
+        }, 502);
+
+        $helper->retrieve($request['callback'], $content);
+
+    }
+
+    public function testSetUpiPinFailure()
+    {
+        $helper = $this->getBankAccountHelper();
+
+        $request = $helper->initiateSetUpiPin($this->fixtures->bank_account->getPublicId());
+
+        $this->mockSdkContentFunction(function(& $content)
+        {
+            $content['gatewayResponseCode'] = 'XN';
+            $content['gatewayResponseMessage'] = 'You have entered incorrect card details';
+        });
+
+        $content = $this->handleSdkRequest($request);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'GATEWAY_ERROR',
+                'description'   => 'XN. You have entered incorrect card details',
+            ], $error);
+        }, 502);
+
+        $helper->retrieve($request['callback'], $content);
+
+    }
+
+    public function testRetrieveSdkNetworkFailure()
+    {
+        $helper = $this->getBankAccountHelper();
+
+        $request = $helper->initiateRetrieve('bank_' . Base\Constants::ARZP_AXIS);
+
+        $this->mockSdk()->withError('NETWORK_ERROR');
+
+        $content = $this->handleSdkRequest($request);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'GATEWAY_ERROR',
+                'description'   => 'Unable to connect to bank',
+            ], $error);
+        }, 502);
+
+        $helper->retrieve($request['callback'], $content);
+    }
+
+    public function testRetrieveSdkInvalidData()
+    {
+        $helper = $this->getBankAccountHelper();
+
+        $request = $helper->initiateSetUpiPin($this->fixtures->bank_account->getPublicId());
+
+        $this->mockSdk()->withError('INVALID_DATA');
+
+        $content = $this->handleSdkRequest($request);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'GATEWAY_ERROR',
+                'description'   => 'Action could not be completed at bank',
+            ], $error);
+        }, 502);
+
+        $helper->retrieve($request['callback'], $content);
+    }
 }

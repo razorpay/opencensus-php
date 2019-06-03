@@ -7,6 +7,7 @@ use RZP\Models\P2p\Vpa;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\Base\PublicCollection;
 
 /**
  * @property Core $core
@@ -18,17 +19,13 @@ class Processor extends Base\Processor
 {
     public function add(array $input): array
     {
-        $this->initialize(Action::ADD, $input);
+        $this->initialize(Action::ADD, $input, true);
 
-        return [
-            'id'               => 'vpa_8zIfY8quFElCbH',
-            'entity'           => 'vpa',
-            'beneficiary_name' => $input['beneficiary_name'],
-            'address'          => $input['address'],
-            'username'         => 'beneficiary',
-            'handle'           => 'razorhdfc',
-            'created_at'       => time()
-        ];
+        $beneficiary = $this->findByEntity($this->input->get(Entity::TYPE), $this->input->get(Entity::ID));
+
+        $entity = $this->core->findOrCreate($beneficiary, $this->input->toArray());
+
+        return $entity->toArrayPublic();
     }
 
     public function validate(array $input): array
@@ -81,39 +78,92 @@ class Processor extends Base\Processor
         return $beneficiary->toArrayBeneficiary();
     }
 
+    public function handleBeneficiary(array $input): array
+    {
+        $this->initialize(Action::HANDLE_BENEFICIARY, $input, true);
+
+        $this->gatewayInput = $this->input;
+
+        return $this->callGateway();
+    }
+
+    protected function handleBeneficiarySuccess(array $input): array
+    {
+        $this->initialize(Action::HANDLE_BENEFICIARY_SUCCESS, $input, true);
+
+        $response = $this->toBeneficiaryVpa($this->input->toArray());
+
+        return $response;
+    }
+
     public function fetchAll(array $input): array
     {
         $this->initialize(Action::FETCH_ALL, $input);
 
-        return [
-            'entity'   => 'collection',
-            'count'    => 2,
-            'items'    => [
-                [
-                    'id'                    => 'vpa_8zIfY8quFElCbH',
-                    'entity'                => 'vpa',
-                    'beneficiary_name'      => 'Beneficiary Name',
-                    'address'               => 'beneficiary@razorhdfc',
-                    'username'              => 'beneficiary',
-                    'handle'                => 'razorhdfc',
-                    'created_at'            => time()
-                ],
-                [
-                    'id'                    => 'ba_8zIfY7hSkCF8wr',
-                    'entity'                => 'bank_account',
-                    'beneficiary_name'      => 'Beneficiary Name',
-                    'masked_account_number' => '*********1234',
-                    'ifsc_code'             => 'RAZ00000001',
-                    'bank_name'             => 'Razorpay',
-                    'address'               => '100010001000@RAZ00000001.ifsc.npci',
-                    'created_at'            => time()
-                ]
-            ]
-        ];
+        if (empty($this->input->get(Entity::BLOCKED)) === false)
+        {
+            $this->input->put(Entity::TYPE, Vpa\Entity::VPA);
+
+            $this->gatewayInput = $this->input;
+
+            return $this->callGateway();
+        }
+
+        return parent::fetchAll($input);
+    }
+
+    public function fetchAllSuccess(array $input): array
+    {
+        $this->initialize(Action::FETCH_ALL_SUCCESS, $input);
+
+        $collection = new PublicCollection();
+
+        foreach ($this->input->get(Entity::DATA) as $beneficiary)
+        {
+            $collection->push($this->toBeneficiaryVpa($beneficiary));
+        }
+
+        $output[PublicCollection::ENTITY]   = 'collection';
+        $output[PublicCollection::COUNT]    = $collection->count();
+        $output[PublicCollection::ITEMS]    = $collection->toArray();
+
+        return $output;
     }
 
     protected function getEntity()
     {
         return $this->input->get(Entity::TYPE);
+    }
+
+    protected function findByEntity(string $type, string $id)
+    {
+        switch ($type)
+        {
+            case BankAccount\Entity::BANK_ACCOUNT:
+                $beneficiary = (new BankAccount\Core)->find($id);
+                break;
+
+            case Vpa\Entity::VPA:
+                $beneficiary = (new Vpa\Core)->find($id);
+                break;
+        }
+
+        return $beneficiary;
+    }
+
+    protected function toBeneficiaryVpa(array $input): array
+    {
+        $response = array_only($input, [
+            Vpa\Entity::USERNAME,
+            Vpa\Entity::HANDLE,
+            Entity::BLOCKED,
+            Entity::SPAMMED,
+            Entity::BLOCKED_AT,
+        ]);
+
+        $response[Vpa\Entity::ENTITY]  = Vpa\Entity::VPA;
+        $response[Vpa\Entity::ADDRESS] = Vpa\Entity::toAddress($input);
+
+        return $response;
     }
 }

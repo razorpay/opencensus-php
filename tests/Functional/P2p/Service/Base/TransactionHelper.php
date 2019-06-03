@@ -127,7 +127,7 @@ class TransactionHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function callbackIncomingCollect(string $gateway, array $content = [])
+    public function callback(string $gateway, array $options = [])
     {
         // This API work on direct auth
         $this->setMerchantInContext(false);
@@ -138,10 +138,51 @@ class TransactionHelper extends P2pHelper
 
         $this->resetContexts();
 
+        $request->server($options['server'] ?? []);
+
+        $request->json($options['content']);
+
+        return $this->post($request);
+    }
+
+    public function raiseConcern(string $transactionId, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'transaction/raise_concern';
+
+        $request = $this->request('concerns/transactions/%s', [$transactionId]);
+
+        $default = [
+            'comment' => 'Raising a concern'
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
+    public function concernStatus(string $transactionId, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'transaction/raise_concern';
+
+        $request = $this->request('concerns/transactions/%s/status', [$transactionId]);
+
         $default = [];
 
         $this->content($request, $default, $content);
 
         return $this->post($request);
+    }
+
+    public function fetchAllConcerns(array $content)
+    {
+        $this->validationJsonSchemaPath = 'transaction/fetch_all_concerns';
+
+        $request = $this->request('concerns/transactions?');
+
+        $default = [];
+
+        $this->content($request, $default, $content);
+
+        return $this->get($request);
     }
 }

@@ -13,8 +13,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
-use RZP\Jobs\FTS\CreateAccount;
-use RZP\Models\FundAccount\Type;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
@@ -80,6 +78,7 @@ class Core extends Base\Core
      * `source` entity can be customer|contact
      *
      * @param array             $input
+     * @param MerchantEntity    $merchant
      * @param Base\PublicEntity $source
      *
      * @return Entity
@@ -278,9 +277,6 @@ class Core extends Base\Core
         $ba = $ba->build($input, $addRule);
 
         $ba->merchant()->associate($merchant);
-
-        // Doing this since bank account type/source should not be null
-        $source = $source ?? $merchant;
 
         $ba->source()->associate($source);
 

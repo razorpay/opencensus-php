@@ -223,4 +223,26 @@ return [
             'notes[code]'               => '',
         ],
     ],
+
+    'testSendMailFromBatchService' => [
+        'request'  => [
+            'url'     => '/batch/sendmail',
+            'method'  => 'post',
+            'content' => [
+                'bucket_type'      => 'batch_service',
+                'batch'            => [
+                    'type'        => 'payment_link',
+                    'merchant_id' => 'CVuOcOYoUiAqNY',
+                ],
+                'settings'         => null,
+                'download_file'    => true,
+                'output_file_path' => 'testing/key/payment.csv',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
 ];

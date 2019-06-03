@@ -113,6 +113,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 
+    public function testBankTransferProcessForTinyAmount()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 0.99);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(99, $bankTransfer['amount']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(99, $payment['amount']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
+    }
+
     public function testBankTransferProcessForDisabledMethod()
     {
         // New merchant account, VA created
@@ -384,6 +412,13 @@ class BankTransferTest extends TestCase
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
 
         $refund = $this->getLastEntity('refund', true);
+
+        // Adding this since post reconciliation, we update the status at scrooge side,
+        // post which scrooge sends an update status request to API
+        $this->scroogeUpdateRefundStatus($refund, Refund\Status::PROCESSED);
+
+        $refund = $this->getLastEntity('refund', true);
+
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertNotNull($refund['processed_at']);
         $this->assertEquals(1, $refund['attempts']);
@@ -1953,7 +1988,7 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -2030,5 +2065,56 @@ class BankTransferTest extends TestCase
         // virtual account did not have any associated order.
         $this->assertNotNull($payment['fee']);
         $this->assertNull($payment['order_id']);
+    }
+
+    public function testBankTransferProcessWithPayerBankAccountOf4Chars()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $request['content']['transaction_id'] = $utr;
+
+        $request['content']['amount'] = 50000;
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('UDAN', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 }

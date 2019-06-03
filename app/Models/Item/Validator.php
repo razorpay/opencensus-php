@@ -3,10 +3,10 @@
 namespace RZP\Models\Item;
 
 use RZP\Base;
-use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base as BaseModel;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ExtraFieldsException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -21,12 +21,21 @@ class Validator extends Base\Validator
     const TAX_INPUTS = 'tax_inputs';
     const TAX_CODES  = 'tax_codes';
 
+    const TAX_ATTRIBUTES = [
+        Entity::TAX_INCLUSIVE,
+        Entity::HSN_CODE,
+        Entity::SAC_CODE,
+        Entity::TAX_RATE,
+        Entity::TAX_ID,
+        Entity::TAX_GROUP_ID
+    ];
+
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min:100',
-        Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'required|size:3|in:INR',
+        Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min_amount',
+        Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min_amount',
+        Entity::CURRENCY            => 'required|currency|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'filled|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
@@ -41,9 +50,9 @@ class Validator extends Base\Validator
         Entity::ACTIVE              => 'filled|boolean',
         Entity::NAME                => 'filled|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
-        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
-        Entity::CURRENCY            => 'filled|size:3|in:INR',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int',
+        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int',
+        Entity::CURRENCY            => 'filled|currency|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
         Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
@@ -53,19 +62,48 @@ class Validator extends Base\Validator
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected static $createValidators = [
+        'tax_attributes_international',
         self::TAX_INPUTS,
         self::TAX_CODES,
     ];
 
     protected static $editValidators = [
+        'tax_attributes_international',
         self::TAX_INPUTS,
         self::TAX_CODES,
+        'min_amount',
     ];
 
     public function validateType($attribute, $value)
     {
         Type::checkType($value);
+    }
+
+    /**
+     * For international currency items we should not calculate or allow tax attributes.
+     *
+     * @param array $input
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
+    public function validateTaxAttributesInternational(array $input)
+    {
+        $currency = $input[Entity::CURRENCY] ?? $this->entity->getCurrency();
+
+        if ($currency !== Currency::INR)
+        {
+            $invalidKeys = array_intersect_key($input, array_flip(self::TAX_ATTRIBUTES));
+
+            if (count($invalidKeys) > 0)
+            {
+                throw new ExtraFieldsException(array_keys($invalidKeys));
+            }
+        }
     }
 
     /**
@@ -103,6 +141,24 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateMinAmount(array $input)
+    {
+
+        if ((empty($input[Entity::AMOUNT]) === false) or (empty($input[Entity::UNIT_AMOUNT]) === false))
+        {
+            $input[Entity::AMOUNT] = $input[Entity::AMOUNT] ?? $input[Entity::UNIT_AMOUNT];
+
+            $currency = $this->entity->getCurrency();
+
+            $inputAmount = [
+                Entity::AMOUNT   => $input[Entity::AMOUNT],
+                Entity::CURRENCY => $currency,
+            ];
+
+            $this->validateInputValues('min_amount_check', $inputAmount);
+        }
+    }
+
     public function validateUpdateOperation(Entity $item)
     {
         if ($item->isNotOfType(Type::INVOICE) === true)
@@ -137,7 +193,7 @@ class Validator extends Base\Validator
         if ($item->lineItems()->count() > 0)
         {
             throw new BadRequestValidationFailureException(
-                'Cannot edit/delete an item with which invoices have been created already',
+                'Cannot delete an item with which invoices have been created already',
                 null,
                 [
                     Entity::ID   => $item->getId(),
@@ -173,6 +229,23 @@ class Validator extends Base\Validator
                 "item must be of type: {$actualType}",
                 Entity::TYPE,
                 compact('id', 'expectedType', 'actualType'));
+        }
+    }
+
+    public function validateCurrency($attribute, $currency)
+    {
+        $merchant = app()->basicauth->getMerchant();
+
+        $international = $merchant->isInternational();
+
+        if (($international !== true) and ($currency !== Currency::INR))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,
+                null,
+                [
+                    'currency' => $currency
+                ]);
         }
     }
 }

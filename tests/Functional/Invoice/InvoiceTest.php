@@ -103,6 +103,35 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceLinkWithIdempotentId()
+    {
+        $response = $this->startTest();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertEquals('B24Y8gjypHOVOm', $response['idempotency_key']);
+
+        $this->assertEquals('B24Y8gjypHOVOm', $invoice['idempotency_key']);
+    }
+
+    public function testCreateInvoiceLinkWithIdempotentIdAndGetTheResponse()
+    {
+        $attributes = [
+            'receipt'         => '1',
+            'order_id'        => $this->fixtures->create('order')->getId(),
+            'idempotency_key' => 'B24Y8gjypHOVOm',
+            'type'            => 'link'
+        ];
+
+        $this->fixtures->create('invoice', $attributes);
+
+        $response = $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($response['receipt'], $invoice['receipt']);
+    }
+
     public function testCreateInvoiceWithExistingCustomer()
     {
         $response = $this->startTest();
@@ -112,8 +141,35 @@ class InvoiceTest extends TestCase
         $this->assertEquals('cust_100000customer', $response['customer_id']);
     }
 
+    public function testCreateBulkInvoices()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        // once idempotent PR merges
+        // https://github.com/razorpay/api/pull/11830
+        // then assert with idempotent key
+
+    }
+
     public function testCreateInvoiceWithCustomerIdAndDetails()
     {
+        $this->startTest();
+    }
+
+
+    public function testCreateInvoiceWithInternationalCurrency()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithInternationalCurrencyTax()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
         $this->startTest();
     }
 
@@ -590,6 +646,11 @@ class InvoiceTest extends TestCase
     }
 
     public function testCreateInvoiceWithAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithAmountIntCurrency()
     {
         $this->startTest();
     }
@@ -2673,6 +2734,17 @@ class InvoiceTest extends TestCase
 
                 return true;
             });
+    }
+
+    public function testUpdateBillingPeriod()
+    {
+        $this->createOrder();
+
+        $this->createIssuedInvoice();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------

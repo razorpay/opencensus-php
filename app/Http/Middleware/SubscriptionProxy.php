@@ -23,10 +23,12 @@ class SubscriptionProxy
 
     protected $router;
 
-    const REQUEST_TIMEOUT = 10;
+    protected $requestTimeout;
 
     public function __construct(Application $app)
     {
+        $this->requestTimeout = $app['config']->get('app.subscription_proxy_timeout');
+
         $this->app = $app;
 
         $this->ba = $this->app['basicauth'];
@@ -54,7 +56,7 @@ class SubscriptionProxy
         ];
 
         $defaultOptions = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $this->requestTimeout,
             'auth'    => [$username, $password],
         ];
 
@@ -161,6 +163,11 @@ class SubscriptionProxy
 
     protected function parseResponse($response)
     {
+        if ($this->isHostedPageUrl() === true)
+        {
+            return $this->parseAsHtml($response);
+        }
+
         $code = $response->status_code;
         $body = json_decode($response->body, true);
 
@@ -170,6 +177,21 @@ class SubscriptionProxy
         ]);
 
         return ApiResponse::json($body, $code);
+    }
+
+    protected function parseAsHtml($response)
+    {
+
+        $code = $response->status_code;
+
+        $body = $response->body;
+
+        $this->trace->info(TraceCode::SUBSCRIPTION_SERVICE_PROXY_RESPONSE, [
+            'code' => $code,
+            'body' => $body,
+        ]);
+
+        return \Response::make($body);
     }
 
     protected function hasRequestTimedOut(\Requests_Exception $e): bool
@@ -253,5 +275,18 @@ class SubscriptionProxy
         $isFeatureEnabled = optional($this->ba->getMerchant())->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_V2);
 
         return ($isFeatureEnabled === true);
+    }
+
+    protected function isHostedPageUrl(): bool
+    {
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        if (($currentRoute === 'subscription_view_test') or
+            ($currentRoute === 'subscription_view_live'))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

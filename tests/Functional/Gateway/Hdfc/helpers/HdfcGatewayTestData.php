@@ -58,6 +58,22 @@ return [
         'entity' => 'payment',
     ],
 
+    'testPaymentForAuthorizationTerminalRupay' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\RuntimeException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
     'testPaymentForAuthorizationTerminalFailure' => [
         'response' => [
             'content' => [

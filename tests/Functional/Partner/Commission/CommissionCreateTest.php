@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Partner\Commission;
 
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Partner\Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
@@ -222,6 +223,261 @@ class CommissionCreateTest extends TestCase
     }
 
     /**
+     * Assert that payment is getting created using fees fetched for customer bearer merchant
+     * which includes explicit partner charges when both fees fetch and payment create are on bearer auth
+     */
+    public function testCustomerBearerPaymentCreateBearerAuth()
+    {
+        list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $client = $this->getAppClientByEnv($application);
+
+        $this->generateOAuthAccessTokenForClient(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'scopes' => ['read_write'],
+            ],
+            $client);
+
+        $this->ba->oauthPublicTokenAuth();
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'fee_bearer' => 'customer',
+            ]);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $requestData = $this->testData['testCustomerBearerExplicitBearerAuth'];
+
+        $feesData = $this->runRequestResponseFlow($requestData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['fee']    = $feesData['display']['fees'] * 100;
+        $payment['amount'] = $feesData['display']['amount'] * 100;
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $paymentEntity = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
+
+        $this->assertEquals($payment['fee'], $paymentEntity->getFee());
+    }
+
+    /**
+     * Asserts that the commission must not be added since the request is not through the partner / bearer auth
+     */
+    public function testCustomerBearerExplicitPublicAuth()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $this->fixtures->merchant->edit($subMerchant->getId(),
+            [
+                'fee_bearer' => 'customer',
+            ]);
+
+        $this->createConfigForPartnerApp(
+            $app->getId(),
+            $subMerchant->getId(),
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $this->setSubmerchantPublicAuth($subMerchant->getId());
+
+        $this->startTest();
+    }
+
+    /**
+     * Check that when payment fees is fetched using bearer auth and includes commission fees
+     * then payment authorization fails if for payment create, merchant auth is used
+     */
+    public function testCustomerBearerPaymentCreateBearerAndPublicAuth()
+    {
+        list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $client = $this->getAppClientByEnv($application);
+
+        $this->generateOAuthAccessTokenForClient(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'scopes' => ['read_write'],
+            ],
+            $client);
+
+        $this->ba->oauthPublicTokenAuth();
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'fee_bearer' => 'customer',
+            ]);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $requestData = $this->testData['testCustomerBearerExplicitBearerAuth'];
+
+        $feesData = $this->runRequestResponseFlow($requestData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['fee']    = $feesData['display']['fees'] * 100;
+        $payment['amount'] = $feesData['display']['amount'] * 100;
+
+        $key = $this->fixtures->create('key', ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $key = 'rzp_test_' . $key->getKey();
+
+        $this->app->forgetInstance('basicauth');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment, $key)
+        {
+            $this->doAuthPayment($payment, null, $key);
+        });
+    }
+
+    /**
+     * Asserts that explicit commission gets created when customer bearer payment is captured
+     */
+    public function testCustomerBearerExplicitOnPaymentCapture()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'fee_bearer' => 'customer',
+            ]);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $paymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => (4000 * 100 + (4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
+            'fee'         => ((4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
+        ];
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->createEntityOrigin('payment', $payment->getId());
+
+        $this->setSubmerchantPrivateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['amount'] = 400000;
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/capture';
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
+
+        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+    }
+
+    /**
+     * Checks that capture works on an already authorized payment even after editing the explicit pricing plan.
+     * Also checks that commission and fee break ups are created for explicit commission
+     */
+    public function testCustomerBearerOnExistingAuthorizedPayment()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->fixtures->merchant->edit(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'fee_bearer' => 'customer',
+            ]);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $paymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => (4000 * 100 + (4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
+            'fee'         => ((4000 * 2) + (4000 * 2 * 18 / 100) + (4000 * 0.2) + (4000 * 0.2 * 18 / 100)),
+        ];
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->createEntityOrigin('payment', $payment->getId());
+
+        $this->setSubmerchantPrivateAuth();
+
+        $this->fixtures->pricing->edit('C6rNP4gZXcnZWM',
+            [
+                'percent_rate' => 10,
+            ]);
+
+        $this->fixtures->pricing->edit('C6rNP7QE0mIzpW',
+            [
+                'percent_rate' => 10,
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['amount'] = 400000;
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/capture';
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);
+
+        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+    }
+
+    public function testImplicitVariableAndExplicitForSubvention()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'commission_model'       => Config\CommissionModel::SUBVENTION,
+                'implicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 1,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT, 2);
+
+        $this->assertEquals(Config\CommissionModel::SUBVENTION, $commission['model']);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT, 2);
+
+        $this->assertExplicitCommissionFeeBreakUp($payment, $commission);
+    }
+
+    /**
      * checks that both implicit and explicit commissions are created
      * if both implicit and explicit plans are present and the fee model is postpaid
      */
@@ -301,7 +557,7 @@ class CommissionCreateTest extends TestCase
 
         $testData['request']['content']['amount'] = $payment->getAmount();
 
-        $testData['request']['url'] = '/payments/pay_'.$payment->getId().'/capture';
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/capture';
 
         return $testData;
     }
@@ -332,6 +588,11 @@ class CommissionCreateTest extends TestCase
         if ($type === CommissionType::IMPLICIT)
         {
             $this->assertFalse($commissionByType['record_only']);
+        }
+        else
+        {
+            // explicit commission can never be of subvention model
+            $this->assertEquals(Config\CommissionModel::COMMISSION, $commissionByType['model']);
         }
 
         return [$payment, $commissionByType];

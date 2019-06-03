@@ -6,6 +6,7 @@ use Event;
 
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
+use RZP\Models\Card\Network;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Cache\Events\CacheHit;
@@ -51,7 +52,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(65, $count);
+        $this->assertEquals(83, $count);
 
         $this->assertArrayNotHasKey('recurring', $content);
     }
@@ -77,7 +78,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(65, $count);
+        $this->assertEquals(83, $count);
     }
 
     public function testBulkMethodUpdate()
@@ -87,6 +88,8 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->enableMobikwik('10000000000000');
 
         $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->setDisabledBanks('10000000000000', ['HDFC']);
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
 
@@ -99,7 +102,49 @@ class MethodsTest extends TestCase
         $this->assertEquals($content['netbanking'], true);
         $this->assertEquals($content['mobikwik'], true);
 
-        $this->assertEquals($content['card_networks']['DICL'], true);
+        $this->assertEquals($content['card_networks']['DICL'], false);
+        $this->assertEquals($content['card_networks']['MAES'], true);
+        $this->assertEquals($content['card_networks']['RUPAY'], false);
+    }
+
+    public function testBulkMethodUpdateEnableBanks()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->setDisabledBanks('10000000000000', ['HDFC', 'ICIC']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $content = $this->getLastEntity('methods', true);
+
+        // Assert if HDFC removed from `disabled_banks` list
+        $this->assertArraySelectiveEquals(['ICIC'], $content['disabled_banks']);
+    }
+
+    public function testBulkMethodUpdateDisableBanks()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->setDisabledBanks('10000000000000', ['HDFC']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $content = $this->getLastEntity('methods', true);
+
+        // Assert if ICIC is added to`disabled_banks` list
+        $this->assertArraySelectiveEquals(['HDFC', 'ICIC'], $content['disabled_banks']);
     }
 
     public function testBulkMethodUpdateInvalidMerchantId()
@@ -315,11 +360,11 @@ class MethodsTest extends TestCase
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
-        $this->assertTrue($merchantMethods->isAmexCardEnabled());
+        $this->assertTrue($merchantMethods->isCardNetworkEnabled(Network::AMEX));
 
-        $this->assertFalse($merchantMethods->isJcbEnabled());
+        $this->assertFalse($merchantMethods->isCardNetworkEnabled(Network::JCB));
 
-        $this->assertFalse($merchantMethods->isDinersEnabled());
+        $this->assertFalse($merchantMethods->isCardNetworkEnabled(Network::DICL));
     }
 
     public function testQueryCacheHitForMethods()

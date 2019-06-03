@@ -338,11 +338,29 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
     }
 
-    public function disableCardNetwork($id = '10000000000000', $network)
+    public function enableCardNetworks($id = '10000000000000', $networks)
     {
         $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
 
-        $cardNetworks[strtoupper($network)] = 0;
+        foreach ($networks as $network)
+        {
+            $cardNetworks[strtoupper($network)] = 1;
+        }
+
+        $hexValue = Network::getHexValue($cardNetworks);
+
+        return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
+    }
+
+
+    public function disableCardNetworks($id = '10000000000000', $networks)
+    {
+        $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
+
+        foreach ($networks as $network)
+        {
+            $cardNetworks[strtoupper($network)] = 0;
+        }
 
         $hexValue = Network::getHexValue($cardNetworks);
 
@@ -457,6 +475,11 @@ class Merchant extends Base
     public function disableCardlessEmi($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['cardless_emi' => false]);
+    }
+
+    public function setDisabledBanks($id = '10000000000000', array $disabledBanks)
+    {
+        return $this->fixtures->edit('methods', $id, ['disabled_banks' => $disabledBanks]);
     }
 
     public function createBalanceOfBankingType(int $balance = 0, string $merchantId = '10000000000000')

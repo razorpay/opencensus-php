@@ -19,14 +19,4 @@ class Issuer
     const UTIB = 'UTIB';
     const INDB = 'INDB';
     const SCBL = 'SCBL';
-
-
-    const YESBANK_SUPPORTED_ISSUER = [
-        self::UTIB,
-        self::HDFC,
-        self::INDB,
-        self::KKBK,
-        self::ANDB,
-        self::ICIC,
-    ];
 }

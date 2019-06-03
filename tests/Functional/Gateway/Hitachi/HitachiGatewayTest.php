@@ -398,6 +398,7 @@ class HitachiGatewayTest extends TestCase
         $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
 
         $this->assertEquals(1, $verify['payment']['verified']);
+
         $this->assertEquals('status_match', $verify['gateway']['status']);
 
         //
@@ -449,7 +450,6 @@ class HitachiGatewayTest extends TestCase
         $paymentId = explode('_', $capturedPayment['id'])[1];
 
         $this->assertEquals($paymentId, $hitachi[Hitachi\Entity::PAYMENT_ID]);
-        $this->assertNull($hitachi[Hitachi\Entity::REQUEST_ID]);
         $this->assertNotNull($hitachi[Hitachi\Entity::RRN]);
     }
 

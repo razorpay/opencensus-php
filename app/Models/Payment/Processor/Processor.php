@@ -15,6 +15,7 @@ use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Gateway;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Pricing;
@@ -260,6 +261,8 @@ class Processor
 
             $this->appendMetadataForPayment($input);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED);
+
             $payment = $this->buildPaymentEntity($input);
 
             $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -288,18 +291,24 @@ class Processor
 
             $this->logRequestTime($payment, $startTime);
 
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+
             return $paymentData;
         }
         catch (\Throwable $e)
         {
+            $payment = $payment ?? null;
+
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
-            if ((isset($payment) === true) and ($payment instanceof Payment\Entity))
+            if ($payment instanceof Payment\Entity === true)
             {
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
             }
 
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
+
+            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
             throw $e;
         }
@@ -438,16 +447,19 @@ class Processor
         $this->verifyCardlessEmiEnabled();
 
         if ((empty($input['ott']) === false) or
-            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
         {
-            return;
+            return null;
         }
 
         $merchant = $payment->merchant;
 
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
-        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+        $terminal = $this->repo
+                         ->terminal
+                         ->getTerminalForProviderAndMerchant($input[Payment\Entity::PROVIDER],
+                                                             $merchant[Merchant\Entity::ID]);
 
         $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
@@ -458,8 +470,8 @@ class Processor
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                'method'   => 'cardless_emi',
-                                'provider' => $input['provider']
+                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
+                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
                             ]),
                 'method'  => 'POST',
                 'content' => $input,
@@ -835,10 +847,12 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        // Check if AuthN gateway is not the AuthZ
+        // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
         if ((empty($gatewayInput['authenticate']['gateway']) === false) and
             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
         {
+            $payment->disableCpsRoute();
+
             return;
         }
 
@@ -862,6 +876,10 @@ class Processor
             if (strtolower($variant) === 'cps')
             {
                 $payment->enableCpsRoute();
+            }
+            else
+            {
+                $payment->disableCpsRoute();
             }
         }
     }
@@ -1554,7 +1572,7 @@ class Processor
             }
         }
 
-        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->getByMerchantId($this->payment->merchant['id']);
+        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->fetchForMerchant($this->payment->merchant);
 
         //
         // This data was earlier picked up from env by gateways themselves.
@@ -1657,8 +1675,6 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
-
         if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
@@ -1680,14 +1696,10 @@ class Processor
 
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
-            ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
-
-        if (isset($metadata['checkout_id']) === false)
-        {
-             $this->trace->warning(
-                 TraceCode::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND,
-                 ['metadata' => $metadata, 'payment_id' => $payment->getId()]);
-        }
+            [
+                'metadata'   => $metadata,
+                'payment_id' => $payment->getId()
+            ]);
 
         $this->payment = $payment;
 
@@ -1907,6 +1919,10 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        $orderNotes = $this->order->getNotes()->toArray();
+
+        $payment->setIntegrationMetadataUsingNotes($orderNotes);
     }
 
     protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)
@@ -2610,6 +2626,8 @@ class Processor
     public function redirectTo3ds($id)
     {
         $payment = $this->retrieve($id);
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_3DS_REDIRECT_INITIATED, $payment);
 
         $diff = time() - $payment->getCreatedAt();
 

@@ -130,14 +130,66 @@ return [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'application_id'         => Constants::DEFAULT_PLATFORM_APP_ID,
                 'commissions_enabled'    => 1,
+                'explicit_plan_id'       => null,
+                'implicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type'         => 'application',
                 'entity_id'           => Constants::DEFAULT_PLATFORM_APP_ID,
+                'commission_model'    => 'commission',
                 'commissions_enabled' => true,
             ],
+        ],
+    ],
+
+    'testAddingConfigForSubvention' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'POST',
+            'content' => [
+                'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'application_id'         => Constants::DEFAULT_PLATFORM_APP_ID,
+                'commissions_enabled'    => 1,
+                'commission_model'       => 'subvention',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type'         => 'application',
+                'entity_id'           => Constants::DEFAULT_PLATFORM_APP_ID,
+                'commission_model'    => 'subvention',
+                'commissions_enabled' => true,
+            ],
+        ],
+    ],
+
+    'testAddingConfigWithExpiryForSubvention' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'POST',
+            'content' => [
+                'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'application_id'         => Constants::DEFAULT_PLATFORM_APP_ID,
+                'commissions_enabled'    => 1,
+                'commission_model'       => 'subvention',
+                'implicit_expiry_at'     => 1548860950,
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION,
         ],
     ],
 
@@ -380,6 +432,34 @@ return [
             'content' => [
                 'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'default_plan_id'        => '10ZeroPricingP',
+                'commissions_enabled'    => false,
+                'implicit_plan_id'       => null,
+                'explicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
+                'explicit_refund_fees'   => true,
+                'explicit_should_charge' => false,
+                'commission_model'       => 'commission',
+            ],
+        ],
+    ],
+
+    'testEditingConfigToSubventionModel' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'commission_model'       => 'subvention',
+                'default_plan_id'        => '10ZeroPricingP',
+                'commissions_enabled'    => 0,
+                'implicit_plan_id'       => null,
+                'explicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'        => '10ZeroPricingP',
+                'commission_model'       => 'subvention',
                 'commissions_enabled'    => false,
                 'implicit_plan_id'       => null,
                 'explicit_plan_id'       => null,

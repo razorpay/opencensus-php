@@ -453,7 +453,7 @@ class Gateway extends Base\Gateway
     protected function validateResponseContent($response)
     {
         if ((isset($response[Field::RESPONSE_CODE]) === true) and
-            (in_array($response[Field::RESPONSE_CODE], ['000', '016'], true) === true))
+            (in_array($response[Field::RESPONSE_CODE], ['000'], true) === true))
         {
             $content = $this->getCheckSumArray($response);
 

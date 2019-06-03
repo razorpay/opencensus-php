@@ -88,6 +88,7 @@ final class KeylessPublicAuth
         else
         {
             $input = $this->request->all();
+
             foreach (E::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
             {
                 $key = "{$allowedEntity}_id";

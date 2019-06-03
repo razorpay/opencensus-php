@@ -122,11 +122,11 @@ class Validator extends Base\Validator
 
         if (Gateway::isValidGateway($gateway) === false)
         {
-            throw new Exception\LogicException(
-                'Invalid gateway',
-                null,
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
                 [
-                    'gateway' => $gateway,
+                    'gateway' => $gateway
                 ]);
         }
     }

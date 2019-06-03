@@ -19,9 +19,9 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
-use RZP\Models\Card\Issuer;
+use RZP\Models\FundTransfer;
+use RZP\Models\Card\IIN\IIN;
 use RZP\Jobs\ScroogeRefundRetry;
-use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
@@ -250,9 +250,9 @@ trait Refund
 
         $gatewayRefundResponse = $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function () use ($data, $payment)
+            function () use ($data, $payment, $refund)
             {
-                return $this->callRefundFunction($payment, $data);
+                return $this->callRefundFunction($refund, $payment, $data);
             });
 
         //
@@ -557,7 +557,7 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        if ($this->isFundTransferAttemptRefund($payment, $ftaInput) === true)
+        if ($this->isFundTransferAttemptRefund($refund, $payment, $ftaInput) === true)
         {
             $verifyRefundResult = $this->prepareScroogeRefundResponse([],
                                                       false,
@@ -1287,7 +1287,7 @@ trait Refund
             }
             else
             {
-                $this->callRefundFunctionOnApi($payment, $data);
+                $this->callRefundFunctionOnApi($this->refund, $payment, $data);
             }
 
             // send notification to merchant/customer, this is outside transaction
@@ -1337,9 +1337,9 @@ trait Refund
         }
     }
 
-    protected function callRefundFunctionOnApi($payment, $data)
+    protected function callRefundFunctionOnApi($refund, $payment, $data)
     {
-        $refunded = $this->callRefundFunction($payment, $data);
+        $refunded = $this->callRefundFunction($refund, $payment, $data);
 
         $this->refund->setGatewayRefunded($refunded[Payment\Gateway::SUCCESS]);
 
@@ -1352,11 +1352,11 @@ trait Refund
         $this->repo->saveOrFail($this->refund);
     }
 
-    protected function callRefundFunction($payment, $data, $retry = false)
+    protected function callRefundFunction($refund, $payment, $data, $retry = false)
     {
-        if ($this->isFundTransferAttemptRefund($payment, $data) === true)
+        if ($this->isFundTransferAttemptRefund($refund, $payment, $data) === true)
         {
-            return $this->refundViaFundTransfer($payment, $data);
+            return $this->refundViaFundTransfer($refund, $payment, $data);
         }
         else
         {
@@ -1512,7 +1512,7 @@ trait Refund
         {
             $refundedOnGateway = $this->mutex->acquireAndRelease(
                 $payment->getId(),
-                function() use ($data, $payment)
+                function() use ($data, $payment, $refund)
                 {
                     //
                     // Setting retry to true, will use this action later to decide weather
@@ -1520,7 +1520,7 @@ trait Refund
                     // are retried, we will mark them as processed otherwise not.
                     // For refunds attempted first time, will be marked processed by Scrooge call.
                     //
-                    $refundResponse = $this->callRefundFunction($payment, $data, true);
+                    $refundResponse = $this->callRefundFunction($refund, $payment, $data, true);
 
                     return $refundResponse[Payment\Gateway::SUCCESS];
                 });
@@ -1707,7 +1707,7 @@ trait Refund
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
         }
-        else if ($this->isPaymentCardAndCardTransferRefund($payment) === true)
+        else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true)
         {
             $cardInput = $this->getCardIdInput($payment, $input);
 
@@ -1928,7 +1928,7 @@ trait Refund
         return $this->callGatewayForRefundValidation($data);
     }
 
-    protected function refundViaFundTransfer(Payment\Entity $payment, $data = []): array
+    protected function refundViaFundTransfer(RefundEntity $refund, Payment\Entity $payment, $data = []): array
     {
         $scroogeResponse  = new ScroogeResponse();
 
@@ -1951,7 +1951,7 @@ trait Refund
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
-            else if ($this->isPaymentCardAndCardTransferRefund($payment))
+            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment))
             {
                 $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
             }
@@ -2050,22 +2050,22 @@ trait Refund
         return $this->repo->transaction(function () use ($input, $payment, $fundTransferAttemptInput)
         {
             $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
-                $payment->card,
-                $fundTransferAttemptInput);
+                                                                  $payment->card,
+                                                                  $fundTransferAttemptInput);
 
             return $fta;
         });
     }
 
-    protected function isFundTransferAttemptRefund(Payment\Entity $payment, array $data = []): bool
+    protected function isFundTransferAttemptRefund(RefundEntity $refund, Payment\Entity $payment, array $data = []): bool
     {
         //
         // Refund is explicitly being attempted towards a new bank account or vpa
         // Bank account or vpa input can come from dashboard also, but card_transfer will not come from dashboard.
         // Not keeping check for card_transfer so that every time, we will evaluate if it is card_transfer refund.
         //
-        if ((isset($data['bank_account']) === true) or
-            (isset($data['vpa']) === true))
+        if (((isset($data['bank_account']) === true) or
+            (isset($data['vpa']) === true)) and ($payment->isGatewayCaptured() === true))
         {
             return true;
         }
@@ -2074,7 +2074,7 @@ trait Refund
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentCardAndCardTransferRefund($payment) === true))
+            ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true))
         {
             return true;
         }
@@ -2112,12 +2112,26 @@ trait Refund
      * refund will be made on card. Card should be credit card, should have vault token stored and
      * should belong to supported issuers.
      * Payment should be gateway captured, if it isn't, it should be reversed, not to be refunded directly via FTA.
+     * Also checking if bin is not prepaid as fund transfers are not supported on these bins.
      *
+     * @param RefundEntity $refund
      * @param Payment\Entity $payment
      * @return bool
+     * @throws \Exception
      */
-    protected function isPaymentCardAndCardTransferRefund(Payment\Entity $payment): bool
+    protected function isPaymentCardAndCardTransferRefund(RefundEntity $refund, Payment\Entity $payment): bool
     {
+        //
+        // Check if any card FTA already exists, not allowing card fta if any previous card fta exists
+        //
+        foreach ($refund->fundTransferAttempts as $fundTransferAttempt)
+        {
+            if (empty($fundTransferAttempt->getCardId()) === false)
+            {
+                return false;
+            }
+        }
+
         if (($payment->hasCard() === true) and
             ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
             ($payment->card->getCardVaultToken() !== null) and ($payment->isGatewayCaptured() === true))
@@ -2131,7 +2145,8 @@ trait Refund
                 $cardIssuer = $iin->getIssuer();
 
                 if (($cardType === Type::CREDIT) and
-                    (in_array($cardIssuer, Issuer::YESBANK_SUPPORTED_ISSUER) === true))
+                    (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true) and
+                    (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
                     return true;
                 }

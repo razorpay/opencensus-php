@@ -3,9 +3,10 @@
 namespace RZP\Mail\Admin;
 
 use Carbon\Carbon;
+
+use RZP\Mail\Base;
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
-use RZP\Mail\Base;
 
 class MerchantInvitation extends Base\Mailable
 {

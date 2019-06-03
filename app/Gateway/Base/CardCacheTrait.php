@@ -32,6 +32,7 @@ trait CardCacheTrait
         }
         else
         {
+
             $tempInput['card'] = $input['card']['number'];
 
             $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
@@ -70,7 +71,9 @@ trait CardCacheTrait
     {
         $data = $this->getCardDetailsFromCache($input);
 
-        $input['card']['number'] = (new Card\CardVault)->getCardNumber($data['vault_token']);
+        $vaultToken = $input['card']['vault_token'] ?? $data['vault_token'];
+
+        $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken);
 
         if (isset($data['cvv']) === true)
         {

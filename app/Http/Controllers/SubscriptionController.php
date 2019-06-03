@@ -232,4 +232,45 @@ class SubscriptionController extends Controller
         // that api does not break on not finding this method
         throw new LogicException('The request should not have reached here');
     }
+
+    public function postCreateItem()
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function getItem(string $itemId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function getItems()
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function postUpdateItem(string $itemId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function postDeleteItem(string $itemId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
 }

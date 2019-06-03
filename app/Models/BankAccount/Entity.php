@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
     // Beneficiary registration constants
     //
     const ON                = 'on';
+    const FROM              = 'from';
+    const TO                = 'to';
     const ALL               = 'all';
     const RECIPIENT_EMAILS  = 'recipient_emails';
     const DURATION          = 'duration';

@@ -87,6 +87,7 @@ class Fee extends Base\Core
         list($partnerFee, $partnerTax, $partnerFeeSplit) = $this->calculatePartnerFees($entity);
 
         $totalFee = $rzpFee + $partnerFee;
+        
         $totalTax = $rzpTax + $partnerTax;
 
         $feeSplit = $rzpFeeSplit->concat($partnerFeeSplit);

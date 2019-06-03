@@ -7,8 +7,8 @@ use RZP\Models\Invoice\Type;
 class Expired extends Base
 {
     const SUBJECT_TEMPLATES = [
-        Type::LINK    => ' Payment request of Rs. %s has expired (via Razorpay)',
-        Type::ECOD    => ' Payment request of Rs. %s has expired (via Razorpay)',
+        Type::LINK    => ' Payment request of %s %s has expired (via Razorpay)',
+        Type::ECOD    => ' Payment request of %s %s has expired (via Razorpay)',
         Type::INVOICE => ' Invoice from %s has expired',
     ];
 

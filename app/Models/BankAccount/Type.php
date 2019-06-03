@@ -37,7 +37,7 @@ class Type
         ];
     }
 
-    public static function isValidBeneficiaryRegistrationType(string $type): bool
+    public static function isValidBeneficiaryRegistrationType(string $type = null): bool
     {
         return (in_array($type, self::getBeneficiaryRegistrationTypes(), true) === true);
     }

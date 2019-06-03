@@ -316,6 +316,24 @@ pipeline:
     when:
       event:
         include: [push]
+  build-notify-master:
+      image: plugins/slack
+      secrets: [slack_webhook]
+      channel: tech_backend
+      username: drone
+      icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+      template: >
+          Master Build failed.
+          Build No:{{build.number}}
+          Branch: {{build.branch}}
+          Commit: {{build.commit}}
+          Author: {{build.author}}
+          Started at: {{build.started}}
+          Time taken: {{since build.started}}
+          Link: {{build.link}}
+      when:
+        branch: master
+        status: [failure]
 services:
   mysql:
     image: mysql:5.7
@@ -754,6 +772,8 @@ pipeline:
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
+        - api-sqs-cps-sync-test
+        - api-sqs-cps-sync-live
       repo: razorpay/api
       namespace: api
       tag:
@@ -797,6 +817,8 @@ pipeline:
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
+        - api-sqs-cps-sync-test
+        - api-sqs-cps-sync-live
       repo: razorpay/api
       namespace: api
       tag:

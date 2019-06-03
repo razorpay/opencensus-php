@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Constants\Environment;
 use RZP\Base\RepositoryManager;
 
 class Core
@@ -172,5 +173,10 @@ class Core
     protected function isLiveMode(): bool
     {
         return ($this->mode === Mode::LIVE);
+    }
+
+    protected function isEnvironmentProduction(): bool
+    {
+        return ($this->env === Environment::PRODUCTION);
     }
 }

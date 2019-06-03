@@ -32,7 +32,9 @@ class Entity extends Base\PublicEntity
 
     const STATUS_CODE           = 'status_code';
 
-    protected static $sign      = 'bhqr';
+    const BANK_REFERENCE        = 'bank_reference';
+
+    protected static $sign      = 'bqr';
 
     protected $primaryKey = self::ID;
 
@@ -60,13 +62,11 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::EXPECTED,
-        self::AMOUNT,
         self::PAYMENT_ID,
-        self::VIRTUAL_ACCOUNT_ID,
+        self::AMOUNT,
         self::METHOD,
-        self::PROVIDER_REFERENCE_ID,
-        self::MERCHANT_REFERENCE,
+        self::BANK_REFERENCE,
+        self::VIRTUAL_ACCOUNT_ID,
     ];
 
     protected $casts = [
@@ -76,8 +76,10 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
+        self::ENTITY,
         self::VIRTUAL_ACCOUNT_ID,
         self::PAYMENT_ID,
+        self::BANK_REFERENCE,
     ];
 
     protected $generateIdOnCreate = true;
@@ -114,6 +116,11 @@ class Entity extends Base\PublicEntity
 
             $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
         }
+    }
+
+    public function setPublicBankReferenceAttribute(array & $array)
+    {
+        $array[self::BANK_REFERENCE] = $this->getProviderReferenceId();
     }
 
     // ----------------------- Setters -----------------------

@@ -6,6 +6,7 @@ use Request;
 use Redirect;
 use ApiResponse;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -15,7 +16,7 @@ use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
-use RZP\Models\Admin;
+use RZP\Gateway\Mozart as Mozart;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
@@ -83,7 +84,7 @@ class GatewayController extends Controller
 
         $paymentRepo = $this->app['repo']->payment;
 
-        // This is hackish, we find mode based on searchin in both DB's
+        // This is hackish, we find mode based on searching in both DB's
         $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
 
         if ($mode === null)
@@ -407,6 +408,55 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function callbackYesbank()
+    {
+        $input = Request::all();
+
+        /*
+           this is required as the gateway sends raw encrypted string without urlencoding the same. So symbols such as
+           + etc is interpreted by php as url encoded and the string obtained here will be different than what yes bank
+           had sent and hence decryption would fail.
+        */
+        $originalEncryptedData = str_replace(
+                                    ' ',
+                                    '+',
+                                     $input[Mozart\NetbankingYesb\ResponseFields::ENCRYPTED_RESPONSE]);
+
+        $input[Mozart\NetbankingYesb\ResponseFields::ENCRYPTED_RESPONSE] = $originalEncryptedData;
+
+        $this->app['trace']->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'gateway'          => 'netbanking_yesb',
+                'encrypted_string' => $input
+            ]
+        );
+
+        $gateway = $this->app['gateway']->gateway(Gateway::NETBANKING_YESB);
+
+        $response = $gateway->preProcessServerCallback($input, Gateway::NETBANKING_YESB);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($response, Gateway::NETBANKING_YESB);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $payment = $this->app['repo']->payment->findOrFail($paymentId);
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $url = $url . '?' . http_build_query(['preProcessServerCallbackResponse' => json_encode($response)]);
+
+        return Redirect::to($url);
+    }
+
     public function callbackEmandateNpciNb()
     {
         $input = Request::all();
@@ -585,6 +635,21 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = $service->edit($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to delete gateway downtime entity
+     *
+     * @param Downtime\Service $service
+     * @param string $id
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function deleteGatewayDowntime(Downtime\Service $service, string $id)
+    {
+        $data = $service->delete($id);
 
         return ApiResponse::json($data);
     }

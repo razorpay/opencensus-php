@@ -9,7 +9,9 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
+use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class CombinedReconciliate extends Base\Foundation\SubReconciliate
 {
@@ -120,11 +122,13 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
      * summary count to the batch
      *
      * @param array $fileContents input file contents
-     * @param Batch\Entity $batch batch entity for reconciliation
+     * @param Batch\Processor\Base $batchProcessor
      * @throws ReconciliationException
      */
-    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
+    public function startReconciliationV2(array $fileContents, Batch\Processor\Base $batchProcessor)
     {
+        $batch = $batchProcessor->batch;
+
         $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
@@ -185,6 +189,23 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                         $subReconciliatorObject->runReconciliate($row);
                     });
                 }
+                catch (\Exception $ex)
+                {
+                    //
+                    // Increment failure count.
+                    // Note : This is needed because sometime when batch faces any exception
+                    // (e.g. payment absent) then recon process terminates mid way. If failure
+                    // count was 0 at this time, then the batch status is set to 'processed',
+                    // which should not happen in such failure cases.
+                    //
+                    $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+
+                    //
+                    // Throw the exception because we do not want to process the
+                    // remaining file, as something is wrong with this file.
+                    //
+                    throw $ex;
+                }
                 finally
                 {
                     $batch->incrementProcessedCount();
@@ -193,6 +214,36 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
         }
         finally
         {
+            if (count(static::$scroogeReconciliate) > 0)
+            {
+                //
+                // Here we can't use shouldForceUpdate() function because
+                // the instance variable $this->extraDetails is set only on
+                // subreconciliate objects (payment/refund)
+                //
+
+                $forceUpdateFields = $extraDetails[RequestProcessor\Base::INPUT_DETAILS][RequestProcessor\Base::FORCE_UPDATE];
+
+                $forceUpdateArn = in_array(RequestProcessor\Base::REFUND_ARN, $forceUpdateFields, true);
+
+                $batchProcessor->setScroogeDispatchData(
+                    [
+                        'data'              => static::$scroogeReconciliate,
+                        'source'            => $this->source,
+                        'force_update_arn'  => $forceUpdateArn,
+                    ]
+                );
+
+                //
+                // Need to reset it now, else few testcases are failing when we run
+                // ReconciliationFileTest. Though individually the same test passes.
+                // (even the payment recon test, having only payment rows in MIS file
+                // also have this scroogeReconciliate data set and thus scrooge dispatch happened)
+                //
+
+                static::$scroogeReconciliate = [];
+            }
+
             $this->updateCombinedSummaryCount();
 
             $this->updateBatchWithSummary($batch);

@@ -2113,7 +2113,7 @@ class Core extends Base\Core
         if ($merchant->isInternational() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL);
+                ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED);
         }
 
         $merchant->disableInternational();

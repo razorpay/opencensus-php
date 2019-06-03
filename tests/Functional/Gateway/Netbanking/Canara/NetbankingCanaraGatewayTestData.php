@@ -36,8 +36,8 @@ return [
         'amount'                  => 500,
         'bank'                    => 'CNRB',
         'received'                => true,
-        'merchant_code'           => 'test_merchant_id',
         'entity'                  => 'netbanking',
+        'merchant_code'           => 'test_merchant_id',
     ],
 
     'testPaymentVerifySuccessEntity' => [

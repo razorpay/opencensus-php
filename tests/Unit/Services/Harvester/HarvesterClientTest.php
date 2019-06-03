@@ -26,9 +26,9 @@ class HarvesterClientTest extends TestCase
      */
     public function testGenerateSignatureSuccess(array $config, string $message)
     {
-        $value = $this->getGenerateSignatureMockValue($config, [$message]);
+        $value = $this->getGenerateSignatureMockValue($config, [$message, $config['secret']]);
 
-        $expectedSignature = hash_hmac($this->algo, $message, $config['secret']);
+        $expectedSignature = $this->getSignature($message, $config['secret']);
 
         $this->assertEquals($expectedSignature, $value);
     }
@@ -40,9 +40,9 @@ class HarvesterClientTest extends TestCase
      */
     public function testGenerateSignatureFailureIncorrectKey(array $config, string $message)
     {
-        $value = $this->getGenerateSignatureMockValue($config, [$message]);
+        $value = $this->getGenerateSignatureMockValue($config, [$message, $config['secret']]);
 
-        $expectedSignature = hash_hmac($this->algo, $message. '_incorrect', $config['secret']);
+        $expectedSignature = $this->getSignature($message. '_incorrect', $config['secret']);
 
         $this->assertNotEquals($expectedSignature, $value);
     }
@@ -54,11 +54,16 @@ class HarvesterClientTest extends TestCase
      */
     public function testGenerateSignatureFailureIncorrectSecret(array $config, string $message)
     {
-        $value = $this->getGenerateSignatureMockValue($config, [$message]);
+        $value = $this->getGenerateSignatureMockValue($config, [$message, $config['secret']]);
 
-        $expectedSignature = hash_hmac($this->algo, $message, $config['secret'] . '_incorrect');
+        $expectedSignature = $this->getSignature($message, $config['secret'] . '_incorrect');
 
         $this->assertNotEquals($expectedSignature, $value);
+    }
+
+    protected function getSignature($message, $key)
+    {
+        return hash_hmac($this->algo, $message, $key);
     }
 
     /**

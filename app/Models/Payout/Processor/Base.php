@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
 use RZP\Models\Vpa;
+use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
@@ -69,7 +70,7 @@ abstract class Base extends BaseCore
     protected $balance;
 
     /**
-     * @var BankAccount\Entity|Vpa\Entity
+     * @var BankAccount\Entity|Vpa\Entity|Card\Entity
      */
     protected $fundTransferDestination;
 
@@ -329,20 +330,30 @@ abstract class Base extends BaseCore
         $ftaAccount = $this->fundTransferDestination;
         $ftaCore    = new FundTransferAttempt\Core;
 
-        switch ($ftaAccount->getEntity())
+        $ftaAccountEntity = $ftaAccount->getEntity();
+
+        switch ($ftaAccountEntity)
         {
             case E::BANK_ACCOUNT:
                 $ftaCore->createWithBankAccount($payout, $ftaAccount, $ftaInput);
-
-                return;
+                break;
 
             case E::VPA:
                 $ftaCore->createWithVpa($payout, $ftaAccount, $ftaInput);
+                break;
 
-                return;
+            case E::CARD:
+                $ftaCore->createWithCard($payout, $ftaAccount, $ftaInput);
+                break;
 
             default:
-                // Throw exception
+                throw new Exception\InvalidArgumentException(
+                    'Payout fta destination entity is invalid. '. $ftaAccount->getEntity(),
+                    [
+                        'payout_id'             => $payout->getId(),
+                        'fta_account_id'        => $ftaAccount->getId(),
+                        'fta_account_entity'    => $ftaAccountEntity,
+                    ]);
         }
     }
 

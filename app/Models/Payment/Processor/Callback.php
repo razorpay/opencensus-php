@@ -7,6 +7,7 @@ use Mail;
 use RZP\Jobs;
 use RZP\Error;
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Card;
@@ -55,6 +56,8 @@ trait Callback
 
         $payment = $this->retrieve($id);
 
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CALLBACK_INITIATED, $payment);
+
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST);
 
         // For redirect flow
@@ -74,6 +77,8 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_S2S_CALLBACK_INITIATED, $payment);
+
         // Return if payment is auto captured
         if ($payment->getAutoCaptured())
         {
@@ -451,7 +456,7 @@ trait Callback
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentAuthFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {

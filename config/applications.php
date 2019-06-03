@@ -30,6 +30,10 @@ return [
         'secret'   => env('APP_H2H_SECRET'),
     ],
 
+    'stork' => [
+        'secret' => env('STORK_API_SECRET'),
+    ],
+
     'mailgun' => [
         'url'       => 'razorpay.com',
         'key'       => env('MAILGUN_SECRET'),

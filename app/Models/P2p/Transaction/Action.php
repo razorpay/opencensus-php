@@ -32,10 +32,24 @@ class Action extends Base\Action
     const REJECT                        = 'reject';
     const REJECT_SUCCESS                = 'rejectSuccess';
 
+    const INCOMING_COLLECT              = 'incomingCollect';
+    const INCOMING_COLLECT_SUCCESS      = 'incomingCollectSuccess';
+
+    const INCOMING_PAY                  = 'incomingPay';
+    const INCOMING_PAY_SUCCESS          = 'incomingPaySuccess';
+
+    const RAISE_CONCERN                 = 'raiseConcern';
+    const RAISE_CONCERN_SUCCESS         = 'raiseConcernSuccess';
+
+    const CONCERN_STATUS                = 'concernStatus';
+    const CONCERN_STATUS_SUCCESS        = 'concernStatusSuccess';
+
+    const FETCH_ALL_CONCERNS            = 'fetchAllConcerns';
+
     protected $actionToRoute = [
         self::INITIATE_PAY              => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
         self::INITIATE_COLLECT          => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
         self::INITIATE_AUTHORIZE        => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
-        self::INITIATE_REJECT           => Requests::P2P_CUSTOMER_TRANSACTIONS_REJECT,
+        self::INITIATE_REJECT           => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
     ];
 }

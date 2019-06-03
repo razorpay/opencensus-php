@@ -30,7 +30,9 @@ class ErrorCodes
 
     // Authorize responses
     const EC_05  = '05';
+    const EC_12  = '12';
     const EC_13  = '13';
+    const EC_39  = '39';
     const EC_41  = '41';
     const EC_42  = '42';
     const EC_43  = '43';
@@ -50,6 +52,8 @@ class ErrorCodes
     const EC_110 = '110';
     const EC_120 = '120';
     const EC_399 = '399';
+
+    const EC_ED = 'ED';
 
     protected static $descriptionMappings = [
         // Check BIN error codes
@@ -77,7 +81,9 @@ class ErrorCodes
         // Error code '05' is not available from the integration guide
         // We got it while testing on prod
         self::EC_05   => 'Do not honor',
+        self::EC_12   => 'Invalid Transaction',
         self::EC_13   => 'Amount Error',
+        self::EC_39   => 'No credit account',
         self::EC_41   => 'DECLINED (lost card)',
         self::EC_42   => 'DECLINED (no account)',
         self::EC_43   => 'DECLINED (stolen)',
@@ -91,39 +97,42 @@ class ErrorCodes
         self::EC_61   => 'DECLINED (exceeds with)',
         self::EC_62   => 'DECLINED (restricted card)',
         self::EC_65   => 'DECLINED (exceeds frequency)',
-        self::EC_91   => 'ERROR',
+        self::EC_91   => 'Issuer or switch is inoperative',
         self::EC_92   => 'NO ROUTING AVAILABLE',
         self::EC_96   => 'SYSTEM ERROR',
         self::EC_110  => 'NO ACCT',
         self::EC_120  => 'ACCT CLOSED',
         self::EC_399  => 'SYSTEM UNAVAILABLE',
+        self::EC_ED   => 'E-commerce decline',
     ];
 
     // todo: Add correct mappings for these
     protected static $errorCodeMappings = [
         // Check BIN error code mappings
-        self::EC_01   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_02   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_400  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_401  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_402  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_01   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        self::EC_02   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        self::EC_400  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        self::EC_401  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        self::EC_402  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_406  => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
         self::EC_407  => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
-        self::EC_408  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_408  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_410  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
-        self::EC_412  => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+        self::EC_412  => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
 
         // Callback error code mappings
         self::ACCU100 => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         self::ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::ACCU400 => ErrorCode::GATEWAY_ERROR_USER_INACTIVE,
-        self::ACCU600 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ACCU700 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-        self::ACCU800 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::ACCU600 => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
+        self::ACCU700 => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
+        self::ACCU800 => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
 
         // Authorize error code mappings
         self::EC_05   => ErrorCode::GATEWAY_ERROR_DO_NOT_HONOUR_REMITTER,
+        self::EC_12   => ErrorCode::GATEWAY_ERROR_INVALID_TRANSACTION,
         self::EC_13   => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,
+        self::EC_39   => ErrorCode::GATEWAY_ERROR_NO_CREDIT_ACCOUNT,
         self::EC_41   => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
         self::EC_42   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
         self::EC_43   => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
@@ -131,18 +140,19 @@ class ErrorCodes
         self::EC_54   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
         self::EC_55   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
         self::EC_57   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
-        self::EC_58   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_58   => ErrorCode::GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED,
         self::EC_59   => ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
         self::EC_60   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
         self::EC_61   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
-        self::EC_62   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_62   => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
         self::EC_65   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
-        self::EC_91   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_92   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::EC_96   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_91   => ErrorCode::GATEWAY_ERROR_ISSUER_UNAVAILABLE,
+        self::EC_92   => ErrorCode::GATEWAY_ERROR_ISSUER_UNAVAILABLE,
+        self::EC_96   => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
         self::EC_110  => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
         self::EC_120  => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
-        self::EC_399  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::EC_399  => ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
+        self::EC_ED   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
     ];
 
     public static function getErrorCodeMapped($errorCode)

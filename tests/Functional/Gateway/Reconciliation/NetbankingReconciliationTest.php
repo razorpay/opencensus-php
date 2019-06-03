@@ -781,6 +781,212 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
+    public function testSibSuccessRecon()
+    {
+        $this->gateway = 'netbanking_sib';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_sib');
+
+        $fileContents = $this->generateFile('sib', ['gateway' => 'netbanking_sib']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingSib', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testSibBankAmountMismatch()
+    {
+        $this->gateway = 'netbanking_sib';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_sib');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                if ($action === 'col_payment_sib_nb_recon')
+                {
+                    $content['payment amount'] = 1;
+                }
+            });
+
+        $fileContents = $this->generateFile('sib', ['gateway' => 'netbanking_sib']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingSib', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    public function testSibReconcileFailedPayment()
+    {
+        $this->gateway = 'netbanking_sib';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_sib');
+
+        $fileContents = $this->generateFile('sib', ['gateway' => 'netbanking_sib']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingSib', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testYesbSuccessRecon()
+    {
+        $this->gateway = 'netbanking_yesb';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_yesb');
+
+        $fileContents = $this->generateFile('yesb', ['gateway' => 'netbanking_yesb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingYesb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testYesBankAmountMismatch()
+    {
+        $this->gateway = 'netbanking_yesb';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_yesb');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                if ($action === 'col_payment_yesb_nb_recon')
+                {
+                    $content['Amount'] = 100;
+                }
+            });
+
+        $fileContents = $this->generateFile('yesb', ['gateway' => 'netbanking_yesb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingYesb', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    public function testYesbReconcileFailedPayment()
+    {
+        $this->gateway = 'netbanking_yesb';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_yesb');
+
+        $fileContents = $this->generateFile('yesb', ['gateway' => 'netbanking_yesb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingYesb', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('mozart');
+
+        $data = json_decode($gatewayEntity['raw'], true);
+
+        $this->assertNotNull($data['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testYesbReconStatusFailedSucessApi()
+    {
+        $this->gateway = 'netbanking_yesb';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_yesb');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                if ($action === 'col_payment_yesb_nb_recon')
+                {
+                    $content['Transaction Status'] = 'FAILURE';
+                }
+            });
+
+        $fileContents = $this->generateFile('yesb', ['gateway' => 'netbanking_yesb']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingYesb', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
     public function testCorporationSuccessRecon()
     {
         $this->gateway = 'netbanking_corporation';
@@ -1103,6 +1309,21 @@ class NetbankingReconciliationTest extends TestCase
         $netbanking = $this->fixtures->create('netbanking', $netbankingAttributes);
 
         return $netbanking;
+    }
+
+    protected function createMozartEntity($paymentId, $amount, $gateway)
+    {
+        $mozartAttributes = [
+            'payment_id'      => $paymentId,
+            'gateway'         => $gateway,
+            'amount'          => $amount,
+            'raw'             => json_encode(['payment_id' => $paymentId,'bank_payment_id' => '99999']),
+            'action'          => 'authorize',
+        ];
+
+        $mozart = $this->fixtures->create('mozart', $mozartAttributes);
+
+        return $mozart;
     }
 
     protected function generateFile($bank, $input)

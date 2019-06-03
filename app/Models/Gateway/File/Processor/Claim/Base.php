@@ -113,9 +113,7 @@ class Base extends BaseProcessor
 
         $paymentIds = $claims->pluck('id')->toArray();
 
-        $gatewayEntities = $this->repo
-                                ->netbanking
-                                ->fetchByPaymentIdsAndAction($paymentIds, Action::AUTHORIZE);
+        $gatewayEntities = $this->fetchGatewayEntities($paymentIds);
 
         $gatewayEntities = $gatewayEntities->keyBy('payment_id');
 
@@ -178,5 +176,10 @@ class Base extends BaseProcessor
     public function sendFile($data)
     {
         return;
+    }
+
+    protected function fetchGatewayEntities($paymentIds)
+    {
+        return $this->repo->netbanking->fetchByPaymentIdsAndAction($paymentIds, Action::AUTHORIZE);
     }
 }

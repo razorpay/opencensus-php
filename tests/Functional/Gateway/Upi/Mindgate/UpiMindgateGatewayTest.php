@@ -1013,6 +1013,32 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
+    public function testUpiQrFailureStatusCallback()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request = $this->mockServer()->getAsyncFailureCallbackContentForBharatQr($qrCodeId);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('NOK', $response[0]);
+
+        //Qr Entity will not get Created
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+        $this->assertNull($bharatQr);
+
+    }
+
     public function testUpiVerifyAndRefundPayment()
     {
         $this->testUpiQrPaymentProcess();

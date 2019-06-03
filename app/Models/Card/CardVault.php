@@ -84,4 +84,21 @@ class CardVault extends Base\Core
             throw $e;
         }
     }
+
+    public function deleteToken($tempVaultToken)
+    {
+        try
+        {
+            return $this->cardVault->deleteToken($tempVaultToken);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'message' => 'Failed to delete the token'
+                ]
+            );
+        }
+    }
 }

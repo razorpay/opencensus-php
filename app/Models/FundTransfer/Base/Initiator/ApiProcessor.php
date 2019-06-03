@@ -294,7 +294,14 @@ abstract class ApiProcessor extends NodalAccount
                 'fta_id'        => $this->ftaId,
                 'channel'       => $this->channel,
                 'response_body' => $response->body,
+                'status_code'   => $response->status_code,
             ]);
+
+        $this->trace->count(Metric::NODAL_RESPONSE_STATUS_CODE, [
+            'code'        => $this->responseTraceCode,
+            'channel'     => $this->channel,
+            'status_code' => $response->status_code,
+        ]);
     }
 
     private function traceGatewayResponse(array $response)

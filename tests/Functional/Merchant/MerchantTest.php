@@ -784,6 +784,30 @@ class MerchantTest extends TestCase
         $this->assertNotNull($merchant['archived_at']);
     }
 
+    public function testMerchantForceActivate()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->adminAuth();
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['activated_at']);
+    }
+
     public function testMerchantArchiveWithNoMerchantDetails()
     {
         $merchant = $this->getLastEntity('merchant', true);
@@ -1299,7 +1323,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(34, $banks);
+        $this->assertCount(35, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }

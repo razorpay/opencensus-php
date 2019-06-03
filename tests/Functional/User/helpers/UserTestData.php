@@ -32,6 +32,24 @@ return [
         ],
     ],
 
+    'testRegister'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@c.com',
+            ],
+        ],
+    ],
+
     'testGet' => [
         'request' => [
             'url'    => '/users/id',
@@ -51,6 +69,36 @@ return [
                         'archived_at'  => null,
                         'suspended_at' => null,
                         'role'         => 'owner',
+                    ],
+                ],
+                'invitations'             => [
+                ],
+                'settings'                => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetForPartnerHavingConfigs' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                        'partner_type' => 'pure_platform',
                     ],
                 ],
                 'invitations'             => [

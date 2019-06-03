@@ -7,6 +7,8 @@ use Mail;
 use Hash;
 use Carbon\Carbon;
 
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Mail\User\Otp;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Constants;
@@ -15,6 +17,8 @@ use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -22,6 +26,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 
 class UserTest extends TestCase
 {
+    use PartnerTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
@@ -31,6 +36,10 @@ class UserTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/UserTestData.php';
 
         parent::setUp();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreate()
@@ -40,9 +49,74 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testRegister()
+    {
+        Mail::fake();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $row = DB::table('merchant_map')
+                    ->where('merchant_id', '=', $merchant['id'])
+                    ->where('entity_id', '=', $adminId)
+                    ->where('entity_type', '=', 'admin')
+                    ->first();
+
+        $this->assertNotNull($row);
+    }
+
     public function testGet()
     {
         $user = $this->fixtures->create('user');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetForPartnerHavingConfigs()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $user->merchants->first()->getId();
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'pure_platform']);
+
+        $application = $this->createOAuthApplication(
+            [
+                'id'          => 'CSupbmEglqZkL9',
+                'merchant_id' => $merchantId,
+            ]
+        );
+
+        $this->createConfigForPartnerApp($application->getId());
 
         $testData = & $this->testData[__FUNCTION__];
 

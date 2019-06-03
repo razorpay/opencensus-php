@@ -64,9 +64,15 @@ class Type
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
 
+    const SIB_NETBANKING_REFUND             = 'sib_netbanking_refund';
+
     const VIJAYA_NETBANKING_REFUND          = 'vijaya_netbanking_refund';
 
     const VIJAYA_NETBANKING_CLAIM           = 'vijaya_netbanking_claim';
+
+    const YESB_NETBANKING_CLAIM             = 'yesb_netbanking_claim';
+
+    const YESB_NETBANKING_REFUND            = 'yesb_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
@@ -104,6 +110,7 @@ class Type
     const BATCH_OUTPUT                      = 'batch_output';
     const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
+    const BATCH_SERVICE                     = 'batch_service';
 
     const BLANK                             = 'blank';
 
@@ -151,6 +158,7 @@ class Type
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
+    const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -183,8 +191,11 @@ class Type
             self::EQUITAS_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
+            self::SIB_NETBANKING_REFUND,
             self::VIJAYA_NETBANKING_REFUND,
             self::VIJAYA_NETBANKING_CLAIM,
+            self::YESB_NETBANKING_CLAIM,
+            self::YESB_NETBANKING_REFUND,
             self::IDFC_NETBANKING_REFUND,
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
@@ -308,8 +319,11 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
+        self::SIB_NETBANKING_REFUND,
         self::VIJAYA_NETBANKING_REFUND,
         self::VIJAYA_NETBANKING_CLAIM,
+        self::YESB_NETBANKING_CLAIM,
+        self::YESB_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::RBL_NETBANKING_CLAIM,
         self::AIRTELMONEY_WALLET_REFUND,
@@ -422,6 +436,10 @@ class Type
 
         self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
+        ],
+
+        self::BATCH_SERVICE_BUCKET_CONFIG => [
+            self::BATCH_SERVICE,
         ],
     ];
 

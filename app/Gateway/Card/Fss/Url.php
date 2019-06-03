@@ -10,20 +10,28 @@ class Url
 
     public static $urlMap = [
         Acquirer::FSS => [
-            self::TEST_DOMAIN => "https://merchanthubtest.fssnet.co.in/",
-            self::LIVE_DOMAIN => "https://merchanthub.fsspay.com/",
+            self::TEST_DOMAIN => 'https://merchanthubtest.fssnet.co.in/',
+            self::LIVE_DOMAIN => 'https://merchanthub.fsspay.com/',
 
-            Action::PURCHASE  => "PGAggregator/MerchaggrPayment.htm?param=paymentInit&",
-            Action::REFUND    => "PGAggregator/MerchaggrPayment.htm?param=supportInitTCPIP",
-            Action::VERIFY    => "PGAggregator/MerchaggrPayment.htm?param=supportInitTCPIP",
+            Action::PURCHASE  => 'PGAggregator/MerchaggrPayment.htm?param=paymentInit&',
+            Action::REFUND    => 'PGAggregator/MerchaggrPayment.htm?param=supportInitTCPIP',
+            Action::VERIFY    => 'PGAggregator/MerchaggrPayment.htm?param=supportInitTCPIP',
         ],
         Acquirer::BOB   => [
-            self::TEST_DOMAIN => "https://ipg.bobgateway.com/IPG",
-            self::LIVE_DOMAIN => "https://ipg.bobgateway.com/IPG",
+            self::TEST_DOMAIN => 'https://ipg.bobgateway.com/IPG',
+            self::LIVE_DOMAIN => 'https://ipg.bobgateway.com/IPG',
 
-            Action::PURCHASE => "/VPAS.htm?actionVPAS=VbvVEReqProcessHTTP&",
-            Action::REFUND    => "/tranPipe.htm?param=tranInit",
-            Action::VERIFY    => "/tranPipe.htm?param=tranInit",
+            Action::PURCHASE  => '/VPAS.htm?actionVPAS=VbvVEReqProcessHTTP&',
+            Action::REFUND    => '/tranPipe.htm?param=tranInit',
+            Action::VERIFY    => '/tranPipe.htm?param=tranInit',
+        ],
+        Acquirer::SBI   => [
+            self::TEST_DOMAIN => 'https://certpayments.onlinesbi.com/UPG',
+            self::LIVE_DOMAIN => 'https://certpayments.onlinesbi.com/UPG',
+
+            Action::PURCHASE  => '/VPAS.htm?actionVPAS=VbvVEReqProcessHTTP&',
+            Action::REFUND    => '/tranPipeHTTP.htm?param=tranInit',
+            Action::VERIFY    => '/tranPipeHTTP.htm?param=tranInit',
         ]
     ];
 }
