@@ -275,6 +275,8 @@ export default function Reports(store, opts) {
                   config = {
                     label: configItem.name,
                     value: configItem.id,
+                    referred_accounts: (configItem.template || {})
+                      .referred_accounts,
                     type,
                     description,
                     _item: configItem,
@@ -710,15 +712,28 @@ export default function Reports(store, opts) {
                     <div class="title">PERIOD</div>
                     {entity === 'monthlyInvoice' || (
                       <div class="col-sm-3 col-xs-12">
-                        <div class="form-group form-control">
-                          <Field
-                            name="type"
-                            class="fix-select"
-                            component="select"
-                          >
-                            <option value="daily">Daily</option>
-                            <option value="monthly">Monthly</option>
-                          </Field>
+                        <div
+                          class="form-group form-control"
+                          disabled={
+                            isPartnerReport &&
+                            selectedConfig.referred_accounts === 'all'
+                          }
+                        >
+                          {!(
+                            isPartnerReport &&
+                            selectedConfig.referred_accounts === 'all'
+                          ) ? (
+                            <Field
+                              name="type"
+                              class="fix-select"
+                              component="select"
+                            >
+                              <option value="daily">Daily</option>
+                              <option value="monthly">Monthly</option>
+                            </Field>
+                          ) : (
+                            'Daily'
+                          )}
                         </div>
                       </div>
                     )}
