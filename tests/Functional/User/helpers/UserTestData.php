@@ -99,9 +99,6 @@ return [
                         'suspended_at' => null,
                         'role'         => 'owner',
                         'partner_type' => 'pure_platform',
-                        'partner'      => [
-                            'has_configs' => true,
-                        ],
                     ],
                 ],
                 'invitations'             => [
