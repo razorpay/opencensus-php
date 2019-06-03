@@ -65,7 +65,8 @@ class Validator extends Base\Validator
         'addPlanRulePricingMethod',
         'addPlanRuleMinAndMaxFee',
         'addPlanRulePayoutFundTransfer',
-        'addPlanRuleBankTransfer',
+        // Skipped for now as it blocks the creation of 0-pricing rules.
+        // 'addPlanRuleBankTransfer',
     ];
 
     protected static $fetchRules = [
@@ -213,7 +214,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateaddPlanRuleBankTransfer($input)
+    protected function validateAddPlanRuleBankTransfer($input)
     {
         // Bank Transfer payments can't be rejected, so
         // a percent rate rule is always required for the
