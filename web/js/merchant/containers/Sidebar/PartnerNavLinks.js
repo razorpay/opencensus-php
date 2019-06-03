@@ -49,6 +49,10 @@ export default function PartnerNavLinks() {
         icon="i i-books text-danger"
         to="/partners/reports"
         isPending={false}
+        // disabling for reseller partner not having partner configs
+        additionalCondition={user =>
+          !user.isPartner('reseller') || user.isHavingPartnerConfigs
+        }
       />
     </>
   );
