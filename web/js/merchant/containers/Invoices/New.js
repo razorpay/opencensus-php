@@ -28,12 +28,14 @@ import LineItemTable from './LineItemTable';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import IssueConfirmModal from './IssueConfirmModal';
 import AddInternalNoteModal from './AddInternalNoteModal';
+import SearchbleTypeAhead from './SearchbleTypeAhead';
 import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumbNav';
 import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo';
 import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes';
 import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
 import {
-  fetchCustomersForAutocomplete,
+  searchCustomers,
+  fetchCustomer,
   fetchCustomerAddresses,
 } from 'merchant/modules/customers';
 import { fetchItemsForAutocomplete } from 'merchant/modules/items';
@@ -98,12 +100,10 @@ const selector = formValueSelector('newInvoice');
 @withRouter
 @connect(
   state => {
-    let customers = state.customers.items;
     return {
       session: state.session,
-      customers,
       items: state.items.items,
-      customer: findBy(customers, 'id', selector(state, 'customer.id')),
+      customer: selector(state, 'customer'),
       invoice: state.invoice.invoice,
       invoice_line_items: selector(state, 'line_items'),
       state_of_supply: selector(state, 'state_of_supply'),
@@ -113,9 +113,9 @@ const selector = formValueSelector('newInvoice');
   },
   {
     luminateRow,
-    fetchCustomersForAutocomplete,
-    fetchItemsForAutocomplete,
+    fetchCustomer,
     fetchCustomerAddresses,
+    fetchItemsForAutocomplete,
     saveInvoice,
     deleteInvoice,
     fetchStates,
@@ -176,7 +176,7 @@ export default class InvoicesNewContainer extends Component {
    * Initializes the Invoice.
    * @param {Invoice} invoice
    */
-  _initialize(invoice) {
+  _initialize = invoice => {
     this.props.initialize(invoice);
 
     // Set issue date.
@@ -194,8 +194,8 @@ export default class InvoicesNewContainer extends Component {
 
     if (customerDetails) {
       let customer =
-        this.props.customers &&
-        this.props.customers.find(c => c.id == customerDetails.id);
+        this.state.selectedCustomers &&
+        this.state.selectedCustomers.find(c => c.id == customerDetails.id);
 
       if (customer) {
         let billingAddress, shippingAddress;
@@ -219,7 +219,39 @@ export default class InvoicesNewContainer extends Component {
 
     // Refresh merchant info.
     setTimeout(() => this.getMerchantInfo());
-  }
+  };
+
+  handleFetchCustomer = (id, cb) => {
+    this.props
+      .fetchCustomer(id)
+      .then(customer => {
+        this.setState(
+          {
+            selectedCustomers: [customer],
+          },
+          cb
+        );
+      })
+      .catch(e => {
+        cb(e);
+      });
+  };
+
+  fetchInvoice = invoiceId => {
+    return new Promise(async (resolve, reject) => {
+      const invoice = await this.props.fetchInvoice(invoiceId);
+
+      if (invoice.customer_id) {
+        this.handleFetchCustomer(invoice.customer_id, () => {
+          resolve(invoice);
+        });
+
+        return;
+      }
+
+      resolve(invoice);
+    });
+  };
 
   componentWillMount() {
     let promises = [];
@@ -228,7 +260,7 @@ export default class InvoicesNewContainer extends Component {
 
     if (invoiceId) {
       promises.push(
-        this.props.fetchInvoice(invoiceId).then(invoice => {
+        this.fetchInvoice(invoiceId).then(invoice => {
           if (this.isPaymentLink(invoice)) {
             return;
           }
@@ -251,7 +283,6 @@ export default class InvoicesNewContainer extends Component {
     }
 
     promises = [
-      this.props.fetchCustomersForAutocomplete(),
       this.props.fetchItemsForAutocomplete({
         type: 'invoice',
         'expand[]': 'tax',
@@ -266,7 +297,7 @@ export default class InvoicesNewContainer extends Component {
     });
 
     Promise.all(promises)
-      .then(([customers, items, states, gst, invoice]) => {
+      .then(([items, states, gst, invoice]) => {
         if (invoice) {
           this._initialize(invoice);
         }
@@ -315,8 +346,7 @@ export default class InvoicesNewContainer extends Component {
           isLoading: true,
         });
 
-        this.props
-          .fetchInvoice(nextProps.match.params.id)
+        this.fetchInvoice(nextProps.match.params.id)
           .then(invoice => {
             this.setState({
               isLoading: false,
@@ -494,7 +524,8 @@ export default class InvoicesNewContainer extends Component {
    */
   selectCustomerAndCloseModal = (
     updateAddress = false,
-    selectShippingAddress = false
+    selectShippingAddress = false,
+    updateSelectedCustomers = false
   ) => (customer, shippingSameAsBilling = false) => {
     this.setCustomerInProps(customer);
     this.props.closeModal();
@@ -507,6 +538,12 @@ export default class InvoicesNewContainer extends Component {
         selectShippingAddress,
         shippingSameAsBilling
       );
+    }
+
+    if (updateSelectedCustomers) {
+      this.setState({
+        selectedCustomers: [customer],
+      });
     }
 
     track({
@@ -667,7 +704,7 @@ export default class InvoicesNewContainer extends Component {
       component: (
         <CustomerCreation
           saveLabel="Create Customer"
-          onSave={this.selectCustomerAndCloseModal(true, true)}
+          onSave={this.selectCustomerAndCloseModal(true, true, true)}
           customer={{
             name: searchTerm,
           }}
@@ -689,7 +726,7 @@ export default class InvoicesNewContainer extends Component {
       component: (
         <CustomerCreation
           saveLabel="Update Customer"
-          onSave={this.selectCustomerAndCloseModal()}
+          onSave={this.selectCustomerAndCloseModal(false, false, true)}
           customer={this.props.customer}
           showGSTN={this.state.invoiceCurrency === 'INR'}
         />
@@ -1442,6 +1479,10 @@ export default class InvoicesNewContainer extends Component {
       false,
       autoselectPlaceOfSupply
     );
+
+    this.setState({
+      selectedCustomers: [selectedCustomer],
+    });
   };
 
   showGSTModal = () => {
@@ -1449,6 +1490,10 @@ export default class InvoicesNewContainer extends Component {
       size: 'small',
       component: <AddGST reloadAfterSave={true} />,
     });
+  };
+
+  searchCustomers = searchTerm => {
+    return searchCustomers({ q: searchTerm });
   };
 
   render() {
@@ -1489,6 +1534,7 @@ export default class InvoicesNewContainer extends Component {
       selectedShippingAddress,
       isFetchingAddresses,
       invoiceCurrency,
+      selectedCustomers,
     } = this.state;
 
     /**
@@ -1648,12 +1694,11 @@ export default class InvoicesNewContainer extends Component {
                                 formName="newInvoice"
                                 name="customer.id"
                                 class="material-input"
-                                component={TypeAhead}
-                                options={this.props.customers}
+                                component={SearchbleTypeAhead}
                                 selected={this.props.customer.id}
                                 optionLabelPath="displayName"
                                 selectedOptionLabelPath="selectedDisplayName"
-                                placeholder="Select a customer"
+                                placeholder="Search for customers"
                                 onQuickAdd={this.quickCreateCustomer}
                                 disabled={isDisabled}
                                 labelWhenSearchTermBlank="Create new Customer"
@@ -1661,17 +1706,8 @@ export default class InvoicesNewContainer extends Component {
                                 maxSearchTermLength="12"
                                 keepValueInBG={false}
                                 onOptionChange={this.onSelectCustomer}
-                                normalizeValue={value => {
-                                  let selected = findBy(
-                                    this.props.customers || [],
-                                    'id',
-                                    value
-                                  );
-                                  if (selected) {
-                                    return selected.selectedDisplayName;
-                                  }
-                                  return value;
-                                }}
+                                searchMethod={this.searchCustomers}
+                                options={selectedCustomers}
                               />
                             </div>
                             {customer &&
