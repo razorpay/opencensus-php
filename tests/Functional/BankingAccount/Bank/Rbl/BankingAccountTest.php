@@ -42,7 +42,7 @@ class BankingAccountTest extends TestCase
 
         $this->runRequestResponseFlow($data, function(){
             $this->createBankingAccount([
-                Entity::BANK => 'TEST'
+                Entity::CHANNEL => 'TEST'
             ]);
         });
     }
@@ -63,7 +63,7 @@ class BankingAccountTest extends TestCase
     {
         $data = [
             Entity::PINCODE => '560030',
-            Entity::BANK    => 'rbl'
+            Entity::CHANNEL => 'rbl'
         ];
 
         $data = array_merge($data, $attributes);

@@ -9,12 +9,12 @@ use RZP\Models\Merchant\Balance;
 class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
+    const CHANNEL               = 'channel';
     const ACCOUNT_NUMBER        = 'account_number';
     const ACCOUNT_IFSC_CODE     = 'account_ifsc_code';
     const PINCODE               = 'pincode';
     const STATUS                = 'status';
     const BANK_INTERNAL_STATUS  = 'bank_internal_status';
-    const BANK                  = 'bank';
     const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
     const BALANCE_ID            = 'balance_id';
     const BANK_REFERENCE_NUMBER = 'bank_reference_number';
@@ -37,12 +37,12 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::MERCHANT_ID,
+        self::CHANNEL,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC_CODE,
         self::STATUS,
         self::PINCODE,
         self::FTS_FUND_ACCOUNT_ID,
-        self::BANK,
         self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
@@ -50,19 +50,22 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        self::BANK_REFERENCE_NUMBER,
+        self::CHANNEL,
         self::MERCHANT_ID,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC_CODE,
-        self::STATUS,
         self::PINCODE,
-        self::BANK,
+        self::BANK_REFERENCE_NUMBER,
+        self::STATUS,
+        self::BANK_INTERNAL_STATUS,
+        self::BALANCE_ID,
+        self::FTS_FUND_ACCOUNT_ID,
     ];
 
     protected $public = [
         self::ID,
         self::MERCHANT_ID,
-        self::BANK,
+        self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
     ];
@@ -74,6 +77,7 @@ class Entity extends Base\PublicEntity
 
     public function generateBankReferenceNumber()
     {
+        // TODO: fix.
         $id = substr(time(), 0, 5);
 
         $this->setAttribute(self::BANK_REFERENCE_NUMBER, $id);

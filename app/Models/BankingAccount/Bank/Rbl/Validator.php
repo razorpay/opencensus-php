@@ -9,7 +9,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $availabilityRules = [
-        Entity::BANK              => 'required',
-        Entity::PINCODE           => 'required',
+        Entity::CHANNEL => 'required',
+        Entity::PINCODE => 'required',
     ];
 }

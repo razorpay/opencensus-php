@@ -30,7 +30,7 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::STATUS, 255)
                   ->nullable();
 
-            $table->string(Entity::BANK, 255);
+            $table->string(Entity::CHANNEL, 255);
 
             $table->char(Entity::PINCODE, Entity::PINCODE_LENGTH);
 

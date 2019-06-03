@@ -33,7 +33,7 @@ class Core extends Base\Core
 
     protected function getBankCore(array $input)
     {
-        $bank = $input[Entity::BANK];
+        $bank = $input[Entity::CHANNEL];
 
         $class = __NAMESPACE__ . '\Bank\\' . $bank . '\Core';
 
