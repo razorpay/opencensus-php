@@ -6,8 +6,6 @@ use RZP\Models\Settlement\Channel as FTAChannel;
 
 class Channel
 {
-    public static $supportedChannels = [
-        FTAChannel::YESBANK,
-        FTAChannel::RBL,
-    ];
+    const YESBANK = FTAChannel::YESBANK;
+    const RBL     = FTAChannel::RBL;
 }

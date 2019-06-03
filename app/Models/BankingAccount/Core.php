@@ -2,41 +2,51 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Redis;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function createBankingAccount(string $bankStatus, array $input, Merchant\Entity $merchant)
+    const RBL_PINCODES_REDIS_KEY = 'rbl_pincode_set';
+
+    public function createRblBankingAccount(array $input, Merchant\Entity $merchant): Entity
     {
+        // TODO: Validate if account does not already exist for the merchant
+
+        $status = $this->getRblAvailabilityStatus($input);
+
         $bankingAccount = new Entity;
 
         $bankingAccount->build($input);
 
-        $bankingAccount->setStatus($bankStatus);
-
         $bankingAccount->merchant()->associate($merchant);
+
+        $bankingAccount->setStatus($status);
 
         $this->repo->saveOrFail($bankingAccount);
 
-        $data = $bankingAccount->toArrayPublic();
-
-        return $data;
+        return $bankingAccount;
     }
 
-    public function getBankAvailabilityStatusForMerchant(array $input)
+    protected function getRblAvailabilityStatus(array $input): string
     {
-        $bankCore = $this->getBankCore($input);
+        (new Validator)->validateInput('rbl_availability', $input);
 
-        return $bankCore->getBankAvailabilityStatus($input);
+        $isServiceable = $this->isPincodeRblServiceable($input[Entity::PINCODE]);
+
+        $status = ($isServiceable === true) ? Status::CREATED : Status::UNSERVICEABLE;
+
+        return $status;
     }
 
-    protected function getBankCore(array $input)
+    protected function isPincodeRblServiceable(string $pincode): bool
     {
-        $bank = $input[Entity::CHANNEL];
+        $redis = Redis::connection();
 
-        $class = __NAMESPACE__ . '\Bank\\' . $bank . '\Core';
+        $isAvailable = $redis->sismember(self::RBL_PINCODES_REDIS_KEY, $pincode);
 
-        return new $class;
+        return (bool) $isAvailable;
     }
 }

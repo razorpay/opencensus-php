@@ -29,6 +29,10 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'banking_account';
 
+    protected static $sign = 'bankacc';
+
+    protected $generateIdOnCreate = true;
+
     protected $validStatus = [
         Status::CREATED,
         Status::INITIATED,
@@ -64,6 +68,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::MERCHANT_ID,
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
@@ -71,9 +76,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $generators = [
-        self::ID,
         self::BANK_REFERENCE_NUMBER,
     ];
+
+    // -------------------------- Generators --------------------------------- //
 
     public function generateBankReferenceNumber()
     {
@@ -83,18 +89,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANK_REFERENCE_NUMBER, $id);
     }
 
-    public function generateId()
-    {
-        $this->setAttribute(self::ID, static::generateUniqueId());
-    }
+    // ---------------------------- Setters ----------------------------------- //
 
-    // -------------------------- Setters ------------------------------------- //
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
     }
 
-    // ------------------------ associations --------------------------------- //
+    // --------------------------- Relations ---------------------------------- //
 
     public function merchant()
     {

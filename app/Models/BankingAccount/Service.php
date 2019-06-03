@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -15,14 +16,26 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create(array $input)
+    public function create(array $input): array
     {
-        (new Validator)->validateInput('availability', $input);
+        (new Validator)->setStrictFalse()->validateInput('pre_create', $input);
 
-        $bankStatus = $this->core->getBankAvailabilityStatusForMerchant($input);
+        $channel = $input[Entity::CHANNEL];
 
-        $data = $this->core->createBankingAccount($bankStatus, $input, $this->merchant);
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $account = $this->core->createRblBankingAccount($input, $this->merchant);
 
-        return $data;
+                break;
+
+            default:
+                throw new LogicException(
+                    'Banking Account logic undefined for channel: ' . $channel,
+                    null,
+                    $input);
+        }
+
+        return $account->toArrayPublic();
     }
 }
