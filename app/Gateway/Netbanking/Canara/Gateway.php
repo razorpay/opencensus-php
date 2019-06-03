@@ -106,6 +106,8 @@ class Gateway extends Base\Gateway
 
         $amount = $this->formatAmount($input['payment'][Payment\Entity::AMOUNT] / 100);
 
+        $fee = $this->formatAmount($input['payment_fee'] / 100);
+
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
@@ -119,7 +121,7 @@ class Gateway extends Base\Gateway
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::DATE                          => $date,
             RequestFields::FLDREF1                       => $merchantName,
-            RequestFields::FLDREF2                       => $input['payment_fee']
+            RequestFields::FLDREF2                       => $fee,
         ];
 
         return $data;
