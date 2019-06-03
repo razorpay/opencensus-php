@@ -7,16 +7,29 @@ import Button from 'component/Button';
 import Alert from 'component/Alert';
 
 export default class extends React.PureComponent {
+  state = {
+    currencySelected: this.props.currency,
+  };
+
   onSave = data => {
     this.props.onSave(data.currency);
     this.props.closeModal();
   };
 
+  onChange = option => {
+    this.setState({ currencySelected: option.name });
+  };
+
   render() {
     const alerts = [
       'GST and tax related details will not show up for invoices with international currency.',
-      ...(this.props.alerts || []),
     ];
+
+    if (this.state.currencySelected !== 'INR') {
+      alerts.push(
+        'The rate of all the items in the current invoice will reset to 0.'
+      );
+    }
 
     return (
       <div class="PickCurrency-Modal">
@@ -33,6 +46,7 @@ export default class extends React.PureComponent {
               parentQuerySelector=".ReactModal__Content"
               defaultValue={this.props.currency || 'INR'}
               fullDisplay
+              onChange={this.onChange}
             />
 
             <Alert.Warning>
