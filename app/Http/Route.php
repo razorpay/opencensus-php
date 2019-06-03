@@ -1078,7 +1078,7 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
-        'banking_account_create'                   => ['post',     'banking_account',                                'BankingAccountController@create'                                   ],
+        'banking_account_create'                   => ['post',     'banking_accounts',                               'BankingAccountController@create'                                   ],
     ];
 
     public static $public = [

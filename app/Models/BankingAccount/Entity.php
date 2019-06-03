@@ -21,8 +21,8 @@ class Entity extends Base\PublicEntity
 
     const PINCODE_LENGTH    = '6';
 
-    // need to confirm this length
-    const ACCOUNT_NUMBER_LENGTH = '40';
+    // TODO: need to confirm this length
+    const ACCOUNT_NUMBER_LENGTH     = '40';
     const ACCOUNT_IFSC_CODE_LENGTH  = '11';
 
     const MERCHANT_DATA = 'merchant_data';
