@@ -697,25 +697,6 @@ class Reporting implements ExternalService
         return $items;
     }
 
-    protected function getPartnerConfigs(Merchant\Entity $merchant)
-    {
-        $partnerConfigs = (new Config\Core)->fetchAllConfigsByPartner($merchant);
-
-        $partnerConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-            return ($partnerConfig->isCommissionsEnabled() === true);
-        });
-
-        $commissionConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-            return ($partnerConfig->getCommissionModel() === Config\CommissionModel::COMMISSION);
-        });
-
-        $subventionConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-            return ($partnerConfig->getCommissionModel() === Config\CommissionModel::SUBVENTION);
-        });
-
-        return [$commissionConfigs, $subventionConfigs];
-    }
-
     protected function filterOnReportTypeAndNameAndConsumer(Merchant\Entity $merchant, $items)
     {
         $features = $merchant->getEnabledFeatures();
@@ -729,7 +710,7 @@ class Reporting implements ExternalService
 
         if ($merchant->isPartner() === true)
         {
-            list($commissionConfigs, $subventionConfigs) = $this->getPartnerConfigs($merchant);
+            list($commissionConfigs, $subventionConfigs) = (new Config\Core)->fetchAllEnabledConfigGroupsByPartner($merchant);
 
             // if at least one commission config is enabled, we show commission reports
             if ($commissionConfigs->isNotEmpty() === true)

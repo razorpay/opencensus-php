@@ -190,13 +190,20 @@ class Core extends Base\Core
 
                 if ($merchantEntity->isPartner() === true)
                 {
-                    $configs = $configCore->fetchAllConfigsByPartner($merchantEntity);
+                    $merchant['partner'] = [];
 
-                    if ($configs->isNotEmpty() === true)
+                    list($commissionConfigs, $subventionConfigs) = $configCore->fetchAllConfigGroupsByPartner($merchantEntity);
+
+                    if ($commissionConfigs->isNotEmpty() === true)
                     {
-                        $merchant['partner'] = [
-                            'has_configs' => true,
-                        ];
+                        $merchant['partner']['has_configs'] = true;
+                        $merchant['partner']['has_commission_configs'] = true;
+                    }
+
+                    if ($subventionConfigs->isNotEmpty() === true)
+                    {
+                        $merchant['partner']['has_configs'] = true;
+                        $merchant['partner']['has_subvention_configs'] = true;
                     }
                 }
 

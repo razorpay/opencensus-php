@@ -2106,6 +2106,14 @@ class AdminFetch
                         Commission\Status::REFUNDED,
                     ],
                 ],
+                Commission\Entity::MODEL => [
+                    Fetch::LABEL  => 'Model',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Config\CommissionModel::COMMISSION,
+                        Config\CommissionModel::SUBVENTION,
+                    ],
+                ],
             ],
 
             Entity::MERCHANT_USER => [

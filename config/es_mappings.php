@@ -226,6 +226,9 @@ return [
             'partner_config_id' => [
                 'type' => 'keyword',
             ],
+            'model' => [
+                'type' => 'keyword',
+            ],
             'merchant' => [
                 'properties' => [
                     'id' => [
