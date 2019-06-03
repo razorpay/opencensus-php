@@ -7,7 +7,7 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     protected static $preCreateRules = [
-        Entity::CHANNEL => 'required|string',
+        Entity::CHANNEL => 'required|string|in:rbl',
     ];
 
     protected static $rblAvailabilityRules = [

@@ -189,7 +189,7 @@ class Table
 
     const SETTING               = 'settings';
 
-    const BANKING_ACCOUNT       = 'banking_account';
+    const BANKING_ACCOUNT       = 'banking_accounts';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';

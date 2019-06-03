@@ -18,47 +18,40 @@ class BankingAccountTest extends TestCase
         $pincodeList = ['560030', '560034'];
 
         $this->app['redis']->sadd('rbl_pincode_set', $pincodeList);
+
+        $this->ba->proxyAuth();
     }
 
     public function testCreateBankingAccount()
     {
-         $this->ba->proxyAuth();
-
-         sd($this->startTest());
+        $this->startTest();
     }
 
     public function testCreateBankingAccountWithUnserviceablePincode()
     {
-        $this->ba->proxyAuth();
-
         $this->startTest();
     }
 
     public function testCreateBankingAccountWithInvalidBank()
     {
-        $this->ba->proxyAuth();
-
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function(){
-            $this->createBankingAccount([
-                Entity::CHANNEL => 'TEST'
-            ]);
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->createBankingAccount([Entity::CHANNEL => 'TEST']);
         });
     }
 
     public function testCreateBankingAccountWithEmptyPincode()
     {
-        $this->ba->proxyAuth();
-
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function(){
-            $this->createBankingAccount([
-                Entity::PINCODE => ''
-            ]);
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->createBankingAccount([Entity::PINCODE => '']);
         });
     }
+
     protected function createBankingAccount(array $attributes = [])
     {
         $data = [
@@ -69,9 +62,9 @@ class BankingAccountTest extends TestCase
         $data = array_merge($data, $attributes);
 
         $request = [
-            'method'    => 'post',
-            'url'       => '/banking_account',
-            'content'   => $data
+            'method'  => 'post',
+            'url'     => '/banking_accounts',
+            'content' => $data
         ];
 
         $response = $this->makeRequestAndGetContent($request);

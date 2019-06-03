@@ -1,73 +1,73 @@
 <?php
 
-use RZP\Error\PublicErrorCode;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 return [
     'testCreateBankingAccount' => [
-        'request' => [
-            'url' => '/banking_account',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'POST',
             'content' => [
-                'bank'          => 'rbl',
-                'pincode'       => '560034',
-            ],
-        ],
-        'response' => [
-            'content' => [
-              /*  'merchant_id' => '10000000000000',
-                'bank'        => 'rbl',
-                'status'      => 'created'*/
-            ],
-        ],
-    ],
-
-    'testCreateBankingAccountWithUnserviceablePincode' => [
-        'request' => [
-            'url' => '/banking_account',
-            'method' => 'POST',
-            'content' => [
-                'bank'          => 'rbl',
-                'pincode'       => '899090',
+                'channel' => 'rbl',
+                'pincode' => '560034',
             ],
         ],
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'bank'        => 'rbl',
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
+    'testCreateBankingAccountWithUnserviceablePincode' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'POST',
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '899090',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'channel'     => 'rbl',
                 'status'      => 'unserviceable'
             ],
         ],
     ],
 
     'testCreateBankingAccountWithEmptyPincode' => [
-      'response' =>  [
-          'content' => [
-              'error' => [
-                  'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                  'description' => 'The pincode field is required when bank is rbl.',
-              ],
-          ],
-          'status_code' => 400,
-      ],
-      'exception' => [
-          'class' => 'RZP\Exception\BadRequestValidationFailureException',
-          'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-      ],
-    ],
-
-    'testCreateBankingAccountWithInvalidBank' => [
-        'response' =>  [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected bank is invalid.',
+                    'description' => 'The pincode field is required when channel is rbl.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateBankingAccountWithInvalidBank' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected channel is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
