@@ -195,6 +195,8 @@ class GovernorService
                             $request['method'],
                             $request['options']);
                 }
+
+                break;
             }
             catch(\Requests_Exception $e)
             {
