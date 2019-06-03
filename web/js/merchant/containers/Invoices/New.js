@@ -38,7 +38,7 @@ import {
   fetchCustomer,
   fetchCustomerAddresses,
 } from 'merchant/modules/customers';
-import { fetchItemsForAutocomplete } from 'merchant/modules/items';
+import { fetchItem } from 'merchant/modules/items';
 import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
 import { fetchStates } from 'merchant/modules/states';
 import { fetchGSTTaxes } from 'merchant/modules/taxes';
@@ -115,7 +115,7 @@ const selector = formValueSelector('newInvoice');
     luminateRow,
     fetchCustomer,
     fetchCustomerAddresses,
-    fetchItemsForAutocomplete,
+    fetchItem,
     saveInvoice,
     deleteInvoice,
     fetchStates,
@@ -159,6 +159,8 @@ export default class InvoicesNewContainer extends Component {
       today: issue_date,
       isFetchingAddresses: false,
       invoiceCurrency: this.props.invoice.currency || 'INR',
+      selectedCustomers: [],
+      selectedItems: [],
     };
   }
 
@@ -221,35 +223,50 @@ export default class InvoicesNewContainer extends Component {
     setTimeout(() => this.getMerchantInfo());
   };
 
-  handleFetchCustomer = (id, cb) => {
-    this.props
-      .fetchCustomer(id)
-      .then(customer => {
+  fetchItems = async lineItems => {
+    const lineItemsPromisesList = lineItems.filter(e => e.item_id).map(item => {
+      return this.props.fetchItem(item.item_id);
+    });
+
+    return await Promise.all(lineItemsPromisesList);
+  };
+
+  handleFetchCustomerAndItems = (invoice, CB) => {
+    const promiseList = [this.fetchItems(invoice.line_items)];
+
+    if (invoice.customer_id) {
+      promiseList.push(this.props.fetchCustomer(invoice.customer_id));
+    }
+
+    return Promise.all(promiseList).then(([selectedItems, customer]) => {
+      if (customer) {
         this.setState(
           {
             selectedCustomers: [customer],
+            selectedItems,
           },
-          cb
+          CB
         );
-      })
-      .catch(e => {
-        cb(e);
-      });
+
+        return;
+      }
+
+      this.setState(
+        {
+          selectedItems,
+        },
+        CB
+      );
+    });
   };
 
   fetchInvoice = invoiceId => {
     return new Promise(async (resolve, reject) => {
       const invoice = await this.props.fetchInvoice(invoiceId);
 
-      if (invoice.customer_id) {
-        this.handleFetchCustomer(invoice.customer_id, () => {
-          resolve(invoice);
-        });
-
-        return;
-      }
-
-      resolve(invoice);
+      this.handleFetchCustomerAndItems(invoice, () => {
+        resolve(invoice);
+      });
     });
   };
 
@@ -283,10 +300,6 @@ export default class InvoicesNewContainer extends Component {
     }
 
     promises = [
-      this.props.fetchItemsForAutocomplete({
-        type: 'invoice',
-        'expand[]': 'tax',
-      }),
       this.props.fetchStates(),
       this.props.fetchGSTTaxes(),
       ...promises,
@@ -297,7 +310,7 @@ export default class InvoicesNewContainer extends Component {
     });
 
     Promise.all(promises)
-      .then(([items, states, gst, invoice]) => {
+      .then(([states, gst, invoice]) => {
         if (invoice) {
           this._initialize(invoice);
         }
@@ -1535,6 +1548,7 @@ export default class InvoicesNewContainer extends Component {
       isFetchingAddresses,
       invoiceCurrency,
       selectedCustomers,
+      selectedItems,
     } = this.state;
 
     /**
@@ -2094,7 +2108,7 @@ export default class InvoicesNewContainer extends Component {
                       <FieldArray
                         name="line_items"
                         component={LineItemTable}
-                        items={this.props.items}
+                        selectedItems={selectedItems}
                         disabled={isDisabled}
                         invoice={invoice}
                         invoiceCurrency={invoiceCurrency}
