@@ -1,0 +1,167 @@
+<?php
+
+namespace RZP\Models\CreditNote;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+use RZP\Models\Base;
+
+class Entity extends Base\PublicEntity
+{
+    use SoftDeletes;
+
+    const MERCHANT_ID       = 'merchant_id';
+    const CUSTOMER_ID       = 'customer_id';
+    const ENTITY_ID         = 'entity_id';
+    const ENTITY_TYPE       = 'entity_type';
+    const NAME              = 'name';
+    const DESCRIPTION       = 'description';
+    const AMOUNT            = 'amount';
+    const AMOUNT_AVAILABLE  = 'amount_available';
+    const AMOUNT_REFUNDED   = 'amount_refunded';
+    const AMOUNT_ALLOCATED  = 'amount_allocated';
+    const CURRENCY          = 'currency';
+
+    const ACTION = 'action';
+
+    const INVOICES = 'invoices';
+
+    const INVOICE_ID = 'invoice_id';
+
+    const SUBSCRIPTION_ID =   'subscription_id';
+
+    const SUBSCRIPTION = 'subscription';
+
+    protected $entity = 'creditnote';
+
+    protected $generateIdOnCreate = true;
+
+    protected static $sign = 'crnt';
+
+
+
+    protected $visible = [
+        self::ID,
+        self::CUSTOMER_ID,
+        self::MERCHANT_ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::AMOUNT_AVAILABLE,
+        self::AMOUNT_REFUNDED,
+        self::AMOUNT_ALLOCATED,
+        self::CURRENCY,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    protected $fillable = [
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::CURRENCY,
+    ];
+
+    protected $defaults = [
+        self::AMOUNT_REFUNDED  => 0,
+        self::AMOUNT_ALLOCATED => 0,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::CUSTOMER_ID,
+        self::MERCHANT_ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::AMOUNT_AVAILABLE,
+        self::AMOUNT_REFUNDED,
+        self::AMOUNT_ALLOCATED,
+        self::CURRENCY,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    protected $amounts = [
+        self::AMOUNT,
+        self::AMOUNT_AVAILABLE,
+        self::AMOUNT_REFUNDED,
+        self::AMOUNT_ALLOCATED,
+    ];
+
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Entity');
+    }
+
+    public function creditNoteInvoices()
+    {
+        return $this->hasMany('RZP\Models\CreditNote\Invoice\Entity', 'credit_note_id');
+    }
+
+    /**
+     * Defines a polymorphic relation with entities
+     * implementing a morphMany association on the
+     * 'source' key
+     */
+    public function source()
+    {
+        return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
+    }
+
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getAmountAvailable()
+    {
+        return $this->getAttribute(self::AMOUNT_AVAILABLE);
+    }
+
+    public function getAmountRefunded()
+    {
+        return $this->getAttribute(self::AMOUNT_REFUNDED);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function setAmountAvailable(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_AVAILABLE, $amount);
+    }
+
+    public function setAmountRefunded(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
+    }
+
+    public function calculateAndSetAmountRefundedAndAvailable($refundedAmount)
+    {
+        $this->setAmountAvailable($this->getAmountAvailable() - $refundedAmount);
+
+        $this->setAmountRefunded($this->getAmountRefunded() + $refundedAmount);
+    }
+}

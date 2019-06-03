@@ -1078,6 +1078,11 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+        'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
+        'credit_note_list'                         => ['get',      'creditnote',                                     'CreditNoteController@list'                                         ],
+        'credit_note_get'                          => ['get',      'creditnote/{id}',                                'CreditNoteController@get'                                          ],
+        'credit_note_apply'                        => ['post',     'creditnote/{id}/apply',                          'CreditNoteController@apply'                                        ],
+
     ];
 
     public static $public = [
@@ -1342,6 +1347,10 @@ final class Route
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
         'merchant_methods_downtime_private',
+        'create_credit_note',
+        'credit_note_list',
+        'credit_note_get',
+        'credit_note_apply',
     ];
 
     // Only routes defined in internalApps go here
