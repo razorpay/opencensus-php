@@ -37,6 +37,10 @@ class Service extends Base\Service
 
     const EXTENSION           = 'extension';
 
+    const MERCHANT_LOGO       = 'merchant_logo';
+
+    const MERCHANT_NAME       = 'merchant_name';
+
     // Users who signed up before this date
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
@@ -629,6 +633,14 @@ class Service extends Base\Service
             );
         }
 
+        $merchant = $user->currentMerchant();
+
+        $merchantData = $merchant->toArray();
+
+        $merchantLogo = $merchantData['logo_url'] ?? null;
+
+        $merchantName = $merchantData['name'] ?? null;
+
         $signer = new Sha256();
 
         $sessionConfig = $this->app['config']['session'];
@@ -645,6 +657,8 @@ class Service extends Base\Service
                                    ->setExpiration(time() + $tokenExpiry)
                                    ->set(self::MERCHANT_ID, $currentMerchantId)
                                    ->set(self::USER_ID, $user->id)
+                                   ->set(self::MERCHANT_LOGO, $merchantLogo)
+                                   ->set(self::MERCHANT_NAME, $merchantName)
                                    ->sign($signer, $jwtEncryptionKey)
                                    ->getToken();
 
