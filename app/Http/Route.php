@@ -1078,6 +1078,29 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+
+        // Governor Proxy APIs - Namespace
+        'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                            'GovernorController@createNamespace'                        ],
+
+        // Governor Proxy APIs - Domain Model
+        'governor_domain_model_list'              => ['get',      '{source}/rule_engine/data_model/{namespace}',               'GovernorController@getDomainModels'                        ],
+        'governor_create_domain_model'            => ['post',     '{source}/rule_engine/data_model/{namespace}',               'GovernorController@createDomainModel'                      ],
+        'governor_update_namespace'               => ['put',      '{source}/rule_engine/data_model/{namespace}',               'GovernorController@updateDomainModel'                      ],
+
+        // Governor Proxy APIs - Rule
+        'governor_create_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRule'                             ],
+        'governor_create_rule_bulk'               => ['patch',    '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRules'                            ],
+        'governor_update_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
+        'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@getRules'                               ],
+        'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',          'GovernorController@getRule'                                ],
+
+        // Governor Proxy APIs - Rule Chain
+        'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@createRuleChain'                        ],
+        'governor_update_rule_chain'              => ['put',      '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@updateRuleChain'                        ],
+        'governor_rule_chain_list'                => ['get',      '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@getRuleChains'                          ],
+
+        // Governor Proxy APIs - Execute Rule Chain
+        'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
         'banking_account_create'                   => ['post',     'banking_accounts',                               'BankingAccountController@create'                                   ],
     ];
 
@@ -2048,6 +2071,20 @@ final class Route
         'subscription_skip_cycle',
 
         'merchant_partners_fetch',
+
+        'governor_create_namespace',
+        'governor_domain_model_list',
+        'governor_create_domain_model',
+        'governor_update_namespace',
+        'governor_create_rule',
+        'governor_create_rule_bulk',
+        'governor_update_rule',
+        'governor_rule_list',
+        'governor_get_rule',
+        'governor_create_rule_chain',
+        'governor_update_rule_chain',
+        'governor_rule_chain_list',
+        'governor_rule_chain_execute',
         'payment_on_hold_bulk_update',
     ];
 
@@ -2448,6 +2485,20 @@ final class Route
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
 
         'merchant_partners_fetch'                  => '*',
+
+        'governor_create_namespace'                => Permission::CREATE_GATEWAY_RULE,
+        'governor_domain_model_list'               => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_domain_model'             => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_namespace'                => Permission::EDIT_GATEWAY_RULE,
+        'governor_create_rule'                     => Permission::CREATE_GATEWAY_RULE,
+        'governor_create_rule_bulk'                => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule'                     => Permission::EDIT_GATEWAY_RULE,
+        'governor_rule_list'                       => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_rule'                        => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_rule_chain'               => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule_chain'               => Permission::EDIT_GATEWAY_RULE,
+        'governor_rule_chain_list'                 => Permission::VIEW_GATEWAY_RULE,
+        'governor_rule_chain_execute'              => Permission::VIEW_GATEWAY_RULE,
         'webhook_fire'                             => Permission::MAKE_API_CALL,
         'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,

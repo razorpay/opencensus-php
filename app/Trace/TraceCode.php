@@ -1819,6 +1819,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
 
+    const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
+    const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
+    const GOVERNOR_SERVICE_RETRY                                = 'GOVERNOR_SERVICE_RETRY';
+    const GOVERNOR_SERVICE_ERROR                                = 'GOVERNOR_SERVICE_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
