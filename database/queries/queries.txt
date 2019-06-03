@@ -4943,6 +4943,12 @@ ALTER TABLE fund_account_validations
     ADD COLUMN retry_at INTEGER UNSIGNED DEFAULT NULL after batch_fund_transfer_id,
     ADD INDEX retry_at_index (`retry_at`);
 
+ALTER TABLE merchant_banks
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
+
+ALTER TABLE terminals
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
+    ADD INDEX `terminals_paylater_index` (paylater);
 ALTER TABLE invoices
     ADD COLUMN idempotency_key varchar(255) UNIQUE DEFAULT NULL AFTER batch_id,
     ADD INDEX invoices_idempotency_key_index (idempotency_key);
