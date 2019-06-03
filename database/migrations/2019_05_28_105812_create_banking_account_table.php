@@ -23,7 +23,7 @@ class CreateBankingAccountTable extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::ACCOUNT_IFSC_CODE, Entity::ACCOUNT_IFSC_CODE_LENGTH)
+            $table->char(Entity::ACCOUNT_IFSC, Entity::ACCOUNT_IFSC_LENGTH)
                   ->nullable();
 
             $table->string(Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_NUMBER_LENGTH)
@@ -57,6 +57,6 @@ class CreateBankingAccountTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('banking_account');
+        Schema::dropIfExists(Table::BANKING_ACCOUNT);
     }
 }

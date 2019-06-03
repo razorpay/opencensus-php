@@ -11,7 +11,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const CHANNEL               = 'channel';
     const ACCOUNT_NUMBER        = 'account_number';
-    const ACCOUNT_IFSC_CODE     = 'account_ifsc_code';
+    const ACCOUNT_IFSC          = 'account_ifsc';
     const PINCODE               = 'pincode';
     const STATUS                = 'status';
     const BANK_INTERNAL_STATUS  = 'bank_internal_status';
@@ -23,9 +23,7 @@ class Entity extends Base\PublicEntity
 
     // TODO: need to confirm this length
     const ACCOUNT_NUMBER_LENGTH     = '40';
-    const ACCOUNT_IFSC_CODE_LENGTH  = '11';
-
-    const MERCHANT_DATA = 'merchant_data';
+    const ACCOUNT_IFSC_LENGTH  = '11';
 
     protected $entity = 'banking_account';
 
@@ -33,17 +31,12 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $validStatus = [
-        Status::CREATED,
-        Status::INITIATED,
-    ];
-
     protected $fillable = [
         self::ID,
         self::MERCHANT_ID,
         self::CHANNEL,
         self::ACCOUNT_NUMBER,
-        self::ACCOUNT_IFSC_CODE,
+        self::ACCOUNT_IFSC,
         self::STATUS,
         self::PINCODE,
         self::FTS_FUND_ACCOUNT_ID,
@@ -57,7 +50,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::MERCHANT_ID,
         self::ACCOUNT_NUMBER,
-        self::ACCOUNT_IFSC_CODE,
+        self::ACCOUNT_IFSC,
         self::PINCODE,
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
