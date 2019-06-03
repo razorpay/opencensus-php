@@ -779,7 +779,7 @@ trait Authorize
             return;
         }
 
-        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        if (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider, true) === true)
         {
             return;
         }
@@ -811,16 +811,16 @@ trait Authorize
                 ]);
         }
 
-        if ((empty($cardlessEmiData['provider']) === true) or
-            ($cardlessEmiData['provider'] !== $input['provider']))
+        if ((empty($cardlessEmiData[Payment\Entity::PROVIDER]) === true) or
+            ($cardlessEmiData[Payment\Entity::PROVIDER] !== $input[Payment\Entity::PROVIDER]))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PROVIDER,
                 null,
                 [
                     'payment_id'        => $payment->getId(),
-                    'input_provider'    => $input['provider'],
-                    'provider'          => $cardlessEmiData['provider'] ?? null,
+                    'input_provider'    => $input[Payment\Entity::PROVIDER],
+                    'provider'          => $cardlessEmiData[Payment\Entity::PROVIDER] ?? null,
                 ]);
         }
     }
@@ -2217,6 +2217,7 @@ trait Authorize
      * @param array          $input        Input data received from checkout/merchant.
      * @param array          $gatewayInput Data that is required by gateway for the payment to be processed.
      *
+     * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
@@ -2329,7 +2330,7 @@ trait Authorize
 
             $contact = $input['contact'];
 
-            $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
+            $cacheKey = strtoupper($input[Payment\Entity::PROVIDER]) . '_' . $contact . '_' . $merchantId;
 
             $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 
