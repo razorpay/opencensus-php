@@ -691,7 +691,7 @@ class Service extends Base\Service
         return $token;
     }
 
-    protected function validateTokenUserIfLoggedIn($token)
+    protected function validateMerchantUserIfLoggedIn($token)
     {
         $user = Auth::user();
 

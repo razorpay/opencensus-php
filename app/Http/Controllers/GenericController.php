@@ -20,6 +20,7 @@ class GenericController extends Controller
 
     const WHITELISTED_ROUTES_EXTENSION = [
         'invoices',
+        'currency/all/proxy',
     ];
 
     public function handleAny($mode, $path)
