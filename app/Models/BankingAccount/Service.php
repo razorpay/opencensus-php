@@ -23,6 +23,13 @@ class Service extends Base\Service
 
         $channel = $input[Entity::CHANNEL];
 
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE,
+            [
+                'channel'            => $channel,
+                'input'              => $input,
+            ]);
+
         switch ($channel)
         {
             case Channel::RBL:
@@ -31,27 +38,27 @@ class Service extends Base\Service
                 break;
 
             default:
-                throw new LogicException(
-                    'Banking Account logic undefined for channel: ' . $channel,
-                    null,
-                    $input);
+                $this->throwUnhandledChannelException($channel, $input);
+
+                return null;
         }
 
         return $account->toArrayPublic();
     }
 
-    public function update(string $id, array $input)
+    public function update(string $id, array $input): array
     {
-        $bankingAccount = $this->repo->banking_account->findOrFailPublic($id);
+        /** @var Entity $bankingAccount */
+        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
 
         $channel = $bankingAccount->getChannel();
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_EDIT,
             [
-                'channel'           => $channel,
-                'edit_input'        => $input,
-                'banking_account'   => $bankingAccount->toArray(),
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
             ]);
 
         switch ($channel)
@@ -59,13 +66,28 @@ class Service extends Base\Service
             case Channel::RBL:
                 $account = $this->core->updateRblBankingAccount($bankingAccount, $input);
 
-                return $account;
+                break;
 
             default:
-                throw new LogicException(
-                    'Banking Account logic undefined for channel: ' . $channel,
-                    null,
-                    $input);
+                $this->throwUnhandledChannelException($channel, $input);
+
+                return null;
         }
+
+        return $account->toArrayPublic();
+    }
+
+    /**
+     * @param string $channel
+     * @param array  $input
+     *
+     * @throws LogicException
+     */
+    protected function throwUnhandledChannelException(string $channel, array $input)
+    {
+        throw new LogicException(
+            'Banking Account logic undefined for channel: ' . $channel,
+            null,
+            $input);
     }
 }

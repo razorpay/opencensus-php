@@ -4957,3 +4957,6 @@ ALTER TABLE invoices
 ALTER TABLE payouts
     ADD COLUMN pending_at INT(11) DEFAULT NULL AFTER `processed_at`,
     ADD INDEX payouts_pending_at_index (pending_at);
+
+ALTER TABLE banking_accounts
+    ADD COLUMN bank_internal_status VARCHAR(255) DEFAULT NULL AFTER status;

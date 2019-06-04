@@ -23,11 +23,16 @@ class RblStatus
         Status::CREATED        => [],
     ];
 
-    public static function isValidStatus(string $status)
+    public static function isValid(string $status): bool
     {
         $key = __CLASS__ . '::' . strtoupper($status);
 
-        if (((defined($key) === true) and (constant($key) === $status)) === false)
+        return ((defined($key) === true) and (constant($key) === $status));
+    }
+
+    public static function validate(string $status)
+    {
+        if (self::isValid($status) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Not a valid RBL status',
@@ -38,7 +43,7 @@ class RblStatus
         }
     }
 
-    public static function isValidRblToInternalStatusMapping(string $bankStatus, string $status)
+    public static function validateInternalBankStatusToStatus(string $bankStatus, string $status)
     {
         $statusList = self::$bankToInternalStatusMap[$status];
 

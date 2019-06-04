@@ -32,7 +32,7 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    public function updateRblBankingAccount(Entity $bankingAccount, array $input)
+    public function updateRblBankingAccount(Entity $bankingAccount, array $input): Entity
     {
         (new Validator)->validateInput('rbl_update', $input);
 
@@ -69,31 +69,39 @@ class Core extends Base\Core
 
     protected function checkRblToInternalStatusMapping(array $input)
     {
-        if (isset($input[Entity::BANK_INTERNAL_STATUS]) === true)
+        if (isset($input[Entity::BANK_INTERNAL_STATUS]) === false)
         {
-            $bankInternalStatus = $input[Entity::BANK_INTERNAL_STATUS];
-
-            RblStatus::isValidStatus($bankInternalStatus);
-
-            RblStatus::isValidRblToInternalStatusMapping($bankInternalStatus, $input[Entity::STATUS]);
+            return;
         }
+
+        $bankInternalStatus = $input[Entity::BANK_INTERNAL_STATUS];
+        $status             = $input[Entity::STATUS];
+
+        RblStatus::validate($bankInternalStatus);
+        RblStatus::validateInternalBankStatusToStatus($bankInternalStatus, $status);
     }
 
-    // This method is responsible for checking that unless the merchant is L2 acitvated, no one can update
-    // the status of RBL current account to processed. This to avoid cases of manual error by Bizops.
+    /**
+     * This method is responsible for checking that unless the merchant is L2 activated, no one can update
+     * the status of RBL current account to processed. This to avoid cases of manual error by Bizops.
+     *
+     * @param Entity $bankingAccount
+     *
+     * @throws BadRequestValidationFailureException
+     */
     protected function checkMerchantIsActivated(Entity $bankingAccount)
     {
         $merchant = $bankingAccount->merchant;
 
-        $merchantAcitvationStatus = $merchant->merchantDetail->getActivationStatus();
+        $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
 
-        if ($merchantAcitvationStatus !== Detail\Status::ACTIVATED)
+        if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
         {
             throw new BadRequestValidationFailureException(
-                'Merchant is not L2 acivated, Please check',
+                'Operation not allowed, merchant is not L2 activated',
                 null,
                 [
-                    'merchant_activation_status' =>  $merchant->merchantDetail->getActivationStatus(),
+                    'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
                     'banking_account'            => $bankingAccount->getId(),
                 ]);
         }
