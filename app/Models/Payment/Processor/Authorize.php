@@ -5492,37 +5492,11 @@ trait Authorize
             ]
         );
 
-        $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
-
-        if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
-        {
-            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
-        }
-
-        $key = $payment->getCacheRedirectInputKey();
-
-        $inputDetails = $this->cache->get($key);
-
-        if ($inputDetails === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
-            );
-        }
-
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
-        {
-            $this->setCardNumberAndCvv($inputDetails);
-        }
-
         $resource = $this->getCallbackMutexResource($payment);
 
         $response = $this->mutex->acquireAndRelease(
             $resource,
-            function() use ($payment, $inputDetails)
+            function() use ($payment)
             {
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
@@ -5537,6 +5511,18 @@ trait Authorize
                 {
                     return $this->rethrowFailedPaymentErrorException($payment);
                 }
+
+                $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
+
+                if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
+                {
+                    $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+                }
+
+                $inputDetails = $this->getInputDetails($payment);
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
@@ -5576,6 +5562,27 @@ trait Authorize
             2000);
 
         return $response;
+    }
+
+    protected function getInputDetails($payment)
+    {
+        $key = $payment->getCacheRedirectInputKey();
+
+        $inputDetails = $this->cache->get($key);
+
+        if ($inputDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+            );
+        }
+
+        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
+        {
+            $this->setCardNumberAndCvv($inputDetails);
+        }
+
+        return $inputDetails;
     }
 
     protected function getFallbackOrRedirectType($payment, $ret)

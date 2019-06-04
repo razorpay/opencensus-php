@@ -101,7 +101,7 @@ class Processor
      * We only allow payment to fallback within a certain duration.
      * A payment can fallback only within few minutes
      */
-    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 300;  // 5min * 60 sec
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 1200;  // 20 min * 60 sec
 
     /**
      * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
@@ -127,7 +127,7 @@ class Processor
     /**
      * Timeout to store card details for redirect to authorize
      */
-    const REDIRECT_CACHE_TTL = 5;
+    const REDIRECT_CACHE_TTL = 20;
 
     const CACHE_KEY = 'fallback_%s_card_details';
 
