@@ -646,6 +646,7 @@ final class Route
         'org_fieldmap_delete'                      => ['delete',   'field-map/{id}',                                 'OrganizationController@deleteOrgFieldMap'                          ],
         'role_create'                              => ['post',     'roles',                                          'OrganizationController@createRole'                                 ],
         'role_get_multiple'                        => ['get',      'roles',                                          'OrganizationController@getMultipleRoles'                           ],
+        'role_get_for_merchant'                    => ['get',      'roles/merchant',                                 'OrganizationController@getRolesForMerchant'                        ],
         'role_get'                                 => ['get',      'roles/{id}',                                     'OrganizationController@getRole'                                    ],
         'role_edit'                                => ['put',      'roles/{id}',                                     'OrganizationController@putRole'                                    ],
         'role_delete'                              => ['delete',   'roles/{id}',                                     'OrganizationController@deleteRole'                                 ],

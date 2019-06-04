@@ -180,6 +180,13 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getRolesForMerchant()
+    {
+        $data = $this->service(E::ROLE)->getRolesForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteRole(string $roleId)
     {
         $data = $this->service(E::ROLE)->deleteRole($roleId);

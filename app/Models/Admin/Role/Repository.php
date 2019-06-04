@@ -37,6 +37,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchMerchantRolesForOrg($orgId)
+    {
+        //Hard coding the roles for now.
+        $rblroles = ['Finance L1','Finance L2', 'Finance L3', 'Admin', 'Owner'];
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->whereIn(Entity::NAME, $rblroles)
+                    ->with('permissions')
+                    ->get();
+    }
+
     public function fetchRolesForOrgWithoutPermissions($orgId)
     {
         return $this->newQuery()
@@ -91,11 +102,5 @@ class Repository extends Base\Repository
                     ->where($pmMap . '.permission_id', '=', $id)
                     ->where($rOrgId, '=', $orgId)
                     ->get();
-    }
-
-    public function updateRoleForUser(string $roleId, string $oldRoleId, string $userid, string $orgid)
-    {
-
-
     }
 }
