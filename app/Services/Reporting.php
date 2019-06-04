@@ -445,18 +445,35 @@ class Reporting implements ExternalService
 
     public function fetchLogMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input, $headers);
     }
 
     // TODO: Add filter based upon feature/tags for admin calls
     public function fetchConfigMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $headers);
+    }
+
+    protected function fetchHeadersFromInput(array $input)
+    {
+        $consumer    = $input['consumer'] ?? Account::SHARED_ACCOUNT;
+        $reportType = $input['report_type'] ?? 'merchant';
+
+        return [
+            self::CONSUMER_HEADER    => $consumer,
+            self::REPORT_TYPE_HEADER => $reportType,
+        ];
     }
 
     public function fetchScheduleMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $headers);
     }
 
     protected function createScheduleOnApi(array $input)
@@ -718,9 +735,9 @@ class Reporting implements ExternalService
 
         if ($merchant->isPartner() === true)
         {
-            list($commissionConfigs, $subventionConfigs) = (new Config\Core)->fetchAllEnabledConfigGroupsByPartner($merchant);
+            list($commissionConfigs, $subventionConfigs) = (new Config\Core)->fetchAllConfigGroupsByPartner($merchant);
 
-            // if at least one commission config is enabled, we show commission reports
+            // if at least one commission config is present, we show commission reports
             if ($commissionConfigs->isNotEmpty() === true)
             {
                 if ($merchant->isResellerPartner() === false)
@@ -801,6 +818,41 @@ class Reporting implements ExternalService
                 'consumer'  => Account::SHARED_ACCOUNT,
                 'condition' => $showSubventionReports,
             ],
+            [
+                'name'        => 'Payments',
+                'type'        => 'payments',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showTxnCommissionReport,
+            ],
+            [
+                'name'        => 'Refunds',
+                'type'        => 'refunds',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showTxnCommissionReport,
+            ],
+            [
+                'name'        => 'Combined',
+                'type'        => 'transactions',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showTxnCommissionReport,
+            ],
+            [
+                'name'        => 'Settlements',
+                'type'        => 'settlements',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showTxnCommissionReport,
+            ],
+            [
+                'name'        => 'Settlements Recon',
+                'type'        => 'settlements',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showTxnCommissionReport,
+            ],
         ];
 
         $items = $items->filter(function ($value) use ($filterConditions) {
@@ -810,7 +862,11 @@ class Reporting implements ExternalService
                     ($value['type'] === $filterCondition['type']) and
                     ($value['consumer'] === $filterCondition['consumer']))
                 {
-                    return $filterCondition['condition'];
+                    if ((empty($filterCondition['report_type']) === true) or
+                        ($filterCondition['report_type'] === $value['report_type']))
+                    {
+                        return $filterCondition['condition'];
+                    }
                 }
             }
 

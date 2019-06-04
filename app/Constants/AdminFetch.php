@@ -39,13 +39,25 @@ class AdminFetch
     {
         return [
             Entity::REPORTING_LOGS => [
-                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+                'consumer'         => Fetch::FIELD_MERCHANT_ID,
+                'config_id'        => [
+                    Fetch::LABEL        => 'Config Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
             ],
             Entity::REPORTING_CONFIGS => [
-                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+                'consumer'          => Fetch::FIELD_MERCHANT_ID,
+                'report_type'       => [
+                    Fetch::LABEL        => 'Report Type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
             ],
             Entity::REPORTING_SCHEDULES => [
-                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+                'consumer'          => Fetch::FIELD_MERCHANT_ID,
+                'config_id'        => [
+                    Fetch::LABEL        => 'Config Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
             ],
             Entity::SHIELD_RULES => [
                 'is_active'         => [
