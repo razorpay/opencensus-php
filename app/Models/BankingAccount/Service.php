@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 
 class Service extends Base\Service
 {
@@ -37,5 +38,27 @@ class Service extends Base\Service
         }
 
         return $account->toArrayPublic();
+    }
+
+    public function fetchBankingDetailsForMerchant()
+    {
+        $data = $this->merchant->bankingAccounts->callOnEveryItem('toArrayPublic');
+
+        $data = array_map(array($this, 'transform'), $data);
+
+        return $data;
+    }
+
+    public function transform($data)
+    {
+        $data[BankAccount\Entity::BANK_NAME] = $data[Entity::CHANNEL];
+
+        $data['ifsc'] = $data[Entity::ACCOUNT_IFSC];
+
+        unset($data[Entity::CHANNEL]);
+
+        unset($data[Entity::ACCOUNT_IFSC]);
+
+        return $data;
     }
 }

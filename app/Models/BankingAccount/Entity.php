@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_IFSC,
     ];
 
     protected static $generators = [
