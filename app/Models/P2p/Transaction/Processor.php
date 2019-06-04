@@ -426,7 +426,10 @@ class Processor extends Base\Processor
 
                     return $transaction;
                 });
-            });
+            },
+            60,
+            ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+            3);
     }
 
     protected function performTransactionActions(Actions $actions, Entity $transaction)
