@@ -6,7 +6,6 @@ use ApiResponse;
 
 class BankingAccountController extends Controller
 {
-
     use Traits\HasCrudMethods;
 
     public function fetchBankingDetailsForMerchant()
