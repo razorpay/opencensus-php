@@ -2507,6 +2507,7 @@ final class Route
         'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
+        'banking_account_edit'                     => Permission::BANKING_UPDATE_ACCOUNT,
     ];
 
     public static $direct = [

@@ -363,10 +363,6 @@ return [
                 'description' => 'View Operations Reports',
                 'assignable'  => true,
             ],
-            Permission::EDIT_BANKING_ACCOUNT => [
-                'description' => 'Updating banking account details of the merchant',
-                'assignable'  => true,
-            ]
         ],
 
         PermissionCategory::SETTLEMENT => [
@@ -732,7 +728,15 @@ return [
                 'description' => 'Modify subscriptions form admin dashboard',
                 'assignable'  => true
             ]
-        ]
+        ],
+
+        // RazorpayX
+        PermissionCategory::RAZORPAYX_BANKING => [
+            Permission::BANKING_UPDATE_ACCOUNT => [
+                'description' => 'Updating banking account details of the merchant',
+                'assignable'  => true,
+            ],
+        ],
     ],
 
     'workflows' => [
