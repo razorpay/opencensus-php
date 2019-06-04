@@ -985,6 +985,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Offer\Entity');
     }
 
+    public function bankingAccounts()
+    {
+        return $this->hasMany('RZP\Models\BankingAccount\Entity');
+    }
+
     protected function getMaxPaymentAmountAttribute()
     {
         $amount = $this->attributes[self::MAX_PAYMENT_AMOUNT];
