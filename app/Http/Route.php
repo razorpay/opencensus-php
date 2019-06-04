@@ -254,6 +254,7 @@ final class Route
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'merchant_features_fetch'                  => ['get',      'merchants/me/features',                          'MerchantController@getMerchantFeatures'                            ],
         'merchant_features_update'                 => ['post',     'merchants/me/features',                          'MerchantController@updateMerchantFeatures'                         ],
+        'merchant_partner_configs_fetch'           => ['get',      'merchants/me/partner/configs',                   'PartnerConfigController@fetchConfigByPartner'                      ],
         'merchants_update_bulk'                    => ['put',      'merchants/bulk',                                 'MerchantController@updateMerchantsBulk'                            ],
         'merchants_update_channel'                 => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'            => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
@@ -1710,6 +1711,7 @@ final class Route
         'invoice_update_billing_period',
         'bulk_invoice_create',
         'banking_account_create',
+        'merchant_partner_configs_fetch',
     ];
 
     // These will run on internal auth with the assurance
