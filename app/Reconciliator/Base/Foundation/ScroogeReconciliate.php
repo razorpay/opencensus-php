@@ -31,11 +31,14 @@ class ScroogeReconciliate extends Base\Core
      */
     protected $gatewaySettledAt;
 
+    protected $reconciledAt;
+
     const ARN                   = 'arn';
     const REFUND_ID             = 'refund_id';
     const STATUS                = 'status';
     const GATEWAY_KEYS          = 'gateway_keys';
     const GATEWAY_SETTLED_AT    = 'gateway_settled_at';
+    const RECONCILED_AT         = 'reconciled_at';
 
     const INFO_CODE                 = 'info_code';
     const MESSAGE                   = 'message';
@@ -43,11 +46,13 @@ class ScroogeReconciliate extends Base\Core
     const SOURCE                    = 'source';
     const REFUNDS                   = 'refunds';
     const CHUNK_NUMBER              = 'chunk_number';
+    const REFUND_COUNT              = 'refund_count';
     const BATCH_ID                  = 'batch_id';
     const RECON_GATEWAY             = 'recon_gateway';
     const SHOULD_FORCE_UPDATE_ARN   = 'should_force_update_arn';
 
     const CHUNK_SIZE                = 500;
+    const TOTAL_REFUNDS             = 'total_refunds';
     const TOTAL_CHUNKS              = 'total_chunks';
 
     const FAILURE_COUNT             = 'failure_count';
@@ -107,6 +112,25 @@ class ScroogeReconciliate extends Base\Core
     }
 
     /**
+     * @return int
+     */
+    public function getReconciledAt()
+    {
+        return $this->reconciledAt;
+    }
+
+    /**
+     * @param int $reconciledAt
+     * @return ScroogeReconciliate
+     */
+    public function setReconciledAt(int $reconciledAt): self
+    {
+        $this->reconciledAt = $reconciledAt;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getGatewayKeys(): array
@@ -140,7 +164,8 @@ class ScroogeReconciliate extends Base\Core
                 self::STATUS                => $reconObject->status,
                 self::GATEWAY_KEYS          => $reconObject->gatewayKeys,
                 self::ARN                   => $reconObject->arn,
-                self::GATEWAY_SETTLED_AT    => $reconObject->gatewaySettledAt
+                self::GATEWAY_SETTLED_AT    => $reconObject->gatewaySettledAt,
+                self::RECONCILED_AT         => $reconObject->reconciledAt,
             ];
         }
 
@@ -161,6 +186,15 @@ class ScroogeReconciliate extends Base\Core
         //
         $chunks = array_chunk($data, self::CHUNK_SIZE, true);
 
+        $this->trace->info(
+            TraceCode::REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA,
+            [
+                self::TOTAL_REFUNDS => count($data),
+                self::TOTAL_CHUNKS  => count($chunks),
+                self::BATCH_ID      => $batch->getId(),
+            ]
+        );
+
         foreach ($chunks as $key => $chunk)
         {
             $chunkData = [
@@ -175,6 +209,7 @@ class ScroogeReconciliate extends Base\Core
             $traceData =[
                 self::MODE                    => $this->mode,
                 self::CHUNK_NUMBER            => $key + 1,
+                self::REFUND_COUNT            => count($chunk),
                 self::SHOULD_FORCE_UPDATE_ARN => $forceUpdateArn,
                 self::BATCH_ID                => $batch->getId(),
                 self::SOURCE                  => $source,

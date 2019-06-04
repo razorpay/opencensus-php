@@ -77,6 +77,8 @@ class Reconciliation extends Base
         // as there will not be any async dispatch process
         if ($this->hasScroogeRefunds() === false)
         {
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayTraceAll());
+
             $this->updateStatusPostProcess();
         }
 
@@ -90,7 +92,7 @@ class Reconciliation extends Base
         $this->deleteLocalFiles();
     }
 
-    protected function hasScroogeRefunds()
+    public function hasScroogeRefunds()
     {
         return (empty($this->scroogeDispatchData['data']) === false);
     }
