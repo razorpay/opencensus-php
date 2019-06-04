@@ -1,10 +1,10 @@
 import CommissionsDailyList from '../../Commissions/Daily/List';
 
-export default function SubventionsDailyList(props) {
+export default function EarningsDailyList(props) {
   return (
     <CommissionsDailyList
-      amountTitle="Total Subvention"
-      queryType="subvention_daily"
+      amountTitle="Total Earnings"
+      queryType="aggregate_daily"
       {...props}
     />
   );

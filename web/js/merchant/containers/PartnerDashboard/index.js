@@ -4,7 +4,7 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
-import Earnings from './Commissions';
+import Earnings from './Earnings';
 import Subvention from './Subvention';
 import Applications from './Applications';
 import Reports from './Reports';

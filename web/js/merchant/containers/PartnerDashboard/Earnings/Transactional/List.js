@@ -9,7 +9,7 @@ import Amount from 'rzp/ui/Amount';
 import { commissionId, createdAtShort } from 'rzp/ui/item/pair';
 import { capitalize } from 'rzp/utils/rzp-utils';
 
-import ListFilter from './ListFilter';
+import ListFilter from '../../Commissions/Transactional/ListFilter';
 
 const sourceType = {
   title: 'Source',

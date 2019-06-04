@@ -22,11 +22,6 @@ const date = {
   ),
 };
 
-const earnings = {
-  title: 'Total Earnings',
-  value: item => <Amount value={item.earnings} currency={'INR'} />,
-};
-
 const volume = {
   title: 'Transaction Amount',
   value: item => <Amount value={item.transactionVolume} currency={'INR'} />,
@@ -48,6 +43,14 @@ const transactions = {
   closeModal,
 })
 export default class CommissionsDailyList extends ListContainer {
+  constructor(props) {
+    super(props);
+    this.amountColumn = {
+      title: props.amountTitle,
+      value: item => <Amount value={item.earnings} currency={'INR'} />,
+    };
+  }
+
   onDatesChange = (from, to) => {
     this.search({ from, to });
   };
@@ -63,7 +66,7 @@ export default class CommissionsDailyList extends ListContainer {
             .format('X')
         ));
     }
-
+    params.queryType = this.props.queryType;
     return this.props.fetchAggregate(without(params, ['skip', 'count']));
   }
 
@@ -94,7 +97,13 @@ export default class CommissionsDailyList extends ListContainer {
       <div class="content-wrapper CommissionList--Daily">
         <ListFilter onDatesChange={this.onDatesChange} />
         <DataTable
-          columns={[date, earnings, volume, activeMerchants, transactions]}
+          columns={[
+            date,
+            this.amountColumn,
+            volume,
+            activeMerchants,
+            transactions,
+          ]}
           title="Data"
           EmptyComponent={
             this.props.items.limit && this.renderLessThanRequiredMerchants
