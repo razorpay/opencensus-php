@@ -64,6 +64,7 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
+    const PENDING_AT             = 'pending_at';
     const PROCESSED_AT           = 'processed_at';
     const REVERSED_AT            = 'reversed_at';
     const QUEUED_AT              = 'queued_at';
@@ -139,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::PROCESSED_AT,
+        self::PENDING_AT,
         self::REVERSED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
@@ -176,6 +178,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON,
         self::REMARKS,
         self::PROCESSED_AT,
+        self::PENDING_AT,
         self::REVERSED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
@@ -217,6 +220,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLED_AT,
         self::QUEUED_AT,
         self::INITIATED_AT,
+        self::PENDING_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
         self::FAILURE_REASON,
@@ -251,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::PROCESSED_AT,
+        self::PENDING_AT,
         self::REVERSED_AT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
@@ -291,6 +296,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::PROCESSED_AT,
+        self::PENDING_AT,
         self::REVERSED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
@@ -509,6 +515,11 @@ class Entity extends Base\PublicEntity
     public function getProcessedAt()
     {
         return $this->getAttribute(self::PROCESSED_AT);
+    }
+
+    public function getPendingAt()
+    {
+        return $this->getAttribute(self::PENDING_AT);
     }
 
     public function getReversedAt()
@@ -736,6 +747,11 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($date)
     {
         $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setPendingAt($date)
+    {
+        $this->setAttribute(self::PENDING_AT, $date);
     }
 
     public function setReversedAt($date)
@@ -1024,6 +1040,19 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::PROCESSED_AT]);
+        }
+    }
+
+    public function setPublicPendingAtAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::PENDING_AT]);
         }
     }
 
