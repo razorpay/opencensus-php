@@ -2,8 +2,9 @@
 
 namespace RZP\Models\BankingAccount;
 
-use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
 
 class Service extends Base\Service
 {
@@ -37,5 +38,34 @@ class Service extends Base\Service
         }
 
         return $account->toArrayPublic();
+    }
+
+    public function update(string $id, array $input)
+    {
+        $bankingAccount = $this->repo->banking_account->findOrFailPublic($id);
+
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'channel'           => $channel,
+                'edit_input'        => $input,
+                'banking_account'   => $bankingAccount->toArray(),
+            ]);
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $account = $this->core->updateRblBankingAccount($bankingAccount, $input);
+
+                return $account;
+
+            default:
+                throw new LogicException(
+                    'Banking Account logic undefined for channel: ' . $channel,
+                    null,
+                    $input);
+        }
     }
 }

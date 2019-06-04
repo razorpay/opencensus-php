@@ -363,6 +363,10 @@ return [
                 'description' => 'View Operations Reports',
                 'assignable'  => true,
             ],
+            Permission::EDIT_BANKING_ACCOUNT => [
+                'description' => 'Updating banking account details of the merchant',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::SETTLEMENT => [
