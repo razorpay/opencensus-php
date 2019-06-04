@@ -37,6 +37,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchRolesForOrgWithoutPermissions($orgId)
+    {
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->get();
+    }
+
     public function validateOrgHasNoSuchRole(Entity $role, Org\Entity $org)
     {
         $roleExists = $this->newQuery()
@@ -84,5 +91,11 @@ class Repository extends Base\Repository
                     ->where($pmMap . '.permission_id', '=', $id)
                     ->where($rOrgId, '=', $orgId)
                     ->get();
+    }
+
+    public function updateRoleForUser(string $roleId, string $oldRoleId, string $userid, string $orgid)
+    {
+
+
     }
 }

@@ -719,6 +719,29 @@ return [
                 'description' => 'Modify subscriptions form admin dashboard',
                 'assignable'  => true
             ]
+        ],
+
+        PermissionCategory::PAYOUTS => [
+            Permission::CREATE_PAYOUT => [
+                'description' => 'Merchant can create a new payout',
+                'assignable'  => false,
+                'workflow'    => true
+            ],
+            Permission::EDIT_PAYOUT => [
+                'description'  => 'Merchant can edit a payout',
+                'assignable'   => false,
+                'workflow'     => true
+            ],
+            Permission::BULK_APPROVE_REJECT_PAYOUT => [
+                'description'  => 'Merchant can bulk approve or reject payouts',
+                'assignable'   => false,
+                'workflow'     => true
+            ],
+            Permission::VIEW_PAYOUT  => [
+                'description'  => 'Merchant can view payouts',
+                'assignable'   => false,
+                'workflow'     => false
+            ]
         ]
     ],
 

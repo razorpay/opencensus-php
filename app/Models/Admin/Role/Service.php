@@ -80,4 +80,12 @@ class Service extends Base\Service
 
         return $role->toArrayPublic();
     }
+
+    public function getAllRolesForOrg(): array
+    {
+        $orgID = $this->merchant->getOrgId();
+        $roles = $this->repo->role->fetchRolesForOrgWithoutPermissions($orgID);
+
+        return $roles->toArrayPublic();
+    }
 }

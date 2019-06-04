@@ -230,6 +230,13 @@ class Name
     const VIEW_OPERATIONS_REPORT              = 'view_operations_report';
     const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
 
+    //Permissions for enabling maker/checker for payouts
+    const CREATE_PAYOUT                       = 'create_payout';
+    const EDIT_PAYOUT                         = 'edit_payout';
+    const BULK_APPROVE_REJECT_PAYOUT          = 'bulk_approve_reject_payout';
+    const VIEW_PAYOUT                         = 'view_payout';
+
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE              => self::EDIT_MERCHANT_UNARCHIVE,

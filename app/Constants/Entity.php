@@ -132,6 +132,7 @@ class Entity
     const ACTION_CHECKER        = 'action_checker';
     const ACTION_STATE          = 'action_state';
     const ACTION_COMMENT        = 'action_comment';
+    const WORKFLOW_PAYOUT_AMOUNT_RULES  = 'workflow_payout_amount_rules';
 
     // Generic comment and state entities
     const COMMENT               = 'comment';
