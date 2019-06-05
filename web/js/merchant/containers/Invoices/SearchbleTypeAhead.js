@@ -7,9 +7,15 @@ import TypeAhead from 'rzp/ui/Select/TypeAhead';
 export default class SearchbleTypeAhead extends React.Component {
   static getDerivedStateFromProps(nextProps, state) {
     if (nextProps.options) {
+      const cache = {};
+
+      [...nextProps.options, ...state.options].forEach(e => {
+        cache[e.id] = e;
+      });
+
       return {
         ...state,
-        options: Array.from(new Set([...nextProps.options, ...state.options])),
+        options: Object.values(cache),
       };
     }
 

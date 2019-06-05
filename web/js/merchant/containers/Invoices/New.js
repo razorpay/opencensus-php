@@ -2416,7 +2416,7 @@ export default class InvoicesNewContainer extends Component {
 }
 
 const removeTaxForNonINRItems = (props, invoiceCurrency) => {
-  const updatedProps = { ...props };
+  const updatedProps = JSON.parse(JSON.stringify(props));
 
   if (invoiceCurrency !== 'INR') {
     updatedProps.currency = invoiceCurrency;
