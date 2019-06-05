@@ -18,6 +18,7 @@
 </head>
 <body>
   <div id="ext-root"></div>
+  <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
   <script src="http://127.0.0.1:7999/static/extension/app.js" async defer onload="renderApp()"></script>
 
   <script type="text/javascript">
