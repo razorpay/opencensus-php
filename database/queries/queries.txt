@@ -4961,3 +4961,9 @@ ALTER TABLE payouts
 ALTER TABLE banking_accounts
     ADD COLUMN bank_internal_status VARCHAR(255) DEFAULT NULL AFTER status,
     ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status);
+
+ALTER TABLE balance
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
+    ADD COLUMN account_provider VARCHAR(255) DEFAULT NULL AFTER account_type,
+    ADD INDEX balance_account_type_index (account_type),
+    ADD INDEX balance_account_provider_index (account_provider);

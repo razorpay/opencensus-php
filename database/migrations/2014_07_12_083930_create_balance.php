@@ -54,6 +54,12 @@ class CreateBalance extends Migration
             $table->string(Balance::ACCOUNT_NUMBER, 255)
                   ->nullable();
 
+            $table->string(Balance::ACCOUNT_TYPE, 255)
+                  ->nullable();
+
+            $table->string(Balance::ACCOUNT_PROVIDER, 255)
+                  ->nullable();
+
             $table->integer(Balance::CREATED_AT);
             $table->integer(Balance::UPDATED_AT);
 
