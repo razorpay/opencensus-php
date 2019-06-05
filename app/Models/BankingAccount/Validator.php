@@ -35,7 +35,7 @@ class Validator extends Base\Validator
     {
         foreach ($input[Entity::PINCODES] as $pincode)
         {
-            if (preg_match(Entity::PINCODE_REGEX, $pincode) === 0)
+            if (validate_indian_pincode($pincode) === false)
             {
                 throw new BadRequestValidationFailureException(
                     'Pincode is not valid',

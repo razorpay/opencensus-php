@@ -19,11 +19,6 @@ class PincodeSearch
 
     const LIMIT = 1;
 
-    // @see: https://en.wikipedia.org/wiki/Postal_Index_Number
-    const MAX_PINCODE = 859999;
-
-    const MIN_PINCODE = 110000;
-
     const CACHE_TTL = 86400;
 
     const CACHE_KEY_FORMAT = 'pincode:pincodesearch_%s';
@@ -152,7 +147,7 @@ class PincodeSearch
 
     public function fetchCityAndStateFromPincode($pincode): array
     {
-        if ($this->validate($pincode) === false)
+        if (validate_indian_pincode($pincode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $pincode . ' is not correct.');
@@ -190,25 +185,6 @@ class PincodeSearch
         $this->cache->put($key, $response, static::CACHE_TTL);
 
         return $response;
-    }
-
-    /**
-     * Some basic checks around pincode
-     * @param $pincode Input Pincode
-     * @see https://en.wikipedia.org/wiki/Postal_Index_Number
-     * @return boolean
-     */
-    protected function validate($pincode)
-    {
-        if ((strlen($pincode) !== 6) or
-            (ctype_digit($pincode) === false) or
-            ($pincode > self::MAX_PINCODE) or
-            ($pincode < self::MIN_PINCODE))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     protected function getParams(int $pincode)

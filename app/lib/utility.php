@@ -4,6 +4,12 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Exception\AssertionException;
 
+const INDIA_MAX_PINCODE = 859999;
+
+const INDIA_MIN_PINCODE = 110000;
+
+const INDIAN_PINCODE_REGEX = '/^[1-9][0-9]{5}$/';
+
 /**
  * getallheaders() polyfill for nginx servers
  *
@@ -801,5 +807,23 @@ if (! function_exists('get_diff_in_millisecond'))
         $requestTime = $requestTime * 1000;
 
         return (int) $requestTime;
+    }
+}
+
+if (! function_exists('validate_indian_pincode'))
+{
+    /**
+     * Checks if the string passed is a valid Indian pincode
+     * Ref- https://en.wikipedia.org/wiki/Postal_Index_Number
+     *
+     * @param  string $string pincode to check
+     * @return boolean
+     */
+    function validate_indian_pincode(string $pincode): bool
+    {
+
+        return (preg_match(INDIAN_PINCODE_REGEX, $pincode) === 1) and
+               ($pincode <= INDIA_MAX_PINCODE) and
+               ($pincode >= INDIA_MIN_PINCODE);
     }
 }
