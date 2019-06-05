@@ -88,9 +88,9 @@ class Service extends Base\Service
         switch ($channel)
         {
             case Channel::RBL:
-                $coreMethod = $coreMethod . 'ForRbl';
+                $coreMethod = $coreMethod . 'For' . ucfirst($channel);
 
-                $result = $this->core->$coreMethod($input[Entity::PINCODES]);
+                $this->core->$coreMethod($input[Entity::PINCODES]);
 
                 break;
 
@@ -100,7 +100,7 @@ class Service extends Base\Service
                 return null;
         }
 
-        return $result;
+        return ['success' => true];
     }
 
     /**

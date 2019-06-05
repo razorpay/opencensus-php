@@ -28,10 +28,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $serviceablePincodeValidators = [
-        Entity::PINCODE,
+        Entity::PINCODES,
     ];
 
-    public function validatePincode(array $input)
+    public function validatePincodes(array $input)
     {
         foreach ($input[Entity::PINCODES] as $pincode)
         {

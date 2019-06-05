@@ -67,23 +67,18 @@ class Core extends Base\Core
         return (bool) $isAvailable;
     }
 
-    public function addServiceablePincodesForRbl(array $pincode) : bool
+    public function addServiceablePincodesForRbl(array $pincodes)
     {
-        $this->redisConnection()->sadd(self::RBL_PINCODES_REDIS_KEY, $pincode);
+        $redis = Redis::connection();
 
-        return true;
+        $redis->sadd(self::RBL_PINCODES_REDIS_KEY, $pincodes);
     }
 
-    public function deleteServiceablePincodesForRbl(array $pincode) : bool
+    public function deleteServiceablePincodesForRbl(array $pincodes)
     {
-        $this->redisConnection()->srem(self::RBL_PINCODES_REDIS_KEY, $pincode);
+        $redis = Redis::connection();
 
-        return true;
-    }
-
-    public function redisConnection()
-    {
-        return Redis::connection();
+        $redis->srem(self::RBL_PINCODES_REDIS_KEY, $pincodes);
     }
 
     protected function checkRblToInternalStatusMapping(array $input)
