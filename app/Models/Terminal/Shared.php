@@ -26,6 +26,7 @@ class Shared
     const NETBANKING_BOB_TERMINAL            = '100NbBbdaTrmnl';
     const NETBANKING_VIJAYA_TERMINAL         = '100NbVijbTrmnl';
     const NETBANKING_CORPORATION_TERMINAL    = '100NbCorpTrmnl';
+    const NETBANKING_CUB_TERMINAL            = '1000NbCubTrmnl';
     const NETBANKING_KOTAK_TERMINAL          = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL          = '100NbIciciTmnl';
     const NETBANKING_ICICI_CRP_TERMINAL      = '100NbIcicCrpTl';
