@@ -77,4 +77,31 @@ class CurrencyTest extends TestCase
         $this->assertArrayHasKey('name', $res['INR']);
 
     }
+
+    public function testGetPaymentCurrenciesAdminProxy()
+    {
+        $merchantId = 10000000000000;
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $res = $this->startTest();
+
+        $this->assertArrayHasKey('INR', $res);
+
+        $this->assertArrayHasKey('code', $res['INR']);
+
+        $this->assertArrayHasKey('min_value', $res['INR']);
+
+        $this->assertArrayHasKey('min_auth_value', $res['INR']);
+
+        $this->assertArrayHasKey('denomination', $res['INR']);
+
+        $this->assertArrayHasKey('symbol', $res['INR']);
+
+        $this->assertArrayHasKey('name', $res['INR']);
+    }
 }

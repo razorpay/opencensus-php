@@ -437,7 +437,7 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'action'     => 'authorize',
+                'action'     => 'capture',
                 'pRespCode'  => '00',
                 'payment_id' => substr($authResponse['razorpay_payment_id'],4),
             ],

@@ -97,6 +97,7 @@ class Netbanking
         IFSC::CSBK,
         IFSC::ALLA,
         IFSC::CNRB,
+        IFSC::CIUB,
         IFSC::ESFB,
         IFSC::SBIN,
         IFSC::VIJB,
@@ -423,6 +424,11 @@ class Netbanking
         Gateway::NETBANKING_AIRTEL => [
             'retail' => [
                 IFSC::AIRP,
+            ]
+        ],
+        Gateway::NETBANKING_CUB => [
+            'retail' => [
+                IFSC::CIUB,
             ]
         ],
         Gateway::NETBANKING_FEDERAL => [

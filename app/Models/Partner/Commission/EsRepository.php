@@ -11,6 +11,7 @@ class EsRepository extends Base\EsRepository
         Entity::ID,
         Entity::TYPE,
         Entity::NOTES,
+        Entity::MODEL,
         Entity::STATUS,
         Entity::SOURCE_ID,
         Entity::PARTNER_ID,
@@ -23,6 +24,7 @@ class EsRepository extends Base\EsRepository
     protected $esFetchParams = [
         Entity::ID,
         Entity::TYPE,
+        Entity::MODEL,
         Entity::STATUS,
         Entity::SOURCE_ID,
         Entity::PARTNER_ID,
@@ -50,6 +52,11 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForSourceId(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::SOURCE_ID, $value);
+    }
+
+    public function buildQueryForModel(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Entity::MODEL, $value);
     }
 
     public function buildQueryForPartnerId(array & $query, string $value)

@@ -465,6 +465,17 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];
 
+    protected static $netbankingCubTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_cub',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
+    ];
+
     protected static $netbankingVijayaTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',

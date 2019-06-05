@@ -576,6 +576,11 @@ class Entity extends Base\PublicEntity
 
     public function getEmi()
     {
+        if (is_null($this->iinRelation) === false)
+        {
+            return (bool) $this->iinRelation->isEmiAvailable();
+        }
+
         return (bool) $this->getAttribute(self::EMI);
     }
 

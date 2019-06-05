@@ -1,4 +1,4 @@
-FROM razorpay/onggi:php-7.2-apache
+FROM razorpay/onggi:php-7.1-apache
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN

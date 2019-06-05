@@ -57,4 +57,16 @@ return [
             'content' => $supportedCurrencyData
         ],
     ],
+
+    'testGetPaymentCurrenciesAdminProxy' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'GET',
+            'url' => '/currency/all/proxy',
+        ],
+        'response' => [
+            'content' => $supportedCurrencyData
+        ],
+    ],
 ];

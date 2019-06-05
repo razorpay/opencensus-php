@@ -154,6 +154,14 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         // as this will be done during dispatch processing
         if ($this->isScroogeRefund() === true)
         {
+            //
+            // Send the API reconciledAt timestamp to scrooge, else if this txn is not
+            // marked as reconciled in scrooge then scrooge will use its own current
+            // timestamp to set reconciledAt and send back that new timestamp which will
+            // further overwrite the API reconciledAt, which would be wrong.
+            //
+            static::$scroogeReconciliate[$entityId]->setReconciledAt($this->refund->transaction->getReconciledAt());
+
             return;
         }
 

@@ -812,6 +812,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->app->instance('card.cardVault', $cardVault);
 
+        $this->count = 0;
+
         $cardVault->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), 'post', Mockery::type('array'))
             ->andReturnUsing(function ($route, $method, $input)
@@ -824,6 +826,7 @@ class SavedCardsPaymentCreateTest extends TestCase
                 switch ($route)
                 {
                     case 'tokenize':
+                        $this->count += 1;
                         $this->assertEquals('4000400000000004', $input['secret']);
                         $this->assertEquals(1, $input['scheme']);
 
@@ -877,6 +880,9 @@ class SavedCardsPaymentCreateTest extends TestCase
         $paymentInput[Payment::CARD]['number'] = '4000400000000004';
 
         $this->doAuthPayment($paymentInput);
+
+        // tokenize should be called only once in a payment flow.
+        $this->assertEquals(1, $this->count);
 
         $payment = $this->getLastEntity('payment', true);
         $card    = $this->getDbLastEntity('card');

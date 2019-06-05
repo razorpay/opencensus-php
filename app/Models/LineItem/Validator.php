@@ -21,6 +21,15 @@ class Validator extends Base\Validator
     const TAX_CODES  = 'tax_codes';
     const TAX_INPUTS = 'tax_inputs';
 
+    const TAX_ATTRIBUTES = [
+        Entity::HSN_CODE,
+        Entity::SAC_CODE,
+        Entity::TAX_RATE,
+        Entity::TAX_ID,
+        Entity::TAX_IDS,
+        Entity::TAX_GROUP_ID
+    ];
+
     protected static $createRules = [
         Entity::QUANTITY            => 'filled|integer|min:1',
         Entity::ITEM_ID             => 'sometimes|nullable|string|max:19',

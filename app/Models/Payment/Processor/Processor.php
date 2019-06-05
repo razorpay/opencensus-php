@@ -101,7 +101,7 @@ class Processor
      * We only allow payment to fallback within a certain duration.
      * A payment can fallback only within few minutes
      */
-    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 300;  // 5min * 60 sec
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 1200;  // 20 min * 60 sec
 
     /**
      * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
@@ -127,7 +127,7 @@ class Processor
     /**
      * Timeout to store card details for redirect to authorize
      */
-    const REDIRECT_CACHE_TTL = 5;
+    const REDIRECT_CACHE_TTL = 20;
 
     const CACHE_KEY = 'fallback_%s_card_details';
 
@@ -447,16 +447,19 @@ class Processor
         $this->verifyCardlessEmiEnabled();
 
         if ((empty($input['ott']) === false) or
-            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
         {
-            return;
+            return null;
         }
 
         $merchant = $payment->merchant;
 
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
-        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+        $terminal = $this->repo
+                         ->terminal
+                         ->getTerminalForProviderAndMerchant($input[Payment\Entity::PROVIDER],
+                                                             $merchant[Merchant\Entity::ID]);
 
         $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
@@ -467,8 +470,8 @@ class Processor
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                'method'   => 'cardless_emi',
-                                'provider' => $input['provider']
+                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
+                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
                             ]),
                 'method'  => 'POST',
                 'content' => $input,
@@ -844,10 +847,12 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        // Check if AuthN gateway is not the AuthZ
+        // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
         if ((empty($gatewayInput['authenticate']['gateway']) === false) and
             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
         {
+            $payment->disableCpsRoute();
+
             return;
         }
 
@@ -871,6 +876,10 @@ class Processor
             if (strtolower($variant) === 'cps')
             {
                 $payment->enableCpsRoute();
+            }
+            else
+            {
+                $payment->disableCpsRoute();
             }
         }
     }

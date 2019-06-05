@@ -7,18 +7,18 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
 {
+    //
     // The following three constants are required by the
     // FTA module to update the source status. Things will
-    // get wrecked if these are removed. Wrecked.
-
+    // get wrecked if these are removed.
+    //
     const PROCESSED     = 'processed';
     const INITIATED     = Attempt\Status::INITIATED;
     const FAILED        = 'reversed';
 
-
     const CREATED       = 'created';
+    const PENDING       = 'pending';
     const REVERSED      = 'reversed';
-
     const QUEUED        = 'queued';
     const CANCELLED     = 'cancelled';
 
@@ -28,7 +28,8 @@ class Status
      */
     const PROCESSING = 'processing';
 
-    public static $internalToPublicStatusMapping = [
+    public static $internalToPublicStatusMap = [
+        self::PENDING   => self::PENDING,
         self::CREATED   => self::PROCESSING,
         self::INITIATED => self::PROCESSING,
         self::PROCESSED => self::PROCESSED,
@@ -45,22 +46,23 @@ class Status
     public static $timestampedStatuses = [
         // We have a special logic for `created` in entity status setter
         self::CREATED,
+        self::PENDING,
         self::PROCESSED,
         self::REVERSED,
         self::QUEUED,
         self::CANCELLED,
     ];
 
-    public static function getPublicStatusFromInternalStatus($internalStatus)
+    public static function getPublicStatusFromInternalStatus($internalStatus): string
     {
-        return static::$internalToPublicStatusMapping[$internalStatus] ?? $internalStatus;
+        return static::$internalToPublicStatusMap[$internalStatus] ?? $internalStatus;
     }
 
     public static function getInternalStatusFromPublicStatus($publicStatus)
     {
         $flippedMap = [];
 
-        foreach (self::$internalToPublicStatusMapping as $internalStatus => $externalStatus)
+        foreach (self::$internalToPublicStatusMap as $internalStatus => $externalStatus)
         {
             $flippedMap[$externalStatus][] = $internalStatus;
         }

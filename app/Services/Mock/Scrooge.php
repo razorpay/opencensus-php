@@ -45,7 +45,7 @@ class Scrooge extends BaseScrooge
             'body' => [
                 'response' => [
                     'batch_id'                  => $input['batch_id'],
-                    'chunk_number'              => 2,
+                    'chunk_number'              => $input['chunk_number'],
                     'refunds'                   => $refunds,
                     'should_force_update_arn'   => $input['should_force_update_arn'],
                     'source'                    => 'manual',

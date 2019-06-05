@@ -74,6 +74,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_RECON_QUEUE_SCROOGE_DISPATCH_FAILED            = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH_FAILED';
     const REFUND_RETRY_QUEUE_SCROOGE_DISPATCH                   = 'REFUND_RETRY_QUEUE_SCROOGE_DISPATCH';
     const REFUND_RECON_QUEUE_SCROOGE_DISPATCH                   = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH';
+    const REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA          = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA';
     const REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED            = 'REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED';
     const REFUND_SCROOGE_RESPONSE                               = 'REFUND_SCROOGE_RESPONSE';
     const REFUND_SCROOGE_VERIFY_RESPONSE                        = 'REFUND_SCROOGE_VERIFY_RESPONSE';
@@ -1663,7 +1664,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
     const REFUND_REVERSAL_FAILED                                = 'REFUND_REVERSAL_FAILED';
 
-    const FTA_TRANSFER_DISPATCH                                 = 'FTA_DISPATCH_TRANSFER';
+    const FTA_TRANSFER_DISPATCH                                 = 'FTA_TRANSFER_DISPATCH';
     const FTA_TRANSFER_DISPATCH_FAILED                          = 'FTA_TRANSFER_DISPATCH_FAILED';
     const FTA_MERCHANT_BENE_REG_INIT                            = 'FTA_MERCHANT_BENE_REG_INIT';
     const FTA_MERCHANT_BENE_REG_COMPLETE                        = 'FTA_MERCHANT_BENE_REG_COMPLETE';
@@ -1812,10 +1813,20 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_MULTIPART_PAYLOAD                       = 'BATCH_SERVICE_MULTIPART_PAYLOAD';
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
+    const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
+    const BATCH_SERVICE_BULK_EXCEPTION                          = 'BATCH_SERVICE_BULK_EXCEPTION';
 
     const PAYMENT_ON_HOLD                                       = 'PAYMENT_ON_HOLD';
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
+
+    const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
+    const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
+    const GOVERNOR_SERVICE_RETRY                                = 'GOVERNOR_SERVICE_RETRY';
+    const GOVERNOR_SERVICE_ERROR                                = 'GOVERNOR_SERVICE_ERROR';
+    const CAPTURE_VERIFY_ONHOLD_FINISH_ACTION                   = 'CAPTURE_VERIFY_ONHOLD_FINISH_ACTION';
+    const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -100,9 +100,13 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(TraceCode::FTA_TRANSFER_DISPATCH_FAILED, [
-                'fta_id' => $fta->getId(),
-            ]);
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_TRANSFER_DISPATCH_FAILED,
+                [
+                    'fta_id' => $fta->getId(),
+                ]);
         }
     }
 

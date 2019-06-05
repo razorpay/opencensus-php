@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const AEPS              = 'aeps';
     const EMANDATE          = 'emandate';
     const CARDLESS_EMI      = 'cardless_emi';
+    const PAYLATER          = 'paylater';
     const CARD_NETWORKS     = 'card_networks';
     const PHONEPE           = 'phonepe';
 
