@@ -80,24 +80,7 @@ class Service extends Base\Service
 
     public function fetchMultiple()
     {
-        $data = $this->merchant->bankingAccounts->callOnEveryItem('toArrayPublic');
-
-        $data = array_map(array($this, 'transform'), $data);
-
-        return $data;
-    }
-
-    public function transform($data)
-    {
-        $data[BankAccount\Entity::BANK_NAME] = $data[Entity::CHANNEL];
-
-        $data['ifsc'] = $data[Entity::ACCOUNT_IFSC];
-
-        unset($data[Entity::CHANNEL]);
-
-        unset($data[Entity::ACCOUNT_IFSC]);
-
-        return $data;
+        return $this->merchant->bankingAccounts;
     }
 
     /**
