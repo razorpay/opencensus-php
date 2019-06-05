@@ -86,6 +86,7 @@ export default class UpdateSubscription extends Component {
         this.setState({
           loading: false,
         });
+
         this.props.showNotification({
           type: 'error',
           message: errors[0],
@@ -102,11 +103,35 @@ export default class UpdateSubscription extends Component {
     this.setState({ currentTab, validTabs });
   };
 
+  isFormChanged() {
+    const { fields, internals, previousSubscription } = this.state;
+
+    const isPlanChanged = previousSubscription.plan_id !== fields.plan_id,
+      isQuantityChanged = previousSubscription.quantity !== fields.quantity,
+      isStateDateChanged =
+        previousSubscription.start_at !== fields.start_at ||
+        !!previousSubscription.start_at !== internals._startsImmediately,
+      isTotalCountChanged =
+        previousSubscription.total_count !== fields.total_count;
+
+    return (
+      isPlanChanged ||
+      isQuantityChanged ||
+      isStateDateChanged ||
+      isTotalCountChanged
+    );
+  }
+
   isFormValid = () => {
-    const { fields, internals } = this.state;
+    const { fields, internals, previousSubscription } = this.state;
     const validateTotalCount = (this.planDetailsForm || {}).validateTotalCount;
 
-    return isFormValid(fields, internals, validateTotalCount);
+    return (
+      this.isFormChanged() &&
+      (!!fields.plan_id &&
+        (internals._startsImmediately || !!fields.start_at) &&
+        (validateTotalCount ? !validateTotalCount(fields.total_count) : true))
+    );
   };
 
   handleChangeIn = ({ target }) => {
@@ -331,14 +356,6 @@ export default class UpdateSubscription extends Component {
       </div>
     );
   }
-}
-
-function isFormValid(fields, internals, validateTotalCount = () => {}) {
-  return (
-    !!fields.plan_id &&
-    (internals._startsImmediately || !!fields.start_at) &&
-    !validateTotalCount(fields.total_count)
-  );
 }
 
 const tabsMeta = {

@@ -53,6 +53,7 @@ export default ({
   onCancelClick,
   onManualAttempt,
   onTestChargeAttempt,
+  isSideView,
 }) => {
   let showTestChargeBtn =
     !isLoading &&
@@ -93,6 +94,10 @@ export default ({
     'created',
   ].indexOf(subscription.status);
 
+  const style = {
+    marginRight: isSideView ? 30 : 0,
+  };
+
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
       {isLoading ? (
@@ -105,9 +110,9 @@ export default ({
             <i class="i i-refresh text-main icon--formal" />{' '}
             <strong>{subscription.id}</strong>
             <ShowWhen additionalCondition={_ => allowUpdateSubscription}>
-              <div class="pull-right">
+              <div class="pull-right" style={style}>
                 <NavLink
-                  class="btn btn-primary m-r"
+                  class="btn btn-primary"
                   to={`/subscriptions/update/${subscription.id}`}
                 >
                   Update

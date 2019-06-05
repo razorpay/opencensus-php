@@ -478,7 +478,14 @@ export default class SubscriptionDetailsContainer extends Component {
   };
 
   render() {
-    let { entity, plan, customer, invoices, activeSecEntityId } = this.props;
+    let {
+      entity,
+      plan,
+      customer,
+      invoices,
+      activeSecEntityId,
+      closeUrl,
+    } = this.props;
     let {
       isLoading,
       invoice,
@@ -618,6 +625,7 @@ export default class SubscriptionDetailsContainer extends Component {
               ? this.onTestChargeAttemptWhileCreate
               : this.onTestChargeAttempt)
           }
+          isSideView={closeUrl}
         />
 
         {invoiceSecView}
