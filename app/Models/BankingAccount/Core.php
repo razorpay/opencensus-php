@@ -2,16 +2,16 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Razorpay\IFSC\Bank;
 use Redis;
+use Razorpay\IFSC\Bank;
 
-use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -95,6 +95,8 @@ class Core extends Base\Core
                 'channel' => Channel::YESBANK,
                 'input'   => $input,
             ]);
+
+        (new Validator)->validateInput('yesbank_create', $input);
 
         $input[Entity::CHANNEL] = Channel::YESBANK;
 
