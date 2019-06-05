@@ -43,6 +43,7 @@ export function changeData({
   plans,
   updatedPlan,
   prevPlan,
+  internals,
 }) {
   const currSelectedPlan = updatedPlan
       ? updatedPlan
@@ -92,7 +93,10 @@ export function changeData({
     });
   }
 
-  if (previousSubscription.start_at !== fields.start_at) {
+  if (
+    previousSubscription.start_at !== fields.start_at ||
+    (previousSubscription.start_at && internals._startsImmediately)
+  ) {
     changes.push({
       heading: 'Start Date',
       changes: [
@@ -111,8 +115,8 @@ export function changeData({
         currency={prevSelectedPlan.item.currency}
       />
       {previousSubscription.quantity > 1
-        ? `charged every ${previousSubscription.quantity} monthly`
-        : 'changed for month'}
+        ? ` charged every ${previousSubscription.quantity} monthly`
+        : ' changed for month'}
       <b>
         <i class="i i-arrow-forward" />
         <Amount
@@ -126,7 +130,7 @@ export function changeData({
         )}
       </b>
     </li>,
-    !Number(fields.update_at_cycle_end) ? (
+    !Number(fields.update_at_cycle_end) || internals._startsImmediately ? (
       <li>
         The changes will take into effect <b>immediately.</b>
       </li>

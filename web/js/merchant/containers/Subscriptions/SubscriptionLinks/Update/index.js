@@ -71,7 +71,17 @@ export default class UpdateSubscription extends Component {
       .then(resp => {
         this.setState({
           fields: {
-            ...resp,
+            id,
+            type: resp.type,
+            plan_id: resp.plan_id,
+            quantity: resp.quantity,
+            start_at: resp.start_at,
+            charge_at: resp.charge_at,
+            expire_by: resp.expire_by,
+            total_count: resp.total_count,
+            current_end: resp.current_end,
+            current_start: resp.current_start,
+            customer_notify: resp.customer_notify,
           },
           previousSubscription: {
             ...resp,
@@ -104,26 +114,23 @@ export default class UpdateSubscription extends Component {
   };
 
   isFormChanged() {
-    const { fields, internals, previousSubscription } = this.state;
-
-    const isPlanChanged = previousSubscription.plan_id !== fields.plan_id,
-      isQuantityChanged = previousSubscription.quantity !== fields.quantity,
-      isStateDateChanged =
-        previousSubscription.start_at !== fields.start_at ||
-        !!previousSubscription.start_at !== internals._startsImmediately,
-      isTotalCountChanged =
-        previousSubscription.total_count !== fields.total_count;
+    const {
+      fields,
+      previousSubscription,
+      internals: { _startsImmediately },
+    } = this.state;
 
     return (
-      isPlanChanged ||
-      isQuantityChanged ||
-      isStateDateChanged ||
-      isTotalCountChanged
+      previousSubscription.plan_id !== fields.plan_id ||
+      previousSubscription.quantity !== fields.quantity ||
+      (previousSubscription.start_at && _startsImmediately) ||
+      previousSubscription.start_at !== fields.start_at ||
+      previousSubscription.total_count !== fields.total_count
     );
   }
 
   isFormValid = () => {
-    const { fields, internals, previousSubscription } = this.state;
+    const { fields, internals } = this.state;
     const validateTotalCount = (this.planDetailsForm || {}).validateTotalCount;
 
     return (
@@ -234,6 +241,7 @@ export default class UpdateSubscription extends Component {
           } else {
             const entityId = data.id;
             const redirectUrl = '/subscriptions/' + entityId;
+
             this.props.history.push(redirectUrl);
           }
         }
@@ -256,7 +264,7 @@ export default class UpdateSubscription extends Component {
     }
 
     switch (this.state.currentTab) {
-      case 0:
+      case 0: {
         return (
           <PlanDetails
             plans={this.props.plans}
@@ -269,7 +277,8 @@ export default class UpdateSubscription extends Component {
             ref={form => (this.planDetailsForm = form)}
           />
         );
-      case 1:
+      }
+      case 1: {
         return (
           <Review
             fields={this.state.fields}
@@ -278,6 +287,7 @@ export default class UpdateSubscription extends Component {
             previousSubscription={this.state.previousSubscription}
           />
         );
+      }
     }
   };
 
