@@ -67,20 +67,6 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_STATUS,
     ];
 
-    protected static $generators = [
-        self::BANK_REFERENCE_NUMBER,
-    ];
-
-    // -------------------------- Generators --------------------------------- //
-
-    public function generateBankReferenceNumber()
-    {
-        // TODO: fix.
-        $id = substr(time(), 0, 5);
-
-        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $id);
-    }
-
     // ---------------------------- Setters ----------------------------------- //
 
     public function setStatus(string $status)
@@ -88,11 +74,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setBankReferenceNumber(string $number)
+    {
+        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $number);
+    }
+
     // -------------------------- Getters ------------------------------------ //
 
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
     }
 
     // --------------------------- Relations ---------------------------------- //

@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
+use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -600,55 +601,60 @@ class Activate extends Base\Core
      */
     public function activateBusinessBankingIfApplicable(Entity $merchant): Entity
     {
-        if ($merchant->isBusinessBankingEnabled() === true)
+        if ($merchant->isBusinessBankingEnabled() === false)
         {
-            $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+            return $merchant;
+        }
 
-            // If merchant is instantly activated or Activated this flow will kick in.
-            if ($merchant->isActivated() === true)
-            {
-                // Business Banking logic is coupled only with the live mode.
-                $liveMode = $this->app['basicauth']->getLiveConnection();
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
-                $this->app['basicauth']->setModeAndDbConnection($liveMode);
+        // If merchant is instantly activated or Activated this flow will kick in.
+        if ($merchant->isActivated() === true)
+        {
+            // Business Banking logic is coupled only with the live mode.
+            $liveMode = $this->app['basicauth']->getLiveConnection();
 
-                //
-                // This endpoint could be hit from test mode as well, depending which this merchant has been read from
-                // corresponding connection. Because this entity is synced between both connection, setting connection
-                // to live mode is same as fetching merchant of same id from live connection. We need to do this
-                // because in subsequent steps we do things like $merchant->bankingBalance which we expect in this flow
-                // to query in live connection.
-                //
-                $merchant->setConnection($liveMode);
+            $this->app['basicauth']->setModeAndDbConnection($liveMode);
 
-                // Create Banking Balance.
-                $balance = (new Balance\Core)->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
+            //
+            // This endpoint could be hit from test mode as well, depending which this merchant has been read from
+            // corresponding connection. Because this entity is synced between both connection, setting connection
+            // to live mode is same as fetching merchant of same id from live connection. We need to do this
+            // because in subsequent steps we do things like $merchant->bankingBalance which we expect in this flow
+            // to query in live connection.
+            //
+            $merchant->setConnection($liveMode);
 
-                // Virtual Account.
-                $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
+            // Create Banking Balance.
+            $balance = (new Balance\Core)->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
 
-                $this->trace->info(
-                    TraceCode::MERCHANT_BUSINESS_BANKING_ACCOUNT,
-                    [
-                        'virtual_account_id' => $virtualAccount->getId(),
-                        'merchant_id'        => $virtualAccount->getMerchantId(),
-                    ]);
-            }
+            // Virtual Account.
+            $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
 
-            $merchantDetails->reload();
+            $bankingAccount = (new BankingAccount\Core)->createBasicBankingAccountFromVA($virtualAccount);
 
-            // This means that L2 form is also verified.
-            if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
-            {
-                $featureParams = [
-                    Feature\Entity::ENTITY_ID    => $merchant->getId(),
-                    Feature\Entity::ENTITY_TYPE  => 'merchant',
-                    Feature\Entity::NAMES        => [Feature\Constants::PAYOUT],
-                    Feature\Entity::SHOULD_SYNC  => true,
-                ];
+            $this->trace->info(
+                TraceCode::MERCHANT_BUSINESS_BANKING_ACCOUNT,
+                [
+                    'virtual_account_id' => $virtualAccount->getId(),
+                    'banking_account_id' => $bankingAccount->getId(),
+                    'merchant_id'        => $virtualAccount->getMerchantId(),
+                ]);
+        }
 
-                (new Feature\Service)->addFeatures($featureParams);
-            }
+        $merchantDetails->reload();
+
+        // This means that L2 form is also verified.
+        if ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED)
+        {
+            $featureParams = [
+                Feature\Entity::ENTITY_ID    => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE  => 'merchant',
+                Feature\Entity::NAMES        => [Feature\Constants::PAYOUT],
+                Feature\Entity::SHOULD_SYNC  => true,
+            ];
+
+            (new Feature\Service)->addFeatures($featureParams);
         }
 
         return $merchant;
