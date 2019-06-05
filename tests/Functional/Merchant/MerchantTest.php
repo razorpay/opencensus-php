@@ -20,6 +20,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
@@ -3962,6 +3963,19 @@ class MerchantTest extends TestCase
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedBankingAccount = [
+            'channel'     => 'yesbank',
+            'merchant_id' => '10000000000000',
+            'status'      => 'processed',
+            'pincode'     => null
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $bankingAccount->toArray());
+        $this->assertNotNull($bankingAccount->getBalanceId());
 
         $merchants = DB::connection('test')->table('merchant_users')
                                            ->where('user_id', '=', $user['id'])
