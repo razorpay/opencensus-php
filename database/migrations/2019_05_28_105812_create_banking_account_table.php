@@ -32,6 +32,9 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::STATUS, 255)
                   ->nullable();
 
+            $table->string(Entity::BANK_INTERNAL_STATUS, 255)
+                  ->nullable();
+
             $table->string(Entity::CHANNEL, 255);
 
             $table->char(Entity::PINCODE, Entity::PINCODE_LENGTH);
@@ -47,6 +50,8 @@ class CreateBankingAccountTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            $table->index(Entity::BANK_INTERNAL_STATUS);
         });
     }
 

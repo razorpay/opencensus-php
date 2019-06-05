@@ -60,6 +60,10 @@ class Type
 
     const RBL_NETBANKING_CLAIM              = 'rbl_netbanking_claim';
 
+    const CUB_NETBANKING_REFUND             = 'cub_netbanking_refund';
+
+    const CUB_NETBANKING_CLAIM              = 'cub_netbanking_claim';
+
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';

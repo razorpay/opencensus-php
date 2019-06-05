@@ -1217,4 +1217,7 @@ class ErrorCode
     const FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA                                    = 'FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA';
 
     const BAD_REQUEST_CPS_ANOTHER_SYNC_IN_PROGRESS                                  = 'BAD_REQUEST_CPS_ANOTHER_SYNC_IN_PROGRESS';
+    const GATEWAY_ERROR_AUTHORIZATION_FAILED                                        = 'GATEWAY_ERROR_AUTHORIZATION_FAILED';
+    const GATEWAY_ERROR_INVALID_REQUEST_BODY                                        = 'GATEWAY_ERROR_INVALID_REQUEST_BODY';
+    const GATEWAY_ERROR_REFUND_TIMED_OUT                                            = 'GATEWAY_ERROR_REFUND_TIMED_OUT';
 }

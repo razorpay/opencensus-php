@@ -261,6 +261,7 @@ class Service extends Base\Service
             'scrooge_failure_count' => $scroogeFailureCount,
             'batch_id'              => $batchId,
             'chunk_number'          => $chunkNumber,
+            'refund_count'          => count($response[ScroogeReconciliate::REFUNDS]),
             'failures'              => $failures,
         ];
 

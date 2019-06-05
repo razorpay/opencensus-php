@@ -4949,6 +4949,15 @@ ALTER TABLE merchant_banks
 ALTER TABLE terminals
     ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
     ADD INDEX `terminals_paylater_index` (paylater);
+
 ALTER TABLE invoices
     ADD COLUMN idempotency_key varchar(255) UNIQUE DEFAULT NULL AFTER batch_id,
     ADD INDEX invoices_idempotency_key_index (idempotency_key);
+
+ALTER TABLE payouts
+    ADD COLUMN pending_at INT(11) DEFAULT NULL AFTER `processed_at`,
+    ADD INDEX payouts_pending_at_index (pending_at);
+
+ALTER TABLE banking_accounts
+    ADD COLUMN bank_internal_status VARCHAR(255) DEFAULT NULL AFTER status,
+    ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status);

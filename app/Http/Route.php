@@ -1104,6 +1104,7 @@ final class Route
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_accounts_for_merchant'           => ['get',      'banking_accounts/merchant',                                 'BankingAccountController@fetchBankingDetailsForMerchant'   ],
+        'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
     ];
 
     public static $public = [
@@ -2090,6 +2091,7 @@ final class Route
         'governor_rule_chain_list',
         'governor_rule_chain_execute',
         'payment_on_hold_bulk_update',
+        'banking_account_update'
     ];
 
     public static $routePermission = [
@@ -2507,6 +2509,7 @@ final class Route
         'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
+        'banking_account_update'                   => Permission::BANKING_UPDATE_ACCOUNT,
     ];
 
     public static $direct = [
