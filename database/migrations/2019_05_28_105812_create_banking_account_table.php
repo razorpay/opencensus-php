@@ -50,6 +50,8 @@ class CreateBankingAccountTable extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            $table->index(Entity::BANK_INTERNAL_STATUS);
         });
     }
 
