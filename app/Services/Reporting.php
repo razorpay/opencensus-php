@@ -732,9 +732,15 @@ class Reporting implements ExternalService
         $showTxnCommissionReport          = false;
         $showAggregateCommissionReport    = false;
         $showSubventionReports            = false;
+        $showAggregateReports             = false;
 
         if ($merchant->isPartner() === true)
         {
+            if ($merchant->isResellerPartner() === false)
+            {
+                $showAggregateReports = true;
+            }
+
             list($commissionConfigs, $subventionConfigs) = (new Config\Core)->fetchAllConfigGroupsByPartner($merchant);
 
             // if at least one commission config is present, we show commission reports
@@ -823,35 +829,35 @@ class Reporting implements ExternalService
                 'type'        => 'payments',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showTxnCommissionReport,
+                'condition'   => $showAggregateReports,
             ],
             [
                 'name'        => 'Refunds',
                 'type'        => 'refunds',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showTxnCommissionReport,
+                'condition'   => $showAggregateReports,
             ],
             [
                 'name'        => 'Combined',
                 'type'        => 'transactions',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showTxnCommissionReport,
+                'condition'   => $showAggregateReports,
             ],
             [
                 'name'        => 'Settlements',
                 'type'        => 'settlements',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showTxnCommissionReport,
+                'condition'   => $showAggregateReports,
             ],
             [
                 'name'        => 'Settlements Recon',
                 'type'        => 'settlements',
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
-                'condition'   => $showTxnCommissionReport,
+                'condition'   => $showAggregateReports,
             ],
         ];
 
