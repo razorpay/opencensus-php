@@ -572,6 +572,9 @@ return [
             Permission::ADMIN_FILE_UPLOAD            => [
                 'description' => 'Upload a bank file',
             ],
+            Permission::EDIT_THROTTLE_SETTINGS       => [
+                'description'  => 'Edit throttle settings',
+            ],
         ],
 
         // Permissions

@@ -1102,8 +1102,12 @@ final class Route
 
         // Governor Proxy APIs - Execute Rule Chain
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
+
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
+
+        'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
+        'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
     ];
 
     public static $public = [
@@ -2089,7 +2093,11 @@ final class Route
         'governor_rule_chain_list',
         'governor_rule_chain_execute',
         'payment_on_hold_bulk_update',
-        'banking_account_update'
+        'banking_account_update',
+
+        // throttle settings routes
+        'fetch_throttle_settings',
+        'edit_throttle_settings',
     ];
 
     public static $routePermission = [
@@ -2508,6 +2516,9 @@ final class Route
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
         'banking_account_update'                   => Permission::BANKING_UPDATE_ACCOUNT,
+
+        'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
+        'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
     ];
 
     public static $direct = [
