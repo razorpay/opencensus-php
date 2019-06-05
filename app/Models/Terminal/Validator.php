@@ -420,6 +420,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
     ];
 
+    protected static $walletPhonepeEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_phonepe',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+    ];
+
     protected static $walletOlamoneyEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_olamoney',
         Entity::TYPE                       => 'sometimes|array',

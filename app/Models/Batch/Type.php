@@ -45,6 +45,8 @@ class Type
 
     const INSTANT_ACTIVATION        = 'instant_activation';
 
+    const SUBMERCHANT_ASSIGN        = 'submerchant_assign';
+
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
 
@@ -85,6 +87,7 @@ class Type
         self::TERMINAL,
         self::MERCHANT_ONBOARDING,
         self::SUB_MERCHANT,
+        self::SUBMERCHANT_ASSIGN,
     ];
 
     /**
@@ -140,7 +143,8 @@ class Type
         self::CONTACT,
         self::FUND_ACCOUNT,
         self::MERCHANT_ONBOARDING,
-        self::LINKED_ACCOUNT_REVERSAL
+        self::LINKED_ACCOUNT_REVERSAL,
+        self::SUBMERCHANT_ASSIGN,
     ];
 
     /**
