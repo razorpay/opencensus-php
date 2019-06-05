@@ -25,6 +25,10 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER_LENGTH     = '40';
     const ACCOUNT_IFSC_LENGTH  = '11';
 
+    const PINCODE_REGEX = '/^[1-9][0-9]{5}$/';
+    const PINCODES      = 'pincodes';
+    const ACTION        = 'action';
+
     protected $entity = 'banking_account';
 
     protected static $sign = 'bankacc';
