@@ -1117,6 +1117,8 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+        'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'bank_account_info_webhook'               => ['post',     'banking_accounts/webhook/{channel}',                        'BankingAccountController@processBankAccountInformation'    ],
     ];
 
     public static $public = [

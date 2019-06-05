@@ -26,4 +26,13 @@ class BankingAccountController extends Controller
 
         return $response;
     }
+    
+    public function processBankAccountInformation(string $gateway)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processBankAccountInfoNotification($gateway, $input);
+
+        return $response;
+    }
 }

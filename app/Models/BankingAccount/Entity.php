@@ -32,7 +32,6 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_STATE                 = 'beneficiary_state';
     const BENEFICIARY_COUNTRY               = 'beneficiary_country';
     const BENEFICIARY_NAME                  = 'beneficiary_name';
-
     const PINCODE_LENGTH    = '6';
 
     // TODO: need to confirm this length

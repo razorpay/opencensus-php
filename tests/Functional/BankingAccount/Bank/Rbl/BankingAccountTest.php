@@ -83,6 +83,7 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
+
     }
 
     public function testFailedBankAccountInfoNotification()

@@ -23,6 +23,7 @@ class RblFields
     const STATUS                            = 'Status';
     const PHONE_NUM                         = 'PHONE_NUM';
     const EMAIL_ID                          = 'EMAIL_ID';
+
     const RZP_ALERT_NOTIFICATION_REQUEST    = 'RZPAlertNotiReq';
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
 

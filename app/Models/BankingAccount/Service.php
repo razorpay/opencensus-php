@@ -4,7 +4,6 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
 
 class Service extends Base\Service
