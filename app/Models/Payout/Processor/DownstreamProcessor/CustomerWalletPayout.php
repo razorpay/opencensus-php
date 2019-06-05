@@ -9,11 +9,11 @@ use RZP\Models\Adjustment;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Settlement\Channel;
 
-class CustomerWalletPayout extends Foundation\Base
+class CustomerWalletPayout extends Base
 {
     const DEBIT_WALLET_FEE_ADJUSTMENT_DESCRIPTION  = 'Debit wallet withdrawal fee amount';
 
-    public function createTransaction(Entity $payout)
+    protected function createTransaction(Entity $payout)
     {
         $customerTransactionData = $this->getCustomerTransactionData($payout);
 
@@ -43,7 +43,7 @@ class CustomerWalletPayout extends Foundation\Base
         }
     }
 
-    public function setChannel(Entity $payout)
+    protected function setChannel(Entity $payout)
     {
         $channel = Channel::YESBANK;
 

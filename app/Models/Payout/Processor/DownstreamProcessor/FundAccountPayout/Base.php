@@ -3,11 +3,11 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 use RZP\Models\Payout\Entity;
-use RZP\Models\Payout\Processor\DownstreamProcessor\Foundation;
+use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
 
-class Base extends Foundation\Base
+class Base extends DSBase
 {
-    public function setChannel(Entity $payout)
+    protected function setChannel(Entity $payout)
     {
         $channel = snake_case(class_basename(get_called_class()));
 
