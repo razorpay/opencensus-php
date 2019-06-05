@@ -56,6 +56,10 @@ class CreateInvoices extends Migration
             $table->string(Entity::BATCH_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Entity::IDEMPOTENCY_KEY,255)
+                  ->unique()
+                  ->nullable();
+
             $table->integer(Entity::DATE)
                   ->nullable();
 

@@ -2,19 +2,21 @@
 
 namespace RZP\Models\FundAccount;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use RZP\Constants;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Class Entity
- *
- * @package RZP\Models\FundAccount
+ * @property Card\Entity|BankAccount\Entity|Vpa\Entity account
+ * @property Merchant\Entity merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -45,6 +47,9 @@ class Entity extends Base\PublicEntity
     // VPA is basically publicly exposed underlying account
     // when account type is VPA
     const VPA           = 'vpa';
+    // Card is basically publicly exposed underlying account
+    // when account type is card
+    const CARD          = 'card';
 
     protected $generateIdOnCreate = true;
 
@@ -62,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::DETAILS,
         self::BANK_ACCOUNT,
+        self::CARD,
         self::BATCH_ID,
         self::VPA,
         self::ACTIVE,
@@ -136,6 +142,9 @@ class Entity extends Base\PublicEntity
 
             case Type::VPA:
                 return $this->account->getAddress();
+
+            case Type::CARD:
+                return $this->account->getFormatted();
         }
     }
 
@@ -148,6 +157,7 @@ class Entity extends Base\PublicEntity
 
             // Generic format for all other types, but be explicit.
             case Type::BANK_ACCOUNT:
+            case Type::CARD:
                 return ucfirst(str_replace('_', ' ', $this->getAccountType()));
         }
     }
@@ -205,17 +215,13 @@ class Entity extends Base\PublicEntity
 
     public function setPublicDetailsAttribute(array & $array)
     {
-        // Expose the account relation in the 'details' attribute.
-        $publicAttributes = $this->account->toArrayPublic();
-
-        // For now, don't expose the public id and entity attributes from any of the related entities
-        array_forget($publicAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
-
-        $array[self::DETAILS] = $publicAttributes;
-
         $accountType = array_get($array, self::ACCOUNT_TYPE);
 
-        $array[$accountType] = $publicAttributes;
+        $accountAttributes = $this->getAccountDetails($accountType);
+
+        $array[self::DETAILS] = $accountAttributes;
+
+        $array[$accountType] = $accountAttributes;
     }
 
     public function setPublicBatchIdAttribute(array & $attributes)
@@ -297,4 +303,19 @@ class Entity extends Base\PublicEntity
     // -------------- Accessors --------------
 
     // ------------ End Accessors ------------
+
+    protected function getAccountDetails(string $accountType)
+    {
+        $accountAttributes = $this->account->toArrayPublic();
+
+        if ($accountType === Type::CARD)
+        {
+            $accountAttributes = $this->account->toArrayFundAccount();
+        }
+
+        // For now, don't expose the public id and entity attributes from any of the related entities
+        array_forget($accountAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
+
+        return $accountAttributes;
+    }
 }

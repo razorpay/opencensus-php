@@ -268,6 +268,65 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
         $this->assertEquals($payment['id'], 'pay_' . $gatewayRefund['payment_id']);
     }
 
+    public function testReversePayment()
+    {
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $input = ['amount' => $payment['amount']];
+
+        $this->refundAuthorizedPayment($paymentId, $input);
+
+        $gatewayEntity = $this->getLastEntity('cardless_emi', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($paymentId, $refund['payment_id']);
+
+        $this->assertEquals('refund', $gatewayEntity['action']);
+    }
+
+    public function testReverseFailed()
+    {
+        $data = $this->testData['testRefundFailed'];
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'refund')
+            {
+                $content['status']     = 'failed';
+                $content['error_code'] = 'REFUND_FAILED';
+                $content['error_description'] = 'Refund failed';
+            }
+        });
+
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundAuthorizedPayment($payment['id']);
+
+        $gatewayEntity = $this->getLastEntity('cardless_emi',true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+
+        $this->assertEquals('REFUND_FAILED', $gatewayEntity['error_code']);
+        $this->assertEquals('Refund failed', $gatewayEntity['error_description']);
+    }
+
     public function testRefundFailed()
     {
         $data = $this->testData[__FUNCTION__];

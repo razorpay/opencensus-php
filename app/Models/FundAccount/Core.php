@@ -5,6 +5,7 @@ namespace RZP\Models\FundAccount;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -33,14 +34,18 @@ class Core extends Base\Core
     {
         $this->modifyRequestForBackwardCompatibility($input);
 
-        $fundAccount = (new Entity)->build($input);
+        $fundAccount = (new Entity);
+
+        // This needs to be done before the build since validator
+        // uses the merchant association to check for a feature.
+        $fundAccount->merchant()->associate($merchant);
+
+        $fundAccount = $fundAccount->build($input);
 
         $this->repo->transaction(
             function() use ($input, $merchant, $source, $fundAccount, $batch)
             {
                 $account = $this->createAccount($input, $merchant, $source);
-
-                $fundAccount->merchant()->associate($merchant);
 
                 $fundAccount->source()->associate($source);
 
@@ -76,8 +81,8 @@ class Core extends Base\Core
         }
 
         //
-        // `account_type` is a required field, so if unset we just return and let this fail at the Entity
-        // build validation stage.
+        // `account_type` is a required field, so if unset we just return
+        // and let this fail at the Entity build validation stage.
         //
         if (isset($input[Entity::ACCOUNT_TYPE]) === false)
         {
@@ -109,6 +114,26 @@ class Core extends Base\Core
 
             case Type::VPA:
                 $account = (new Vpa\Core)->createForBankingSource($accountInput, $source);
+                break;
+
+            case Type::CARD:
+                // cvv needs to be passed otherwise card creation will fail if it's
+                // not present, hence passing a dummy value. It's not stored anyways.
+                $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv();
+
+                // If the expiry is sent, we use that to validate and such.
+                // If the expiry is not sent, we use a dummy expiry.
+                // We do not expose expiry in either way.
+                // Expiry is mandatory for card creation.
+                $accountInput[Card\Entity::EXPIRY_MONTH] = $accountInput[Card\Entity::EXPIRY_MONTH] ?? Card\Entity::DUMMY_EXPIRY_MONTH;
+                $accountInput[Card\Entity::EXPIRY_YEAR] = $accountInput[Card\Entity::EXPIRY_YEAR] ?? Card\Entity::DUMMY_EXPIRY_YEAR;
+
+                // If name is sent, we use that. We also expose it.
+                // If name is not sent, we use a dummy name. We do not expose it.
+                // Name is mandatory for card creation.
+                $accountInput[Card\Entity::NAME] = $accountInput[Card\Entity::NAME] ?? Card\Entity::DUMMY_NAME;
+
+                $account = (new Card\Core)->createForFundAccount($accountInput, $merchant);
                 break;
 
             default:
@@ -146,7 +171,6 @@ class Core extends Base\Core
      * @param string $id
      * @param Merchant\Entity $merchant
      * @return Entity
-     * @throws Exception\BaseException, if id is not found
      */
     public function findByPublicIdAndMerchant(string $id, Merchant\Entity $merchant): Entity
     {

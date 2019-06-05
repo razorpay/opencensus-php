@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Vpa;
+use RZP\Models\Card;
 use RZP\Models\User;
 use RZP\Services\FTS;
 use RZP\Models\Batch;
@@ -149,6 +150,18 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new CorePaymentService($app);
+        });
+
+        $this->app->singleton('governor', function($app)
+        {
+            $goverorMock = $app['config']->get('applications.governor.mock');
+
+            if ($goverorMock === true)
+            {
+                return new Mock\GovernorService($app);
+            }
+
+            return new GovernorService($app);
         });
 
         $this->app->singleton('card.otpelf', function($app)
@@ -489,6 +502,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // transaction
             'adjustment'                => Adjustment\Entity::class,
             'payment'                   => Payment\Entity::class,
+            'card'                      => Card\Entity::class,
             'order'                     => Order\Entity::class,
             'refund'                    => Payment\Refund\Entity::class,
             'settlement'                => Settlement\Entity::class,

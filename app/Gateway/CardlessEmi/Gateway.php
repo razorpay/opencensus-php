@@ -329,6 +329,18 @@ class Gateway extends Base\Gateway
         $this->checkRefundSuccess($responseArray);
     }
 
+    public function reverse(array $input)
+    {
+        parent::action($input, Action::REVERSE);
+
+        if ($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER] !== CardlessEmi::FLEXMONEY)
+        {
+            return;
+        }
+
+        return $this->refund($input);
+    }
+
 /*-------------------------------------------------HELPER FUNCTIONS--------------------------------------------------*/
 
     protected function getCheckAccountRequestContent($input)

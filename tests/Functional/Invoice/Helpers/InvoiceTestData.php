@@ -117,6 +117,88 @@ return [
             ],
         ],
     ],
+
+    'testCreateInvoiceLinkWithIdempotentId' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'        => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                    'gstin'   => '29ABCDE1234L1Z1',
+                ],
+                'type'            => 'link',
+                'view_less'       => 1,
+                'amount'          => 100,
+                'currency'        => "INR",
+                'description'     => 'Any Description about paymentLink',
+                'partial_payment' => "0",
+                'idempotency_key' => 'B24Y8gjypHOVOm'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => null,
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'status'           => 'issued',
+                'sms_status'       => 'pending',
+                'email_status'     => 'pending',
+                'view_less'        => true,
+                'amount'           => 100,
+                'currency'         => 'INR',
+                'payment_id'       => null,
+                'type'             => 'link',
+                'idempotency_key'  => 'B24Y8gjypHOVOm'
+            ],
+        ],
+    ],
+
+    'testCreateInvoiceLinkWithIdempotentIdAndGetTheResponse' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer'        => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'type'            => 'link',
+                'view_less'       => 1,
+                'amount'          => 100,
+                'currency'        => "INR",
+                'description'     => 'Any Description about paymentLink',
+                'partial_payment' => "0",
+                'idempotency_key' => 'B24Y8gjypHOVOm'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => '1',
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '1234567890',
+                    'name'    => 'test',
+                ],
+                'status'           => 'issued',
+                'sms_status'       => 'sent',
+                'email_status'     => 'sent',
+                'view_less'        => true,
+                'amount'           => 100000,
+                'currency'         => 'INR',
+                'payment_id'       => null,
+                'type'             => 'link',
+                'idempotency_key'  => 'B24Y8gjypHOVOm'
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithNewCustomerAndAddress' => [
         'request' => [
             'url' => '/invoices',
@@ -248,6 +330,111 @@ return [
         ],
     ],
 
+    'testCreateBulkInvoices' => [
+        'request' => [
+            'url'     => '/invoices/bulk',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'receipt'    => '00000000000001',
+                    'customer'   => [
+                        'email'   => 'test1@razorpay.com',
+                        'contact' => '9999999999',
+                        'name'    => 'test1',
+                        'gstin'   => '29ABCDE1234L1Z1',
+                    ],
+                    'line_items' => [
+                        [
+                            'name'        => 'Some item name',
+                            'description' => 'Some item description',
+                            'amount'      => 100000,
+                            'hsn_code'    => '00110022'
+                        ],
+                    ],
+                ],
+                [
+                    'receipt'    => '00000000000002',
+                    'customer'   => [
+                        'email'   => 'test2@razorpay.com',
+                        'contact' => '9999999998',
+                        'name'    => 'test2',
+                        'gstin'   => '29ABCDE1234L1Z2',
+                    ],
+                    'line_items' => [
+                        [
+                            'name'        => 'Some item name',
+                            'description' => 'Some item description',
+                            'amount'      => 100000,
+                            'hsn_code'    => '00110022'
+                        ],
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'receipt'          => '00000000000001',
+                        'customer_details' => [
+                            'email'   => 'test1@razorpay.com',
+                            'contact' => '9999999999',
+                            'name'    => 'test1',
+                            'gstin'   => '29ABCDE1234L1Z1',
+                        ],
+                        'line_items'       => [
+                            [
+                                'name'        => 'Some item name',
+                                'description' => 'Some item description',
+                                'amount'      => 100000,
+                                'quantity'    => 1,
+                                'type'        => 'invoice',
+                                'hsn_code'    => '00110022'
+                            ]
+                        ],
+                        'status'           => 'issued',
+                        'sms_status'       => 'pending',
+                        'email_status'     => 'pending',
+                        'view_less'        => true,
+                        'amount'           => 100000,
+                        'currency'         => 'INR',
+                        'payment_id'       => null,
+                        'type'             => 'invoice',
+                    ],
+                    [
+                        'receipt'          => '00000000000002',
+                        'customer_details' => [
+                            'email'   => 'test2@razorpay.com',
+                            'contact' => '9999999998',
+                            'name'    => 'test2',
+                            'gstin'   => '29ABCDE1234L1Z2',
+                        ],
+                        'line_items'       => [
+                            [
+                                'name'        => 'Some item name',
+                                'description' => 'Some item description',
+                                'amount'      => 100000,
+                                'quantity'    => 1,
+                                'type'        => 'invoice',
+                                'hsn_code'    => '00110022'
+                            ]
+                        ],
+                        'status'           => 'issued',
+                        'sms_status'       => 'pending',
+                        'email_status'     => 'pending',
+                        'view_less'        => true,
+                        'amount'           => 100000,
+                        'currency'         => 'INR',
+                        'payment_id'       => null,
+                        'type'             => 'invoice',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateInvoiceWithCustomerIdAndDetails' => [
         'request' => [
             'url' => '/invoices',
@@ -368,6 +555,132 @@ return [
                 'email_status' => 'pending',
                 'view_less'    => true,
                 'amount'       => 100,
+            ],
+        ],
+    ],
+
+    'testCreateInvoiceWithInternationalCurrencyTax' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'USD',
+                        'tax_rate'      => 120,
+                    ],
+                    [
+                        'name'          => 'Another item',
+                        'description'   => 'Another description',
+                        'unit_amount'   => 200000,
+                        'quantity'      => 2,
+                        'currency'      => 'USD',
+                        'tax_rate'      => 120,
+                    ]
+                ],
+                'currency'    => 'USD',
+                'description' => 'Just an invoice summary',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '1234567890',
+                    'name'    => 'test',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'unit_amount' => 100000,
+                        'quantity'    => 1,
+                        'currency'    => 'USD',
+                        'tax_rate'    => null,
+                    ],
+                    [
+                        'name'        => 'Another item',
+                        'description' => 'Another description',
+                        'amount'      => 200000,
+                        'unit_amount' => 200000,
+                        'quantity'    => 2,
+                        'currency'    => 'USD',
+                        'tax_rate'    => null,
+                    ]
+                ],
+                'currency'     => 'USD',
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 500000,
+                'description'  => 'Just an invoice summary',
+            ],
+        ],
+    ],
+
+    'testCreateInvoiceWithInternationalCurrency' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'USD',
+                    ],
+                    [
+                        'name'          => 'Another item',
+                        'description'   => 'Another description',
+                        'unit_amount'   => 200000,
+                        'quantity'      => 2,
+                        'currency'      => 'USD',
+                    ]
+                ],
+                'currency'    => 'USD',
+                'description' => 'Just an invoice summary',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '1234567890',
+                    'name'    => 'test',
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'unit_amount' => 100000,
+                        'quantity'    => 1,
+                        'currency'    => 'USD',
+                    ],
+                    [
+                        'name'        => 'Another item',
+                        'description' => 'Another description',
+                        'amount'      => 200000,
+                        'unit_amount' => 200000,
+                        'quantity'    => 2,
+                        'currency'    => 'USD',
+                    ]
+                ],
+                'currency'     => 'USD',
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 500000,
+                'description'  => 'Just an invoice summary',
             ],
         ],
     ],

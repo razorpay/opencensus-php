@@ -28,6 +28,8 @@ class Core extends Base\Core
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
+        $this->removeTaxFieldsForInternational($morphEntity, $input);
+
         //
         // For Backward compatibility: If without ITEM_ID (template),
         // no CURRENCY is sent, we use invoice's currency.
@@ -105,6 +107,8 @@ class Core extends Base\Core
         $this->modifyInputToHandleRenamedAttributes($input);
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
+
+        $this->removeTaxFieldsForInternational($morphEntity, $input);
 
         $lineItem->edit($input);
 
@@ -364,6 +368,23 @@ class Core extends Base\Core
             $input[Entity::AMOUNT] = $input[Entity::UNIT_AMOUNT];
 
             unset($input[Entity::UNIT_AMOUNT]);
+        }
+    }
+
+    /**
+     * Silently remove tax fields for international curreny line items when added directly with out item id.
+     * Don't want to keep a hard check on the items tax attributes because in future we might allow the same.
+     *
+     * @param Base\PublicEntity $morphEntity
+     * @param array             $input
+     */
+    protected function removeTaxFieldsForInternational(Base\PublicEntity $morphEntity, array & $input)
+    {
+        if ($morphEntity->isInternational() === true)
+        {
+            $taxAttributes = Validator::TAX_ATTRIBUTES;
+
+            $input = array_diff_key($input, array_flip($taxAttributes));
         }
     }
 }

@@ -294,6 +294,7 @@ class Validator extends Base\Validator
     protected static $amexEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:' . Gateway::AMEX,
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|alpha_num|min:8',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
     ];
 
@@ -419,6 +420,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
     ];
 
+    protected static $walletPhonepeEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_phonepe',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+    ];
+
     protected static $walletOlamoneyEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_olamoney',
         Entity::TYPE                       => 'sometimes|array',
@@ -462,6 +470,17 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingCubTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_cub',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
     ];
 
     protected static $netbankingVijayaTerminalRules = [
@@ -582,7 +601,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:netbanking_sib',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
-        Entity::TYPE                       => 'sometimes|array'
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingFederalTerminalRules = [

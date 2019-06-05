@@ -150,6 +150,33 @@ return [
         ],
     ],
 
+    'testCreateItemWithTaxIdInternational' => [
+        'request'  => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'        => 'Item 1',
+                'description' => 'Item 1 description :) ..',
+                'amount'      => 100,
+                'currency'    => 'USD',
+                'tax_id'      => 'tax_00000000000001',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'tax_id is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'testCreateItemWithTaxGroupId' => [
         'request' => [
             'url'     => '/items',
@@ -662,7 +689,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Cannot edit/delete an item with which invoices have been created already',
+                    'description' => 'Cannot delete an item with which invoices have been created already',
                 ],
             ],
             'status_code' => 400,

@@ -134,9 +134,11 @@ trait HeadlessOtp
         ];
 
         $data = [
-            'payment_id' => $payment->getId(),
-            'request'    => $request,
-            'card'       => $card
+            'payment_id'  => $payment->getId(),
+            'request'     => $request,
+            'card'        => $card,
+            'merchant_id' => $payment->getMerchantId(),
+            'gateway'     => $payment->getGateway(),
         ];
 
         $response = $this->app['card.otpelf']->otpSend($data);

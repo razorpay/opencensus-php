@@ -122,14 +122,18 @@ class Gateway extends Base\Gateway
 
         $content = $this->getRefundRequestContent($gatewayPayment, $input);
 
-        $responseArray = $this->getRefundResponse($content, $input);
+        $responseContent = $this->getRefundResponse($content, $input);
+
+        $responseArray = $this->xmlToArray($responseContent);
 
         if ($this->checkRefundDateError($responseArray) == true)
         {
             $content[RefundRequestFields::TRANSACTION_DATE] = $this->getPreviousDate(
                                                                     $content[RefundRequestFields::TRANSACTION_DATE]);
 
-            $responseArray = $this->getRefundResponse($content, $input);
+            $responseContent = $this->getRefundResponse($content, $input);
+
+            $responseArray = $this->xmlToArray($responseContent);
         }
 
         $date = $content[RefundRequestFields::TRANSACTION_DATE];
@@ -141,6 +145,15 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($attributes);
 
         $this->checkRefundSuccess($responseArray);
+
+        $scroogeGatewayResponse = (is_string($responseContent) === false) ?
+                                   json_encode($responseContent) :
+                                   $responseContent;
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => $scroogeGatewayResponse,
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($responseArray)
+        ];
     }
 
     public function verify(array $input)
@@ -268,18 +281,23 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new Base\ScroogeResponse();
+
         $unprocessedRefunds = $this->getUnprocessedRefunds();
 
         $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
@@ -300,6 +318,19 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        //
+        // Adding this check because gateway is sending 421 in the verify refund responses
+        // for refunds of certain terminals, if this is passed to scrooge, we hit the refund API once
+        // On subsequent receipt of this status, scrooge marks the refund as a hard failure which needs
+        // manual intervention
+        //
+        if ($response->status_code == 421)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_VERIFY_REFUND_NOT_SUPPORTED)
+                                   ->toArray();
+        }
+
         $crypto = $this->getResponseDecryptor();
 
         $decryptedResponse = $crypto->decryptString($response->body);
@@ -319,6 +350,9 @@ class Gateway extends Base\Gateway
         $xmlResponse = (array) simplexml_load_string(trim($decryptedResponse));
 
         $verifyRefundResponseArray = json_decode(json_encode($xmlResponse), true);
+
+        $scroogeResponse->setGatewayVerifyResponse($decryptedResponse)
+                        ->setGatewayKeys($this->getGatewayVerifyRefundData($verifyRefundResponseArray));
 
         if ($verifyRefundResponseArray[VerifyRefundFields::ERRORCODE] === Status::VERIFY_REFUND_SUCCESS)
         {
@@ -345,10 +379,13 @@ class Gateway extends Base\Gateway
                 $this->createGatewayPaymentEntity($attributes,'refund');
             }
 
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        return false;
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                               ->toArray();
     }
 
     protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response, string $entity)
@@ -526,8 +563,15 @@ class Gateway extends Base\Gateway
                 ]);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR
-            );
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+                '',
+                ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => '',
+                    Payment\Gateway::GATEWAY_KEYS      => [
+                        'gateway' => $this->gateway,
+                    ]
+                ]);
         }
     }
 
@@ -1008,9 +1052,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentResponse($response->body, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
-        $responseArray = $this->xmlToArray($response->body);
-
-        return $responseArray;
+        return $response->body;
     }
 
     protected function getVerifyResponse(array $content, $verify)
@@ -1067,5 +1109,39 @@ class Gateway extends Base\Gateway
         }
 
         return false;
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                RefundResponseFields::MERCHANT_ID    => $refundFields[RefundResponseFields::MERCHANT_ID] ?? null,
+                RefundResponseFields::STATUS_CODE    => $refundFields[RefundResponseFields::STATUS_CODE] ?? null,
+                RefundResponseFields::TRANSACTION_ID => $refundFields[RefundResponseFields::TRANSACTION_ID] ?? null,
+                RefundResponseFields::STATUS_MESSAGE => $refundFields[RefundResponseFields::STATUS_MESSAGE] ?? null,
+            ];
+        }
+        return [];
+    }
+
+    protected function getGatewayVerifyRefundData(array $verifyRefundFields = [])
+    {
+        if (empty($verifyRefundFields) === false)
+        {   $refundDetails = $verifyRefundFields[VerifyRefundFields::DETAILS][VerifyRefundFields::REFUND] ?? null;
+            return [
+                VerifyRefundFields::ERRORCODE            => $verifyRefundFields[VerifyRefundFields::ERRORCODE] ?? null,
+                VerifyRefundFields::MESSAGE              => $verifyRefundFields[VerifyRefundFields::MESSAGE] ?? null,
+                VerifyRefundFields::TXN_ID               => $refundDetails[VerifyRefundFields::TXN_ID] ?? null,
+                VerifyRefundFields::PRODUCT              => $refundDetails[VerifyRefundFields::PRODUCT] ?? null,
+                VerifyRefundFields::REFUND_INITIATE_DATE =>
+                    $refundDetails[VerifyRefundFields::REFUND_INITIATE_DATE] ?? null,
+                VerifyRefundFields::REFUNDPROCESSDATE    =>
+                    $refundDetails[VerifyRefundFields::REFUNDPROCESSDATE] ?? null,
+                VerifyRefundFields::REMARKS              => $refundDetails[VerifyRefundFields::REMARKS] ?? null,
+                VerifyRefundFields::MEREFUNDREF          => $refundDetails[VerifyRefundFields::MEREFUNDREF] ?? null,
+            ];
+        }
+        return [];
     }
 }

@@ -140,6 +140,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB
         ];
 
         return in_array($gatewayName, $immediateVerificationGateways);
@@ -149,7 +150,7 @@ class Gateway extends Base\Gateway
     {
         switch ($gateway)
         {
-            case 'upi_airtel':
+            case Payment\Gateway::UPI_AIRTEL:
                 return json_decode($input[0], true);
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
@@ -229,6 +230,28 @@ class Gateway extends Base\Gateway
         $traceRes = $this->getRedactedData($response);
 
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE);
+
+        if ($response['success'] === true)
+        {
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            if ($gatewayEntity !== null)
+            {
+                $gatewayEntity->setReceived(true);
+
+                $this->repo->saveOrFail($gatewayEntity);
+            }
+            else
+            {
+                $attributes = $this->getMappedAttributes($response);
+
+                $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::REFUND);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function verify(array $input)
@@ -313,11 +336,6 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        if ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
-        {
-            $content = $this->updateBankPaymentIdFromResponse($content, $verify->payment);
-        }
-
         $this->updateGatewayPaymentEntityWithAction($verify->payment, $content, true, Action::AUTHORIZE);
 
         return $verify->status;
@@ -338,8 +356,9 @@ class Gateway extends Base\Gateway
         {
             $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
         }
-
         $content['entities'] = $input;
+
+        $this->checkTpvAndModifyOrder($content, $input);
 
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
@@ -373,6 +392,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => Action::PAY_VERIFY,
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
+            ],
+            Payment\Gateway::NETBANKING_CUB => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_VERIFY,
             ],
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT => null,
@@ -441,6 +465,12 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
             ],
+
+            Payment\Gateway::NETBANKING_CUB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
         ];
 
         return $previousActionForData[$gateway][$this->action];
@@ -478,6 +508,8 @@ class Gateway extends Base\Gateway
         unset($data['otp']);
 
         unset($data['data']['_raw']);
+
+        unset($data['_raw']);
 
         return $data;
     }
@@ -545,11 +577,17 @@ class Gateway extends Base\Gateway
             $attributes = $this->getMappedAttributes($attributes);
         }
 
+        $raw = $gatewayPayment->getRaw();
+
+        $rawArray = json_decode($raw, true);
+
         $action = $action ?: $this->action;
 
         $redactedRaw = $this->getRedactedData($attributes['raw']);
 
-        $attributes['raw'] = json_encode($redactedRaw);
+        $finalRaw = array_merge($rawArray, $redactedRaw);
+
+        $attributes['raw'] = json_encode($finalRaw);
 
         $gatewayPayment->setAction($action);
 
@@ -558,28 +596,6 @@ class Gateway extends Base\Gateway
         $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
-    }
-
-    protected function updateBankPaymentIdFromResponse($content, $gatewayPayment)
-    {
-        // temporary change - will go after conditional operation implementation on mozart
-        $rawResponse = $content['data']['_raw']['BODY'];
-
-        $gatewayPaymentRaw = json_decode($gatewayPayment['raw'], true);
-
-        if ($rawResponse === 'Transaction Completed Successfully')
-        {
-            $content['data']['bank_payment_id'] = $gatewayPaymentRaw['bank_payment_id'];
-        }
-
-        if (strpos($rawResponse, 'Transaction Completed Successfully. Bank Reference Number is') !== false)
-        {
-            $splitRawResponse = explode(' ', $rawResponse);
-
-            $content['data']['bank_payment_id'] = $splitRawResponse[count($splitRawResponse) - 1];
-        }
-
-        return $content;
     }
 
     protected function getPaymentToVerify(Verify $verify)
@@ -663,6 +679,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB,
         ];
 
         return in_array($gateway, $validationGateways, true);
@@ -682,6 +699,7 @@ class Gateway extends Base\Gateway
         $formattedAmountGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::UPI_AIRTEL,
         ];
 
@@ -709,5 +727,21 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    protected function checkTpvAndModifyOrder(& $content, $input)
+    {
+        if (($this->action === Action::PAY_INIT) and ($input['merchant']->isTPVRequired() === false))
+        {
+            if (isset($content['entities']['order']['account_number']) === true)
+            {
+                $content['entities']['order']['account_number'] = null;
+            }
+
+            if (isset($content['entities']['order']['bank_account']['account_number']) === true)
+            {
+                $content['entities']['order']['bank_account']['account_number'] = null;
+            }
+        }
     }
 }

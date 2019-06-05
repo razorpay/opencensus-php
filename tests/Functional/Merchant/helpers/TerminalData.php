@@ -1882,6 +1882,7 @@ return [
                 'gateway'                   => 'netbanking_sib',
                 'gateway_merchant_id'       => 'merchant_id',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'gateway_access_code'
             ],
             'method' => 'POST'
         ],

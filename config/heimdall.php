@@ -572,6 +572,9 @@ return [
             Permission::ADMIN_FILE_UPLOAD            => [
                 'description' => 'Upload a bank file',
             ],
+            Permission::EDIT_THROTTLE_SETTINGS       => [
+                'description'  => 'Edit throttle settings',
+            ],
         ],
 
         // Permissions
@@ -728,7 +731,15 @@ return [
                 'description' => 'Modify subscriptions form admin dashboard',
                 'assignable'  => true
             ]
-        ]
+        ],
+
+        // RazorpayX
+        PermissionCategory::RAZORPAYX_BANKING => [
+            Permission::BANKING_UPDATE_ACCOUNT => [
+                'description' => 'Updating banking account details of the merchant',
+                'assignable'  => true,
+            ],
+        ],
     ],
 
     'workflows' => [

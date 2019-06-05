@@ -52,7 +52,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(65, $count);
+        $this->assertEquals(83, $count);
 
         $this->assertArrayNotHasKey('recurring', $content);
     }
@@ -78,7 +78,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(65, $count);
+        $this->assertEquals(83, $count);
     }
 
     public function testBulkMethodUpdate()

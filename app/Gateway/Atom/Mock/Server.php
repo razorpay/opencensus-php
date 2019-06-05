@@ -276,6 +276,15 @@ class Server extends Base\Mock\Server
         $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
 
+        if ($xml === 'status-code = 421')
+        {
+            $response = \Response::make($xml);
+
+            $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+            $response->headers->set('Cache-Control', 'no-cache');
+            $response->setStatusCode(421);
+        }
+
         return $response;
     }
 
@@ -316,6 +325,11 @@ class Server extends Base\Mock\Server
             </REFUNDSTATUS>';
 
         $this->content($xml, 'verify_refund');
+
+        if ($xml === 'status-code = 421')
+        {
+            return $xml;
+        }
 
         $crypto = $this->getEncryptor();
 

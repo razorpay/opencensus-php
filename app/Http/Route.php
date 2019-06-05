@@ -236,6 +236,7 @@ final class Route
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
+        'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
         'merchant_delete_app_access_mapping'       => ['delete',   'merchants/{id}/applications/{appId}',            'MerchantController@deleteMapOAuthApplication'                      ],
         'merchant_tags_bulk'                       => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
@@ -253,6 +254,7 @@ final class Route
         'credits_fetch_multiple'                   => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'merchant_features_fetch'                  => ['get',      'merchants/me/features',                          'MerchantController@getMerchantFeatures'                            ],
         'merchant_features_update'                 => ['post',     'merchants/me/features',                          'MerchantController@updateMerchantFeatures'                         ],
+        'merchant_partner_configs_fetch'           => ['get',      'merchants/me/partner/configs',                   'PartnerConfigController@fetchConfigByPartner'                      ],
         'merchants_update_bulk'                    => ['put',      'merchants/bulk',                                 'MerchantController@updateMerchantsBulk'                            ],
         'merchants_update_channel'                 => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'            => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
@@ -511,6 +513,7 @@ final class Route
         'customer_get_wallet_balance'              => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
         'customer_get_wallet_statement'            => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
+        'bulk_invoice_create'                      => ['post',     'invoices/bulk',                                  'InvoiceController@createInvoiceBulk'                               ],
         'invoice_fetch'                            => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
         'invoice_get_count'                        => ['get',      'invoices-count',                                 'InvoiceController@getInvoicesCount'                                ],
         'invoice_fetch_multiple'                   => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
@@ -1060,6 +1063,7 @@ final class Route
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
+        'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@createPublic'                                ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
 
@@ -1075,6 +1079,35 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+
+        // Governor Proxy APIs - Namespace
+        'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                            'GovernorController@createNamespace'                        ],
+
+        // Governor Proxy APIs - Domain Model
+        'governor_domain_model_list'              => ['get',      '{source}/rule_engine/data_model/{namespace}',               'GovernorController@getDomainModels'                        ],
+        'governor_create_domain_model'            => ['post',     '{source}/rule_engine/data_model/{namespace}',               'GovernorController@createDomainModel'                      ],
+        'governor_update_namespace'               => ['put',      '{source}/rule_engine/data_model/{namespace}',               'GovernorController@updateDomainModel'                      ],
+
+        // Governor Proxy APIs - Rule
+        'governor_create_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRule'                             ],
+        'governor_create_rule_bulk'               => ['patch',    '{source}/rule_engine/rule/{namespace}',                     'GovernorController@createRules'                            ],
+        'governor_update_rule'                    => ['post',     '{source}/rule_engine/rule/{namespace}',                     'GovernorController@updateRule'                             ],
+        'governor_rule_list'                      => ['get',      '{source}/rule_engine/rule/{namespace}',                     'GovernorController@getRules'                               ],
+        'governor_get_rule'                       => ['get',      '{source}/rule_engine/rule/{namespace}/{rulename}',          'GovernorController@getRule'                                ],
+
+        // Governor Proxy APIs - Rule Chain
+        'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@createRuleChain'                        ],
+        'governor_update_rule_chain'              => ['put',      '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@updateRuleChain'                        ],
+        'governor_rule_chain_list'                => ['get',      '{source}/rule_engine/rule_chain/{namespace}',               'GovernorController@getRuleChains'                          ],
+
+        // Governor Proxy APIs - Execute Rule Chain
+        'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
+
+        'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
+
+        'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
+        'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
     ];
 
     public static $public = [
@@ -1145,6 +1178,7 @@ final class Route
         'payment_redirect_3ds',
         'currency_fetch_all',
         'payment_validate_account',
+        'fund_account_create_public',
     ];
 
     public static $device = [
@@ -1373,6 +1407,7 @@ final class Route
         'payment_link_expire_cron',
         'merchant_activation_migrate',
         'merchant_admin_lead_put',
+        'merchant_get_app_access_mapping',
         'merchant_create_app_access_mapping',
         'merchant_create_invoice_entities',
         'merchant_invoice_correction',
@@ -1395,6 +1430,7 @@ final class Route
         'org_get_by_hostname',
         'payment_auth_notify',
         'payment_auto_capture',
+        'payment_capture_gateway_multiple',
         'payment_capture_reminder',
         'payment_refund_authorized',
         'payment_timeout',
@@ -1678,6 +1714,9 @@ final class Route
         'currency_fetch_all_proxy',
         'commissions_analytics',
         'invoice_update_billing_period',
+        'bulk_invoice_create',
+        'banking_account_create',
+        'merchant_partner_configs_fetch',
     ];
 
     // These will run on internal auth with the assurance
@@ -1904,7 +1943,6 @@ final class Route
         'payment_authorize_time_out',
         'payment_auto_capture_email',
         'payment_bulk_capture',
-        'payment_capture_gateway_multiple',
         'payment_capture_gateway_manual',
         'payment_capture_verify',
         'payment_dispute_create',
@@ -2040,7 +2078,26 @@ final class Route
         'subscription_skip_cycle',
 
         'merchant_partners_fetch',
+
+        'governor_create_namespace',
+        'governor_domain_model_list',
+        'governor_create_domain_model',
+        'governor_update_namespace',
+        'governor_create_rule',
+        'governor_create_rule_bulk',
+        'governor_update_rule',
+        'governor_rule_list',
+        'governor_get_rule',
+        'governor_create_rule_chain',
+        'governor_update_rule_chain',
+        'governor_rule_chain_list',
+        'governor_rule_chain_execute',
         'payment_on_hold_bulk_update',
+        'banking_account_update',
+
+        // throttle settings routes
+        'fetch_throttle_settings',
+        'edit_throttle_settings',
     ];
 
     public static $routePermission = [
@@ -2300,7 +2357,6 @@ final class Route
         'payment_authorize_time_out'               => '*',
         'payment_auto_capture_email'               => '*',
         'payment_bulk_capture'                     => '*',
-        'payment_capture_gateway_multiple'         => '*',
         'payment_capture_gateway_manual'           => '*',
         'payment_capture_verify'                   => '*',
         'payment_fix_authorize_at'                 => '*',
@@ -2441,9 +2497,28 @@ final class Route
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
 
         'merchant_partners_fetch'                  => '*',
+
+        'governor_create_namespace'                => Permission::CREATE_GATEWAY_RULE,
+        'governor_domain_model_list'               => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_domain_model'             => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_namespace'                => Permission::EDIT_GATEWAY_RULE,
+        'governor_create_rule'                     => Permission::CREATE_GATEWAY_RULE,
+        'governor_create_rule_bulk'                => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule'                     => Permission::EDIT_GATEWAY_RULE,
+        'governor_rule_list'                       => Permission::VIEW_GATEWAY_RULE,
+        'governor_get_rule'                        => Permission::VIEW_GATEWAY_RULE,
+        'governor_create_rule_chain'               => Permission::CREATE_GATEWAY_RULE,
+        'governor_update_rule_chain'               => Permission::EDIT_GATEWAY_RULE,
+        'governor_rule_chain_list'                 => Permission::VIEW_GATEWAY_RULE,
+        'governor_rule_chain_execute'              => Permission::VIEW_GATEWAY_RULE,
         'webhook_fire'                             => Permission::MAKE_API_CALL,
+        'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
+        'banking_account_update'                   => Permission::BANKING_UPDATE_ACCOUNT,
+
+        'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
+        'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
     ];
 
     public static $direct = [
@@ -2772,6 +2847,13 @@ final class Route
         'batch' => [
             'invoice_create',
             'batch_send_mail',
+            'bulk_invoice_create',
+        ],
+
+        'stork' => [
+            // Storks needs connected applications against a merchant to fan
+            // out the same event to former entities as well.
+            'merchant_get_app_access_mapping',
         ],
     ];
 

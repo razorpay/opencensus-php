@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->createRequest($content);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
 
         return $request;
     }
@@ -106,6 +106,8 @@ class Gateway extends Base\Gateway
 
         $amount = $this->formatAmount($input['payment'][Payment\Entity::AMOUNT] / 100);
 
+        $fee = $this->formatAmount($input['payment_fee'] / 100);
+
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
@@ -119,7 +121,7 @@ class Gateway extends Base\Gateway
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::DATE                          => $date,
             RequestFields::FLDREF1                       => $merchantName,
-            RequestFields::FLDREF2                       => $input['payment_fee']
+            RequestFields::FLDREF2                       => $fee,
         ];
 
         return $data;
@@ -410,5 +412,21 @@ class Gateway extends Base\Gateway
     public function formatAmount($amount)
     {
         return number_format($amount, 2, '.', '');
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+        array $content = [])
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'data'       => $content
+            ]);
     }
 }

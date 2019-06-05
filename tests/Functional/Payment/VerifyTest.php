@@ -1113,6 +1113,8 @@ class VerifyTest extends TestCase
 
     public function testCaptureVerifyHoldPayment()
     {
+        $this->markTestSkipped("Feature not enabled atm.");
+
         $this->setMockGatewayTrue();
 
         $this->fixtures->merchant->addFeatures(['payment_onhold']);

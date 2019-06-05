@@ -7,26 +7,9 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    const REFUNDS = 'refunds';
-
-    const PAYMENT_COLUMN_HEADERS = [
-        'PG Transaction ID',
-        'Flexpay Transaction ID',
-        'Transaction Amount',
-        'Transaction Date',
-    ];
-
-    const REFUND_COLUMN_HEADERS = [
-        'PG Refund ID',
-        'Flexpay Transaction ID',
-        'Transaction Amount',
-        'Refund Amount',
-        'Refund Date',
-    ];
-
     protected function getTypeName($fileName)
     {
-        if (strpos($fileName, self::REFUNDS) !== false)
+        if (strpos($fileName, self::REFUND) !== false)
         {
             $typeName = self::REFUND;
         }
@@ -38,27 +21,8 @@ class Reconciliate extends Base\Reconciliate
         return $typeName;
     }
 
-    public function getNumLinesToSkip(array $fileDetails)
+    protected function getFileName(array $extraDetails): string
     {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 1,
-            FileProcessor::LINES_FROM_BOTTOM => 0
-        ];
-    }
-
-    public function getColumnHeadersForType($type)
-    {
-        $headers = [];
-
-        if ($type === self::PAYMENT)
-        {
-            $headers = self::PAYMENT_COLUMN_HEADERS;
-        }
-        else if ($type === self::REFUND)
-        {
-            $headers = self::REFUND_COLUMN_HEADERS;
-        }
-
-        return $headers;
+        return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
     }
 }

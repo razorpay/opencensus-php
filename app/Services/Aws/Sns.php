@@ -5,6 +5,7 @@ namespace RZP\Services\Aws;
 use Aws;
 
 use RZP\Services\Aws\Credentials;
+use RZP\Trace\TraceCode;
 
 class Sns
 {

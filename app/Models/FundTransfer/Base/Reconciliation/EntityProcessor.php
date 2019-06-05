@@ -208,12 +208,21 @@ abstract class EntityProcessor extends Base\Core
 
         $failureStatuses = $statusClass::getFailureStatus();
 
+        $bankStatusFailedCode = $bankStatusCode;
+
+        //Converting status code to integer in case if it is numeric
+        //Since array keys of success and failure statuses get set as int if they are numeric
+        if (is_numeric($bankStatusFailedCode) === true)
+        {
+            $bankStatusFailedCode = (int)$bankStatusFailedCode;
+        }
+
         if ((in_array($bankStatusCode, $successStatuses, true) === true) and
             (empty($utr) === false))
         {
             $status = Attempt\Status::PROCESSED;
         }
-        else if (in_array($bankStatusCode, $failureStatuses, true) === true)
+        else if (in_array($bankStatusFailedCode, $failureStatuses, true) === true)
         {
             $status = Attempt\Status::FAILED;
 

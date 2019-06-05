@@ -885,8 +885,6 @@ class AxisGatewayTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->scroogeRefund($refund);
-
         // Assert for fta created for given refund
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -910,8 +908,6 @@ class AxisGatewayTest extends TestCase
         $this->fixtures->iin->edit($card['iin'], ['type' => 'debit']);
 
         $refund = $this->refundPayment($payment['id']);
-
-        $this->scroogeRefund($refund);
 
         // Assert for fta not created for given refund
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
