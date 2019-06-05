@@ -1103,7 +1103,7 @@ final class Route
         // Governor Proxy APIs - Execute Rule Chain
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
-        'banking_accounts_for_merchant'           => ['get',      'banking_accounts/merchant',                                 'BankingAccountController@fetchBankingDetailsForMerchant'   ],
+        'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
     ];
 
@@ -1714,7 +1714,7 @@ final class Route
         'bulk_invoice_create',
         'banking_account_create',
         'merchant_partner_configs_fetch',
-        'banking_accounts_for_merchant',
+        'banking_accounts_list',
     ];
 
     // These will run on internal auth with the assurance
