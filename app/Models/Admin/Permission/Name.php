@@ -233,6 +233,9 @@ class Name
     const BATCH_API_CALL                      = 'batch_api_call';
     const EDIT_SCROOGE_REDIS_CONFIG           = 'edit_scrooge_redis_config';
 
+    // RazorpayX/Business banking permissions
+    const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE              => self::EDIT_MERCHANT_UNARCHIVE,

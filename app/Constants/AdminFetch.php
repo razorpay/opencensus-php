@@ -1579,7 +1579,7 @@ class AdminFetch
                 'fund_account_id' => [],
                 'status'          => [
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMapping),
+                    Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMap),
                 ],
                 'reference_id'    => [],
             ],
