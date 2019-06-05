@@ -11,6 +11,10 @@ class Status
     const CANCELLED         = 'cancelled';
     const UNSERVICEABLE     = 'unserviceable';
 
+    // Statuses to communicate with RBL
+    const SUCCESS           = 'Success';
+    const FAILURE           = 'Failure';
+
     public static function isValidStatus(string $status)
     {
         $key = __CLASS__ . '::' . strtoupper($status);

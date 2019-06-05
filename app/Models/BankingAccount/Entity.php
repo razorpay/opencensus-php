@@ -2,22 +2,36 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                    = 'id';
-    const CHANNEL               = 'channel';
-    const ACCOUNT_NUMBER        = 'account_number';
-    const ACCOUNT_IFSC          = 'account_ifsc';
-    const PINCODE               = 'pincode';
-    const STATUS                = 'status';
-    const BANK_INTERNAL_STATUS  = 'bank_internal_status';
-    const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
-    const BALANCE_ID            = 'balance_id';
-    const BANK_REFERENCE_NUMBER = 'bank_reference_number';
+    const ID                                = 'id';
+    const CHANNEL                           = 'channel';
+    const ACCOUNT_NUMBER                    = 'account_number';
+    const ACCOUNT_IFSC                      = 'account_ifsc';
+    const ACCOUNT_NAME                      = 'account_name';
+    const ACCOUNT_CURRENCY                  = 'account_currency';
+    const ACCOUNT_ACTIVATION_DATE           = 'account_activation_date';
+    const PINCODE                           = 'pincode';
+    const STATUS                            = 'status';
+    const BANK_INTERNAL_STATUS              = 'bank_internal_status';
+    const FTS_FUND_ACCOUNT_ID               = 'fts_fund_account_id';
+    const BALANCE_ID                        = 'balance_id';
+    const BANK_REFERENCE_NUMBER             = 'bank_reference_number';
+    const BANK_INTERNAL_REFERENCE_NUMBER    = 'bank_internal_reference_number';
+    const BENEFICIARY_ADDRESS1              = 'beneficiary_address1';
+    const BENEFICIARY_ADDRESS2              = 'beneficiary_address2';
+    const BENEFICIARY_ADDRESS3              = 'beneficiary_address3';
+    const BENEFICIARY_EMAIL                 = 'beneficiary_email';
+    const BENEFICIARY_MOBILE                = 'beneficiary_mobile';
+    const BENEFICIARY_PIN                   = 'beneficiary_pin';
+    const BENEFICIARY_CITY                  = 'beneficiary_city';
+    const BENEFICIARY_STATE                 = 'beneficiary_state';
+    const BENEFICIARY_COUNTRY               = 'beneficiary_country';
 
     const PINCODE_LENGTH    = '6';
 
@@ -46,6 +60,18 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL,
+        self::BENEFICIARY_ADDRESS1,
+        self::BENEFICIARY_ADDRESS2,
+        self::BENEFICIARY_ADDRESS3,
+        self::BENEFICIARY_CITY,
+        self::BENEFICIARY_STATE,
+        self::BENEFICIARY_COUNTRY,
+        self::ACCOUNT_NAME,
+        self::ACCOUNT_ACTIVATION_DATE,
+        self::ACCOUNT_NAME,
+        self::BANK_INTERNAL_REFERENCE_NUMBER,
     ];
 
     protected $visible = [

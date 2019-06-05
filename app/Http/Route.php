@@ -1116,6 +1116,8 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+        'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'bank_account_info_webhook'               => ['post',     'banking_accounts/webhook/{channel}',                        'BankingAccountController@processBankAccountInformation'    ],
     ];
 
     public static $public = [
@@ -1516,6 +1518,7 @@ final class Route
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
+        'bank_account_info_webhook',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2801,6 +2804,10 @@ final class Route
         'yesbank' => [
             'bank_transfer_process',
             'bank_transfer_notify',
+        ],
+
+        'rbl' => [
+            'bank_account_info_webhook'
         ],
 
         // BharatQR routes are not authenticated

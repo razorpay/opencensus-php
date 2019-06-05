@@ -52,6 +52,22 @@ class BankingAccountTest extends TestCase
         });
     }
 
+    public function testSuccessBankAccountInfoNotification()
+    {
+        $this->testCreateBankingAccount();
+
+        $this->ba->privateAuth('rzp_test', 'rbl_secret');
+
+        $this->startTest();
+    }
+
+    public function testFailedBankAccountInfoNotification()
+    {
+        $this->ba->privateAuth('rzp_test', 'rbl_secret');
+
+        $this->startTest();
+    }
+
     protected function createBankingAccount(array $attributes = [])
     {
         $data = [

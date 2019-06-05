@@ -136,6 +136,10 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
+    'rbl' => [
+        'secret' => env('RBL_SECRET'),
+    ],
+
     'bharatqr' => [
         'secret' => env('BHARAT_QR_SECRET'),
     ],

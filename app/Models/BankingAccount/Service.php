@@ -109,6 +109,37 @@ class Service extends Base\Service
         return $this->merchant->bankingAccounts;
     }
 
+    public function processBankAccountInfoNotification(string $channel, array $input)
+    {
+        $this->trace->info(
+            TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_REQUEST,
+            [
+                'input'         => $input,
+                'gateway'       => $channel,
+            ]);
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+
+            try
+                {
+                    $this->core->processRblBankAccountInfoNotification($input);
+
+                    $response = $this->core->prepareRblNotificationResponse(Status::SUCCESS, $input);
+                }
+                catch (\Exception $e)
+                {
+                    $response = $this->core->prepareRblNotificationResponse(Status::FAILURE, $input);
+                }
+
+                return $response;
+
+            default:
+                $this->throwUnhandledChannelException($channel, $input);
+        }
+    }
+
     /**
      * @param string $channel
      * @param array  $input
