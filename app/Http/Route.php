@@ -1102,7 +1102,8 @@ final class Route
 
         // Governor Proxy APIs - Execute Rule Chain
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
-        'banking_account_create'                   => ['post',     'banking_accounts',                               'BankingAccountController@create'                                   ],
+        'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'banking_serviceable_pincodes'            => ['post',     'banking/serviceability/{channel}/pincodes',                 'BankingAccountController@postServiceablePincodes'          ],
     ];
 
     public static $public = [
@@ -2088,6 +2089,7 @@ final class Route
         'governor_rule_chain_list',
         'governor_rule_chain_execute',
         'payment_on_hold_bulk_update',
+        'banking_serviceable_pincodes',
     ];
 
     public static $routePermission = [
