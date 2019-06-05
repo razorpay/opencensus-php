@@ -38,4 +38,31 @@ class Service extends Base\Service
 
         return $account->toArrayPublic();
     }
+
+    public function addOrRemoveServiceablePincodes(array $input, $channel)
+    {
+        $input[Entity::CHANNEL] = $channel;
+
+        (new Validator)->validateInput('serviceablePincode', $input);
+
+        $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $coreMethod = $coreMethod . 'ForRbl';
+
+                $result = $this->core->$coreMethod($input[Entity::PINCODES]);
+
+                break;
+
+            default:
+                throw new LogicException(
+                    'Banking Account logic undefined for channel: ' . $channel,
+                    null,
+                    $input);
+        }
+
+        return $result;
+    }
 }
