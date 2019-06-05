@@ -39,6 +39,9 @@ class Role
         self::SELLERAPP,
         self::OWNER,
         self::AGENT,
+        self::FINANCE_L1,
+        self::FINANCE_L2,
+        self::FINANCE_L3,
     ];
 
     const WRITER_ROLES = [

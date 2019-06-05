@@ -54,6 +54,11 @@ class Service extends Base\Service
         return $role->toArrayPublic();
     }
 
+    public function getRoleNamesForMerchant()
+    {
+        return $this->repo->role->getMerchantRoleNames();
+    }
+
     public function deleteRole($roleId)
     {
         $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();

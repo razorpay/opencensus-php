@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Role;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 
@@ -81,7 +82,9 @@ class Validator extends Base\Validator
         }
         else
         {
-            $dashboardRoles = User\Role::ALL_ROLES;
+            $dynamicRoles = (new Role\Service())->getRoleNamesForMerchant();
+            $dashboardRoles = array_merge($dynamicRoles,User\Role::ALL_ROLES);
+
         }
 
         if ($merchant->isTagAdded('enable_rbl_role') === true)
