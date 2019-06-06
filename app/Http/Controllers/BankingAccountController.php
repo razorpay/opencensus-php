@@ -17,11 +17,12 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($result);
     }
-    public function processBankAccountInformation(string $gateway)
+
+    public function processBankAccountInformation(string $channel)
     {
         $input = Request::all();
 
-        $response = $this->service()->processBankAccountInfoNotification($gateway, $input);
+        $response = $this->service()->processBankAccountInfoNotification($channel, $input);
 
         return $response;
     }
