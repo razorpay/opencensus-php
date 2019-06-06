@@ -65,7 +65,9 @@ class Core extends Base\Core
         $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
                                                                 $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE]);
 
-        $bankingAccount = $bankingAccount->edit($attributesToSave);
+        $bankingAccount->edit($attributesToSave);
+
+        $bankingAccount->setBankInternalStatus(RblStatus::CLOSED);
 
         $bankingAccount->setStatus(Status::PROCESSED);
 
