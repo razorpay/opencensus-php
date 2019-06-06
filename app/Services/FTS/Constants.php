@@ -60,6 +60,8 @@ final class Constants
 
     const ACCOUNT_TYPE                  = 'account_type';
 
+    const PREFERRED_MODE                = 'preferred_mode';
+
     const STATUS_CREATED                = 'created';
 
     const ACCOUNT_NUMBER                = 'account_number';
