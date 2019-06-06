@@ -716,7 +716,9 @@ app
         return $scope.onShowSignin && $scope.onShowSignin();
       };
 
-      $scope.goToSignupLayout = function(signupData) {
+      $scope.goToSignupLayout = function(data) {
+        var signupData = data || {};
+
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
         $scope.rightLayout = false;
