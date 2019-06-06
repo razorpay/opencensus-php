@@ -119,6 +119,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setBankInternalStatus(string $status)
+    {
+        $this->setAttribute(self::BANK_INTERNAL_STATUSN, $status);
+    }
+
     // -------------------------- Getters ------------------------------------ //
 
     public function getChannel()
