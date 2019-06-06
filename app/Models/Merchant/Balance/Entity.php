@@ -40,6 +40,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::CURRENCY,
+        self::ACCOUNT_TYPE,
+        self::ACCOUNT_PROVIDER,
     ];
 
     protected $defaults = [
@@ -290,9 +292,11 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Applies where clause on MERCHANT_ID and TYPE. For TYPE defaults to PRIMARY.
-     * @param  BuilderEx $query
-     * @param  string    $merchantId
+     * Applies a WHERE clause on merchant_id and type. type defaults to 'primary'
+     *
+     * @param BuilderEx $query
+     * @param string    $merchantId
+     * @param string    $type
      */
     public function scopeMerchantIdAndType(BuilderEx $query, string $merchantId, string $type = Type::PRIMARY)
     {

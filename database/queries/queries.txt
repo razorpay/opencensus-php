@@ -4973,3 +4973,6 @@ ALTER TABLE banking_accounts
     MODIFY COLUMN bank_reference_number VARCHAR(255) DEFAULT NULL,
     ADD INDEX banking_accounts_channel_index (channel),
     ADD INDEX banking_accounts_status_index (status);
+
+ALTER TABLE balance
+    DROP INDEX balance_merchant_id_type_unique;

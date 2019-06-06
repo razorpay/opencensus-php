@@ -625,13 +625,13 @@ class Activate extends Base\Core
             //
             $merchant->setConnection($liveMode);
 
-            // Create Banking Balance.
-            $balance = (new Balance\Core)->createOrFetchBalance($merchant, Product::BANKING, $liveMode);
+            // Create Banking Balance
+            $balance = (new Balance\Core)->createOrFetchSharedBankingBalance($merchant,  $liveMode);
 
-            // Virtual Account.
+            // Virtual Account
             $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
 
-            $bankingAccount = (new BankingAccount\Core)->createBasicBankingAccountFromVA($virtualAccount);
+            $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
 
             $this->trace->info(
                 TraceCode::MERCHANT_BUSINESS_BANKING_ACCOUNT,

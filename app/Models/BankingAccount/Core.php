@@ -17,8 +17,9 @@ class Core extends Base\Core
 {
     const RBL_PINCODES_REDIS_KEY = 'rbl_pincode_set';
 
-    public function createBasicBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
+    public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
     {
+        // Virtual account has to be with receiver_type bank account
         if ($virtualAccount->hasBankAccount() === false)
         {
             throw new LogicException(
@@ -30,6 +31,7 @@ class Core extends Base\Core
         $bankAccount = $virtualAccount->bankAccount;
         $bankCode    = $bankAccount->getBankCode();
 
+        // Only Yesbank bank accounts are allowed as shared banking accounts, for now
         if ($bankCode !== Bank::YESB)
         {
             throw new LogicException(
@@ -38,10 +40,23 @@ class Core extends Base\Core
                 ['bank_code' => $bankCode]);
         }
 
+        $balanceId = $virtualAccount->getBalanceId();
+
+        //
+        // If a banking_account already exists for a balance_id, return that instead
+        // of creating a new one.
+        //
+        $existingBankingAcc = $this->repo->banking_account->getFromBalanceId($balanceId);
+
+        if ($existingBankingAcc !== null)
+        {
+            return $existingBankingAcc;
+        }
+
         $bankingAccountInput = [
             Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
             Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
-            Entity::BALANCE_ID          => $virtualAccount->getBalanceId(),
+            Entity::BALANCE_ID          => $balanceId,
             Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
         ];
 
