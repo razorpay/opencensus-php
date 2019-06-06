@@ -55,7 +55,18 @@ class GenericController extends Controller
     {
         if (in_array($path, self::WHITELISTED_ROUTES_EXTENSION, true) === true)
         {
-            return $this->handleAny($mode, $path);
+            $request = new App\Admin\ApiRequestAny([
+                'mode'      => $mode,
+                'headers'   => [
+                    'X-Chrome-Extension'=> true,
+                ],
+            ]);
+
+            $method = Request::method();
+
+            list($error, $data) = $request->send($path, $method);
+
+            return AppResponse::jsonResponse($error, $data);
         }
 
         return AppResponse::unauthorizedResponse('Unauthorized.', Request::route()->getName(), $path);
