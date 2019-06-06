@@ -14,11 +14,26 @@
     function renderApp() {
         window.RZP.renderApp('ext-root', {});
     }
+
+    function initAnalytics() {
+      var useAnalytics = true;
+
+      if (String.prototype.indexOf && window.rzp_user && window.rzp_user.email && window.rzp_user.email.toLowerCase().indexOf('@razorpay.com') > 0) {
+        useAnalytics = false;
+      }
+
+      if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
+        window.analytics.init(['ga'], {
+          ga: 'UA-53341507-2'
+        });
+      }
+    }
+
   </script>
 </head>
 <body>
   <div id="ext-root"></div>
-  <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+  <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer onload="initAnalytics()"></script>
   <script src="http://127.0.0.1:7999/static/extension/app.js" async defer onload="renderApp()"></script>
 
   <script type="text/javascript">
