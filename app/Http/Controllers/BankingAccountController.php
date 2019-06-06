@@ -9,7 +9,7 @@ class BankingAccountController extends Controller
 {
     use Traits\HasCrudMethods;
 
-    public function postServiceablePincodes(string $channel)
+g    public function postServiceablePincodes(string $channel)
     {
         $input = Request::all();
 
@@ -26,12 +26,12 @@ class BankingAccountController extends Controller
 
         return $response;
     }
-    
-    public function processBankAccountInformation(string $gateway)
+
+    public function processBankAccountInformation(string $channel)
     {
         $input = Request::all();
 
-        $response = $this->service()->processBankAccountInfoNotification($gateway, $input);
+        $response = $this->service()->processBankAccountInfoNotification($channel, $input);
 
         return $response;
     }
