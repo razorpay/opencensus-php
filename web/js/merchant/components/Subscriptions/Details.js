@@ -54,6 +54,7 @@ export default ({
   onManualAttempt,
   onTestChargeAttempt,
   isSideView,
+  creditNotes,
 }) => {
   let showTestChargeBtn =
     !isLoading &&
@@ -92,7 +93,7 @@ export default ({
     'authenticated',
     'active',
     'created',
-  ].indexOf(subscription.status);
+  ].includes(subscription.status);
 
   const style = {
     marginRight: isSideView ? 30 : 0,
@@ -272,7 +273,7 @@ export default ({
               <EntityDetailList
                 mode={mode}
                 title="Invoices detail"
-                goToLink={goToLink}
+                goToLink={goToLink('invoice')}
                 subTitle={
                   subscription.total_count &&
                   `${subscription.paid_count} of ${
@@ -290,6 +291,8 @@ export default ({
                 subscriptionchargeAt={subscription.charge_at}
                 authAttempts={subscription.auth_attempts}
                 subscriptionId={subscription.id}
+                creditNotes={creditNotes}
+                creditNotesGoToLink={goToLink('credit_note')}
               />
 
               <NestedEntityDetailRow label="Notes" value={subscription.notes} />

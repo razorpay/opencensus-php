@@ -16,12 +16,18 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
         />
         <Input.Radio
           label="Apply Changes"
-          name="update_at_cycle_end"
-          options={['Immediately', 'End of Cycle']}
+          name="schedule_change_at"
+          options={CHANGES_OPTIONS}
           className="Input--vTop"
+          defaultValue={this.props.fields.schedule_change_at}
           onChange={this.props.onRadioChange}
         />
       </React.Fragment>
     );
   }
 }
+
+const CHANGES_OPTIONS = [
+  { label: 'Immediately', value: 'now' },
+  { label: 'End of Cycle', value: 'cycle_end' },
+];

@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityRow from 'merchant/components/EntityDetailList/Row';
+import Time from 'rzp/ui/Time';
+import Amount from 'rzp/ui/Amount';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 /*
@@ -11,8 +13,14 @@ import EntityRow from 'merchant/components/EntityDetailList/Row';
 
 export default class EntityDetailList extends Component {
   constructor(props) {
-    super(props);
-    this.state = { curLimit: props.moreAfterlimit };
+    super();
+
+    this.INVOICE_MAP = {};
+    this.CREDIT_NOTE_MAP = {};
+
+    this.state = {
+      curLimit: props.moreAfterlimit,
+    };
   }
 
   countHaltedInvoices(items) {
@@ -97,6 +105,8 @@ export default class EntityDetailList extends Component {
         isChargeAttemptFailed = true;
       }
 
+      this.INVOICE_MAP[item.created_at] = index;
+
       list.push(
         <EntityRow
           key={index}
@@ -120,6 +130,60 @@ export default class EntityDetailList extends Component {
 
     return list;
   }
+
+  getCreditNotesRow = () => {
+    const { creditNotes, goToLink } = this.props;
+
+    return creditNotes.map((creditNote, index) => {
+      this.CREDIT_NOTE_MAP[creditNote.created_at] = index;
+
+      return (
+        <div
+          class="entity-detail-row clickable"
+          onClick={() => goToLink(creditNote.id, index)}
+        >
+          <div class="row-item content">
+            <div class="detail-row">
+              <div class="row-element left">
+                <Time value={creditNote.created_at} format="MMM DD, YYYY" />
+              </div>
+              <span class="row-element right">
+                <Amount
+                  currency={creditNote.currency}
+                  value={creditNote.amount}
+                />
+              </span>
+            </div>
+            <div class="detail-row">
+              <div class="row-element left">
+                Refund due to subscription update.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    });
+  };
+
+  mergeCreditNotesRows = () => {
+    const { items, creditNotes } = this.props;
+
+    const rowList = this.getRowList(),
+      creditNoteList = this.getCreditNotesRow();
+
+    const createdAtList = [...creditNotes, ...items]
+      .map(note => note.created_at)
+      .sort();
+
+    return createdAtList.map(id => {
+      const creditNoteLoc = this.CREDIT_NOTE_MAP[id],
+        invoiceLoc = this.INVOICE_MAP[id];
+
+      if (creditNoteLoc) return creditNoteList[creditNoteLoc];
+
+      return rowList[invoiceLoc];
+    });
+  };
 
   render() {
     let { title, subTitle, error, loading, items } = this.props;
@@ -147,7 +211,7 @@ export default class EntityDetailList extends Component {
       );
     }
 
-    let rowList = (rowList = this.getRowList());
+    let rowList = this.mergeCreditNotesRows();
 
     if (!loading && !items.length) {
       rowList = <h4 class="empty-table-message">{`No '${title}' Found!`}</h4>;

@@ -9,6 +9,7 @@ import {
   fetchSubscription as fetchItem,
   fetchInvoices,
   paymentManualAttempt,
+  cancelUpdateSubscription,
 } from 'merchant/modules/subscriptions';
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
@@ -24,6 +25,7 @@ import CancellationModal from './CancellationModal';
 import TestPaymentModal from './TestPaymentModal';
 import AddOnCreation from 'merchant/containers/AddOns/New';
 import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+import CreditNoteDetails from '../../components/Invoices/CreditNoteDetails';
 
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
@@ -55,6 +57,7 @@ import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
     showNotification,
     openModal,
     closeModal,
+    cancelUpdateSubscription,
   }
 )
 export default class SubscriptionDetailsContainer extends Component {
@@ -226,13 +229,27 @@ export default class SubscriptionDetailsContainer extends Component {
       });
   }
 
-  goToLink = (itemId, index) => {
-    this.setState({ curInvoiceIndex: index });
+  goToLink = type => (itemId, index) => {
+    if (type === 'invoice') {
+      this.setState({ curInvoiceIndex: index });
+      this.props.history.push(
+        `/subscriptions/${this.props.entity.id}/${itemId}`
+      );
+
+      if (this.invoiceView && findDOMNode(this.invoiceView)) {
+        findDOMNode(this.invoiceView).classList.add('toggle-slider');
+      }
+
+      return;
+    }
+
     this.props.history.push(`/subscriptions/${this.props.entity.id}/${itemId}`);
 
-    if (this.invoiceView && findDOMNode(this.invoiceView)) {
-      findDOMNode(this.invoiceView).classList.add('toggle-slider');
+    if (this.creditNoteView && findDOMNode(this.creditNoteView)) {
+      findDOMNode(this.creditNoteView).classList.add('toggle-slider');
     }
+
+    return;
   };
 
   onCancellationModalMount = id => {
@@ -485,6 +502,8 @@ export default class SubscriptionDetailsContainer extends Component {
       invoices,
       activeSecEntityId,
       closeUrl,
+      invoice_id,
+      credit_note_id,
     } = this.props;
     let {
       isLoading,
@@ -496,7 +515,7 @@ export default class SubscriptionDetailsContainer extends Component {
     } = this.state;
 
     let invoicesList = invoices;
-    let invoiceSecView;
+    let invoiceSecView, creditNoteSecView;
 
     // Add 'next_due' invoice in the Invoices list
     if (!invoices.loading && !invoices.error) {
@@ -605,6 +624,10 @@ export default class SubscriptionDetailsContainer extends Component {
       );
     }
 
+    creditNoteSecView = (
+      <CreditNoteDetails ref={comp => (this.creditNoteView = comp)} />
+    );
+
     return (
       <div class="multi-content">
         <SubscriptionDetails
@@ -619,6 +642,37 @@ export default class SubscriptionDetailsContainer extends Component {
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
           onManualAttempt={this.onManualAttempt}
+          cancelUpdateSubscription={this.props.cancelUpdateSubscription}
+          creditNotes={[
+            {
+              id: 'crnt_CdJ6bpQFE0Kgfi',
+              customer_id: 'CSgSa6pi6wvAfa',
+              merchant_id: '10000000000000',
+              name: 'Test credit note',
+              description: null,
+              amount: 5000,
+              amount_available: 5000,
+              amount_refunded: 0,
+              amount_allocated: 0,
+              currency: 'INR',
+              created_at: 1559561988,
+              updated_at: 1559561988,
+            },
+            {
+              id: 'crnt_CdHpBm4OqeFf3u',
+              customer_id: 'CSgSa6pi6wvAfa',
+              merchant_id: '10000000000000',
+              name: 'Test credit note',
+              description: null,
+              amount: 5000,
+              amount_available: 3200,
+              amount_refunded: 1800,
+              amount_allocated: 0,
+              currency: 'INR',
+              created_at: 1559557477,
+              updated_at: 1559562260,
+            },
+          ]}
           onTestChargeAttempt={
             this.props.mode === 'test' &&
             (entity.status === 'created'
@@ -628,7 +682,9 @@ export default class SubscriptionDetailsContainer extends Component {
           isSideView={closeUrl}
         />
 
-        {invoiceSecView}
+        {invoice_id && invoiceSecView}
+
+        {credit_note_id && creditNoteSecView}
       </div>
     );
   }

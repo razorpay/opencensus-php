@@ -130,7 +130,7 @@ export function changeData({
         )}
       </b>
     </li>,
-    !Number(fields.update_at_cycle_end) || internals._startsImmediately ? (
+    fields.schedule_change_at === 'immediately' ? (
       <li>
         The changes will take into effect <b>immediately.</b>
       </li>

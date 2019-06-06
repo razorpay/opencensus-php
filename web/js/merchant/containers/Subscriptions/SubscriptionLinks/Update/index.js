@@ -53,6 +53,7 @@ export default class UpdateSubscription extends Component {
         quantity: null,
         total_count: null,
         type: null,
+        schedule_change_at: null,
       },
       previousSubscription: {},
       internals: {},
@@ -135,6 +136,7 @@ export default class UpdateSubscription extends Component {
 
     return (
       this.isFormChanged() &&
+      fields.schedule_change_at &&
       (!!fields.plan_id &&
         (internals._startsImmediately || !!fields.start_at) &&
         (validateTotalCount ? !validateTotalCount(fields.total_count) : true))
@@ -223,8 +225,7 @@ export default class UpdateSubscription extends Component {
         total_count: fields.total_count,
         quantity: fields.quantity,
         customer_notify: fields.customer_notify,
-        update_at_cycle_end: fields.update_at_cycle_end,
-        description: 'Sample text Description',
+        schedule_change_at: fields.schedule_change_at,
       };
 
     return this.props
