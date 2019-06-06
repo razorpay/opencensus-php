@@ -11,7 +11,7 @@
 <div>
     <p>Congratulations! Your Razorpay account has been activated.</p>
 
-    <p>You can now <b>start accepting online payments using Razorpay</b> using a variety of payment methods in any of the following ways</p>
+    <p>You can now <b>start accepting online payments using Razorpay</b> using a variety of payment methods.</p>
 
 
     <dl>

@@ -11,7 +11,7 @@
 <div>
     <p>Congratulations! Your Razorpay account has been activated.</p>
 
-    <p>You can now <b>start accepting online payments using Razorpay</b> using a variety of payment methods in any of the following ways</p>
+    <p>You can now <b>start accepting online payments using Razorpay</b> using a variety of payment methods</p>
 
     <dl>
         <dt>You can <b>accept payments</b> in <a href = "{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" >your RazorpayX account </a> by two methods -</dt>
