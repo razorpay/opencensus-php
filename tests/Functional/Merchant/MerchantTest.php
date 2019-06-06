@@ -3974,8 +3974,22 @@ class MerchantTest extends TestCase
             'pincode'     => null
         ];
 
+        $balanceId = $bankingAccount->getBalanceId();
+
         $this->assertArraySelectiveEquals($expectedBankingAccount, $bankingAccount->toArray());
-        $this->assertNotNull($bankingAccount->getBalanceId());
+        $this->assertNotNull($balanceId);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $expectedBalance = [
+            'type'             => 'banking',
+            'account_type'     => 'shared',
+            'account_provider' => null,
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBalance, $balance->toArray());
 
         $merchants = DB::connection('test')->table('merchant_users')
                                            ->where('user_id', '=', $user['id'])
