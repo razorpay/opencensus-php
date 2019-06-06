@@ -59,6 +59,15 @@ export default class RefundsList extends Component {
               <Table items={this.data.state_machine_logs} fields={logFields} />
             </ToggleEntityRow>
           )}
+          {this.data &&
+            this.data.public_state_machine_logs && (
+              <ToggleEntityRow label="Public status logs">
+                <Table
+                  items={this.data.public_state_machine_logs}
+                  fields={logFields}
+                />
+              </ToggleEntityRow>
+            )}
         </main>
         <aside class="container">
           {this.data &&
@@ -117,7 +126,7 @@ export default class RefundsList extends Component {
               </option>
             ))}
           </SelectField>
-          <Field name="arn" label="ARN" />
+          <Field name="reference1" label="Reference1" />
           <button>Update</button>
         </Form>
       </ModalContent>
@@ -130,7 +139,7 @@ export default class RefundsList extends Component {
       data: {
         event: data.event,
         gateway_keys: {
-          arn: data.arn,
+          reference1: data.reference1,
         },
       },
     }).then(data => {
@@ -147,6 +156,7 @@ const fields = [
   item => ['Method', item.method],
   item => ['Amount', item.currency + ' ' + getFormattedAmount(item.amount)],
   item => ['Status', item.status],
+  item => ['Public status', item.public_status],
   item => ['Refund Created At', formatDate(item.created_at)],
   item => ['Refund Updated At', formatDate(item.updated_at)],
   item => ['Payment ID', <b>{item.payment_id}</b>],
@@ -157,7 +167,7 @@ const fields = [
   ],
   item => ['Payment Gateway Captured', item.payment_gateway_captured],
   item => ['Reconciled At', formatDate(item.reconciled_at)],
-  item => ['ARN', item.arn],
+  item => ['Reference1', item.reference1],
   item => ['Last Attempted At', formatDate(item.last_attempted_at)],
   item => ['Next Attempt At', formatDate(item.next_attempt_at)],
   item => [

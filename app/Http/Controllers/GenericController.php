@@ -16,6 +16,7 @@ class GenericController extends Controller
         'x-consumer',
         'x-report-type',
         'x-cross-org-id',
+        'x-org-id',
     ];
 
     const WHITELISTED_ROUTES_EXTENSION = [

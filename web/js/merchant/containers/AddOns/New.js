@@ -9,6 +9,7 @@ import { required } from 'rzp/utils/validators';
 import { saveAddOn } from 'merchant/modules/addons';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+import { AmountTooltip } from 'rzp/ui/Amount';
 
 @connect(null, {
   saveAddOn,
@@ -22,12 +23,12 @@ export default class CreateAddOn extends Component {
   state = {};
 
   componentWillMount() {
-    let { addon, subscriptionId } = this.props;
+    let { addon, subscriptionId, currency = 'INR' } = this.props;
 
     let initProps = {
       addon,
       subscription_id: subscriptionId,
-      item: { currency: 'INR' },
+      item: { currency },
       quantity: 1,
     };
 
@@ -52,7 +53,7 @@ export default class CreateAddOn extends Component {
   };
 
   render() {
-    const { handleSubmit, invalid, addon } = this.props;
+    const { handleSubmit, invalid, addon, currency } = this.props;
 
     return (
       <div class="addon-create">
@@ -87,8 +88,14 @@ export default class CreateAddOn extends Component {
 
             <div class="form-group">
               <div style={{ display: 'inline-block', width: '62%' }}>
-                <label class="control-label label-required">
-                  Price per unit (in ₹)
+                <label class="control-label label-required price-per-unit">
+                  Price per unit (in{' '}
+                  <AmountTooltip
+                    currency={currency}
+                    parentQuerySelector=".Modal"
+                  >
+                    {window.currencyList[currency].symbol}
+                  </AmountTooltip>)
                 </label>
                 <Field
                   name="item[amount]"

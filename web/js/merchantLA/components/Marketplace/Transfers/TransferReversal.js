@@ -1,11 +1,22 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
+import Button from 'component/Button';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
 import { reversalId, amount, createdAt } from 'merchantLA/utils/item/pair';
+import { openModal } from 'rzp/modules/modals';
+import RefundToCustomerModal from './RefundToCustomerModal';
+
+import {
+  trackClickReverseDetails,
+  trackClickReversalID,
+  trackClickRefundToCustomer,
+} from './ga';
 
 /*
  * Design:
@@ -38,69 +49,137 @@ const NumReversals = ({ reversals, titleCase = false }) => {
   );
 };
 
-const ReversalsList = ({ reversals }) => {
-  const reversalHeading = {
-    title: 'Reversal Details',
-    subTitle: <NumReversals reversals={reversals} titleCase={true} />,
+class ReversalsList extends React.Component {
+  onToggleClick = _ => {
+    setTimeout(() => {
+      const isOpen = document.querySelector(
+        '.reversals-list.full-width-item.sub-entity-list'
+      );
+      trackClickReverseDetails(
+        `${this.props.reversalStatus} | ${isOpen ? 'Open' : 'Close'}`
+      );
+    });
   };
 
-  return (
-    <ContentToggler>
-      <span>Reversal Details</span>
-      <div className="reversals-list full-width-item sub-entity-list">
-        <DataTable
-          title="Reversals"
-          customClass="reversals-table"
-          progressLoader={true}
-          columns={[reversalId, amount, createdAtWithStyle]}
-          items={reversals.items}
-          loading={reversals.loading}
-          showHeaders={false}
-          noStripe={true}
-          panelHeading={reversalHeading}
-        />
-      </div>
-    </ContentToggler>
-  );
-};
+  onClickReversalId = _ => {
+    trackClickReversalID(this.props.reversalStatus);
+  };
 
-export default ({ transfer, reversals }) => {
-  const reversedAmount = transfer.amount_reversed,
-    reversalStatus =
-      reversedAmount === 0
-        ? null
-        : transfer.amount === reversedAmount ? 'full' : 'partial';
+  render() {
+    const { transfer, reversals } = this.props;
+    const reversalHeading = {
+      title: 'Reversal Details',
+      subTitle: <NumReversals reversals={reversals} titleCase={true} />,
+    };
 
-  if (!reversalStatus) {
+    const transferReversalId = {
+      ...reversalId,
+      value: item => (
+        <Link
+          to={`/transfers/${transfer.id}/${item.id}`}
+          onClick={this.onClickReversalId}
+        >
+          <code>{item.id}</code>
+        </Link>
+      ),
+    };
+
     return (
-      <div>
-        <p>No reversals created</p>
-      </div>
+      <ContentToggler>
+        <span onClick={this.onToggleClick}>Reversal Details</span>
+        <div className="reversals-list full-width-item sub-entity-list">
+          <DataTable
+            title="Reversals"
+            customClass="reversals-table"
+            progressLoader={true}
+            columns={[transferReversalId, amount, createdAtWithStyle]}
+            items={reversals.items}
+            loading={reversals.loading}
+            showHeaders={false}
+            noStripe={true}
+            panelHeading={reversalHeading}
+          />
+        </div>
+      </ContentToggler>
     );
-  } else if (reversalStatus === 'full') {
+  }
+}
+
+@connect(_ => ({}), { openModal })
+export default class TransferReversal extends React.PureComponent {
+  openRefundToCustomerModal = _ => {
+    this.props.openModal({
+      size: 'small',
+      component: <RefundToCustomerModal transfer={this.props.transfer} />,
+    });
+
+    trackClickRefundToCustomer();
+  };
+
+  renderRefundToCustomerButton = () =>
+    this.props.showRefundToCustomer && (
+      <Button
+        onClick={this.openRefundToCustomerModal}
+        class="btn btn-default m-t"
+      >
+        Refund to Customer
+      </Button>
+    );
+
+  render() {
+    const { transfer, reversals } = this.props,
+      reversedAmount = transfer.amount_reversed,
+      reversalStatus =
+        reversedAmount === 0
+          ? null
+          : transfer.amount === reversedAmount ? 'full' : 'partial';
+
+    if (!reversalStatus) {
+      return (
+        <div>
+          <p>No reversals created</p>
+          {this.renderRefundToCustomerButton()}
+        </div>
+      );
+    } else if (reversalStatus === 'full') {
+      return (
+        <div>
+          <Definition>
+            Fully Reversed
+            <div>
+              in <NumReversals reversals={reversals} />
+            </div>
+          </Definition>
+          <ReversalsList
+            reversalStatus={reversalStatus}
+            transfer={transfer}
+            reversals={reversals}
+          />
+        </div>
+      );
+    }
+
     return (
       <div>
-        <p>Fully Reversed</p>
-        <ReversalsList reversals={reversals} />
+        <div className="m-b">
+          <Definition>
+            <span>
+              <Amount value={reversedAmount} currency={transfer.currency} />{' '}
+              Reversed
+            </span>
+            <span>
+              Partially Reversed in <NumReversals reversals={reversals} />
+            </span>
+            {this.renderRefundToCustomerButton()}
+          </Definition>
+        </div>
+        <p />
+        <ReversalsList
+          reversalStatus={reversalStatus}
+          transfer={transfer}
+          reversals={reversals}
+        />
       </div>
     );
   }
-
-  return (
-    <div>
-      <div className="m-b">
-        <Definition>
-          <span>
-            <Amount value={reversedAmount} currency={transfer.currency} />{' '}
-            Reversed
-          </span>
-          <span>
-            Partially Reversed in <NumReversals reversals={reversals} />
-          </span>
-        </Definition>
-      </div>
-      <p />
-      <ReversalsList reversals={reversals} />
-    </div>
-  );
-};
+}

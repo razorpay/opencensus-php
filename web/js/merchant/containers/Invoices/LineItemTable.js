@@ -43,6 +43,7 @@ export default class InvoiceLineItemTable extends Component {
       invoice,
       invoiceTotal,
       applyTaxes,
+      invoiceCurrency,
     } = this.props;
 
     return (
@@ -71,6 +72,7 @@ export default class InvoiceLineItemTable extends Component {
                         gstSlabs={gstSlabs}
                         onRemove={this.onRemove}
                         applyTaxes={applyTaxes}
+                        invoiceCurrency={invoiceCurrency}
                       />
                     ))}
                     <tr class="addline">
@@ -100,15 +102,26 @@ export default class InvoiceLineItemTable extends Component {
                         <tr class="total sub-total">
                           <td />
                           <td class="text-right">Sub Total</td>
-                          <td class="text-right">₹{invoiceTotal.subtotal}</td>
-                        </tr>
-                        <tr class="total sub-total">
-                          <td />
-                          <td class="text-right">Total Tax</td>
-                          <td class="text-right" width="30%">
-                            ₹{invoiceTotal.tax}
+                          <td class="text-right">
+                            {' '}
+                            <Amount
+                              value={invoiceTotal.subtotal * 100}
+                              currency={invoice.currency}
+                            />
                           </td>
                         </tr>
+                        {invoiceCurrency === 'INR' && (
+                          <tr class="total sub-total">
+                            <td />
+                            <td class="text-right">Total Tax</td>
+                            <td class="text-right" width="30%">
+                              <Amount
+                                value={invoiceTotal.tax * 100}
+                                currency={invoice.currency}
+                              />
+                            </td>
+                          </tr>
+                        )}
                       </Fragment>
                     )}
                     <tr class="total">
@@ -117,18 +130,26 @@ export default class InvoiceLineItemTable extends Component {
                         <b>Total Amount</b>
                       </td>
                       <td class="text-right" width="30%">
-                        <b>₹{invoiceTotal.total}</b>
+                        <b>
+                          <Amount
+                            value={invoiceTotal.total * 100}
+                            currency={invoiceCurrency}
+                          />
+                        </b>
                       </td>
                     </tr>
-                    <tr class="total amount-words">
-                      <td colSpan="3" class="text-right">
-                        <AmountInWords
-                          amount={invoiceTotal.total}
-                          prefix="(In Words)"
-                          suffix="/-"
-                        />
-                      </td>
-                    </tr>
+                    {!invoice.subscription_id &&
+                      invoiceCurrency === 'INR' && (
+                        <tr class="total amount-words">
+                          <td colSpan="3" class="text-right">
+                            <AmountInWords
+                              amount={invoiceTotal.total}
+                              prefix="(In Words)"
+                              suffix="/-"
+                            />
+                          </td>
+                        </tr>
+                      )}
                     {invoice.amount_paid ? (
                       <tr class="text-success amount-paid">
                         <td />

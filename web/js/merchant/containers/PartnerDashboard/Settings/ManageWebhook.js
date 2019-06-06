@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import { Component } from 'react';
 
 import { fetchAppWebhooks } from 'merchant/modules/applications';
 
@@ -22,7 +22,7 @@ export default class ManageWebhook extends Component {
 
   render() {
     return (
-      <Fragment>
+      <>
         {this.state.loading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -30,7 +30,7 @@ export default class ManageWebhook extends Component {
         ) : (
           <CreateWebhook webhook={this.state.webhook} {...this.props} />
         )}
-      </Fragment>
+      </>
     );
   }
 }

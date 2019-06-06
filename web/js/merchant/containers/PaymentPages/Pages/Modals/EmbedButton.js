@@ -3,7 +3,6 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Button from 'component/Button';
 import Input from 'component/Input';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import ReactDOMServer from 'react-dom/server';
 import { closeModal } from 'rzp/modules/modals';
 import { trackCreateButtonSizeSelection, trackCreateButtonCancel } from '../ga';
 
@@ -105,12 +104,31 @@ export default class extends React.Component {
       </span>
     );
 
-    const liveCode = ReactDOMServer.renderToStaticMarkup(previewBtnCode);
+    /* Embed Button */
+
+    const scriptURL = 'https://cdn.razorpay.com/static/embed_btn/bundle.js';
+    const buttonClass = 'razorpay-embed-btn';
+    const scriptTagID = 'razorpay-embed-btn-js';
+
+    const embedBtnCode = `<div class="${buttonClass}" data-url="${shortUrl}" data-text="${
+      this.state.btnLabel
+    }" data-color="${this.color}" data-size="${BTN_SIZES[
+      btnSize
+    ].toLowerCase()}">
+  <script>
+    (function(){
+      var d=document; var x=!d.getElementById('${scriptTagID}')
+      if(x){ var s=d.createElement('script'); s.defer=!0;s.id='${scriptTagID}';
+      s.src='${scriptURL}';d.body.appendChild(s);} else{var rzp=window['__rzp__'];
+      rzp && rzp.init && rzp.init()}})();
+  </script>
+</div>
+    `;
 
     return (
       <div>
         <ModalHeader
-          title="Create Embed Button"
+          title="Create Payment Button"
           onCloseClick={() => {
             closeModal();
             trackCreateButtonCancel();
@@ -145,7 +163,7 @@ export default class extends React.Component {
                   HTML Code
                   <div class="description">
                     Copy & Paste this HTML in your code
-                    <CustomClipboard value={liveCode}>
+                    <CustomClipboard value={embedBtnCode}>
                       <button
                         class="btn btn-link btn-xs"
                         onClick={() =>
@@ -160,7 +178,7 @@ export default class extends React.Component {
                 </div>
               )}
               class="Input--vTop"
-              value={liveCode}
+              value={embedBtnCode.trim()}
               readOnly
             />
 

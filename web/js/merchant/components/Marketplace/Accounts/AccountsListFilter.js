@@ -5,12 +5,12 @@ export default props => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
-        <label>Account Id:</label>
+        <label>Account Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Account Email:</label>
+        <label>Account Email</label>
         <Field name="email" component="input" class="form-control input-sm" />
       </div>
 

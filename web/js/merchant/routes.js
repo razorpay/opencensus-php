@@ -20,8 +20,10 @@ import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
-import CommissionDetails from 'merchant/containers/PartnerDashboard/Commissions/Entity';
+import TransactionalEarningDetails from 'merchant/containers/PartnerDashboard/Commissions/Transactional/Entity';
+import DailyEarningDetails from 'merchant/containers/PartnerDashboard/Commissions/Daily/Entity';
 import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
+import AccountDetailsNew from 'merchant/containers/Marketplace/Accounts/DetailsNew';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
 
@@ -41,10 +43,6 @@ const entityDetailsMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': {
     component: PaymentsDetails,
     additionalCondition: user => user.isAllowedEdit('payments'),
-  },
-  '/payments/:id(pay_.+)/:transfer_id(trf_.+)': {
-    component: PaymentsDetails,
-    additionalCondition: user => user.isAllowedView('payments'),
   },
   '/payments/:id(pay_.+)': {
     component: PaymentsDetails,
@@ -82,6 +80,7 @@ const entityDetailsMap = {
   },
 
   '/route/payments/:id': { component: PaymentsDetails },
+  '/route/accounts/:id': { component: AccountDetailsNew },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
@@ -103,12 +102,22 @@ const entityDetailsMap = {
     component: SubscriptionBatchDetails,
   },
 
-  '/route/transfers/:id': { component: TransferDetails },
-  '/route/reversals/:id': { component: ReversalDetails },
+  '/route/transfers/:id(trf_.+)/:reversal_id(rvrsl_.+)': {
+    component: TransferDetails,
+  },
+  '/route/transfers/:id(trf_.+)': { component: TransferDetails },
+  '/route/reversals/:id(rvrsl_.+)': { component: ReversalDetails },
 
-  '/submerchants/:id(acc_.+)/:appId': { component: SubmerchantDetails },
-  '/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
-  '/commissions/:id(comm_.+)': { component: CommissionDetails },
+  '/partners/submerchants/:id(acc_.+)/:appId': {
+    component: SubmerchantDetails,
+  },
+  '/partners/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
+  '/partners/earnings/transactional/:id(comm_.+)': {
+    component: TransactionalEarningDetails,
+  },
+  '/partners/earnings/daily/:timestamp': {
+    component: DailyEarningDetails,
+  },
   '/disputes/:id(disp_.+)': {
     component: DisputeDetails,
     additionalCondition: user => user.isAllowedView('payments'),

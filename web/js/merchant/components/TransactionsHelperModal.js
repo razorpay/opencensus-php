@@ -36,7 +36,7 @@ export default class InstantActivationSuccess extends Component {
           </modal-header>
           <modal-body>
             <Group>
-              {!isKLA && (
+              {isKLA && (
                 <Fragment>
                   <GroupItem>
                     <p>
@@ -57,7 +57,7 @@ export default class InstantActivationSuccess extends Component {
                       <a
                         className="Button--secondary Button active"
                         target="_blank"
-                        href="https://docs.razorpay.com/"
+                        href="https://razorpay.com/docs"
                         onClick={() => {
                           track.trackIntegration();
                           onClose();

@@ -21,10 +21,6 @@
     ~window.parent.location.href.indexOf("{{ config('app.banking_service_url') }}")
   ) {
 
-    document.write(
-      "<link rel='stylesheet' href='{{ config('app.banking_service_url') }}/dist/pgClient.css' type='text/css'/>"
-    );
-
     document.write("<script src='{{ config('app.banking_service_url') }}/dist/pgClient.js'>\<\/script>");
 
     window.RZP.appHost = "{{ config('app.banking_service_url') }}";
@@ -66,24 +62,6 @@
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
-  @if(!$isOrgHDFC)
-      <script>
-        function addHelpNinja() {
-          var helpNinjaScript = document.createElement('script');
-          helpNinjaScript.setAttribute('src','https://static.helpninja.com/helpninja.js');
-          helpNinjaScript.setAttribute('id', 'oc_script');
-          helpNinjaScript.setAttribute('convid', '-Kvx6dgy972KCFPlQR0s');
-          helpNinjaScript.async = true;
-
-          document.head.appendChild(helpNinjaScript);
-        }
-
-        var screenWidth = window.innerWidth;
-        if (screenWidth > 780) {
-            addHelpNinja();
-        }
-      </script>
-  @endif
 @endif
 
 

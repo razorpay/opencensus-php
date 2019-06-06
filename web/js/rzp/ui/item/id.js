@@ -9,10 +9,10 @@ const baseUrl = {
   sub: '/subscriptions/',
   trf: '/route/transfers/',
   disp: '/disputes/',
-  acc: '/submerchants/',
+  acc: '/partners/submerchants/',
   token: '/tokens/',
-  comm: '/commissions/',
-  // rvrsl: '/route/reversals/',
+  comm: '/partners/earnings/transactional/',
+  rvrsl: '/route/reversals/',
 };
 
 const sources = {
@@ -26,6 +26,7 @@ const batchBaseUrls = {
   payment_link: 'paymentlinks',
   auth_link: 'subscriptions',
   recurring_charge: 'subscriptions',
+  linked_account_reversal: 'reversals',
 };
 
 export const idItem = id => <code>{id}</code>;

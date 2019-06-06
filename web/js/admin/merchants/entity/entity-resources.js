@@ -8,7 +8,6 @@ import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Table from 'ui/Table';
-import AsyncButton from 'ui/AsyncButton';
 import ShowWhen from 'admin/components/ShowWhen';
 import CreditsDetails from './entityDetails/CreditsDetails';
 import FeaturesDetails from './entityDetails/FeaturesDetails';
@@ -62,11 +61,43 @@ function _getAdminsFields(adminsMap) {
 
 function _getSubmerchantFields() {
   return [
-    ['Merchant Id', item => item.id],
+    [
+      'Merchant Id',
+      item => {
+        const itemId = item.id.replace('acc_', '');
+        return (
+          <a href={`/admin/merchants/${itemId}`} class="link">
+            {itemId}
+          </a>
+        );
+      },
+    ],
     [
       'Merchant Name',
       item =>
         item.name || <em class="info-block">To view name please refresh</em>,
+    ],
+  ];
+}
+
+function _getPartnerFields() {
+  return [
+    [
+      'Partner Id',
+      item => (
+        <a class="link" target="_blank" href={`/admin/merchants/${item.id}`}>
+          {item.id}
+        </a>
+      ),
+    ],
+    ['Name', item => item.name],
+    [
+      'View Settings',
+      item => (
+        <a href={`/admin/merchants/${item.id}/partner_config`} class="link">
+          Partner Settings
+        </a>
+      ),
     ],
   ];
 }
@@ -313,10 +344,10 @@ export function getDetailsViewMap(model) {
     scheduleTasks,
     hasSettlementSchedule,
     features,
-    bankDetails,
     creditsLogs,
     adminsMap,
     submerchants,
+    partners,
   } = model.merchant;
   return [
     {
@@ -363,6 +394,14 @@ export function getDetailsViewMap(model) {
       children: () => (
         <div>
           <Table items={submerchants} fields={_getSubmerchantFields()} />
+        </div>
+      ),
+    },
+    {
+      label: 'List of Affiliated Partners',
+      children: () => (
+        <div>
+          <Table items={partners} fields={_getPartnerFields()} />
         </div>
       ),
     },
@@ -577,6 +616,13 @@ export function getDetailsViewMap(model) {
       label: 'Activation Flow',
       value: details.merchant_details
         ? () => statusPill(details.merchant_details.activation_flow)
+        : '--',
+    },
+    {
+      label: 'International Activation Flow',
+      value: details.merchant_details
+        ? () =>
+            statusPill(details.merchant_details.international_activation_flow)
         : '--',
     },
     {

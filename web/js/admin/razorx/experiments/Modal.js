@@ -35,11 +35,13 @@ export default class extends React.Component {
     let selectedFeature = null;
     let state = {};
 
-    if (isEdit) {
+    if (this.props.feature) {
       selectedFeature = { ...this.props.feature };
       selectedFeature.id = String(selectedFeature.id);
-
       state.selectedFeature = selectedFeature;
+    }
+
+    if (isEdit) {
       state.featuresList = [selectedFeature];
       state.segments = this.props.data.segments;
     }

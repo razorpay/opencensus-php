@@ -87,6 +87,14 @@ export default function OrgForm({
             required
             defaultValue={org.signature_email}
           />
+          {org.id && (
+            <Field
+              label="Default Pricing"
+              name="default_pricing_plan_id"
+              defaultValue={org.default_pricing_plan_id}
+              placeholder="Default Pricing Plan Id"
+            />
+          )}
           <CheckField
             label="Allow Sign Up"
             defaultChecked={org.allow_sign_up | 0}

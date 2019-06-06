@@ -434,9 +434,7 @@ class Service extends Base\Service
                     $data['experiments']['is_banner'] = $merchantService->getTreatment('is_banner');
                     $data['experiments']['capital_announcement'] = $merchantService->getTreatment('capital_announcement');
                     $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
-                    $data['experiments']['subscriptions_live'] = $merchantService->getTreatment('subscriptions_live');
-                    $data['experiments']['subscriptions_approved_notlive'] = $merchantService->getTreatment('subscriptions_approved_notlive');
-                    $data['experiments']['non_subscriptions'] = $merchantService->getTreatment('non_subscriptions');
+                    $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
 
                     $data['current'] = $currentMerchantId;
 
@@ -458,6 +456,31 @@ class Service extends Base\Service
                         list($error, $x) = $request->send("merchants/product-switch", "POST");
 
                         $data = $this->updateUserDetails($data, $user);
+                    }
+
+                    // if the merchant is a partner
+                    if (empty($data['merchants'][$merchant['id']]['partner_type']) === false)
+                    {
+                        $data['merchants'][$merchant['id']]['partner'] = [];
+
+                        $configs = $merchantService->fetchPartnerConfigs();
+
+                        if (empty($configs) === false)
+                        {
+                            $data['merchants'][$merchant['id']]['partner']['has_configs'] = true;
+
+                            foreach ($configs as $config)
+                            {
+                                if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
+                                {
+                                    $data['merchants'][$merchant['id']]['partner']['has_commission_configs'] = true;
+                                }
+                                else if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::SUBVENTION)
+                                {
+                                    $data['merchants'][$merchant['id']]['partner']['has_subvention_configs'] = true;
+                                }
+                            }
+                        }
                     }
                 }
 

@@ -163,6 +163,24 @@ export default class User {
     };
   }
 
+  get internationalActivationFlow() {
+    return {
+      international_activation_flow: this.international_activation_flow,
+
+      get isWhitelistFlow() {
+        return this.international_activation_flow === 'whitelist';
+      },
+
+      get isBlacklistFlow() {
+        return this.international_activation_flow === 'blacklist';
+      },
+
+      get isGraylistFlow() {
+        return this.international_activation_flow === 'greylist';
+      },
+    };
+  }
+
   get isAccepted() {
     return this.activation_status === 'activated';
   }
@@ -254,6 +272,14 @@ export default class User {
       : !!this.partner_type;
   }
 
+  get isHavingPartnerConfigs() {
+    const currentMerchant = (this.merchants || {})[this.current];
+    return (
+      !!currentMerchant.partner_type &&
+      (currentMerchant.partner || {}).has_configs
+    );
+  }
+
   getExpStatus(name) {
     return ((this.experiments || {})[name] || {}).result === 'on';
   }
@@ -294,6 +320,16 @@ export default class User {
 
   get isExpireByRequired() {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
+  }
+
+  get isInttCurrenciesEnabled() {
+    return (
+      !!this.international && this.getExpStatus('international_currencies')
+    );
+  }
+
+  get getCurrencyList() {
+    return window.currencyList;
   }
 }
 

@@ -2,6 +2,7 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button from 'component/Button';
 import { classList, getFormattedAmount } from 'common/util';
+import Amount, { AmountTooltip } from 'rzp/ui/Amount';
 import EditLayer from '../EditLayer';
 
 export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
@@ -10,12 +11,7 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
 
   const isAmountEntitySet = paymentPageEntity.hasOwnProperty('amount');
 
-  let amountToDisplay;
   if (isAmountEntitySet) {
-    amountToDisplay = getFormattedAmount(
-      Number(paymentPageEntity.amount || 0) * 100
-    );
-
     if (!paymentPageEntity.amount) {
       cls += ' Field--small';
     }
@@ -34,9 +30,10 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
               if (paymentPageEntity.amount) {
                 <React.Fragment>
                   <span>
-                    <b>₹ {amountToDisplay.split('.')[0]}</b>.{
-                      amountToDisplay.split('.')[1]
-                    }
+                    <Amount
+                      currency={paymentPageEntity.currency}
+                      value={Number(paymentPageEntity.amount || 0) * 100}
+                    />
                   </span>
                   {paymentPageEntity.settings &&
                     paymentPageEntity.settings.allow_multiple_units && (
@@ -70,7 +67,16 @@ export const AmountField = ({ paymentPageEntity = {}, onAddAmount }) => {
                     )}
                 </React.Fragment>;
               } else {
-                <input class="Field-el" placeholder="Enter Amount" disabled />;
+                <React.Fragment>
+                  <span class="Field-addon--before">
+                    <AmountTooltip currency={paymentPageEntity.currency} />
+                  </span>
+                  <input
+                    className="Field-el"
+                    placeholder="Enter Amount"
+                    disabled
+                  />
+                </React.Fragment>;
               }
             } else {
               <Button.Transparent
@@ -169,6 +175,9 @@ export class AmountCreator extends React.PureComponent {
       disableSubmit,
     } = this.state;
 
+    const isCurrencyChangeDisabled = !!this.props.field.id;
+    // console.log('...', this.props.field);
+
     return (
       <Form
         name="form_creator_amount"
@@ -176,16 +185,26 @@ export class AmountCreator extends React.PureComponent {
         onSubmit={onSubmit}
       >
         <div class="section section-1">
-          <Input
-            label="Amount"
-            name="amount"
-            placeholder="Enter Amount"
-            defaultValue={this.defaults.amount}
-            addonBefore="₹"
-            autoFocus
-            pattern="^[0-9]+(.([0-9]){1,2})?$"
-            disabled={hasDynamicAmount}
-          />
+          <Input.Group class="InputGroup--inline" label="Amount">
+            <div class="Input-content">
+              <Input.CurrencySelect
+                name="currency"
+                disabled={isCurrencyChangeDisabled}
+                defaultValue={this.props.field.currency}
+                parentQuerySelector=".Modal-body"
+              />
+
+              <Input
+                name="amount"
+                class="Input--amount"
+                placeholder="0.00"
+                defaultValue={this.defaults.amount}
+                autoFocus
+                pattern="^[0-9]+(.([0-9]){1,2})?$"
+                disabled={hasDynamicAmount}
+              />
+            </div>
+          </Input.Group>
           <Input.Check
             data-name="has_dynamic_amount"
             fieldLabel="Customer decides this while paying"

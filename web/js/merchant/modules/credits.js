@@ -4,8 +4,12 @@ import { merchantFetch } from 'merchant/utils/ajax';
 
 const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS';
 
-const getCreditsData = _ => merchantFetch('credits');
-const fetchBalance = _ => merchantFetch('balance');
+export const getCreditsData = _ => merchantFetch('credits');
+export const fetchBalance = accountId =>
+  merchantFetch({
+    url: 'balance',
+    accountId,
+  });
 
 export const fetchCreditBalance = () => {
   return {

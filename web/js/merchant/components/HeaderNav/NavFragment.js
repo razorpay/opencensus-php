@@ -103,8 +103,13 @@ class NavFragment extends Component {
           <li>
             <a
               target="_blank"
-              href="https://docs.razorpay.com"
-              onClick={() => analytics('Go To - Documentation')}
+              href="https://razorpay.com/docs?utm-source=dashboard-navbar"
+              onClick={() => {
+                window.rzpAnalytics({
+                  eventCategory: 'Dashboard - Header',
+                  eventAction: 'Go To - Documentation',
+                });
+              }}
             >
               <span>Documentation</span>
             </a>

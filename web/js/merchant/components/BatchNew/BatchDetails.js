@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 
 import Banner from 'rzp/ui/Banner';
 import Spinner from 'rzp/ui/Spinner';
+import NoEntityResultsFound from 'common/NoEntityResultsFound';
 
 export default function BatchDetails({ renderDetails, ...props }) {
-  let { batch = {}, isLoading, onDownload } = props;
+  let { batch = {}, isLoading, onDownload, downloadReportText } = props;
   let batchName =
     batch.name && batch.name.length > 24
       ? `${batch.name.substr(0, 24)}...`
@@ -16,7 +17,7 @@ export default function BatchDetails({ renderDetails, ...props }) {
         <div class="page-spinner-container">
           <Spinner />
         </div>
-      ) : (
+      ) : undefined !== batchName ? (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <i class="i i-plan text-primary" />{' '}
@@ -28,13 +29,20 @@ export default function BatchDetails({ renderDetails, ...props }) {
               ctaOnClick={onDownload.bind(this, batch.id)}
             >
               <span>
-                Download the report containing all Payment Links data.
+                {downloadReportText ||
+                  'Download the report containing all Payment Links data.'}
               </span>
             </Banner>
             <div class="panel-body">
               {renderDetails && renderDetails(props)}
             </div>
           </div>
+        </div>
+      ) : (
+        <div class="content-wrapper content-sm txn-details Entity--paymentpage">
+          <NoEntityResultsFound
+            error={<span>No results found for given id</span>}
+          />
         </div>
       )}
     </div>

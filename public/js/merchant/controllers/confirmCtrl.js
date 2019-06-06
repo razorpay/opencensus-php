@@ -59,14 +59,19 @@ app.controller('ConfirmCtrl', [
         if (data.success) {
           $scope.success = true;
 
-          if (isHostedInBB) {
-            return $scope.successCb() && $scope.successCb();
-          }
-
           var dripPayload = {
             email: data.data.email,
             email_verified: true,
           };
+
+          window.trackHubs({
+            name: 'update_property',
+            data: dripPayload,
+          });
+
+          if (isHostedInBB) {
+            return $scope.successCb() && $scope.successCb();
+          }
 
           $timeout(function() {
             try {

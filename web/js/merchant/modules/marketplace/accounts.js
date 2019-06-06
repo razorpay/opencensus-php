@@ -3,8 +3,10 @@ import { set, merge, unshift } from 'rzp/utils/immutable';
 
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
+const ACCOUNT_UPDATE = 'ACCOUNT_UPDATE';
 const UPDATE_EMAIL = 'UPDATE_EMAIL';
 const ACCOUNT_DASHBOARD_ACCESS = 'ACCOUNT_DASHBOARD_ACCESS';
+const ACCOUNT_REFUNDS_ACCESS = 'ACCOUNT_REFUNDS_ACCESS';
 
 export const fetchAccountsApi = (data, params) => {
   return ajax(
@@ -12,6 +14,16 @@ export const fetchAccountsApi = (data, params) => {
       url: '/accounts',
       data,
       params,
+    },
+    {},
+    '/merchant/api'
+  );
+};
+
+export const fetchAccountApi = id => {
+  return ajax(
+    {
+      url: `/beta/accounts/${id}`,
     },
     {},
     '/merchant/api'
@@ -37,15 +49,35 @@ export const saveAccount = data => {
   };
 };
 
+export const updateAccount = data => {
+  return {
+    type: ACCOUNT_UPDATE,
+    payload: data,
+  };
+};
+
 export const toggleDashboardAccess = data => {
   return {
     type: ACCOUNT_DASHBOARD_ACCESS,
     payload: merchantFetch({
-      url: 'la-merchants/dashboard-access',
+      url: 'la-merchants/config',
       method: 'post',
       appendModeInURL: true,
       accountId: data.accountId,
-      data: { dashboard_access: data.dashboard_access },
+      data: { ...data, dashboard_access: data.dashboard_access },
+    }).then(response => response.data),
+  };
+};
+
+export const toggleAllowRefunds = data => {
+  return {
+    type: ACCOUNT_REFUNDS_ACCESS,
+    payload: merchantFetch({
+      url: 'la-merchants/config',
+      method: 'post',
+      appendModeInURL: true,
+      accountId: data.accountId,
+      data: { ...data, allow_reversals: data.allow_reversals },
     }).then(response => response.data),
   };
 };
@@ -103,6 +135,17 @@ export default function(state = initialState, action) {
 
     case `${ACCOUNT_CREATE}::SUCCESS`:
       return set(state, 'accounts', unshift(state.accounts, action.payload));
+
+    case ACCOUNT_UPDATE:
+      return set(
+        state,
+        'accounts',
+        state.accounts.map(acc => {
+          if (acc.id === action.payload.id) return action.payload;
+
+          return acc;
+        })
+      );
 
     default:
       return state;

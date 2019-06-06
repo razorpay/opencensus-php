@@ -7,7 +7,8 @@
     }
     if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
         analytics.init(['ga', 'fb', 'linkedin'], {
-          ga: 'UA-53341507-2'
+          ga: 'UA-53341507-2',
+          fb: '697927486977350'
         });
         // Init old key as well
         ga('create', 'UA-53341507-1', 'auto', 'old');

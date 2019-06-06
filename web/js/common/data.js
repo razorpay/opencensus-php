@@ -81,6 +81,23 @@ export const networks = {
   UNP: 'Union Pay',
 };
 
+export const cardSteps = {
+  authorisation: 'Authorisation',
+  authentication: 'Authentication',
+};
+
+export const authTypes = {
+  _3DS: '3ds',
+  HEADLESS_OTP: 'headless_otp',
+  IVR: 'ivr',
+  OTP: 'otp',
+};
+
+export const authGateway = {
+  mpi_blade: 'Blade',
+  mpi_enstage: 'Endstage',
+};
+
 export const gatewayAcquirers = {
   axis: 'Axis',
   hdfc: 'HDFC',
@@ -97,6 +114,7 @@ export const gateways = {
     amex: 'Amex',
     sharp: 'Sharp',
     hitachi: 'Hitachi',
+    card_fss: 'Card FSS',
   },
 
   netbanking: {
@@ -146,6 +164,7 @@ export const gateways = {
     upi_hulk: 'UPI/HULK',
     upi_mindgate: 'Mindgate/HDFC UPI',
     sharp: 'Sharp',
+    upi_axis: 'UPI/Axis',
   },
 };
 
@@ -267,3 +286,12 @@ export const publicFeature = {
     },
   },
 };
+
+// partner types
+export const partnerTypes = [
+  'fully_managed',
+  'aggregator',
+  'pure_platform',
+  'reseller',
+  'bank',
+];

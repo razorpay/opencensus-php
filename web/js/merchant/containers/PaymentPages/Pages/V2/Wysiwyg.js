@@ -318,6 +318,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     // console.log('Handle Create..', paymentPageEntity);
 
     const {
+      currency,
       amount,
       title,
       description,
@@ -339,6 +340,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
 
     const reqPayload = {
+      currency,
       amount: amount || null,
       title,
       description: description || null,

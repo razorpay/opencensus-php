@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -26,6 +26,7 @@ import OndemandModal from './OndemandModal';
 import Amount from 'rzp/ui/Amount';
 import Button from 'component/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { trackInstantSettlementsBanner } from '../../components/Announcements/ga';
 
 @withRouter
 @connect(
@@ -134,6 +135,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   showRequestEarySettlementForm = e => {
     trackEarlySettlementRequests();
+
     this.props.openModal({
       component: <RequestEarlyAccessForm />,
       size: 'large',
@@ -181,13 +183,13 @@ export default class SettlementsListContainer extends ListContainer {
               <HeaderAction>
                 <React.Fragment>
                   {this.state.showRequestESButton ? (
-                    <a
+                    <Link
                       class="btn btn-link req-es-btn"
-                      href="#requestearlyaccess"
+                      to="/settlements#requestearlyaccess"
                     >
                       Request Early Settlements{' '}
                       <i class="fa fa-circle interpunct" />
-                    </a>
+                    </Link>
                   ) : (
                     ''
                   )}
@@ -211,7 +213,8 @@ export default class SettlementsListContainer extends ListContainer {
                     'current_balance'
                   ) && (
                     <span class="settlement-balance-amount">
-                      Current Balance: <Amount value={balance} />
+                      Current Balance:{' '}
+                      <Amount value={balance} currency={'INR'} />
                     </span>
                   )}
 

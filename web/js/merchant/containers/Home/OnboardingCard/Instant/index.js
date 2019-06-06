@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
+
 import TestModeCard from './TestMode';
 import ActivationStatusCard from './ActivationStatus';
 import LiveModeCard from './LiveMode';
@@ -58,6 +60,10 @@ export default class OnboardingCardInstant extends Component {
     if (this.content) {
       this.setContentWidth(this.content.innerWidth);
     }
+
+    trackhubsContactUpdate({
+      activation_status: this.props.user.activation_status,
+    });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -91,6 +97,7 @@ export default class OnboardingCardInstant extends Component {
         isRejected,
         isAccepted,
         needsClarification,
+        international,
       } = user,
       { showTransactionsHelper, isKLA, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
@@ -109,6 +116,7 @@ export default class OnboardingCardInstant extends Component {
         isActivated,
         isRejected,
         setActiveStep: this.setActiveStep,
+        international,
       };
 
     return (

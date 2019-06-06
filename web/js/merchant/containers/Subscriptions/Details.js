@@ -277,9 +277,14 @@ export default class SubscriptionDetailsContainer extends Component {
 
   secClose = () => {
     let { compactSlider, history, location } = this.props;
-    findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+
+    if (this.invoiceView) {
+      findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+    }
 
     compactSlider();
+
+    // Going back to initial detail view mode. Remove the chunk in url after the last /.
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 
@@ -295,14 +300,14 @@ export default class SubscriptionDetailsContainer extends Component {
     return {
       id: 'inv_upcoming',
       status: 'next_due',
-      currency: 'INR',
+      currency: this.props.plan && this.props.plan.item.currency,
       billing_start: chargeAt,
       amount: planAmount + totalAddOnsAmount,
     };
   }
 
   // Manual Attempt to invoice charge
-  onManualAttempt = (invoiceId, subscriptionId) => {
+  onManualAttempt = (invoiceId, subscriptionId = this.props.id) => {
     this.context.confirm({
       header: 'Are you sure you want to manually charge it?',
       message: null,
@@ -466,6 +471,7 @@ export default class SubscriptionDetailsContainer extends Component {
           subscriptionId={this.props.entity.id}
           onSave={this.handleOnCreateAddOn}
           closeModal={this.props.closeModal}
+          currency={this.props.plan.item.currency}
         />
       ),
     });

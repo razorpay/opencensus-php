@@ -23,19 +23,21 @@ const handleError = e => {
   return downloadReportErrorMsg;
 };
 
-export const createLog = (data, accountId) => {
+export const createLog = (data, accountId, shouldAppendHeader) => {
   return merchantFetch({
     url: 'reporting/logs',
     method: 'post',
     data,
     ...(!!accountId && { accountId }),
+    headers: appendReportTypeHeader(shouldAppendHeader),
   });
 };
 
-export const getLog = (logId, accountId) => {
+export const getLog = (logId, accountId, shouldAppendHeader) => {
   return merchantFetch({
     url: `reporting/logs/${logId}`,
     ...(!!accountId && { accountId }),
+    headers: appendReportTypeHeader(shouldAppendHeader),
   });
 };
 
@@ -46,18 +48,20 @@ export const getFile = (fileId, accountId) => {
   });
 };
 
-const updateLog = (data, accountId) => {
+const updateLog = (data, accountId, shouldAppendHeader) => {
   return merchantFetch({
     url: `reporting/logs/${data.id}`,
     method: 'patch',
     data: { emails: data.emails },
     ...(!!accountId && { accountId }),
+    headers: appendReportTypeHeader(shouldAppendHeader),
   });
 };
 
-export const getConfigs = () => {
+export const getConfigs = shouldFetchPartnerConfigs => {
   return merchantFetch({
     url: 'reporting/configs',
+    headers: appendReportTypeHeader(shouldFetchPartnerConfigs),
   });
 };
 
@@ -75,7 +79,8 @@ export const generateReportV2 = (
   params,
   isMerchantAccount,
   onProgress,
-  onPollStart
+  onPollStart,
+  isPartnerReport
 ) => {
   const startTime = new Date(),
     accountHeaderVal = !isMerchantAccount && params.generated_by;
@@ -83,7 +88,7 @@ export const generateReportV2 = (
   let numCallsMade = 0,
     timeElapsed = 0;
 
-  return createLog(params, accountHeaderVal)
+  return createLog(params, accountHeaderVal, isPartnerReport)
     .then(resp => {
       if (!resp.success || !resp.data || !resp.data.id) {
         onProgress(resp.data);
@@ -95,7 +100,8 @@ export const generateReportV2 = (
       const logId = resp.data.id;
 
       const logPoll = poll({
-        fetchFunc: () => getLog(resp.data.id, accountHeaderVal),
+        fetchFunc: () =>
+          getLog(resp.data.id, accountHeaderVal, isPartnerReport),
         validator: resp => {
           numCallsMade++;
           timeElapsed = new Date() - startTime;
@@ -177,12 +183,13 @@ export const generateReportV2 = (
 export const emailReportV2 = (
   params,
   isMerchantAccount,
-  shouldUpdate = false
+  shouldUpdate = false,
+  isPartnerReport
 ) => {
   const accountHeaderVal = !isMerchantAccount && params.generated_by;
   const reqFunc = shouldUpdate ? updateLog : createLog;
 
-  return reqFunc(params, accountHeaderVal)
+  return reqFunc(params, accountHeaderVal, isPartnerReport)
     .then(resp => {
       if (!resp.success || !resp.data || !resp.data.id) {
         return emailReportErrorMsg;
@@ -278,4 +285,10 @@ export function reportsReducer(state = initialState, action) {
     default:
       return state;
   }
+}
+
+function appendReportTypeHeader(isPartnerReport) {
+  return {
+    ...(isPartnerReport && { 'X-Report-Type': 'partner' }),
+  };
 }

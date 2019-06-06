@@ -13,6 +13,7 @@ export default {
     'support',
     'rbl_supervisor',
     'rbl_agent',
+    'agent',
   ],
   orders: [
     'owner',
@@ -35,6 +36,7 @@ export default {
     'finance',
     'support',
     'rbl_supervisor',
+    'agent',
   ],
   invoices: [
     'owner',
@@ -106,6 +108,7 @@ export default {
     'operations',
     'finance',
     'rbl_supervisor',
+    'agent',
   ],
   api_keys: ['owner', 'admin'],
   profile: [
@@ -137,4 +140,10 @@ export default {
   webhooks: ['owner', 'admin', 'manager'],
   configuration: ['owner', 'admin', 'manager'],
   applications: ['owner'],
+
+  // partner dashboard permissions
+  submerchants: ['owner', 'admin', 'manager'],
+  partner_settings: ['owner', 'admin', 'manager'],
+  earnings: ['owner', 'admin', 'manager'],
+  partner_applications: ['owner', 'manager', 'admin'],
 };

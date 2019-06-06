@@ -7,12 +7,13 @@ import Alert from 'component/Alert';
 import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
+import { classList, addPrefixToObjectKeys } from 'common/util';
 import { activationDuration } from 'common/data';
 import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
+import { trackFb, trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -22,6 +23,7 @@ import mainFormTabsContent, {
 import accountFormTabsContent, {
   accountFormTabs,
   accountFormFieldNamesMeta,
+  BUSINESS_TYPE_OPTIONS,
 } from './AccountActivationFormMap';
 
 import * as trackers from 'merchant/containers/Activation/ga_new';
@@ -185,6 +187,10 @@ export default class ActivationWizard extends React.Component {
 
         a.onChange = (file, progressTracker) => {
           return props.saveFile(a.name, file, progressTracker).then(() => {
+            updateHubSpotContactsProperties({
+              [a.name]: true,
+            });
+
             this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
           });
         };
@@ -197,6 +203,11 @@ export default class ActivationWizard extends React.Component {
 
   componentDidMount() {
     addDropShield('.Activation--wizard');
+
+    if (!this.props.user.isAccepted) {
+      trackFb('KYC_start');
+      updateHubSpotContactsProperties({ started: true });
+    }
   }
 
   componentWillUnmount() {
@@ -481,6 +492,8 @@ export default class ActivationWizard extends React.Component {
       } else {
         cb && cb(true);
 
+        updateHubSpotContactsProperties(reqData);
+
         const latestDirty = { ...this.state.dirty };
         Object.keys(savingDataOfWhichTab).forEach(key => {
           if (
@@ -596,6 +609,17 @@ export default class ActivationWizard extends React.Component {
             type: false,
           });
       } else {
+        trackFb(`KYC_complete_${data.data.activation_flow}`);
+
+        updateHubSpotContactsProperties(
+          {
+            final_submission: true,
+          },
+          {
+            account_status: data.data.activation_status,
+          }
+        );
+
         onAction &&
           onAction.trackSubmit({
             type: true,
@@ -1290,7 +1314,6 @@ class SubmitForm extends React.Component {
     if (!this.state.allowSubmit) {
       return;
     }
-
     return this.props.submitActvationForm();
   };
 
@@ -1382,4 +1405,29 @@ class SubmitForm extends React.Component {
       </div>
     );
   }
+}
+
+function updateHubSpotContactsProperties(data, extra) {
+  const hbsData = addPrefixToObjectKeys('l2_', data);
+
+  const trackData = {
+    ...hbsData,
+    ...extra,
+  };
+
+  if (data.business_type) {
+    trackData.l2_business_type = (
+      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
+    ).label;
+  }
+
+  if (data.promoter_pan) {
+    trackData.l2_promoter_pan = !!trackData.l2_promoter_pan;
+  }
+
+  if (data.gstin) {
+    trackData.l2_gstin = !!trackData.l2_gstin;
+  }
+
+  trackhubsContactUpdate(trackData);
 }

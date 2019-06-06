@@ -1,4 +1,3 @@
-import AsyncButton from 'react-async-button';
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -8,8 +7,7 @@ import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import Amount from 'rzp/ui/Amount';
+import { AmountTooltip } from 'rzp/ui/Amount';
 import {
   isBlank,
   rupeesToPaise,
@@ -24,14 +22,14 @@ import {
 } from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
 
-const isPartialPayment = props => {
+export const isPartialPayment = props => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded,
     amountEntered = rupeesToPaise(props.payable_amount);
 
   return amountEntered < refundableAmount;
 };
 
-const amountValidation = props => {
+export const amountValidation = props => {
   const value = props.payable_amount || '';
 
   if (!value) {
@@ -55,7 +53,7 @@ const amountValidation = props => {
   }
 };
 
-const RefundType = ({ partial, isTitleCase = false }) => {
+export const RefundType = ({ partial, isTitleCase = false }) => {
   let text = partial ? 'partial' : 'full';
 
   if (isTitleCase) {
@@ -138,9 +136,7 @@ export default class RefundModal extends Component {
 
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
     if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
-      var errorMsg =
-        'Reversals cannot be automated when partially refunding a payment that has more than 1 transfer.' +
-        ' Create reversals manually before attempting the refund.';
+      var errorMsg = `Reversals can't be automated when partially refunding a payment with more than 1 transfer to different linked accounts. Create reversals manually before attempting the refund.`;
 
       this.props.showNotification({
         type: 'error',
@@ -236,7 +232,11 @@ export default class RefundModal extends Component {
             <div class="form-group">
               <label class="label-required">Refund Amount</label>
               <div class="input-group">
-                <div class="input-group-addon">{payment.currency}</div>
+                <AmountTooltip
+                  currency={payment.currency}
+                  parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
+                  customClass="input-group-addon"
+                />
                 <Field
                   name="amount"
                   component={InputField}

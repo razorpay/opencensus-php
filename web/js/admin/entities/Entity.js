@@ -249,20 +249,31 @@ const actions = {
       updateEntity={entityComponent::updateEntity}
     />
   ),
-  batch: (entity, entityComponent) =>
-    entity &&
-    entity.status !== 'processed' &&
-    !entity.processing && (
-      <ShowWhen permission="retry_batch">
-        <AsyncButton
-          class="btn"
-          pendingClass="small spinner"
-          onClick={retryBatch.bind(entity, entityComponent::updateEntity)}
-          text="Retry batch"
-          confirm="Confirm retry batch?"
-        />
-      </ShowWhen>
-    ),
+  batch: (entity, entityComponent) => {
+    const normalCase = entity.status !== 'processed' && !entity.processing;
+    const reconInProcessingBatch =
+      entity.type === 'reconciliation' &&
+      entity.status === 'created' &&
+      entity.processing &&
+      entity.updated_at < Math.floor(new Date() / 1000) - 7200; // 7200 seconds = 2 hours
+
+    // Some recon batches are getting stuck in processing = true and status = created
+    // We want to enable retry option for such batches, if updated_at is 2 hour (or more) older
+    return (
+      entity &&
+      (normalCase || reconInProcessingBatch) && (
+        <ShowWhen permission="retry_batch">
+          <AsyncButton
+            class="btn"
+            pendingClass="small spinner"
+            onClick={retryBatch.bind(entity, entityComponent::updateEntity)}
+            text="Retry Batch"
+            confirm="Confirm retry batch?"
+          />
+        </ShowWhen>
+      )
+    );
+  },
   credits: (entity, entityComponent) => (
     <action.CreditActions
       entity={entity}
@@ -284,7 +295,7 @@ function updateEntity(data) {
 }
 
 function deleteEmiPlan() {
-  return adminDelete(`emi/${this.id}`);
+  return adminDelete(`live/emi/${this.id}`);
 }
 
 function downloadFile() {

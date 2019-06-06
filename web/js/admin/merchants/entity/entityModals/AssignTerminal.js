@@ -11,9 +11,6 @@ import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import MultiSelectField from 'ui/MultiSelectField';
 
-// TODO: import currency data in a better way
-import CurrencyData from './currency.json';
-
 const gatewayMapping = {
   hdfc: 'HDFC',
   amex: 'Amex',
@@ -111,7 +108,15 @@ const terminalTypesMapping = [
   { value: 'pin', name: 'PIN' },
   { value: 'bharat_qr', name: 'Bharat QR' },
   { value: 'debit_recurring', name: 'Debit Recurring' },
-  { value: 'direct_settlement', name: 'Direct Settlement' },
+  {
+    value: 'direct_settlement_with_refund',
+    name: 'Direct Settlement With Refund',
+  },
+  {
+    value: 'direct_settlement_without_refund',
+    name: 'Direct Settlement Without Refund',
+  },
+  ,
   { value: 'moto', name: 'Moto' },
 ];
 
@@ -124,7 +129,14 @@ const HDFC_terminalTypesMapping = [
   { value: 'pay', name: 'UPI Pay' },
   { value: 'collect', name: 'UPI Collect' },
   { value: 'bharat_qr', name: 'Bharat QR' },
-  { value: 'direct_settlement', name: 'Direct Settlement' },
+  {
+    value: 'direct_settlement_with_refund',
+    name: 'Direct Settlement With Refund',
+  },
+  {
+    value: 'direct_settlement_without_refund',
+    name: 'Direct Settlement Without Refund',
+  },
 ];
 
 const gatewayMappingOnAddMessages = {
@@ -133,8 +145,8 @@ const gatewayMappingOnAddMessages = {
 
 const gatewayMappingTerminalTypesDefaults = {
   paytm: {
-    value: 'direct_settlement',
-    name: 'Direct Settlement',
+    value: 'direct_settlement_with_refund',
+    name: 'Direct Settlement With Refund',
   },
 };
 
@@ -405,15 +417,7 @@ export default class TerminalForm extends Component {
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField
-            name="bank_transfer"
-            label="Bank Transfer"
-            defaultValue={
-              isEditMode && entity.bank_transfer !== null
-                ? entity.bank_transfer | 0
-                : ''
-            }
-          >
+          <SelectField name="bank_transfer" label="Bank Transfer">
             <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
@@ -435,8 +439,14 @@ export default class TerminalForm extends Component {
 
           <SelectField name="currency" label="Currency" defaultValue="">
             <option value="" />
-            {CurrencyData.data.map(({ code }) => (
-              <option value={code}>{code}</option>
+            {Object.keys(
+              (window.currencyLib && window.currencyLib.displayCurrencies) || [
+                'INR',
+              ]
+            ).map(k => (
+              <option key={k} value={k}>
+                {k}
+              </option>
             ))}
           </SelectField>
 

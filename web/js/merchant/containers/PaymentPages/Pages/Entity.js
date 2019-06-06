@@ -1,4 +1,3 @@
-import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
@@ -11,42 +10,20 @@ import {
   editPaymentPage,
   activatePaymentPage,
   deactivatePaymentPage,
-  sendLink,
 } from './model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import Definition from 'rzp/ui/Definition';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Spinner from 'rzp/ui/Spinner';
-import Time from 'rzp/ui/Time';
-import Amount from 'rzp/ui/Amount';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
-import ShowWhen from 'merchant/components/ShowWhen';
-import StatsInfo from 'ui/StatsTable';
-import GroupDetailsTable from 'rzp/ui/GroupDetailsTable';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { trackDetailViewEdits, trackShareActions } from './ga';
 
-import EditPaymentFor from './Edit/EditPaymentFor';
-import EditTimesPayable from './Edit/EditTimesPayable';
-
 import NoEntityResultsFound from 'common/NoEntityResultsFound';
 
 import PaymentPagesV2Entity from './V2/Entity';
 
-import {
-  EditExpiry,
-  EditNotes,
-  EditReceipt,
-} from '../../PaymentLinks/Edit/index';
 import ActivateAgain from './Modals/ActivateAgain';
-import ShareView from './Modals/Share';
-
-import Button from 'component/Button';
-
-const MAX_API_COUNT = 100;
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {

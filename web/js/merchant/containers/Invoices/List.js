@@ -6,6 +6,7 @@ import Pager from 'rzp/ui/Pager';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
@@ -124,6 +125,7 @@ export default class InvoicesListContainer extends ListContainer {
             onSubmit={this.search}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
+            isInttCurrenciesEnabled={user.isInttCurrenciesEnabled}
           />
 
           <Alert type={status.type} message={status.message} />
@@ -153,13 +155,14 @@ export default class InvoicesListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen
-            additionalCondition={user =>
-              (mode !== 'live' || !user.isRejected) &&
-              user.isAllowedEdit('invoices')
-            }
-          >
-            <div class="btn-toolbar pull-right">
+          <div class="btn-toolbar pull-right">
+            <DocsLink url="https://razorpay.com/docs/invoices/" />
+            <ShowWhen
+              additionalCondition={user =>
+                (mode !== 'live' || !user.isRejected) &&
+                user.isAllowedEdit('invoices')
+              }
+            >
               <NavLink
                 to="/invoices/new"
                 class="btn btn-primary"
@@ -168,8 +171,8 @@ export default class InvoicesListContainer extends ListContainer {
                 <i class="i i-plus" />
                 <span>Create Invoice</span>
               </NavLink>
-            </div>
-          </ShowWhen>
+            </ShowWhen>
+          </div>
         </HeaderAction>
 
         {content}

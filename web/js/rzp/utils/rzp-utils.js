@@ -92,6 +92,21 @@ export const mapBy = (array, prop) => {
   });
 };
 
+/**
+ * Converst [{a: 'key', b: 'value'}] => {key: value}
+ * @param {Array} array
+ * @param {Function} iterator
+ */
+export const arrayToObject = (array = [], iterator) => {
+  return array.reduce((accumulator, currentItem) => {
+    const { key, value } = iterator(currentItem);
+    return {
+      ...accumulator,
+      [key]: value,
+    };
+  }, {});
+};
+
 export const groupBy = (records, colName) => {
   const result = {};
 
@@ -707,13 +722,29 @@ export const pluralize = (str, length) => {
 export const capitalize = input =>
   !!input ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
 
+export const isValidZipcodeCountryWise = (country, zipcode) => {
+  let isValid = false;
+
+  if (!country) {
+    return false;
+  }
+
+  if (country.toLowerCase() === 'india') {
+    isValid = zipcode.length === 6;
+  } else {
+    isValid = zipcode.length <= 8 && zipcode.length >= 3;
+  }
+
+  return isValid;
+};
+
 /**
  * Checks the validity of an address.
  * Line1, City, State, Country, Zipcode are required fields in an address.
  * @param {Object} address
  * @return {Bool}
  */
-export const isAddressValid = address => {
+export const isAddressValid = (address, customValidator = {}) => {
   const allKeys = Boolean(
     address &&
       address.line1 &&
@@ -734,7 +765,9 @@ export const isAddressValid = address => {
       line1.length <= 255 &&
       city.length >= 2 &&
       city.length <= 32 &&
-      zipcode.length === 6 &&
+      (customValidator.zipcode
+        ? customValidator.zipcode(country, zipcode)
+        : zipcode.length === 6) &&
       state.length >= 2 &&
       state.length <= 32 &&
       country.length >= 2 &&
@@ -857,3 +890,24 @@ export const loadImage = (src, onLoad, onError) => {
 
   image.src = src;
 };
+
+/*
+* Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
+*
+* This is helper fn. as a work around for dispatching manual events on native elements.
+*
+* */
+export function setNativeValue(element, value) {
+  const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
+  const prototype = Object.getPrototypeOf(element);
+  const prototypeValueSetter = Object.getOwnPropertyDescriptor(
+    prototype,
+    'value'
+  ).set;
+
+  if (valueSetter && valueSetter !== prototypeValueSetter) {
+    prototypeValueSetter.call(element, value);
+  } else {
+    valueSetter.call(element, value);
+  }
+}

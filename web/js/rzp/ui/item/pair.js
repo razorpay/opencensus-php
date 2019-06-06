@@ -51,6 +51,10 @@ export const paymentId = { title: 'Payment Id', value: id.payment };
 export const orderId = { title: 'Order Id', value: id.order };
 export const rzpOrderId = { title: 'Razorpay Order Id', value: id.rzpOrder };
 export const refundId = { title: 'Refund Id', value: id.refund };
+export const customerRefundId = {
+  title: 'Refund Id',
+  value: item => item.customer_refund_id,
+};
 export const settlementId = { title: 'Settlemt Id', value: id.settlement };
 export const transferId = { title: 'Transfer Id', value: id.transfer };
 export const reversalId = { title: 'Reversal Id', value: id.reversal };
@@ -61,9 +65,9 @@ export const batchIdLink = { title: 'Batch Id', value: id.batchLink };
 export const disputeId = { title: 'Dispute Id', value: id.dispute };
 export const tokenId = { title: 'Token Id', value: id.token };
 export const creditId = { title: 'Credit Id', value: id.credit };
-export const submerchant = { title: 'Merchant Name', value: id.submerchant };
-export const submerchantId = { title: 'Merchant ID', value: id.submerchantId };
-export const commissionId = { title: 'Commission ID', value: id.commission };
+export const submerchant = { title: 'Account Name', value: id.submerchant };
+export const submerchantId = { title: 'Account ID', value: id.submerchantId };
+export const commissionId = { title: 'Earning ID', value: id.commission };
 
 export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
@@ -118,7 +122,7 @@ export const planName = {
 };
 
 export const planAmount = {
-  title: 'Amount/Unit (INR)',
+  title: 'Amount/Unit',
   value: getAmount('item.amount'),
   columnClass: textRightClass,
 };

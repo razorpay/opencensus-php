@@ -42,7 +42,7 @@ export default class TeamContainer extends Component {
           <div class="btn-toolbar pull-right">
             <a
               class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/team-support"
+              href="https://razorpay.com/docs/team-support/"
               target="_blank"
             >
               Documentation &nbsp;

@@ -297,23 +297,6 @@ export default class CreateNewContainer extends React.Component {
     });
   };
 
-  openRPLShareView = (id, shortUrl, title, description) => {
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <RPLShareView
-          handleClose={this.props.closeModal}
-          handleAction={sendLink.bind(null, id)}
-          isNew={true}
-          showNotification={this.props.showNotification}
-          url={shortUrl}
-          title={title}
-          description={description}
-        />
-      ),
-    });
-  };
-
   onCreate = () => {
     const IS_MODAL_VIEW = this.props.onClose;
 
@@ -425,13 +408,13 @@ export default class CreateNewContainer extends React.Component {
         f.hasOwnProperty('inlineFields') &&
         Array.isArray(f.inlineFields)
       ) {
-        let label;
-        if (typeof f.label === 'function') {
+        let label = f.label;
+        if (typeof label === 'function') {
           label = f.label(this);
         }
 
-        let className;
-        if (typeof f.className === 'function') {
+        let className = f.className;
+        if (typeof className === 'function') {
           className = f.className(this);
         }
 

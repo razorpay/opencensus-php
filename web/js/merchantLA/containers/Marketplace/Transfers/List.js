@@ -15,7 +15,7 @@ import {
 import { classList } from 'common/util';
 import Amount from 'rzp/ui/Amount';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import { pluralize } from 'rzp/utils/rzp-utils';
+import { pluralize, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 const helperCues = {
   title: '',
@@ -34,7 +34,7 @@ const helperCues = {
         <span>
           <i
             class={classList(
-              'i i-reversal cue',
+              'i i-undo cue',
               hasReversals ? 'cue--active' : 'cue--inactive'
             )}
           />
@@ -73,9 +73,33 @@ const helperCues = {
 
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
+  onSearchAnalytics = params => {
+    const { pathname } = this.props.location;
+    if (pathname && pathname.indexOf('route') < 0) {
+      const label = getKeysSeparatedByPipe(params);
+      if (label && label.length > 0) {
+        window.rzpAnalytics({
+          eventCategory: 'LA Dashboard - Transfers',
+          eventAction: 'Search - Refunds',
+          eventLabel: label,
+        });
+      }
+    }
+  };
+
+  onClearAnalytics = () => {
+    const { pathname } = this.props.location;
+    if (pathname && pathname.indexOf('route') < 0) {
+      window.rzpAnalytics({
+        eventCategory: 'LA Dashboard - Transfers',
+        eventAction: 'Clear Search Params - Search params',
+      });
+    }
+  };
+
   render() {
     return (
-      <div>
+      <div class="transfers-list">
         <tabbed-container>
           <header id="marketplace-header">
             <NavLink to="/transfers">Transfers</NavLink>
@@ -87,6 +111,8 @@ export default class TransfersListContainer extends ListContainer {
                 form="transfersListFilter"
                 count={this.state.count}
                 onSubmit={this.search}
+                onSearchAnalytics={this.onSearchAnalytics}
+                onClearAnalytics={this.onClearAnalytics}
               />
 
               <DataTable

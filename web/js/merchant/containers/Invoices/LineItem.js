@@ -4,6 +4,7 @@ import InlineField from 'rzp/ui/Forms/InlineField';
 import InputField from 'rzp/ui/Forms/InputField';
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 import ItemCreation from 'merchant/containers/Items/New';
+import Amount from 'rzp/ui/Amount';
 import * as ModalActions from 'rzp/modules/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'rzp/utils/rzp-utils';
 import Item from 'merchant/models/Item';
@@ -30,12 +31,16 @@ export default class InvoiceLineItem extends React.Component {
     this.state = {};
   }
 
+  get isCurrencyInr() {
+    return this.props.invoiceCurrency === 'INR';
+  }
+
   quickCreateItem = ({ searchTerm = '' }) => {
     /**
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin);
+    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
@@ -48,6 +53,7 @@ export default class InvoiceLineItem extends React.Component {
           }}
           isNew
           showTaxes={showTaxes}
+          currency={this.props.invoiceCurrency}
         />
       ),
     });
@@ -80,10 +86,11 @@ export default class InvoiceLineItem extends React.Component {
      * Taxes are only to be shown when GSTIN is present.
      * The size of the modal depends on whether or not taxes are to be shown.
      */
-    let showTaxes = Boolean(this.gstin);
+    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     // Get Item that is to be edited.
-    const item = this.props.invoice_line_items[this.props.index].selectedItem;
+    const selectedOption = this.props.invoice_line_items[this.props.index];
+    const item = selectedOption.selectedItem || {};
 
     this.props.openModal({
       size: showTaxes ? 'regular' : 'small',
@@ -93,6 +100,7 @@ export default class InvoiceLineItem extends React.Component {
           onSave={this.selectItemAndCloseModal}
           item={item}
           showTaxes={showTaxes}
+          currency={selectedOption.currency || item.currency}
         />
       ),
     });
@@ -136,6 +144,29 @@ export default class InvoiceLineItem extends React.Component {
     change(`${fieldName}.tax_ids`, null);
   };
 
+  setTaxes = item => {
+    let { fieldName } = this.props;
+
+    // Set HSN Code
+    this.props.change(`${fieldName}.hsn_code`, item.hsn_code || null);
+
+    // Set SAC Code.
+    this.props.change(`${fieldName}.sac_code`, item.sac_code || null);
+
+    // Set tax rate.
+    this.props.change(`${fieldName}.tax_rate`, item.tax_rate || null);
+
+    // Set taxes.
+    let cessTax = this.getCessFromItem(item);
+    this.props.change(`${fieldName}.taxes`, cessTax ? [cessTax] : []);
+
+    // Set whether or not the item is tax-inclusive.
+    this.props.change(
+      `${fieldName}.tax_inclusive`,
+      item.tax_inclusive || false
+    );
+  };
+
   /**
    * When props change to show whether GST will be used or not,
    * update cess and GST, or unset taxes depending on what is passed.
@@ -146,7 +177,7 @@ export default class InvoiceLineItem extends React.Component {
     if (!item) return;
 
     // Determine whether or not taxes are shown.
-    let showTaxes = Boolean(this.gstin);
+    let showTaxes = Boolean(this.gstin) && this.isCurrencyInr;
 
     let { fieldName, gstSlabs } = this.props;
 
@@ -159,24 +190,7 @@ export default class InvoiceLineItem extends React.Component {
 
     // The tax-related details in the line item if taxes are to be shown.
     if (showTaxes) {
-      // Set HSN Code
-      this.props.change(`${fieldName}.hsn_code`, item.hsn_code || null);
-
-      // Set SAC Code.
-      this.props.change(`${fieldName}.sac_code`, item.sac_code || null);
-
-      // Set tax rate.
-      this.props.change(`${fieldName}.tax_rate`, item.tax_rate || null);
-
-      // Set taxes.
-      let cessTax = this.getCessFromItem(item);
-      this.props.change(`${fieldName}.taxes`, cessTax ? [cessTax] : []);
-
-      // Set whether or not the item is tax-inclusive.
-      this.props.change(
-        `${fieldName}.tax_inclusive`,
-        item.tax_inclusive || false
-      );
+      this.setTaxes(item);
     }
 
     // Set selected item in state.
@@ -402,6 +416,23 @@ export default class InvoiceLineItem extends React.Component {
     }
   }
 
+  resetSelectedItemForChangingCurrency = props => {
+    props.change(`${props.fieldName}.amountInINR`, 0);
+
+    const selectedOption = props.invoice_line_items[props.index],
+      showTaxes = Boolean(this.gstin) && props.invoiceCurrency === 'INR';
+
+    if (selectedOption.selectedItem && showTaxes) {
+      this.setTaxes(selectedOption.selectedItem);
+    }
+  };
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.invoiceCurrency !== this.props.invoiceCurrency) {
+      this.resetSelectedItemForChangingCurrency(nextProps);
+    }
+  }
+
   render() {
     let {
       fieldName,
@@ -409,7 +440,7 @@ export default class InvoiceLineItem extends React.Component {
       index,
       disabled,
       items,
-      applyTaxes,
+      invoiceCurrency,
     } = this.props;
     let selectedOption = this.props.invoice_line_items[index];
     let isEmptyRow = !(
@@ -436,6 +467,10 @@ export default class InvoiceLineItem extends React.Component {
 
     // Get cess rate.
     let cess = selectedOption.cess;
+
+    const selectedCurrency = selectedItem.currency || selectedOption.currency;
+
+    const applyTaxes = this.props.applyTaxes && selectedCurrency === 'INR'; // Selected Item won't be exists for non-inr items
 
     return (
       <tr
@@ -493,12 +528,13 @@ export default class InvoiceLineItem extends React.Component {
               />
             </div>
             <p class="lineItem__description">{selectedOption.description}</p>
-            {itemHSNSAC && (
-              <p>
-                <span class="light">{HSNSACLabel} - </span>
-                <strong>{itemHSNSAC}</strong>
-              </p>
-            )}
+            {itemHSNSAC &&
+              applyTaxes && (
+                <p>
+                  <span class="light">{HSNSACLabel} - </span>
+                  <strong>{itemHSNSAC}</strong>
+                </p>
+              )}
           </div>
         </td>
 
@@ -543,29 +579,43 @@ export default class InvoiceLineItem extends React.Component {
         </td>
 
         <td class="text-right lineItem__total">
-          <div class="item-total">₹{lineItemTotal}</div>
+          <div class="item-total">
+            <Amount value={lineItemTotal * 100} currency={invoiceCurrency} />
+          </div>
           {selectedOption.item_id &&
             applyTaxes && (
               <div class="tax-details">
                 {gstSlab &&
                   gstSlab.groups.map(group => (
                     <p key={`${selectedOption.item_id}_${group}_rate`}>
-                      {selectedOption.tax_inclusive ? '' : '+ '}₹{(
-                        calculateTax(
-                          lineItemTotalFloat,
-                          selectedOption.tax_rate / 100,
-                          selectedOption.tax_inclusive
-                        ) / gstSlab.groups.length
-                      ).toFixed(2)}
+                      {selectedOption.tax_inclusive ? '' : '+ '}
+                      <Amount
+                        value={
+                          calculateTax(
+                            lineItemTotalFloat,
+                            selectedOption.tax_rate / 100,
+                            selectedOption.tax_inclusive
+                          ) *
+                          100 /
+                          gstSlab.groups.length
+                        }
+                        currency={invoiceCurrency}
+                      />
                     </p>
                   ))}
                 {cess && (
                   <p>
-                    {selectedOption.tax_inclusive ? '' : '+ '}₹{calculateTax(
-                      lineItemTotalFloat,
-                      cess / 100,
-                      selectedOption.tax_inclusive
-                    ).toFixed(2)}
+                    {selectedOption.tax_inclusive ? '' : '+ '}
+                    <Amount
+                      value={
+                        calculateTax(
+                          lineItemTotalFloat,
+                          cess / 100,
+                          selectedOption.tax_inclusive
+                        ) * 100
+                      }
+                      currency={invoiceCurrency}
+                    />
                   </p>
                 )}
                 {(gstSlab || cess) && (

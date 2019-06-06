@@ -1,7 +1,8 @@
+import { Component } from 'react';
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 
-export default props => {
+const ReversalListFilter = props => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
@@ -28,3 +29,5 @@ export default props => {
     </ListFilter>
   );
 };
+
+export default ReversalListFilter;

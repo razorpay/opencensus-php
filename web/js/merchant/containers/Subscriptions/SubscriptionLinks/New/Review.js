@@ -10,18 +10,25 @@ export default function NewSubscriptionLinkReview({
 }) {
   const selectedPlan = props.plans.find(({ id }) => id === fields.plan_id);
 
-  const { amount: planAmount } = selectedPlan.item;
+  const { amount: planAmount, currency } = selectedPlan.item;
   const planQuantity = fields.quantity;
 
-  const addOnAmount = fields.addons.reduce(
-    (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
-    0
-  );
+  const addOnAmount = fields.addons
+    .filter(addon => !!addon.amount) // Filter out empty addon
+    .reduce(
+      (totalAmount, { item, quantity }) => totalAmount + item.amount * quantity,
+      0
+    );
   const subscriptioAmount = planAmount * planQuantity;
+  const minAuthAmount =
+    currency === 'INR'
+      ? 500
+      : (props.getCurrencyList[currency] || {}).min_auth_value;
   const authorizationAmount = getAuthorizationAmount(
     subscriptioAmount,
     addOnAmount,
-    internals._startsImmediately
+    internals._startsImmediately,
+    minAuthAmount
   );
 
   const intervalCycle = getIntervalCycle(
@@ -38,6 +45,7 @@ export default function NewSubscriptionLinkReview({
           <Amount
             value={selectedPlan.item.amount}
             currency={selectedPlan.item.currency}
+            parentQuerySelector=".Modal-body"
           />
         </p>
       </div>
@@ -52,6 +60,7 @@ export default function NewSubscriptionLinkReview({
               <Amount
                 value={authorizationAmount}
                 currency={selectedPlan.item.currency}
+                parentQuerySelector=".Modal-body"
               />
             </p>
             <div>
@@ -59,11 +68,16 @@ export default function NewSubscriptionLinkReview({
                 <Amount
                   value={planAmount}
                   currency={selectedPlan.item.currency}
+                  parentQuerySelector=".Modal-body"
                 />&nbsp;x&nbsp;{planQuantity}&nbsp;(quantity)
               </EntityDetailRow>
               {!!addOnAmount && (
                 <EntityDetailRow label="Upfront Amount">
-                  <Amount value={addOnAmount} />
+                  <Amount
+                    value={addOnAmount}
+                    currency={selectedPlan.item.currency}
+                    parentQuerySelector=".Modal-body"
+                  />
                 </EntityDetailRow>
               )}
             </div>
@@ -78,6 +92,7 @@ export default function NewSubscriptionLinkReview({
               <Amount
                 value={subscriptioAmount}
                 currency={selectedPlan.item.currency}
+                parentQuerySelector=".Modal-body"
               />
             </p>
             <div>
@@ -96,12 +111,12 @@ export default function NewSubscriptionLinkReview({
 /**
  * refer https://razorpay.com/docs/subscriptions/create/#possible-scenarios to understand logic
  */
-function getAuthorizationAmount(subAmt, addonAmt, immediate) {
+function getAuthorizationAmount(subAmt, addonAmt, immediate, minAuthAmount) {
   if (immediate) {
     // in case of addons not present addonAmt will be zero. so no effect on subscription Amount
     return subAmt + addonAmt;
   } else {
-    // in case of future subscriptions it is either addon amount (if addons present) else Rs. 5
-    return addonAmt || 500; //Rs. 5
+    // in case of future subscriptions it is either addon amount (if addons present) else Current currency min auth ammount
+    return addonAmt || minAuthAmount;
   }
 }

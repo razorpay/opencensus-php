@@ -8,7 +8,11 @@ export default function QuantitySelector(props) {
       <Input
         label={
           <>
-            <Amount value={props.rate} currency={props.currency} />
+            <Amount
+              value={props.rate}
+              currency={props.currency}
+              parentQuerySelector={`.Modal-body .SubscriptionLinks--new`}
+            />
             <span className="m-l">x</span>
           </>
         }

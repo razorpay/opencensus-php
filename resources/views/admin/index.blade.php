@@ -11,10 +11,21 @@
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <script>
-    var org = {!! json_encode($org) !!};
-    var user = {!! json_encode($user) !!};
+    var org = {!! json_encode($org) !!},
+      user = {!! json_encode($user) !!},
+      _hsq = window._hsq = window._hsq || [];
+
+    // Hubspot
+    window.updateHubsContacts = function(data) {
+      _hsq.push(['identify', data]);
+
+      _hsq.push(['trackEvent', {
+        id: 'UPDATE_CONTACT_PROPERTY',
+      }]);
+    }
   </script>
 </head>
 <body>
 <div id="react-root" class="react-root"></div>
 <script src="{{$cdn}}/dist/admin-entry.js"></script>
+<script src="//js.hs-scripts.com/5558946.js"></script>

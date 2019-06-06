@@ -2,6 +2,7 @@ import Input from 'component/Input';
 import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { AmountTooltip } from 'rzp/ui/Amount';
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
@@ -24,34 +25,55 @@ const CustomInput = props => {
           </Popover>
         </small>
       </div>
-      <Input {...props} />
+
+      <Input.Group class="InputGroup--inline">
+        <div class="Input-content">
+          <Input.CurrencySelect
+            name="currency"
+            defaultValue="INR"
+            disabled
+            parentQuerySelector=".Modal-body"
+          />
+
+          <Input {...props} />
+        </div>
+      </Input.Group>
     </div>
   );
 };
 
 /* Form fields of Payment Links */
 export default [
-  [
-    {
-      name: 'amount',
-      label: 'Amount',
-      type: 'tel',
-      placeholder: '0.00',
-      required: true,
-      addonBefore: '₹',
-      autoFocus: true,
-      validator: val => {
-        if (!isAmount(val)) {
-          const decimal = val && val.split('.');
-
-          if (decimal.length == 2 && decimal[1].length > 2) {
-            return 'Enter upto 2 decimals';
-          } else {
-            return 'Invalid Amount';
-          }
-        }
+  {
+    label: 'Amount',
+    required: true,
+    inlineFields: [
+      {
+        name: 'currency',
+        _cmp: Input.CurrencySelect,
+        parentQuerySelector: '.Modal-body',
       },
-    },
+      {
+        name: 'amount',
+        type: 'tel',
+        placeholder: '0.00',
+        required: true,
+        autoFocus: true,
+        validator: val => {
+          if (!isAmount(val)) {
+            const decimal = val && val.split('.');
+
+            if (decimal.length == 2 && decimal[1].length > 2) {
+              return 'Enter upto 2 decimals';
+            } else {
+              return 'Invalid Amount';
+            }
+          }
+        },
+      },
+    ],
+  },
+  [
     {
       name: 'partial_payment',
       fieldLabel: (
@@ -78,7 +100,6 @@ export default [
     },
     {
       name: 'first_payment_min_amount',
-      addonBefore: '₹',
       placeholder: '0.00',
       size: 'half_big',
       _autoRenderImpure: true,

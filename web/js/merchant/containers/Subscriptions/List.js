@@ -6,6 +6,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
+import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
 import {
@@ -57,6 +58,7 @@ export default class SubscriptionsListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <DocsLink url="https://razorpay.com/docs/subscriptions/"/>
             <NavLink class="btn btn-primary" to="/subscriptions/new">
               <i class="i i-plus" />
               <span>Create New Subscription</span>

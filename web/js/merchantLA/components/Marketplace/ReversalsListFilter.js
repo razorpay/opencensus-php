@@ -2,12 +2,43 @@ import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 
 export default props => {
+  const merchant = props.user.merchants[props.user.current];
+  const isRefundsAllowed = props.user.isAllowedLARefunds;
+
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>Reversal Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
+
+      {isRefundsAllowed && (
+        <div class="form-group list-filter-item">
+          <label>Customer Refund Id</label>
+          <Field
+            name="customer_refund_id"
+            component="input"
+            class="form-control input-sm"
+          />
+        </div>
+      )}
+
+      {isRefundsAllowed && (
+        <div class="form-group list-filter-item">
+          <label>Initiated by</label>
+          <Field
+            name="initiator_id"
+            component="select"
+            class="form-control input-sm"
+          >
+            <option value="">All</option>
+            <option value={merchant.id}>{merchant.billing_label}</option>
+            <option value={props.user.marketplace_merchant_id}>
+              {props.user.marketplace_merchant_name}
+            </option>
+          </Field>
+        </div>
+      )}
 
       <div class="form-group list-filter-item count">
         <label>Count</label>

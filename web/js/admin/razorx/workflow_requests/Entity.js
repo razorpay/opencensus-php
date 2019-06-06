@@ -4,7 +4,6 @@ import { observer } from 'mobx-react';
 import { openModal, notifySuccess, notifyDone } from 'common/modal';
 import { adminFetch, adminPut } from 'common/fetch';
 import Comments from 'admin/requests/Comments';
-import RequestForm from 'admin/requests/RequestForm';
 import RequestActions from 'admin/requests/RequestActions';
 import { formatDate, titleCase } from 'common/util';
 
@@ -19,6 +18,8 @@ export default class RequestEntity extends Component {
 
   //immutables
   levels = {};
+
+  state = {};
 
   componentWillMount() {
     extendObservable(this, { pending: true });
@@ -59,27 +60,6 @@ export default class RequestEntity extends Component {
     );
   }
 
-  handleUploadForm = body => {
-    const { id } = this.props.match.params;
-
-    //Check whether form body has these values or not
-    if (
-      typeof body.title === 'undefined' &&
-      typeof body.description === 'undefined'
-    ) {
-      return;
-    }
-
-    return adminPut({
-      url: `live/w-actions/${id}`,
-      data: body,
-    }).then(response => {
-      if (response) {
-        notifyDone();
-      }
-    });
-  };
-
   @action
   handleCommentAdd = response => {
     this.comments.push({ type: 'comment', ...response });
@@ -93,11 +73,18 @@ export default class RequestEntity extends Component {
     );
   };
 
+  updateEntityData = entityData => {
+    this.setState({
+      entityData,
+    });
+  };
+
   render() {
     if (this.pending) {
       return <div class="spinner center" />;
     }
 
+    const { entityData } = this.state;
     const { levels, checkers, comments } = this;
     const data = this.data.toJS();
     const shouldShowTick = ['approved', 'executed'].indexOf(data.state) !== -1;
@@ -109,12 +96,11 @@ export default class RequestEntity extends Component {
       <div class="parent-container requests-container">
         <div class="header">
           <span class="title">
-            {data.permission.description &&
-              titleCase(data.permission.description)}{' '}
+            Experiment:{' '}
+            <a className="link" href={`/razorx/${url}`} target="_blank">
+              {entityData && entityData.description}
+            </a>
           </span>
-          <a className="link" href={`/razorx/${url}`} target="_blank">
-            {data.entity_id}
-          </a>
         </div>
         <div class="container-group requests-content">
           <div class="list-container">
@@ -132,65 +118,16 @@ export default class RequestEntity extends Component {
                   {data.state}
                 </span>
               </div>
-
-              {/* Title, description */}
-              <RequestForm
-                title={data.title}
-                description={data.description}
-                requestState={data.state}
-                onSubmit={this.handleUploadForm}
-              />
-
-              {/* Steps Assigned to */}
-              <div className="container levels-container">
-                <label>
-                  <b>Assigned To:</b>
-                </label>
-                {levels &&
-                  Object.keys(levels).map((key, kdx) => {
-                    kdx++;
-                    return (
-                      <div
-                        className={`m-t m-b level ${
-                          kdx != data.current_level ? 'inactive' : ''
-                        }`}
-                        key={key}
-                      >
-                        {kdx < data.current_level ||
-                        (kdx == data.current_level && shouldShowTick) ? (
-                          <i className="i-yes text-success" />
-                        ) : null}
-
-                        <span className="square-pills no-color">
-                          STEP {key}
-                        </span>
-                        {levels[key].map((item, idx) => (
-                          <span className="square-pills" key={idx}>
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    );
-                  })}
-              </div>
             </div>
 
-            {/*Workflow Actions*/}
-            {['open', 'approved'].indexOf(data.state) > -1 && (
-              <div className="box container">
-                <div className="heading">
-                  <b>Actions:</b>
-                </div>
-
-                <RequestActions
-                  id={data.id}
-                  onUpdateAction={this.handleActionUpdate}
-                  requestState={data.state}
-                  checkers={checkers}
-                  hideTitle
-                />
-              </div>
-            )}
+            <div class="box container">
+              <ExperimentsEntity
+                id={data.entity_id}
+                updateEntityData={this.updateEntityData}
+                isReadOnly
+                isCustomLayout
+              />
+            </div>
 
             {/* Comments container */}
             <Comments
@@ -201,7 +138,13 @@ export default class RequestEntity extends Component {
             />
           </div>
 
-          <ExperimentsEntity id={data.entity_id} isReadOnly />
+          {/*Workflow Actions*/}
+          <RequestActions
+            id={data.id}
+            onUpdateAction={this.handleActionUpdate}
+            requestState={data.state}
+            checkers={checkers}
+          />
         </div>
       </div>
     );

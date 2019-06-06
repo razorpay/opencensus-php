@@ -9,6 +9,9 @@
   .ItemCreationModal__hsn-radios
     .RadioButton
       margin-top: 0px;
+  
+  .description
+    min-height: 91px;
 
   .RadioButton
     margin-bottom: 8px;
@@ -29,3 +32,40 @@
 
     .Modal__actions
       margin-top: 16px;
+
+  .input-group--amount
+    .Input--Currency
+      margin: 0
+      display: table-cell
+
+      &.Input--noMargin
+        .value
+          height: 34px
+
+        & + .InputField
+          width: unset
+
+      .Input-el
+        height: 34px
+
+      .PowerSelect
+        border-color: #cfdadd
+
+        &__Trigger
+          height: 32px
+
+          &Label, &Status
+            height: 32px
+
+    .InputField
+      width: 147px
+      margin-left: -1px
+
+    .input-group-addon
+      vertical-align: top
+      line-height: 20px
+      margin-left: -1px
+
+
+.Input--Currency-dropdown.ps-in-modal__Tether
+  z-index: 100000

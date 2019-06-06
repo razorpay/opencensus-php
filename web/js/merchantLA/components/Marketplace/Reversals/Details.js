@@ -10,8 +10,24 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReversalDetails extends Component {
+  handleClickSourceId = _ =>
+    window.rzpAnalytics({
+      eventCategory: 'LA Dashboard - Reversals',
+      eventAction: 'Click - Source ID',
+    });
+
   render() {
-    const { reversal, isLoading, onClose, parentAccountName } = this.props;
+    const {
+        reversal,
+        isLoading,
+        onClose,
+        parentAccountName,
+        merchant,
+        isRefundsAllowed,
+      } = this.props,
+      isLAInitiator =
+        reversal.initiator_id &&
+        reversal.initiator_id.replace('acc_', '') === merchant.id;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -37,18 +53,29 @@ export default class ReversalDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <EntityDetailRow label="Parent Account">
-                  <Definition>
-                    <b>{parentAccountName}</b>
-                  </Definition>
-                </EntityDetailRow>
-
                 <EntityDetailRow label="Amount">
                   <Amount
                     value={reversal.amount}
                     currency={reversal.currency}
                   />
                 </EntityDetailRow>
+
+                {isRefundsAllowed && (
+                  <EntityDetailRow
+                    label="Initiated By"
+                    value={() =>
+                      isLAInitiator ? merchant.billing_label : parentAccountName
+                    }
+                  />
+                )}
+
+                {isRefundsAllowed &&
+                  isLAInitiator && (
+                    <EntityDetailRow
+                      label="Customer Refund ID"
+                      value={_ => reversal.customer_refund_id}
+                    />
+                  )}
 
                 <EntityDetailRow
                   label="Created At"
@@ -64,7 +91,10 @@ export default class ReversalDetails extends Component {
                   label="Source ID"
                   value={() => (
                     <div>
-                      <Link to={`/transfers/${reversal.transfer_id}`}>
+                      <Link
+                        to={`/transfers/${reversal.transfer_id}`}
+                        onClick={this.handleClickSourceId}
+                      >
                         {reversal.transfer_id}
                       </Link>
                     </div>

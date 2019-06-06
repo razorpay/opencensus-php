@@ -11,14 +11,30 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchantLA/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { fetchBalanceAction } from 'merchantLA/modules/credits';
+import Amount from 'rzp/ui/Amount';
 
-@connect(state => state.settlements, {
-  fetchAll,
-  ...ModalActions,
-})
+@connect(
+  state => ({
+    ...state.settlements,
+    balanceData: state.credits.balanceData,
+    user: state.session.user,
+    merchant: state.merchant,
+  }),
+  {
+    fetchAll,
+    fetchBalanceAction,
+    ...ModalActions,
+  }
+)
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
+    if (this.props.user.current && !this.props.balanceData.data.balance) {
+      this.props.fetchBalanceAction();
+    }
+
     window.rzpAnalytics({
       eventCategory: 'LA Dashboard - Settlements',
       eventAction: 'Go To - Settlements',
@@ -72,19 +88,14 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, error } = this.props;
+    const { loading, items, error, balanceData } = this.props;
 
     return (
       <tabbed-container>
         <header>
           <NavLink to="/settlements">Settlements</NavLink>
-        </header>
-
-        <TestModeBanner />
-
-        <content>
-          <div class="content-wrapper">
-            <HeaderAction>
+          <HeaderAction>
+            <div>
               <a
                 class="btn btn-link"
                 href="http://razorpay.com/settlement"
@@ -92,7 +103,22 @@ export default class SettlementsListContainer extends ListContainer {
               >
                 How settlements work?&nbsp;<span class="icon i-external-link" />
               </a>
-            </HeaderAction>
+              {this.props.balanceData.loading ? (
+                <PlaceholderLoader style={{ width: 150 }} />
+              ) : (
+                <span class="settlement-balance-amount">
+                  Current Balance:{' '}
+                  <Amount value={balanceData.data.balance} currency={'INR'} />
+                </span>
+              )}
+            </div>
+          </HeaderAction>
+        </header>
+
+        <TestModeBanner />
+
+        <content>
+          <div class="content-wrapper">
             <SettlementsListFilter
               form="settlementsListFilter"
               count={this.state.count}

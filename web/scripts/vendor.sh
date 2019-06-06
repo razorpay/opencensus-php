@@ -42,7 +42,7 @@ END
 )
 
 EVEN=true
-for j in vendor_a vendor_m; do
+for j in vendor_m; do
   for i in ${!j}; do
     if [ "$EVEN" = "true" ] ; then
       EVEN=false

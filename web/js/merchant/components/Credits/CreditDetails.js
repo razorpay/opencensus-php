@@ -47,7 +47,7 @@ export default class CreditDetails extends Component {
           <p class="puck">{description}</p>
 
           <strong class="big-font">
-            <Amount value={totalCredits} />
+            <Amount value={totalCredits} currency={'INR'} />
           </strong>
 
           {!!creditItems.length && (
@@ -73,7 +73,9 @@ export default class CreditDetails extends Component {
                   },
                   {
                     title: 'Value',
-                    value: ({ value }) => <Amount value={value} />,
+                    value: ({ value }) => (
+                      <Amount value={value} currency={'INR'} />
+                    ),
                   },
                   createdAt,
                 ]}

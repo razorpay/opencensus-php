@@ -4,6 +4,7 @@ import Spinner from 'rzp/ui/Spinner';
 import * as ConfigActions from 'merchant/modules/config';
 import * as NotificationActions from 'rzp/modules/notifications';
 import FlashCheckout from './FlashCheckout';
+import Internationalization from './Internationalization';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
 
@@ -12,6 +13,7 @@ import EmailNotifications from './EmailNotifications';
     return {
       user: state.session.user,
       configState: state.config,
+      mode: state.session.mode,
     };
   },
   { ...ConfigActions, ...NotificationActions }
@@ -55,7 +57,7 @@ export default class CongfigurationContainer extends Component {
     let { config, features, loading } = this.props.configState;
 
     return (
-      <div class="content-wrapper content-sm">
+      <div class="content-wrapper content-sm" id="settings-content">
         {loading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -66,6 +68,8 @@ export default class CongfigurationContainer extends Component {
             {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
               <FlashCheckout />
             )}
+            {/* temporarily hide internationalization for test mode due to inconsistency in db */}
+            {this.props.mode === 'live' && <Internationalization />}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
         )}

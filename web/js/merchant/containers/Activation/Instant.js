@@ -11,16 +11,17 @@ import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { showNotification } from 'rzp/modules/notifications';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-import { classList } from 'common/util';
+import { classList, addPrefixToObjectKeys } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
+import { trackFb, trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
 } from 'merchant/modules/home';
 
-import formFields from './L1FormMap';
+import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
 import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';
 
 function defaultFieldProps(f) {
@@ -174,6 +175,7 @@ export default class ActivationWizard extends React.Component {
       activation_status,
       activation_flow,
       submitted,
+      international,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -183,6 +185,7 @@ export default class ActivationWizard extends React.Component {
       activated,
       activation_status,
       activation_flow,
+      international,
       submitted: +submitted,
     }));
 
@@ -211,6 +214,13 @@ export default class ActivationWizard extends React.Component {
 
         trackL1FormSuccess(this.user.activation_flow);
 
+        // updating contact propteries of hubspot contact
+        updateHubSpotContactsProperties({
+          ...data,
+          activation_flow: this.user.activation_flow,
+          completed: true,
+        });
+
         const {
           isWhitelistFlow,
           isBlacklistFlow,
@@ -219,6 +229,7 @@ export default class ActivationWizard extends React.Component {
 
         if (isWhitelistFlow) {
           this.props.showInstantActivationSuccessModal();
+          trackFb('activation_complete_success');
         } else if (isGraylistFlow) {
           this.props.showKYCDetailsModal();
         }
@@ -234,6 +245,8 @@ export default class ActivationWizard extends React.Component {
         }
 
         trackL1FormError();
+
+        trackFb('activation_complete_error');
 
         if (this.onActivationSuccess) {
           this.onActivationSuccess({ success: false });
@@ -324,6 +337,12 @@ export default class ActivationWizard extends React.Component {
 
   componentDidMount() {
     this.handleUIUpdate();
+
+    trackFb('activation_start');
+
+    updateHubSpotContactsProperties({
+      started: true,
+    });
   }
 
   componentDidUpdate() {
@@ -520,4 +539,22 @@ function isFieldValid(field, activation, data) {
   }
 
   return true;
+}
+
+function updateHubSpotContactsProperties(data) {
+  const hbsData = addPrefixToObjectKeys('l1_', data);
+
+  delete hbsData.l1_business_model;
+
+  if (data.business_type) {
+    hbsData.l1_business_type = (
+      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
+    ).label;
+  }
+
+  if (hbsData.l1_promoter_pan) {
+    hbsData.l1_promoter_pan == !!hbsData.l1_promoter_pan;
+  }
+
+  trackhubsContactUpdate(hbsData);
 }
