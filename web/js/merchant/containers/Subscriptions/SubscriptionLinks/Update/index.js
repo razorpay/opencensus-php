@@ -215,7 +215,7 @@ export default class UpdateSubscription extends Component {
     });
   };
 
-  handleCreate = e => {
+  handleCreate = () => {
     const { fields, previousSubscription } = this.state,
       data = {
         id: previousSubscription.id,
@@ -254,7 +254,7 @@ export default class UpdateSubscription extends Component {
       });
   };
 
-  renderForm = _ => {
+  renderForm = () => {
     if (this.state.loading) {
       return (
         <div class="page-spinner-container">

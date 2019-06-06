@@ -43,7 +43,7 @@ export function changeData({
   plans,
   updatedPlan,
   prevPlan,
-  internals,
+  internals = {},
 }) {
   const currSelectedPlan = updatedPlan
       ? updatedPlan
