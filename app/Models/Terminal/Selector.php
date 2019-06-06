@@ -205,12 +205,34 @@ class Selector extends Base\Core
                 }
             }
             else if (($payment->isCard() === true) and
-                     (($payment->card->isDiners() === true) or
-                      ($payment->card->isNetworkUnknown() === true)))
+                     ($payment->card->isNetworkUnknown() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
+
+            else if ( ($payment->isCard() === true) and
+                     ($payment->card->isDiners() === true))
+            {
+                $merchant = $this->input['merchant'];
+                $merchant->disableCardNetworks($merchant->getId(),['dicl']);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED;
+            }
+
+            else if ($payment[Entity::METHOD] === Method::NETBANKING)
+            {
+                $merchant = $this->input['merchant'];
+                $input = array("disabled_banks"=>$payment['bank']);
+
+                $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+                $merchant->disablePaymentBanks($methods, $input);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT;
+            }
+
             else
             {
                 throw new Exception\RuntimeException(
