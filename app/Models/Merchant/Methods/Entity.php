@@ -349,6 +349,8 @@ class Entity extends Base\PublicEntity
     public function isMpesaEnabled()
     {
         return false;
+
+        return $this->getAttribute(self::MPESA);
     }
 
     public function isPayumoneyEnabled()
