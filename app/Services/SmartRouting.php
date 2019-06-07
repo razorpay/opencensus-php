@@ -76,9 +76,16 @@ class SmartRouting
         return $this->sendRequest(self::UPDATE_GATEWAY_RULE, $data);
     }
 
-    public function deleteGateway($id)
+    public function deleteGateway($id, $group)
     {
-        return $this->sendRequest(self::DELETE_GATEWAY_RULE, null, $id);
+        $params = null;
+
+        if (empty($group) === false)
+        {
+            $params = ['group' => $group];
+        }
+
+        return $this->sendRequest(self::DELETE_GATEWAY_RULE, null, $id, $params);
     }
 
     protected function sendNonBlockingRequest($action, $data = null, $id = null)
@@ -104,11 +111,11 @@ class SmartRouting
     }
 
 
-    protected function sendRequest($action, $data = null, $id = null)
+    protected function sendRequest($action, $data = null, $id = null, $params = null)
     {
         try
         {
-            $url = $this->getUrl($action, $id);
+            $url = $this->getUrl($action, $id, $params);
 
             if ($data === null)
             {
@@ -220,7 +227,7 @@ class SmartRouting
                 'response' => $response
             ]);
 
-        $success = $response[self::SUCCESS];
+        $success = $response[self::SUCCESS] ?? true;
 
         if ($success === false)
         {
@@ -234,9 +241,21 @@ class SmartRouting
         }
     }
 
-    private function getUrl($action, $id) : string
+    private function getUrl($action, $id, $params) : string
     {
         $url = $this->baseUrl . str_replace_first(':id', $id, $action['url']);
+
+        if (empty($params) == false)
+        {
+            $url = $url . '?';
+
+            foreach ($params as $key => $value) {
+
+                $url .= $key . '=' . $value . '&';
+            }
+
+            $url = rtrim($url, '&');
+        }
 
         return $url;
     }
