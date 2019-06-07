@@ -5658,16 +5658,19 @@ trait Authorize
         // prepend required zeroes in the account number based on bank
         switch ($bank)
         {
-            case SBI:
-                $accountNumber = str_pad($accountNumber, 10, "0", STR_PAD_LEFT );
+            case 'sbi':
+                $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
                 break;
 
-            case Kotak:
-                $accountNumber = str_pad($accountNumber, 10, "0", STR_PAD_LEFT );
+            case 'kotak':
+                $accountNumber = str_pad($accountNumber, 14, '0', STR_PAD_LEFT );
                 break;
 
-            case Canara:
-                $accountNumber = str_pad($accountNumber, 10, "0", STR_PAD_LEFT );
+            case 'centralbank':
+                $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
+                break;
+
+            default:
                 break;
         }
 
