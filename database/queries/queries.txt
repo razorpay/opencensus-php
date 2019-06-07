@@ -4967,3 +4967,6 @@ ALTER TABLE balance
     ADD COLUMN account_provider VARCHAR(255) DEFAULT NULL AFTER account_type,
     ADD INDEX balance_account_type_index (account_type),
     ADD INDEX balance_account_provider_index (account_provider);
+
+ALTER TABLE paysecure
+    MODIFY COLUMN hkey TEXT DEFAULT NULL;
