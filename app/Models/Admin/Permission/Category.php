@@ -31,5 +31,6 @@ class Category
     const RAZORX            = 'razorx';
     const GATEWAY           = 'gateway';
     const SUBSCRIPTIONS     = 'subscriptions';
+    const PAYOUTS           = 'payouts';
     const RAZORPAYX_BANKING = 'razorpayx_banking';
 }
