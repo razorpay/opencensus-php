@@ -167,7 +167,7 @@ class SmartRouting
         {
             try
             {
-                if ($method === 'post' or $method === 'put')
+                if ($method === 'POST' or $method === 'PUT')
                 {
                     $response = Requests::$method(
                         $request['url'],
