@@ -10,6 +10,7 @@ use RZP\Models\Customer;
 use RZP\Models\Invoice;
 use RZP\Models\Invoice\Status;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\CreditNote\Invoice as creditNoteInvoice;
@@ -20,15 +21,15 @@ class Core extends Base\Core
 {
     public function create(Merchant\Entity $merchant, array $input): Entity
     {
-        $creditnote = (new Entity)->build($input);
-
         $customer_id = $input[Entity::CUSTOMER_ID];
 
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customer_id, $merchant);
 
-        $this->fillNecessaryFields($creditnote, $input);
+        $this->checkForSubscription($input, $customer);
 
-        $this->associateSource($creditnote, $input, $customer);
+        $creditnote = (new Entity)->build($input);
+
+        $this->fillNecessaryFields($creditnote, $input);
 
         $creditnote->merchant()->associate($merchant);
 
@@ -40,7 +41,7 @@ class Core extends Base\Core
     }
 
 
-    protected function associateSource(Entity $creditNote, array $input, Customer\Entity $customer)
+    protected function checkForSubscription(array & $input, Customer\Entity $customer)
     {
         if (isset($input[Entity::SUBSCRIPTION_ID]) === true)
         {
@@ -51,7 +52,8 @@ class Core extends Base\Core
                 throw new BadRequestValidationFailureException(
                      ' Subscription customer id does not match '.$input[Entity::CUSTOMER_ID]);
             }
-            $creditNote->source()->associate($subscription);
+
+            $input[Entity::SUBSCRIPTION_ID] = Subscription\Entity::stripDefaultSign($input[Entity::SUBSCRIPTION_ID]);
         }
     }
 
@@ -130,9 +132,9 @@ class Core extends Base\Core
 
     protected function validateInvoiceAndEntity(Invoice\Entity $invoice, Entity $creditNote)
     {
-        if (($creditNote->getEntityType() !== null) and ($creditNote->getEntityType() === Entity::SUBSCRIPTION))
+        if (($creditNote->getSubscriptionId() !== null))
         {
-            if ($invoice->getSubscriptionId() !== $creditNote->getEntityId())
+            if ($invoice->getSubscriptionId() !== $creditNote->getSubscriptionId())
             {
                 throw new BadRequestValidationFailureException(
                     Entity::SUBSCRIPTION . ' does not match with the invoice '.$invoice->getPublicId());

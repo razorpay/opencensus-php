@@ -5,6 +5,8 @@ namespace RZP\Models\CreditNote;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Customer;
+use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
 {
@@ -12,8 +14,7 @@ class Entity extends Base\PublicEntity
 
     const MERCHANT_ID       = 'merchant_id';
     const CUSTOMER_ID       = 'customer_id';
-    const ENTITY_ID         = 'entity_id';
-    const ENTITY_TYPE       = 'entity_type';
+    const SUBSCRIPTION_ID   = 'subscription_id';
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
     const AMOUNT            = 'amount';
@@ -28,7 +29,7 @@ class Entity extends Base\PublicEntity
 
     const INVOICE_ID = 'invoice_id';
 
-    const SUBSCRIPTION_ID =   'subscription_id';
+
 
     const SUBSCRIPTION = 'subscription';
 
@@ -44,8 +45,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
+        self::SUBSCRIPTION_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::SUBSCRIPTION_ID,
     ];
 
     protected $defaults = [
@@ -73,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
+        self::SUBSCRIPTION_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -89,6 +91,12 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_AVAILABLE,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_ALLOCATED,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::SUBSCRIPTION_ID,
+        self::CUSTOMER_ID,
     ];
 
 
@@ -112,16 +120,7 @@ class Entity extends Base\PublicEntity
      * implementing a morphMany association on the
      * 'source' key
      */
-    public function source()
-    {
-        return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
-    }
 
-
-    public function getEntityType()
-    {
-        return $this->getAttribute(self::ENTITY_TYPE);
-    }
 
     public function getAmount()
     {
@@ -143,10 +142,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
-    public function getEntityId()
+    public function getSubscriptionId()
     {
-        return $this->getAttribute(self::ENTITY_ID);
+        return $this->getAttribute(self::SUBSCRIPTION_ID);
     }
+
 
     public function setAmountAvailable(int $amount)
     {
@@ -163,5 +163,22 @@ class Entity extends Base\PublicEntity
         $this->setAmountAvailable($this->getAmountAvailable() - $refundedAmount);
 
         $this->setAmountRefunded($this->getAmountRefunded() + $refundedAmount);
+    }
+
+    protected function setPublicSubscriptionIdAttribute(array & $array)
+    {
+        $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
+
+        if ($subscriptionId !== null)
+        {
+            $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedIdOrNull($subscriptionId);
+        }
+    }
+
+    protected function setPublicCustomerIdAttribute(array & $array)
+    {
+        $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 }

@@ -13,7 +13,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::CUSTOMER_ID => 'required|public_id|size:19',
-        Entity::SUBSCRIPTION_ID => 'sometimes|public_id|size:18|nullable',
+        Entity::SUBSCRIPTION_ID => 'sometimes|string|size:14|nullable',
         Entity::NAME        => 'required|string|max:255',
         Entity::DESCRIPTION => 'sometimes|string|max:2048',
         Entity::AMOUNT      => 'required|mysql_unsigned_int',
