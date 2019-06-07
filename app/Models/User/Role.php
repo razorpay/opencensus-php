@@ -23,9 +23,6 @@ class Role
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
     const RBL_SUPERVISOR        = 'rbl_supervisor';
     const RBL_AGENT             = 'rbl_agent';
-    const FINANCE_L1            = 'Finance L1';
-    const FINANCE_L2            = 'Finance L2';
-    const FINANCE_L3            = 'Finance L3';
 
     // Payment Link Agent - not publicly available
     const AGENT                 = 'agent';
@@ -39,9 +36,6 @@ class Role
         self::SELLERAPP,
         self::OWNER,
         self::AGENT,
-        self::FINANCE_L1,
-        self::FINANCE_L2,
-        self::FINANCE_L3,
     ];
 
     const WRITER_ROLES = [

@@ -78,12 +78,12 @@ class Validator extends Base\Validator
         }
         else if ($product === Product::BANKING)
         {
-            $dashboardRoles = User\Role::BANKING_ROLES;
+            $dynamicRoles = (new Role\Service())->getRoleNamesForMerchant();
+            $dashboardRoles = array_merge($dynamicRoles,User\Role::BANKING_ROLES);
         }
         else
         {
-            $dynamicRoles = (new Role\Service())->getRoleNamesForMerchant();
-            $dashboardRoles = array_merge($dynamicRoles,User\Role::ALL_ROLES);
+            $dashboardRoles = User\Role::ALL_ROLES;
         }
 
         if ($merchant->isTagAdded('enable_rbl_role') === true)

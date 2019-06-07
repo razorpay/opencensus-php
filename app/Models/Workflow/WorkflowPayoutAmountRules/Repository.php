@@ -8,7 +8,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'workflow_payout_amount_rules';
 
-    public function fetchWorkflowRulesForMerchant(int $merchantId)
+    public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
