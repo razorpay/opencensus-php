@@ -3,6 +3,7 @@
 namespace RZP\Tests\P2p\Service\UpiAxis\BankAccount;
 
 use RZP\Tests\P2p\Service\Base;
+use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\BankAccount\Entity;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 
@@ -44,17 +45,28 @@ class BankAccountTest extends TestCase
 
         $bankAccounts = $helper->retrieve($request['callback'], $content);
 
-        $this->assertCollection($bankAccounts, 3);
-
+        $this->assertCollection($bankAccounts, 2);
         // This is to assert that existing bank accounts are getting updates
-        $this->assertUpiPinSet(false, $bankAccounts['items'][2]);
+        $this->assertUpiPinSet(false, $bankAccounts['items'][1]);
 
         $content['sdk']['accounts'][1]['branchName'] = 'Test Branch Name';
         $content['sdk']['accounts'][1]['mpinSet'] = 'true';
+        $content['sdk']['accounts'][1]['referenceId'] = 'UpadatingThis';
+
+        $uniqueId = $content['sdk']['accounts'][1]['bankAccountUniqueId'];
+
+        unset($content['sdk']['accounts'][0]);
 
         $bankAccounts = $helper->retrieve($request['callback'], $content);
 
-        $this->assertUpiPinSet(true, $bankAccounts['items'][2]);
+        $this->assertCollection($bankAccounts, 1);
+        $this->assertUpiPinSet(true, $bankAccounts['items'][0]);
+
+        $bankAccount = $this->getDbBankAccountById($bankAccounts['items'][0]['id']);
+
+        $this->assertSame('UpadatingThis', $bankAccount->getGatewayData()['referenceId']);
+        $this->assertSame($uniqueId, $bankAccount->getGatewayData()['id']);
+        $this->assertSame($uniqueId, $bankAccount->getGatewayData()['bankAccountUniqueId']);
     }
 
     public function testFetchAll()

@@ -229,6 +229,13 @@ class Name
     const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';
     const VIEW_OPERATIONS_REPORT              = 'view_operations_report';
     const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
+    const SETTLEMENT_RELEASE_HOLD_PAYMENT     = 'settlement_release_hold_payment';
+    const BATCH_API_CALL                      = 'batch_api_call';
+    const EDIT_SCROOGE_REDIS_CONFIG           = 'edit_scrooge_redis_config';
+    const EDIT_THROTTLE_SETTINGS              = 'edit_throttle_settings';
+
+    // RazorpayX/Business banking permissions
+    const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
 
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';

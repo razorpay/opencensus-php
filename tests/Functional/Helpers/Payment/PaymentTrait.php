@@ -1020,9 +1020,9 @@ trait PaymentTrait
         $this->ba->scroogeAuth();
 
         $request = array(
-            'method'  => 'PUT',
-            'url'     => '/refunds/'.$input['id'].'/update_status',
-            'content' => $input);
+            'method'    => 'PUT',
+            'url'       => '/refunds/' . $input['id'] . '/update_status',
+            'content'   => $input);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -2001,8 +2001,8 @@ trait PaymentTrait
         };
 
         $cardVault->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing($callable);
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
     }

@@ -189,6 +189,16 @@ class Validator extends Base\Validator
         Entity::NOTES => 'sometimes|notes',
     ];
 
+    protected static $paymentOnholdBulkUpdateRules = [
+        'payment_ids'    => 'required|sequential_array',
+        'payment_ids.*'  => 'required|public_id',
+        'on_hold'        => 'required|boolean',
+    ];
+
+    protected static $paymentCardMigrateRules = [
+        'limit' => 'sometimes|integer',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',

@@ -12,12 +12,13 @@ class DiagClient extends EventTrackerClient
     use Traits\OrderEvent;
     use Traits\PaymentEvent;
 
-    public function trackEvent(string $eventType, string $eventVersion, string $eventName, array $properties)
+    public function trackEvent(string $eventType, string $eventVersion, array $event, array $properties)
     {
         $event = [
             'event_type'    => $eventType,
             'event_version' => $eventVersion,
-            'event'         => $eventName,
+            'event_group'   => $event['group'],
+            'event'         => $event['name'],
             'timestamp'     => (int)(microtime(true) * 1000000),
             'properties'    => $properties,
         ];

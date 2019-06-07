@@ -22,4 +22,16 @@ class PartnerConfigController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * Get all config for a given merchant
+     *
+     * @return mixed
+     */
+    public function fetchConfigByPartner()
+    {
+        $data  = $this->service()->fetchConfigByPartner();
+
+        return ApiResponse::json($data);
+    }
 }

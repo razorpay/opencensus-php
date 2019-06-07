@@ -595,6 +595,15 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $virtualAccountArray,
         ];
 
+        if ($payment->isBankTransfer() === true)
+        {
+            $bankTransfer = $payment->bankTransfer;
+
+            $partialPayload[$bankTransfer->getEntity()] = [
+                'entity' => $bankTransfer->toArrayPublic(),
+            ];
+        }
+
         return $partialPayload;
     }
 

@@ -33,7 +33,7 @@ class BankAccountTransformer extends Transformer
         ]);
 
         // This is by which API will identify the bank account
-        $gatewayData[Entity::ID] = $gatewayData[Fields::REFERENCE_ID];
+        $gatewayData[Entity::ID] = $gatewayData[Fields::BANK_ACCOUNT_UNIQUE_ID];
 
         $gatewayData[Fields::VPA_SUGGESTIONS] = implode(',', $this->input[Fields::VPA_SUGGESTIONS] ?? []);
 

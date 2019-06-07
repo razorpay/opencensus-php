@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Diag\EventCode;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
@@ -40,9 +41,9 @@ trait Capture
         );
 
         $this->app['diag']->trackPaymentEvent(
-            EventCode::PAYMENT_CAPTURE_INITIATED, 
-            $payment, 
-            null, 
+            EventCode::PAYMENT_CAPTURE_INITIATED,
+            $payment,
+            null,
             [
                 'input'  => $input
             ]);
@@ -71,8 +72,8 @@ trait Capture
     public function autoCapturePayment($payment)
     {
         $this->app['diag']->trackPaymentEvent(
-            EventCode::PAYMENT_CAPTURE_INITIATED, 
-            $payment, 
+            EventCode::PAYMENT_CAPTURE_INITIATED,
+            $payment,
             null,
             [
                 'auto_capture' => 1
@@ -481,15 +482,7 @@ trait Capture
         }
         else
         {
-            //
-            // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
-            // to a queue. We then try to capture on HDFC.
-            // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
-            // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
-            // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
-            //
-            if ((($ex instanceof Exception\GatewayTimeoutException) === true) and
-                ($this->payment->getGateway() === Payment\Gateway::HDFC))
+            if ($this->shouldDispatchCaptureOnFailure($ex) === true)
             {
                 $this->dispatchCaptureFailure($ex, $data);
             }
@@ -498,6 +491,30 @@ trait Capture
                 throw $ex;
             }
         }
+    }
+
+    protected function shouldDispatchCaptureOnFailure(\Throwable $ex)
+    {
+        $payment = $this->payment;
+        //
+        // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
+        // to a queue. We then try to capture on HDFC.
+        // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
+        // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
+        // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
+        //
+        // For PaySecure, if we don't capture the payment, the amount would not be settled to NPCI and hence it would
+        // not be settled to us. So, for every exceptions, we should dispatch to capture job for PaySecure.
+        //
+        switch ($payment->getGateway())
+        {
+            case Payment\Gateway::HDFC:
+                return (($ex instanceof Exception\GatewayTimeoutException) === true);
+            case Payment\Gateway::HITACHI:
+                return ($payment->card->getNetworkCode() === Card\Network::RUPAY);
+        }
+
+        return false;
     }
 
     protected function dispatchCaptureFailure(\Throwable $ex, array $data)

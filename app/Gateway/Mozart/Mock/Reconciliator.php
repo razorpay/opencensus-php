@@ -7,6 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Mozart\NetbankingSib;
+use RZP\Gateway\Mozart\NetbankingYesb;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
 class Reconciliator extends Base\Mock\PaymentReconciliator
@@ -27,6 +28,47 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $data;
     }
 
+    protected function netbanking_yesb($input)
+    {
+        $this->fileExtension = FileStore\Format::CSV;
+
+        $this->fileToWriteName = 'Recon_' . Carbon::now(Timezone::IST)->format('dmY');
+
+        for ($i = 0; $i < 5; $i++)
+        {
+            $data[] = [];
+        }
+
+        $data[] = NetbankingYesb\ReconFields::RECON_FIELDS;
+
+        $data[] = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d/m/Y');
+
+            $col = [
+                NetbankingYesb\ReconFields::MERCHANT_CODE      => 'test_merchant',
+                NetbankingYesb\ReconFields::CLIENT_CODE        => 'RAZORPAY',
+                NetbankingYesb\ReconFields::PAYMENT_ID         => $row['payment']['id'],
+                NetbankingYesb\ReconFields::TRANSACTION_DATE   => $date,
+                NetbankingYesb\ReconFields::AMOUNT             => $row['payment']['amount'] / 100,
+                NetbankingYesb\ReconFields::SERVICE_CHARGES    => '0',
+                NetbankingYesb\ReconFields::BANK_REFERENCE_ID  => $this->fetchBankPaymentId($row['mozart']['raw']),
+                NetbankingYesb\ReconFields::TRANSACTION_STATUS => NetbankingYesb\Constants::RECON_STATUS_SUCCESS,
+            ];
+
+            $this->content($col, 'col_payment_yesb_nb_recon');
+
+            $data[] = $col;
+        }
+
+        return $data;
+    }
+
     protected function netbanking_sib($input)
     {
         $this->fileExtension = FileStore\Format::TXT;
@@ -38,9 +80,9 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         foreach ($input as $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'],
-                Timezone::IST)
-                ->format('d/m/Y');
+                                $row['payment']['created_at'],
+                                Timezone::IST)
+                                ->format('d/m/Y');
 
             $col = [
                 NetbankingSib\ReconFields::TRANSACTION_DATE      => $date,
@@ -49,7 +91,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 NetbankingSib\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row['mozart']['raw']),
             ];
 
-            $this->content($col, 'col_payment_yesb_nb_recon');
+            $this->content($col, 'col_payment_sib_nb_recon');
 
             $data[] = $col;
         }
@@ -85,7 +127,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
         else
         {
-            parent::createFile($content, $type, $store);
+             return parent::createFile($content, $type, $store);
         }
     }
 

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use View;
 use ApiResponse;
+use Request as Req;
 use Illuminate\Http\Request;
 
 use RZP\Exception\BadRequestException;
@@ -105,5 +106,43 @@ class BatchController extends Controller
         $response = $this->service()->validateFile($input);
 
         return ApiResponse::json($response);
+    }
+
+    /**
+     * @param Request $request
+     *
+     * After Batch is processed, Batch Service will
+     * call batch/sendmail route to trigger mail
+     * to merchant about batch completion.
+     *
+     * @return mixed
+     */
+    public function sendMail(Request $request)
+    {
+        $input = $request->all();
+
+        $response = $this->service()->sendMail($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param $path
+     *
+     * @return array
+     *
+     *  Redirects to batch Micro Service.
+     */
+    public function sendRequest($path)
+    {
+        $method = Req::method();
+
+        $input = Req::all();
+
+        $options['mode'] = $this->app['rzp.mode'];
+
+        $response = $this->app->batchService->getResponseFromBatchService($path, $method, $options, $input);
+
+        return $response;
     }
 }

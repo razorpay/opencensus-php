@@ -1060,4 +1060,22 @@ class TerminalTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateNetbankingYesbTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateNetbankingCanaraTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

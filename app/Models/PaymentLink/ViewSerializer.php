@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Models\Currency\Currency;
 
 class ViewSerializer extends Base\Core
 {
@@ -126,6 +127,7 @@ class ViewSerializer extends Base\Core
 
     protected function addDerivedAttributesForPaymentLink(array & $serialized)
     {
+        $serialized['min_amount_value'] = Currency::getMinAmount($this->paymentLink->getCurrency());
     }
 
     protected function addFormattedAmountAttributesForPaymentLink(array & $serialized)

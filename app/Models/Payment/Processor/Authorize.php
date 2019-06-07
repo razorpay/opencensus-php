@@ -259,7 +259,8 @@ trait Authorize
                 [
                     'attempt'     => $retryAttempts,
                     'terminal_id' => $payment->getTerminalId(),
-                    'gateway'     => $payment->getGateway()
+                    'gateway'     => $payment->getGateway(),
+                    'shared'      => $currentTerminal->isShared()
                 ]);
 
             $terminalGatewayInput = $gatewayInput;
@@ -347,7 +348,12 @@ trait Authorize
     {
         try
         {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED, $payment);
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED,
+                $payment,
+                null,
+                $gatewayInput['authenticate'] ?? []
+            );
 
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
 
@@ -773,7 +779,7 @@ trait Authorize
             return;
         }
 
-        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        if (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider, true) === true)
         {
             return;
         }
@@ -805,16 +811,16 @@ trait Authorize
                 ]);
         }
 
-        if ((empty($cardlessEmiData['provider']) === true) or
-            ($cardlessEmiData['provider'] !== $input['provider']))
+        if ((empty($cardlessEmiData[Payment\Entity::PROVIDER]) === true) or
+            ($cardlessEmiData[Payment\Entity::PROVIDER] !== $input[Payment\Entity::PROVIDER]))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PROVIDER,
                 null,
                 [
                     'payment_id'        => $payment->getId(),
-                    'input_provider'    => $input['provider'],
-                    'provider'          => $cardlessEmiData['provider'] ?? null,
+                    'input_provider'    => $input[Payment\Entity::PROVIDER],
+                    'provider'          => $cardlessEmiData[Payment\Entity::PROVIDER] ?? null,
                 ]);
         }
     }
@@ -2211,6 +2217,7 @@ trait Authorize
      * @param array          $input        Input data received from checkout/merchant.
      * @param array          $gatewayInput Data that is required by gateway for the payment to be processed.
      *
+     * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
@@ -2323,7 +2330,7 @@ trait Authorize
 
             $contact = $input['contact'];
 
-            $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
+            $cacheKey = strtoupper($input[Payment\Entity::PROVIDER]) . '_' . $contact . '_' . $merchantId;
 
             $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 
@@ -3050,7 +3057,13 @@ trait Authorize
         }
         // @codingStandardsIgnoreEnd
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CARDSAVING_PROCESSED, $payment);
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_CARDSAVING_PROCESSED,
+            $payment,
+            null,
+            [
+                'local' => $token->isLocal()
+            ]);
 
         return $token;
     }
@@ -3494,7 +3507,6 @@ trait Authorize
 
     protected function migrateCardDataIfApplicable($payment)
     {
-
         try
         {
             if (($payment->isMethodCardOrEmi() === false) or
@@ -4436,7 +4448,13 @@ trait Authorize
 
         $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
 
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT, $payment);
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
+            $payment,
+            null,
+            [
+                'url' => $response['url'] ?? ''
+            ]);
 
         return $response;
     }
@@ -4913,8 +4931,6 @@ trait Authorize
 
         $merchantMethods = $this->methods;
 
-        $this->checkAndValidateAmexIfNotEnabled($merchantMethods, $card);
-
         // Only check enabled or not on live mode
         if ($this->mode === Mode::TEST)
         {
@@ -4945,7 +4961,7 @@ trait Authorize
                 'number');
         }
 
-        $this->checkAndValidateIfCardNetworkDisabled($payment->merchant, $card);
+        $this->checkAndValidateIfCardNetworkDisabled($merchantMethods, $card);
     }
 
     protected function verifyFeatureForMerchant(Merchant\Entity $merchant, $feature)
@@ -5032,6 +5048,22 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
                 'number');
+        }
+    }
+
+    protected function checkAndValidateIfCardNetworkDisabled($methods, $card)
+    {
+        $network = $card->getNetworkCode();
+
+        if ($methods->isCardNetworkEnabled($network) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+                null,
+                [
+                    'network' => $network,
+                    'iin'     => $card->getIin()
+                ]);
         }
     }
 
@@ -5290,28 +5322,6 @@ trait Authorize
         return hash_hmac('sha1', $string, $secret);
     }
 
-    protected function checkAndValidateIfCardNetworkDisabled(Merchant\Entity $merchant, Card\Entity $card)
-    {
-        $disabledNetworkFeatures = [
-            Card\Network::RUPAY => Feature\Constants::DISABLE_RUPAY,
-            Card\Network::MAES  => Feature\Constants::DISABLE_MAESTRO,
-        ];
-
-        $networkCode = $card->getNetworkCode();
-
-        if ((isset($disabledNetworkFeatures[$networkCode]) === true) and
-            ($merchant->isFeatureEnabled($disabledNetworkFeatures[$networkCode]) === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
-                null,
-                [
-                    'network' => $networkCode,
-                    'iin'     => $card->getIin()
-                ]);
-        }
-    }
-
     protected function isMagicEnabled(Payment\Entity $payment)
     {
         if ($payment->isMethodCardOrEmi() === false)
@@ -5482,37 +5492,11 @@ trait Authorize
             ]
         );
 
-        $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
-
-        if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
-        {
-            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
-        }
-
-        $key = $payment->getCacheRedirectInputKey();
-
-        $inputDetails = $this->cache->get($key);
-
-        if ($inputDetails === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
-            );
-        }
-
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
-        {
-            $this->setCardNumberAndCvv($inputDetails);
-        }
-
         $resource = $this->getCallbackMutexResource($payment);
 
         $response = $this->mutex->acquireAndRelease(
             $resource,
-            function() use ($payment, $inputDetails)
+            function() use ($payment)
             {
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
@@ -5527,6 +5511,18 @@ trait Authorize
                 {
                     return $this->rethrowFailedPaymentErrorException($payment);
                 }
+
+                $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
+
+                if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
+                {
+                    $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+                }
+
+                $inputDetails = $this->getInputDetails($payment);
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
@@ -5566,6 +5562,27 @@ trait Authorize
             2000);
 
         return $response;
+    }
+
+    protected function getInputDetails($payment)
+    {
+        $key = $payment->getCacheRedirectInputKey();
+
+        $inputDetails = $this->cache->get($key);
+
+        if ($inputDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+            );
+        }
+
+        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
+        {
+            $this->setCardNumberAndCvv($inputDetails);
+        }
+
+        return $inputDetails;
     }
 
     protected function getFallbackOrRedirectType($payment, $ret)

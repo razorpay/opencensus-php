@@ -265,6 +265,8 @@ return array(
 
     'proxy_address'                => env('PROXY_ADDRESS'),
 
+    'subscription_proxy_timeout'   => env('SUBSCRIPTION_PROXY_TIMEOUT', 10),
+
     'throw_exception_in_testing'   => env('THROW_EXCEPTION_IN_TESTING', true),
 
     'data_store' => [

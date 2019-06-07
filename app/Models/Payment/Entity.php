@@ -176,6 +176,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const PROVIDER              = 'provider';
+
     const OFFER_ID              = 'offer_id';
     const SETTLED_BY            = 'settled_by';
 
@@ -815,7 +817,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if ($input[Entity::METHOD] === Method::CARDLESS_EMI)
         {
-            $this->setAttribute(self::WALLET, $input['provider']);
+            $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
         }
     }
 
@@ -2122,7 +2124,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         switch($this->getMethod())
         {
             case Method::CARD:
-                return [$method, $this->getFormattedCard()];
             case Method::EMI:
                 return [$method, $this->getFormattedCard()];
             case Method::NETBANKING:
@@ -2137,6 +2138,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, ''];
             case Method::EMANDATE:
                 return [$method, $this->getBankName()];
+            case Method::CARDLESS_EMI:
+                return [$method, Processor\CardlessEmi::getName($this->getWallet())];
         }
     }
 
@@ -2652,6 +2655,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function bankTransfer()
     {
         return $this->hasOne('RZP\Models\BankTransfer\Entity');
+    }
+
+    public function bharatQr()
+    {
+        return $this->hasOne('RZP\Models\BharatQr\Entity');
     }
 
     public function batch()

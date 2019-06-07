@@ -26,6 +26,7 @@ class Shared
     const NETBANKING_BOB_TERMINAL            = '100NbBbdaTrmnl';
     const NETBANKING_VIJAYA_TERMINAL         = '100NbVijbTrmnl';
     const NETBANKING_CORPORATION_TERMINAL    = '100NbCorpTrmnl';
+    const NETBANKING_CUB_TERMINAL            = '1000NbCubTrmnl';
     const NETBANKING_KOTAK_TERMINAL          = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL          = '100NbIciciTmnl';
     const NETBANKING_ICICI_CRP_TERMINAL      = '100NbIcicCrpTl';
@@ -50,6 +51,7 @@ class Shared
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
     const NETBANKING_SIB_TERMINAL            = '1000NbSibTrmnl';
     const NETBANKING_SBI_TERMINAL            = '100NbSbinTrmnl';
+    const NETBANKING_YESB_TERMINAL           = '100NbYesbTrmnl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';

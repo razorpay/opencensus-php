@@ -32,6 +32,8 @@ class CardVault
 
     protected $request;
 
+    protected $cardNumberToToken = [];
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -49,16 +51,27 @@ class CardVault
 
     public function tokenize($input)
     {
+        $key  = '';
+
         if (array_key_exists('card', $input) === true)
         {
             $payload = [
                 self::SECRET => $input['card'],
             ];
+
+            $key = $input['card'];
         }
 
         if (array_key_exists(self::SCHEME, $input) === true)
         {
             $payload[self::SCHEME] = $input[self::SCHEME];
+
+            $key = $key . '_' . $input[self::SCHEME];
+        }
+
+        if (empty($this->cardNumberToToken[$key]) === false)
+        {
+            return $this->cardNumberToToken[$key];
         }
 
         $response = $this->sendRequest('tokenize', 'post', $payload);
@@ -68,6 +81,8 @@ class CardVault
             throw new Exception\RuntimeException(
                 'card vault request failed', ['data' => $response]);
         }
+
+        $this->cardNumberToToken[$key] = $response[self::TOKEN];
 
         return $response[self::TOKEN];
     }
@@ -111,10 +126,15 @@ class CardVault
         return $response;
     }
 
-    public function deleteToken($token)
+    public function deleteToken($tempVaultToken)
     {
-        // need to implement this
-        return [];
+        $input = [
+            self::TOKEN  => $tempVaultToken,
+        ];
+
+        $response = $this->sendRequest('token/delete', 'post', $input);
+
+        return $response;
     }
 
     public function sendRequest($url, $method, $data = null)

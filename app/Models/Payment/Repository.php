@@ -1051,7 +1051,7 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::AUTHORIZED)
                     ->groupBy(Entity::MERCHANT_ID)
                     ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
     }
@@ -1072,7 +1072,7 @@ class Repository extends Base\Repository
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->groupBy(Entity::MERCHANT_ID)
                     ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
     }
@@ -1411,8 +1411,8 @@ class Repository extends Base\Repository
 
     protected function addQueryParamAcquirerData($query, $params)
     {
-        $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
-        $bankAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::NETBANKING . "', " . Entity::REFERENCE1 . "=?, '')";
+        $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . Method::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
+        $bankAcqDataSql = "IF(" . Entity::METHOD . " = '" . Method::NETBANKING . "', " . Entity::REFERENCE1 . "=?, '')";
 
         // Acquirer data column is picked based on method
         $query->where(function ($q) use ($cardAcqDataSql, $bankAcqDataSql, $params)
@@ -1621,6 +1621,33 @@ class Repository extends Base\Repository
                     ->betweenTime($from, $to)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function findPaymentsWithCardVault(string $vault, int $limit)
+    {
+        $cardRepo = $this->repo->card;
+
+        $cardTableName = $cardRepo->getTableName();
+
+        $cardIdColumn = $cardRepo->dbColumn(Card\Entity::ID);
+
+        $cardVaultColumn = $cardRepo->dbColumn(Card\Entity::VAULT);
+
+        $paymentData = $this->dbColumn('*');
+
+        $timestamp = time() - Entity::PAYMENT_WINDOW;
+
+        $createdAt  = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentCardIdColumn  = $this->dbColumn(Entity::CARD_ID);
+
+        return $this->newQuery()
+                    ->join($cardTableName, $paymentCardIdColumn, '=', $cardIdColumn)
+                    ->where($cardVaultColumn, '=', $vault)
+                    ->where($createdAt, '<=', $timestamp)
+                    ->select($paymentData)
+                    ->limit($limit)
                     ->get();
     }
 

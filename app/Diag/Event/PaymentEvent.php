@@ -84,5 +84,12 @@ class PaymentEvent extends Event
                 'currency' => $order->getCurrency()
             ];
         }
+
+        $metadata = $payment->getMetadata();
+
+        if (empty($metadata) === false)
+        {
+            $properties['metadata'] = $metadata;
+        }
     }
 }

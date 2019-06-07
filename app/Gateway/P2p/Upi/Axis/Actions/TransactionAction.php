@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis\Actions;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Gateway\P2p\Upi\Axis\S2sDirect;
 
 class TransactionAction extends Action
 {
@@ -13,6 +14,10 @@ class TransactionAction extends Action
     const PAY_COLLECT                               = 'PAY_COLLECT';
 
     const DECLINE_COLLECT                           = 'DECLINE_COLLECT';
+
+    const RAISE_QUERY                               = 'RAISE_QUERY';
+
+    const QUERY_STATUS                              = 'QUERY_STATUS';
 
     const MAP = [
         self::SEND_MONEY => [
@@ -208,6 +213,20 @@ class TransactionAction extends Action
                     Fields::TRANSACTION_TIME_STAMP,
                     Fields::UDF_PARAMETERS,
                 ],
+            ],
+        ],
+
+        self::RAISE_QUERY => [
+            self::SOURCE    => self::DIRECT,
+            self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
+
+        self::QUERY_STATUS => [
+            self::SOURCE    => self::DIRECT,
+            self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
             ],
         ],
     ];

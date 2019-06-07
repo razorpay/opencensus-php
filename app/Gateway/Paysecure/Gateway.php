@@ -26,7 +26,7 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'paysecure_%s_card_details';
-    const CARD_CACHE_TTL = 0;
+    const CARD_CACHE_TTL = 14400;
 
     protected $gatewayPayment = null;
 
@@ -93,8 +93,6 @@ class Gateway extends Base\Gateway
             $request = $this->getRedirectRequest($response);
 
             $this->traceGatewayPaymentRequest($request, $input);
-
-            return $request;
         }
         // Iframe flow
         else
@@ -114,9 +112,9 @@ class Gateway extends Base\Gateway
             $request['content'] = View::make('gateway.paysecurePinpadForm')
                                       ->with('data', $this->getPinpadData($response))
                                       ->render();
-
-            return $request;
         }
+
+        return $request;
     }
 
     /**
@@ -230,19 +228,18 @@ class Gateway extends Base\Gateway
 
         $parsed = parse_url($redirectUrl);
 
+        $content = $this->getMappedAttributes($response);
+
         if (isset($parsed['query']) === true)
         {
             parse_str($parsed['query'], $parsed);
 
             $hkey = $parsed[Fields::ACCU_HKEY];
 
-            $content = [
-                Entity::GATEWAY_TRANSACTION_ID => $response[Fields::TRAN_ID ],
-                Entity::HKEY                   => $hkey,
-            ];
-
-            $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
+            $content[Entity::HKEY] = $hkey;
         }
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content, false);
     }
 
     protected function getRedirectRequest($response)

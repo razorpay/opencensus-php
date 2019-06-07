@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const AEPS              = 'aeps';
     const EMANDATE          = 'emandate';
     const CARDLESS_EMI      = 'cardless_emi';
+    const PAYLATER          = 'paylater';
     const CARD_NETWORKS     = 'card_networks';
     const PHONEPE           = 'phonepe';
 
@@ -300,44 +301,19 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isCardNetworkEnabled(string $network): bool
+    {
+        if (Network::isValidNetworkCode($network) === false)
+        {
+            return false;
+        }
+
+        return ((bool) $this->getCardNetworks()[$network]);
+    }
+
     public function isAmexEnabled()
     {
-        return $this->getAttribute(self::AMEX);
-    }
-
-    public function isAmexCardEnabled(): bool
-    {
         return ((bool) $this->getCardNetworks()[Network::AMEX]);
-    }
-
-    public function isDinersEnabled(): bool
-    {
-        return ((bool) $this->getCardNetworks()[Network::DICL]);
-    }
-
-    public function isMastercardEnabled(): bool
-    {
-        return ((bool) $this->getCardNetworks()[Network::MC]);
-    }
-
-    public function isMaestroEnabled(): bool
-    {
-        return ((bool) $this->getCardNetworks()[Network::MAES]);
-    }
-
-    public function isVisaEnabled(): bool
-    {
-        return ((bool) $this->getCardNetworks()[Network::VISA]);
-    }
-
-    public function isJcbEnabled(): bool
-    {
-        return ((bool) $this->getCardNetworks()[Network::JCB]);
-    }
-
-    public function isRupayEnabled(): bool
-    {
-        return ((bool) $this->getCardNetworks()[Network::RUPAY]);
     }
 
     public function isPaytmEnabled()
@@ -373,6 +349,8 @@ class Entity extends Base\PublicEntity
     public function isMpesaEnabled()
     {
         return false;
+
+        return $this->getAttribute(self::MPESA);
     }
 
     public function isPayumoneyEnabled()
@@ -458,7 +436,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmex()
     {
-        return $this->getAttribute(self::AMEX);
+        return ((bool) $this->getCardNetworks()[Network::AMEX]);
     }
 
     public function getCardNetworks(): array

@@ -15,6 +15,10 @@ class ErrorMap
     const SESSION_EXPIRED                               = 'SESSION_EXPIRED';
     const INVALID_DATA                                  = 'INVALID_DATA';
     const INVALID_SIGNATURE                             = 'INVALID_SIGNATURE';
+    const NETWORK_ERROR                                 = 'NETWORK_ERROR';
+    const SMS_SENDING_FAILED                            = 'SMS_SENDING_FAILED';
+    const SMS_VERIFICATION_EXPIRED                      = 'SMS_VERIFICATION_EXPIRED';
+    const SDK_CHECKSUM_MISMATCH                         = 'SDK_CHECKSUM_MISMATCH';
 
     public static $errorMap = [
         self::NOT_AVAILABLE                             => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -24,6 +28,10 @@ class ErrorMap
         self::INVALID_DATA                              => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::INVALID_SIGNATURE                         => ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED,
         self::INACTIVE_DEVICE                           => ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE,
+        self::NETWORK_ERROR                             => ErrorCode::GATEWAY_ERROR_CONNECTION_ERROR,
+        self::SMS_SENDING_FAILED                        => ErrorCode::BAD_REQUEST_SMS_FAILED,
+        self::SMS_VERIFICATION_EXPIRED                  => ErrorCode::BAD_REQUEST_SMS_FAILED,
+        self::SDK_CHECKSUM_MISMATCH                     => ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
     ];
 
     public static $pendingErrors = [

@@ -1233,6 +1233,7 @@ class AuthorizeTest extends TestCase
             'pricing_plan_id' => '1hDYlICobzOCYt',
         ]);
 
+        $this->fixtures->merchant->disableCardNetworks('10000000000000', ['maes']);
         $this->fixtures->merchant->addFeatures(['disable_maestro']);
 
         $payment['card']['number'] = '5081597022059105';
@@ -1263,6 +1264,7 @@ class AuthorizeTest extends TestCase
             'pricing_plan_id' => '1hDYlICobzOCYt',
         ]);
 
+        $this->fixtures->merchant->disableCardNetworks('10000000000000', ['rupay']);
         $this->fixtures->merchant->addFeatures(['disable_rupay']);
 
         $payment['card']['number'] = '6073849700004947';
@@ -1281,6 +1283,83 @@ class AuthorizeTest extends TestCase
 
             $this->makeRequestAndGetContent($request);
         });
+    }
+
+    public function testAuthorizeWithCardnetworkDisabled()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ]);
+
+        $cards = [
+            ['6073849700004947', '880'], // Rupay
+            ['341111111111111', '8808'], // Amex
+            ['30569309025904', '880'],   // Diners
+            ['2030400000121212', '880'], // Bajaj Finserv
+        ];
+
+        $this->fixtures->merchant->disableCardNetworks('10000000000000', ['amex', 'rupay', 'dicl', 'bajaj']);
+
+        $data = $this->testData['testCardNetworkDisabled'];
+
+        foreach($cards as $card)
+        {
+            $payment['card']['number'] = $card[0];
+            $payment['card']['cvv']    = $card[1];
+
+            $this->runRequestResponseFlow($data, function() use ($payment)
+            {
+                $request = [
+                    'method'  => 'POST',
+                    'url'     => '/payments',
+                    'content' => $payment
+                ];
+
+                $this->ba->publicLiveAuth();
+
+                $this->makeRequestAndGetContent($request);
+            });
+        }
+    }
+
+    public function testAuthorizeWithCardnetworkEnabled()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ]);
+
+        $cards = [
+            ['6073849700004947', '880'], // Rupay
+            ['30569309025904', '880'], // Diners
+        ];
+
+        $this->fixtures->merchant->enableCardNetworks('10000000000000', ['rupay', 'dicl']);
+
+        foreach($cards as $card)
+        {
+            $payment['card']['number'] = $card[0];
+            $payment['card']['cvv']    = $card[1];
+
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/payments',
+                'content' => $payment
+            ];
+
+            $this->ba->publicLiveAuth();
+
+            $response = $this->makeRequestAndGetContent($request);
+
+            $this->assertArrayHasKey('razorpay_payment_id', $response);
+        }
     }
 
     public function testAuthCodeUpdateFromLateAuth()

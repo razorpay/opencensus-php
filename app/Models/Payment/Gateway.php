@@ -51,6 +51,7 @@ class Gateway
     const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_CUB         = 'netbanking_cub';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
@@ -62,6 +63,7 @@ class Gateway
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
+    const NETBANKING_YESB        = 'netbanking_yesb';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -227,6 +229,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
         self::NETBANKING_CORPORATION,
+        self::HITACHI,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -271,7 +274,8 @@ class Gateway
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::ATOM,
-        Payment\Gateway::SHARP
+        Payment\Gateway::SHARP,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -288,8 +292,10 @@ class Gateway
         IFSC::KKBK,
         IFSC::INDB,
         IFSC::ICIC,
+        IFSC::USFB,
+        IFSC::IBKL,
         Netbanking::PUNB_R,
-        Netbanking::BARB_R
+        Netbanking::BARB_R,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -536,6 +542,7 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -610,6 +617,7 @@ class Gateway
             self::NETBANKING_SIB,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
+            self::NETBANKING_CUB,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
             self::NETBANKING_CORPORATION,
@@ -627,6 +635,7 @@ class Gateway
             self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
+            self::NETBANKING_YESB,
         ],
 
         //
@@ -755,6 +764,7 @@ class Gateway
         self::AMEX,
         self::WALLET_OPENWALLET,
         self::HITACHI,
+        self::CARDLESS_EMI,
     ];
 
     /**
@@ -785,6 +795,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+            Network::RUPAY,
         ],
         self::HDFC => [
             Network::MC,
@@ -992,11 +1003,14 @@ class Gateway
         self::UPI_MINDGATE,
         self::UPI_ICICI,
         self::BAJAJ,
+        self::AMEX,
+        self::ISG,
     ];
 
     public static $captureVerifyQREnabledGateways = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::ISG
     ];
 
     /**
@@ -1248,12 +1262,14 @@ class Gateway
         IFSC::UTIB         => Gateway::NETBANKING_AXIS,
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
+        IFSC::CIUB         => Gateway::NETBANKING_CUB,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
+        IFSC::YESB         => Gateway::NETBANKING_YESB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1355,7 +1371,6 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
-        Gateway::CYBERSOURCE,
         Gateway::ENACH_RBL,
     ];
 

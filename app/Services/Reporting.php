@@ -324,6 +324,9 @@ class Reporting implements ExternalService
             $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
 
             $apiResponse = $this->createScheduleOnApi($scheduleRequest);
+
+            // Link Api schedule with reporting schedule
+            $response = $this->linkSingleScheduledTasks($response);
         }
 
         if (empty($apiResponse) === true)
@@ -332,12 +335,17 @@ class Reporting implements ExternalService
                 'Failed to create schedule');
         }
 
-        return $apiResponse;
+        return $response;
     }
 
     public function fetchScheduleMultiple(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+        $scheduleDataList = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+
+        $scheduleTaskData = $this->linkAllScheduledTasks($scheduleDataList);
+
+        return $scheduleTaskData;
+
     }
 
     public function fetchScheduleById(string $id): array
@@ -437,18 +445,35 @@ class Reporting implements ExternalService
 
     public function fetchLogMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input, $headers);
     }
 
     // TODO: Add filter based upon feature/tags for admin calls
     public function fetchConfigMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $headers);
+    }
+
+    protected function fetchHeadersFromInput(array $input)
+    {
+        $consumer    = $input['consumer'] ?? Account::SHARED_ACCOUNT;
+        $reportType = $input['report_type'] ?? 'merchant';
+
+        return [
+            self::CONSUMER_HEADER    => $consumer,
+            self::REPORT_TYPE_HEADER => $reportType,
+        ];
     }
 
     public function fetchScheduleMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $headers);
     }
 
     protected function createScheduleOnApi(array $input)
@@ -697,25 +722,6 @@ class Reporting implements ExternalService
         return $items;
     }
 
-    protected function getPartnerConfigs(Merchant\Entity $merchant)
-    {
-        $partnerConfigs = (new Config\Core)->fetchAllConfigsByPartner($merchant);
-
-        $partnerConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-            return ($partnerConfig->isCommissionsEnabled() === true);
-        });
-
-        $commissionConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-            return ($partnerConfig->getCommissionModel() === Config\CommissionModel::COMMISSION);
-        });
-
-        $subventionConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-            return ($partnerConfig->getCommissionModel() === Config\CommissionModel::SUBVENTION);
-        });
-
-        return [$commissionConfigs, $subventionConfigs];
-    }
-
     protected function filterOnReportTypeAndNameAndConsumer(Merchant\Entity $merchant, $items)
     {
         $features = $merchant->getEnabledFeatures();
@@ -726,12 +732,18 @@ class Reporting implements ExternalService
         $showTxnCommissionReport          = false;
         $showAggregateCommissionReport    = false;
         $showSubventionReports            = false;
+        $showAggregateReports             = false;
 
         if ($merchant->isPartner() === true)
         {
-            list($commissionConfigs, $subventionConfigs) = $this->getPartnerConfigs($merchant);
+            if ($merchant->isResellerPartner() === false)
+            {
+                $showAggregateReports = true;
+            }
 
-            // if at least one commission config is enabled, we show commission reports
+            list($commissionConfigs, $subventionConfigs) = (new Config\Core)->fetchAllConfigGroupsByPartner($merchant);
+
+            // if at least one commission config is present, we show commission reports
             if ($commissionConfigs->isNotEmpty() === true)
             {
                 if ($merchant->isResellerPartner() === false)
@@ -812,6 +824,41 @@ class Reporting implements ExternalService
                 'consumer'  => Account::SHARED_ACCOUNT,
                 'condition' => $showSubventionReports,
             ],
+            [
+                'name'        => 'Payments',
+                'type'        => 'payments',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Refunds',
+                'type'        => 'refunds',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Combined',
+                'type'        => 'transactions',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Settlements',
+                'type'        => 'settlements',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Settlements Recon',
+                'type'        => 'settlements',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
         ];
 
         $items = $items->filter(function ($value) use ($filterConditions) {
@@ -821,7 +868,11 @@ class Reporting implements ExternalService
                     ($value['type'] === $filterCondition['type']) and
                     ($value['consumer'] === $filterCondition['consumer']))
                 {
-                    return $filterCondition['condition'];
+                    if ((empty($filterCondition['report_type']) === true) or
+                        ($filterCondition['report_type'] === $value['report_type']))
+                    {
+                        return $filterCondition['condition'];
+                    }
                 }
             }
 
@@ -940,5 +991,61 @@ class Reporting implements ExternalService
         }
 
         return $parentId;
+    }
+
+    /**
+     * Loop through all the reporting schedules and link API schedule object in it.
+     *
+     * @param  array  $scheduleData
+     *
+     * @return array
+     */
+    protected function linkAllScheduledTasks(array $scheduleDataList)
+    {
+
+        if (isset($scheduleDataList['error']) === true)
+        {
+            return $scheduleDataList;
+        }
+
+        if (isset($scheduleDataList['items']) === false)
+        {
+            return $scheduleDataList;
+        }
+
+        foreach ($scheduleDataList['items'] as &$item)
+        {
+            $item = $this->linkSingleScheduledTasks($item);
+        }
+
+        return $scheduleDataList;
+    }
+
+    /**
+     * Linking API schedule object in the passed reporting schedule object so the frontend can show the
+     * schedule details to the users
+     *
+     * @param  array  $scheduleData
+     *
+     * @return array
+     */
+    protected function linkSingleScheduledTasks(array $scheduleData)
+    {
+
+        if (isset($scheduleData['id']) === false)
+        {
+            return $scheduleData;
+        }
+
+        $entityId = $this->generateEntityId($scheduleData['id']);
+
+        $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
+
+        if ($scheduleTask !== null)
+        {
+            $scheduleData['schedule'] = $scheduleTask->schedule;
+        }
+
+        return $scheduleData;
     }
 }

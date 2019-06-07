@@ -22,6 +22,40 @@ class Scrooge extends BaseScrooge
             ];
     }
 
+    public function initiateRefundRecon(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $refunds = [];
+
+        foreach ($input['refunds'] as $refund)
+        {
+            $refunds[] = [
+                'arn'               => $refund['arn'],
+                'gateway_keys'      => [
+                    'arn'               => '12345678910',
+                    'recon_batch_id'    => $input['batch_id']
+                ],
+                'reconciled_at'         => 1549108187,
+                'refund_id'             => $refund['refund_id'],
+                'status'                => 'processed',
+                'gateway_settled_at'    => $refund['gateway_settled_at']
+            ];
+        }
+
+        $response = [
+            'body' => [
+                'response' => [
+                    'batch_id'                  => $input['batch_id'],
+                    'chunk_number'              => $input['chunk_number'],
+                    'refunds'                   => $refunds,
+                    'should_force_update_arn'   => $input['should_force_update_arn'],
+                    'source'                    => 'manual',
+                ]
+            ]
+        ];
+
+        return $response;
+    }
+
     public function getReports(array $input): array
     {
         return json_decode('{"data": [

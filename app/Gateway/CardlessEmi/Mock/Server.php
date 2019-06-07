@@ -157,9 +157,7 @@ class Server extends Base\Mock\Server
 
         $content = json_encode($content);
 
-        $content = $this->makeJsonResponse($content);
-
-        return $content;
+        return $this->makeJsonResponse($content);
     }
 
     public function makeJsonResponse($json)

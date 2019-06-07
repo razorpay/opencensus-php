@@ -12,6 +12,13 @@ use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class Core extends Base\Core
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function retrieveRefund($refundId, $merchantId, $paymentId = null)
     {
         if ($paymentId !== null)
@@ -189,5 +196,37 @@ class Core extends Base\Core
                 return false;
             }
         });
+    }
+
+    public function updatePaymentOnHold(Payment\Entity $payment, bool $onHold)
+    {
+        return $this->mutex->acquireAndRelease(
+            $payment->getId(),
+            function() use ($payment, $onHold)
+            {
+                $this->repo->transaction(
+                    function() use ($payment, $onHold)
+                    {
+                        $this->repo->payment->lockForUpdateAndReload($payment);
+
+                        $payment->setOnHold($onHold);
+
+                        $this->repo->saveOrFail($payment);
+
+                        $txn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+
+                        $txn->setOnHold($onHold);
+
+                        $this->repo->saveOrFail($txn);
+
+                        $this->trace->info(
+                            TraceCode::PAYMENT_ON_HOLD,
+                            [
+                                'payment_id'  => $payment->getId(),
+                                'hold_status' => $payment->getOnHold()
+                            ]
+                        );
+                    });
+            });
     }
 }

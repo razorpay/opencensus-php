@@ -30,7 +30,20 @@ class Core extends Base\Core
         'C1fo6ARXco94tP' => true,
         'C1fp6DAnDH4YUz' => true,
         'C1fq8jgl8NRKnh' => true,
+        'CToqTdhmF5b4bx' => true,
+        'CTq2cnNAs3Qxeo' => true,
+        'CTqJ4as5l5X6iQ' => true,
+        'CTqQPHMDvKRab6' => true,
+        'CUt2G8y6WttO2g' => true,
+        'CUsPNux3ZRGMEO' => true,
+        'CUsSCFbU2Rg4zr' => true,
+        'CUsroOupiUIEK2' => true,
+        'CUsv44mEYn5oyV' => true,
+        'CUszQfJSmGEXwH' => true,
         'BoE6Rycqadwtvh' => false,
+        'CBcPtPwFgpjdUp' => false,
+        'ByWbZS28NK9CeG' => false,
+        'BREsAWr9hzga0n' => false,
     ];
 
     /**

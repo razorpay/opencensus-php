@@ -94,7 +94,7 @@ class CreateRefunds extends Migration
             $table->tinyInteger(Refund::REFERENCE4)
                   ->nullable();
 
-            $table->integer(Refund::REFERENCE6)
+            $table->integer(Refund::REVERSED_AT)
                   ->nullable();
 
             $table->char(Refund::BALANCE_ID, Balance::ID_LENGTH)
@@ -129,6 +129,7 @@ class CreateRefunds extends Migration
             $table->index(Refund::CREATED_AT);
             $table->index(Refund::LAST_ATTEMPTED_AT);
             $table->index(Refund::PROCESSED_AT);
+            $table->index(Refund::REVERSED_AT);
             $table->index(Refund::REFERENCE1);
             $table->index(Refund::UPDATED_AT);
             $table->index([Refund::MERCHANT_ID, Refund::CREATED_AT]);

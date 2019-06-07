@@ -113,4 +113,37 @@ class ThrottleTest extends TestCase
         $this->setRedisGlobalSettings([K::BLOCKED_USER_AGENTS => 'Razorpay UA' . K::LIST_DELIMITER . 'CurlBOT']);
         $this->startTest($this->testData[__FUNCTION__ .  'Failure2']);
     }
+
+    /**
+     * Checks that throttle settings can be set and get by api
+     */
+    public function testFetchThrottleSettings()
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($this->testData['testCreateThrottleSettings']['request']);
+
+        // verify that custom settings are added in the set
+        $members = $this->redis->smembers(K::CUSTOM_SETTINGS_SET);
+
+        $this->assertArraySelectiveEquals(['throttle:t:i:10000000000000'], $members);
+
+        $this->startTest();
+    }
+
+    /**
+     * Checks that the created throttle settings can block and allow requests
+     */
+    public function testThrottleCreateSettings()
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'1']['request']);
+        $this->makeRequestAndGetContent($this->testData[__FUNCTION__.'2']['request']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest($this->testData['testGetOrderWhenIPBlockedSuccess']);
+        $this->startTest($this->testData['testGetOrderWhenBlockedForTestMerchant1']);
+    }
 }

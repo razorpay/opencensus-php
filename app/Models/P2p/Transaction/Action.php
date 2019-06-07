@@ -38,6 +38,14 @@ class Action extends Base\Action
     const INCOMING_PAY                  = 'incomingPay';
     const INCOMING_PAY_SUCCESS          = 'incomingPaySuccess';
 
+    const RAISE_CONCERN                 = 'raiseConcern';
+    const RAISE_CONCERN_SUCCESS         = 'raiseConcernSuccess';
+
+    const CONCERN_STATUS                = 'concernStatus';
+    const CONCERN_STATUS_SUCCESS        = 'concernStatusSuccess';
+
+    const FETCH_ALL_CONCERNS            = 'fetchAllConcerns';
+
     protected $actionToRoute = [
         self::INITIATE_PAY              => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,
         self::INITIATE_COLLECT          => Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE,

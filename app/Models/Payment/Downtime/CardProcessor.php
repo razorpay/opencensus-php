@@ -88,6 +88,10 @@ class CardProcessor extends BaseProcessor
     {
         $supportingGateways = (new CardNetworkMapping)->getGatewaysSupportingNetwork($network);
 
+        // Gateway downtime can also be created as gateway = ALL which
+        // gets skipped while filtering affectingGatewayDowntimes
+        $supportingGateways = array_merge($supportingGateways, [GatewayDowntime::ALL]);
+
         $affectingGatewayDowntimes = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, $supportingGateways);
 
         $gatewayDowntimeMaxStart = $affectingGatewayDowntimes->max(GatewayDowntime::BEGIN);

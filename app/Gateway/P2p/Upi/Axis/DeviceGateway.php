@@ -152,7 +152,6 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $request = $this->initiateS2sRequest(DeviceAction::DEREGISTER);
 
         $request->merge([
-            Fields::MERCHANT_CUSTOMER_ID    => $merchantCustomerId,
             Fields::CUSTOMER_MOBILE_NUMBER  => $device->get(Entity::CONTACT),
         ]);
 

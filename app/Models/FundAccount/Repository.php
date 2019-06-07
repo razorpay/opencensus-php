@@ -66,7 +66,7 @@ class Repository extends Base\Repository
         // If no underlying account (bank account/vpa) found, return null.
         if ($account === null)
         {
-            return;
+            return null;
         }
 
         // Else gets latest fund account entity with this account and contact(optionally).

@@ -3,6 +3,8 @@
 namespace RZP\Tests\P2p\Service\UpiAxis\Transaction;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Models\P2p\Transaction\Type;
+use RZP\Models\P2p\Transaction\Flow;
 use RZP\Models\P2p\Transaction\Entity;
 use RZP\Models\P2p\Transaction\Status;
 use RZP\Tests\P2p\Service\Base\Traits;
@@ -81,6 +83,7 @@ class TransactionTest extends TestCase
     {
         $helper = $this->getTransactionHelper();
 
+        $expiry = (clone $this->testCurrentTime)->timezone('Asia/Kolkata')->addDay(1);
         $gatewayTransactionId = str_random(35);
         $this->mockSdk()->setCallback('COLLECT_REQUEST_RECEIVED', [
             Fields::AMOUNT                  => '1.00',
@@ -89,6 +92,7 @@ class TransactionTest extends TestCase
             Fields::UPI_REQUEST_ID          => 'RZP' . str_random(32),
             Fields::REMARKS                 => 'SomeTransaction',
             Fields::GATEWAY_TRANSACTION_ID  => $gatewayTransactionId,
+            Fields::EXPIRY                  => $expiry->toIso8601String(),
             Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_1)
                                                               ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID]
         ]);
@@ -105,6 +109,7 @@ class TransactionTest extends TestCase
             Entity::INTERNAL_STATUS   => Status::CREATED,
             Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
             Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
+            Entity::EXPIRE_AT         => $expiry->getTimestamp(),
         ], $transaction->toArray());
 
         $this->assertArraySubset([
@@ -268,5 +273,128 @@ class TransactionTest extends TestCase
             UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'BT',
             UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Transaction pending'
         ], $transaction->upi->toArrayPublic());
+    }
+
+    public function testCollectOnus()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $request = $helper->initiateCollect();
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeTransaction($request['callback'], $content);
+
+        $transaction1 = $this->getDbLastTransaction();
+
+        $this->assertArraySubset([
+            Entity::CUSTOMER_ID       => $this->fixtures->device->getCustomerId(),
+            Entity::STATUS            => Status::INITIATED,
+            Entity::INTERNAL_STATUS   => Status::INITIATED,
+            Entity::PAYER_ID          => $this->fixtures->vpa(self::DEVICE_2)->getId(),
+            Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
+            Entity::TYPE              => Type::COLLECT,
+            Entity::FLOW              => Flow::CREDIT,
+        ], $transaction1->toArray());
+
+        $this->mockSdk()->setCallback('COLLECT_REQUEST_RECEIVED', [
+            Fields::AMOUNT                  => '1.00',
+            Fields::PAYEE_VPA               => $this->fixtures->vpa(self::DEVICE_1)->getAddress(),
+            Fields::PAYER_VPA               => $this->fixtures->vpa(self::DEVICE_2)->getAddress(),
+            Fields::REMARKS                 => 'SomeTransaction',
+            Fields::GATEWAY_TRANSACTION_ID  => $content['sdk']['gatewayTransactionId'],
+            Fields::GATEWAY_REFERENCE_ID    => $content['sdk']['gatewayReferenceId'],
+            Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_2)
+                                                   ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID]
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction2 = $this->getDbLastTransaction();
+
+        $this->assertArraySubset([
+            Entity::CUSTOMER_ID       => $this->fixtures->device(self::DEVICE_2)->getCustomerId(),
+            Entity::STATUS            => Status::CREATED,
+            Entity::INTERNAL_STATUS   => Status::CREATED,
+            Entity::PAYER_ID          => $this->fixtures->vpa(self::DEVICE_2)->getId(),
+            Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa(self::DEVICE_2)->getBankAccountId(),
+            Entity::TYPE              => Type::COLLECT,
+            Entity::FLOW              => Flow::DEBIT,
+        ], $transaction2->toArray());
+
+        $this->assertSame($transaction1->upi->getNetworkTransactionId(), $transaction2->upi->getNetworkTransactionId());
+        $this->assertSame($transaction1->upi->getRrn(), $transaction2->upi->getRrn());
+
+        $this->fixtures->switchDeviceSet(self::DEVICE_2);
+
+        $coproto = $helper->initiateAuthorize($transaction2->getPublicId());
+
+        $content = $this->handleSdkRequest($coproto);
+
+        $helper->withSchemaValidated();
+
+        $helper->authorizeTransaction($coproto['callback'], $content);
+
+        $this->assertArraySubset([
+            Entity::CUSTOMER_ID       => $this->fixtures->device->getCustomerId(),
+            Entity::STATUS            => Status::COMPLETED,
+            Entity::INTERNAL_STATUS   => Status::COMPLETED,
+            Entity::PAYER_ID          => $this->fixtures->vpa->getId(),
+            Entity::BANK_ACCOUNT_ID   => $this->fixtures->vpa->getBankAccountId(),
+        ], $transaction2->reload()->toArray());
+    }
+
+    public function testCollectRejectWithBlock()
+    {
+        $transaction = $this->createCollectIncomingTransaction();
+
+        $helper = $this->getTransactionHelper();
+
+        $content = [
+            'beneficiary' => [
+                'username'  => $transaction->payee->getUsername(),
+                'handle'    => $transaction->payee->getHandle(),
+                'type'      => $transaction->payee->getP2pEntityName(),
+                'blocked'   => true,
+                'spammed'   => false,
+            ],
+        ];
+
+        $this->mockActionRequestFunction(['vpaHandleBeneficiary' => function($content) use ($transaction)
+        {
+            $this->assertSame($transaction->upi->getNetworkTransactionId(), $content['upiRequestId']);
+            $this->assertSame('true', $content['shouldBlock']);
+            $this->assertSame('false', $content['shouldSpam']);
+        }]);
+
+        $helper->initiateReject($transaction->getPublicId(), $content);
+    }
+
+    public function testCollectRejectWithBlockAndSpam()
+    {
+        $transaction = $this->createCollectIncomingTransaction();
+
+        $helper = $this->getTransactionHelper();
+
+        $content = [
+            'beneficiary' => [
+                'username'  => $transaction->payee->getUsername(),
+                'handle'    => $transaction->payee->getHandle(),
+                'type'      => $transaction->payee->getP2pEntityName(),
+                'blocked'   => true,
+                'spammed'   => true,
+            ],
+        ];
+
+        $this->mockActionRequestFunction(['vpaHandleBeneficiary' => function($content) use ($transaction)
+        {
+            $this->assertSame($transaction->upi->getNetworkTransactionId(), $content['upiRequestId']);
+            $this->assertSame('true', $content['shouldBlock']);
+            $this->assertSame('true', $content['shouldSpam']);
+        }]);
+
+        $helper->initiateReject($transaction->getPublicId(), $content);
     }
 }

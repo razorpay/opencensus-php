@@ -33,7 +33,7 @@ class BasicAuth extends BaseBasicAuth
     {
         $this->setType(Type::PRIVILEGE_AUTH);
 
-        $this->setAppTrue();
+        $this->setAppAuth(true);
     }
 
     public function adminAuth()

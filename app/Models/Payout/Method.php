@@ -17,6 +17,7 @@ class Method
 
     public static $destinationMethodMap = [
         E::BANK_ACCOUNT => self::FUND_TRANSFER,
+        E::CARD         => self::FUND_TRANSFER,
         E::VPA          => self::UPI,
     ];
 

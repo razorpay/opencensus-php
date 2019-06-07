@@ -74,7 +74,6 @@ return [
                 'content'     => [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'The amount must be atleast 14',
                     ],
                 ],
                 'status_code' => 400,

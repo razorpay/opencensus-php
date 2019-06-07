@@ -23,10 +23,12 @@ class SubscriptionProxy
 
     protected $router;
 
-    const REQUEST_TIMEOUT = 10;
+    protected $requestTimeout;
 
     public function __construct(Application $app)
     {
+        $this->requestTimeout = $app['config']->get('app.subscription_proxy_timeout');
+
         $this->app = $app;
 
         $this->ba = $this->app['basicauth'];
@@ -54,7 +56,7 @@ class SubscriptionProxy
         ];
 
         $defaultOptions = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $this->requestTimeout,
             'auth'    => [$username, $password],
         ];
 

@@ -121,7 +121,6 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'field' => 'number',
                 ],
             ],
             'status_code' => 400,

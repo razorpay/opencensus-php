@@ -1,0 +1,45 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "entity",
+        "address",
+        "username",
+        "handle",
+        "blocked",
+        "blocked_at"
+    ],
+    "properties": {
+        "entity": {
+            "type": "string",
+            "enum": [
+                "vpa"
+            ]
+        },
+        "address": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)@(.*)$"
+        },
+        "username": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "handle": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "blocked": {
+            "type": "boolean"
+        },
+        "spammed": {
+            "type": "boolean"
+        },
+        "blocked_at": {
+            "type": ["integer", "null"]
+        }
+    }
+}
