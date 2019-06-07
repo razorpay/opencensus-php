@@ -116,6 +116,8 @@ class Constants
     const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
     const OVERRIDE_SUB_CONFIG             = 'override_sub_config';
     const DOWNTIME_ROUTING                = 'downtime_routing';
+    const PAYOUT_TO_CARDS                 = 'payout_to_cards';
+    const PAYMENT_ONHOLD                  = 'payment_onhold';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -189,6 +191,13 @@ class Constants
     const DISPUTE_MAILS_DISABLED = 'dispute_mails_disabled';
 
     const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
+
+    /*
+     * This flag will be used to enable x_pro on a merchant. Once enabled the merchant can
+     * decide to upgrade his account to x_pro. This feature gives flexibility initially
+     * to have a controlled roll out of x_pro might be removed going forward.
+     */
+    const X_PRO_INVITE  = 'x_pro_invite';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -344,6 +353,9 @@ class Constants
         self::SHOW_REFUND_PUBLIC_STATUS       => true,
         self::OVERRIDE_SUB_CONFIG             => true,
         self::DOWNTIME_ROUTING                => true,
+        self::PAYOUT_TO_CARDS                 => true,
+        self::PAYMENT_ONHOLD                  => true,
+        self::X_PRO_INVITE                    => true,
     ];
 
     // Entity type constants
@@ -451,6 +463,16 @@ class Constants
         self::QUEUED_PAYOUTS            => [
             'feature'       => self::QUEUED_PAYOUTS,
             'display_name'  => 'Queued payouts',
+            'documentation' => '',
+        ],
+        self::PAYOUT_TO_CARDS           => [
+            'feature'       => self::PAYOUT_TO_CARDS,
+            'display_name'  => 'Payout to cards',
+            'documentation' => '',
+        ],
+        self::X_PRO_INVITE              => [
+            'feature'       => self::X_PRO_INVITE,
+            'display_name'  => 'Razorpay X Pro Invite',
             'documentation' => '',
         ],
     ];

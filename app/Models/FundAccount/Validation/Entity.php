@@ -4,7 +4,7 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
@@ -15,7 +15,8 @@ use RZP\Models\Transaction\Entity as Transaction;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait;
+    use Traits\NotesTrait;
+    use Traits\HasBalance;
 
     const ID                     = 'id';
     const RECEIPT                = 'receipt';
@@ -31,12 +32,15 @@ class Entity extends Base\PublicEntity
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const BALANCE_ID             = 'balance_id';
     const ERROR_CODE             = 'error_code';
     const INTERNAL_ERROR_CODE    = 'internal_error_code';
     const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
     const RESULTS                = 'results';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
+    const RETRY_AT               = 'retry_at';
+    const ATTEMPTS               = 'attempts';
 
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
@@ -64,11 +68,14 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FUND_ACCOUNT_ID,
         self::STATUS,
+        self::ATTEMPTS,
+        self::RETRY_AT,
         self::FEES,
         self::TAX,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
+        self::BALANCE_ID,
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
@@ -177,6 +184,16 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setAttempts(int $attempts)
+    {
+        return $this->setAttribute(self::ATTEMPTS, $attempts);
+    }
+
+    public function setRetryAt($retryAt)
+    {
+        $this->setAttribute(self::RETRY_AT, $retryAt);
+    }
+
     public function setAccountStatus(string $status = null)
     {
         return $this->setAttribute(self::ACCOUNT_STATUS, $status);
@@ -227,6 +244,11 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAttempts(): int
+    {
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function getFees()

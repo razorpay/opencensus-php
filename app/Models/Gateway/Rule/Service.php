@@ -27,7 +27,7 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($rule);
 
-        $this->app->smartRouting->deleteGateway($id);
+        $this->app->smartRouting->deleteGateway($id, $rule->getGroup());
 
         return $rule->toArrayDeleted();
     }

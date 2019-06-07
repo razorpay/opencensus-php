@@ -1466,6 +1466,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
+        // Atom has been on boarded to Scrooge,
+        // Changing this since in scrooge flow it will remain in created until cron picks up FTA for processing
         $this->assertEquals('initiated', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
@@ -1507,7 +1509,7 @@ class RefundTest extends TestCase
 
         $refund  = $this->getLastEntity('refund', true);
 
-        $this->retryFailedRefund($refund['id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -1548,7 +1550,7 @@ class RefundTest extends TestCase
 
         $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
 
-        $this->retryFailedRefund($refund['id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund  = $this->getLastEntity('refund', true);
 

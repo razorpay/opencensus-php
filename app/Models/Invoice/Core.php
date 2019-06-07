@@ -22,6 +22,7 @@ use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
+use RZP\Jobs\Invoice\BatchCancel as InvoiceBatchCancelJob;
 
 class Core extends Base\Core
 {
@@ -82,6 +83,21 @@ class Core extends Base\Core
         string $batchId = null): Entity
     {
         $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
+
+        //
+        // check if idempotent Id exists in the payload entity
+        // if yes then fetch the record from the Db.
+        // if record exist, then return. If not then continue with the flow.
+        //
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->invoice->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY]);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
 
         $this->modifyInputToHandleRenamedAttributes($input);
 
@@ -759,6 +775,19 @@ class Core extends Base\Core
         $settingsAccessor->upsert($input)->save();
 
         InvoiceBatchNotifyJob::dispatch($this->mode, $batch->getId(), $input);
+    }
+
+    /**
+     * Cancels all the invoices associated to batch if batch is
+     * proccessed.
+     *
+     * @param  Batch\Entity $batch
+     */
+    public function cancelInvoicesOfBatch(Batch\Entity $batch)
+    {
+        (new Validator)->validateCancelInvoicesOfBatch($batch);
+
+        InvoiceBatchCancelJob::dispatch($this->mode, $batch->getId());
     }
 
     /**

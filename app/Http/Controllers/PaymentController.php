@@ -403,6 +403,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateOnHoldBulkUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateOnHoldBulkUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * @param string $paymentId
      *
@@ -456,6 +465,15 @@ class PaymentController extends Controller
         $input = Request::all();
 
         $data = $this->service()->getPaymentFlowsPrivate($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function paymentCardVaultMigrate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->paymentCardVaultMigrate($input);
 
         return ApiResponse::json($data);
     }

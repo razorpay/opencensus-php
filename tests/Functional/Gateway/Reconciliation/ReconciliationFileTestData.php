@@ -90,7 +90,7 @@ return [
             'auth_code'            => '195841',
             'orig_msg_type'        => 'TX',
             'transaction_type'     => 'PURCHASE',
-            'transaction_amt'      => 12940,
+            'transaction_amt'      => 500,
             'transaction_currency' => 'INR',
             'amount'               => 12940,
             'comm_amount'          => 129.40000000000001,

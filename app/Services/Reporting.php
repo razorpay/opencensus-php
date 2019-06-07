@@ -20,6 +20,7 @@ use RZP\Models\Partner\Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Base\PublicCollection;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
@@ -46,6 +47,7 @@ class Reporting implements ExternalService
 
     // REPORT_TYPE constants
     const MERCHANT      = 'merchant';
+    const PARTNER       = 'partner';
 
     // Headers
     const CONSUMER_HEADER       = 'X-Consumer';
@@ -117,14 +119,16 @@ class Reporting implements ExternalService
                 // If SHARED_ACCOUNT, use headers sent
                 // Useful for creating schedules for non-merchants
                 $headers[self::REPORT_TYPE_HEADER] = $reportType ?: self::MERCHANT;
-                $headers[self::CONSUMER_HEADER] = $consumer ?: Account::SHARED_ACCOUNT;
+                $headers[self::CONSUMER_HEADER]    = $consumer ?: Account::SHARED_ACCOUNT;
             }
             else
             {
                 // MERCHANT Reports
                 // Proxy Auth used here
-                $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
-                $headers[self::CONSUMER_HEADER] = $merchantId;
+                $this->validateMerchantReportType($reportType);
+
+                $headers[self::REPORT_TYPE_HEADER] = $reportType ?: self::MERCHANT;
+                $headers[self::CONSUMER_HEADER]    = $merchantId;
             }
 
             if (empty($linkedAccountParentId) === false)
@@ -320,6 +324,9 @@ class Reporting implements ExternalService
             $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
 
             $apiResponse = $this->createScheduleOnApi($scheduleRequest);
+
+            // Link Api schedule with reporting schedule
+            $response = $this->linkSingleScheduledTasks($response);
         }
 
         if (empty($apiResponse) === true)
@@ -328,12 +335,17 @@ class Reporting implements ExternalService
                 'Failed to create schedule');
         }
 
-        return $apiResponse;
+        return $response;
     }
 
     public function fetchScheduleMultiple(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+        $scheduleDataList = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+
+        $scheduleTaskData = $this->linkAllScheduledTasks($scheduleDataList);
+
+        return $scheduleTaskData;
+
     }
 
     public function fetchScheduleById(string $id): array
@@ -433,18 +445,35 @@ class Reporting implements ExternalService
 
     public function fetchLogMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input, $headers);
     }
 
     // TODO: Add filter based upon feature/tags for admin calls
     public function fetchConfigMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $headers);
+    }
+
+    protected function fetchHeadersFromInput(array $input)
+    {
+        $consumer    = $input['consumer'] ?? Account::SHARED_ACCOUNT;
+        $reportType = $input['report_type'] ?? 'merchant';
+
+        return [
+            self::CONSUMER_HEADER    => $consumer,
+            self::REPORT_TYPE_HEADER => $reportType,
+        ];
     }
 
     public function fetchScheduleMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+        $headers = $this->fetchHeadersFromInput($input);
+
+        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $headers);
     }
 
     protected function createScheduleOnApi(array $input)
@@ -701,28 +730,36 @@ class Reporting implements ExternalService
         $hasGenericNotesTag = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
         $showTxnCommissionReport          = false;
-        $showAggregateCommissionReports   = false;
+        $showAggregateCommissionReport    = false;
+        $showSubventionReports            = false;
+        $showAggregateReports             = false;
 
         if ($merchant->isPartner() === true)
         {
-            $partnerConfigs = (new Config\Core)->fetchAllConfigsByPartner($merchant);
+            if ($merchant->isResellerPartner() === false)
+            {
+                $showAggregateReports = true;
+            }
 
-            $partnerConfigs = $partnerConfigs->filter(function ($partnerConfig) {
-                return ($partnerConfig->isCommissionsEnabled() === true);
-            });
+            list($commissionConfigs, $subventionConfigs) = (new Config\Core)->fetchAllConfigGroupsByPartner($merchant);
 
-            // if at least one partner config is enabled, we show commission reports
-            if ($partnerConfigs->isNotEmpty() === true)
+            // if at least one commission config is present, we show commission reports
+            if ($commissionConfigs->isNotEmpty() === true)
             {
                 if ($merchant->isResellerPartner() === false)
                 {
                     $showTxnCommissionReport        = true;
-                    $showAggregateCommissionReports = true;
+                    $showAggregateCommissionReport  = true;
                 }
                 else
                 {
-                    $showAggregateCommissionReports = (new Commission\Core)->shouldShowAggregateCommissionReportForPartner($merchant);
+                    $showAggregateCommissionReport  = (new Commission\Core)->shouldShowAggregateCommissionReportForPartner($merchant);
                 }
+            }
+
+            if ($subventionConfigs->isNotEmpty() === true)
+            {
+                $showSubventionReports = true;
             }
         }
 
@@ -761,7 +798,66 @@ class Reporting implements ExternalService
                 'name'      => 'Aggregate Transaction Commission Report',
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
-                'condition' => $showAggregateCommissionReports,
+                'condition' => $showAggregateCommissionReport,
+            ],
+            [
+                'name'      => 'Daily Earnings Report',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showAggregateCommissionReport,
+            ],
+            [
+                'name'      => 'Per Transaction Earnings Report',
+                'type'      => Table::COMMISSION,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showTxnCommissionReport,
+            ],
+            [
+                'name'      => 'Daily Subvention Report',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showSubventionReports,
+            ],
+            [
+                'name'      => 'Per Transaction Subvention Report',
+                'type'      => Table::COMMISSION,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showSubventionReports,
+            ],
+            [
+                'name'        => 'Payments',
+                'type'        => 'payments',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Refunds',
+                'type'        => 'refunds',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Combined',
+                'type'        => 'transactions',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Settlements',
+                'type'        => 'settlements',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'        => 'Settlements Recon',
+                'type'        => 'settlements',
+                'report_type' => 'partner',
+                'consumer'    => Account::SHARED_ACCOUNT,
+                'condition'   => $showAggregateReports,
             ],
         ];
 
@@ -772,7 +868,11 @@ class Reporting implements ExternalService
                     ($value['type'] === $filterCondition['type']) and
                     ($value['consumer'] === $filterCondition['consumer']))
                 {
-                    return $filterCondition['condition'];
+                    if ((empty($filterCondition['report_type']) === true) or
+                        ($filterCondition['report_type'] === $value['report_type']))
+                    {
+                        return $filterCondition['condition'];
+                    }
                 }
             }
 
@@ -841,6 +941,25 @@ class Reporting implements ExternalService
         }
     }
 
+    protected function validateMerchantReportType($reportType)
+    {
+        if ((empty($reportType) === false))
+        {
+            if (($reportType !== self::MERCHANT) and ($reportType !== self::PARTNER))
+            {
+                throw new Exception\BadRequestValidationFailureException('Invalid report type');
+            }
+
+            $merchant = $this->ba->getMerchant();
+
+            if ((empty($merchant) === false) and ($reportType === self::PARTNER) and ($merchant->isPartner() === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+            }
+        }
+    }
+
     /**
      * Filters request array and returns only traceable data
      *
@@ -872,5 +991,61 @@ class Reporting implements ExternalService
         }
 
         return $parentId;
+    }
+
+    /**
+     * Loop through all the reporting schedules and link API schedule object in it.
+     *
+     * @param  array  $scheduleData
+     *
+     * @return array
+     */
+    protected function linkAllScheduledTasks(array $scheduleDataList)
+    {
+
+        if (isset($scheduleDataList['error']) === true)
+        {
+            return $scheduleDataList;
+        }
+
+        if (isset($scheduleDataList['items']) === false)
+        {
+            return $scheduleDataList;
+        }
+
+        foreach ($scheduleDataList['items'] as &$item)
+        {
+            $item = $this->linkSingleScheduledTasks($item);
+        }
+
+        return $scheduleDataList;
+    }
+
+    /**
+     * Linking API schedule object in the passed reporting schedule object so the frontend can show the
+     * schedule details to the users
+     *
+     * @param  array  $scheduleData
+     *
+     * @return array
+     */
+    protected function linkSingleScheduledTasks(array $scheduleData)
+    {
+
+        if (isset($scheduleData['id']) === false)
+        {
+            return $scheduleData;
+        }
+
+        $entityId = $this->generateEntityId($scheduleData['id']);
+
+        $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
+
+        if ($scheduleTask !== null)
+        {
+            $scheduleData['schedule'] = $scheduleTask->schedule;
+        }
+
+        return $scheduleData;
     }
 }

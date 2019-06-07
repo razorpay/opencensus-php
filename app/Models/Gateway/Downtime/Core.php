@@ -41,6 +41,7 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function create(array $input, array $uniqueRecordIdentifiers = [])
     {

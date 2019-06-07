@@ -46,6 +46,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals('10000000000000', $fav['balance_id']);
 
         // Fee and tax will be calculated at the time fund account validation is created.
         $this->assertEquals(354, $fav['fees']);
@@ -277,6 +278,10 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(354, $fav['fees']);
         $this->assertEquals(54, $fav['tax']);
 
+        // Retry At will be calculated and set because
+        // insufficient fund is an internal error and can be retried.
+        $this->assertNotNull($fav['retry_at']);
+
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
@@ -299,19 +304,18 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(1000000, $txn['balance']);
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
-
-        // To make a success request remark should be changed
+        // To make a success request receipt should be changed
         $this->fixtures->fund_account_validation->editEntity('fund_account_validation', $fav['id'], ['receipt' => 'lol']);
 
         $request = [
             'method'  => 'POST',
             'url'     => '/fund_accounts/validations/retry',
-            'content' => ['fund_account_validation_ids' => [$fav['id']]]
+            'content' => ['fund_account_validation_ids' => [preg_replace('/^fav_/', '', $fav['id'])]]
         ];
 
         $this->ba->appAuth();
 
-        $response = $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
 
         $fav         = $this->getLastEntity('fund_account_validation', true);
         // Queue will be processed by now.
@@ -326,5 +330,74 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('processed', $fta['status']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
         $this->assertNotNull($fta['narration']);
+    }
+
+    public function testFundAccValidationRetryWithCron()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals(null, $fav['results']['account_status']);
+
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals('failed', $fta['status']);
+
+        // Retry At will be calculated and set because
+        // insufficient fund is an internal error and can be retried.
+        $this->assertNotNull($fav['retry_at']);
+
+        // To make a success receipt remark should be changed and
+        // retry_at should be changed to some previous time.
+        $this->fixtures->fund_account_validation->editEntity('fund_account_validation', $fav['id'], ['receipt' => 'lol', 'retry_at' => $fav['retry_at'] - 3000]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations/retry/all',
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals(2, $fav['attempts']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals('Someone', $fav['results']['registered_name']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals('processed', $fta['status']);
+    }
+
+    public function testFundAccValidationWhenFailedDuringReconWithNonInternalError()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_beneficiary_not_accepted';
+
+        $response = $this->startTest();
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('invalid', $fav['results']['account_status']);
+
+        // Retry At will be calculated and set because
+        // beneficiary not accepted is not an internal error
+        // and there is not need to retry.
+        $this->assertNull($fav['retry_at']);
     }
 }

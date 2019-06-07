@@ -164,10 +164,44 @@ class Server extends Base\Mock\Server
 
     protected function netbanking_sib($input)
     {
-
         // this encrypted value is never used as the pay_verify response from mozart is mocked
         $content = [
               'ENC_STR' => 'random_encrypted_string'
+        ];
+
+        $request = [
+            'url'          => $input['callbackUrl'],
+            'content'      => $content,
+            'method'       => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_yesb($input)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'gateway_payment_callback_yesb_post',
+            [
+                'paymentId' => $input['paymentId'],
+                'amount'    => number_format($input['amount'] / 100, 2, '.', '')
+            ]);
+
+        $request = [
+            'url'     => $url,
+            'content' => ['encdata' => 'dummy_response_data'],
+            'method'  => 'post',
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    protected function netbanking_cub($input)
+    {
+
+        // this encrypted value is never used as the pay_verify response from mozart is mocked
+        $content = [
+            'ENC_STR' => 'random_encrypted_string'
         ];
 
         $request = [

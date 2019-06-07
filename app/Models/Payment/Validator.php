@@ -86,8 +86,8 @@ class Validator extends Base\Validator
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
-        'provider'                      => 'required_if:method,cardless_emi|string|custom',
-        'ott'                           => 'sometimes_if:method,cardless_emi|string',
+        'provider'                      => 'required_if:method,cardless_emi,paylater|string',
+        'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
     ];
 
     protected static $editAcquirerRules = [
@@ -189,6 +189,16 @@ class Validator extends Base\Validator
         Entity::NOTES => 'sometimes|notes',
     ];
 
+    protected static $paymentOnholdBulkUpdateRules = [
+        'payment_ids'    => 'required|sequential_array',
+        'payment_ids.*'  => 'required|public_id',
+        'on_hold'        => 'required|boolean',
+    ];
+
+    protected static $paymentCardMigrateRules = [
+        'limit' => 'sometimes|integer',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',
@@ -210,6 +220,7 @@ class Validator extends Base\Validator
         'token_expire_by',
         'auth_type',
         'preferred_auth',
+        'payment_provider',
     ];
 
     protected static $minAmountCheckRules = [
@@ -457,13 +468,32 @@ class Validator extends Base\Validator
         Wallet::validateExists($value);
     }
 
-    protected function validateProvider($attribute, $provider)
+    protected function validatePaymentProvider(array $input)
     {
-        if (CardlessEmi::exists($provider) === false)
+        switch ($input['method'])
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Provider is not supported for cardless emi',
-                Payment\Entity::PROVIDER);
+            case Payment\Method::CARDLESS_EMI:
+                if (CardlessEmi::exists($input['provider']) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Provider is not supported for cardless emi',
+                        'provider',
+                        $input['provider']);
+                }
+                break;
+
+            case Payment\Method::PAYLATER:
+                if (Payment\Processor\PayLater::exists($input['provider']) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Provider is not supported for Pay Later',
+                        'provider',
+                        $input['provider']);
+                }
+                break;
+
+            default:
+                return ;
         }
     }
 
@@ -704,8 +734,9 @@ class Validator extends Base\Validator
                 'The contact field is required.', Entity::CONTACT);
         }
 
-        if (($input['method'] === Payment\Method::WALLET) or
-            ($input['method'] === Payment\Method::CARDLESS_EMI))
+        if (in_array($input['method'],
+                [Payment\Method::WALLET, Payment\Method::CARDLESS_EMI, Payment\Method::PAYLATER],
+                true) === true)
         {
             $number = new PhoneBook($input['contact'], true);
 

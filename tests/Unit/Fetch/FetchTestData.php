@@ -442,5 +442,7 @@ return [
 
     E::P2P_UPI_TRANSACTION => [],
 
+    E::P2P_CONCERN => [],
+
     E::CUSTOMER => [],
 ];

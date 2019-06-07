@@ -6,20 +6,25 @@ use RZP\Models\P2p\Base;
 
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasDevice;
+
     const DEVICE_ID    = 'device_id';
     const ENTITY_TYPE  = 'entity_type';
     const ENTITY_ID    = 'entity_id';
     const NAME         = 'name';
 
     /***************** Input Keys ****************/
+    const BENEFICIARY  = 'beneficiary';
     const TYPE         = 'type';
     const VALIDATED    = 'validated';
+    const BLOCKED      = 'blocked';
+    const SPAMMED      = 'spammed';
+    const BLOCKED_AT   = 'blocked_at';
 
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_beneficiary';
-    protected static $sign        = 'beneficiary';
-    protected $generateIdOnCreate = false;
+    protected $generateIdOnCreate = true;
     protected static $generators  = [];
 
     protected $dates = [
@@ -28,7 +33,6 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::DEVICE_ID,
         Entity::ENTITY_TYPE,
         Entity::ENTITY_ID,
         Entity::NAME,
@@ -45,7 +49,6 @@ class Entity extends Base\Entity
 
     protected $public = [
         Entity::ID,
-        Entity::DEVICE_ID,
         Entity::ENTITY_TYPE,
         Entity::ENTITY_ID,
         Entity::NAME,
@@ -53,7 +56,6 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::DEVICE_ID    => null,
         Entity::ENTITY_TYPE  => null,
         Entity::ENTITY_ID    => null,
         Entity::NAME         => null,
@@ -135,5 +137,15 @@ class Entity extends Base\Entity
     public function getName()
     {
         return $this->getAttribute(self::NAME);
+    }
+
+    public function beneficiary()
+    {
+        return $this->morphTo(self::ENTITY);
+    }
+
+    public function toArrayPublic()
+    {
+        return $this->beneficiary ? $this->beneficiary->toArrayBeneficiary() : null;
     }
 }

@@ -469,4 +469,30 @@ return [
             ],
         ],
     ],
+
+    'testGettingConfigsByPartner' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchants/me/partner/configs',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity_id'              => '8ckeirnw84ifke',
+                        'default_plan_id'        => '1hDYlICobzOCYt',
+                        'commission_model'       => 'commission',
+                        'commissions_enabled'    => true,
+                        'implicit_plan_id'       => null,
+                        'explicit_plan_id'       => null,
+                        'implicit_expiry_at'     => null,
+                        'explicit_refund_fees'   => false,
+                        'explicit_should_charge' => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

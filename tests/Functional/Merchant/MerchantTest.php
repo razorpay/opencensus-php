@@ -1323,7 +1323,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(34, $banks);
+        $this->assertCount(35, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -1826,6 +1826,19 @@ class MerchantTest extends TestCase
         $this->assertEquals(1, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
+    }
+
+    public function testGetCheckoutPreferencesForPayLater()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_epaylater_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['paylater']));
+
+        $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
     }
 
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()

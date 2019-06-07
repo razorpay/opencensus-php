@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentHitachiTrait;
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
+    use PaymentPayLaterTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1020,9 +1021,9 @@ trait PaymentTrait
         $this->ba->scroogeAuth();
 
         $request = array(
-            'method'  => 'PUT',
-            'url'     => '/refunds/'.$input['id'].'/update_status',
-            'content' => $input);
+            'method'    => 'PUT',
+            'url'       => '/refunds/' . $input['id'] . '/update_status',
+            'content'   => $input);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -1472,6 +1473,18 @@ trait PaymentTrait
         $payment['method'] = 'cardless_emi';
         $payment['provider'] = $provider;
         $payment['emi_duration'] = 6;
+
+        unset($payment['card'], $payment['bank']);
+
+        return $payment;
+    }
+
+    protected function getDefaultPayLaterPaymentArray($provider)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'paylater';
+        $payment['provider'] = $provider;
+        $payment['contact'] = '+91'. $payment['contact'];
 
         unset($payment['card'], $payment['bank']);
 
@@ -2001,8 +2014,8 @@ trait PaymentTrait
         };
 
         $cardVault->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing($callable);
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
     }

@@ -101,7 +101,7 @@ class Processor
      * We only allow payment to fallback within a certain duration.
      * A payment can fallback only within few minutes
      */
-    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 300;  // 5min * 60 sec
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 1200;  // 20 min * 60 sec
 
     /**
      * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
@@ -127,7 +127,7 @@ class Processor
     /**
      * Timeout to store card details for redirect to authorize
      */
-    const REDIRECT_CACHE_TTL = 5;
+    const REDIRECT_CACHE_TTL = 20;
 
     const CACHE_KEY = 'fallback_%s_card_details';
 
@@ -437,6 +437,10 @@ class Processor
             case Payment\Method::CARDLESS_EMI:
                 $coproto = $this->preProcessPaymentInputsForCardlessEmi($input, $payment);
                 break;
+
+            case Payment\Method::PAYLATER:
+                $coproto = $this->preProcessPaymentInputsForPayLater($input, $payment);
+                break;
         }
 
         return $coproto;
@@ -447,16 +451,21 @@ class Processor
         $this->verifyCardlessEmiEnabled();
 
         if ((empty($input['ott']) === false) or
-            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
         {
-            return;
+            return null;
         }
 
         $merchant = $payment->merchant;
 
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
-        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+
+        $terminal = $this->repo
+                         ->terminal
+                         ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
+                                                          $merchant[Merchant\Entity::ID],
+                                                          Payment\Method::CARDLESS_EMI);
 
         $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
@@ -467,9 +476,56 @@ class Processor
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                'method'   => 'cardless_emi',
-                                'provider' => $input['provider']
+                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
+                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
                             ]),
+                'method'  => 'POST',
+                'content' => $input,
+            ],
+            'image'      => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+            'theme'      => $payment->merchant->getBrandColorElseDefault(),
+            'merchant'   => $merchant->getDbaName(),
+            'gateway'    => $this->getEncryptedGatewayText($gateway),
+            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
+            'key_id'     => $this->ba->getPublicKey(),
+            'version'    => '1',
+            'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
+        ];
+
+        return $coproto;
+    }
+
+    protected function preProcessPaymentInputsForPayLater($input, $payment)
+    {
+        $this->verifyPayLaterEnabled();
+
+        if (empty($input['ott']) === false)
+        {
+            return;
+        }
+
+        $merchant = $payment->merchant;
+
+        $gateway = Payment\Gateway::PAYLATER;
+
+        $terminal = $this->repo
+                         ->terminal
+                         ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
+                                                          $merchant[Merchant\Entity::ID],
+                                                          Payment\Method::PAYLATER);
+
+        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
+
+        $data = (new Customer\Raven)->sendOtp($input, $merchant);
+
+        $coproto = [
+            'type' => 'respawn',
+            'method' => 'paylater',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
+                    'method'   => 'paylater',
+                    'provider' => $input['provider']
+                ]),
                 'method'  => 'POST',
                 'content' => $input,
             ],
@@ -844,10 +900,12 @@ class Processor
      */
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
-        // Check if AuthN gateway is not the AuthZ
+        // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
         if ((empty($gatewayInput['authenticate']['gateway']) === false) and
             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
         {
+            $payment->disableCpsRoute();
+
             return;
         }
 
@@ -871,6 +929,10 @@ class Processor
             if (strtolower($variant) === 'cps')
             {
                 $payment->enableCpsRoute();
+            }
+            else
+            {
+                $payment->disableCpsRoute();
             }
         }
     }
@@ -1563,7 +1625,7 @@ class Processor
             }
         }
 
-        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->getByMerchantId($this->payment->merchant['id']);
+        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->fetchForMerchant($this->payment->merchant);
 
         //
         // This data was earlier picked up from env by gateways themselves.
@@ -1910,6 +1972,10 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        $orderNotes = $this->order->getNotes()->toArray();
+
+        $payment->setIntegrationMetadataUsingNotes($orderNotes);
     }
 
     protected function validateAndSetReceiverIfApplicable(Payment\Entity $payment, array $input)

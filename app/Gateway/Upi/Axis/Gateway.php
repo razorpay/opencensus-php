@@ -1089,7 +1089,7 @@ class Gateway extends Base\Gateway
          * use success as status code to make sure we do not force auth already auth txns.
          */
         if (($gatewayPayment[Entity::STATUS_CODE] === Status::COLLECT_SUCCESS) and
-            ($gatewayPayment[Entity::RECEIVED]) === true)
+            ($gatewayPayment[Entity::RECEIVED] === true))
         {
             return true;
         }

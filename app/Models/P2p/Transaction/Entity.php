@@ -9,6 +9,7 @@ use RZP\Models\P2p\Vpa;
 /**
  * @property Vpa\Entity $payer
  * @property Vpa\Entity $payee
+ * @property Concern\Entity $concern
  * @property UpiTransaction\Entity $upi
  *
  * Class Entity
@@ -54,6 +55,7 @@ class Entity extends Base\Entity
     const PAYEE                = 'payee';
     const BANK_ACCOUNT         = 'bank_account';
     const CL                   = 'cl';
+    const CONCERN              = 'concern';
 
     /************** Entity Properties ************/
 
@@ -203,6 +205,10 @@ class Entity extends Base\Entity
         Entity::COMPLETED_AT         => 'int',
         Entity::CREATED_AT           => 'int',
         Entity::UPDATED_AT           => 'int',
+    ];
+
+    protected $with = [
+        Entity::UPI,
     ];
 
     /***************** SETTERS *****************/
@@ -667,6 +673,16 @@ class Entity extends Base\Entity
     public function upi()
     {
         return $this->hasOne(UpiTransaction\Entity::class, UpiTransaction\Entity::TRANSACTION_ID);
+    }
+
+    public function concerns()
+    {
+        return $this->hasMany(Concern\Entity::class, Concern\Entity::TRANSACTION_ID);
+    }
+
+    public function concern()
+    {
+        return $this->hasOne(Concern\Entity::class, Concern\Entity::TRANSACTION_ID)->latest();
     }
 
     public function setPublicEntityAttribute(array & $array)

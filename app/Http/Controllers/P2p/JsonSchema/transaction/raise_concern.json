@@ -1,0 +1,52 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "transaction_id",
+        "entity",
+        "status",
+        "comment",
+        "gateway_reference_id",
+        "response_code",
+        "response_description",
+        "created_at"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "entity": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "transaction_id": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "status": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "comment": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "gateway_reference_id": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "response_code": {
+            "type": ["string", "null"]
+        },
+        "response_description": {
+            "type": ["string", "null"]
+        },
+        "created_at": {
+            "type": ["integer", "null"]
+        }
+    }
+}

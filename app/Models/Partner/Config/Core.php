@@ -208,6 +208,44 @@ class Core extends Base\Core
         return $this->repo->partner_config->fetchAllConfigForApps($appIds);
     }
 
+    public function fetchAllEnabledConfigGroupsByPartner(Merchant\Entity $merchant)
+    {
+        $configs = $this->fetchAllConfigsByPartner($merchant);
+
+        $configs = $configs->filter(function ($config) {
+            return ($config->isCommissionsEnabled() === true);
+        });
+
+        return $this->groupConfigsByModel($configs);
+    }
+
+    public function fetchAllConfigGroupsByPartner(Merchant\Entity $merchant)
+    {
+        $configs = $this->fetchAllConfigsByPartner($merchant);
+
+        return $this->groupConfigsByModel($configs);
+    }
+
+    /**
+     * Group configs by commission model type
+     *
+     * @param Base\PublicCollection $configs
+     *
+     * @return array
+     */
+    protected function groupConfigsByModel(Base\PublicCollection $configs)
+    {
+        $commissionConfigs = $configs->filter(function ($config) {
+            return ($config->getCommissionModel() === CommissionModel::COMMISSION);
+        });
+
+        $subventionConfigs = $configs->filter(function ($config) {
+            return ($config->getCommissionModel() === CommissionModel::SUBVENTION);
+        });
+
+        return [$commissionConfigs, $subventionConfigs];
+    }
+
     protected function validatePricingPlans(array $input)
     {
         // check if all plan ids are valid

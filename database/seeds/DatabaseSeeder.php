@@ -1168,7 +1168,9 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
+        $this->createNetbankingCubTerminal();
         $this->createNetbankingSbiTerminal();
+        $this->createNetbankingYesbTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1188,6 +1190,7 @@ class DatabaseSeeder extends Seeder
         $this->createHitachiGatewayMotoTerminal();
         $this->createEnstageTerminal();
         $this->createCardlessEmiTerminal();
+        $this->createPayLaterTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -1675,6 +1678,23 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingYesbTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_YESB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_YESB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'RAZORPAY',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
     protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -1754,6 +1774,27 @@ class DatabaseSeeder extends Seeder
                 'card'                => '0',
                 'netbanking'          => '1',
                 'gateway_merchant_id' => 'test_merchant_netbanking_pnb',
+                'recurring'           => 0,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            )
+        );
+    }
+
+    protected function createNetbankingCubTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                  => Terminal\Shared::NETBANKING_CUB_TERMINAL,
+                'merchant_id'         => Account::TEST_ACCOUNT,
+                'gateway'             => Gateway::NETBANKING_CUB,
+                'card'                => '0',
+                'netbanking'          => '1',
+                'gateway_merchant_id'        => 'test_merchant_netbanking_CUB',
+                'gateway_terminal_password'  => Crypt::encrypt('test_terminal_password'),
+                'gateway_terminal_password2' => Crypt::encrypt('test_terminal_password2'),
+                'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
+                'gateway_secure_secret2'     => Crypt::encrypt('test_secure_secret2'),
                 'recurring'           => 0,
                 'created_at'          => time(),
                 'updated_at'          => time(),
@@ -2375,6 +2416,25 @@ class DatabaseSeeder extends Seeder
             'mode'                       => 1,
             'created_at'                 => time(),
             'updated_at'                 => time()
+        ]);
+    }
+
+    protected function createPayLaterTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::PAYLATER_EPAYLATER_TERMINAL,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paylater',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'cardless_emi'              => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'ABCD',
+            'gateway_acquirer'          => 'epaylater',
+            'mode'                      => 1,
+            'gateway_terminal_password' => Crypt::encrypt('random_secret'),
+            'created_at'                => time(),
+            'updated_at'                => time()
         ]);
     }
 }

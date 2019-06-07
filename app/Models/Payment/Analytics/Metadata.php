@@ -98,7 +98,7 @@ class Metadata
 
     // Integration values
 
-    const WOO_COMMERCE  = 'woo_commerce';
+    const WOOCOMMERCE   = 'woocommerce';
     const MAGENTO       = 'magento';
     const CS_CART       = 'cs_cart';
     const OPEN_CART     = 'open_cart';
@@ -108,7 +108,7 @@ class Metadata
     const PRESTASHOP    = 'prestashop';
 
     const INTEGRATION_VALUES = [
-        self::WOO_COMMERCE  => 1,
+        self::WOOCOMMERCE   => 1,
         self::MAGENTO       => 2,
         self::CS_CART       => 3,
         self::OPEN_CART     => 4,

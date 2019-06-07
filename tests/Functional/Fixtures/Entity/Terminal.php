@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Crypt;
+
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Method;
@@ -77,6 +79,8 @@ class Terminal extends Base
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
         $this->createSharedNetbankingEquitasTerminal();
+        $this->createSharedNetbankingYesbTerminal();
+        $this->createSharedNetbankingCubTerminal();
         $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
@@ -636,6 +640,27 @@ class Terminal extends Base
             'gateway_merchant_id2' => 'cardless_emi_merchant2',
             'gateway_acquirer'     => 'flexmoney',
             'mode'                 => 1,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaylaterEpaylaterTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::PAYLATER_EPAYLATER_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paylater',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'paylater'                  => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'ABCD',
+            'gateway_acquirer'          => 'epaylater',
+            'mode'                      => 1,
+            'gateway_terminal_password' => Crypt::encrypt('random_secret'),
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
@@ -2115,6 +2140,41 @@ class Terminal extends Base
 
         return $this->create($attributes);
     }
+
+    public function createSharedNetbankingYesbTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_YESB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_YESB,
+            'gateway_merchant_id'   => 'netbanking_yesb_merchant_id',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingCubTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_CUB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_CUB,
+            'gateway_merchant_id'   => 'netbanking_cub_merchant_id',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingSbiTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;

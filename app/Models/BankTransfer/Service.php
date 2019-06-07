@@ -149,7 +149,13 @@ class Service extends Base\Service
                              ->bank_transfer
                              ->findByPayment($payment);
 
-        return $bankTransfer->toArrayPublic();
+        $response = $bankTransfer->toArrayPublic();
+
+        // Bank transfer doesn't include VA in a public setter,
+        // but it is required in this response. Adding explcitly.
+        $response[Entity::VIRTUAL_ACCOUNT] = $bankTransfer->virtualAccount->toArrayPublic();
+
+        return $response;
     }
 
     /**

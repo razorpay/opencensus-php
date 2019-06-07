@@ -205,13 +205,13 @@ class Core extends Base\Core
     protected function fillMethodSpecificDetails(array & $params, Payment\Entity $payment)
     {
         $method = $payment->getMethod();
-        $card = $payment->card;
-        $emiPlan = $payment->emiPlan;
-        $bank = $payment->getBank();
 
         switch ($method)
         {
             case Payment\Method::CARD:
+
+                $card = $payment->card;
+
                 $params[Entity::METHOD_TYPE]    = $card->getType();
                 $params[Entity::NETWORK]        = $card->getNetworkCode();
                 $params[Entity::ISSUER]         = $card->getIssuer();
@@ -222,6 +222,13 @@ class Core extends Base\Core
                 break;
 
             case Payment\Method::EMI:
+
+                $emiPlan = $payment->emiPlan;
+
+                $card = $payment->card;
+
+                $bank = $payment->getBank();
+
                 // For certain banks whose emi payments need to go through card terminals
                 // we set the method sa card both while fetching applicable rules
                 if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)

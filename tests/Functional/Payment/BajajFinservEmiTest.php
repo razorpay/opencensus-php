@@ -127,6 +127,7 @@ class BajajFinservEmiTest extends TestCase
                 'payment_id'        => $payment->getId(),
                 'amount'            => 100,
                 'action'            => 'authorize',
+                'raw'               => '{}',
             ]);
 
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
@@ -225,6 +226,7 @@ class BajajFinservEmiTest extends TestCase
                 'payment_id'        => $payment->getId(),
                 'amount'            => 100,
                 'action'            => 'authorize',
+                'raw'               => '{}'
             ]);
 
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
@@ -285,6 +287,7 @@ class BajajFinservEmiTest extends TestCase
                 'payment_id'        => $payment->getId(),
                 'amount'            => 100,
                 'action'            => 'authorize',
+                'raw'               => '{}'
             ]);
 
         $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);

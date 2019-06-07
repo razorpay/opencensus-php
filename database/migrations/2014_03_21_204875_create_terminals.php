@@ -107,6 +107,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::CARDLESS_EMI)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::PAYLATER)
+                  ->default(0);
+
             $table->integer(Terminal::EMI_DURATION)
                   ->nullable();
 

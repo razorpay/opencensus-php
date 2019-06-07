@@ -10,6 +10,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
@@ -122,11 +123,11 @@ class Validator extends Base\Validator
 
         if (Gateway::isValidGateway($gateway) === false)
         {
-            throw new Exception\LogicException(
-                'Invalid gateway',
-                null,
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
                 [
-                    'gateway' => $gateway,
+                    'gateway' => $gateway
                 ]);
         }
     }
@@ -220,6 +221,12 @@ class Validator extends Base\Validator
 
                 break;
 
+            case Method::PAYLATER:
+
+                $this->validatePaylaterProvider($issuer);
+
+                break;
+
             default:
                 throw new Exception\BadRequestValidationFailureException(
                     'Method ' . $method . ' is not supported');
@@ -303,6 +310,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid wallet');
+        }
+    }
+
+    protected function validatePaylaterProvider(string  $issuer = null)
+    {
+        $issuer = strtolower($issuer);
+
+        if (PayLater::exists($issuer) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer . ' is not a valid provider');
         }
     }
 

@@ -54,15 +54,15 @@ class Base extends BaseModel\Core
     const SIGNED_URL        = 'signed_url';
 
     /**
-     * The MUTEX instance
-     */
-    protected $mutex;
-
-    /**
      * The batch entity which is being processed
      * @var Batch\Entity
      */
-    protected $batch;
+    public $batch;
+
+    /**
+     * The MUTEX instance
+     */
+    protected $mutex;
 
     /**
      * The merchant instance
@@ -104,6 +104,12 @@ class Base extends BaseModel\Core
      * @var boolean
      */
     protected $useSpreadSheetLibrary = true;
+
+    /**
+     * Holds recon batch data to be sent to Scrooge Service
+     * @var
+     */
+    protected $scroogeDispatchData;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -204,6 +210,13 @@ class Base extends BaseModel\Core
         $this->deleteLocalFiles();
 
         return $response;
+    }
+
+    public function setScroogeDispatchData(array $data)
+    {
+        // Do nothing from Base class. This is handled in Reconciliation.php
+
+        return;
     }
 
     /**
@@ -364,8 +377,6 @@ class Base extends BaseModel\Core
         finally
         {
             $this->postProcess();
-
-            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayTraceAll());
         }
     }
 
@@ -583,6 +594,8 @@ class Base extends BaseModel\Core
      */
     protected function postProcess()
     {
+        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayTraceAll());
+
         $this->updateStatusPostProcess();
 
         //
@@ -605,7 +618,7 @@ class Base extends BaseModel\Core
     /**
      * Updates the status of the batch as per the processing
      */
-    protected function updateStatusPostProcess()
+    public function updateStatusPostProcess()
     {
         //
         // Sets processed_at. We override this attribute whether it finally
@@ -618,7 +631,7 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    protected function setStatusAfterSuccessfulProcessing()
+    public function setStatusAfterSuccessfulProcessing()
     {
         //
         // In some cases, we want to mark the batch as partially_processed if there is even 1 failure.

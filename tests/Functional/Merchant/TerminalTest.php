@@ -362,6 +362,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayLaterTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateUpiAirtelTerminal()
     {
         $url = '/merchants/10000000000000/terminals';
@@ -1053,6 +1062,24 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateNetbankingSibTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateNetbankingYesbTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateNetbankingCanaraTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
 

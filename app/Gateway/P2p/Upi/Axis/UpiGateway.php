@@ -13,14 +13,17 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 {
     public function initiateGatewayCallback(Response $response)
     {
-        switch ($this->input->get(Fields::CONTENT)[Fields::TYPE])
+        $content = $this->input->get(Fields::CONTENT);
+        $type    = $content[Fields::TYPE];
+
+        switch ($type)
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
 
-                $transformer = new UpiTransactionTransformer($this->input->get(Fields::CONTENT));
+                $transformer = new UpiTransactionTransformer($content, $type);
                 $upi = $transformer->transformIncoming();
 
-                $transformer = new TransactionTransformer($this->input->get(Fields::CONTENT));
+                $transformer = new TransactionTransformer($upi, $type);
                 $transaction = $transformer->transformIncoming();
 
                 $context = [
@@ -32,15 +35,30 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
             case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
 
-                $transformer = new UpiTransactionTransformer($this->input->get(Fields::CONTENT));
+                $transformer = new UpiTransactionTransformer($content, $type);
                 $upi = $transformer->transformIncoming();
 
-                $transformer = new TransactionTransformer($this->input->get(Fields::CONTENT));
+                $transformer = new TransactionTransformer($upi, $type);
                 $transaction = $transformer->transformIncoming();
 
                 $context = [
                     Transaction\Entity::ENTITY      => Transaction\Entity::TRANSACTION,
                     Transaction\Entity::ACTION      => Transaction\Action::INCOMING_PAY,
+                ];
+
+                break;
+
+            case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
+
+                $transformer = new UpiTransactionTransformer($content, $type);
+                $upi = $transformer->transformCallback();
+
+                $transformer = new TransactionTransformer($upi, $type);
+                $transaction = $transformer->transformCallback();
+
+                $context = [
+                    Transaction\Entity::ENTITY      => Transaction\Entity::TRANSACTION,
+                    Transaction\Entity::ACTION      => Transaction\Action::AUTHORIZE_TRANSACTION_SUCCESS,
                 ];
 
                 break;
@@ -55,10 +73,13 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
     public function gatewayCallback(Response $response)
     {
+        $gatewayData = $this->input->get(Transaction\Entity::GATEWAY_DATA);
+
         switch ($this->input->get(Fields::CONTENT)[Fields::TYPE])
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
             case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
+            case UpiAction::CUSTOMER_CREDITED_VIA_COLLECT:
 
                 $signature = $this->getpayloadSignature();
                 $payload   = $this->input->get(Fields::PAYLOAD);
@@ -80,8 +101,6 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
                 ]);
 
         }
-
-        $gatewayData = $this->input->get(Transaction\Entity::GATEWAY_DATA);
 
         $gatewayData[Transaction\Entity::RESPONSE] = [
             Transaction\Entity::SUCCESS => true,

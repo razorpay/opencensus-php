@@ -111,6 +111,7 @@ class Entity
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
+    const BANKING_ACCOUNT           = 'banking_account';
 
     // heimdall
     const ORG                   = 'org';
@@ -179,6 +180,7 @@ class Entity
     const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const NETBANKING_SIB         = 'netbanking_sib';
     const NETBANKING_AXIS        = 'netbanking_axis';
+    const NETBANKING_CUB         = 'netbanking_cub';
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
@@ -197,6 +199,8 @@ class Entity
     const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_SBI         = 'netbanking_sbi';
+    const NETBANKING_YESB        = 'netbanking_yesb';
+    const PAYLATER               = 'paylater';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -224,6 +228,7 @@ class Entity
     const P2P_BENEFICIARY        = 'p2p_beneficiary';
     const P2P_TRANSACTION        = 'p2p_transaction';
     const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
+    const P2P_CONCERN            = 'p2p_concern';
 
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
@@ -292,6 +297,7 @@ class Entity
         self::ORDER,
         self::INVOICE,
         self::PAYMENT,
+        self::CONTACT,
         self::CUSTOMER,
         self::SUBSCRIPTION,
         self::PAYMENT_LINK,
@@ -308,6 +314,7 @@ class Entity
         Entity::PAYOUT,
         Entity::BANK_TRANSFER,
         Entity::REFUND,
+        Entity::FUND_ACCOUNT_VALIDATION,
     ];
 
     public static $namespace = [
@@ -428,6 +435,7 @@ class Entity
         self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Vijaya::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_CUB         => \RZP\Gateway\Mozart::class,
         self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Allahabad::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
@@ -440,6 +448,7 @@ class Entity
         self::NETBANKING_CANARA      => \RZP\Gateway\Netbanking\Canara::class,
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
         self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Sbi::class,
+        self::NETBANKING_YESB        => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
@@ -454,6 +463,7 @@ class Entity
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
+        self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -485,6 +495,8 @@ class Entity
         self::P2P_HANDLE            => \RZP\Models\P2p\Vpa\Handle::class,
         self::P2P_BENEFICIARY       => \RZP\Models\P2p\Beneficiary::class,
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
+        self::P2P_UPI_TRANSACTION   => \RZP\Models\P2p\Transaction\UpiTransaction::class,
+        self::P2P_CONCERN           => \RZP\Models\P2p\Transaction\Concern::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
@@ -543,6 +555,7 @@ class Entity
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Base::class,
 
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
+        self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
 
         self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
 

@@ -42,6 +42,7 @@ class Repository extends Base\Repository
         Entity::METHOD      => '=',
         Entity::SOURCE      => '=',
         Entity::TERMINAL_ID => '=',
+        Entity::NETWORK     => '=',
     ];
 
     const UNIQUE_KEYS = [
@@ -49,6 +50,7 @@ class Repository extends Base\Repository
         Entity::ISSUER,
         Entity::METHOD,
         Entity::SOURCE,
+        Entity::NETWORK,
     ];
 
     public function saveOrFail($entity, array $options = [])
@@ -111,6 +113,13 @@ class Repository extends Base\Repository
      */
     protected function addOverlapQuery($query, $input)
     {
+        // We are not adding overlap query if `begin` is not set
+        // Since `begin` is a required field this will not pass the validation check later in code
+        if (isset($input[Entity::BEGIN]) === false)
+        {
+            return;
+        }
+
         $query->where(function ($query) use ($input)
         {
             $query->whereNull(Entity::END)

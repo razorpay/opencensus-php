@@ -40,16 +40,7 @@ class Service extends Base\Service
 
                 $processor = new Transaction\Processor;
 
-                switch ($context[Base\Entity::ACTION])
-                {
-                    case Transaction\Action::INCOMING_COLLECT:
-
-                        return $processor->incomingCollect($callback);
-
-                    case Transaction\Action::INCOMING_PAY:
-
-                        return $processor->incomingPay($callback);
-                }
+                $processor->processAction($context[Base\Entity::ACTION], $callback);
         }
     }
 }

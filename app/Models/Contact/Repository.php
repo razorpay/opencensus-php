@@ -130,10 +130,8 @@ class Repository extends Base\Repository
             {
                 $contactIdColumn     = $this->dbColumn(Entity::ID);
                 $faSourceIdColumn    = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
-                $faAccountTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_TYPE);
 
                 $join->on($faSourceIdColumn, $contactIdColumn);
-                $join->where($faAccountTypeColumn, FundAccount\Type::BANK_ACCOUNT);
             });
     }
 

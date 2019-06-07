@@ -5,6 +5,7 @@ namespace RZP\Services\Aws;
 use Aws;
 
 use RZP\Services\Aws\Credentials;
+use RZP\Trace\TraceCode;
 
 class Sns
 {
@@ -12,6 +13,11 @@ class Sns
      * @var Aws\AwsClientInterface
      */
     protected $client;
+
+    /**
+    * @var Razorpay Logger
+    */
+    protected $trace;
 
     /**
      * @var array
@@ -31,14 +37,20 @@ class Sns
         ];
 
         $this->client = $sdk->createClient('sns', $args);
+
+        $this->trace = $app['trace'];
     }
 
     public function publish($message, $messageTarget = 'sms')
     {
-        $this->client->publish(
+        $result = $this->client->publish(
             [
                 'Message'   => $message,
                 'TargetArn' => $this->awsConfig['sns_target_arn'][$messageTarget],
-            ]);
+            ])->toArray();
+
+        $this->trace->info(TraceCode::AWS_SNS_PUBLISH_RESPONSE, $result);
+
+        return $result;
     }
 }

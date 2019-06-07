@@ -14,6 +14,7 @@ class Fields
     const RID                       = 'rid';
     const TOKEN                     = 'token';
     const UPI_REQUEST_ID            = 'upiRequestId';
+    const UPI_RESPONSE_ID           = 'upiResponseId';
 
     // --------------------------- DEVICE --------------- //
     const SIM_ID                        = 'simId';
@@ -72,6 +73,10 @@ class Fields
     const AVAILABLE                     = 'available';
     const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
     const CUSTOMER_NAME                 = 'customerName';
+    const SHOULD_BLOCK                  = 'shouldBlock';
+    const SHOULD_SPAM                   = 'shouldSpam';
+    const BLOCKED_VPAS                  = 'blockedVpas';
+    const BLOCKED_AT                    = 'blockedAt';
 
     // ------------------- TRANSACTION ------------- //
     const MERCHANT_REQUEST_ID           = 'merchantRequestId';
@@ -91,6 +96,11 @@ class Fields
     const CUSTOME_RESPONSE              = 'customResponse';
     const IS_VERIFIED_PAYEE             = 'isVerifiedPayee';
     const IS_MARKED_SPAM                = 'isMarkedSpam';
+    const QUERY_COMMENT                 = 'queryComment';
+    const QUERY_REFERENCE_ID            = 'queryReferenceId';
+    const QUERY_CLOSING_TIMESTAMP       = 'queryClosingTimestamp';
+    const LIMIT                         = 'limit';
+    const OFFSET                        = 'offset';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';

@@ -4,10 +4,13 @@ namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
 use RZP\Models\P2p\Vpa;
+use RZP\Error\P2p\Error;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Base\Upi;
+use RZP\Models\P2p\Beneficiary;
 use RZP\Http\Controllers\P2p\Requests;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
  * @property Core $core
@@ -21,11 +24,9 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::INITIATE_PAY, $input, true);
 
-        $properties = new Properties($this->context(), $this->action, $this->input);
+        $this->input->put(Entity::INTERNAL_STATUS, Status::CREATED);
 
-        $transaction = $this->core->create($properties, $this->input->toArray());
-
-        $this->core->createUpi($transaction, $this->action);
+        $transaction = $this->createTransaction($this->action, $this->input, new ArrayBag());
 
         $this->initiateCallGateway($transaction);
 
@@ -36,11 +37,9 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::INITIATE_COLLECT, $input, true);
 
-        $properties = new Properties($this->context(), $this->action, $this->input);
+        $this->input->put(Entity::INTERNAL_STATUS, Status::CREATED);
 
-        $transaction = $this->core->create($properties, $this->input->toArray());
-
-        $this->core->createUpi($transaction, $this->action);
+        $transaction = $this->createTransaction($this->action, $this->input, new ArrayBag());
 
         $this->initiateCallGateway($transaction);
 
@@ -73,11 +72,12 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::AUTHORIZE_TRANSACTION_SUCCESS, $input, true);
 
-        $transaction = $this->core->fetch($this->input->get(Entity::TRANSACTION)[Entity::ID]);
+        $transactionInput = $this->input->bag(Entity::TRANSACTION);
+        $upiInput         = $this->input->bag(Entity::UPI);
 
-        $this->core->updateUpi($transaction, $this->input->get(Entity::UPI));
+        $transaction = $this->core->fetch($transactionInput->get(Entity::ID));
 
-        $this->updateTransactionStatus($transaction, $this->input->get(Entity::TRANSACTION));
+        $this->updateTransaction($transaction, $transactionInput, $upiInput);
 
         return $transaction->toArrayPublic();
     }
@@ -101,50 +101,14 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function reject(array $input): array
-    {
-        $this->initialize(Action::REJECT, $input, true);
-
-        $transaction = $this->core->fetch($this->input->get(Entity::ID));
-
-        $transaction->setStatus(Status::FAILED);
-        $transaction->setInternalStatus(Status::REJECTED);
-
-        $this->repo()->saveOrFail($transaction);
-
-        $this->gatewayInput->put(Entity::TRANSACTION, $transaction);
-
-        return $this->callGateway();
-    }
-
-    public function rejectSuccess(array $input): array
-    {
-        $this->initialize(Action::REJECT_SUCCESS, $input, true);
-
-        $transaction = $this->core->fetch($this->input->get(Entity::TRANSACTION)[Entity::ID]);
-
-        $this->core->updateUpi($transaction, [
-            Entity::STATUS  => Status::REJECTED,
-        ]);
-
-        return $transaction->toArrayPublic();
-    }
-
     public function incomingCollect(array $input): array
     {
         $this->initialize(Action::INCOMING_COLLECT, $input, true);
 
-        $this->checkForDuplicate($this->input->get(Entity::UPI));
+        $transactionInput = $this->input->bag(Entity::TRANSACTION);
+        $upiInput         = $this->input->bag(Entity::UPI);
 
-        $transactionInput = $this->arrayBag($this->input->get(Entity::TRANSACTION));
-
-        $properties = new Properties($this->context(), $this->action, $transactionInput);
-
-        $transaction = $this->core->create($properties, $transactionInput->toArray());
-
-        $this->core->createUpi($transaction, $this->action, $this->input->get(Entity::UPI));
-
-        $this->updateTransactionStatus($transaction, $this->input->get(Entity::TRANSACTION));
+        $transaction = $this->createTransaction($this->action, $transactionInput, $upiInput);
 
         return $transaction->toArrayPublic();
     }
@@ -153,19 +117,86 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::INCOMING_PAY, $input, true);
 
-        $this->checkForDuplicate($this->input->get(Entity::UPI));
+        $transactionInput = $this->input->bag(Entity::TRANSACTION);
+        $upiInput         = $this->input->bag(Entity::UPI);
 
-        $transactionInput = $this->arrayBag($this->input->get(Entity::TRANSACTION));
-
-        $properties = new Properties($this->context(), $this->action, $transactionInput);
-
-        $transaction = $this->core->create($properties, $transactionInput->toArray());
-
-        $this->core->createUpi($transaction, $this->action, $this->input->get(Entity::UPI));
-
-        $this->updateTransactionStatus($transaction, $this->input->get(Entity::TRANSACTION));
+        $transaction = $this->createTransaction($this->action, $transactionInput, $upiInput);
 
         return $transaction->toArrayPublic();
+    }
+
+    public function raiseConcern(array $input): array
+    {
+        $this->initialize(Action::RAISE_CONCERN, $input, true);
+
+        $transaction = $this->core->fetch($this->input->pull(Entity::ID));
+
+        if ($transaction->concern instanceof Concern\Entity)
+        {
+            if ($transaction->concern->isClosed() === false)
+            {
+                throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST);
+            }
+        }
+
+        $this->initiateCallGateway($transaction);
+
+        $concern = (new Concern\Core)->create($transaction, $this->input->toArray());
+
+        $this->gatewayInput->put(Entity::CONCERN, $concern);
+
+        return $this->callGateway();
+    }
+
+    public function raiseConcernSuccess(array $input): array
+    {
+        $this->initialize(Action::RAISE_CONCERN_SUCCESS, $input, true);
+
+        $concernInput = $this->input->get(Entity::CONCERN);
+
+        $concern = (new Concern\Core)->fetch($concernInput[Entity::ID]);
+
+        $concern->mergeGatewayData($concernInput[Entity::GATEWAY_DATA] ?? []);
+        $concern->setInternalStatus($concernInput[Entity::INTERNAL_STATUS]);
+
+        (new Concern\Core)->update($concern, $concernInput);
+
+        return $concern->toArrayPublic();
+    }
+
+    public function concernStatus(array $input): array
+    {
+        $this->initialize(Action::CONCERN_STATUS, $input, true);
+
+        $transaction = $this->core->fetch($this->input->pull(Entity::ID));
+
+        if ($transaction->concern instanceof Concern\Entity)
+        {
+            if ($transaction->concern->isClosed() === true)
+            {
+                return $transaction->concern->toArrayPublic();
+            }
+        }
+        else
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+        }
+
+        $this->gatewayInput->put(Entity::TRANSACTION, $transaction);
+        $this->gatewayInput->put(Entity::CONCERN, $transaction->concern);
+        $this->gatewayInput->put(Entity::UPI, $transaction->upi);
+
+        return $this->callGateway();
+    }
+
+    public function fetchAllConcerns(array $input): array
+    {
+        return (new Concern\Core)->fetchAll($input)->toArrayPublic();
+    }
+
+    public function concernStatusSuccess(array $input): array
+    {
+        return $this->raiseConcernSuccess($input);
     }
 
     protected function initiateCallGateway(Entity $transaction)
@@ -181,15 +212,17 @@ class Processor extends Base\Processor
         $this->callbackInput->push($transaction->getPublicId());
     }
 
-    protected function updateTransactionStatus(Entity $transaction, array $input)
+    protected function updateTransactionStatus(Entity $transaction, ArrayBag $input)
     {
-        switch ($input[Entity::INTERNAL_STATUS])
+        switch ($input->get(Entity::INTERNAL_STATUS))
         {
             case Status::COMPLETED:
                 $actions = $this->setTransactionCompleted($transaction, $input);
                 break;
 
             case Status::FAILED:
+            case Status::EXPIRED:
+            case Status::REJECTED:
                 $actions = $this->setTransactionFailed($transaction, $input);
                 break;
 
@@ -209,12 +242,12 @@ class Processor extends Base\Processor
                 ]);
         }
 
-        $this->core->update($transaction, $input);
+        $this->core->update($transaction, $input->toArray());
 
         $this->dispatchEventIfRequired($actions, $transaction);
     }
 
-    protected function setTransactionCompleted(Entity $transaction, array $input): Actions
+    protected function setTransactionCompleted(Entity $transaction, ArrayBag $input): Actions
     {
         $actions = new Actions();
 
@@ -233,12 +266,21 @@ class Processor extends Base\Processor
             ]);
         }
 
+        // TODO: Add support for partial payments
+        if ($input->get(Entity::AMOUNT) !== $transaction->getAmount())
+        {
+            $input->put(Entity::INTERNAL_STATUS, Status::FAILED);
+            $input->put(Entity::INTERNAL_ERROR_CODE, ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
+
+            return $this->setTransactionFailed($transaction, $input);
+        }
+
         $transaction->markCompleted();
 
         return $actions;
     }
 
-    protected function setTransactionFailed(Entity $transaction, array $input): Actions
+    protected function setTransactionFailed(Entity $transaction, ArrayBag $input): Actions
     {
         $actions = new Actions();
 
@@ -259,10 +301,15 @@ class Processor extends Base\Processor
 
         $transaction->setInternalStatus($input[Entity::INTERNAL_STATUS]);
 
+        $error = new Error($input[Entity::INTERNAL_ERROR_CODE]);
+
+        $transaction->setErrorCode($error->getPublicErrorCode());
+        $transaction->setErrorDescription($error->getDescription());
+
         return $actions;
     }
 
-    protected function setTransactionProcessing(Entity $transaction, array $input): Actions
+    protected function setTransactionProcessing(Entity $transaction, ArrayBag $input): Actions
     {
         $actions = new Actions();
 
@@ -281,12 +328,17 @@ class Processor extends Base\Processor
         else if ($input[Entity::INTERNAL_STATUS] === Status::PENDING)
         {
             $transaction->setInternalStatus(Status::PENDING);
+
+            $error = new Error(ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING);
+
+            $transaction->setErrorCode($error->getPublicErrorCode());
+            $transaction->setErrorDescription($error->getDescription());
         }
 
         return $actions;
     }
 
-    public function setTransactionCreated(Entity $transaction, array $input): Actions
+    public function setTransactionCreated(Entity $transaction, ArrayBag $input): Actions
     {
         $actions = new Actions();
 
@@ -313,9 +365,41 @@ class Processor extends Base\Processor
         }
     }
 
-    protected function checkForDuplicate(array $upi)
+    protected function createTransaction(string $action, ArrayBag $input, ArrayBag $upiInput): Entity
     {
-        $existing = $this->core->findAllUpi($this->action, $upi);
+        $transactionInput = clone $input;
+
+        $properties = new Properties($this->context(), $action, $transactionInput);
+
+        $transaction = $this->core->build($transactionInput->toArray());
+
+        $properties->attachToTransaction($transaction);
+
+        $upi = $this->core->buildUpi($transaction, $action, $upiInput->toArray());
+
+        $lock = $upi->getAction() . $upi->getNetworkTransactionId();
+
+        return $this->app['api.mutex']->acquireAndRelease($lock,
+            function() use ($transaction, $input, $upi)
+            {
+                return $this->repo()->transaction(function() use ($transaction, $input, $upi)
+                {
+                    $this->checkForDuplicate($upi);
+
+                    $this->updateTransactionStatus($transaction, $input);
+
+                    $upi->associateTransaction($transaction);
+
+                    $this->core->updateUpi($upi, []);
+
+                    return $transaction;
+                });
+            });
+    }
+
+    protected function checkForDuplicate(UpiTransaction\Entity $upi)
+    {
+        $existing = $this->core->findAllUpi($upi->toArray());
 
         if ($existing->count() > 0)
         {
@@ -323,5 +407,25 @@ class Processor extends Base\Processor
                 Entity::UPI => $upi,
             ]);
         }
+    }
+
+    protected function updateTransaction(Entity $transaction, ArrayBag $input, ArrayBag $upiInput)
+    {
+        $lock = $transaction->upi->getAction() . $transaction->upi->getNetworkTransactionId();
+
+        return $this->app['api.mutex']->acquireAndRelease($lock,
+            function() use ($transaction, $input, $upiInput)
+            {
+                $transaction->reload();
+
+                return $this->repo()->transaction(function() use ($transaction, $input, $upiInput)
+                {
+                    $this->updateTransactionStatus($transaction, $input);
+
+                    $this->core->updateUpi($transaction->upi, $upiInput->toArray());
+
+                    return $transaction;
+                });
+            });
     }
 }

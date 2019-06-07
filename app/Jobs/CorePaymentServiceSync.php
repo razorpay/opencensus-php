@@ -59,13 +59,12 @@ class CorePaymentServiceSync extends Job
 
         try
         {
-            $syncStatus = $this->syncGatewayTransaction();
+            $this->syncGatewayTransaction();
 
             $this->trace->info(
                 TraceCode::CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS,
                 [
                     'data'        => $this->data,
-                    'sync_status' => $syncStatus,
                 ]);
         }
         catch (\Throwable $ex)

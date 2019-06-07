@@ -7,6 +7,8 @@ use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class TestCase extends Service\TestCase
 {
+    protected $gateway = 'p2p_upi_sharp';
+
     protected $deviceSetMap = [
         Fixtures::DEVICE_1 => [
             'merchant'      => Fixtures::TEST_MERCHANT,

@@ -110,6 +110,37 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_yesb($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            [
+                'gateway'   => 'netbanking_yesb',
+                'paymentId' => $entities['payment']['id'],
+                'amount'    => $entities['payment']['amount']
+            ]);
+
+        $response = [
+            'error'             => null,
+            'data'              => [],
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'next'              => [
+                    'redirect' => [
+                        'method'  => 'post',
+                        'url'     => $url,
+                        'content' => [
+                            'PID'     => 'DUMMY_USER',
+                            'encdata' => 'dummy_request_data',
+                    ],
+                ],
+            ],
+        ];
+
+        return $response;
+    }
+
     public function netbanking_sib($entities)
     {
         $url = $this->route->getUrlWithPublicAuth(
@@ -128,6 +159,32 @@ class PayInitData extends Base\Mock\Server
                                     'QS' => 'random_encrypted_string',
                                 ],
                             ]
+            ],
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
+
+    public function netbanking_cub($entities)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            ['gateway' => 'netbanking_cub', 'callbackUrl' => $entities['callbackUrl']]);
+
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
+            'next'              => [
+                'redirect' => [
+                    'method'  => 'post',
+                    'url'     => $url,
+                    'content' => [
+                        'MDATA' => 'random_encrypted_string',
+                    ],
+                ]
             ],
             'mozart_id'         => 'DUMMY_MOZART_ID',
             'external_trace_id' => 'DUMMY_REQUEST_ID',

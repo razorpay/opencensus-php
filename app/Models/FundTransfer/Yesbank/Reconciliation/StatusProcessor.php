@@ -2,9 +2,12 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
+use Carbon\Carbon;
+
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Base\Reconciliation\Constants;
@@ -15,6 +18,9 @@ use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor
 
 class StatusProcessor extends BaseRowProcessor
 {
+    const NOT_FOUND   = 'ns:E404';
+    const TIME_OFFSET = 180;
+
     /**
      * This will update the status based on the transfer API response
      *
@@ -132,6 +138,7 @@ class StatusProcessor extends BaseRowProcessor
             Constants::PAYMENT_DATE          => $response[Constants::PAYMENT_DATE],
             Constants::REFERENCE_NUMBER      => $response[Constants::REFERENCE_NUMBER],
             Constants::MODE                  => Mode::getInternalModeFromExternalMode($response[Constants::MODE]),
+            Constants::BANK_RESPONSE_CODE    => $response[Constants::BANK_SUB_STATUS_CODE] ?? null,
             // Won't be present in case of a successful response
             Constants::PUBLIC_FAILURE_REASON => $response[Constants::PUBLIC_FAILURE_REASON] ?? null,
             Constants::NAME_WITH_BENE_BANK   => $this->row[Constants::NAME_WITH_BENE_BANK] ?? null,
@@ -154,7 +161,20 @@ class StatusProcessor extends BaseRowProcessor
 
         $currentStatus = $this->reconEntity->getBankStatusCode();
 
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $initiatedTimeWithOffset = $this->reconEntity->getInitiateAt() + self::TIME_OFFSET;
+
         $this->reconEntity->setBankStatusCode($this->parsedData[Constants::BANK_STATUS_CODE]);
+
+        // in case of bank response code ns:E404 and
+        // if its initiated not more than 180sec ago then don't update the status
+        // this is because bank might give the status bit later
+        if (($this->parsedData[Constants::BANK_RESPONSE_CODE] === self::NOT_FOUND) and
+            ($initiatedTimeWithOffset > $currentTimestamp))
+        {
+            $this->reconEntity->setBankStatusCode($currentStatus);
+        }
 
         $this->reconEntity->setBankResponseCode($this->parsedData[Constants::STATUS_CODE]);
 

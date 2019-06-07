@@ -167,7 +167,7 @@ pipeline:
       event:
         exclude: [deployment, tag, pull_request]
         include: [push]
-  feature_5_test_suite:
+  gateway_3_test_suite:
     group: A
     image: razorpay/onggi:php-7.1
     pull: true
@@ -187,7 +187,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_features_5_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-5 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -316,6 +316,24 @@ pipeline:
     when:
       event:
         include: [push]
+  build-notify-master:
+      image: plugins/slack
+      secrets: [slack_webhook]
+      channel: tech_backend
+      username: drone
+      icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+      template: >
+          Master Build failed.
+          Build No:{{build.number}}
+          Branch: {{build.branch}}
+          Commit: {{build.commit}}
+          Author: {{build.author}}
+          Started at: {{build.started}}
+          Time taken: {{since build.started}}
+          Link: {{build.link}}
+      when:
+        branch: master
+        status: [failure]
 services:
   mysql:
     image: mysql:5.7
@@ -754,6 +772,8 @@ pipeline:
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
+        - api-sqs-cps-sync-test
+        - api-sqs-cps-sync-live
       repo: razorpay/api
       namespace: api
       tag:
@@ -797,6 +817,8 @@ pipeline:
         - api-sqs-payouts-test
         - api-sqs-payouts-live
         - api-sqs-cardvault
+        - api-sqs-cps-sync-test
+        - api-sqs-cps-sync-live
       repo: razorpay/api
       namespace: api
       tag:

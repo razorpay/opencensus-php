@@ -61,13 +61,18 @@ class Repository extends Base\Repository
         return Card\IIN\Entity::find($iin);
     }
 
-    public function getByParams($params, $limit = 1)
+    public function getByParams($params, $relations = [], $limit = 1)
     {
         $query = $this->newQuery();
 
         foreach ($params as $key => $value)
         {
             $query = $query->where($key, '=', $value);
+        }
+
+        if (count($relations) > 0)
+        {
+            $query->with(...$relations);
         }
 
         $query->limit($limit);
@@ -169,6 +174,32 @@ class Repository extends Base\Repository
                         $query->where(Entity::VAULT_TOKEN, '=', $vautltToken)
                               ->orWhereIn(Entity::GLOBAL_CARD_ID, $globalCardIdsWithToken);
                     })->pluck(Entity::ID)->toArray();
+    }
+
+    public function findCardsWithVaultAndNoPayments(string $vault, int $limit)
+    {
+        $paymentRepo = $this->repo->payment;
+
+        $paymentTable = $paymentRepo->getTableName();
+
+        $paymentCardIdColumn = $paymentRepo->dbColumn(Payment\Entity::CARD_ID);
+
+        $cardData = $this->dbColumn('*');
+
+        $IdColumn = $this->dbColumn(Entity::ID);
+
+        $createdAt  = $this->dbColumn(Entity::CREATED_AT);
+
+        $timestamp = time() - Payment\Entity::PAYMENT_WINDOW;
+
+        return $this->newQuery()
+                    ->leftJoin($paymentTable, $IdColumn, $paymentCardIdColumn)
+                    ->whereNull($paymentCardIdColumn)
+                    ->where(Entity::VAULT, '=', $vault)
+                    ->where($createdAt, '<=', $timestamp)
+                    ->limit($limit)
+                    ->select($cardData)
+                    ->get();
     }
 
     protected function addQueryParamInternational($query, $params)

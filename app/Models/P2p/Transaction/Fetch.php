@@ -14,6 +14,7 @@ class Fetch extends Base\Fetch
             Entity::CUSTOMER_ID         => 'sometimes|string',
             Entity::TYPE                => 'sometimes|string',
             Entity::STATUS              => 'sometimes|string',
+            Entity::FLOW                => 'sometimes|string',
             self::EXPAND_EACH           => 'filled|string|in:payer,payee,upi,bank_account',
         ],
     ];
@@ -25,6 +26,7 @@ class Fetch extends Base\Fetch
             Entity::CUSTOMER_ID,
             Entity::TYPE,
             Entity::STATUS,
+            Entity::FLOW,
             self::EXPAND_EACH,
         ],
     ];

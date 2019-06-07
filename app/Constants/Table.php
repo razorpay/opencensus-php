@@ -189,6 +189,8 @@ class Table
 
     const SETTING               = 'settings';
 
+    const BANKING_ACCOUNT       = 'banking_accounts';
+
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';
     const P2P_DEVICE_TOKEN      = 'p2p_device_tokens';
@@ -200,6 +202,7 @@ class Table
     const P2P_BENEFICIARY       = 'p2p_beneficiaries';
     const P2P_TRANSACTION       = 'p2p_transactions';
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
+    const P2P_CONCERN           = 'p2p_concerns';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,

@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use Mail;
 use RZP\Models\Vpa;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
+use RZP\Mail\Batch\PaymentLink;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
@@ -114,6 +116,30 @@ class BatchTest extends TestCase
         $this->assertEquals($payouts->sum(Payout\Entity::AMOUNT), $batch->getAmount());
         $this->assertEquals($payouts->sum(Payout\Entity::AMOUNT), $batch->getProcessedAmount());
         $this->assertEquals($batch->getId(), $payouts[0]->getBatchId());
+    }
+
+    public function testSendMailFromBatchService()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->fixtures->create('merchant', ['id' => 'CVuOcOYoUiAqNY']);
+
+        $this->writeToCsvFile([], 'payment', null, 'files/filestore/batch/download');
+
+        $this->startTest();
+
+        Mail::assertSent(PaymentLink::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $body = 'Please find attached processed payment link file';
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            return true;
+        });
     }
 
     protected function getFileEntries(string $callee): array

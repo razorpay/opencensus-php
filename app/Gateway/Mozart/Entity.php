@@ -51,4 +51,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::GATEWAY, $gateway);
     }
+
+    public function getRaw()
+    {
+        return $this->getAttribute(self::RAW);
+    }
 }

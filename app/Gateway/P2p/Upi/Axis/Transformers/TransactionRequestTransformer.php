@@ -65,10 +65,24 @@ class TransactionRequestTransformer extends TransactionTransformer
                     Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
                     Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
                     Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
-                    Fields::PAYEE_VPA               => $this->getPayerVpa(),
+                    Fields::PAYEE_VPA               => $this->getPayeeVpa(),
                     Fields::TIME_STAMP              => $this->getTimestamp(),
                     Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
                 ];
+                break;
+
+            case TransactionAction::DECLINE_COLLECT:
+                $output = [
+                    Fields::ACCOUNT_REFERENCE_ID    => $this->getAccountRefenceId(),
+                    Fields::AMOUNT                  => $this->getFormattedAmount(),
+                    Fields::CUSTOMER_VPA            => $this->getPayerVpa(),
+                    Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+                    Fields::MERCHANT_REQUEST_ID     => $this->getMerchantRequestId(),
+                    Fields::PAYEE_VPA               => $this->getPayeeVpa(),
+                    Fields::TIME_STAMP              => $this->getTimestamp(),
+                    Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
+                ];
+
         }
 
         return $output;
@@ -159,15 +173,7 @@ class TransactionRequestTransformer extends TransactionTransformer
 
     public function getUpiRequestId()
     {
-        switch ($this->input[Fields::ACTION])
-        {
-            case TransactionAction::PAY_COLLECT:
-            case TransactionAction::DECLINE_COLLECT:
-                return $this->input[Entity::UPI][UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
-
-            default:
-                return $this->input[Fields::UPI_REQUEST_ID];
-        }
+        return $this->input[Entity::UPI][UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
     }
 
     public function getCollectExpiryMinutes()

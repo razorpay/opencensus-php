@@ -9,4 +9,14 @@ class Url
     const DEREGISTER           = '/api/b2/merchants/customer/deregister';
 
     const VALIDATE_VPA         = '/api/b2/merchants/vpas/validity';
+
+    const RAISE_QUERY          = '/api/b2/merchants/transactions/query/raise';
+
+    const QUERY_STATUS         = '/api/b2/merchants/transactions/query/status';
+
+    const BLOCK_VPA            = '/api/b2/merchants/vpas/blockAndSpam';
+
+    const UNBLOCK_VPA          = '/api/b2/merchants/vpas/unblock';
+
+    const GET_BLOCKED          = '/api/b2/merchants/vpas/block/list';
 }

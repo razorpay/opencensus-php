@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
 class CaptureVerify extends Verify
@@ -108,6 +109,22 @@ class CaptureVerify extends Verify
         }
         finally
         {
+            if($payment->getVerifyBucket() >= 4)
+            {
+                $this->trace->info(
+                    TraceCode::CAPTURE_VERIFY_ONHOLD_ACTION,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'verified_at'   => $payment->getVerifyAt(),
+                        'verify_bucket' => $payment->getVerifyBucket(),
+                        'gateway'       => $payment->getGateway(),
+                        'status'        => $payment->getStatus(),
+                        'result'        => $result,
+                        'verify_action' => $action,
+                    ]
+                );
+            }
+
             // Raise an alert if current bucket is greater than equal to 4
             // and error result is error or unknown.
             // Otherwise raise an alert if verify bucket is last bucket
@@ -154,6 +171,13 @@ class CaptureVerify extends Verify
         // Dry run temporary alert on slack for failed captured payment verification
         $message = 'Dry Run - Captured payment verification failed - payment will go on hold (temporary alert - ignore)';
 
+        $this->trace->info(
+            TraceCode::CAPTURE_VERIFY_ONHOLD_FINISH_ACTION,
+            [
+                'payment_id' => $payment->getId(),
+            ]
+        );
+
         $slackArray = [
             'payment_id'    => $payment->getId(),
             'verified_at'   => $payment->getVerifyAt(),
@@ -169,5 +193,12 @@ class CaptureVerify extends Verify
                 'channel' => $this->slackChannel,
             ]
         );
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->canHoldPayment() === true)
+        {
+            (new Payment\Core)->updatePaymentOnHold($payment, true);
+        }
     }
 }

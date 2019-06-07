@@ -58,7 +58,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE2             = 'reference2';
     const REFERENCE3             = 'reference3';
     const REFERENCE4             = 'reference4';
-    const REFERENCE6             = 'reference6';
+    const REVERSED_AT            = 'reversed_at';
     const REFERENCE9             = 'reference9';
     const BALANCE_ID             = 'balance_id';
 
@@ -842,7 +842,9 @@ class Entity extends Base\PublicEntity
 
         $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
-        if (($response[self::STATUS] === Status::PENDING) and ($isScrooge === true))
+        if (($response[self::STATUS] === Status::PENDING) and
+            ($isScrooge === true) and
+            (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true))
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];

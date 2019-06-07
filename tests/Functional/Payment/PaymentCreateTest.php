@@ -89,7 +89,8 @@ class PaymentCreateTest extends TestCase
             $responseData = $this->testData[__FUNCTION__]['responseData'];;
 
             $responseData['response']['content']['error']['description'] = 'The amount must be atleast ' .
-                                                                            Currency::getMinAmount($payment['currency']);
+                $payment['currency'] . ' '. amount_format_IN(Currency::getMinAmount($payment['currency']));
+
             $this->runRequestResponseFlow($responseData, function() use ($payment)
             {
                 $this->doAuthPayment($payment);

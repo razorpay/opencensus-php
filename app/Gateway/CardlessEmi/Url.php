@@ -28,7 +28,7 @@ class Url
 
     // Flex Money Urls
     const TEST_DOMAIN_FLEXMONEY      = 'https://staging.instacred.me/app';
-    const LIVE_DOMAIN_FLEXMONEY      = 'https://app.flexmoney.in/PaymentGateway/RazorPay';
+    const LIVE_DOMAIN_FLEXMONEY      = 'https://instacred.me/app';
 
     const CHECK_ACCOUNT_FLEXMONEY    = '/users/check-account';
     const AUTHORIZE_FLEXMONEY        = '/payments/authorize';
@@ -36,4 +36,17 @@ class Url
     const VERIFY_FLEXMONEY           = '/payments/verify';
     const REFUND_FLEXMONEY           = '/payments/refund';
     const VERIFY_REFUND              = '/refunds/verify';
+
+    //ePayLater Urls
+
+    const TEST_DOMAIN_EPAYLATER     = 'https://hodor.epaylater.in:8095';
+    const LIVE_DOMAIN_EPAYLATER     = ''; // TODO: fill this later.
+
+    const CHECK_ACCOUNT_EPAYLATER   = '/user/v1/checkaccount';
+    const FETCH_TOKEN_EPAYLATER     = '/user/v1/token';
+    const AUTHORIZE_EPAYLATER       = '/payments';
+    const CAPTURE_EPAYLATER         = '/payments/{id}/capture';
+    const REFUND_EPAYLATER          = '/payments/{id}/refund';
+    const VERIFY_EPAYLATER          = '/payments/{id}';
+    const VERIFY_REFUND_EPAYLATER   = '/refunds/{id}';
 }

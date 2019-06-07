@@ -33,6 +33,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CANARA,
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_YESB,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -51,6 +52,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::UPI_HULK,
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::AMEX,
+        RequestProcessor\Base::CARDLESS_EMI_FLEXMONEY,
     ];
 
     /**
@@ -222,14 +224,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
                 if ($persistSuccess === false)
                 {
-                    // Increment the failure count for the summary.
-                    $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                    $this->handlePersistReconciliationDataFailure($paymentId);
                 }
             }
             else
             {
-                // Increment the failure count for the summary.
-                $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                $this->handleFailedValidation($paymentId);
             }
         }
 
@@ -619,6 +619,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
         $this->markGatewayCapturedAsTrue();
 
+        $this->updatePaymentHoldIfApplicable();
+
         $this->createGatewayCapturedEntityIfApplicable($row);
 
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
@@ -635,6 +637,17 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
         return $recordSuccess;
+    }
+
+    protected function updatePaymentHoldIfApplicable()
+    {
+        if (($this->payment->getOnHold() === false) or
+            ($this->payment->merchant->canHoldPayment() === false))
+        {
+            return;
+        }
+
+        (new Payment\Core)->updatePaymentOnHold($this->payment, false);
     }
 
     protected function getRowDetailsStructured($row)

@@ -152,22 +152,20 @@ class VerifyTest extends TestCase
         $this->startTest();
     }
 
-    public function testIciciUpiVerify()
+    public function testIciciBqrVerify()
     {
         $createdAt = time() - 180;
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create(
-            'terminal',
-            [
-                'id' => 'AqdfGh5460opVt',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_icici',
-                'gateway_merchant_id' => '250000002',
-                'gateway_merchant_id2' => 'abc@icici',
-                'enabled' => 1,
-            ]);
+        $this->fixtures->create('terminal', [
+            'id'                   => 'AqdfGh5460opVt',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'upi_icici',
+            'gateway_merchant_id'  => '250000002',
+            'gateway_merchant_id2' => 'abc@icici',
+            'enabled'              => 1,
+        ]);
 
         $payment = $this->fixtures->create('payment', [
             'method'        => 'upi',
@@ -183,14 +181,105 @@ class VerifyTest extends TestCase
             'receiver_type' => 'qr_code',
         ]);
 
-        $this->fixtures->create('upi',
+        $this->fixtures->create('upi', [
+            'id'            => 1,
+            'payment_id'    => $payment->getId(),
+            'amount'        => 100,
+            'gateway'       => 'upi_icici',
+            'action'        => 'authorize',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testIsgBqrVerify()
+    {
+        $createdAt = time() - 180;
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create('terminal', [
+            'id'                   => 'AqdfGh5460opVt',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'upi_icici',
+            'gateway_merchant_id'  => '250000002',
+            'gateway_terminal_id'  => '12345678',
+            'enabled'              => 1,
+        ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'method'        => 'upi',
+            'gateway'       => 'isg',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'created_at'    => $createdAt,
+            'authorized_at' => $createdAt,
+            'verify_at'     => $createdAt,
+            'captured_at'   => $createdAt,
+            'amount'        => 100,
+            'status'        => 'authorized',
+            'receiver_type' => 'qr_code',
+        ]);
+
+        $this->fixtures->create('isg', [
+            'id'                    => 1,
+            'payment_id'            => $payment->getId(),
+            'amount'                => 100,
+            'action'                => 'authorize',
+            'merchant_pan'          => 'test_pan',
+            'merchant_reference'    =>'testRef',
+            'bank_reference_no'     => '1234abc',
+            'transaction_date_time' => '2019-05-16 08:19:38',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAmexVerify()
+    {
+        $createdAt = time() - 180;
+
+        $this->setMockGatewayTrue();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $this->fixtures->create(
+            'terminal',
             [
-                'id'                => 1,
-                'payment_id'        => $payment->getId(),
-                'amount'            => 100,
-                'gateway'           => 'upi_icici',
-                'action'            => 'authorize',
+                'id'                    => 'AqdfGh5460opVt',
+                'merchant_id'           => '10000000000000',
+                'gateway'               => 'amex',
+                'gateway_merchant_id'   => '250000002',
+                'gateway_secure_secret' => 'abckjicici',
+                'gateway_access_code'   => 'abcdef',
+                'gateway_terminal_id'   => '12345',
+                'enabled'               => 1,
             ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'method'        => 'card',
+            'gateway'       => 'amex',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'card_id'       => $card->getId(),
+            'created_at'    => $createdAt,
+            'authorized_at' => $createdAt,
+            'verify_at'     => $createdAt,
+            'captured_at'   => $createdAt,
+            'amount'        => 100,
+            'status'        => 'authorized',
+        ]);
+
+        $this->fixtures->create('axis_migs', [
+            'id'                  => 1,
+            'payment_id'          => $payment->getId(),
+            'vpc_amount'          => 100,
+            'vpc_command'         => 'pay',
+            'vpc_MerchTxnRef'     => $payment->getId(),
+            'vpc_TxnResponseCode' => 0,
+            'amex'                => true,
+            'action'              => 'authorize',
+        ]);
 
         $this->startTest();
     }
@@ -1020,6 +1109,82 @@ class VerifyTest extends TestCase
         $this->assertContent($content, $resultData);
 
         Carbon::setTestNow();
+    }
+
+    public function testCaptureVerifyHoldPayment()
+    {
+        $this->markTestSkipped("Feature not enabled atm.");
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->merchant->addFeatures(['payment_onhold']);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $transaction = $payment->transaction;
+
+        $this->assertFalse($payment->getOnHold());
+        $this->assertFalse($transaction->getOnHold());
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/all',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(5);
+
+        Carbon::setTestNow($time);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = [
+                    'error_code_tag' => 'GW00201',
+                    'error_service_tag' => 'null',
+                    'result' => '!ERROR!-GW00201-Transaction not found.',
+                ];
+            }
+
+            return $content;
+        }, 'hdfc');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment->reload();
+
+        $transaction->reload();
+
+        $this->assertTrue($payment->getOnHold());
+        $this->assertTrue($transaction->getOnHold());
+
+        // unset hold Payment
+        $this->ba->adminAuth();
+
+        $request = [
+            'url' => '/payments/on_hold/bulk_update',
+            'method' => 'POST',
+            'content' => [
+                'payment_ids' => [$payment->getPublicId()],
+                'on_hold'     => 0,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payment->reload();
+
+        $transaction->reload();
+
+        $this->assertFalse($payment->getOnHold());
+        $this->assertFalse($transaction->getOnHold());
+
     }
 
     protected function setupRedisMock($paymentArray = [])

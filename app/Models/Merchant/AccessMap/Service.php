@@ -10,6 +10,20 @@ class Service extends Base\Service
     const ADD_APP     = 'add_app';
 
     /**
+     * @see MerchantController's getConnectedApplications()
+     *
+     * @param  string $merchantId
+     * @return array
+     */
+    public function getConnectedApplications(string $merchantId): array
+    {
+        return $this->repo
+                    ->merchant_access_map
+                    ->fetchMerchantAccessMapsOnEntityType($merchantId, 'application')
+                    ->toArrayPublic();
+    }
+
+    /**
      * Maps the oauth application to the merchant when he
      * first gives access to his account to the app.
      *

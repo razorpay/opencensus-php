@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -77,7 +78,7 @@ class Validator extends Base\Validator
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                    => 'required|in:payment_link',
         Entity::NAME                    => 'filled|string|max:255',
-        Entity::FILE                    => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                    => 'required_without:file_id|file|max:30720' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
         Invoice\Entity::DRAFT           => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
@@ -206,7 +207,7 @@ class Validator extends Base\Validator
     protected static $subMerchantCreateRules = [
         Entity::TYPE           => 'required|in:sub_merchant',
         Entity::NAME           => 'filled|string|max:255',
-        Entity::FILE           => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE           => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         ME::AUTO_SUBMIT        => 'filled|boolean',
         ME::AUTOFILL_DETAILS   => 'filled|boolean',
         ME::AUTO_ACTIVATE      => 'filled|boolean',
@@ -299,6 +300,24 @@ class Validator extends Base\Validator
         Header::UPI_MINDGATE_COLLECT              => 'sometimes|nullable|in:0,1',
         Header::UPI_MINDGATE_PAY                  => 'sometimes|nullable|in:0,1',
     ];
+
+    protected static $sendMailRules = [
+        Entity::BATCH            => 'required|array|custom',
+        Entity::BUCKET_TYPE      => 'required|string',
+        Entity::OUTPUT_FILE_PATH => 'required|string',
+        Entity::DOWNLOAD_FILE    => 'required|boolean',
+        Entity::SETTINGS         => 'sometimes|array|nullable',
+    ];
+
+    protected static $sendMailBatchRules = [
+        Entity::TYPE        => 'required|custom',
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+    ];
+
+    protected function validateBatch($attribute, $value)
+    {
+        $this->validateInput('sendMailBatch', $value);
+    }
 
     protected function validateType($attribute, $value)
     {

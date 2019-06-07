@@ -85,6 +85,10 @@ class TransactionFilter extends Terminal\Filter
                 return (($terminal->isCardlessEmiEnabled() === true) and
                         ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
 
+            case Method::PAYLATER:
+                return (($terminal->isPayLaterEnabled() === true) and
+                        ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',
@@ -826,33 +830,41 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === false) or
-            ($terminal->getCapability() !== Terminal\Capability::AUTHORIZE))
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($terminal->getGateway()) === true) or
+            ($terminal->getCapability() === Terminal\Capability::AUTHORIZE))
         {
-            return true;
+            switch ($payment->getMethod())
+            {
+                case Method::CARD:
+                case Method::EMI:
+                    $allowedNetworks = [Network::MAES, Network::VISA, Network::MC];
+                    $network = $payment->card->getNetworkCode();
+
+                    if (in_array($network, $allowedNetworks, true) === true)
+                    {
+                        return true;
+                    }
+
+                    // Special case handling for Hitachi Rupay
+                    if (($terminal->getGateway() === Gateway::HITACHI) and
+                        ($network === Network::RUPAY))
+                    {
+                        return true;
+                    }
+                    break;
+
+                case Method::EMANDATE:
+                    // Only Enach RBL gateway supports only authorization
+                    if ($terminal->getGateway() === Gateway::ENACH_RBL)
+                    {
+                        return true;
+                    }
+                    break;
+            }
+
+            return false;
         }
 
-        switch ($payment->getMethod())
-        {
-            case Method::CARD:
-            case Method::EMI:
-                $allowedNetworks = [Network::MAES, Network::VISA, Network::MC];
-
-                if (in_array($payment->card->getNetworkCode(), $allowedNetworks, true) === true)
-                {
-                    return true;
-                }
-                break;
-
-            case Method::EMANDATE:
-                // Only Enach RBL gateway supports only authorization
-                if ($terminal->getGateway() === Gateway::ENACH_RBL)
-                {
-                    return true;
-                }
-                break;
-        }
-
-        return false;
+        return true;
     }
 }

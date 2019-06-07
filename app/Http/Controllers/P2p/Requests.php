@@ -33,6 +33,7 @@ class Requests
     const P2P_CUSTOMER_BENEFICIARIES                        = 'p2p_customer_beneficiaries';
     const P2P_CUSTOMER_BENEFICIARIES_VALIDATE               = 'p2p_customer_beneficiaries_validate';
     const P2P_CUSTOMER_BENEFICIARIES_FETCH_ALL              = 'p2p_customer_beneficiaries_fetch_all';
+    const P2P_CUSTOMER_BENEFICIARIES_HANDLE                 = 'p2p_customer_beneficiaries_handle';
 
     const P2P_CUSTOMER_TRANSACTIONS_INITIATE_PAY            = 'p2p_customer_transactions_initiate_pay';
     const P2P_CUSTOMER_TRANSACTIONS_INITIATE_COLLECT        = 'p2p_customer_transactions_initiate_collect';
@@ -42,6 +43,10 @@ class Requests
     const P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE               = 'p2p_customer_transactions_authorize';
     const P2P_CUSTOMER_TRANSACTIONS_INITIATE_REJECT         = 'p2p_customer_transactions_initiate_reject';
     const P2P_CUSTOMER_TRANSACTIONS_REJECT                  = 'p2p_customer_transactions_reject';
+
+    const P2P_CUSTOMER_CONCERNS_TRANSACTION_RAISE          = 'p2p_customer_concerns_transaction_raise';
+    const P2P_CUSTOMER_CONCERNS_TRANSACTION_FETCH_ALL      = 'p2p_customer_concerns_transaction_fetch_all';
+    const P2P_CUSTOMER_CONCERNS_TRANSACTION_STATUS         = 'p2p_customer_concerns_transaction_status';
 
     const P2P_GATEWAY_CALLBACK                              = 'p2p_gateway_callback';
 }

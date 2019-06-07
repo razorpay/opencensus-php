@@ -6,8 +6,8 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
@@ -23,13 +23,13 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT          => 'sometimes|nullable|mysql_unsigned_int|min:100|custom',
-        Entity::CURRENCY        => 'filled|currency|custom',
+        Entity::AMOUNT          => 'sometimes|nullable|mysql_unsigned_int|min_amount|custom',
+        Entity::CURRENCY        => 'filled|string|currency|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'required|string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
+        Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
@@ -46,12 +46,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT          => 'nullable|mysql_unsigned_int|min:100|custom',
+        Entity::AMOUNT          => 'nullable|mysql_unsigned_int|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
+        Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
@@ -92,12 +92,17 @@ class Validator extends Base\Validator
         'images.*'   => 'required|image|max:2048',
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected static $createValidators = [
         Entity::SETTINGS,
     ];
 
     protected static $editValidators = [
         Entity::SETTINGS,
+        'min_amount', // Since currency will not be available in edit PP sending currency from custom func.
     ];
 
     /**
@@ -164,9 +169,6 @@ class Validator extends Base\Validator
      */
     public function validateAmount(string $attribute, int $amount = null)
     {
-        // @todo Validate the minimum amount for a currency, since international currencies will have varied min amount
-        // since we don't have min amount data for now we are not doing this now.
-
         $paymentLink = $this->entity;
 
         if ($amount === null)
@@ -377,6 +379,21 @@ class Validator extends Base\Validator
         if ($this->entity->getCurrency() !== $currency)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_LINK_CURRENCY_MISMATCH);
+        }
+    }
+
+    public function validateMinAmount(array $input)
+    {
+        if (empty($input[Entity::AMOUNT]) === false)
+        {
+            $currency = $this->entity->getCurrency();
+
+            $inputAmount = [
+                Entity::AMOUNT   => $input[Entity::AMOUNT],
+                Entity::CURRENCY => $currency,
+            ];
+
+            $this->validateInputValues('min_amount_check', $inputAmount);
         }
     }
 }

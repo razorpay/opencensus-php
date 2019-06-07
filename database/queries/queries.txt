@@ -4921,8 +4921,59 @@ ALTER TABLE merchant_banks
     ADD COLUMN phonepe TINYINT(1) NOT NULL DEFAULT 0 AFTER olamoney,
     ADD INDEX merchant_banks_phonepe_index (phonepe);
 
+ALTER TABLE fund_transfer_attempts
+    ADD INDEX fund_transfer_attempts_card_id_index (card_id);
+
 ALTER TABLE partner_configs
     ADD COLUMN `commission_model` varchar(255) not null default 'commission' after `explicit_should_charge`;
 
 ALTER TABLE commissions
     ADD COLUMN `model` varchar(255) not null default 'commission' after `record_only`;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN balance_id CHAR(14) DEFAULT NULL AFTER batch_fund_transfer_id,
+    ADD INDEX fund_account_validations_balance_id_index (balance_id);
+
+ALTER TABLE refunds
+    CHANGE COLUMN reference6 reversed_at INT(11) UNSIGNED DEFAULT NULL,
+    ADD INDEX refunds_reversed_at_index (`reversed_at`);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
+
+ALTER TABLE terminals
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
+    ADD INDEX `terminals_paylater_index` (paylater);
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN attempts TINYINT(1) DEFAULT 1 after batch_fund_transfer_id,
+    ADD COLUMN retry_at INTEGER UNSIGNED DEFAULT NULL after batch_fund_transfer_id,
+    ADD INDEX retry_at_index (`retry_at`);
+
+ALTER TABLE merchant_banks
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
+
+ALTER TABLE terminals
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
+    ADD INDEX `terminals_paylater_index` (paylater);
+
+ALTER TABLE invoices
+    ADD COLUMN idempotency_key varchar(255) UNIQUE DEFAULT NULL AFTER batch_id,
+    ADD INDEX invoices_idempotency_key_index (idempotency_key);
+
+ALTER TABLE payouts
+    ADD COLUMN pending_at INT(11) DEFAULT NULL AFTER `processed_at`,
+    ADD INDEX payouts_pending_at_index (pending_at);
+
+ALTER TABLE banking_accounts
+    ADD COLUMN bank_internal_status VARCHAR(255) DEFAULT NULL AFTER status,
+    ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status);
+
+ALTER TABLE balance
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
+    ADD COLUMN account_provider VARCHAR(255) DEFAULT NULL AFTER account_type,
+    ADD INDEX balance_account_type_index (account_type),
+    ADD INDEX balance_account_provider_index (account_provider);
+
+ALTER TABLE paysecure
+    MODIFY COLUMN hkey TEXT DEFAULT NULL;

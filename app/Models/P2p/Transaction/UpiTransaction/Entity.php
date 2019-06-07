@@ -29,6 +29,9 @@ class Entity extends Base\Entity
     const PAYEE_ACCOUNT_NUMBER         = 'payee_account_number';
     const PAYEE_IFSC_CODE              = 'payee_ifsc_code';
 
+    /************** Input Properties ************/
+    const TRANSACTION                  = 'transaction';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_upi_transaction';
@@ -88,6 +91,7 @@ class Entity extends Base\Entity
         Entity::DEVICE_ID,
         Entity::HANDLE,
         Entity::RRN,
+        Entity::NETWORK_TRANSACTION_ID,
         Entity::GATEWAY_ERROR_CODE,
         Entity::GATEWAY_ERROR_DESCRIPTION,
         Entity::CREATED_AT,
@@ -132,6 +136,18 @@ class Entity extends Base\Entity
         Entity::PAYEE_IFSC_CODE              => 'string',
         Entity::CREATED_AT                   => 'int',
         Entity::UPDATED_AT                   => 'int',
+    ];
+
+    protected static $unsetCreateInput = [
+        Entity::TRANSACTION,
+    ];
+
+    protected static $unsetEditInput = [
+        Entity::DEVICE_ID,
+        Entity::HANDLE,
+        Entity::ACTION,
+        Entity::TRANSACTION,
+        Entity::TRANSACTION_ID,
     ];
 
     protected function generateRefId($input)

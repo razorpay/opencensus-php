@@ -812,6 +812,8 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->app->instance('card.cardVault', $cardVault);
 
+        $this->count = 0;
+
         $cardVault->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), 'post', Mockery::type('array'))
             ->andReturnUsing(function ($route, $method, $input)
@@ -824,6 +826,7 @@ class SavedCardsPaymentCreateTest extends TestCase
                 switch ($route)
                 {
                     case 'tokenize':
+                        $this->count += 1;
                         $this->assertEquals('4000400000000004', $input['secret']);
                         $this->assertEquals(1, $input['scheme']);
 
@@ -843,7 +846,12 @@ class SavedCardsPaymentCreateTest extends TestCase
                         }
                         break;
 
-                    case 'delete':
+                    case 'token':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        break;
+
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         break;
 
                     case 'token/migrate':
@@ -872,6 +880,9 @@ class SavedCardsPaymentCreateTest extends TestCase
         $paymentInput[Payment::CARD]['number'] = '4000400000000004';
 
         $this->doAuthPayment($paymentInput);
+
+        // tokenize should be called only once in a payment flow.
+        $this->assertEquals(1, $this->count);
 
         $payment = $this->getLastEntity('payment', true);
         $card    = $this->getDbLastEntity('card');
@@ -934,6 +945,10 @@ class SavedCardsPaymentCreateTest extends TestCase
                         break;
 
                     case 'delete':
+                        break;
+
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         break;
 
                     case 'token/migrate':
@@ -1021,6 +1036,10 @@ class SavedCardsPaymentCreateTest extends TestCase
                     case 'delete':
                         break;
 
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        break;
+
                     case 'token/migrate':
                         $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         $response['token'] = strrev($input['token']);
@@ -1057,6 +1076,127 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals('==ANwADMwADMwADMwQDMwADN', $card->getGlobalFingerPrint());
 
         $this->assertEquals('rzpvault', $card['vault']);
+    }
+
+    public function testCardVaultMigrationJobCron()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                $response = [
+                    'error' => '',
+                    'success' => true,
+                ];
+
+                switch ($route)
+                {
+                    case 'tokenize':
+                        $this->assertEquals('4000400000000004', $input['secret']);
+                        $this->assertEquals(1, $input['scheme']);
+
+                        $response['token'] = base64_encode($input['secret']);
+
+                        break;
+
+                    case 'detokenize':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        $response['value'] = base64_decode($input['token']);
+                        break;
+
+                    case 'validate':
+                        if ($input['token'] === 'fail')
+                        {
+                            $response['success'] = false;
+                        }
+                        break;
+
+                    case 'delete':
+                        break;
+
+                    case 'token/delete':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        break;
+
+                    case 'token/migrate':
+                        $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
+                        $response['token'] = strrev($input['token']);
+                        $response['fingerprint'] = strrev($input['token']);
+                    break;
+                }
+                return $response;
+            });
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4000400000000004';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card    = $this->getDbLastEntity('card');
+
+        $this->assertEquals('created', $payment['status']);
+
+        $this->assertEquals('rzpencryption', $card['vault']);
+
+        $card2 = $this->fixtures->create('card', [
+                    'vault'       => 'rzpencryption',
+                    'vault_token' => 'NDAwMDQwMDAwMDAwMDAwNA==',
+                    'created_at'  => Carbon::now()->getTimestamp() - 3600,
+                ]);
+
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['created_at' => Carbon::now()->getTimestamp() - 3600]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/cards',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('1', $response['payments_count']);
+        $this->assertEquals('1', $response['cards_count']);
+
+        $card = $this->getDbLastEntity('card');
+        $card2 = $this->getDbEntityById('card', $card2->getId());
+
+        $this->assertEquals('==ANwADMwADMwADMwQDMwADN', $card->getVaultToken());
+        $this->assertEquals('==ANwADMwADMwADMwQDMwADN', $card->getGlobalFingerPrint());
+
+        $this->assertEquals('rzpvault', $card['vault']);
+
+        $this->assertEquals('==ANwADMwADMwADMwQDMwADN', $card2->getVaultToken());
+        $this->assertEquals('==ANwADMwADMwADMwQDMwADN', $card2->getGlobalFingerPrint());
+
+        $this->assertEquals('rzpvault', $card2['vault']);
     }
 
     protected function mockSession($appToken = 'capp_1000000custapp')

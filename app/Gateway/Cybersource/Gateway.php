@@ -477,75 +477,53 @@ class Gateway extends Base\Gateway
         return $verify->verifyResponseContent;
     }
 
-    protected function verifyPayment($verify)
+    protected function checkGatewaySuccess($verify)
     {
-        $input = $verify->input;
-
         $content = $verify->verifyResponseContent;
-
-        $verify->status = VerifyResult::STATUS_MATCH;
-
-        // Payment is failed when ics_auth is not present
-        if ($content['success'] === true)
-        {
-            $this->verifyPaymentReconcileWithGatewayResponse($verify);
-        }
-        else
-        {
-            $this->verifyNonExistentCase($verify);
-        }
-
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
-
-        $attributes = $this->getMappedAttributes($content['data']);
-
-        $this->updateGatewayPaymentEntity($verify->payment, $attributes);
-
-        return $verify->status;
-    }
-
-    protected function verifyNonExistentCase($verify)
-    {
-        $payment = $verify->payment;
-        $input = $verify->input;
 
         $verify->gatewaySuccess = false;
 
-        if (($payment === null) and
-            (($input['payment']['status'] === 'failed') or
-                ($input['payment']['status'] === 'created')))
+        if ((isset($content['success']) === true) and
+            ($content['success'] === true))
         {
-            $verify->apiSuccess = false;
-        }
-        else if (($payment['status'] === null) or
-                ($payment['status'] !== Status::AUTHORIZED))
-        {
-            $verify->apiSuccess = false;
-        }
-        else if ($payment['status'] === Status::AUTHORIZED)
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = true;
+            $verify->gatewaySuccess = true;
         }
     }
 
-    protected function verifyPaymentReconcileWithGatewayResponse($verify)
+    protected function verifyPayment(Verify $verify)
     {
-        $payment = $verify->payment;
-        $input = $verify->input;
+        $this->setVerifyStatus($verify);
 
-        $verify->gatewaySuccess = true;
+        $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
+    }
 
-        if (($input['payment']['status'] !== 'created') and
-            ($input['payment']['status'] !== 'failed'))
+    protected function saveVerifyResponseIfNeeded($verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        unset($content['data']['_raw']);
+
+        return $this->updateGatewayPaymentEntity($gatewayPayment, $content['data']);
+    }
+
+    protected function setVerifyStatus(Verify $verify)
+    {
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        $status = VerifyResult::STATUS_MISMATCH;
+
+        if ($verify->apiSuccess === $verify->gatewaySuccess)
         {
-            $verify->apiSuccess = true;
+            $status = VerifyResult::STATUS_MATCH;
         }
-        else
-        {
-            $verify->status = VerifyResult::STATUS_MISMATCH;
-            $verify->apiSuccess = false;
-        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $verify->status = $status;
     }
 
     public function manualGatewayCapture(array $input)

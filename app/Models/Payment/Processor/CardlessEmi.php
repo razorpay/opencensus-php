@@ -18,4 +18,9 @@ class CardlessEmi
     {
         return (isset(self::$fullName[$provider]) === true);
     }
+
+    public static function getName($provider)
+    {
+        return self::$fullName[$provider];
+    }
 }

@@ -6,7 +6,7 @@ use RZP\Exception;
 
 class FundAccountType
 {
-    const BANK_ACCOUNT      = 'bank_account';
+    const BANK_ACCOUNT = 'bank_account';
 
     public static $allowedTypes = [
         self::BANK_ACCOUNT,

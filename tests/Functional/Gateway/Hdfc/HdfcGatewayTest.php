@@ -122,6 +122,30 @@ class HdfcGatewayTest extends TestCase
         $this->assertEquals('Y', $mpi['enrolled']);
     }
 
+    public function testPaymentForAuthorizationTerminalRupay()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = [
+            'card' => [
+                'number'       => '6073849700004947',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->defaultAuthPayment($payment);
+        });
+    }
+
     public function testPaymentForAuthorizationTerminalFailure()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);

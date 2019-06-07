@@ -25,6 +25,9 @@ trait FundAccountValidationTrait
         $this->assertEquals(354, $fav['fees']);
         $this->assertEquals(54, $fav['tax']);
 
+        $this->assertEquals(null, $bankAccount['entity_id']);
+        $this->assertEquals(null, $bankAccount['type']);
+
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);

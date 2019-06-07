@@ -565,7 +565,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $terminalId = trim(str_replace("'", '', $terminalId));
         }
 
-        $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
+        $isCybersource = Reconciliate::isCybersourceTerminalId($terminalId);
 
         return $isCybersource;
     }
@@ -655,7 +655,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $gatewayPayment = (new Hdfc\Gateway)->createGatewayEntity($attributes);
 
             $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
+                TraceCode::RECON_INFO,
                 [
                     'info_code'             => Base\InfoCode::RECON_GATEWAY_ENTITY_CREATED,
                     'payment_id'            => $this->payment->getId(),

@@ -2,10 +2,16 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use Mail;
+use Queue;
+
 use RZP\Gateway\Hitachi;
+use RZP\Gateway\Paysecure\Entity;
 use RZP\Gateway\Paysecure\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\Capture as CaptureJob;
 use RZP\Exception\GatewayTimeoutException;
+use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -52,6 +58,8 @@ class PaysecureGatewayTest extends TestCase
             'business_registered_city'    => 'Bangalore',
         ];
 
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Ménage12345678901234567890']);
+
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $this->fixtures->iin->create([
@@ -77,6 +85,19 @@ class PaysecureGatewayTest extends TestCase
 
     public function testPaymentAuthViaRedirect()
     {
+        // Assert that the terminal owner does not contain non-alpha numeric characters
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_terminal_owner_name')
+                {
+                    $this->assertEquals('Mnage12345678901234567', $content);
+
+                    $this->assertLessThanOrEqual(23, strlen($content));
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
@@ -181,7 +202,15 @@ class PaysecureGatewayTest extends TestCase
 
         $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
 
-        $this->assertNotEmpty($gatewayPayment);
+        $this->assertArraySelectiveEquals(
+            [
+                Entity::STATUS        => 'failure',
+                Entity::ACTION        => 'authorize',
+                Entity::ERROR_CODE    => '406',
+                Entity::ERROR_MESSAGE => 'Not Authenticated',
+            ],
+            $gatewayPayment
+        );
     }
 
     public function testCallbackFailure()
@@ -408,12 +437,80 @@ class PaysecureGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'action'     => 'authorize',
+                'action'     => 'capture',
                 'pRespCode'  => '00',
                 'payment_id' => substr($authResponse['razorpay_payment_id'],4),
             ],
             $hitachi
         );
+    }
+
+    public function testCaptureDispatchedOnTimeout()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $authResponse = $this->testPaymentAuthViaRedirect();
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                // Hitachi's advice uses the same action response as that of callback
+                if ($action === 'callback')
+                {
+                    throw new GatewayTimeoutException('Timed out');
+                }
+            },
+            'hitachi'
+        );
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return ($payment['id'] === $data['payment']['public_id']);
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureDispatchedOnFailure()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $authResponse = $this->testPaymentAuthViaRedirect();
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                // Hitachi's advice uses the same action response as that of callback
+                if ($action === 'callback')
+                {
+                    $decoded = json_decode($content, true);
+
+                    $decoded['pRespCode'] = 'Z3';
+
+                    $content = json_encode($decoded);
+                }
+            },
+            'hitachi'
+        );
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return ($payment['id'] === $data['payment']['public_id']);
+        });
+
+        Mail::assertQueued(CapturedMail::class);
     }
 
     public function testPaymentRefundViaHitachi()

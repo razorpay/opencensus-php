@@ -80,7 +80,7 @@ class P2pSeeder extends Seeder
                 'customer_id'           => Constants::RZP_LOCAL_CUSTOMER_2,
                 'merchant_id'           => Constants::TEST_MERCHANT,
                 'contact'               => '+919988772222',
-                'auth_token'            => Constants::CUSTOMER_1_DEVICE_1
+                'auth_token'            => Constants::CUSTOMER_2_DEVICE_1
             ]);
     }
 

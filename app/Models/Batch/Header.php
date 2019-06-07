@@ -523,6 +523,11 @@ class Header
     const ATOM_NON_RECURRING       = 'Non Recurring';
     const ATOM_TERMINAL_ID         = 'Terminal ID';
 
+    //
+    // Submerchant bulk assign headers
+    //
+    const TERMINAL_ID      = 'terminal_id';
+
     // Contact Headers
     const CONTACT_ID                  = 'Contact Id';
     const CONTACT_TYPE                = 'Contact Type';
@@ -1729,6 +1734,19 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+
+        Type::SUBMERCHANT_ASSIGN => [
+            self::INPUT => [
+                self::SUBMERCHANT_ID,
+                self::TERMINAL_ID,
+            ],
+            self::OUTPUT => [
+                self::SUBMERCHANT_ID,
+                self::TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ]
+        ]
     ];
 
     /**
