@@ -11,6 +11,7 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Diag\EventCode;
@@ -1611,7 +1612,7 @@ trait Authorize
         if (($payment->getMethod() == Method::UPI) and
             ($payment->merchant->isTPVRequired() === true))
         {
-            $this->modifyAccountNumberForSpecificBanks($payment->getBank(),$gatewayInput);
+            $this->modifyAccountNumberForSpecificBanks($payment,$gatewayInput);
         }
 
         // set token for local card saving in gateway input
@@ -5651,22 +5652,22 @@ trait Authorize
         $gatewayInput['payment_fee'] = $fee;
     }
 
-    protected function modifyAccountNumberForSpecificBanks(string $bank,array & $gatewayInput)
+    protected function modifyAccountNumberForSpecificBanks($payment, array & $gatewayInput)
     {
         $accountNumber = $gatewayInput['order']['account_number'];
 
         // prepend required zeroes in the account number based on bank
-        switch ($bank)
+        switch ($payment->getBank())
         {
-            case 'sbi':
+            case ProviderCode::SBI:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
                 break;
 
-            case 'kotak':
+            case ProviderCode::KOTAK:
                 $accountNumber = str_pad($accountNumber, 14, '0', STR_PAD_LEFT );
                 break;
 
-            case 'centralbank':
+            case ProviderCode::CENTRALBANK:
                 $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
                 break;
 
