@@ -112,7 +112,7 @@ class Entity extends Base\PublicEntity
 
     public function creditNoteInvoices()
     {
-        return $this->hasMany('RZP\Models\CreditNote\Invoice\Entity', 'credit_note_id');
+        return $this->hasMany('RZP\Models\CreditNote\Invoice\Entity', 'creditnote_id');
     }
 
     /**

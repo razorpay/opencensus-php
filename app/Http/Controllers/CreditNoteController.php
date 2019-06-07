@@ -4,9 +4,12 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\CreditNote;
 
 class CreditNoteController extends Controller
 {
+    protected $service = CreditNote\Service::class;
+
     use Traits\HasCrudMethods;
 
     public function apply(string $id)
