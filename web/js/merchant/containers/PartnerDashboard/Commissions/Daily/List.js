@@ -45,10 +45,7 @@ const transactions = {
 export default class CommissionsDailyList extends ListContainer {
   constructor(props) {
     super(props);
-    this.amountColumn = {
-      title: props.amountTitle,
-      value: item => <Amount value={item.earnings} currency={'INR'} />,
-    };
+    this.amountColumn = props.amountColumn;
   }
 
   onDatesChange = (from, to) => {

@@ -7,25 +7,25 @@ export default function SubventionContainer() {
   return (
     <tabbed-container>
       <header>
-        <NavLink exact to="/partners/subvention/daily">
+        <NavLink exact to="/partners/subventions/daily">
           Daily Subvention
         </NavLink>
-        <NavLink exact to="/partners/subvention/transactional">
+        <NavLink exact to="/partners/subventions/transactional">
           Subvention Per Transaction
         </NavLink>
       </header>
       <content>
         <Switch>
           <Redirect
-            to="/partners/subvention/daily"
-            from="partners/subvention"
+            to="/partners/subventions/daily"
+            from="partners/subventions"
             exact
           />
 
-          <Route path="/partners/subvention/daily" component={Daily} />
+          <Route path="/partners/subventions/daily" component={Daily} />
 
           <Route
-            path="/partners/subvention/transactional"
+            path="/partners/subventions/transactional"
             component={Transactional}
           />
         </Switch>

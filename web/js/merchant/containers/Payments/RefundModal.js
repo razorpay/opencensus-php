@@ -136,9 +136,7 @@ export default class RefundModal extends Component {
 
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
     if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
-      var errorMsg =
-        'Reversals cannot be automated when partially refunding a payment that has more than 1 transfer.' +
-        ' Create reversals manually before attempting the refund.';
+      var errorMsg = `Reversals can't be automated when partially refunding a payment with more than 1 transfer to different linked accounts. Create reversals manually before attempting the refund.`;
 
       this.props.showNotification({
         type: 'error',

@@ -133,7 +133,7 @@
             switch(data.name) {
                 case 'identify': {
                     _hsq.push(['identify', {
-                        id: data.id, // merchant id
+                        mid: data.id, // merchant id
                         email: data.email, // email
                     }]);
                     break;

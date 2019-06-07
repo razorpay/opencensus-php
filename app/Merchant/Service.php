@@ -411,6 +411,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fetchPartnerConfigs()
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->send('merchants/me/partner/configs', 'GET');
+
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return $data['items'] ?? [];
+    }
+
     public function getMerchantUsers($merchantId)
     {
         $adminUser = Auth::guard('api')->user();
