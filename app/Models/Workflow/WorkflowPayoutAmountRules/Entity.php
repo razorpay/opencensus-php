@@ -17,7 +17,6 @@ class Entity extends Base\Entity
     const Y_AMOUNT       = 'y_amount';
     const WORKFLOW_ID    = 'workflow_id';
 
-
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
@@ -68,7 +67,6 @@ class Entity extends Base\Entity
 
     protected static $sign = 'workflw';
     protected $entity = 'workflow_payout_amount_rules';
-
 
     public function getMerchantID()
     {

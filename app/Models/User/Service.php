@@ -691,10 +691,4 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
-
-    public function getAllRolesForUser(): array
-    {
-        $orgId = $this->auth->getOrgId();
-
-    }
 }

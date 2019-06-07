@@ -236,7 +236,6 @@ class Name
     const BULK_APPROVE_REJECT_PAYOUT          = 'bulk_approve_reject_payout';
     const VIEW_PAYOUT                         = 'view_payout';
 
-
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE              => self::EDIT_MERCHANT_UNARCHIVE,

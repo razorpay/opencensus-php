@@ -55,8 +55,9 @@ class Service extends Base\Service
     }
 
     public function getRoleNamesForMerchant()
+
     {
-        return $this->repo->role->getMerchantRoleNames();
+        return (new Entity)->getMerchantRoleNames();
     }
 
     public function deleteRole($roleId)

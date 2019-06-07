@@ -134,4 +134,9 @@ class Entity extends Base\Entity
             self::PERMISSIONS,
         ];
     }
+
+    public function getMerchantRoleNames()
+    {
+        return  ['Finance L1','Finance L2', 'Finance L3',];
+    }
 }

@@ -40,7 +40,7 @@ class Repository extends Base\Repository
     public function fetchMerchantRolesForOrg($orgId)
     {
         //Hard coding the roles for now.
-        $rblroles = $this->getMerchantRoleNames();
+        $rblroles = (new Entity)->getMerchantRoleNames();
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->whereIn(Entity::NAME, $rblroles)
@@ -48,10 +48,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getMerchantRoleNames()
-    {
-        return  ['Finance L1','Finance L2', 'Finance L3',];
-    }
+
 
     public function validateOrgHasNoSuchRole(Entity $role, Org\Entity $org)
     {

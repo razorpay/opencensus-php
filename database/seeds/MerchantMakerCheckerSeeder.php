@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: venkateswarluyerramalli
- * Date: 2019-05-17
- * Time: 15:55
- */
 
 use Illuminate\Database\Seeder;
 
@@ -35,35 +29,35 @@ class MerchantMakerCheckerSeeder extends Seeder
             $l2id = str_random(14);
             $l3id = str_random(14);
 
-            DB::table(Table::ROLE)->insert([
-                                               // RZP
-                                               [
-                                                   'id'          => $l1id,
-                                                   'name'        => 'Finance L1',
-                                                   'description' => 'Finanace L1',
-                                                   'org_id'      => self::RAZORPAY_ORG_ID,
-                                                   'created_at'  => time(),
-                                                   'updated_at'  => time(),
-                                               ],
-                                               // HDFC
-                                               [
-                                                   'id'          => $l2id,
-                                                   'name'        => 'Finance L2',
-                                                   'description' => 'Finanace L2',
-                                                   'org_id'      => self::RAZORPAY_ORG_ID,
-                                                   'created_at'  => time(),
-                                                   'updated_at'  => time(),
-                                               ],
-                                               [
-                                                   'id'          => $l3id,
-                                                   'name'        => 'Finance L3',
-                                                   'description' => 'Finanace L3',
-                                                   'org_id'      => self::RAZORPAY_ORG_ID,
-                                                   'created_at'  => time(),
-                                                   'updated_at'  => time(),
-                                               ],
-
-                                           ]);
+            DB::table(Table::ROLE)->insert(
+                [
+                   // RZP
+                   [
+                       'id'          => $l1id,
+                       'name'        => 'Finance L1',
+                       'description' => 'Finanace L1',
+                       'org_id'      => self::RAZORPAY_ORG_ID,
+                       'created_at'  => time(),
+                       'updated_at'  => time(),
+                   ],
+                   // HDFC
+                   [
+                       'id'          => $l2id,
+                       'name'        => 'Finance L2',
+                       'description' => 'Finanace L2',
+                       'org_id'      => self::RAZORPAY_ORG_ID,
+                       'created_at'  => time(),
+                       'updated_at'  => time(),
+                   ],
+                   [
+                       'id'          => $l3id,
+                       'name'        => 'Finance L3',
+                       'description' => 'Finanace L3',
+                       'org_id'      => self::RAZORPAY_ORG_ID,
+                       'created_at'  => time(),
+                       'updated_at'  => time(),
+                   ],
+               ]);
 
             $createPayoutPerm = (new Permission\Repository)->retrieveIdsByNames(
                 ['create_payout'])->toArray()[0]['id'];

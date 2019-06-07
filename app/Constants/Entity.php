@@ -126,12 +126,12 @@ class Entity
     //
     // Workflow Entities
     //
-    const WORKFLOW              = 'workflow';
-    const WORKFLOW_STEP         = 'workflow_step';
-    const WORKFLOW_ACTION       = 'workflow_action';
-    const ACTION_CHECKER        = 'action_checker';
-    const ACTION_STATE          = 'action_state';
-    const ACTION_COMMENT        = 'action_comment';
+    const WORKFLOW                      = 'workflow';
+    const WORKFLOW_STEP                 = 'workflow_step';
+    const WORKFLOW_ACTION               = 'workflow_action';
+    const ACTION_CHECKER                = 'action_checker';
+    const ACTION_STATE                  = 'action_state';
+    const ACTION_COMMENT                = 'action_comment';
     const WORKFLOW_PAYOUT_AMOUNT_RULES  = 'workflow_payout_amount_rules';
 
     // Generic comment and state entities

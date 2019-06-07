@@ -84,7 +84,6 @@ class Validator extends Base\Validator
         {
             $dynamicRoles = (new Role\Service())->getRoleNamesForMerchant();
             $dashboardRoles = array_merge($dynamicRoles,User\Role::ALL_ROLES);
-
         }
 
         if ($merchant->isTagAdded('enable_rbl_role') === true)
