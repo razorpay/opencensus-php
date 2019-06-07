@@ -91,6 +91,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     protected static $createValidators = [
@@ -372,6 +373,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+    ];
+
+    protected static $upiAirtelEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_airtel',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
