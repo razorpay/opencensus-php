@@ -640,22 +640,16 @@ export default class InvoicesNewContainer extends Component {
   };
 
   openInvoiceCurrencyChangeModal = ({ showCross = true, currency }) => {
+    const invoiceCurrency = currency || this.state.invoiceCurrency;
+
     this.props.openModal({
       size: 'small',
       component: (
         <PickCurrency
-          currency={currency || this.state.invoiceCurrency}
+          currency={invoiceCurrency}
           onSave={this.setInvoiceCurrency}
           closeModal={this.props.closeModal}
           showCross={showCross}
-          alerts={
-            this.props.invoice_line_items &&
-            this.props.invoice_line_items.length
-              ? [
-                  'The rate of all the items in the current invoice will reset to 0.',
-                ]
-              : null
-          }
         />
       ),
     });

@@ -43,7 +43,16 @@ export default function PartnerDashboard() {
         }
       />
 
-      <ShowWhenRoute path="/partners/reports" component={Reports} />
+      <ShowWhenRoute
+        path="/partners/reports"
+        component={Reports}
+        path="/partners/reports"
+        component={Reports}
+        // disabling for resellers not having partner configs
+        additionalCondition={user =>
+          !user.isPartner('reseller') || user.isHavingPartnerConfigs
+        }
+      />
 
       <Route path="/partners/submerchants" component={SubMerchantList} />
     </Switch>

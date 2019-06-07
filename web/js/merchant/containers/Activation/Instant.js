@@ -229,11 +229,10 @@ export default class ActivationWizard extends React.Component {
 
         if (isWhitelistFlow) {
           this.props.showInstantActivationSuccessModal();
+          trackFb('activation_complete_success');
         } else if (isGraylistFlow) {
           this.props.showKYCDetailsModal();
         }
-
-        trackFb('activation_complete_success');
 
         return this.props.history.replace(`/`);
       })

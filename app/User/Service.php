@@ -441,6 +441,31 @@ class Service extends Base\Service
 
                         $data = $this->updateUserDetails($data, $user);
                     }
+
+                    // if the merchant is a partner
+                    if (empty($data['merchants'][$merchant['id']]['partner_type']) === false)
+                    {
+                        $data['merchants'][$merchant['id']]['partner'] = [];
+
+                        $configs = $merchantService->fetchPartnerConfigs();
+
+                        if (empty($configs) === false)
+                        {
+                            $data['merchants'][$merchant['id']]['partner']['has_configs'] = true;
+
+                            foreach ($configs as $config)
+                            {
+                                if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::COMMISSION)
+                                {
+                                    $data['merchants'][$merchant['id']]['partner']['has_commission_configs'] = true;
+                                }
+                                else if ($config[Merchant\Constants::COMMISSION_MODEL] === Merchant\Constants::SUBVENTION)
+                                {
+                                    $data['merchants'][$merchant['id']]['partner']['has_subvention_configs'] = true;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 if (((bool) $merchant['activated']) === true)

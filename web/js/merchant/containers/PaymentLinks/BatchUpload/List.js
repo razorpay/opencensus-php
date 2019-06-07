@@ -92,7 +92,7 @@ export default class BatchListContainer extends Component {
         batchFormInitialValues={batchFormInitialValues}
         batchType="payment_link"
         maxRows={50000}
-        maxFileSize={10485760}
+        maxFileSize={31457280} // 30MB
         gaEvents={gaEvents}
         createBatch={this.props.createBatch}
         validateBatch={this.props.validateBatch}
