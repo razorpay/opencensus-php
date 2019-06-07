@@ -502,12 +502,12 @@ class Selector extends Base\Core
 
         $response = $this->app->razorx->getTreatment($merchantId, 'payments_hit_routing_service', $this->mode);
 
-        if (($response === 'control') or ($response === 'off'))
+        if (($response === 'on'))
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
 

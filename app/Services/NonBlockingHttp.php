@@ -24,16 +24,6 @@ class NonBlockingHttp
     {
         try
         {
-            $this->trace->info(
-                TraceCode::NON_BLOCKING_HTTP_DATA,
-                [
-                    'url'      => $url,
-                    'username' => $username,
-                    'password' => $password,
-                    'payload'  => $payload,
-                    'timeout'  => $this->timeout,
-                ]);
-
             $curl_handler = curl_init($url);
 
             $encodedData = json_encode($payload);
@@ -56,13 +46,7 @@ class NonBlockingHttp
                 curl_setopt($curl_handler, CURLOPT_HTTPHEADER, $headers);
             }
 
-            curl_setopt($curl_handler, CURLOPT_RETURNTRANSFER, true);
-
-            $content  = curl_exec($curl_handler);
-
-            $this->trace->info(
-                TraceCode::NON_BLOCKING_HTTP_DATA,
-                ['content' => $content]);
+            curl_exec($curl_handler);
 
             curl_close($curl_handler);
         }

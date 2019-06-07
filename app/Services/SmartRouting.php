@@ -149,7 +149,7 @@ class SmartRouting
 
             $response = $this->sendSmartRoutingRequest($request);
 
-            $this->checkErrors(json_decode($response->body, true));
+            $this->checkErrors($response);
 
             return json_decode($response->body, true);
         }
@@ -221,23 +221,17 @@ class SmartRouting
 
     protected function checkErrors($response)
     {
+        $responseBody = json_decode($response->body, true);
+
         $this->trace->info(
             TraceCode::SMART_ROUTING_RESPONSE,
             [
-                'response' => $response
+                'response' => $responseBody
             ]);
 
-        $success = $response[self::SUCCESS] ?? true;
-
-        if ($success === false)
+        if ($response->status_code >= 400)
         {
-            $error = $response[self::ERROR];
-
-            $data = [
-                'error' => $error,
-            ];
-
-            throw new Exception\RuntimeException('smart routing request failed', $data);
+            throw new Exception\RuntimeException('Smart routing request failed', $responseBody);
         }
     }
 
