@@ -72,6 +72,94 @@ return [
         ],
     ],
 
+    'testApprovePayoutWithOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve/{id}',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'   => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testApprovePayoutWithInvalidOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve/{id}',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'   => '1234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testApproveBulkPayoutWithOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve',
+            'content' => [
+                'payout_ids' => [],
+                'token'      => 'BUIj3m2Nx2VvVj',
+                'otp'        => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
+    'testRejectPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/reject/{id}',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'   => '1234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'pending',
+            ],
+        ],
+    ],
+
+    'testBulkRejectPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/reject',
+            'content' => [
+                'payout_ids' => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 2,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
     'testCreatePayoutForAmountLessThanMinFee' => [
         'request'  => [
             'method'  => 'POST',

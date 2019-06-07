@@ -28,6 +28,34 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postApproveFundAccountPayout(string $id)
+    {
+        $response = $this->service()->approveFundAccountPayout($id, $this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkApproveFundAccountPayouts()
+    {
+        $response = $this->service()->bulkApproveFundAccountPayout($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postRejectFundAccountPayout(string $id)
+    {
+        $response = $this->service()->rejectFundAccountPayout($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkRejectFundAccountPayouts()
+    {
+        $response = $this->service()->bulkRejectFundAccountPayout($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantPayoutOnDemand()
     {
         $input = Request::all();

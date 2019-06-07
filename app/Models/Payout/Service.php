@@ -11,6 +11,9 @@ use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -34,6 +37,118 @@ class Service extends Base\Service
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
 
         return $payout->toArrayPublic();
+    }
+
+    public function approveFundAccountPayout(string $id, array $input): array
+    {
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout->getValidator()->validateApproveRejectPayout();
+
+        $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
+
+        // TODO mark the workflow as approved
+        // get workflow action id and send payload as approved is true
+
+        return $payout->toArrayPublic();
+    }
+
+    public function bulkApproveFundAccountPayout(array $input)
+    {
+        (new Validator)->validateInput('bulk_approve', $input);
+
+        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+
+        foreach ($payouts as $payout)
+        {
+            $payout->getValidator()->validateApproveRejectPayout();
+        }
+
+        $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
+
+        $failedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                // TODO mark the workflow as approved
+                // get workflow action id for each payout and send payload as approved is true
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
+                    [
+                        'payout_id' => $payout->getId(),
+                ]);
+
+                $failedIds[] = $payout->getId();
+            }
+        }
+
+        return [
+            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'failed_ids'  => $failedIds,
+        ];
+    }
+
+    public function rejectFundAccountPayout(string $id): array
+    {
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout->getValidator()->validateApproveRejectPayout();
+
+        // TODO mark the workflow as approved
+        // get workflow action id and send payload as approved is false
+
+        return $payout->toArrayPublic();
+    }
+
+    public function bulkRejectFundAccountPayout(array $input)
+    {
+        (new Validator)->validateInput('bulk_reject', $input);
+
+        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+
+        foreach ($payouts as $payout)
+        {
+            $payout->getValidator()->validateApproveRejectPayout();
+        }
+
+        $failedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                // TODO mark the workflow as approved
+                // get workflow action id for each payout and send payload as approved is false
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
+                    [
+                        'payout_id' => $payout->getId(),
+                    ]);
+
+                $failedIds[] = $payout->getId();
+            }
+        }
+
+        return [
+            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'failed_ids'  => $failedIds,
+        ];
     }
 
     /**

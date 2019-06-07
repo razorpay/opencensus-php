@@ -254,6 +254,122 @@ class PayoutTest extends TestCase
         $this->startTest();
     }
 
+    public function testApprovePayoutWithOtp()
+    {
+        $payout = $this->testCreatePayout();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/approve/'. $payout['id'];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutWithInvalidOtp()
+    {
+        $payout = $this->testCreatePayout();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/approve/'. $payout['id'];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApproveBulkPayoutWithOtp()
+    {
+        $payout1 = $this->testCreatePayout();
+        $payout2 = $this->testCreatePayout();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout1['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->fixtures->edit(
+            'payout',
+            $payout2['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testRejectPayout()
+    {
+        $payout = $this->testCreatePayout();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/reject/'. $payout['id'];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkRejectPayouts()
+    {
+        $payout1 = $this->testCreatePayout();
+        $payout2 = $this->testCreatePayout();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        $this->fixtures->edit(
+            'payout',
+            $payout1['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->fixtures->edit(
+            'payout',
+            $payout2['id'],
+            [
+                'status' => Payout\Status::PENDING,
+            ]);
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testRetryPayout(): array
     {
         $payout = $this->testCreatePayout();
