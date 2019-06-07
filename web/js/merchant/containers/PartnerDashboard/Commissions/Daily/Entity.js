@@ -15,13 +15,17 @@ import VerticalBreakup from './VerticalBreakup';
 @connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {
   componentWillMount() {
-    this.props.fetchSingleDayAggregate(Number(this.props.timestamp));
+    this.fetchData(Number(this.props.timestamp));
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.timestamp !== nextProps.timestamp) {
-      this.props.fetchSingleDayAggregate(Number(nextProps.timestamp));
+      this.fetchData(Number(nextProps.timestamp));
     }
+  }
+
+  fetchData(timestamp) {
+    this.props.fetchSingleDayAggregate(timestamp, this.props.queryType);
   }
 
   render() {

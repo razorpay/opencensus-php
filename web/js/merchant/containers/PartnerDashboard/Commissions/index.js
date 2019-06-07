@@ -29,6 +29,7 @@ export default class EarningsContainer extends Component {
               path="/partners/earnings/transactional"
               component={Transactional}
               additionalCondition={user => !user.isPartner('reseller')}
+              exact
             />
             <ShowWhenRoute path="/partners/earnings/daily" component={Daily} />
           </Switch>
