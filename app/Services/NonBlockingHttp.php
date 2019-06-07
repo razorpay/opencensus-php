@@ -30,7 +30,8 @@ class NonBlockingHttp
                     'url'      => $url,
                     'username' => $username,
                     'password' => $password,
-                    'payload'  => $payload
+                    'payload'  => $payload,
+                    'timeout'  => $this->timeout,
                 ]);
 
             $curl_handler = curl_init($url);
@@ -55,7 +56,11 @@ class NonBlockingHttp
                 curl_setopt($curl_handler, CURLOPT_HTTPHEADER, $headers);
             }
 
-            curl_exec($curl_handler);
+            $content  = curl_exec($curl_handler);
+
+            $this->trace->info(
+                TraceCode::NON_BLOCKING_HTTP_DATA,
+                $content);
 
             curl_close($curl_handler);
         }
