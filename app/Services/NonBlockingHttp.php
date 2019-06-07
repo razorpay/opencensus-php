@@ -56,11 +56,13 @@ class NonBlockingHttp
                 curl_setopt($curl_handler, CURLOPT_HTTPHEADER, $headers);
             }
 
+            curl_setopt($curl_handler, CURLOPT_RETURNTRANSFER, true);
+
             $content  = curl_exec($curl_handler);
 
             $this->trace->info(
                 TraceCode::NON_BLOCKING_HTTP_DATA,
-                $content);
+                ['content' => $content]);
 
             curl_close($curl_handler);
         }
