@@ -58,6 +58,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
+        Entity::PAYLATER                    => 'sometimes|boolean',
         Entity::ENABLED                     => 'sometimes|in:0,1',
         Entity::CAPABILITY                  => 'sometimes|in:0,1,2',
     ];
@@ -812,6 +813,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
+    protected static $payLaterTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:paylater',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::PAYLATER                    => 'required|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+    ];
+
     protected static $updateTerminalsBankRules = [
         Entity::TERMINAL_IDS                => 'required|array',
         Entity::ACTION                      => 'required|string|in:add,remove',
@@ -1183,6 +1192,10 @@ class Validator extends Base\Validator
             return Method::CARDLESS_EMI;
         }
 
+        if (empty($input[Entity::PAYLATER]) === false)
+        {
+            return Method::PAYLATER;
+        }
         return null;
     }
 

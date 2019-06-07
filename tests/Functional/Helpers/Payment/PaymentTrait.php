@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentHitachiTrait;
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
+    use PaymentPayLaterTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1472,6 +1473,18 @@ trait PaymentTrait
         $payment['method'] = 'cardless_emi';
         $payment['provider'] = $provider;
         $payment['emi_duration'] = 6;
+
+        unset($payment['card'], $payment['bank']);
+
+        return $payment;
+    }
+
+    protected function getDefaultPayLaterPaymentArray($provider)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'paylater';
+        $payment['provider'] = $provider;
+        $payment['contact'] = '+91'. $payment['contact'];
 
         unset($payment['card'], $payment['bank']);
 

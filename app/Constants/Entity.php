@@ -200,6 +200,7 @@ class Entity
     const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_YESB        = 'netbanking_yesb';
+    const PAYLATER               = 'paylater';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -462,6 +463,7 @@ class Entity
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
+        self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -553,6 +555,7 @@ class Entity
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Base::class,
 
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
+        self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
 
         self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
 

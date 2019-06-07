@@ -4938,6 +4938,13 @@ ALTER TABLE refunds
     CHANGE COLUMN reference6 reversed_at INT(11) UNSIGNED DEFAULT NULL,
     ADD INDEX refunds_reversed_at_index (`reversed_at`);
 
+ALTER TABLE merchant_banks
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
+
+ALTER TABLE terminals
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
+    ADD INDEX `terminals_paylater_index` (paylater);
+
 ALTER TABLE fund_account_validations
     ADD COLUMN attempts TINYINT(1) DEFAULT 1 after batch_fund_transfer_id,
     ADD COLUMN retry_at INTEGER UNSIGNED DEFAULT NULL after batch_fund_transfer_id,

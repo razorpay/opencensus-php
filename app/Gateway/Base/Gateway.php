@@ -169,6 +169,9 @@ class Gateway
      */
     protected $route;
 
+    /**
+     * @var $terminal \RZP\Models\Terminal\Entity
+     */
     protected $terminal;
 
     protected $gateway;
