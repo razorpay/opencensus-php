@@ -86,7 +86,7 @@ require('vars.php');
         <a href="https://www.razorpay.com/" target="_blank" class="nav" >Home</a>
         <a href="https://www.razorpay.com/features/" target="_blank" class="nav">Features</a>
         <a href="https://www.razorpay.com/pricing/" target="_blank" class="nav">Pricing</a>
-        <a href="https://docs.razorpay.com/" target="_blank" class="nav">Documentation</a>
+        <a href="https://razorpay.com/docs/" target="_blank" class="nav">Documentation</a>
         <a href="https://www.razorpay.com/contact/" target="_blank" class="nav">Contact Us</a>
       </div>
     </div>
