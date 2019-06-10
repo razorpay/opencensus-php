@@ -275,6 +275,15 @@ trait PaymentCreationTrait
             }
         }
 
+        if ($request['url'] === '/payments/create/redirect')
+        {
+            $targetUrl =$this->getMetaRefreshUrl($response);
+
+            if ($this->isRedirectToAuthorizeUrl($targetUrl) === true)
+            {
+                return $this->makeRedirectToAuthorize($targetUrl);
+            }
+        }
         return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
     }
 

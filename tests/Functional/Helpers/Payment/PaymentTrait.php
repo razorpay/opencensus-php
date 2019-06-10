@@ -1634,6 +1634,27 @@ trait PaymentTrait
         return false;
     }
 
+    protected function getMetaRefreshUrl($response)
+    {
+        $crawler = new Crawler($response->getContent());
+
+        $contents = $crawler->filterXpath("//meta[@http-equiv='refresh']")->extract(array('content'));
+
+        if (count($contents) === 0)
+        {
+            return '';
+        }
+
+        preg_match('/0;url=(.*)/', $contents[0], $matches);
+
+        if (count($matches) !== 2)
+        {
+            return '';
+        }
+
+        return $matches[1];
+    }
+
     protected function getDataForGatewayRequest($response, &$callback = null)
     {
         $url = $values = $method = null;
