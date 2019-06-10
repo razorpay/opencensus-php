@@ -20,7 +20,7 @@ final class RazorxTreatment
     const INTERNATIONAL_ACTIVATIONS = 'international_activations';
 
     // Razorx treatment constant for whom to forward/redirect to New Batch service.
-    const BATCH_SERVICE_PAYMENT_LINK = 'batch_service_payment_link';
+    const BATCH_SERVICE_PAYMENT_LINK = 'batch_service_payment_link_updated';
 
     // Razorx treatment constant whether batchService be called or not.
     const BATCH_SERVICE_BE_CALLED = 'batch_service_be_called';

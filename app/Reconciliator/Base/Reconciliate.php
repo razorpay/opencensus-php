@@ -153,10 +153,10 @@ class Reconciliate extends Base\Core
      * pass the batch entity to the individual subreconciliators
      *
      * @param array $allFilesContents
-     * @param Batch\Processor\Base $batchProcessor
+     * @param Batch\Processor\Reconciliation $batchProcessor
      * @param string $source
      */
-    public function startReconciliationV2(array $allFilesContents, Batch\Processor\Base $batchProcessor, string $source)
+    public function startReconciliationV2(array $allFilesContents, Batch\Processor\Reconciliation $batchProcessor, string $source)
     {
         $batch = $batchProcessor->batch;
 
@@ -194,7 +194,14 @@ class Reconciliate extends Base\Core
             }
         }
 
-        $this->traceBatchProcessingSummary($batch);
+        //
+        // For batches having scrooge refunds, we send batch processed summary
+        // when last chunk of scrooge response gets processed
+        //
+        if ($batchProcessor->hasScroogeRefunds() === false)
+        {
+            $this->traceBatchProcessingSummary($batch);
+        }
     }
 
     /**
@@ -431,7 +438,7 @@ class Reconciliate extends Base\Core
     }
 
     // Sends recon batch processing summary
-    protected function traceBatchProcessingSummary($batch)
+    public function traceBatchProcessingSummary($batch)
     {
         $summary = [
             'info'          => 'Processed Batch Summary',

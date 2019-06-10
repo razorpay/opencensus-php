@@ -78,6 +78,10 @@ class Payment extends Base
         {
             $rule = $this->getRelevantPricingRuleForCardlessEmi($rules);
         }
+        else if ($method === PaymentModel\Method::PAYLATER)
+        {
+            $rule = $this->getRelevantPricingRuleForPayLater($rules);
+        }
         // else if ($method === PaymentModel\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -287,6 +291,21 @@ class Payment extends Base
         $provider = $payment->getWallet();
 
         // @todo: Pricing structure to do discussed with product
+        $filters = [
+            [Pricing\Entity::PAYMENT_ISSUER, $provider, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
+        return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForPayLater($rules)
+    {
+        $payment = $this->entity;
+
+        $provider = $payment->getWallet();
+
         $filters = [
             [Pricing\Entity::PAYMENT_ISSUER, $provider, true, null],
         ];

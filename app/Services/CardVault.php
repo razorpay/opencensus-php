@@ -51,21 +51,27 @@ class CardVault
 
     public function tokenize($input)
     {
+        $key  = '';
+
         if (array_key_exists('card', $input) === true)
         {
             $payload = [
                 self::SECRET => $input['card'],
             ];
+
+            $key = $input['card'];
         }
 
         if (array_key_exists(self::SCHEME, $input) === true)
         {
             $payload[self::SCHEME] = $input[self::SCHEME];
+
+            $key = $key . '_' . $input[self::SCHEME];
         }
 
-        if (empty($this->cardNumberToToken[$payload[self::SECRET]]) === false)
+        if (empty($this->cardNumberToToken[$key]) === false)
         {
-            return $this->cardNumberToToken[$payload[self::SECRET]];
+            return $this->cardNumberToToken[$key];
         }
 
         $response = $this->sendRequest('tokenize', 'post', $payload);
@@ -76,7 +82,7 @@ class CardVault
                 'card vault request failed', ['data' => $response]);
         }
 
-        $this->cardNumberToToken[$payload[self::SECRET]] = $response[self::TOKEN];
+        $this->cardNumberToToken[$key] = $response[self::TOKEN];
 
         return $response[self::TOKEN];
     }

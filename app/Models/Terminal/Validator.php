@@ -58,6 +58,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
+        Entity::PAYLATER                    => 'sometimes|boolean',
         Entity::ENABLED                     => 'sometimes|in:0,1',
         Entity::CAPABILITY                  => 'sometimes|in:0,1,2',
     ];
@@ -90,6 +91,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     protected static $createValidators = [
@@ -373,6 +375,15 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
+    protected static $upiAirtelEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_airtel',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+    ];
+
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
@@ -420,6 +431,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
     ];
 
+    protected static $walletPhonepeEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_phonepe',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+    ];
+
     protected static $walletOlamoneyEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_olamoney',
         Entity::TYPE                       => 'sometimes|array',
@@ -463,6 +481,17 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingCubTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_cub',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
     ];
 
     protected static $netbankingVijayaTerminalRules = [
@@ -791,6 +820,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::CARDLESS_EMI                => 'required|boolean|in:1',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+    ];
+
+    protected static $payLaterTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:paylater',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::PAYLATER                    => 'required|boolean|in:1',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
@@ -1165,6 +1202,10 @@ class Validator extends Base\Validator
             return Method::CARDLESS_EMI;
         }
 
+        if (empty($input[Entity::PAYLATER]) === false)
+        {
+            return Method::PAYLATER;
+        }
         return null;
     }
 

@@ -178,13 +178,16 @@ class Gateway extends Base\Gateway
 
         $requestContent = $this->getPurchaseRequestArrayWithCard($input);
 
+        $traceContent = $requestContent;
+        unset($traceContent[ApiRequestFields::V1_TRANSACTION][ApiRequestFields::V1_CREDIT_CARD_DATA]);
+
         $gatewayPayment = [
             'amount' => $input['payment'][Payment\Entity::AMOUNT],
         ];
 
         $gatewayEntity = $this->createGatewayPaymentEntity($gatewayPayment, $input);
 
-        $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $requestContent);
+        $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $traceContent);
 
         $response = $this->getSoapResponse($requestContent);
 

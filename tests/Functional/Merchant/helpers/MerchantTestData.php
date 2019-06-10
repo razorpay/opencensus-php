@@ -4174,6 +4174,17 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForPayLater' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testBulkAssignPricing' => [
         'request'  => [
             'url'     => '/merchants/pricing/bulk',

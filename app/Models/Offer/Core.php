@@ -29,6 +29,8 @@ class Core extends Base\Core
 
     public function create(array $input)
     {
+        $this->trace->info(TraceCode::OFFER_CREATE_REQUEST, $input);
+
         $merchant = $this->merchant;
 
         $resource = 'offer_create_' . $merchant->getId();
@@ -353,5 +355,12 @@ class Core extends Base\Core
         }
 
         return $applicableOffers;
+    }
+
+    public function withMerchant(Merchant\Entity $merchant)
+    {
+        $this->merchant = $merchant;
+
+        return $this;
     }
 }

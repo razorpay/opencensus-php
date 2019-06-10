@@ -140,6 +140,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB
         ];
 
         return in_array($gatewayName, $immediateVerificationGateways);
@@ -176,6 +177,11 @@ class Gateway extends Base\Gateway
     public function refund(array $input)
     {
         parent::refund($input);
+
+        if ($this->isFileBasedRefund($input['payment']['gateway']) === true)
+        {
+            return;
+        }
 
         $request = $this->getMozartRequestArray($input);
 
@@ -392,6 +398,11 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::NETBANKING_CUB => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_VERIFY,
+            ],
             Payment\Gateway::NETBANKING_YESB => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
@@ -455,6 +466,12 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
+
+            Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
@@ -667,6 +684,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB,
         ];
 
         return in_array($gateway, $validationGateways, true);
@@ -686,6 +704,7 @@ class Gateway extends Base\Gateway
         $formattedAmountGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::UPI_AIRTEL,
         ];
 
@@ -729,5 +748,16 @@ class Gateway extends Base\Gateway
                 $content['entities']['order']['bank_account']['account_number'] = null;
             }
         }
+    }
+
+    protected function isFileBasedRefund($gateway)
+    {
+        $fileBasedGateways = [
+            Payment\Gateway::NETBANKING_YESB,
+            Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB,
+        ];
+
+        return in_array($gateway, $fileBasedGateways, true);
     }
 }

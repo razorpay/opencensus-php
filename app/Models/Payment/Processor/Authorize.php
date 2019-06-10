@@ -761,6 +761,8 @@ trait Authorize
 
             $this->validateCardlessEmiIfApplicable($payment, $input);
 
+            $this->validatePayLaterIfApplicable($payment, $input);
+
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -784,6 +786,21 @@ trait Authorize
             return;
         }
 
+        $this->validateContactAndProviderFromToken($payment, $input);
+    }
+
+    protected function validatePayLaterIfApplicable(Payment\Entity $payment, $input)
+    {
+        if ($payment->isPayLater() === false)
+        {
+            return;
+        }
+
+        $this->validateContactAndProviderFromToken($payment, $input);
+    }
+
+    private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
+    {
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);
@@ -791,7 +808,7 @@ trait Authorize
         if ($cardlessEmiData === null)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Token provided is invalid for cardless emi',
+                'Token provided is invalid for '. $input['method'] ?? 'cardless emi',
                 null,
                 $cardlessEmiData);
         }
@@ -3110,6 +3127,10 @@ trait Authorize
                 $this->verifyCardlessEmiEnabled();
                 break;
 
+            case Payment\Method::PAYLATER:
+                $this->verifyPayLaterEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -4925,6 +4946,21 @@ trait Authorize
         }
     }
 
+    protected function verifyPayLaterEnabled()
+    {
+        /**
+         * @var $merchantMethods \RZP\Models\Merchant\Methods\Entity
+         */
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isPayLaterEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
         $card = $payment->card;
@@ -5492,37 +5528,11 @@ trait Authorize
             ]
         );
 
-        $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
-
-        if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
-        {
-            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
-        }
-
-        $key = $payment->getCacheRedirectInputKey();
-
-        $inputDetails = $this->cache->get($key);
-
-        if ($inputDetails === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
-            );
-        }
-
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
-        {
-            $this->setCardNumberAndCvv($inputDetails);
-        }
-
         $resource = $this->getCallbackMutexResource($payment);
 
         $response = $this->mutex->acquireAndRelease(
             $resource,
-            function() use ($payment, $inputDetails)
+            function() use ($payment)
             {
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
@@ -5537,6 +5547,18 @@ trait Authorize
                 {
                     return $this->rethrowFailedPaymentErrorException($payment);
                 }
+
+                $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
+
+                if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
+                {
+                    $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+                }
+
+                $inputDetails = $this->getInputDetails($payment);
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
@@ -5576,6 +5598,27 @@ trait Authorize
             2000);
 
         return $response;
+    }
+
+    protected function getInputDetails($payment)
+    {
+        $key = $payment->getCacheRedirectInputKey();
+
+        $inputDetails = $this->cache->get($key);
+
+        if ($inputDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+            );
+        }
+
+        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
+        {
+            $this->setCardNumberAndCvv($inputDetails);
+        }
+
+        return $inputDetails;
     }
 
     protected function getFallbackOrRedirectType($payment, $ret)
