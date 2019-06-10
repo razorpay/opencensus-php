@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -1129,4 +1130,59 @@ class PaymentCreateTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
+
+    // comment $this->isTestMode() if block in selector.php to run the test case
+    public function testPaymentFailOnDinersAndDisableMerchant()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '30569309025904';
+        $this->fixtures->merchant->enableCardNetworks('10000000000000',['dicl']);
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestException::class
+        );
+
+        $methods = $this->getLastEntity('methods', true);
+        $this->assertEquals(0, $methods['card_networks']['DICL']);
+
+    }
+
+    // comment $this->isTestMode() if block in selector.php to run the test case
+    public function testPaymentFailOnNetBankingAndDisableMerchant()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestException::class
+        );
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestException::class
+        );
+
+        $methods = $this->getLastEntity('methods', true);
+        s($methods);
+        $this->assertEquals(['HDFC','SBIN'], $methods['disabled_banks']);
+
+
+    }
+
 }
