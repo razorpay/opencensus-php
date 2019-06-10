@@ -35,7 +35,7 @@ class MerchantBalanceUpdate extends Job
     {
         try
         {
-            parent::handle();
+        parent::handle();
            $this->trace->info(
                 TraceCode::MERCHANT_BALANCE_UPDATE_REQUEST,
                 [

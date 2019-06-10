@@ -7,6 +7,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Currency;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Models\Payment as PaymentEntity;
 use RZP\Models\Base as BaseCollection;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
@@ -99,15 +100,19 @@ class Payment extends Base
         {
             return false;
         }
-        else
-        {
-            if ($this->source->isLateBalanceUpdate() === true)
-            {
-                return false;
-            }
 
-            return true;
+        if ($this->source->isLateBalanceUpdate() === true)
+        {
+            return false;
         }
+
+        if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
+        {
+            return false;
+        }
+
+        return true;
+
     }
 
     protected function fillEmptyTxnFeesAndAmount()

@@ -417,6 +417,14 @@ class TransactionTest extends TestCase
         $this->assertEquals(0, $txn->getFee());
     }
 
+    public function testHandleAsyncMerchantBalanceUpdate()
+    {
+        $this->fixtures->merchant->addFeatures(['async_balance_update']);
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+    }
+
     protected function createMultipleTransactions()
     {
         $payments = $this->fixtures->times(5)->create(

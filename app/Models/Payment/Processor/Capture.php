@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Diag\EventCode;
@@ -587,11 +588,11 @@ trait Capture
             // Currently, since we are doing this only for Dream11, we are not handling credits.
             // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
             //
-            if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
-                ($payment->getMerchantId() === Preferences::MID_DREAM11))
-            {
-                $payment->setLateBalanceUpdate();
-            }
+            // if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
+            //     ($payment->getMerchantId() === Preferences::MID_DREAM11))
+            // {
+            //     $payment->setLateBalanceUpdate();
+            // }
 
             list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
 
@@ -607,9 +608,33 @@ trait Capture
             {
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
+
+            $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
         });
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+    }
+
+    protected function handleAsyncUpdateBalanceIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false)
+        {
+            return;
+        }
+
+        $input = [
+            'payment_id' => $payment->getId(),
+            'transaction' => $txn->getId(),
+            'mode'        => $this->mode,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_UPDATE_INIT,
+            [
+                'input' => $input,
+            ]);
+
+        Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)

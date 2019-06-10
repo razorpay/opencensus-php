@@ -122,6 +122,7 @@ class Constants
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     const ASYNC_MERCHANT_BALANCE_UPDATE   = 'async_merchant_balance_update';
+    const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
     /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
@@ -367,7 +368,7 @@ class Constants
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
-        self::ASYNC_MERCHANT_BALANCE_UPDATE   => true,
+        self::ASYNC_BALANCE_UPDATE            => true,
     ];
 
     // Entity type constants
