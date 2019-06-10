@@ -210,29 +210,30 @@ class Selector extends Base\Core
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
-
-            else if ( ($payment->isCard() === true) and
+            else if (($payment->isCard() === true) and
                      ($payment->card->isDiners() === true))
             {
                 $merchant = $this->input['merchant'];
-                $merchant->disableCardNetworks($merchant->getId(),['dicl']);
+                $merchant->methods->setDinersCard(0);
+                $merchant->methods->saveOrFail();
 
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED;
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
-
-            else if ($payment[Entity::METHOD] === Method::NETBANKING)
+            else if ($payment['method'] === Method::NETBANKING)
             {
                 $merchant = $this->input['merchant'];
-                $input = array("disabled_banks"=>$payment['bank']);
-
                 $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-                $merchant->disablePaymentBanks($methods, $input);
+
+                $inputBanks = array($payment['bank']);
+                $disabledBanks = array_merge($methods->getDisabledBanks(),$inputBanks);
+
+                $merchant->methods->setDisabledBanks($disabledBanks);
+                $merchant->methods->saveOrFail();
 
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT;
+                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT);
             }
-
             else
             {
                 throw new Exception\RuntimeException(
