@@ -2209,7 +2209,7 @@ final class Route
         'terminal_remove_merchant'                 => Permission::TERMINAL_MANAGE_MERCHANT,
         'emi_plan_delete'                          => Permission::DELETE_EMI_PLAN,
         'iin_edit'                                 => Permission::EDIT_IIN_RULE,
-        'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE,
+        'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE_BULK,
         'offer_create'                             => Permission::CREATE_MERCHANT_OFFER,
         'offer_update'                             => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'                     => Permission::ASSIGN_MERCHANT_HANDLE,
