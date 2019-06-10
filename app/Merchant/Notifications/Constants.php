@@ -115,6 +115,23 @@ class Constants
                 'action' => 'Capital - Announcement',
             ],
         ],
+        [
+            'title'       => 'Instant Settlements',
+            'description' => 'Get all your settlements within the same working day with Razorpay Instant Settlements!',
+            'start_ts'    => 1560175200,
+            'end_ts'      => 1560794400,
+            'icon'        => 'settlements',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Request Access',
+                    'url'   => '/settlements#requestearlyaccess',
+                ],
+            ],
+            'filters'     => [
+                'experiments'  => ['announcements_early_settlements_1'],
+            ],
+        ],
     ];
 
     public static function getNotifications(): array
