@@ -629,6 +629,7 @@ final class Route
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
         'offer_create'                             => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
+        'offer_create_bulk'                        => ['post',     'offers/bulk',                                    'OfferController@createOfferBulk'                                   ],
         'offer_update'                             => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_fetch_multiple'                     => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
@@ -2098,6 +2099,7 @@ final class Route
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
+        'offer_create_bulk',
     ];
 
     public static $routePermission = [
@@ -2211,6 +2213,7 @@ final class Route
         'iin_edit'                                 => Permission::EDIT_IIN_RULE,
         'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE_BULK,
         'offer_create'                             => Permission::CREATE_MERCHANT_OFFER,
+        'offer_create_bulk'                        => Permission::CREATE_MERCHANT_OFFER,
         'offer_update'                             => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'                     => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_business_categories'  => '*',

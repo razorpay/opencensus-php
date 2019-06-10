@@ -1282,6 +1282,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for offers
 
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';
+    const OFFER_CREATE_BULK                                     = 'OFFER_CREATE_BULK';
     const OFFER_DISCOUNT_CREATED                                = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                             = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                                  = 'OFFER_UPDATE_REQUEST';
