@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
@@ -154,7 +155,7 @@ class Processor extends Base\Core
             {
                 $this->traceSetlInitiating($channel);
 
-                if ($this->mode === Mode::TEST)
+                if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION]) === true))
                 {
                     $setlResponse = $this->createSettlementsForTestMode($channel);
                 }
@@ -570,6 +571,7 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements($input, string $channel = null)
     {
+        return [true, null];
         $channelWith24x7Settlement = Channel::get24x7Channels();
 
         if (in_array($channel, $channelWith24x7Settlement, true) === true)

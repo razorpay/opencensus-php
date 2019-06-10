@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement;
 use App;
 use Carbon\Carbon;
 
+use RZP\Constants\Environment;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -387,7 +388,7 @@ class Merchant
 
         // adding dev for local testing purpose
         // and enabling mocking attempt on on prod
-        if (($mode === Mode::TEST) and (in_array($env, ['prod']) === true))
+        if (($mode === Mode::TEST) and (in_array($env, [Environment::PRODUCTION]) === true))
         {
             return true;
         }
