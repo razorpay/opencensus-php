@@ -273,7 +273,7 @@ class PaymentDowntimeTest extends TestCase
                 'source'      => 'BANK',
                 'acquirer'    => 'axis',
                 'network'     => 'MC',
-                'card_type'   => 'debit',
+                'card_type'   => 'ALL',
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -286,7 +286,7 @@ class PaymentDowntimeTest extends TestCase
         $fetchDowntimeRequest = [
             'content' => [],
             'method' => 'GET',
-            'url' => '/methods/downtimes'
+            'url' => '/payments/downtimes'
         ];
 
         $this->makeRequestAndGetContent($fetchDowntimeRequest);
@@ -439,7 +439,7 @@ class PaymentDowntimeTest extends TestCase
         $this->ba->appAuth();
 
         $this->makeRequestAndGetContent([
-            'url'     => '/methods/downtimes/trigger',
+            'url'     => '/payments/downtimes/trigger',
             'method'  => 'POST',
             'content' => [],
         ]);

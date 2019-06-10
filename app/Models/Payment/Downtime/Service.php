@@ -23,7 +23,7 @@ class Service extends Base\Service
 
     public function getMethodDowntimeDataForMerchant(array $input): array
     {
-        $downtimes = $this->getRepository()->fetchCurrentAndFutureDowntimes();
+        $downtimes = $this->getRepository()->fetchOngoingDowntimes();
 
         return $downtimes->toArrayPublic();
     }

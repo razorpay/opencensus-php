@@ -39,7 +39,13 @@ class CardProcessor extends BaseProcessor
 
         foreach ($gatewayDowntimes as $gatewayDowntime)
         {
-            $mapping->addDowntime($gatewayDowntime->getGateway(), $gatewayDowntime->getNetwork());
+            // Gateway downtimes created without network field is created as `Unknown`
+            // hence we are considering `Unknown` and `All` as same.
+            if ((in_array($gatewayDowntime->getIssuer(), [GatewayDowntime::ALL, GatewayDowntime::UNKNOWN])) and
+                (in_array($gatewayDowntime->getCardType(), [GatewayDowntime::ALL, GatewayDowntime::UNKNOWN])))
+            {
+                $mapping->addDowntime($gatewayDowntime->getGateway(), $gatewayDowntime->getNetwork());
+            }
         }
 
         return $mapping->getUnavailableNetworks();

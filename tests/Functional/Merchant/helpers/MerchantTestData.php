@@ -2709,7 +2709,7 @@ return [
 
     'testGetWalletDowntime' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [

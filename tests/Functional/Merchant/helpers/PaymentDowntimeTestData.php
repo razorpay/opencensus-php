@@ -8,7 +8,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 return [
     'testGetCardDowntimeForRupayGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -29,7 +29,7 @@ return [
 
     'testGetNoCardDowntimeForSingleRupayGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -44,7 +44,7 @@ return [
 
     'testGetUpiDowntimeForAllGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -69,7 +69,7 @@ return [
 
     'testGetUpiDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -94,7 +94,7 @@ return [
 
     'testGetNoUpiDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -108,7 +108,7 @@ return [
 
     'testGetNetbankingDowntimeForSingleBankBilldeskGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -134,7 +134,7 @@ return [
 
     'createNetbankingAllGatewayDowntime' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -160,7 +160,7 @@ return [
 
     'testGetNetbankingDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -186,7 +186,7 @@ return [
 
     'testGetNoNetbankingDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -200,7 +200,7 @@ return [
 
     'testGetCardDowntimeForSingleNetworkHdfcGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -226,7 +226,7 @@ return [
 
     'testGetCardDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -252,7 +252,7 @@ return [
 
     'testGetNoCardDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -266,7 +266,7 @@ return [
 
     'testGetWalletDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
