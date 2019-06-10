@@ -154,7 +154,14 @@ class Processor extends Base\Core
             {
                 $this->traceSetlInitiating($channel);
 
-                $setlResponse = $this->createSettlements($channel, $useQueue);
+                if ($this->mode === Mode::TEST)
+                {
+                    $setlResponse = $this->createSettlementsForTestMode($channel);
+                }
+                else
+                {
+                    $setlResponse = $this->createSettlements($channel, $useQueue);
+                }
 
                 if ($useQueue === true)
                 {
@@ -528,6 +535,17 @@ class Processor extends Base\Core
         return $this->createSettlementEntities($groupedTxns, $channel);
     }
 
+    protected function createSettlementsForTestMode($channel): array
+    {
+        $mids = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::TEST_MODE_SETTLEMENT]);
+
+        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, $mids, []);
+
+        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+
+        return $this->createSettlementEntities($groupedTxns, $channel);
+    }
+
     protected function preSettlementProcessing(array $input)
     {
         $this->inititalizeVariables($input);
@@ -552,13 +570,6 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements($input, string $channel = null)
     {
-        $isTestMode = $this->isTestMode();
-
-        if ($isTestMode === true)
-        {
-            return [true, null];
-        }
-
         $channelWith24x7Settlement = Channel::get24x7Channels();
 
         if (in_array($channel, $channelWith24x7Settlement, true) === true)

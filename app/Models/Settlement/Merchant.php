@@ -356,9 +356,84 @@ class Merchant
         $this->payout->batchFundTransfer()->dissociate();
     }
 
+    /**
+     * creates attempt for the settlement
+     * if its run on test mode on prod then it'll also mock the bank response
+     * for success condition
+     *
+     * @param int|null $initiateAt
+     */
     protected function createSettlementAttemptEntity(int $initiateAt = null)
     {
-        $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt);
+        $fta = $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt);
+
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $this->updateMockResponse($fta);
+        }
+    }
+
+    /**
+     * It'll check the condition for mocking FTA
+     * It depends on request mode and env
+     * currently we are also considering dev for testing purpose
+     *
+     * @return bool
+     */
+    protected function doMockAttemptProcessed(): bool
+    {
+        $env  = app('env');
+        $mode = app('rzp.mode');
+
+        // adding dev for local testing purpose
+        // and enabling mocking attempt on on prod
+        if (($mode === Mode::TEST) and (in_array($env, ['prod']) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * It'll set the mock data required for the FTA to get processed
+     * bank status code been set based on the channel used
+     * utr will be a random string
+     *
+     * @param FundTransferAttempt\Entity $fta
+     */
+    protected function updateMockResponse(FundTransferAttempt\Entity $fta)
+    {
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $channel = $fta->getChannel();
+
+        $status = $this->getChannelStatus($channel);
+
+        // set the fist successful status
+        // in case of mock we have to set the only the success response
+        $bankStatusCode = $status::getSuccessfulStatus()[0];
+
+        $fta->setUtr($currentTimestamp . random_alphanum_string(6));
+        $fta->setStatus(FundTransferAttempt\Status::INITIATED);
+        $fta->setBankStatusCode($bankStatusCode);
+
+        $this->repo->saveOrFail($fta);
+    }
+
+    /**
+     * It'll return the status object back to the caller
+     *
+     * @param string $channel
+     * @return mixed
+     */
+    protected function getChannelStatus(string $channel)
+    {
+        $class = 'RZP\\Models\\FundTransfer\\'
+        . ucfirst($channel)
+        . '\\Reconciliation\\Status';
+
+        return new $class();
     }
 
     protected function createPayoutAttemptEntity(int $initiateAt = null)
@@ -400,6 +475,7 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
+        return $fundTransferAttempt;
         //TODO:: disabled fts flow for settlement
         //(new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, true);
     }
