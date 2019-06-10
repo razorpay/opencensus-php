@@ -48,7 +48,11 @@ class RoleTest extends TestCase
 
         $perms = $this->fixtures->times(3)->create('permission');
 
-        $permIds = array_map(create_function('$p', 'return $p->getId();'), $perms);
+        $func = function($p) {
+            return $p->getId();
+        };
+
+        $permIds = array_map($func, $perms);
 
         $role->permissions()->sync($permIds);
 
@@ -98,8 +102,12 @@ class RoleTest extends TestCase
         $this->startTest();
 
         $savedPermissions = $role->permissions->all();
-        $savedPermissionIds = array_map(create_function('$p', 'return $p->getPublicId();'),
-                                                        $savedPermissions);
+
+        $func = function($p) {
+            return $p->getPublicId();
+        };
+
+        $savedPermissionIds = array_map($func, $savedPermissions);
 
         $this->assertEquals(count(array_intersect($savedPermissionIds, $expectedPermissionIds)),
                             count(array_intersect($expectedPermissionIds, $savedPermissionIds)));

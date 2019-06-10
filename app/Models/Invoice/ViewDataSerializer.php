@@ -276,6 +276,7 @@ class ViewDataSerializer extends Base\Core
         $serialized[Entity::CALLBACK_URL]       = $this->invoice->getCallbackUrl();
         $serialized[Entity::CALLBACK_METHOD]    = $this->invoice->getCallbackMethod();
         $serialized[Entity::MERCHANT_GSTIN]     = $this->invoice->getMerchantGstin();
+        $serialized[Entity::CUSTOMER_GSTIN]     = $this->invoice->getCustomerGstin();
         $serialized[Entity::MERCHANT_LABEL]     = $this->invoice->getMerchantLabel();
         $serialized[Entity::SUPPLY_STATE_NAME]  = $this->invoice->getSupplyStateName();
         $serialized[Entity::HAS_ADDRESS_OR_POS] = (($this->invoice->hasCustomerBillingAddress() === true) or

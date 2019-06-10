@@ -13,6 +13,7 @@ class Card extends Base
             'expiry_year'       =>  '2100',
             'iin'               =>  '411111',
             'last4'             =>  '1111',
+            'issuer'            =>  'HDFC',
         ),
         array(
             'id'                =>  '100000000gcard',

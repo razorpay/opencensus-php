@@ -41,6 +41,9 @@ class Core extends Base\Core
         'CUsv44mEYn5oyV' => true,
         'CUszQfJSmGEXwH' => true,
         'BoE6Rycqadwtvh' => false,
+        'CBcPtPwFgpjdUp' => false,
+        'ByWbZS28NK9CeG' => false,
+        'BREsAWr9hzga0n' => false,
     ];
 
     /**

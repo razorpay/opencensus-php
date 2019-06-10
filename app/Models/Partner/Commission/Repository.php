@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Commission;
 
 use RZP\Base\BuilderEx;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Partner\Config\CommissionModel;
 use RZP\Models\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository
@@ -16,6 +17,7 @@ class Repository extends BaseRepository
         Entity::ID                => 'filled|string|size:19',
         Entity::TYPE              => 'filled|string|in:'. Type::IMPLICIT .','. Type::EXPLICIT,
         Entity::STATUS            => 'filled|string|custom',
+        Entity::MODEL             => 'filled|string|custom',
         Entity::SOURCE_ID         => 'sometimes|string|min:14|max:19',
         Entity::PARTNER_ID        => 'required|string|size:14',
         Entity::MERCHANT_ID       => 'sometimes|string|min:14|max:18',
@@ -37,6 +39,17 @@ class Repository extends BaseRepository
     public function validateStatus($attribute, $status)
     {
         Status::validateStatus($status);
+    }
+
+    /**
+     * @param $attribute
+     * @param $model
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateModel($attribute, $model)
+    {
+        CommissionModel::validate($model);
     }
 
     /**

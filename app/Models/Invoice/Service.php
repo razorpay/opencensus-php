@@ -3,13 +3,16 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
 class Service extends Base\Service
@@ -47,6 +50,67 @@ class Service extends Base\Service
         }
 
         return $invoice->toArrayPublic();
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function createBulkInvoice(array $input)
+    {
+        $invoiceBatch = new Base\PublicCollection();
+
+        (new Validator)->validateBulkInvoiceCount($input);
+
+        foreach ($input as $item)
+        {
+            try
+            {
+                $idempotency_key = isset($item[Entity::IDEMPOTENCY_KEY]) ? $item[Entity::IDEMPOTENCY_KEY] : null;
+
+                $response = $this->create($item);
+
+                $invoiceBatch->push($response);
+
+            }
+            catch (Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                                             Trace::INFO,
+                                             TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
+                $exceptionData = [
+                    Entity::IDEMPOTENCY_KEY => $idempotency_key,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $invoiceBatch->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                                             Trace::CRITICAL,
+                                             TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
+
+                $exceptionData = [
+                    Entity::IDEMPOTENCY_KEY => $idempotency_key,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $invoiceBatch->push($exceptionData);
+            }
+        }
+
+        return $invoiceBatch->toArrayWithItems();
     }
 
     public function fetch(string $id, array $input): array

@@ -68,6 +68,21 @@ class Repository extends Base\Repository
         }
     }
 
+    public function deleteOrFail($entity)
+    {
+        parent::deleteOrFail($entity);
+
+        // Every delete of gateway downtimes table should
+        // queue a refresh of the payment downtimes table
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIMES, false);
+
+        // Will enable on prod after PaymentDowntime logic is more thoroughly tested.
+        if ($paymentDowntimesEnabled === true)
+        {
+            PaymentDowntime::dispatch($this->app['rzp.mode']);
+        }
+    }
+
     public function isMerchantIdRequiredForFetch()
     {
         return false;

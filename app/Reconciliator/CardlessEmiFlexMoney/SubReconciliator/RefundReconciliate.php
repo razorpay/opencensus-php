@@ -10,11 +10,11 @@ use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
-    const REFUND_ID                = 'PG Refund ID';
-    const GATEWAY_TRANSACTION_ID   = 'Flexpay Transaction ID';
-    const TRANSACTION_AMOUNT       = 'Transaction Amount';
-    const REFUND_AMOUNT            = 'Refund Amount';
-    const REFUND_DATE              = 'Refund Date';
+    const REFUND_ID                = 'pg_refund_id';
+    const GATEWAY_TRANSACTION_ID   = 'flexpay_transaction_id';
+    const TRANSACTION_AMOUNT       = 'transaction_amount';
+    const REFUND_AMOUNT            = 'refund_amount';
+    const REFUND_DATE              = 'refund_date';
 
     protected function getRefundId(array $row)
     {
@@ -66,14 +66,14 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getBaseAmount() !== $this->getReconRefundAmount($row))
+        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'payment_id'      => $this->payment->getId(),
-                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'expected_amount' => $this->refund->getBaseAmount(),
                     'recon_amount'    => $this->getReconRefundAmount($row),
                     'currency'        => $this->payment->getCurrency(),
                     'gateway'         => $this->gateway,

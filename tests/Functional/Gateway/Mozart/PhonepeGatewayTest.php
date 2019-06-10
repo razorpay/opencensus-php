@@ -132,6 +132,7 @@ class PhonepeGatewayTest extends TestCase
             Mozart\Entity::ACTION       => 'authorize',
             Mozart\Entity::AMOUNT       => 50000,
             Mozart\Entity::PAYMENT_ID   => substr($id,4),
+            Mozart\Entity::RAW          => '{}',
         ]);
 
         $this->runRequestResponseFlow($data, function() use ($id)

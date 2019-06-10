@@ -73,12 +73,19 @@ class CardVaultMigrationJob extends Job
         }
         catch (\Throwable $e)
         {
-            $this->release(self::RELEASE_WAIT_SECS);
-
             $this->trace->traceException($e,
                 Trace::ERROR,
                 TraceCode::VAULT_TOKEN_MIGRATION_ERROR,
                 $this->input);
+
+
+            if (empty($this->input['payment_id']) === true)
+            {
+                $this->delete();
+                return;
+            }
+
+            $this->release(self::RELEASE_WAIT_SECS);
         }
     }
 }

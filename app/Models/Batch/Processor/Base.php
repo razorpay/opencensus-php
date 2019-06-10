@@ -377,8 +377,6 @@ class Base extends BaseModel\Core
         finally
         {
             $this->postProcess();
-
-            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayTraceAll());
         }
     }
 
@@ -596,6 +594,8 @@ class Base extends BaseModel\Core
      */
     protected function postProcess()
     {
+        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayTraceAll());
+
         $this->updateStatusPostProcess();
 
         //

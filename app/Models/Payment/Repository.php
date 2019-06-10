@@ -1051,7 +1051,7 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::AUTHORIZED)
                     ->groupBy(Entity::MERCHANT_ID)
                     ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
     }
@@ -1072,7 +1072,7 @@ class Repository extends Base\Repository
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->groupBy(Entity::MERCHANT_ID)
                     ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
     }
@@ -1411,8 +1411,8 @@ class Repository extends Base\Repository
 
     protected function addQueryParamAcquirerData($query, $params)
     {
-        $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
-        $bankAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::NETBANKING . "', " . Entity::REFERENCE1 . "=?, '')";
+        $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . Method::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
+        $bankAcqDataSql = "IF(" . Entity::METHOD . " = '" . Method::NETBANKING . "', " . Entity::REFERENCE1 . "=?, '')";
 
         // Acquirer data column is picked based on method
         $query->where(function ($q) use ($cardAcqDataSql, $bankAcqDataSql, $params)

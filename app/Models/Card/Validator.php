@@ -8,7 +8,7 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
         Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
@@ -16,16 +16,16 @@ class Validator extends Base\Validator
         Entity::NAME               => 'sometimes|regex:(^[a-zA-Z.\- 0-9\']+$)|max:100',
         Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault,rzpencryption',
         Entity::INTERNATIONAL      => 'sometimes',
-    );
+    ];
 
-    protected static $editRules = array(
+    protected static $editRules = [
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
         Entity::NAME               => 'sometimes|alpha_space|max:100',
         Entity::VAULT_TOKEN        => 'sometimes|string',
         Entity::VAULT              => 'required_with:vault_token|in:tokenex,rzpvault,rzpencryption',
         Entity::INTERNATIONAL      => 'sometimes',
-    );
+    ];
 
     protected static $recurringRules = [
         Entity::IIN                => 'required|numeric|digits:6'
@@ -35,9 +35,9 @@ class Validator extends Base\Validator
         'limit'              => 'sometimes|numeric',
     ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'expiry_date'
-    );
+    ];
 
     protected static $createVaultTokenRules = [
         'namespace' => 'required|max:30|in:nodal_certs',
@@ -46,8 +46,8 @@ class Validator extends Base\Validator
 
     protected function validateExpiryDate($input)
     {
-        $month = $input['expiry_month'];
-        $year = $input['expiry_year'];
+        $month = $input[Entity::EXPIRY_MONTH];
+        $year = $input[Entity::EXPIRY_YEAR];
 
         $currentMonth = date('n');
         $currentYear = (int) date('Y');
@@ -57,36 +57,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE);
-        }
-    }
-
-    protected function validateAddress($input)
-    {
-        $addr_unset = array();
-        $addr_set = array();
-
-        foreach(self::$addressAttributes as $key)
-        {
-            if ((!isset($input[$key])) or
-                (empty($input[$key])))
-            {
-                array_push($addr_unset, $key);
-            }
-            else
-            {
-                array_push($addr_set, $key);
-            }
-        }
-
-        if (count($addr_set) > 0)
-        {
-            $addr_unset_count = count($addr_unset);
-            if (($addr_unset_count > 1) or
-                (($addr_unset_count === 1) and
-                 ($addr_unset_count[0] !== 'address_line2')))
-            {
-                $msg = implode(',', $addr_unset) . ' address values are not set.';
-            }
         }
     }
 }

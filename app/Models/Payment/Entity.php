@@ -176,6 +176,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const PROVIDER              = 'provider';
+
     const OFFER_ID              = 'offer_id';
     const SETTLED_BY            = 'settled_by';
 
@@ -813,9 +815,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected function generateWallet($input)
     {
-        if ($input[Entity::METHOD] === Method::CARDLESS_EMI)
+        if (($input[Entity::METHOD] === Method::CARDLESS_EMI) or
+            ($input[Entity::METHOD] === Method::PAYLATER))
         {
-            $this->setAttribute(self::WALLET, $input['provider']);
+            $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
         }
     }
 
@@ -1608,6 +1611,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::CARDLESS_EMI);
     }
 
+    public function isPayLater()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::PAYLATER);
+    }
+
     public function isPinAuth()
     {
         return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
@@ -2138,6 +2146,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, $this->getBankName()];
             case Method::CARDLESS_EMI:
                 return [$method, Processor\CardlessEmi::getName($this->getWallet())];
+            case Method::PAYLATER:
+                return [$method, Processor\PayLater::getName($this->getWallet())];
         }
     }
 
@@ -2161,6 +2171,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         else if ($this->isUpi() === true)
         {
             $issuer = $this->getPspFromVpa();
+        }
+        else if ($this->isPayLater() === true)
+        {
+            $issuer = $this->getWallet();
         }
 
         return $issuer;

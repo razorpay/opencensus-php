@@ -37,6 +37,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\FundTransfer\Attempt\Repository  $fund_transfer_attempt
  * @property Models\Payout\Repository                $payout
  * @property Models\Merchant\Detail\Repository       $merchant_detail
+ * @property Models\BankingAccount\Repository        $banking_account
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

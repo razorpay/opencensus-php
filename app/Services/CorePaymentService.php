@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
+use RZP\Gateway\Base\Action;
 
 class CorePaymentService
 {
@@ -39,6 +40,8 @@ class CorePaymentService
     protected $trace;
 
     protected $request;
+
+    protected $action;
 
     public function __construct($app)
     {
@@ -69,6 +72,8 @@ class CorePaymentService
 
     public function action(string $gateway, string $action, array $input)
     {
+        $this->action = $action;
+
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
@@ -232,10 +237,13 @@ class CorePaymentService
 
     protected function isSuccessResponse($code, $responseBody)
     {
-        if (($code === 200) and
-            (empty($responseBody[self::ERROR]) === true))
+        if ($code === 200)
         {
-            return true;
+            if ((empty($responseBody[self::ERROR]) === true) or
+                ($this->action === Action::VERIFY))
+            {
+                return true;
+            }
         }
 
         return false;

@@ -517,7 +517,8 @@ class PaymentCreateController extends Controller
                                     'cdn'  => $this->config->get('url.cdn.production')
                                ]);
                 }
-                else if ($data['method'] === Payment\Method::CARDLESS_EMI)
+                else if (($data['method'] === Payment\Method::CARDLESS_EMI) or
+                         ($data['method'] === Payment\Method::PAYLATER))
                 {
                     $templateData = [
                        'data' => $data,

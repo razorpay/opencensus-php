@@ -84,6 +84,21 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
+        //
+        // check if idempotent Id exists in the payload entity
+        // if yes then fetch the record from the Db.
+        // if record exist, then return. If not then continue with the flow.
+        //
+        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        {
+            $result = $this->repo->invoice->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY]);
+
+            if ($result !== null)
+            {
+                return $result;
+            }
+        }
+
         $this->modifyInputToHandleRenamedAttributes($input);
 
         $shouldFailOnDuplicateInternalRef = boolval($input['fail_existing'] ?? true);

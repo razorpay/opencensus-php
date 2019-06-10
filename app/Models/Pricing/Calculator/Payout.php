@@ -15,16 +15,11 @@ use RZP\Models\Payout as PayoutModel;
  */
 class Payout extends Base
 {
-    public function __construct(BaseModel\PublicEntity $entity, string $product)
-    {
-        parent::__construct($entity, $product);
-    }
-
     protected function getPricingRule($rules, $method)
     {
         //
-        // Mode based pricing can only be defined on payouts of method=fund_transfer
-        // at the moment.
+        // Mode based pricing can only be defined on
+        // payouts of method=fund_transfer at the moment.
         //
         if ($method === PayoutModel\Method::FUND_TRANSFER)
         {

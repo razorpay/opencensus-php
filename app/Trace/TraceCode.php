@@ -74,6 +74,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_RECON_QUEUE_SCROOGE_DISPATCH_FAILED            = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH_FAILED';
     const REFUND_RETRY_QUEUE_SCROOGE_DISPATCH                   = 'REFUND_RETRY_QUEUE_SCROOGE_DISPATCH';
     const REFUND_RECON_QUEUE_SCROOGE_DISPATCH                   = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH';
+    const REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA          = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA';
     const REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED            = 'REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED';
     const REFUND_SCROOGE_RESPONSE                               = 'REFUND_SCROOGE_RESPONSE';
     const REFUND_SCROOGE_VERIFY_RESPONSE                        = 'REFUND_SCROOGE_VERIFY_RESPONSE';
@@ -1281,6 +1282,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for offers
 
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';
+    const OFFER_CREATE_BULK                                     = 'OFFER_CREATE_BULK';
     const OFFER_DISCOUNT_CREATED                                = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                             = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                                  = 'OFFER_UPDATE_REQUEST';
@@ -1500,6 +1502,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
+    const AWS_SNS_PUBLISH_RESPONSE                              = 'AWS_SNS_PUBLISH_RESPONSE';
 
     const SERVER_ERROR_LOG_RISK                                 = 'SERVER_ERROR_LOG_RISK';
 
@@ -1662,7 +1665,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
     const REFUND_REVERSAL_FAILED                                = 'REFUND_REVERSAL_FAILED';
 
-    const FTA_TRANSFER_DISPATCH                                 = 'FTA_DISPATCH_TRANSFER';
+    const FTA_TRANSFER_DISPATCH                                 = 'FTA_TRANSFER_DISPATCH';
     const FTA_TRANSFER_DISPATCH_FAILED                          = 'FTA_TRANSFER_DISPATCH_FAILED';
     const FTA_MERCHANT_BENE_REG_INIT                            = 'FTA_MERCHANT_BENE_REG_INIT';
     const FTA_MERCHANT_BENE_REG_COMPLETE                        = 'FTA_MERCHANT_BENE_REG_COMPLETE';
@@ -1811,10 +1814,23 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_MULTIPART_PAYLOAD                       = 'BATCH_SERVICE_MULTIPART_PAYLOAD';
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
+    const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
+    const BATCH_SERVICE_BULK_EXCEPTION                          = 'BATCH_SERVICE_BULK_EXCEPTION';
 
     const PAYMENT_ON_HOLD                                       = 'PAYMENT_ON_HOLD';
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
+
+    // Banking account
+    const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
+    const BANKING_ACCOUNT_CREATE                                = 'BANKING_ACCOUNT_CREATE';
+
+    const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
+    const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
+    const GOVERNOR_SERVICE_RETRY                                = 'GOVERNOR_SERVICE_RETRY';
+    const GOVERNOR_SERVICE_ERROR                                = 'GOVERNOR_SERVICE_ERROR';
+    const CAPTURE_VERIFY_ONHOLD_FINISH_ACTION                   = 'CAPTURE_VERIFY_ONHOLD_FINISH_ACTION';
+    const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

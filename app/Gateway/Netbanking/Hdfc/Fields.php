@@ -35,6 +35,13 @@ class Fields
     const REF10                     = 'Ref10';          // Client name
     const DATE1                     = 'Date1';          // Start date
     const DATE2                     = 'Date2';          // End date
+    const DISPLAY_DETAILS           = 'DisplayDetails'; // Always Y
+    const DETAILS1                  = 'Details1';       // Merchant name
+    const DETAILS2                  = 'Details2';       // Merchant unique reference no. (payment id)
+
+    // The following values are prepended to the details field
+    const MERCHANT_NAME                = 'MERCHANT NAME';
+    const MERCHANT_REFERENCE_NO_DETAIL = 'MERCHANT REF NO';
 
     // Constant values used in E-Mandate registration request
     const CLIENT_NAME       = 'RAZORPAY';

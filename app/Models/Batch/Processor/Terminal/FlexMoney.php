@@ -31,7 +31,7 @@ class Flexmoney extends BaseProcessor
         $gatewayMerchantId       = trim($entry[Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID]);
         $gatewayMerchantId2      = trim($entry[Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID2]);
         $gatewayTerminalPassword = trim($entry[Batch\Header::FLEXMONEY_TERMINAL_PASSWORD]);
-        $networkCategory         = trim($entry[Batch\Header::FLEXMONEY_CATEGORY]);
+        $terminalCategory        = trim($entry[Batch\Header::FLEXMONEY_CATEGORY]);
 
         $createTerminalParams = [
             Terminal\Entity::MERCHANT_ID                => $merchantId,
@@ -43,7 +43,7 @@ class Flexmoney extends BaseProcessor
             Terminal\Entity::GATEWAY_MERCHANT_ID        => $gatewayMerchantId,
             Terminal\Entity::GATEWAY_MERCHANT_ID2       => $gatewayMerchantId2,
             Terminal\Entity::GATEWAY_ACQUIRER           => CardlessEmi::FLEXMONEY,
-            Terminal\Entity::NETWORK_CATEGORY           => $networkCategory,
+            Terminal\Entity::CATEGORY                   => $terminalCategory,
             Terminal\Entity::TYPE                       => [
                 Terminal\Type::NON_RECURRING => '1',
             ],

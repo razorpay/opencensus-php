@@ -71,6 +71,11 @@ class Validator extends Base\Validator
      */
     const NOTIFY_INVOICES_OF_BATCH = 'notify_invoices_of_batch';
 
+    /**
+     * Rate limit on items sending for bulk invoice create.
+     */
+    const MAX_BULK_INVOICES_LIMIT = 15;
+
     protected static $createRules = [
         Entity::SMS_NOTIFY               => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY             => 'sometimes|boolean',
@@ -99,6 +104,7 @@ class Validator extends Base\Validator
         Entity::SUPPLY_STATE_CODE        => 'filled|string|custom',
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
+        Entity::IDEMPOTENCY_KEY          => 'sometimes|string'
     ];
 
     //
@@ -163,6 +169,7 @@ class Validator extends Base\Validator
         Entity::SUPPLY_STATE_CODE        => 'filled|string|custom',
         Entity::CALLBACK_URL             => 'filled|url',
         Entity::CALLBACK_METHOD          => 'required_with:callback_url|filled|string|in:get',
+        Entity::IDEMPOTENCY_KEY          => 'sometimes|string'
     ];
 
     protected static $editDraftRules = [
@@ -1010,24 +1017,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateInternational()
-    {
-        $invoice = $this->entity;
-
-        $type = $invoice->getType();
-
-        $currency = $invoice->getCurrency();
-
-        if (($currency !== Currency::INR) and
-            ((Type::isPaymentLinkType($type) === false) and ($invoice->isOfSubscription() === false)))
-        {
-            throw new BadRequestValidationFailureException(
-                'Currency ' . $currency . ' is not supported',
-                'currency'
-            );
-        }
-    }
-
     public function validateExternalEntity()
     {
         $invoice = $this->entity;
@@ -1056,6 +1045,24 @@ class Validator extends Base\Validator
                 [
                     'currency' => $currency
                 ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     * Rate limit on number of invoice creation in Bulk Route
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBulkInvoiceCount(array $input)
+    {
+        if (count($input) > self::MAX_BULK_INVOICES_LIMIT)
+        {
+            throw new BadRequestValidationFailureException(
+                'Max Limit of Bulk Invoice is ' . self::MAX_BULK_INVOICES_LIMIT,
+                null,
+                null
+            );
         }
     }
 }

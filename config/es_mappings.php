@@ -158,6 +158,9 @@ return [
             'user_id' => [
                 'type'            => 'keyword',
             ],
+            'currency' => [
+                'type'            => 'keyword',
+            ],
             'receipt' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -221,6 +224,9 @@ return [
                 'type' => 'keyword',
             ],
             'partner_config_id' => [
+                'type' => 'keyword',
+            ],
+            'model' => [
                 'type' => 'keyword',
             ],
             'merchant' => [

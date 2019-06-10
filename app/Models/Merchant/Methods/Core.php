@@ -157,7 +157,8 @@ class Core extends Base\Core
             Payment\Method::WALLET       => [],
             Payment\Method::EMI          => false,
             Payment\Method::UPI          => false,
-            Payment\Method::CARDLESS_EMI => []
+            Payment\Method::CARDLESS_EMI => [],
+            Payment\Method::PAYLATER     => [],
         ];
 
         $methods = $this->getMethods($merchant);
@@ -181,7 +182,11 @@ class Core extends Base\Core
         $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
         $data[Payment\Method::UPI] = $methods->isUpiEnabled();
         $data[Payment\Method::CARDLESS_EMI] =
-                                      $methods->isCardlessEmiEnabled() ? $this->getCardlessEmiProviders($merchant) : [];
+                  $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI) : [];
+
+        $data[Payment\Method::PAYLATER] =
+            $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER) : [];
+
         $emi = $methods->isEmiEnabled();
 
         if ($emi === true)
@@ -499,21 +504,21 @@ class Core extends Base\Core
         return Netbanking::getNames($banks);
     }
 
-    public function getCardlessEmiProviders($merchant)
+    public function getProviders($merchant, $method)
     {
-        $cardlessEmi = [];
+        $provider = [];
 
-        $providers = $this->app['repo']->terminal->findByMerchantIdAndCardlessEmi($merchant['id']);
+        $providers = $this->app['repo']->terminal->findByMerchantIdAndMethod($merchant['id'], $method);
 
         $providers = $providers->toArray();
 
         $providers = (array_unique(array_column($providers, 'gateway_acquirer')));
 
-        foreach ($providers as $provider)
+        foreach ($providers as $providerName)
         {
-            $cardlessEmi[$provider] = true;
+            $provider[$providerName] = true;
         }
 
-        return $cardlessEmi;
+        return $provider;
     }
 }

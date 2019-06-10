@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const AEPS              = 'aeps';
     const EMANDATE          = 'emandate';
     const CARDLESS_EMI      = 'cardless_emi';
+    const PAYLATER          = 'paylater';
     const CARD_NETWORKS     = 'card_networks';
     const PHONEPE           = 'phonepe';
 
@@ -77,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
+        self::PAYLATER,
         self::CARD_NETWORKS,
         self::PHONEPE,
     ];
@@ -107,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
+        self::PAYLATER,
         self::CARD_NETWORKS,
         self::PHONEPE,
     ];
@@ -140,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI,
         self::CARD_NETWORKS,
         self::PHONEPE,
+        self::PAYLATER,
     ];
 
     protected $defaults = array(
@@ -168,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER  => true,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
+        self::PAYLATER       => false,
         self::PHONEPE        => false,
     );
 
@@ -206,6 +211,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MPESA,
         self::CARDLESS_EMI,
+        self::PAYLATER,
         self::PHONEPE,
     ];
 
@@ -233,6 +239,7 @@ class Entity extends Base\PublicEntity
         self::AEPS          => 'bool',
         self::EMANDATE      => 'bool',
         self::CARDLESS_EMI  => 'bool',
+        self::PAYLATER      => 'bool',
         self::PHONEPE       => 'bool',
     ];
 
@@ -348,6 +355,8 @@ class Entity extends Base\PublicEntity
     public function isMpesaEnabled()
     {
         return false;
+
+        return $this->getAttribute(self::MPESA);
     }
 
     public function isPayumoneyEnabled()
@@ -393,6 +402,11 @@ class Entity extends Base\PublicEntity
     public function isCardlessEmiEnabled()
     {
         return $this->getAttribute(self::CARDLESS_EMI);
+    }
+
+    public function isPayLaterEnabled()
+    {
+        return $this->getAttribute(self::PAYLATER);
     }
 
     public function isTransferEnabled()

@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentHitachiTrait;
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
+    use PaymentPayLaterTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1478,6 +1479,18 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultPayLaterPaymentArray($provider)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'paylater';
+        $payment['provider'] = $provider;
+        $payment['contact'] = '+91'. $payment['contact'];
+
+        unset($payment['card'], $payment['bank']);
+
+        return $payment;
+    }
+
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
@@ -2001,8 +2014,8 @@ trait PaymentTrait
         };
 
         $cardVault->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing($callable);
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
     }

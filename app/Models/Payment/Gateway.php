@@ -15,6 +15,7 @@ use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
@@ -51,6 +52,7 @@ class Gateway
     const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_CUB         = 'netbanking_cub';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
@@ -92,6 +94,7 @@ class Gateway
     const WALLET_PHONEPE     = 'wallet_phonepe';
 
     const CARDLESS_EMI       = 'cardless_emi';
+    const PAYLATER           = 'paylater';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -152,6 +155,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
+        self::PAYLATER     => [PayLater::EPAYLATER],
     ];
 
     const POWER_WALLETS = [
@@ -273,7 +277,8 @@ class Gateway
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::ATOM,
-        Payment\Gateway::SHARP
+        Payment\Gateway::SHARP,
+        Payment\Gateway::UPI_AIRTEL,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -614,6 +619,7 @@ class Gateway
             self::NETBANKING_SIB,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
+            self::NETBANKING_CUB,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
             self::NETBANKING_CORPORATION,
@@ -689,7 +695,11 @@ class Gateway
 
         Method::CARDLESS_EMI => [
             self::CARDLESS_EMI,
-        ]
+        ],
+
+        Method::PAYLATER => [
+            self::PAYLATER,
+        ],
     ];
 
     const CARD_GATEWAYS_LIVE = [
@@ -760,6 +770,7 @@ class Gateway
         self::AMEX,
         self::WALLET_OPENWALLET,
         self::HITACHI,
+        self::CARDLESS_EMI,
     ];
 
     /**
@@ -969,6 +980,7 @@ class Gateway
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::CARDLESS_EMI,
+        self::PAYLATER,
     ];
 
     public static $verifyDisabled = [
@@ -1257,6 +1269,7 @@ class Gateway
         IFSC::UTIB         => Gateway::NETBANKING_AXIS,
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
+        IFSC::CIUB         => Gateway::NETBANKING_CUB,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,

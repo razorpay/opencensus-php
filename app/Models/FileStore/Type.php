@@ -60,6 +60,10 @@ class Type
 
     const RBL_NETBANKING_CLAIM              = 'rbl_netbanking_claim';
 
+    const CUB_NETBANKING_REFUND             = 'cub_netbanking_refund';
+
+    const CUB_NETBANKING_CLAIM              = 'cub_netbanking_claim';
+
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
@@ -189,6 +193,8 @@ class Type
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::EQUITAS_NETBANKING_REFUND,
+            self::CUB_NETBANKING_REFUND,
+            self::CUB_NETBANKING_CLAIM,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
             self::SIB_NETBANKING_REFUND,
@@ -317,6 +323,8 @@ class Type
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
+        self::CUB_NETBANKING_CLAIM,
+        self::CUB_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
         self::SIB_NETBANKING_REFUND,

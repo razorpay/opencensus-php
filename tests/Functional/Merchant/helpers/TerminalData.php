@@ -893,6 +893,29 @@ return [
         ]
     ],
 
+    'testCreatePayLaterTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'paylater',
+                'gateway_acquirer'          => 'epaylater',
+                'category'                  => 1234,
+                'gateway_merchant_id'       => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id2'      => 'test merchant',
+                'mode'                      => 1,
+                'paylater'                  => 1,
+                'gateway_terminal_password' => 'aabbccdd'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id2' => 'test merchant',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateUpiAirtelTerminal'  => [
         'request' => [
             'content' => [
@@ -1882,6 +1905,7 @@ return [
                 'gateway'                   => 'netbanking_sib',
                 'gateway_merchant_id'       => 'merchant_id',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'gateway_access_code'
             ],
             'method' => 'POST'
         ],

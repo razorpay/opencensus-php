@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use RZP\Models\Base;
 use RZP\Constants\Es;
+use RZP\Models\Currency\Currency;
 
 class EsRepository extends Base\EsRepository
 {
@@ -16,6 +17,7 @@ class EsRepository extends Base\EsRepository
         Entity::CUSTOMER_EMAIL,
         Entity::DESCRIPTION,
         Entity::STATUS,
+        Entity::CURRENCY,
         Entity::TYPE,
         Entity::TERMS,
         Entity::NOTES,
@@ -47,6 +49,7 @@ class EsRepository extends Base\EsRepository
     protected $commonFetchParams = [
         Entity::STATUS,
         Entity::STATUSES,
+        Entity::INTERNATIONAL,
         Entity::TYPE,
         Entity::TYPES,
         Entity::MERCHANT_ID,
@@ -77,6 +80,25 @@ class EsRepository extends Base\EsRepository
 
         $this->addFilter($query, $filter);
     }
+
+    /**
+     * Adds a negative term filter and filter for INR when international attribtue is sent for es.
+     *
+     * @param array  $query
+     * @param string $value
+     */
+    public function buildQueryForInternational(array & $query, string $value)
+    {
+        if ($value === '1')
+        {
+            $this->addNegativeTermFilter($query, Entity::CURRENCY, Currency::INR);
+        }
+        else
+        {
+            $this->addTermFilter($query, Entity::CURRENCY, Currency::INR);
+        }
+    }
+
 
     public function buildQueryForUserId(array & $query, string $value)
     {

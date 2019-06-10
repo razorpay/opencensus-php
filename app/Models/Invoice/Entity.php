@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const SUBSCRIPTION_ID           = 'subscription_id';
     const BATCH_ID                  = 'batch_id';
+    const IDEMPOTENCY_KEY           = 'idempotency_key';
     const CUSTOMER_ID               = 'customer_id';
     const CUSTOMER_NAME             = 'customer_name';
     const CUSTOMER_EMAIL            = 'customer_email';
@@ -73,6 +74,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE               = 'entity_type';
     const ENTITY_ID                 = 'entity_id';
     const STATUSES                  = 'statuses';
+    const INTERNATIONAL             = 'international';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -310,6 +312,7 @@ class Entity extends Base\PublicEntity
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
         self::INTERNAL_REF,
+        self::IDEMPOTENCY_KEY,
     ];
 
     protected $visible = [
@@ -364,6 +367,7 @@ class Entity extends Base\PublicEntity
         self::TAXABLE_AMOUNT,
         self::USER_ID,
         self::INTERNAL_REF,
+        self::IDEMPOTENCY_KEY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -415,6 +419,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::CREATED_AT,
+        self::IDEMPOTENCY_KEY,
     ];
 
     /**
@@ -1034,7 +1039,10 @@ class Entity extends Base\PublicEntity
 
     public function setCustomerGstin($customerGstin)
     {
-        $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
+        if ($this->isInternational() === false)
+        {
+            $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
+        }
     }
 
     public function setSmsStatus($status)
@@ -1219,6 +1227,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $details;
+    }
+
+    public function isInternational(): bool
+    {
+        return ($this->getCurrency() !== Currency::INR);
     }
 
     /**

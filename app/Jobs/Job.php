@@ -82,11 +82,23 @@ class Job implements ShouldQueue
 
         $app = App::getFacadeRoot();
 
+        //
+        // While queueing a job, we need current mode so the
+        // job worker can set it while being invoked from console.
+        //
+        // App rzp mode should actually be the go-to source for current mode,
+        // since basic auth sets it while setting its own mode variable, and
+        // other flows (ones that don't use basic auth) also set it explicitly.
+        // Eg. GatewayDowntime/Service:setMode.
+        //
+        // However, we're still picking up basic auth mode first on the off
+        // chance that there's some flow where it is set but rzp.mode is not.
+        //
         $previousMode = $app['basicauth']->getMode();
 
-        if (isset($this->app['rzp.mode']) === true)
+        if (isset($app['rzp.mode']) === true)
         {
-            $previousMode = $this->app['rzp.mode'];
+            $previousMode = $app['rzp.mode'];
         }
 
         $this->previousMode = $previousMode;

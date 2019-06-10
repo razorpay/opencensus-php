@@ -204,4 +204,78 @@ return [
             'status_code' => 403,
         ],
     ],
+
+    'testCreateThrottleSettings' => [
+        'request' => [
+            'method'  => 'put',
+            'url'     => '/throttle/settings',
+            'content' => [
+                'id'    => '10000000000000',
+                'mode'  => 'live',
+                'auth'  => 'public',
+                'proxy' => 0,
+                'route' => 'order_fetch',
+                'rules' => [
+                    'mock'        => 0,
+                    'lrv'         => 60,
+                    'lrd'         => 60,
+                    'mbs'         => 10,
+                    'blocked_ips' => '12.22.43.123||342.23.12.32',
+                    'block'       => true,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchThrottleSettings' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/throttle/settings',
+            'content' => [
+                'id'    => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'live:public:0:order_fetch:mock'        => '0',
+                'live:public:0:order_fetch:lrv'         => '60',
+                'live:public:0:order_fetch:lrd'         => '60',
+                'live:public:0:order_fetch:mbs'         => '10',
+                'live:public:0:order_fetch:blocked_ips' => '12.22.43.123||342.23.12.32',
+                'live:public:0:order_fetch:block'       => '1',
+            ],
+        ],
+    ],
+
+    'testThrottleCreateSettings1' => [
+        'request' => [
+            'method'  => 'put',
+            'url'     => '/throttle/settings',
+            'content' => [
+                'rules' => [
+                    'blocked_ips' => '10.0.123.124||10.0.123.125',
+                ],
+            ],
+        ],
+    ],
+
+    'testThrottleCreateSettings2' => [
+
+        'request' => [
+            'method'  => 'put',
+            'url'     => '/throttle/settings',
+            'content' => [
+                'mode'  => 'test',
+                'auth'  => 'private',
+                'proxy' => 0,
+                'route' => 'invoice_fetch_multiple',
+                'rules' => [
+                    'block' => 1,
+                ],
+            ],
+        ],
+    ],
 ];

@@ -11,6 +11,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Metrics\Metric;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class Core extends Base\Core
@@ -237,6 +238,10 @@ class Core extends Base\Core
                     'batch_id'              => $batch->getId(),
                 ]
             );
+
+            (new Reconciliate)->traceBatchProcessingSummary($batch);
+
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $batch->toArrayTraceAll());
         }
         else
         {

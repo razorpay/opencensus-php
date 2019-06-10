@@ -4,6 +4,7 @@ namespace RZP\Gateway\CardlessEmi\Mock;
 
 use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\CardlessEmi\Action;
 use RZP\Gateway\CardlessEmi\ResponseFields;
 
 class Server extends Base\Mock\Server
@@ -60,6 +61,8 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+        parent::capture($input);
+
         $array = $this->getInputData($input);
 
         $content = [
@@ -97,11 +100,22 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
-        $array = json_decode($this->input, true);
+        parent::verify($input);
+
+        $array = $this->getInputData($input);
+
+        $id = $array[ResponseFields::PAYMENT_ID] ?? null;
+
+        list($isEpayLater, $paymentId) = $this->getEpayLaterIdIfApplicable();
+
+        if ($isEpayLater === true)
+        {
+            $id = $paymentId;
+        }
 
         $content = [
             'entity'              => ResponseFields::PAYMENT,
-            'rzp_payment_id'      => $array[ResponseFields::PAYMENT_ID],
+            'rzp_payment_id'      => $id,
             'provider_payment_id' => '12345678',
             'status'              => 'authorized',
             'currency'            => 'INR',
@@ -119,6 +133,8 @@ class Server extends Base\Mock\Server
 
     public function capture($input)
     {
+        parent::capture($input);
+
         $array = json_decode($this->input, true);
 
         $content = [
@@ -157,9 +173,7 @@ class Server extends Base\Mock\Server
 
         $content = json_encode($content);
 
-        $content = $this->makeJsonResponse($content);
-
-        return $content;
+        return $this->makeJsonResponse($content);
     }
 
     public function makeJsonResponse($json)
@@ -202,5 +216,21 @@ class Server extends Base\Mock\Server
         $secret = '23MTPU209562JTP28T';
 
         return base64_encode(hash_hmac(HashAlgo::SHA256, $str, $secret, true));
+    }
+
+    protected function getEpayLaterIdIfApplicable()
+    {
+        $url = $this->mockRequest['url'];
+
+        if ($this->action === Action::VERIFY)
+        {
+            $array = explode('payments/', $url);
+
+            if (count($array) === 2)
+            {
+                return [true, $array[1]];
+            }
+        }
+        return [false, null];
     }
 }

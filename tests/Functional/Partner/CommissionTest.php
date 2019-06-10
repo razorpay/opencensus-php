@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Models\Partner\Config\CommissionModel;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class CommissionTest extends OAuthTestCase
@@ -97,6 +98,14 @@ class CommissionTest extends OAuthTestCase
 
         $result = $this->startTest($testData);
 
+        $this->assertCommissionData($partner, $subMerchant, $payment, $result['items']);
+
+        unset($testData['request']['content']['source_id']);
+
+        $testData['request']['content']['model'] = CommissionModel::COMMISSION;
+
+        $this->startTest($testData);
+        
         $this->assertCommissionData($partner, $subMerchant, $payment, $result['items']);
     }
 
@@ -226,6 +235,7 @@ class CommissionTest extends OAuthTestCase
                 'source_id'   => $source->getId(),
                 'source_type' => $source->getEntity(),
                 'partner_id'  => $partner->getId(),
+                'model'       => 'commission',
             ]
         ];
 

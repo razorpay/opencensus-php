@@ -1,0 +1,334 @@
+<?php
+
+namespace RZP\Services;
+
+use Requests_Session;
+
+use Requests;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+
+class GovernorService
+{
+    const CONTENT_TYPE_HEADER      = 'Content-Type';
+    const ACCEPT_HEADER            = 'Accept';
+    const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
+    const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
+    const APPLICATION_JSON         = 'application/json';
+
+    const REQUEST_TIMEOUT = 40;
+    const MAX_RETRY_COUNT = 1;
+
+    // request and response fields
+    const ERROR     = 'error';
+
+    const CREATE_NAMESPACE  =   [
+        'url'       =>  "rule_engine/namespace",
+        'method'    =>  "POST",
+    ];
+
+    const DOMAIN_MODEL_LIST  =   [
+        'url'       =>  "rule_engine/data_model/:namespace",
+        'method'    =>  "GET",
+    ];
+
+    const CREATE_DOMAIN_MODEL  =   [
+        'url'       =>  "rule_engine/data_model/:namespace",
+        'method'    =>  "POST",
+    ];
+
+    const UPDATE_DOMAIN_MODEL  =   [
+        'url'       =>  "rule_engine/data_model/:namespace",
+        'method'    =>  "PUT",
+    ];
+
+    const CREATE_RULE  =   [
+        'url'       =>  "rule_engine/rule/:namespace",
+        'method'    =>  "POST",
+    ];
+
+    const CREATE_RULES  =   [
+        'url'       =>  "rule_engine/rule/:namespace/bulk",
+        'method'    =>  "POST",
+    ];
+
+    const UPDATE_RULE  =   [
+        'url'       =>  "rule_engine/rule/:namespace",
+        'method'    =>  "PUT",
+    ];
+
+    const RULE_LIST  =   [
+        'url'       =>  "rule_engine/rule/:namespace",
+        'method'    =>  "GET",
+    ];
+
+    const GET_RULE   =   [
+        'url'       =>  "rule_engine/rule/:namespace/:entity_identifier",
+        'method'    =>  "GET",
+    ];
+
+    const CREATE_RULE_CHAIN  =   [
+        'url'       =>  "rule_engine/rule_chain/:namespace",
+        'method'    =>  "POST",
+    ];
+
+
+    const UPDATE_RULE_CHAIN  =   [
+        'url'       =>  "rule_engine/rule_chain/:namespace",
+        'method'    =>  "PUT",
+    ];
+
+
+    const RULE_CHAIN_LIST  =   [
+        'url'       =>  "rule_engine/rule_chain/:namespace",
+        'method'    =>  "GET",
+    ];
+
+
+    const EXECUTE_CHAINS  =   [
+        'url'       =>  "rule_engine/execute/rule_chain/:namespace",
+        'method'    =>  "POST",
+    ];
+
+    /**
+     * The application instance.
+     *
+     * @var Application
+     */
+    protected $app;
+
+    protected $config;
+
+    protected $trace;
+
+    protected $request;
+
+    public function __construct($app)
+    {
+        $this->app = $app;
+
+        $this->trace = $app['trace'];
+
+        $this->config = $app['config']->get('applications.governor');
+
+        if ($this->request === null)
+        {
+            $this->request = $this->initRequestObject();
+        }
+    }
+
+    protected function initRequestObject()
+    {
+        $baseUrl = $this->getBaseUrl();
+
+        $defaultHeaders = $this->getDefaultHeaders();
+
+        $defaultOptions = $this->getDefaultOptions();
+
+        $request = new Requests_Session($baseUrl, $defaultHeaders, [], $defaultOptions);
+
+        return $request;
+    }
+
+    public function sendRequest(array $requestSchema, $data, $source, $namespace = null, $getEntityIdentifier = null, array $queryParams = [])
+    {
+        $url = $this->getUrl($requestSchema, $namespace, $getEntityIdentifier);
+
+        $method = $this->getMethod($requestSchema);
+
+        $auth = $this->getAuthDetails($source);
+
+        $url = $url . '?';
+
+        foreach ($queryParams as $key => $value)
+        {
+            $url .= $key . '=' . $value . '&';
+        }
+
+        $request = [
+            'url'     => $url,
+            'method'  => $method,
+            'content' => $data,
+            'headers' => [
+                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+            ],
+            'options' => [
+                'auth' => $auth,
+            ]
+        ];
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_REQUEST, $request);
+
+        $response = $this->sendRawRequest($request);
+
+        $parsedResponse = $this->processResponse($response);
+
+        $this->trace->info(TraceCode::GOVERNOR_SERVICE_RESPONSE, $parsedResponse['response_body'] ?? []);
+
+        return $parsedResponse;
+    }
+
+    protected function sendRawRequest($request)
+    {
+        $retryCount = 0;
+
+        while (true)
+        {
+            try
+            {
+                switch($request['method']) {
+                    case Requests::POST:
+                    case Requests::PUT:
+                        $response = $this->request->request(
+                            $request['url'],
+                            $request['headers'],
+                            json_encode($request['content']),
+                            $request['method'],
+                            $request['options']);
+                            break;
+                    default:
+                        $response = $this->request->request(
+                            $request['url'],
+                            $request['headers'],
+                            null,
+                            $request['method'],
+                            $request['options']);
+                }
+
+                break;
+            }
+            catch(\Requests_Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                if ($retryCount < self::MAX_RETRY_COUNT)
+                {
+                    $this->trace->info(
+                        TraceCode::GOVERNOR_SERVICE_RETRY,
+                        [
+                            'message' => $e->getMessage(),
+                            'type'    => $e->getType(),
+                            'data'    => $e->getData()
+                        ]);
+
+                    $retryCount++;
+
+                    continue;
+                }
+
+                $this->throwServiceErrorException($e);
+            }
+        }
+
+        return $response;
+    }
+
+    protected function getBaseUrl(): string
+    {
+        $baseUrl = $this->config['url'];
+
+        return $baseUrl;
+    }
+
+    protected function getUrl($requestArray, $namespace = '', $getEntityIdentifier = ''): string
+    {
+        $baseUrl = $this->getBaseUrl();
+
+        $url = $baseUrl . str_replace_first(':namespace', $namespace, $requestArray['url']);
+
+        $url = str_replace_first(':entity_identifier', $getEntityIdentifier, $url);
+
+        return $url;
+    }
+
+    protected function getMethod($requestArray): string
+    {
+        return $requestArray['method'];
+    }
+
+    protected function getDefaultOptions(): array
+    {
+        $options = [
+            'timeout' => self::REQUEST_TIMEOUT,
+        ];
+
+        return $options;
+    }
+
+    protected function getDefaultHeaders(): array
+    {
+        $headers = [
+            self::CONTENT_TYPE_HEADER      => self::APPLICATION_JSON,
+            self::ACCEPT_HEADER            => self::APPLICATION_JSON,
+            self::X_RAZORPAY_APP_HEADER    => 'api',
+        ];
+
+        return $headers;
+    }
+
+    protected function throwServiceErrorException(\Throwable $e)
+    {
+        $errorCode = ErrorCode::SERVER_ERROR_GOVERNOR_SERVICE_FAILURE;
+
+        if ((empty($e->getData()) === false) and
+            (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
+        {
+            $errorCode = ErrorCode::SERVER_ERROR_GOVERNOR_SERVICE_TIMEOUT;
+        }
+
+        throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
+    }
+
+
+    protected function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                $this->trace->error(
+                    TraceCode::GOVERNOR_SERVICE_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
+        }
+    }
+
+    protected function processResponse($response)
+    {
+        return [
+            'response_body' => $this->jsonToArray($response->body),
+            'response_code' => $response->status_code,
+        ];
+    }
+
+    public function getAuthDetails(string $source) {
+        switch ($source) {
+            case 'cps':
+                return [
+                    $this->config['cps']['username'],
+                    $this->config['cps']['password']
+                ];
+            case 'smart_routing':
+                return [
+                    $this->config['smart_routing']['username'],
+                    $this->config['smart_routing']['password']
+                ];
+            default:
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+    }
+}
