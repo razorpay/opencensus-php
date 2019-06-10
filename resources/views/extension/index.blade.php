@@ -34,7 +34,7 @@
 <body>
   <div id="ext-root"></div>
   <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer onload="initAnalytics()"></script>
-  <script src="http://127.0.0.1:7999/static/extension/app.js" async defer onload="renderApp()"></script>
+  <script src="{{$cdnDashboardUrl}}/static/extension/app.js" async defer onload="renderApp()"></script>
 
   @include('partials/xhr_overwrite')
 
