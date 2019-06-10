@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
 
     public function creditNote()
     {
-        return $this->belongsTo('RZP\Models\CreditNote\Entity');
+        return $this->belongsTo('RZP\Models\CreditNote\Entity', 'creditnote_id');
     }
 
     public function invoice()
