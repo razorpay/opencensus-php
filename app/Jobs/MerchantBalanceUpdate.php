@@ -35,13 +35,15 @@ class MerchantBalanceUpdate extends Job
     {
         try
         {
-        parent::handle();
-           $this->trace->info(
+            parent::handle();
+            $this->trace->info(
                 TraceCode::MERCHANT_BALANCE_UPDATE_REQUEST,
                 [
                     'input'       => $this->input,
                 ]
             );
+
+            $updated = (new PaymentService)->updateMerchantBalance($this->input['payment_id'], $this->input['transaction_id']);
 
             $this->trace->info(
                 TraceCode::MERCHANT_BALANCE_UPDATE_SUCCESSFULL,[

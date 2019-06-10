@@ -959,6 +959,7 @@ class Core extends Base\Core
         $txn->accountBalance()->associate($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
+
         $this->repo->balance->updateBalance($merchantBalance);
 
         $txn->setBalance($merchantBalance->getBalance());

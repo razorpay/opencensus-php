@@ -1783,6 +1783,14 @@ class Service extends Base\Service
         return $updated;
     }
 
+    public function updateMerchantBalance(string $paymentId, string $transactionId)
+    {
+        $payment = $this->repo->payment->find($paymentId);
+        $transaction = $this->repo->transaction->find($transactionId);
+
+        $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction);
+    }
+
     public function fetchForSubscription(string $paymentId, string $subscriptionId): array
     {
         $payment = $this->repo->payment->fetchByIdandSubscriptionId($paymentId, $subscriptionId);

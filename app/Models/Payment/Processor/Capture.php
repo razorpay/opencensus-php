@@ -624,7 +624,7 @@ trait Capture
 
         $input = [
             'payment_id' => $payment->getId(),
-            'transaction' => $txn->getId(),
+            'transaction_id' => $txn->getId(),
             'mode'        => $this->mode,
         ];
 
@@ -633,8 +633,27 @@ trait Capture
             [
                 'input' => $input,
             ]);
-
+        s($payment->getId());
+        s($txn->getId());
         Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
+    }
+
+    public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        $this->payment = $payment;
+
+        $this->repo->transaction(function() use ($payment, $txn)
+        {
+            $this->lockForUpdateAndReload($payment);
+
+            $merchantId = $txn->getMerchantId();
+
+            $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
+
+            $txn->accountBalance()->associate($merchantBalance);
+
+            $this->handleLateBalanceUpdate($txn, $merchantBalance);
+        });
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)
