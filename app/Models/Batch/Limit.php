@@ -33,6 +33,7 @@ class Limit
         Type::AUTH_LINK                             => 10000,
         Type::RECURRING_CHARGE                      => 10000,
         Type::SUB_MERCHANT                          => 5000,
+        Type::SUBMERCHANT_ASSIGN                    => 50000,
     ];
 
     /**
