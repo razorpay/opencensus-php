@@ -57,7 +57,6 @@ import CreditNoteDetails from '../../components/Invoices/CreditNoteDetails';
     showNotification,
     openModal,
     closeModal,
-    cancelUpdateSubscription,
   }
 )
 export default class SubscriptionDetailsContainer extends Component {
@@ -65,7 +64,13 @@ export default class SubscriptionDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  state = {};
+  constructor(props) {
+    super();
+
+    this.state = {
+      creditNotes: [],
+    };
+  }
 
   componentDidMount() {
     const { closeUrl, id } = this.props,
@@ -512,6 +517,7 @@ export default class SubscriptionDetailsContainer extends Component {
       errors,
       invoiceErrors,
       invoiceLoading,
+      creditNotes,
     } = this.state;
 
     let invoicesList = invoices;
@@ -642,37 +648,8 @@ export default class SubscriptionDetailsContainer extends Component {
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
           onManualAttempt={this.onManualAttempt}
-          cancelUpdateSubscription={this.props.cancelUpdateSubscription}
-          creditNotes={[
-            {
-              id: 'crnt_CdJ6bpQFE0Kgfi',
-              customer_id: 'CSgSa6pi6wvAfa',
-              merchant_id: '10000000000000',
-              name: 'Test credit note',
-              description: null,
-              amount: 5000,
-              amount_available: 5000,
-              amount_refunded: 0,
-              amount_allocated: 0,
-              currency: 'INR',
-              created_at: 1559561988,
-              updated_at: 1559561988,
-            },
-            {
-              id: 'crnt_CdHpBm4OqeFf3u',
-              customer_id: 'CSgSa6pi6wvAfa',
-              merchant_id: '10000000000000',
-              name: 'Test credit note',
-              description: null,
-              amount: 5000,
-              amount_available: 3200,
-              amount_refunded: 1800,
-              amount_allocated: 0,
-              currency: 'INR',
-              created_at: 1559557477,
-              updated_at: 1559562260,
-            },
-          ]}
+          cancelUpdateSubscription={cancelUpdateSubscription}
+          creditNotes={creditNotes}
           onTestChargeAttempt={
             this.props.mode === 'test' &&
             (entity.status === 'created'

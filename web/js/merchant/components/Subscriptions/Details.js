@@ -16,30 +16,6 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
 
 import Definition from 'rzp/ui/Definition';
 
-// Customer component
-const getCustomerDetail = customer => (
-  <Definition placeholder="--">
-    {customer.name}
-    {customer.email && <span>{customer.email}</span>}
-    {customer.contact && <span>{customer.contact}</span>}
-    {customer.id && <code>{customer.id}</code>}
-  </Definition>
-);
-
-// Get plan description
-const getDescription = (interval, period) => {
-  switch (period) {
-    case 'monthly':
-      return `Billed Every ${interval} month`;
-    case 'yearly':
-      return `Billed Every ${interval} year`;
-    case 'weekly':
-      return `Billed Every ${interval} week`;
-    default:
-      return period;
-  }
-};
-
 export default ({
   mode,
   subscription,
@@ -55,6 +31,7 @@ export default ({
   onTestChargeAttempt,
   isSideView,
   creditNotes,
+  cancelUpdateSubscription,
 }) => {
   let showTestChargeBtn =
     !isLoading &&
@@ -247,8 +224,11 @@ export default ({
                   <div>
                     The subscription will be updated on{' '}
                     {moment.unix(subscription.start_at).format('DD MMM, YYYY')}
-                    <AsyncBtn.Transparent class="pull-right">
-                      Cancel
+                    <AsyncBtn.Transparent
+                      onClick={() => cancelUpdateSubscription(subscription.id)}
+                      class="pull-right"
+                    >
+                      Cancel Update
                     </AsyncBtn.Transparent>
                   </div>
                   <ContentToggler>
@@ -323,3 +303,27 @@ const UpdatedSubscriptionPreview = ({ data }) =>
       </div>
     </div>
   ));
+
+// Customer component
+const getCustomerDetail = customer => (
+  <Definition placeholder="--">
+    {customer.name}
+    {customer.email && <span>{customer.email}</span>}
+    {customer.contact && <span>{customer.contact}</span>}
+    {customer.id && <code>{customer.id}</code>}
+  </Definition>
+);
+
+// Get plan description
+const getDescription = (interval, period) => {
+  switch (period) {
+    case 'monthly':
+      return `Billed Every ${interval} month`;
+    case 'yearly':
+      return `Billed Every ${interval} year`;
+    case 'weekly':
+      return `Billed Every ${interval} week`;
+    default:
+      return period;
+  }
+};

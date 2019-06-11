@@ -16,7 +16,6 @@ const SUBSCRIPTION_UPDATE = 'SUBSCRIPTION_UPDATE';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
-const SUBSCRIPTION_CANCEL_UPDATE = 'SUBSCRIPTION_CANCEL_UPDATE';
 const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
 
 export const fetchCreditNote = id => {
@@ -60,12 +59,10 @@ export const updateSubscription = params => {
   };
 };
 
-export const cancelUpdateSubscription = params => {
-  const subscription = new Subscription(params);
-  return {
-    type: SUBSCRIPTION_CANCEL_UPDATE,
-    payload: subscription.save(params),
-  };
+export const cancelUpdateSubscription = id => {
+  const subscription = new Subscription({ id });
+
+  return subscription.cancel();
 };
 
 export const deleteSubscription = params => {
