@@ -19,9 +19,11 @@ class GenericController extends Controller
         'x-org-id',
     ];
 
-    const WHITELISTED_ROUTES_EXTENSION = [
-        'invoices',
-        'currency/all/proxy',
+    const WHITELISTED_ROUTES_REGEX = [
+        '^invoices$',
+        '^currency\/all\/proxy$',
+        'invoices\/inv_[[:alnum:]]{14}\/notify_by\/(?:email|sms)$',
+        '^invoices\/inv_[[:alnum:]]{14}\/cancel$'
     ];
 
     public function handleAny($mode, $path)
@@ -53,7 +55,9 @@ class GenericController extends Controller
 
     public function handleAnyExtension($mode, $path)
     {
-        if (in_array($path, self::WHITELISTED_ROUTES_EXTENSION, true) === true)
+        $whiteListedRoutesRegex = implode('|', self::WHITELISTED_ROUTES_REGEX);
+
+        if (preg_match($whiteListedRoutesRegex, $path, $pathMatches) === true)
         {
             $request = new App\Admin\ApiRequestAny([
                 'mode'      => $mode,
