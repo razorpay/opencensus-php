@@ -391,6 +391,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_BATCH_NOTIFY_JOB_INV_NOTIFY_ERROR             = 'INVOICE_BATCH_NOTIFY_JOB_INV_NOTIFY_ERROR';
     const INVOICE_BATCH_CANCEL_JOB_INV_CANCEL_ERROR             = 'INVOICE_BATCH_CANCEL_JOB_INV_CANCEL_ERROR';
     const INVOICE_BATCH_CANCEL_SUMMARY                          = 'INVOICE_BATCH_CANCEL_SUMMARY';
+    const INVOICE_BATCH_COUNT_ZERO                              = 'INVOICE_BATCH_COUNT_ZERO';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
