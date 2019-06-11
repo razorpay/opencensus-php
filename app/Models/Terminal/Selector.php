@@ -147,18 +147,7 @@ class Selector extends Base\Core
 
         if (empty($sortedTerminals) === true)
         {
-            if (($this->isTestMode() === true) or
-                ($this->app->environment('testing') === true))
-            {
-                //
-                // The current list of terminals which were retrieved earlier do
-                // not contain the sharp terminal and hence, making a call to DB.
-                //
-                $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
-
-                $sortedTerminals = array($terminal);
-            }
-            else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
+           if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
             {
                 //
                 // Rupay transactions for pharma merchants need to be routed through
