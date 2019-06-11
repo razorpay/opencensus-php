@@ -147,6 +147,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUBSCRIPTION_ID);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
 
     public function setAmountAvailable(int $amount)
     {

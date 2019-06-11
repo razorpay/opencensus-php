@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         Entity::SUBSCRIPTION_ID => 'sometimes|string|size:14|nullable',
         Entity::NAME        => 'required|string|max:255',
         Entity::DESCRIPTION => 'sometimes|string|max:2048',
-        Entity::AMOUNT      => 'required|mysql_unsigned_int',
+        Entity::AMOUNT      => 'required|mysql_unsigned_int|min_amount',
         Entity::CURRENCY    => 'required|currency',
     ];
 
@@ -44,6 +44,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Duplicate items for invoices');
+        }
+    }
+
+    public function validateMinAmount(array $input)
+    {
+        if (empty($input[Entity::AMOUNT]) === false)
+        {
+            $currency = $this->entity->getCurrency();
+
+            $inputAmount = [
+                Entity::AMOUNT   => $input[Entity::AMOUNT],
+                Entity::CURRENCY => $currency,
+            ];
+
+            $this->validateInputValues('min_amount_check', $inputAmount);
         }
     }
 

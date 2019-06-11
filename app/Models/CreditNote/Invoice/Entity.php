@@ -3,6 +3,8 @@
 namespace RZP\Models\CreditNote\Invoice;
 
 use RZP\Models\Base;
+use RZP\Models\Invoice;
+use RZP\Models\Payment\Refund;
 
 class Entity extends Base\PublicEntity
 {
@@ -55,6 +57,12 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::REFUND_ID,
+        self::INVOICE_ID,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -85,8 +93,35 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INVOICE_ID);
     }
 
+    public function getPublicInvoiceId()
+    {
+        $invoiceId = $this->getAttribute(self::INVOICE_ID);
+
+        return Invoice\Entity::getSignedIdOrNull($invoiceId);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    protected function setPublicRefundIdAttribute(array & $array)
+    {
+        $refundId = $this->getAttribute(self::REFUND_ID);
+
+        if ($refundId !== null)
+        {
+            $array[self::REFUND_ID] = Refund\Entity::getSignedIdOrNull($refundId);
+        }
+    }
+
+    protected function setPublicInvoiceIdAttribute(array & $array)
+    {
+        $invoiceId = $this->getAttribute(self::INVOICE_ID);
+
+        if ($invoiceId !== null)
+        {
+            $array[self::INVOICE_ID] = Invoice\Entity::getSignedIdOrNull($invoiceId);
+        }
     }
 }

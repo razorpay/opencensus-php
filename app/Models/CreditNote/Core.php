@@ -128,6 +128,12 @@ class Core extends Base\Core
             throw new BadRequestValidationFailureException(
                 $invoice->getPublicId() . ' is not in paid state');
         }
+
+        if ($invoice->getCurrency() !== $creditNote->getCurrency())
+        {
+            throw new BadRequestValidationFailureException(
+                $invoice->getPublicId() . ' and credit note currency does not match');
+        }
     }
 
     protected function validateInvoiceAndEntity(Invoice\Entity $invoice, Entity $creditNote)

@@ -32,7 +32,7 @@ class ViewDataSerializer extends Base\Core
 
         foreach ($creditNoteInvoices as $creditNoteInvoice)
         {
-            $invoiceId = $creditNoteInvoice->getInvoiceId();
+            $invoiceId = $creditNoteInvoice->getPublicInvoiceId();
 
             if(isset($invoiceSerialized[$invoiceId]) === false)
             {
