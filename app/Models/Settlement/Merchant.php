@@ -5,7 +5,6 @@ namespace RZP\Models\Settlement;
 use App;
 use Carbon\Carbon;
 
-use RZP\Constants\Environment;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -15,8 +14,8 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Constants\Environment;
 use RZP\Models\Settlement\Details as SetlDetails;
-use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
@@ -38,6 +37,8 @@ class Merchant
     protected $setlDetailAmounts;
     protected $scheduleTasks;
     protected $logging;
+    protected $mode;
+    protected $env;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -62,6 +63,10 @@ class Merchant
         $this->attachMerchantBankAccount();
 
         $this->logging = $logging;
+
+        $this->mode = $app['rzp.mode'];
+
+        $this->env = $app['env'];
     }
 
     public function retryFailedSettlement(Settlement\Entity $setl)
@@ -383,12 +388,9 @@ class Merchant
      */
     protected function doMockAttemptProcessed(): bool
     {
-        $env  = app('env');
-        $mode = app('rzp.mode');
-
         // adding dev for local testing purpose
         // and enabling mocking attempt on on prod
-        if (($mode === Mode::TEST) and (in_array($env, [Environment::PRODUCTION]) === true))
+        if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true))
         {
             return true;
         }
@@ -409,14 +411,16 @@ class Merchant
 
         $channel = $fta->getChannel();
 
-        $status = $this->getChannelStatus($channel);
+        $status = $this->getStatusInstanceByChannel($channel);
 
         // set the fist successful status
         // in case of mock we have to set the only the success response
         $bankStatusCode = $status::getSuccessfulStatus()[0];
 
         $fta->setUtr($currentTimestamp . random_alphanum_string(6));
+
         $fta->setStatus(FundTransferAttempt\Status::INITIATED);
+
         $fta->setBankStatusCode($bankStatusCode);
 
         $this->repo->saveOrFail($fta);
@@ -428,7 +432,7 @@ class Merchant
      * @param string $channel
      * @return mixed
      */
-    protected function getChannelStatus(string $channel)
+    protected function getStatusInstanceByChannel(string $channel)
     {
         $class = 'RZP\\Models\\FundTransfer\\'
         . ucfirst($channel)

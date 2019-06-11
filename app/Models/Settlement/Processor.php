@@ -3,8 +3,6 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Constants\Environment;
-use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -12,9 +10,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Jobs\SettlementJob;
 use RZP\Models\BankAccount;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant as MerchantModel;
 
 class Processor extends Base\Core
@@ -571,7 +571,6 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements($input, string $channel = null)
     {
-        return [true, null];
         $channelWith24x7Settlement = Channel::get24x7Channels();
 
         if (in_array($channel, $channelWith24x7Settlement, true) === true)
