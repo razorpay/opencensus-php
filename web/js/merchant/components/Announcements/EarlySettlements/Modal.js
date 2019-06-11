@@ -70,7 +70,7 @@ export default class RequestEarlyAccessForm extends Component {
           } else {
             price =
               response.data[`${this.props.user.current}_scheduled_es_pricing`];
-            title = 'Automatic Early Settlements';
+            title = 'Automatic Instant Settlements';
           }
           this.setState({
             fetching: false,
@@ -296,7 +296,7 @@ export default class RequestEarlyAccessForm extends Component {
           <h3 class="modal-title">Get Started!</h3>
         </div>
         <div class="help-block">
-          You can choose to get early settlements in either of the following
+          You can choose to get Instant settlements in either of the following
           ways:
         </div>
         <form onSubmit={handleSubmit(this.onSubmit)}>
@@ -308,7 +308,7 @@ export default class RequestEarlyAccessForm extends Component {
               onChange={this.handleChange}
               label={() => (
                 <span class="radio-label">
-                  <label class="title">Automatic Early Settlements</label>
+                  <label class="title">Automatic Instant Settlements</label>
                   <div class="description">
                     Razorpay will automatically settle all your payments at
                     specific hours during the day, ensuring a consistent working
@@ -324,7 +324,7 @@ export default class RequestEarlyAccessForm extends Component {
               onChange={this.handleChange}
               label={() => (
                 <span class="radio-label">
-                  <label class="title">On-demand Early Settlements</label>
+                  <label class="title">On-demand Instant Settlements</label>
                   <div class="description">
                     Choose when you want your settlements early. All your other
                     settlements follow your existing settlement schedule.
@@ -392,7 +392,7 @@ export default class RequestEarlyAccessForm extends Component {
             <i class="i i-close" />
           </button>
           <div class="modal-header">
-            <h3 class="modal-title">Early Settlements</h3>
+            <h3 class="modal-title">Instant Settlements</h3>
           </div>
           <div class="help-block">
             Razorpay is working with <strong>top financing institutions</strong>{' '}
@@ -405,7 +405,7 @@ export default class RequestEarlyAccessForm extends Component {
             >
               <p class="m-t">
                 <a target="_blank" href="https://razorpay.com/knowledgebase/">
-                  Know more about Early Settlements{' '}
+                  Know more about Instant Settlements{' '}
                   <i class="i i-external-link" />
                 </a>
               </p>
@@ -483,14 +483,17 @@ const SuccessScreen = closeScreen => (
       </button>
 
       <img class="banner" src="img/early_settlements/es-banner-2.png" />
-      <h3 class="modal-title">Early Settlements Requested</h3>
+      <h3 class="modal-title">Instant Settlements Requested</h3>
       <div class="help-block">
-        You shall be activated soon for Early Settlements. A confirmation email
-        will be sent to your registered Email ID.
+        You shall be activated soon for Instant Settlements. A confirmation
+        email will be sent to your registered Email ID.
       </div>
 
       <div>
-        <Button.Primary class="close-btn" onClick={() => closeScreen('Got it')}>
+        <Button.Primary
+          class="close-btn m-t"
+          onClick={() => closeScreen('Got it')}
+        >
           Got it
         </Button.Primary>
       </div>
