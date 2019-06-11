@@ -552,4 +552,87 @@ class TransactionTest extends TestCase
         $response = $helper->callback($this->gateway, $request);
         $this->assertTrue($response['success']);
     }
+
+    public function testFetchAll()
+    {
+        $transaction1 = $this->createPayTransaction([
+            Entity::STATUS              => Status::COMPLETED,
+            Entity::INTERNAL_STATUS     => Status::COMPLETED,
+        ]);
+
+        $transaction2 = $this->createCollectIncomingTransaction([]);
+
+        $helper = $this->getTransactionHelper();
+
+        $concern = $helper->raiseConcern($transaction1->getPublicId());
+
+        $this->createPayTransaction();
+
+        $collection = $helper->fetchAll([
+            'expand'    => ['payer', 'payee', 'upi', 'concern'],
+            'response'  => 'history',
+        ]);
+
+        $this->assertCollection($collection, 2, [
+            [
+                'id'        => $transaction2->getPublicId(),
+                'status'    => 'created',
+                'type'      => 'collect',
+            ],
+            [
+                'id'        => $transaction1->getPublicId(),
+                'status'    => 'completed',
+                'type'      => 'pay',
+            ],
+        ]);
+
+        $this->assertNotEmpty($collection['items'][1]['concern']);
+    }
+
+    public function testFetchDeletedBeneficiary()
+    {
+        $this->createPayTransaction([
+            Entity::STATUS              => Status::COMPLETED,
+            Entity::INTERNAL_STATUS     => Status::COMPLETED,
+        ]);
+
+        $this->fixtures->vpa(self::DEVICE_2)->delete();
+
+        $helper = $this->getTransactionHelper();
+
+        $transactions = $helper->fetchAll(['expand' => ['payer', 'payee']]);
+
+        $this->assertSame($this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+                          $transactions['items'][0]['payer']['id']);
+        $this->assertSame($this->fixtures->vpa(self::DEVICE_2)->getPublicId(),
+                          $transactions['items'][0]['payee']['id']);
+        $this->assertTrue($transactions['items'][0]['payee']['validated']);
+
+        $this->createPayTransaction([
+            Entity::PAYEE_TYPE          => 'bank_account',
+            Entity::PAYEE_ID            => $this->fixtures->bankAccount(self::DEVICE_2)->getId(),
+            Entity::STATUS              => Status::COMPLETED,
+            Entity::INTERNAL_STATUS     => Status::COMPLETED,
+        ]);
+
+        $this->fixtures->bankAccount(self::DEVICE_2)->delete();
+
+        $transactions = $helper->fetchAll(['expand' => ['payer', 'payee']]);
+
+        $this->assertSame($this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+                          $transactions['items'][0]['payer']['id']);
+        $this->assertSame($this->fixtures->bankAccount(self::DEVICE_2)->getPublicId(),
+                          $transactions['items'][0]['payee']['id']);
+        $this->assertTrue($transactions['items'][0]['payee']['validated']);
+
+        $this->createPayIncomingTransaction();
+
+        $transactions = $helper->fetchAll(['expand' => ['payer', 'payee']]);
+
+        $this->assertSame($this->fixtures->vpa(self::DEVICE_2)->getPublicId(),
+                          $transactions['items'][0]['payer']['id']);
+        $this->assertSame($this->fixtures->vpa(self::DEVICE_1)->getPublicId(),
+                          $transactions['items'][0]['payee']['id']);
+        $this->assertTrue($transactions['items'][0]['payer']['validated']);
+    }
 }

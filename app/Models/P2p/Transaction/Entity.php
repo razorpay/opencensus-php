@@ -155,6 +155,7 @@ class Entity extends Base\Entity
         Entity::PAYEE,
         Entity::BANK_ACCOUNT,
         Entity::UPI,
+        Entity::CONCERN,
     ];
 
     protected $defaults = [
@@ -686,12 +687,12 @@ class Entity extends Base\Entity
 
     public function payer()
     {
-        return $this->morphTo(self::PAYER);
+        return $this->morphTo(self::PAYER)->withTrashed();
     }
 
     public function payee()
     {
-        return $this->morphTo(self::PAYEE);
+        return $this->morphTo(self::PAYEE)->withTrashed();
     }
 
     public function upi()
@@ -712,6 +713,35 @@ class Entity extends Base\Entity
     public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = 'customer.transaction';
+    }
+
+    public function toArrayPublic(): array
+    {
+        $array = parent::toArrayPublic();
+
+        $array[self::UPI] = $this->upi->toArrayPublic();
+
+        if (isset($array[self::PAYER]))
+        {
+            $array[self::PAYER] = $this->payer->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::PAYEE]))
+        {
+            $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::BANK_ACCOUNT]))
+        {
+            $array[self::BANK_ACCOUNT] = $this->bankAccount->toArrayPublic();
+        }
+
+        if (isset($array[self::CONCERN]))
+        {
+            $array[self::CONCERN] = $this->concern->toArrayPublic();
+        }
+
+        return $array;
     }
 
     public function toArrayPartner(): array

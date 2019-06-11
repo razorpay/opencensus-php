@@ -325,7 +325,7 @@ class Entity extends Base\Entity
         $creds = array_map(
             function($cred)
             {
-                return array_get($cred, Credentials::SET);
+                return array_only($cred, [Credentials::SET, Credentials::LENGTH]);
             }, $this->getCreds());
 
         $array[self::CREDS] = $creds;

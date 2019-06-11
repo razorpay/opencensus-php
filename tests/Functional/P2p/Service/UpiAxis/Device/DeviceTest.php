@@ -127,6 +127,12 @@ class DeviceTest extends TestCase
 
     public function testDeregister()
     {
+        $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
+        $bankAccount = $this->fixtures->bankAccount(self::DEVICE_1);
+        $vpa         = $this->fixtures->vpa(self::DEVICE_1);
+        $transaction = $this->createPayTransaction();
+        $beneficiary = $this->fixtures->createBeneficiary([]);
+
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
@@ -134,13 +140,8 @@ class DeviceTest extends TestCase
         $this->mockActionContentFunction([
             Device\Action::DEREGISTER => function(& $content)
             {
-                //$content['status'] = 'FAILURE';
+                $this->assertArrayHasKey('payload', $content);
             }]);
-
-        $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
-        $bankAccount = $this->fixtures->bankAccount(self::DEVICE_1);
-        $vpa         = $this->fixtures->vpa(self::DEVICE_1);
-        $transaction = $this->createPayTransaction();
 
         $helper->deregisterDevice();
 
@@ -148,5 +149,6 @@ class DeviceTest extends TestCase
         $this->assertTrue($bankAccount->refresh()->trashed());
         $this->assertTrue($vpa->refresh()->trashed());
         $this->assertTrue($transaction->refresh()->trashed());
+        $this->assertNull($this->getDbLastEntity('p2p_beneficiary'));
     }
 }

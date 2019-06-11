@@ -7,6 +7,7 @@ use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Beneficiary;
 use RZP\Models\P2p\Transaction;
 
 /**
@@ -164,6 +165,8 @@ class Processor extends Base\Processor
                 (new BankAccount\Core)->deleteAll();
                 (new DeviceToken\Core)->deleteAll();
                 (new Transaction\Core)->deleteAll();
+                (new Beneficiary\Core)->deleteAll();
+
             });
 
         return [

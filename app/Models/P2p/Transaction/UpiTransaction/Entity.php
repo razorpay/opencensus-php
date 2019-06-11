@@ -93,9 +93,6 @@ class Entity extends Base\Entity
     ];
 
     protected $public = [
-        Entity::TRANSACTION_ID,
-        Entity::DEVICE_ID,
-        Entity::HANDLE,
         Entity::RRN,
         Entity::REF_ID,
         Entity::REF_URL,
