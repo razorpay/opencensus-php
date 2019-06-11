@@ -80,7 +80,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('merchant_payout_on_demand', $input);
 
-        //Here value true specifies payout on demand mode enabled
+        // Here value true specifies payout on demand mode enabled
         $input[Entity::TYPE] = Entity::ON_DEMAND;
 
         $payout = (new Payout\Core)->createPayoutToMerchant($input, $this->merchant);

@@ -15,6 +15,8 @@ final class Metric
     const PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS  = 'payout_initiated_to_reversed_duration_seconds.histogram';
 
     // Dimension constants
-    const CHANNEL = 'channel';
-    const MODE    = 'mode';
+    const MODE           = 'mode';
+    const CHANNEL        = 'channel';
+    const ACCOUNT_TYPE   = 'account_type';
+    const FAILURE_REASON = 'failure_reason';
 }

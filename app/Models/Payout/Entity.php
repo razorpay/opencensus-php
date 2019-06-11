@@ -422,6 +422,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function hasCustomer()
     {
         return ($this->isAttributeNotNull(self::CUSTOMER_ID) === true);
@@ -1195,8 +1200,10 @@ class Entity extends Base\PublicEntity
     public function getMetricDimensions(array $extra = []): array
     {
         $dimensions = $extra + [
-                Metric::CHANNEL => $this->getChannel(),
-                Metric::MODE    => $this->getMode(),
+                Metric::CHANNEL      => $this->getChannel(),
+                Metric::MODE         => $this->getMode(),
+                Metric::ACCOUNT_TYPE => 'shared',
+                //Metric::ACCOUNT_TYPE => $this->balance->getAccountType(),  // This change will be made later.
             ];
 
         return $dimensions;

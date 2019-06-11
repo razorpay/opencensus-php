@@ -604,7 +604,11 @@ class Core extends Base\Core
 
     protected function pushReversedMetrics(Entity $payout)
     {
-        $metricDimensions        = $payout->getMetricDimensions();
+        $extraDimensions = [
+            Metric::FAILURE_REASON => $payout->getFailureReason(),
+        ];
+
+        $metricDimensions        = $payout->getMetricDimensions($extraDimensions);
         $createdToReversedTime   = $payout->getReversedAt() - $payout->getCreatedAt();
         $initiatedToReversedTime = $payout->getReversedAt() - $payout->getInitiatedAt();
 
