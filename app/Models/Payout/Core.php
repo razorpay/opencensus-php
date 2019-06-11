@@ -288,8 +288,6 @@ class Core extends Base\Core
         $payout->setStatus(Status::INITIATED);
 
         $this->repo->saveOrFail($payout);
-
-        $this->pushInitiatedMetrics($payout);
     }
 
     public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
@@ -537,8 +535,6 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payout);
 
-        $this->pushProcessedMetrics($payout);
-
         $this->app->events->fire('api.payout.processed', [$payout]);
     }
 
@@ -582,25 +578,44 @@ class Core extends Base\Core
                 return $reversal;
             });
 
-        $this->pushReversedMetrics($payout);
-
         return $reversal;
+    }
+
+    public function pushPayoutStatusChangeMetrics(Entity $payout, string $status)
+    {
+        switch ($status)
+        {
+            case Status::INITIATED:
+                $this->pushInitiatedMetrics($payout);
+                break;
+
+            case Status::PROCESSED:
+                $this->pushProcessedMetrics($payout);
+                break;
+
+            case Status::REVERSED:
+                $this->pushReversedMetrics($payout);
+                break;
+
+            default:
+                return;
+        }
     }
 
     protected function pushReversedMetrics(Entity $payout)
     {
         $metricDimensions        = $payout->getMetricDimensions();
         $createdToReversedTime   = $payout->getReversedAt() - $payout->getCreatedAt();
-        $processedToReversedTime = $payout->getReversedAt() - $payout->getProcessedAt();
+        $initiatedToReversedTime = $payout->getReversedAt() - $payout->getInitiatedAt();
 
         $this->trace->histogram(
-            Metric::PAYOUT_CREATED_TO_REVERSED_DURATION_MILLISECONDS,
+            Metric::PAYOUT_CREATED_TO_REVERSED_DURATION_SECONDS,
             $createdToReversedTime,
             $metricDimensions);
 
         $this->trace->histogram(
-            Metric::PAYOUT_PROCESSED_TO_REVERSED_DURATION_MILLISECONDS,
-            $processedToReversedTime,
+            Metric::PAYOUT_INITIATED_TO_REVERSED_DURATION_SECONDS,
+            $initiatedToReversedTime,
             $metricDimensions);
     }
 
@@ -610,7 +625,7 @@ class Core extends Base\Core
         $createdToInitiatedTime  = $payout->getInitiatedAt() - $payout->getCreatedAt();
 
         $this->trace->histogram(
-            Metric::PAYOUT_CREATED_TO_INITIATED_DURATION_MILLISECONDS,
+            Metric::PAYOUT_CREATED_TO_INITIATED_DURATION_SECONDS,
             $createdToInitiatedTime,
             $metricDimensions);
     }
@@ -622,12 +637,12 @@ class Core extends Base\Core
         $initiatedToProcessedTime = $payout->getProcessedAt() - $payout->getInitiatedAt();
 
         $this->trace->histogram(
-            Metric::PAYOUT_CREATED_TO_PROCESSED_DURATION_MILLISECONDS,
+            Metric::PAYOUT_CREATED_TO_PROCESSED_DURATION_SECONDS,
             $createdToProcessedTime,
             $metricDimensions);
 
         $this->trace->histogram(
-            Metric::PAYOUT_INITIATED_TO_PROCESSED_DURATION_MILLISECONDS,
+            Metric::PAYOUT_INITIATED_TO_PROCESSED_DURATION_SECONDS,
             $initiatedToProcessedTime,
             $metricDimensions);
     }

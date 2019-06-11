@@ -711,6 +711,9 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute($timestampKey, $currentTime);
         }
+
+        // Entity calling Core is terrible. To be refactored later.
+        (new Core)->pushPayoutStatusChangeMetrics($this, $status);
     }
 
     public function setInitiatedAt()
