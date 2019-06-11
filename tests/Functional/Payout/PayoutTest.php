@@ -51,18 +51,18 @@ class PayoutTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        // Test for Metrics
-        $metricsMock = $this->createMetricsMock();
-
-        $metricsMock->expects($this->at(10))
-                    ->method('count')
-                    ->withConsecutive(
-                        [
-                            'payout_created_total',
-                            1,
-                            ['mode' => 'NEFT', 'channel' => 'yesbank']
-                        ]);
-
+        // Test for Metrics -- to be added later
+        //$metricsMock = $this->createMetricsMock();
+        //
+        //$metricsMock->expects($this->at(10))
+        //            ->method('count')
+        //            ->withConsecutive(
+        //                [
+        //                    'payout_created_total',
+        //                    1,
+        //                    ['mode' => 'NEFT', 'channel' => 'yesbank']
+        //                ]);
+        //
         //$metricsMock->expects($this->atLeast(1))
         //            ->method('histogram')
         //            ->withConsecutive(
