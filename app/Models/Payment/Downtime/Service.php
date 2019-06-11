@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Webhook\Event;
 
