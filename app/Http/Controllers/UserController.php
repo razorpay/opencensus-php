@@ -250,7 +250,9 @@ class UserController extends Controller
      */
      public function getBrowserExtensionIndex()
      {
-        return view('extension.index');
+        $dashboardCdn = \Config::get('app.cdn_dashboard_url');
+        $data['cdnUrl'] = $dashboardCdn ? substr($dashboardCdn, 0, -10) : "http://static.razorpay.in";
+        return view('extension.index', $data);
      }
 
     /**
