@@ -751,15 +751,15 @@ class Gateway
      * @var array
      */
     public static $gatewayNetworkPurchaseSupport = [
-        self::HDFC => [],
-        self::AXIS_MIGS => [],
-        self::AMEX => [],
-        self::CYBERSOURCE => [],
-        self::PAYSECURE => [],
-        self::FIRST_DATA => [],
-        self::WALLET_OPENWALLET => [],
-        self::HITACHI => [
-            self::NOT_SUPPORTED => [Network::RUPAY]
+        self::HDFC                  => [],
+        self::AXIS_MIGS             => [],
+        self::AMEX                  => [],
+        self::CYBERSOURCE           => [],
+        self::PAYSECURE             => [],
+        self::FIRST_DATA            => [],
+        self::WALLET_OPENWALLET     => [],
+        self::HITACHI               => [
+            self::NOT_SUPPORTED     => [Network::RUPAY]
         ],
     ];
 
@@ -1734,16 +1734,25 @@ class Gateway
     public static function supportsPurchase($gateway, $networkCode = null): bool
     {
         $arrayKeys = array_keys(self::$gatewayNetworkPurchaseSupport);
+
         $supportsPurchase = in_array($gateway, $arrayKeys, true);
-        if ($supportsPurchase === false) {
+
+        if ($supportsPurchase === false)
+        {
             return false;
-        } else {
-            if ($networkCode === null) {
+        }
+        else
+        {
+            if ($networkCode === null)
+            {
                 return $supportsPurchase;
-            } else {
+            }
+            else
+            {
                 return self::supportsPurchaseForNetwork($gateway, $networkCode);
             }
         }
+
     }
 
     public static function supportsReverse($gateway)
