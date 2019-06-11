@@ -57,7 +57,7 @@ class GenericController extends Controller
     {
         $whiteListedRoutesRegex = implode('|', self::WHITELISTED_ROUTES_REGEX);
 
-        if (preg_match($whiteListedRoutesRegex, $path, $pathMatches) === true)
+        if (preg_match('/' . $whiteListedRoutesRegex . '/', $path, $pathMatches) == true)
         {
             $request = new App\Admin\ApiRequestAny([
                 'mode'      => $mode,
