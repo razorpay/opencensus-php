@@ -1108,6 +1108,10 @@ final class Route
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
+
+        // Excel Store Proxy APIs
+        'excel_store_view'                        => ['get',      'excel-store/views/{id}',                                     'ExcelStoreController@getView'                             ],
+        'excel_store_bridge'                      => ['any',      'excel-store/{path?}',                                        'ExcelStoreController@any'                                 ],
     ];
 
     public static $public = [
@@ -1179,6 +1183,7 @@ final class Route
         'currency_fetch_all',
         'payment_validate_account',
         'fund_account_create_public',
+        // 'excel_store_view',
     ];
 
     public static $device = [
@@ -2098,6 +2103,9 @@ final class Route
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
+
+        // Excel Store routes
+        'excel_store_bridge',
     ];
 
     public static $routePermission = [
@@ -2519,6 +2527,7 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
+        'excel_store_bridge'                       => Permission::ACCESS_EXCEL_STORE,
     ];
 
     public static $direct = [
@@ -2582,6 +2591,7 @@ final class Route
         'payment_redirect_to_authorize_get',
         'payment_redirect_to_authorize_post',
         'gateway_payment_callback_upi_airtel',
+        'excel_store_view',
     ];
 
     /**
