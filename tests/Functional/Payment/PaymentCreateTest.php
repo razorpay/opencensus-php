@@ -1134,11 +1134,18 @@ class PaymentCreateTest extends TestCase
     // comment $this->isTestMode() if block in selector.php to run the test case
     public function testPaymentFailOnDinersAndDisableMerchant()
     {
-        $payment = $this->getDefaultPaymentArray();
+        $this->ba->publicLiveAuth();
+        $this->fixtures->merchant->activate();
 
-        $payment['card']['number'] = '30569309025904';
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+
         $this->fixtures->merchant->enableCardNetworks('10000000000000',['dicl']);
-        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
+
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '30569309025904';
 
         $this->makeRequestAndCatchException(
             function() use ($payment)
@@ -1148,7 +1155,7 @@ class PaymentCreateTest extends TestCase
             BadRequestException::class
         );
 
-        $methods = $this->getLastEntity('methods', true);
+        $methods = $this->getLastEntity('methods', true,'live');
         $this->assertEquals(0, $methods['card_networks']['DICL']);
 
     }
@@ -1156,8 +1163,12 @@ class PaymentCreateTest extends TestCase
     // comment $this->isTestMode() if block in selector.php to run the test case
     public function testPaymentFailOnNetBankingAndDisableMerchant()
     {
+        $this->ba->publicLiveAuth();
+        $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
         $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
-        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
         $this->makeRequestAndCatchException(
             function() use ($payment)
@@ -1168,7 +1179,7 @@ class PaymentCreateTest extends TestCase
         );
 
         $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
-        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
         $this->makeRequestAndCatchException(
             function() use ($payment)
@@ -1178,11 +1189,8 @@ class PaymentCreateTest extends TestCase
             BadRequestException::class
         );
 
-        $methods = $this->getLastEntity('methods', true);
-        s($methods);
+        $methods = $this->getLastEntity('methods', true,'live');
         $this->assertEquals(['HDFC','SBIN'], $methods['disabled_banks']);
-
-
     }
 
 }
