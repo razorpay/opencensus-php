@@ -16,6 +16,15 @@ class OfferController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createOfferBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateOffer(string $id)
     {
         $input = Request::all();

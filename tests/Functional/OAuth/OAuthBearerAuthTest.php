@@ -337,6 +337,16 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testAppBlacklistedFeatureEnabledOnAppHeadlessOtpGetSecretBugFix()
     {
+       $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('On');
+
         $client = factory(Client\Entity::class)->create();
 
         $accessToken = $this->generateOAuthAccessToken(
@@ -393,9 +403,9 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $response = $this->makeRequestParent($request);
 
-        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+        $targetUrl =$this->getMetaRefreshUrl($response);
 
-        $targetUrl = $response->getTargetUrl();
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($targetUrl));
 
         $response = $this->makeRedirectToAuthorize($targetUrl);
 

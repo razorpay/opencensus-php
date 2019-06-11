@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Webhook\Event;
 
@@ -23,7 +24,7 @@ class Service extends Base\Service
 
     public function getMethodDowntimeDataForMerchant(array $input): array
     {
-        $downtimes = $this->getRepository()->fetchCurrentAndFutureDowntimes();
+        $downtimes = $this->getRepository()->fetchOngoingDowntimes();
 
         return $downtimes->toArrayPublic();
     }

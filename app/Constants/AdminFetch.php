@@ -583,6 +583,12 @@ class AdminFetch
                 ],
             ],
 
+            Entity::MOZART => [
+                'gateway'    => Fetch::FIELD_GATEWAY,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'refund_id'  => Fetch::FIELD_REFUND_ID,
+            ],
+
             Entity::CARD => [
                 'global_card_id' => [
                     Fetch::LABEL  => 'Global Card Id',

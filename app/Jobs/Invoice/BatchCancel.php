@@ -4,6 +4,7 @@ namespace RZP\Jobs\Invoice;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
 
 /**
@@ -23,27 +24,60 @@ class BatchCancel extends Job
      */
     protected $batchId;
 
-    public function __construct(string $mode, string $batchId)
+    protected $successCount;
+
+    /**
+     * Invoice's Core instance
+     *
+     * @var InvoiceModel\Core
+     */
+    protected $core;
+
+    const TOTAL_INVOICES_COUNT = 'total_invoices_count';
+    const FAILED_INVOICE_IDS   = 'failed_invoice_ids';
+
+    public function __construct(string $mode, string $batchId, int $successCount)
     {
         parent::__construct($mode);
 
         $this->batchId = $batchId;
+
+        $this->successCount = $successCount;
     }
 
     public function handle()
     {
         parent::handle();
 
-        $invoices = $this->repoManager->invoice->findIssuedByBatchId($this->batchId);
+        $this->core = new InvoiceModel\Core;
 
         $summary = [
-            'total_invoices_count' => $invoices->count(),
-            'failed_invoice_ids'   => [],
+            self::TOTAL_INVOICES_COUNT => 0,
+            self::FAILED_INVOICE_IDS   => [],
         ];
 
-        foreach ($invoices as $invoice)
+        //
+        // fetch invoices created by batch in chunks, and cancel each one
+        // do this until there is no more invoices left to cancel
+        // and fetched invoice count is less than total count of batch
+        //
+        while ($this->successCount > $summary[self::TOTAL_INVOICES_COUNT])
         {
-            $this->cancel($invoice, $summary);
+            $invoices = $this->repoManager->invoice->findIssuedByBatchIdWithLimit($this->batchId);
+
+            if (count($invoices) === 0)
+            {
+                $this->trace->debug(TraceCode::INVOICE_BATCH_COUNT_ZERO, [$this->batchId]);
+
+                break;
+            }
+
+            $summary[self::TOTAL_INVOICES_COUNT] += count($invoices);
+
+            foreach ($invoices as $invoice)
+            {
+                $this->cancel($invoice, $summary);
+            }
         }
 
         $this->trace->debug(TraceCode::INVOICE_BATCH_CANCEL_SUMMARY, $summary);
@@ -53,15 +87,15 @@ class BatchCancel extends Job
     {
         try
         {
-            (new InvoiceModel\Core())->cancelInvoice($invoice);
+            $this->core->cancelInvoice($invoice);
         }
         catch (\Throwable $e)
         {
-            $summary['failed_invoice_ids'][] = $invoice->getId();
+            $summary[self::FAILED_INVOICE_IDS][] = $invoice->getId();
 
             $this->trace->traceException(
                 $e,
-                null,
+                Trace::ERROR,
                 TraceCode::INVOICE_BATCH_CANCEL_JOB_INV_CANCEL_ERROR,
                 [
                     'batch_id'   => $this->batchId,

@@ -50,6 +50,12 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'required|string',
     ];
 
+    protected static $createBulkRules = [
+        'offer'          => 'associative_array',
+        'merchant_ids'   => 'array',
+        'merchant_ids.*' => 'filled|string|unsigned_id',
+    ];
+
     protected static $emiSubventionRules = [
         Entity::NAME                => 'sometimes|filled|string|max:50',
         Entity::PAYMENT_METHOD      => 'required|in:emi',
