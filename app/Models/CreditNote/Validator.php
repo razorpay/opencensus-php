@@ -27,7 +27,7 @@ class Validator extends Base\Validator
 
     protected static $applyItemsRules = [
         Entity::INVOICE_ID =>  'required|public_id|size:18',
-        Entity::AMOUNT     => 'required|mysql_unsigned_int',
+        Entity::AMOUNT     => 'required|mysql_unsigned_int|min_amount',
     ];
 
     public function validateInvoices($attribute, $value)
