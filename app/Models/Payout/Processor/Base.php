@@ -15,18 +15,17 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
-use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
  * Class Base
  * @package RZP\Models\Payout\Processor
  */
-abstract class Base extends BaseCore
+class Base extends BaseCore
 {
     /**
      * @var Merchant\Entity
@@ -82,9 +81,9 @@ abstract class Base extends BaseCore
 
             $payoutType = $this->getPayoutType();
 
-            $downstreamProcessor = new Payout\Processor\DownstreamProcessor\DownstreamProcessor($payoutType,
-                                                                                                $payout,
-                                                                                                $this->fundTransferDestination);
+            $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                           $payout,
+                                                           $this->fundTransferDestination);
 
             $downstreamProcessor->process();
 
@@ -129,15 +128,17 @@ abstract class Base extends BaseCore
 
                         $payoutType = $this->getPayoutType();
 
-                        $downstreamProcessor = new Payout\Processor\DownstreamProcessor\DownstreamProcessor($payoutType,
-                                                                                                            $payout,
-                                                                                                            $this->fundTransferDestination);
+                        $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                                       $payout,
+                                                                       $this->fundTransferDestination);
 
+                        //
                         // Ensure that the queued flag in the payout entity is not set.
                         // If it is set, it's going to cause issues since the downstream processor
                         // doesn't throw an error on insufficient funds if queued flag is set.
-                        // If it doesn't throw an error, we'll mark it created without actually
+                        // If it doesn't throw an error, we'll end up marking it created without actually
                         // creating any transaction or FTA.
+                        //
                         $downstreamProcessor->process();
 
                         $payout->setStatus(Payout\Status::CREATED);

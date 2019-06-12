@@ -13,6 +13,13 @@ class CustomerWalletPayout extends Base
 {
     const DEBIT_WALLET_FEE_ADJUSTMENT_DESCRIPTION  = 'Debit wallet withdrawal fee amount';
 
+    protected function setChannel(Entity $payout)
+    {
+        $channel = Channel::YESBANK;
+
+        $payout->setChannel($channel);
+    }
+
     protected function createTransaction(Entity $payout)
     {
         $customerTransactionData = $this->getCustomerTransactionData($payout);
@@ -41,13 +48,6 @@ class CustomerWalletPayout extends Base
             // Create merchant adjustment to deduct fee from merchant balance.
             $this->createAdjustmentForFee($payout, $fee);
         }
-    }
-
-    protected function setChannel(Entity $payout)
-    {
-        $channel = Channel::YESBANK;
-
-        $payout->setChannel($channel);
     }
 
     protected function getCustomerTransactionData(Entity $payout)
