@@ -201,6 +201,52 @@ class PaymentDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testGatewayDowntimeIndividualBankAllGateway()
+    {
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'netbanking',
+                'source'      => 'BANK',
+                'issuer'      => 'SBIN',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($downtime['method'], 'netbanking');
+        $this->assertEquals($downtime['issuer'], 'SBIN');
+        $this->assertEquals($downtime['status'], 'scheduled');
+
+        // 90 minutes elapsed
+        Carbon::setTestNow(Carbon::now()->addMinutes(90));
+
+        // Create new downtime
+        $addDowntimeRequest['content']['issuer'] = 'ALLA';
+        $addDowntimeRequest['content']['begin']  = Carbon::now()->timestamp;
+        $addDowntimeRequest['content']['end']    = Carbon::now()->addMinutes(60)->timestamp;
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtimes = $this->fetchOngoingDowntime();
+
+        // Previous downtime should get resolved
+        $this->assertCount(1, $downtimes['items']);
+
+        $this->assertEquals($downtimes['items'][0]['method'], 'netbanking');
+        $this->assertEquals($downtimes['items'][0]['instrument']['bank'], 'ALLA');
+        $this->assertEquals($downtimes['items'][0]['status'], 'scheduled');
+    }
+
     public function testGetCardDowntimeForSingleNetworkHdfcGateway()
     {
         $request = [
@@ -297,6 +343,52 @@ class PaymentDowntimeTest extends TestCase
         $this->assertEquals($downtime['status'], 'scheduled');
     }
 
+    public function testGatewayDowntimeIndividualCardAllGateway()
+    {
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'network'     => 'MC',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'card',
+                'source'      => 'BANK'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($downtime['method'], 'card');
+        $this->assertEquals($downtime['network'], 'MC');
+        $this->assertEquals($downtime['status'], 'scheduled');
+
+        // 90 minutes elapsed
+        Carbon::setTestNow(Carbon::now()->addMinutes(90));
+
+        // Create new downtime
+        $addDowntimeRequest['content']['network'] = 'VISA';
+        $addDowntimeRequest['content']['begin']  = Carbon::now()->timestamp;
+        $addDowntimeRequest['content']['end']    = Carbon::now()->addMinutes(60)->timestamp;
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtimes = $this->fetchOngoingDowntime();
+
+        // Previous downtime should get resolved
+        $this->assertCount(1, $downtimes['items']);
+
+        $this->assertEquals($downtimes['items'][0]['method'], 'card');
+        $this->assertEquals($downtimes['items'][0]['instrument']['network'], 'VISA');
+        $this->assertEquals($downtimes['items'][0]['status'], 'scheduled');
+    }
+
     public function testGetNoCardDowntimeForSingleGateway()
     {
         $request = [
@@ -342,6 +434,51 @@ class PaymentDowntimeTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testGatewayDowntimeIndividualWalletAllGateway()
+    {
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(60)->timestamp,
+                'gateway'     => 'wallet_olamoney',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'wallet',
+                'source'      => 'BANK'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($downtime['method'], 'wallet');
+        $this->assertEquals($downtime['issuer'], 'olamoney');
+        $this->assertEquals($downtime['status'], 'scheduled');
+
+        // 90 minutes elapsed
+        Carbon::setTestNow(Carbon::now()->addMinutes(90));
+
+        // Create new downtime
+        $addDowntimeRequest['content']['gateway'] = 'wallet_payumoney';
+        $addDowntimeRequest['content']['begin']  = Carbon::now()->timestamp;
+        $addDowntimeRequest['content']['end']    = Carbon::now()->addMinutes(60)->timestamp;
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtimes = $this->fetchOngoingDowntime();
+
+        // Previous downtime should get resolved
+        $this->assertCount(1, $downtimes['items']);
+
+        $this->assertEquals($downtimes['items'][0]['method'], 'wallet');
+        $this->assertEquals($downtimes['items'][0]['instrument']['wallet'], 'payumoney');
+        $this->assertEquals($downtimes['items'][0]['status'], 'scheduled');
     }
 
     public function testGetWalletDowntimeWithEndTime()
@@ -454,5 +591,18 @@ class PaymentDowntimeTest extends TestCase
         $signature = hash_hmac('sha256', json_encode($request['content']), $secret);
 
         $request['content']['signature'] = $signature;
+    }
+
+    protected function fetchOngoingDowntime()
+    {
+        $this->ba->privateAuth();
+
+        $fetchDowntimeRequest = [
+            'content' => [],
+            'method' => 'GET',
+            'url' => '/payments/downtimes'
+        ];
+
+        return $this->makeRequestAndGetContent($fetchDowntimeRequest);
     }
 }
