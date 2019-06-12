@@ -1,31 +1,36 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+
+import AddOnCreation from 'merchant/containers/AddOns/New';
+
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
+import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
+
+import { fetchPlan } from 'merchant/modules/plans';
+import { deleteAddOn } from 'merchant/modules/addons';
+import { fetchInvoice } from 'merchant/modules/invoices/details';
+import { fetchCustomer } from 'merchant/modules/customers';
+import { showNotification } from 'rzp/modules/notifications';
+import { openModal, closeModal } from 'rzp/modules/modals';
+import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
+import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import {
-  fetchSubscription as fetchItem,
   fetchInvoices,
   paymentManualAttempt,
+  fetchScheduledChanges,
   cancelUpdateSubscription,
+  fetchSubscription as fetchItem,
 } from 'merchant/modules/subscriptions';
-import { fetchPlan } from 'merchant/modules/plans';
-import { fetchCustomer } from 'merchant/modules/customers';
-import { fetchInvoice } from 'merchant/modules/invoices/details';
-import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
-import { deleteAddOn } from 'merchant/modules/addons';
-import { showNotification } from 'rzp/modules/notifications';
-import { expandSlider, compactSlider } from 'rzp/modules/slider';
-import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 
-import { openModal, closeModal } from 'rzp/modules/modals';
+import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
+import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
+
 import CancellationModal from './CancellationModal';
 import TestPaymentModal from './TestPaymentModal';
-import AddOnCreation from 'merchant/containers/AddOns/New';
-import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
-import CreditNoteDetails from '../../components/Invoices/CreditNoteDetails';
 
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
@@ -39,27 +44,25 @@ import CreditNoteDetails from '../../components/Invoices/CreditNoteDetails';
 
 @withRouter
 @connect(
-  state => {
-    return {
-      ...state.session,
-      ...state.subscription,
-      ...state.app,
-    };
-  },
+  state => ({
+    ...state.session,
+    ...state.subscription,
+    ...state.app,
+  }),
   {
-    expandSlider,
-    compactSlider,
-    fetchInvoice,
-    fetchItem,
-    fetchInvoices,
     fetchPlan,
-    fetchCustomer,
-    showNotification,
+    fetchItem,
     openModal,
     closeModal,
+    fetchInvoice,
+    expandSlider,
+    compactSlider,
+    fetchInvoices,
+    fetchCustomer,
+    showNotification,
   }
 )
-export default class SubscriptionDetailsContainer extends Component {
+export default class SubscriptionDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -224,8 +227,10 @@ export default class SubscriptionDetailsContainer extends Component {
           fetchPlan(subscription.plan_id),
           subscription.customer_id && fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
+          fetchScheduledChanges(subscription.id),
         ]).then(response => {
-          this.setState({ isLoading: false });
+          this.setState({ isLoading: false, scheduledChanges: response[3] });
+
           this.fetchInvoicesList(id);
         });
       })
@@ -237,6 +242,7 @@ export default class SubscriptionDetailsContainer extends Component {
   goToLink = type => (itemId, index) => {
     if (type === 'invoice') {
       this.setState({ curInvoiceIndex: index });
+
       this.props.history.push(
         `/subscriptions/${this.props.entity.id}/${itemId}`
       );
@@ -481,6 +487,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
   handleOnCreateAddOn = () => {
     this.props.closeModal();
+
     this.fetchAddOns(this.props.entity.id);
   };
 
@@ -499,6 +506,22 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
+  handleCancelUpdateSubscription = id => () => {
+    return cancelUpdateSubscription(id)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Updated subscription is canceled successfully',
+        });
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
   render() {
     let {
       entity,
@@ -510,6 +533,7 @@ export default class SubscriptionDetailsContainer extends Component {
       invoice_id,
       credit_note_id,
     } = this.props;
+
     let {
       isLoading,
       invoice,
@@ -606,26 +630,26 @@ export default class SubscriptionDetailsContainer extends Component {
       // And in this case InvoiceDetails won't show loader but error message
       invoiceSecView = (
         <InvoiceDetail
-          mode={this.props.mode}
-          curInvoiceIndex={this.state.curInvoiceIndex}
-          nextChargeAt={entity.charge_at}
-          invoice={invoiceData}
-          subscription={entity}
           plan={plan}
           addons={addonsList}
+          invoice={invoiceData}
+          subscription={entity}
+          mode={this.props.mode}
           onClose={this.secClose}
-          statusMsg={makeErrorStatus(invoiceErrors)}
-          onManualAttempt={this.onManualAttempt}
+          nextChargeAt={entity.charge_at}
+          subscriptionId={this.props.id}
+          isValidInvoice={isValidInvoice}
           onAddOnDelete={this.deleteAddOn}
           showAddOnModal={this.showAddOnModal}
-          isValidInvoice={isValidInvoice}
+          onManualAttempt={this.onManualAttempt}
+          ref={comp => (this.invoiceView = comp)}
+          statusMsg={makeErrorStatus(invoiceErrors)}
+          curInvoiceIndex={this.state.curInvoiceIndex}
           isLoading={
             this.props.invoice_id === 'inv_upcoming' && invoiceData
               ? false
               : invoiceLoading
           }
-          ref={comp => (this.invoiceView = comp)}
-          subscriptionId={this.props.id}
         />
       );
     }
@@ -637,26 +661,27 @@ export default class SubscriptionDetailsContainer extends Component {
     return (
       <div class="multi-content">
         <SubscriptionDetails
-          mode={this.props.mode}
-          subscription={entity}
           plan={plan}
-          customer={entity && entity.customer_id ? customer : {}}
-          invoices={invoicesList}
+          subscription={entity}
+          isSideView={closeUrl}
           isLoading={isLoading}
-          statusMsg={makeErrorStatus(errors)}
+          mode={this.props.mode}
+          invoices={invoicesList}
           goToLink={this.goToLink}
+          creditNotes={creditNotes}
+          statusMsg={makeErrorStatus(errors)}
+          scheduledChanges={scheduledChanges}
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
           onManualAttempt={this.onManualAttempt}
-          cancelUpdateSubscription={cancelUpdateSubscription}
-          creditNotes={creditNotes}
           onTestChargeAttempt={
             this.props.mode === 'test' &&
             (entity.status === 'created'
               ? this.onTestChargeAttemptWhileCreate
               : this.onTestChargeAttempt)
           }
-          isSideView={closeUrl}
+          customer={entity && entity.customer_id ? customer : {}}
+          cancelUpdateSubscription={this.handleCancelUpdateSubscription}
         />
 
         {invoice_id && invoiceSecView}
@@ -673,7 +698,7 @@ function makeErrorStatus(message) {
       type: 'error',
       message: message,
     };
-  } else {
-    return {};
   }
+
+  return {};
 }

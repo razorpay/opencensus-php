@@ -43,6 +43,12 @@ export const fetchInvoices = subs_id => {
   };
 };
 
+export const fetchScheduledChanges = id => {
+  let subscription = new Subscription({ id });
+
+  return subscription.fetchScheduledChanges();
+};
+
 export const saveSubscription = params => {
   const subscription = new Subscription();
   return {
@@ -62,7 +68,7 @@ export const updateSubscription = params => {
 export const cancelUpdateSubscription = id => {
   const subscription = new Subscription({ id });
 
-  return subscription.cancel();
+  return subscription.cancelUpdate();
 };
 
 export const deleteSubscription = params => {

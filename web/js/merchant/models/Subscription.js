@@ -3,6 +3,8 @@ import GenericEntity from './GenericEntity';
 export default class Subscription extends GenericEntity {
   resourceUrl = 'subscriptions';
 
+  serializeResponse = response => new Subscription(response.data);
+
   getRouteName() {
     return this.isNew ? 'subscription_create' : 'subscription_update';
   }
@@ -12,10 +14,21 @@ export default class Subscription extends GenericEntity {
       method: 'post',
       url: `${this.resourceUrl}/${this.id}/cancel`,
       data: { cancel_at_cycle_end: cancelAtCycleEnd },
-    }).then(response => {
-      return new Subscription(response.data);
-    });
+    }).then(this.serializeResponse);
   }
+
+  cancelUpdate = () => {
+    return this.makeGenericAjaxCall({
+      method: 'post',
+      url: `${this.resourceUrl}/${this.id}/cancel_scheduled_changes`,
+    }).then(this.serializeResponse);
+  };
+
+  fetchScheduledChanges = () => {
+    return this.makeGenericAjaxCall(
+      `${this.resourceUrl}/${this.id}/cancel_scheduled_changes`
+    ).then(this.serializeResponse);
+  };
 
   fetchInvoices(subs_id) {
     return this.makeGenericAjaxCall({

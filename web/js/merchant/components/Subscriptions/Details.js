@@ -1,38 +1,42 @@
+import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import Amount from 'rzp/ui/Amount';
+
 import Time from 'rzp/ui/Time';
+import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import EntityDetailList from 'merchant/components/EntityDetailList/List';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { AsyncBtn } from 'component/Button';
+import Definition from 'rzp/ui/Definition';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+
+import { AsyncBtn } from 'component/Button';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import EntityDetailList from 'merchant/components/EntityDetailList/List';
+import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/Update/Review';
 
-import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
+export default props => {
+  const {
+    mode,
+    subscription,
+    plan,
+    customer,
+    isLoading,
+    statusMsg,
+    invoices,
+    goToLink,
+    activeSecEntityId,
+    onCancelClick,
+    onManualAttempt,
+    onTestChargeAttempt,
+    isSideView,
+    creditNotes,
+    cancelUpdateSubscription,
+  } = props;
 
-import Definition from 'rzp/ui/Definition';
-
-export default ({
-  mode,
-  subscription,
-  plan,
-  customer,
-  isLoading,
-  statusMsg,
-  invoices,
-  goToLink,
-  activeSecEntityId,
-  onCancelClick,
-  onManualAttempt,
-  onTestChargeAttempt,
-  isSideView,
-  creditNotes,
-  cancelUpdateSubscription,
-}) => {
   let showTestChargeBtn =
     !isLoading &&
     onTestChargeAttempt &&
@@ -41,30 +45,7 @@ export default ({
     ) > -1 ||
       subscription.status === 'created');
 
-  const testModeMsg = {};
-  if (showTestChargeBtn) {
-    switch (subscription.status) {
-      case 'halted':
-        testModeMsg.btnLabel = 'Issue invoice';
-        testModeMsg.infoMsg = ' Issue next scheduled invoice now. ';
-        break;
-      case 'pending':
-        testModeMsg.btnLabel = 'Attempt Retry';
-        testModeMsg.infoMsg =
-          ' Attempt scheduled retry now for last issued invoice. ';
-        break;
-      case 'created':
-        testModeMsg.btnLabel = 'Start Subscription';
-        testModeMsg.infoMsg =
-          ' Make the first payment to start the subscription. ';
-        break;
-
-      default:
-        testModeMsg.btnLabel = 'Charge this now';
-        testModeMsg.infoMsg =
-          ' Attempt charge now for next scheduled invoice. ';
-    }
-  }
+  const testModeMsg = getTestModeMessage(subscription.status) || {};
 
   const allowUpdateSubscription = [
     'authenticated',
@@ -225,7 +206,7 @@ export default ({
                     The subscription will be updated on{' '}
                     {moment.unix(subscription.start_at).format('DD MMM, YYYY')}
                     <AsyncBtn.Transparent
-                      onClick={() => cancelUpdateSubscription(subscription.id)}
+                      onClick={cancelUpdateSubscription(subscription.id)}
                       class="pull-right"
                     >
                       Cancel Update
@@ -284,6 +265,38 @@ export default ({
       )}
     </div>
   );
+};
+
+const getTestModeMessage = status => {
+  switch (status) {
+    case 'halted': {
+      return {
+        btnLabel: 'Issue invoice',
+        infoMsg: ' Issue next scheduled invoice now. ',
+      };
+    }
+
+    case 'pending': {
+      return {
+        btnLabel: 'Attempt Retry',
+        infoMsg: ' Attempt scheduled retry now for last issued invoice. ',
+      };
+    }
+
+    case 'created': {
+      return {
+        btnLabel: 'Start Subscription',
+        infoMsg: ' Make the first payment to start the subscription. ',
+      };
+    }
+
+    default: {
+      return {
+        btnLabel: 'Charge this now',
+        infoMsg: ' Attempt charge now for next scheduled invoice. ',
+      };
+    }
+  }
 };
 
 const UpdatedSubscriptionPreview = ({ data }) =>
