@@ -21,7 +21,7 @@ class RblWebhook extends Rbl
         $input = $input[RblFields::RZP_ALERT_NOTIFICATION_REQUEST][RblFields::BODY];
 
         $attributesToSave = $this->getMappedAttributes(RblFields::$rblFieldsToEntityMap, $input);
-s($attributesToSave);
+
         $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
                                                                     $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE]);
 
@@ -50,6 +50,5 @@ s($attributesToSave);
         ];
 
         return $response;
-
     }
 }

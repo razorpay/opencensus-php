@@ -47,22 +47,6 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    public function processRblBankAccountInfoNotification(array $input)
-    {
-        $attributesToSave = $this->getMappedAttributes(RblFields::$rblFieldsToEntityMap, $input);
-
-        $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
-                                                                $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE]);
-
-        $bankingAccount->edit($attributesToSave);
-
-        $bankingAccount->setBankInternalStatus(RblStatus::CLOSED);
-
-        $bankingAccount->setStatus(Status::PROCESSED);
-
-        $this->repo->saveOrFail($bankingAccount);
-    }
-
     protected function getRblAvailabilityStatus(array $input): string
     {
         (new Validator)->validateInput('rbl_availability', $input);
