@@ -17,6 +17,8 @@ class Reconciliator extends Base\RefundFile
     const CUSTOMER_ACCOUNT_NO       = '100000';
     const MERCHANT_CODE             = 'RAZORPAY';
 
+    const INITIAL_LINE              = 'FCDBREFERENCE|DEBITACCOUNT|TXNDATE|MERCHANTREFRENCE|MERCHATNCODE|AMOUNT';
+
     protected static $fileToWriteName = 'Canara_Netbanking_Reconciliation';
 
     public function generateReconciliation($input = null)
@@ -53,9 +55,11 @@ class Reconciliator extends Base\RefundFile
 
         $txt = $this->generateText($data, '|');
 
+        $finalTextData = self::INITIAL_LINE ."\r\n" . $txt;
+
         $creator = $this->createFile(
             FileStore\Format::TXT,
-            $txt,
+            $finalTextData,
             $fileName,
             FileStore\Type::CANARA_NETBANKING_REFUND
         );
