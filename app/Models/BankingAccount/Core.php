@@ -170,8 +170,8 @@ class Core extends Base\Core
     protected function createSourceAccount(Entity $bankingAccount, string $ftsFundAccountId, array $content)
     {
         $response = $this->app['fts_create_account']->createSourceAccount($bankingAccount->getId(),
-            Constants\Entity::BANKING_ACCOUNT,
-            'payout');
+                                                                          Constants\Entity::BANKING_ACCOUNT,
+                                                                          'payout');
 
     }
 
