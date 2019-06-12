@@ -199,4 +199,12 @@ class Channel
     {
         return defined(get_class() . '::' . strtoupper($channel));
     }
+
+    public static function validate(string $channel)
+    {
+        if (in_array($channel, self::getChannels(), true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid channel name: ' . $channel);
+        }
+    }
 }

@@ -98,10 +98,6 @@ class Validator extends Base\Validator
 
     protected function validateChannel($attribute, $channel)
     {
-        if (SettlementChannel::exists($channel) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid channel name: ' . $channel);
-        }
+        SettlementChannel::validate($channel);
     }
 }
