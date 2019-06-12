@@ -625,9 +625,11 @@ class OtpPaymentTest extends TestCase
 
         $this->assertArrayHasKey('selected_terminals_ids', $gatewayInput);
 
-        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+        $targetUrl =$this->getMetaRefreshUrl($response);
 
-        $response = $this->makeRedirectToAuthorize($response->getTargetUrl());
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($targetUrl));
+
+        $response = $this->makeRedirectToAuthorize($targetUrl);
 
         $content = $this->getJsonContentFromResponse($response, null);
 
@@ -713,9 +715,9 @@ class OtpPaymentTest extends TestCase
 
         $this->assertArrayHasKey('selected_terminals_ids', $gatewayInput);
 
-        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+        $targetUrl =$this->getMetaRefreshUrl($response);
 
-        $targetUrl = $response->getTargetUrl();
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($targetUrl));
 
         $response = $this->makeRedirectToAuthorize($targetUrl);
 
@@ -789,12 +791,14 @@ class OtpPaymentTest extends TestCase
 
         $response = $this->makeRequestParent($request);
 
-        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+        $url =$this->getMetaRefreshUrl($response);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($url));
 
         $this->makeRequestAndCatchException(
-        function() use ($response)
+        function() use ($url)
         {
-            $this->makeRedirectToAuthorize($response->getTargetUrl());
+            $this->makeRedirectToAuthorize($url);
         },
         GatewayRequestException::class,
         'Gateway request timed out');
@@ -805,7 +809,7 @@ class OtpPaymentTest extends TestCase
 
         $this->fixtures->base->editEntity('payment', $payment['id'], ['status' => 'created']);
 
-        $this->makeRedirectToAuthorize($response->getTargetUrl());
+        $this->makeRedirectToAuthorize($url);
 
         $payment2 = $this->getLastEntity('payment', true);
 
@@ -861,12 +865,14 @@ class OtpPaymentTest extends TestCase
 
         $response = $this->makeRequestParent($request);
 
-        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+        $targetUrl =$this->getMetaRefreshUrl($response);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($targetUrl));
 
         $this->makeRequestAndCatchException(
-        function() use ($response)
+        function() use ($targetUrl)
         {
-            $this->makeRedirectToAuthorize($response->getTargetUrl());
+            $this->makeRedirectToAuthorize($targetUrl);
         },
         GatewayRequestException::class,
         'Gateway request timed out');
@@ -877,7 +883,7 @@ class OtpPaymentTest extends TestCase
 
         $this->fixtures->base->editEntity('payment', $payment['id'], ['status' => 'created']);
 
-        $this->makeRedirectToAuthorize($response->getTargetUrl());
+        $this->makeRedirectToAuthorize($targetUrl);
 
         $payment2 = $this->getLastEntity('payment', true);
 
@@ -934,9 +940,9 @@ class OtpPaymentTest extends TestCase
 
         $response = $this->makeRequestParent($request);
 
-        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+        $targetUrl =$this->getMetaRefreshUrl($response);
 
-        $id = getTextBetweenStrings($response->getTargetUrl(), '/payments/', '/authorize');
+        $id = getTextBetweenStrings($targetUrl, '/payments/', '/authorize');
 
         $this->redirectToAuthorize = true;
 

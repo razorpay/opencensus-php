@@ -30,11 +30,50 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $this->trace->info(TraceCode::OFFER_CREATE_REQUEST, $input);
-
         $offer = $this->core->create($input);
 
         return $offer->toArrayPublic();
+    }
+
+    public function createBulk(array $input)
+    {
+        (new Validator)->validateInput('create_bulk', $input);
+
+        $this->trace->info(TraceCode::OFFER_CREATE_BULK, $input);
+
+        $offer = $input['offer'];
+
+        $merchantIds = $input['merchant_ids'];
+
+        $success  = 0;
+        $failures = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->core->withMerchant($merchant)->create($offer);
+
+                $success += 1;
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failures[] = $merchantId;
+            }
+        }
+
+        $summary  = [
+            'success'  => $success,
+            'failures' => $failures
+        ];
+
+        $this->trace->info(TraceCode::OFFER_CREATE_BULK, $summary);
+
+        return $summary;
     }
 
     public function update(string $id, array $input)

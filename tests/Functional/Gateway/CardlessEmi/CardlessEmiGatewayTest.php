@@ -4,13 +4,17 @@ namespace RZP\Tests\Functional\Gateway\CardlessEmi;
 
 use RZP\Gateway\CardlessEmi;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CardlessEmiGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use Helpers\DbEntityFetchTrait;
 
     protected $provider = 'earlysalary';
+
+    protected $method = 'cardless_emi';
 
     protected $payment;
 

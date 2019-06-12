@@ -3,6 +3,7 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use Monolog\Logger;
@@ -279,7 +280,7 @@ class BankAccount extends Base
         // Calculate Retry At value
         $nextAttempt = $this->validation->getAttempts() + 1;
 
-        $retryAfter = self::$attemptToRetryAfterSecondsMap[$nextAttempt];
+        $retryAfter = Arr::get(self::$attemptToRetryAfterSecondsMap, $nextAttempt);
 
         if ($retryAfter == null)
         {

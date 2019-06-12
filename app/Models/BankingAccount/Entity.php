@@ -55,8 +55,6 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
         self::BANK_INTERNAL_STATUS,
-        self::BALANCE_ID,
-        self::FTS_FUND_ACCOUNT_ID,
     ];
 
     protected $public = [
@@ -66,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
+        self::BANK_INTERNAL_STATUS,
     ];
 
     protected static $generators = [
@@ -87,6 +86,13 @@ class Entity extends Base\PublicEntity
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    // -------------------------- Getters ------------------------------------ //
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
     }
 
     // --------------------------- Relations ---------------------------------- //

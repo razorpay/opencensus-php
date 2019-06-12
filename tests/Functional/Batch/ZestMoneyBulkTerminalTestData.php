@@ -43,14 +43,14 @@ return [
                         Header::ZESTMONEY_GATEWAY_MERCHANT_ID  => '123',
                         Header::ZESTMONEY_GATEWAY_MERCHANT_ID2 => '123',
                         Header::ZESTMONEY_TERMINAL_PASSWORD    => 'password',
-                        Header::ZESTMONEY_CATEGORY             => 'ecommerce'
+                        Header::ZESTMONEY_CATEGORY             => '1234'
                     ],
                     [
                         Header::ZESTMONEY_MERCHANT_ID          => '100000Razorpay',
                         Header::ZESTMONEY_GATEWAY_MERCHANT_ID  => '321',
                         Header::ZESTMONEY_GATEWAY_MERCHANT_ID2 => '321',
                         Header::ZESTMONEY_TERMINAL_PASSWORD    => 'password',
-                        Header::ZESTMONEY_CATEGORY             => 'ecommerce'
+                        Header::ZESTMONEY_CATEGORY             => '1234'
                     ]
                 ],
             ],

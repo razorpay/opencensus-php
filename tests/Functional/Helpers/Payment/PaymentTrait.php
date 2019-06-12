@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentHitachiTrait;
     use PaymentMobikwikTrait;
     use PaymentOlamoneyTrait;
+    use PaymentPayLaterTrait;
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
@@ -1478,6 +1479,18 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultPayLaterPaymentArray($provider)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'paylater';
+        $payment['provider'] = $provider;
+        $payment['contact'] = '+91'. $payment['contact'];
+
+        unset($payment['card'], $payment['bank']);
+
+        return $payment;
+    }
+
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
@@ -1619,6 +1632,27 @@ trait PaymentTrait
         }
 
         return false;
+    }
+
+    protected function getMetaRefreshUrl($response)
+    {
+        $crawler = new Crawler($response->getContent());
+
+        $contents = $crawler->filterXpath("//meta[@http-equiv='refresh']")->extract(array('content'));
+
+        if (count($contents) === 0)
+        {
+            return '';
+        }
+
+        preg_match('/0;url=(.*)/', $contents[0], $matches);
+
+        if (count($matches) !== 2)
+        {
+            return '';
+        }
+
+        return $matches[1];
     }
 
     protected function getDataForGatewayRequest($response, &$callback = null)
