@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Webhook\Event;
 
@@ -97,7 +98,7 @@ class Service extends Base\Service
                 ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
             ];
 
-            $this->app['events']->fire('api.downtime.started', $eventPayload);
+            $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
         }
     }
 
@@ -114,7 +115,7 @@ class Service extends Base\Service
                 ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
             ];
 
-            $this->app['events']->fire('api.downtime.resolved', $eventPayload);
+            $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
         }
     }
 }
