@@ -1222,6 +1222,12 @@ class Validator extends Base\Validator
         {
             return Method::PAYLATER;
         }
+
+        if (empty($input[Entity::UPI]) === false)
+        {
+            return Method::UPI;
+        }
+
         return null;
     }
 
