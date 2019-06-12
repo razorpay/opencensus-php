@@ -16,11 +16,13 @@ use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PaymentCreateTest extends TestCase
 {
     use OAuthTrait;
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -1131,12 +1133,11 @@ class PaymentCreateTest extends TestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
-    // comment $this->isTestMode() if block in selector.php to run the test case
     public function testPaymentFailOnDinersAndDisableMerchant()
     {
+        $this->changeEnvToNonTest();
         $this->ba->publicLiveAuth();
         $this->fixtures->merchant->activate();
-
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
 
@@ -1147,22 +1148,17 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '30569309025904';
 
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            BadRequestException::class
-        );
+        $this->doAuthPayment($payment);
 
-        $methods = $this->getLastEntity('methods', true,'live');
-        $this->assertEquals(0, $methods['card_networks']['DICL']);
+        $entity = $this->getDbLastEntity('methods', 'live');
+
+        $this->assertEquals(false, $entity->isCardNetworkEnabled('DICL'));
 
     }
 
-    // comment $this->isTestMode() if block in selector.php to run the test case
     public function testPaymentFailOnNetBankingAndDisableMerchant()
     {
+        $this->changeEnvToNonTest();
         $this->ba->publicLiveAuth();
         $this->fixtures->merchant->activate();
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
@@ -1170,27 +1166,17 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
         $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            BadRequestException::class
-        );
+        $this->doAuthPayment($payment);
+
 
         $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
         $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            },
-            BadRequestException::class
-        );
 
-        $methods = $this->getLastEntity('methods', true,'live');
-        $this->assertEquals(['HDFC','SBIN'], $methods['disabled_banks']);
+        $this->doAuthPayment($payment);
+
+        $methods = $entity = $this->getDbLastEntity('methods', 'live');
+        $this->assertEquals(['HDFC','SBIN'], $methods->getDisabledBanks());
     }
 
 }
