@@ -26,6 +26,9 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC         => 'filled|string|size:11',
         Entity::BANK_INTERNAL_STATUS => 'filled|string',
         Entity::STATUS               => 'filled|string|custom',
+        Entity::USER1                => 'filled|string',
+        Entity::SECRET1              => 'filled|string',
+        Entity::SECRET2              => 'filled|string',
     ];
 
     protected static $rblUpdateRules = [
@@ -33,6 +36,12 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC         => 'required_with:account_number|size:11',
         Entity::STATUS               => 'filled|string|custom',
         Entity::BANK_INTERNAL_STATUS => 'required_if:status,processing,processed,cancelled|string',
+    ];
+
+    protected static $rblCreateMerchantTokenRules = [
+        RblFields::SUBCORP_ID               => 'required|string',
+        RblFields::SUBCORP_USER_ID          => 'required|string',
+        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 
     /**

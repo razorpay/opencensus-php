@@ -2,11 +2,13 @@
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Entity;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BankingAccountTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -51,6 +53,42 @@ class BankingAccountTest extends TestCase
             $this->createBankingAccount([Entity::PINCODE => '']);
         });
     }
+
+    public function testStoreMerchantCredentials()
+    {
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $dataToReplace = [
+          'request' => [
+              'url' => '/banking_account/' . $bankingAccount->getId() . '/merchant_credentials'
+          ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testStoreMerchantCredentialsFailed()
+    {
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_account/' . $bankingAccount->getId() . '/merchant_credentials'
+            ]
+        ];
+
+        $this->mockCardVault(function ()
+        {
+            return ['success' => false];
+        });
+
+        $this->startTest($dataToReplace);
+    }
+
 
     protected function createBankingAccount(array $attributes = [])
     {

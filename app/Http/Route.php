@@ -1105,6 +1105,7 @@ final class Route
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
+        'banking_account_merchant_credentials'    => ['post',     'banking_account/{id}/merchant_credentials',                 'BankingAccountController@storeMerchantCredentials'         ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1717,6 +1718,7 @@ final class Route
         'bulk_invoice_create',
         'banking_account_create',
         'merchant_partner_configs_fetch',
+        'banking_account_merchant_credentials'
     ];
 
     // These will run on internal auth with the assurance

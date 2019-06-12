@@ -37,6 +37,9 @@ class Base
     // Transfer related URIs
     const FUND_TRANSFER_CREATE_URI = '/transfer';
 
+    // Source Account related URIs
+    const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
@@ -97,6 +100,7 @@ class Base
 
         if ($response->status_code === 409)
         {
+            // ToDo check Tracecode with Ratan
             throw new Exception\RecordAlreadyExists(
                 'record already exists',
                 TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
