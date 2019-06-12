@@ -1,6 +1,12 @@
 import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+
+import Form from 'component/Form';
+import Spinner from 'rzp/ui/Spinner';
+import { ModalAsideNav } from 'component/Wizard';
+import Button, { AsyncBtn } from 'component/Button';
+import { Modal, ModalContent } from 'component/Modal';
 
 import { fetchPlans } from 'merchant/modules/plans';
 import { fetchItems } from 'merchant/modules/items';
@@ -8,18 +14,13 @@ import {
   updateSubscription,
   fetchSubscription,
 } from 'merchant/modules/subscriptions';
+
 import { showNotification } from 'rzp/modules/notifications';
 
-import Spinner from 'rzp/ui/Spinner';
-import { ModalAsideNav } from 'component/Wizard';
-import { Modal, ModalContent } from 'component/Modal';
-import Form from 'component/Form';
-import Button, { AsyncBtn } from 'component/Button';
-
-import PlanDetails from './PlanDetails';
-import Review from './Review';
-
 import { stringToObj } from 'common/util';
+
+import Review from './Review';
+import PlanDetails from './PlanDetails';
 
 @withRouter
 @connect(
@@ -47,7 +48,6 @@ export default class UpdateSubscription extends Component {
         charge_at: null,
         current_end: null,
         current_start: null,
-        customer_notify: null,
         expire_by: null,
         plan_id: null,
         quantity: null,
@@ -82,7 +82,6 @@ export default class UpdateSubscription extends Component {
             total_count: resp.total_count,
             current_end: resp.current_end,
             current_start: resp.current_start,
-            customer_notify: resp.customer_notify,
           },
           previousSubscription: {
             ...resp,
@@ -217,16 +216,45 @@ export default class UpdateSubscription extends Component {
     });
   };
 
+  prepareForSave = () => {
+    const { fields, internals, previousSubscription } = this.state;
+
+    const data = {
+      id: previousSubscription.id,
+    };
+
+    if (previousSubscription.plan_id !== fields.plan_id) {
+      data.plan_id = fields.plan_id;
+    }
+
+    if (previousSubscription.quantity !== fields.quantity) {
+      data.quantity = fields.quantity;
+    }
+
+    if (previousSubscription.total_count !== fields.total_count) {
+      data.total_count = fields.total_count;
+    }
+
+    if (
+      previousSubscription.start_at &&
+      previousSubscription.start_at !== fields.start_at
+    ) {
+      data.start_at = fields.start_at;
+    }
+
+    if (
+      previousSubscription.start_at &&
+      internals._startsImmediately &&
+      previousSubscription.status === 'created'
+    ) {
+      data.start_at = null;
+    }
+
+    return data;
+  };
+
   handleCreate = () => {
-    const { fields, previousSubscription } = this.state,
-      data = {
-        id: previousSubscription.id,
-        plan_id: fields.plan_id,
-        total_count: fields.total_count,
-        quantity: fields.quantity,
-        customer_notify: fields.customer_notify,
-        schedule_change_at: fields.schedule_change_at,
-      };
+    const data = this.prepareForSave();
 
     return this.props
       .updateSubscription(data)
@@ -237,14 +265,12 @@ export default class UpdateSubscription extends Component {
             message: 'Subscription Updates Successfully',
           });
 
-          if (this.props.onClose) {
-            this.props.onClose();
-          } else {
-            const entityId = data.id;
-            const redirectUrl = '/subscriptions/' + entityId;
+          if (this.props.onClose) return this.props.onClose();
 
-            this.props.history.push(redirectUrl);
-          }
+          const entityId = data.id;
+          const redirectUrl = '/subscriptions/' + entityId;
+
+          this.props.history.push(redirectUrl);
         }
       })
       .catch(({ errors }) => {

@@ -10,6 +10,8 @@ import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
 import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
 
+import Plan from 'merchant/models/Plan';
+
 import { fetchPlan } from 'merchant/modules/plans';
 import { deleteAddOn } from 'merchant/modules/addons';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
@@ -31,7 +33,6 @@ import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
 
 import CancellationModal from './CancellationModal';
 import TestPaymentModal from './TestPaymentModal';
-
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
  * --------------------------------------------------------------------
@@ -72,6 +73,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     this.state = {
       creditNotes: [],
+      scheduledChanges: null,
     };
   }
 
@@ -216,10 +218,40 @@ export default class SubscriptionDetailsContainer extends React.Component {
     });
   }
 
+  fetchScheduledChanges = id => {
+    return fetchScheduledChanges(id)
+      .then(res => {
+        this.setState({
+          scheduledChanges: {
+            ...this.state.scheduledChanges,
+            data: res,
+          },
+        });
+
+        const plan = new Plan();
+        return plan.fetch(res.plan_id);
+      })
+      .then(resp => {
+        this.setState({
+          scheduledChanges: {
+            ...this.state.scheduledChanges,
+            plan: resp,
+            isLoading: false,
+          },
+        });
+      });
+  };
+
   fetchSubscriptionDetails(id) {
     let { entity, fetchItem, fetchPlan, fetchCustomer } = this.props;
 
-    this.setState({ isLoading: true });
+    this.setState({
+      isLoading: true,
+      scheduledChanges: {
+        ...this.state.scheduledChanges,
+        isLoading: true,
+      },
+    });
 
     fetchItem(id)
       .then(subscription => {
@@ -227,9 +259,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
           fetchPlan(subscription.plan_id),
           subscription.customer_id && fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
-          fetchScheduledChanges(subscription.id),
         ]).then(response => {
-          this.setState({ isLoading: false, scheduledChanges: response[3] });
+          this.setState({ isLoading: false }, () =>
+            this.fetchScheduledChanges(id)
+          );
 
           this.fetchInvoicesList(id);
         });
@@ -524,24 +557,25 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
   render() {
     let {
-      entity,
       plan,
+      entity,
       customer,
       invoices,
-      activeSecEntityId,
       closeUrl,
       invoice_id,
       credit_note_id,
+      activeSecEntityId,
     } = this.props;
 
     let {
-      isLoading,
+      errors,
       invoice,
       secView,
-      errors,
+      isLoading,
+      creditNotes,
       invoiceErrors,
       invoiceLoading,
-      creditNotes,
+      scheduledChanges,
     } = this.state;
 
     let invoicesList = invoices;

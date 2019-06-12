@@ -25,9 +25,10 @@ export default class Subscription extends GenericEntity {
   };
 
   fetchScheduledChanges = () => {
-    return this.makeGenericAjaxCall(
-      `${this.resourceUrl}/${this.id}/cancel_scheduled_changes`
-    ).then(this.serializeResponse);
+    return this.makeGenericAjaxCall({
+      method: 'get',
+      url: `${this.resourceUrl}/${this.id}/retrieve_scheduled_changes`,
+    }).then(this.serializeResponse);
   };
 
   fetchInvoices(subs_id) {

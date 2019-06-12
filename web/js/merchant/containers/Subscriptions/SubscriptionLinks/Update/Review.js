@@ -1,7 +1,9 @@
 import Amount from 'rzp/ui/Amount';
 
 export default function UpdateSubscriptionLinkReview(props) {
-  const { changes, summary } = changeData(props);
+  const changes = changeData(props),
+    summary = changeSummary(props);
+
   return (
     <div class="SubscriptionLinks--Update-review">
       {changes.map(e => <ChangeValue {...e} />)}
@@ -10,52 +12,28 @@ export default function UpdateSubscriptionLinkReview(props) {
   );
 }
 
-const ChangeValue = ({ heading, changes }) => (
-  <div class="changed-values">
-    <span class="big-dot-separator" />
-    <div>
-      <strong>{heading}</strong>
-      {changes.map(e => (
-        <div class="current-change" key={e.current}>
-          {e.current}
-          <b>
-            <i class="i i-arrow-forward" />
-            {e.change}
-          </b>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const Summary = ({ data }) => {
-  return (
-    <div class="summary">
-      <strong>Summary</strong>
-      <ul>{data}</ul>
-    </div>
-  );
-};
-
 export function changeData({
-  fields,
-  previousSubscription,
   plans,
-  updatedPlan,
+  fields,
   prevPlan,
   internals = {},
+  updatedPlan,
+  previousSubscription,
 }) {
-  const currSelectedPlan = updatedPlan
-      ? updatedPlan
-      : plans.find(({ id }) => id === fields.plan_id),
-    prevSelectedPlan = prevPlan
-      ? prevPlan
-      : plans.find(({ id }) => id === previousSubscription.plan_id),
-    refund =
-      currSelectedPlan.item.amount * fields.quantity -
-      prevSelectedPlan.item.amount * previousSubscription.quantity;
-
   const changes = [];
+
+  let currSelectedPlan = updatedPlan,
+    prevSelectedPlan = prevPlan;
+
+  if (!updatedPlan) {
+    currSelectedPlan = plans.find(({ id }) => id === fields.plan_id);
+  }
+
+  if (!prevPlan) {
+    prevSelectedPlan = plans.find(
+      ({ id }) => id === previousSubscription.plan_id
+    );
+  }
 
   if (prevSelectedPlan.item.name !== currSelectedPlan.item.name) {
     changes.push({
@@ -108,7 +86,28 @@ export function changeData({
     });
   }
 
-  const summary = [
+  return changes;
+}
+
+export function changeSummary({
+  plans,
+  fields,
+  prevPlan,
+  updatedPlan,
+  previousSubscription,
+}) {
+  const currSelectedPlan = updatedPlan
+      ? updatedPlan
+      : plans.find(({ id }) => id === fields.plan_id),
+    prevSelectedPlan = prevPlan
+      ? prevPlan
+      : plans.find(({ id }) => id === previousSubscription.plan_id);
+
+  let refund =
+    currSelectedPlan.item.amount * fields.quantity -
+    prevSelectedPlan.item.amount * previousSubscription.quantity;
+
+  return [
     <li>
       <Amount
         value={prevSelectedPlan.item.amount}
@@ -144,18 +143,41 @@ export function changeData({
       <li>
         {' '}
         Refund of{' '}
-        <Amount value={refund} currency={currSelectedPlan.item.currency} /> has
-        been initiated.{' '}
+        <Amount
+          value={Math.abs(refund)}
+          currency={currSelectedPlan.item.currency}
+        />{' '}
+        has been initiated.{' '}
       </li>
     ) : (
       ''
     ),
   ];
-
-  return {
-    changes,
-    summary,
-  };
 }
+
+const ChangeValue = ({ heading, changes }) => (
+  <div class="changed-values">
+    <span class="big-dot-separator" />
+    <div>
+      <strong>{heading}</strong>
+      {changes.map(e => (
+        <div class="current-change" key={e.current}>
+          {e.current}
+          <b>
+            <i class="i i-arrow-forward" />
+            {e.change}
+          </b>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const Summary = ({ data }) => (
+  <div class="summary">
+    <strong>Summary</strong>
+    <ul>{data}</ul>
+  </div>
+);
 
 const getTimeInFormat = date => moment.unix(date).format('DD MMM, YYYY');

@@ -21,19 +21,20 @@ import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/
 export default props => {
   const {
     mode,
-    subscription,
     plan,
     customer,
-    isLoading,
-    statusMsg,
     invoices,
     goToLink,
-    activeSecEntityId,
-    onCancelClick,
-    onManualAttempt,
-    onTestChargeAttempt,
+    isLoading,
+    statusMsg,
     isSideView,
     creditNotes,
+    subscription,
+    onCancelClick,
+    onManualAttempt,
+    scheduledChanges,
+    activeSecEntityId,
+    onTestChargeAttempt,
     cancelUpdateSubscription,
   } = props;
 
@@ -53,9 +54,23 @@ export default props => {
     'created',
   ].includes(subscription.status);
 
+  const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(
+    subscription.status
+  );
+
   const style = {
     marginRight: isSideView ? 30 : 0,
   };
+
+  const subscriptionChanges =
+    !scheduledChanges.isLoading &&
+    scheduledChanges.data &&
+    changeData({
+      prevPlan: plan,
+      fields: scheduledChanges.data,
+      updatedPlan: scheduledChanges.plan,
+      previousSubscription: subscription,
+    });
 
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
@@ -88,84 +103,70 @@ export default props => {
                 {getCustomerDetail(customer)}
               </EntityDetailRow>
 
-              <EntityDetailRow
-                label="Plan"
-                value={() => (
-                  <div>
-                    <Link to={`/plans/${subscription.plan_id}`}>
-                      {subscription.plan_id}
-                    </Link>
-                    <div style={{ marginTop: '4px' }}>
-                      <div class="label--primary">{plan.item.name}</div>
-                      <div class="label--secondary">
-                        {plan.item.description}
-                      </div>
-                      <div class="label--secondary">
-                        {getDescription(plan.interval, plan.period)}
-                      </div>
+              <EntityDetailRow label="Plan">
+                <div>
+                  <Link to={`/plans/${subscription.plan_id}`}>
+                    {subscription.plan_id}
+                  </Link>
+                  <div style={{ marginTop: '4px' }}>
+                    <div class="label--primary">{plan.item.name}</div>
+                    <div class="label--secondary">{plan.item.description}</div>
+                    <div class="label--secondary">
+                      {getDescription(plan.interval, plan.period)}
                     </div>
                   </div>
-                )}
-              />
+                </div>
+              </EntityDetailRow>
 
               <EntityDetailRow label="Link">
                 <CopyLink url={subscription.short_url} />
               </EntityDetailRow>
 
-              <EntityDetailRow
-                label="Recurring Billing"
-                value={() => (
-                  <div>
-                    <div class="label--primary">
-                      <Amount
-                        currency={plan.item.currency}
-                        value={subscription.quantity * plan.item.unit_amount}
-                      />
-                    </div>
-                    <small class="label--secondary">
-                      {subscription.quantity} x{' '}
-                      <Amount
-                        currency={plan.item.currency}
-                        value={plan.item.unit_amount}
-                      />{' '}
-                      per unit
-                    </small>
+              <EntityDetailRow label="Recurring Billing">
+                <div>
+                  <div class="label--primary">
+                    <Amount
+                      currency={plan.item.currency}
+                      value={subscription.quantity * plan.item.unit_amount}
+                    />
                   </div>
-                )}
-              />
+                  <small class="label--secondary">
+                    {subscription.quantity} x{' '}
+                    <Amount
+                      currency={plan.item.currency}
+                      value={plan.item.unit_amount}
+                    />{' '}
+                    per unit
+                  </small>
+                </div>
+              </EntityDetailRow>
 
-              <EntityDetailRow
-                label="Status"
-                value={() => (
-                  <div>
-                    <SubscriptionStatusLabel status={subscription.status} />
+              <EntityDetailRow label="Status">
+                <div>
+                  <SubscriptionStatusLabel status={subscription.status} />
 
-                    <span>
-                      {['cancelled', 'completed', 'expired'].indexOf(
-                        subscription.status
-                      ) === -1 ? (
-                        <button class="btn-link" onClick={onCancelClick}>
-                          Cancel Subscription
-                        </button>
-                      ) : null}
-                    </span>
-                  </div>
-                )}
-              />
+                  <span>
+                    {['cancelled', 'completed', 'expired'].indexOf(
+                      subscription.status
+                    ) === -1 ? (
+                      <button class="btn-link" onClick={onCancelClick}>
+                        Cancel Subscription
+                      </button>
+                    ) : null}
+                  </span>
+                </div>
+              </EntityDetailRow>
 
-              <EntityDetailRow
-                label="Created At"
-                value={() => (
-                  <Time
-                    value={subscription.created_at}
-                    format="DD MMM YYYY, hh:mm:ss a"
-                  />
-                )}
-              />
-              <EntityDetailRow
-                label="Next Due on"
-                value={() => <Time value={subscription.charge_at} />}
-              />
+              <EntityDetailRow label="Created At">
+                <Time
+                  value={subscription.created_at}
+                  format="DD MMM YYYY, hh:mm:ss a"
+                />
+              </EntityDetailRow>
+
+              <EntityDetailRow label="Next Due on">
+                <Time value={subscription.charge_at} />
+              </EntityDetailRow>
 
               {showTestChargeBtn && (
                 <div
@@ -197,44 +198,40 @@ export default props => {
                   </div>
                 </div>
               )}
-              {true && (
-                <div
-                  class="update-subscription-preview alert alert-warning custom-banner"
-                  style={{ width: '100%' }}
-                >
-                  <div>
-                    The subscription will be updated on{' '}
-                    {moment.unix(subscription.start_at).format('DD MMM, YYYY')}
-                    <AsyncBtn.Transparent
-                      onClick={cancelUpdateSubscription(subscription.id)}
-                      class="pull-right"
-                    >
-                      Cancel Update
-                    </AsyncBtn.Transparent>
-                  </div>
-                  <ContentToggler>
-                    <span>View Less</span>
-                    <div className="full-width-item">
-                      <strong>Update Summary</strong>
-                      <UpdatedSubscriptionPreview
-                        data={
-                          changeData({
-                            fields: subscription,
-                            previousSubscription: subscription,
-                            updatedPlan: plan,
-                            prevPlan: plan,
-                          }).changes
-                        }
-                      />
+              {!scheduledChanges.isLoading &&
+                scheduledChanges.data && (
+                  <div
+                    class="update-subscription-preview alert alert-warning custom-banner"
+                    style={{ width: '100%' }}
+                  >
+                    <div>
+                      The subscription will be updated on{' '}
+                      {moment
+                        .unix(subscription.start_at)
+                        .format('DD MMM, YYYY')}
+                      {!hideCancelUpdate && (
+                        <AsyncBtn.Transparent
+                          onClick={cancelUpdateSubscription(subscription.id)}
+                          class="pull-right"
+                        >
+                          Cancel Update
+                        </AsyncBtn.Transparent>
+                      )}
                     </div>
-                  </ContentToggler>
-                </div>
-              )}
+                    <ContentToggler>
+                      <span>View Less</span>
+                      <div className="full-width-item">
+                        <strong>Update Summary</strong>
+                        <UpdatedSubscriptionPreview
+                          data={subscriptionChanges}
+                        />
+                      </div>
+                    </ContentToggler>
+                  </div>
+                )}
 
               <EntityDetailList
                 mode={mode}
-                title="Invoices detail"
-                goToLink={goToLink('invoice')}
                 subTitle={
                   subscription.total_count &&
                   `${subscription.paid_count} of ${
@@ -244,15 +241,17 @@ export default props => {
                 moreAfterlimit={3}
                 error={invoices.error}
                 items={invoices.items}
-                activeSecEntityId={activeSecEntityId}
-                loading={invoices.loading}
-                onManualAttempt={onManualAttempt}
-                subscriptionStatus={subscription.status}
-                subscriptionType={subscription.type}
-                subscriptionchargeAt={subscription.charge_at}
-                authAttempts={subscription.auth_attempts}
-                subscriptionId={subscription.id}
+                title="Invoices detail"
                 creditNotes={creditNotes}
+                loading={invoices.loading}
+                goToLink={goToLink('invoice')}
+                subscriptionId={subscription.id}
+                onManualAttempt={onManualAttempt}
+                subscriptionType={subscription.type}
+                activeSecEntityId={activeSecEntityId}
+                authAttempts={subscription.auth_attempts}
+                subscriptionStatus={subscription.status}
+                subscriptionchargeAt={subscription.charge_at}
                 creditNotesGoToLink={goToLink('credit_note')}
               />
 
@@ -299,8 +298,8 @@ const getTestModeMessage = status => {
   }
 };
 
-const UpdatedSubscriptionPreview = ({ data }) =>
-  data.map(({ heading, changes }) => (
+const UpdatedSubscriptionPreview = ({ data }) => {
+  return data.map(({ heading, changes }) => (
     <div class="changed-values">
       <div>
         {changes.map(e => (
@@ -316,6 +315,7 @@ const UpdatedSubscriptionPreview = ({ data }) =>
       </div>
     </div>
   ));
+};
 
 // Customer component
 const getCustomerDetail = customer => (
