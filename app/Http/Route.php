@@ -1113,11 +1113,10 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
+        'bank_account_info_webhook'               => ['post',     'banking_accounts/account_webhook/{channel}',                'BankingAccountController@processBankAccountInformation'    ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
-        'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
-        'bank_account_info_webhook'               => ['post',     'banking_accounts/webhook/{channel}',                        'BankingAccountController@processBankAccountInformation'    ],
     ];
 
     public static $public = [

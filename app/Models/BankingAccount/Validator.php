@@ -79,6 +79,18 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC         => 'required_with:account_number|size:11',
         Entity::STATUS               => 'filled|string|custom',
         Entity::BANK_INTERNAL_STATUS => 'required_if:status,processing,processed,cancelled|string',
+        Entity::STATUS                          => 'filled|string|custom',
+        Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
+        Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
+        Entity::PINCODE                         => 'filled|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'filled|string',
+        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
+        Entity::BENEFICIARY_STATE               => 'filled|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|string|date',
+        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
+        Entity::ACCOUNT_NAME                    => 'filled|string',
     ];
 
     // ToDo fix the validator on seeing actual data types in RBL notification

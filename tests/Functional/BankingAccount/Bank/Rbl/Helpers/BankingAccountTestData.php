@@ -74,7 +74,7 @@ return [
 
     'testSuccessBankAccountInfoNotification' => [
         'request'  => [
-            'url'     => '/banking_accounts/webhook/rbl',
+            'url'     => '/banking_accounts/account_webhook/rbl',
             'method'  => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [

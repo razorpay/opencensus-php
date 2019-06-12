@@ -3,10 +3,12 @@
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class BankingAccountTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -58,7 +60,21 @@ class BankingAccountTest extends TestCase
 
         $this->ba->privateAuth('rzp_test', 'rbl_secret');
 
-        $this->startTest();
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber()
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
     }
 
     public function testFailedBankAccountInfoNotification()

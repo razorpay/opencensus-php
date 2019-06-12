@@ -14,6 +14,10 @@ class RblStatus
     const CLOSED         = 'closed';
     const CANCELLED      = 'cancelled';
 
+    // Statuses to communicate with RBL
+    const SUCCESS           = 'Success';
+    const FAILURE           = 'Failure';
+
     protected static $bankToInternalStatusMap = [
         Status::PROCESSING     => [self::OPEN, self::DRAFT, self::REWORK, self::VERIFIED, self::DISCREPANCY],
         Status::PROCESSED      => [self::CLOSED],

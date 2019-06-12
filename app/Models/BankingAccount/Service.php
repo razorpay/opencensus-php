@@ -124,13 +124,21 @@ class Service extends Base\Service
 
             try
                 {
-                    $this->core->processRblBankAccountInfoNotification($input);
+                    $rbl = new RblWebhook();
 
-                    $response = $this->core->prepareRblNotificationResponse(Status::SUCCESS, $input);
+                    $bankReference = $rbl->preProcessAccountInfoNotification($input);
+
+                    $bankingAccount = $this->repo->banking_account->findByBankReference($bankReference);
+
+                    $attributes = $rbl->processAccountInfoNotification($input);
+
+                    $this->core->updateRblBankingAccount($bankingAccount, $attributes);
+
+                    $response = $rbl->postProcessAccountInfoNotificationResponse($input, RblStatus::SUCCESS);
                 }
                 catch (\Exception $e)
                 {
-                    $response = $this->core->prepareRblNotificationResponse(Status::FAILURE, $input);
+                    $response = $rbl->postProcessAccountInfoNotificationResponse($input, RblStatus::FAILURE);
                 }
 
                 return $response;

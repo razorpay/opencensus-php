@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_CITY                  = 'beneficiary_city';
     const BENEFICIARY_STATE                 = 'beneficiary_state';
     const BENEFICIARY_COUNTRY               = 'beneficiary_country';
+    const BENEFICIARY_NAME                  = 'beneficiary_name';
 
     const PINCODE_LENGTH    = '6';
 
@@ -72,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_ACTIVATION_DATE,
         self::ACCOUNT_NAME,
         self::BANK_INTERNAL_REFERENCE_NUMBER,
+        self::BENEFICIARY_NAME,
     ];
 
     protected $visible = [
@@ -121,7 +123,7 @@ class Entity extends Base\PublicEntity
 
     public function setBankInternalStatus(string $status)
     {
-        $this->setAttribute(self::BANK_INTERNAL_STATUSN, $status);
+        $this->setAttribute(self::BANK_INTERNAL_STATUS, $status);
     }
 
     // -------------------------- Getters ------------------------------------ //
@@ -129,6 +131,16 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getBankReferenceNumber()
+    {
+        return $this->getAttribute(self::BANK_REFERENCE_NUMBER);
     }
 
     // --------------------------- Relations ---------------------------------- //

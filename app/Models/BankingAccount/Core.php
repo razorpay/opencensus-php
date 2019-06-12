@@ -3,7 +3,6 @@
 namespace RZP\Models\BankingAccount;
 
 use Redis;
-use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -46,21 +45,11 @@ class Core extends Base\Core
         $this->repo->saveOrFail($bankingAccount);
 
         return $bankingAccount;
-
     }
 
     public function processRblBankAccountInfoNotification(array $input)
     {
-        $input = $input[RblFields::RZP_ALERT_NOTIFICATION_REQUEST][RblFields::BODY];
-
-        (new Validator)->validateInput('rbl_account_info_notification', $input);
-
-        // ToDo fix this field name based on update from RBL
-        $bankReferenceNumber = $input[RblFields::REF_NUM_1];
-
-        $bankingAccount = $this->repo->banking_account->findByBankReference($bankReferenceNumber);
-
-        $attributesToSave = $this->getRblAttributesToSave(RblFields::$rblFieldsToEntityMap, $input);
+        $attributesToSave = $this->getMappedAttributes(RblFields::$rblFieldsToEntityMap, $input);
 
         $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
                                                                 $attributesToSave[Entity::ACCOUNT_ACTIVATION_DATE]);
@@ -72,26 +61,6 @@ class Core extends Base\Core
         $bankingAccount->setStatus(Status::PROCESSED);
 
         $this->repo->saveOrFail($bankingAccount);
-    }
-
-    public function prepareRblNotificationResponse(string $status, array $input)
-    {
-        $tranId = $input[RblFields::RZP_ALERT_NOTIFICATION_REQUEST][RblFields::HEADER][RblFields::TRAN_ID];
-
-        $response = [
-            RblFields::RZP_ALERT_NOTIFICATION_RESPONSE => [
-                RblFields::HEADER =>
-                    [
-                        RblFields::TRAN_ID => $tranId,
-                    ],
-                RblFields::BODY =>
-                    [
-                        RblFields::STATUS => $status
-                    ]
-            ],
-        ];
-
-        return $response;
     }
 
     protected function getRblAvailabilityStatus(array $input): string
@@ -166,28 +135,5 @@ class Core extends Base\Core
                     'banking_account'            => $bankingAccount->getId(),
                 ]);
         }
-    }
-
-    protected function getRblAttributesToSave($map, array $input)
-    {
-        $attr = [];
-
-        foreach ($input as $key => $value)
-        {
-            if (isset($map[$key]))
-            {
-                $newKey        = $map[$key];
-                $attr[$newKey] = $value;
-            }
-        }
-
-        return $attr;
-    }
-
-    protected function parseAndFormatRblDate(string $date)
-    {
-        $date = Carbon::parse($date)->format('Y-m-d');
-
-        return $date;
     }
 }

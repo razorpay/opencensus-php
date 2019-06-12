@@ -10,9 +10,8 @@ class Repository extends Base\Repository
 
     public function findByBankReference(string $bankReference)
     {
-        $query = $this->newQuery()
-                      ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference);
-
-        return $query->firstOrFail();
+        return $this->newQuery()
+                    ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
+                    ->firstOrFail();
     }
 }
