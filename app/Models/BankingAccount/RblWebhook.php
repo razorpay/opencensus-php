@@ -50,5 +50,6 @@ class RblWebhook extends Rbl
         ];
 
         return $response;
+
     }
 }

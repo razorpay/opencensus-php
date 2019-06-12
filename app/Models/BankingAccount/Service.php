@@ -127,8 +127,7 @@ class Service extends Base\Service
 
                     $bankReference = $rbl->preProcessAccountInfoNotification($input);
 
-                    $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel($bankReference,
-                                                                                           Channel::RBL);
+                    $bankingAccount = $this->repo->banking_account->findByBankReference($bankReference);
 
                     $attributes = $rbl->processAccountInfoNotification($input);
 
