@@ -1737,11 +1737,7 @@ class Gateway
 
         $supportsPurchase = in_array($gateway, $arrayKeys, true);
 
-        if ($supportsPurchase === false)
-        {
-            return false;
-        }
-        else
+        if ($supportsPurchase === true)
         {
             if ($networkCode === null)
             {
@@ -1753,6 +1749,7 @@ class Gateway
             }
         }
 
+        return $supportsPurchase;
     }
 
     public static function supportsReverse($gateway)
