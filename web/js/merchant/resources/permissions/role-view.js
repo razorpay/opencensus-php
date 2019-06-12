@@ -109,6 +109,7 @@ export default {
     'finance',
     'rbl_supervisor',
     'agent',
+    'support',
   ],
   api_keys: ['owner', 'admin'],
   profile: [
