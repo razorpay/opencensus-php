@@ -1132,6 +1132,7 @@ class PaymentCreateTest extends TestCase
 
     public function testForRuPayPaymentOnHitachiTerminalModePurchase()
     {
+        $this->mockCardVault();
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
         $this->fixtures->merchant->enableMethod('10000000000000', 'card');
         $this->fixtures->iin->create([
