@@ -98,7 +98,7 @@ class Service extends Base\Service
                 ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
             ];
 
-            $this->app['events']->fire('api.downtime.started', $eventPayload);
+            $this->app['events']->fire('api.payment.downtime.started', $eventPayload);
         }
     }
 
@@ -115,7 +115,7 @@ class Service extends Base\Service
                 ApiEventSubscriber::MERCHANT_ID => $webhook->merchant->getId(),
             ];
 
-            $this->app['events']->fire('api.downtime.resolved', $eventPayload);
+            $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
         }
     }
 }
