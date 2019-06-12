@@ -3,10 +3,12 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -1129,4 +1131,43 @@ class PaymentCreateTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
+
+    public function testPaymentByUpiTpvForSpecificBanks()
+    {
+        // mocking the gateway call to check the bank account in input
+        $this->mockGateway();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $order = $this->fixtures->create('order', ['bank' => ProviderCode::KOTAK, 'account_number' => '923729373']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['bank'] = ProviderCode::KOTAK;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+    }
+
+    protected function mockGateway()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+            Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway,$action,$input,$mode)
+            {
+                $length = strlen($input['order']['account_number']);
+                $this->assertEquals(14, $length);
+            });
+
+        $this->app->instance('gateway', $gateway);
+    }
+
 }
