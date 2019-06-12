@@ -81,7 +81,7 @@ class Service extends Base\Service
     {
         $input[Entity::CHANNEL] = $channel;
 
-        (new Validator)->validateInput('serviceablePincode', $input);
+        (new Validator)->validateInput('serviceable_pincode', $input);
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
 
