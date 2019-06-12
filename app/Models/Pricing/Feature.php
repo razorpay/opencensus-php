@@ -13,6 +13,7 @@ class Feature
     const EMI                     = 'emi';
     const ESAUTOMATIC             = 'esautomatic';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
+    const REFUND                  = 'refund';
 
     const FEATURE_LIST = [
         self::PAYMENT,

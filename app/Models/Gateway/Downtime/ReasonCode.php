@@ -36,6 +36,6 @@ class ReasonCode
 
     public static function getSeverity(string $code)
     {
-        return ReasonCode::SEVERITY_MAP[$code] ?? null;
+        return ReasonCode::SEVERITY_MAP[strtoupper($code)] ?? null;
     }
 }

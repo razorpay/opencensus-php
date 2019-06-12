@@ -27,6 +27,12 @@ class Entity extends Base\PublicEntity
     //
     const ACCOUNT_NUMBER = 'account_number';
 
+    //
+    // These attributes are populated for all non-primary balance accounts
+    //
+    const ACCOUNT_TYPE     = 'account_type';
+    const ACCOUNT_PROVIDER = 'account_provider';
+
     // Additional input keys
     const BALANCE_ID     = 'balance_id';
 

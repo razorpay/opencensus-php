@@ -82,6 +82,7 @@ return [
         'p2p_upi_sharp',
         'p2p_upi_axis',
         'paysecure',
+        'paylater',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -147,6 +148,7 @@ return [
     'mock_isg'                    => env('ISG_MOCK'),
     'mock_paysecure'              => env('PAYSECURE_MOCK'),
     'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
+    'mock_paylater'               => env('PAYLATER_MOCK'),
     'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),

@@ -27,6 +27,31 @@ return [
             ]
         ]
     ],
+
+    'testCreateDowntimePayLater' => [
+        'request' => [
+            'content' => [
+                'gateway'     => 'paylater',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'paylater',
+                'issuer'      => 'epaylater',
+                'comment'     => 'Test Reason',
+                'source'      => 'statuscake',
+                'network'     => 'NA',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'comment'     => 'Test Reason',
+                'method'      => 'paylater',
+                'issuer'      => 'epaylater',
+                'reason_code' => 'LOW_SUCCESS_RATE'
+            ]
+        ]
+    ],
+
     'testGatewayFetchDowntimes' => [
         'request' => [
             'content' => [

@@ -21,11 +21,19 @@ class CardNetworkMapping
 
     public function addDowntime(string $gateway, string $network)
     {
-        if ($gateway === Downtime\Entity::ALL)
+        // Gateway downtimes created without network field is created as `Unknown`
+        // hence we are considering `Unknown` and `All` as same.
+        // For eg. Downtimes created by StatusCake only sends `gateway`
+        if (($gateway === Downtime\Entity::ALL) and
+            (in_array($network, [Downtime\Entity::ALL, Downtime\Entity::UNKNOWN])))
+        {
+            $this->addAllGatewayDowntimeForAllNetwork();
+        }
+        else if ($gateway === Downtime\Entity::ALL)
         {
             $this->addAllGatewayDowntimeForNetwork($network);
         }
-        else if ($network === Downtime\Entity::ALL)
+        else if (in_array($network, [Downtime\Entity::ALL, Downtime\Entity::UNKNOWN]))
         {
             $this->addAllNetworkDowntimeForGateway($gateway);
         }
@@ -47,7 +55,14 @@ class CardNetworkMapping
             }
         }
 
-        return $unavailableNetworks;
+        if (count($unavailableNetworks) === count($this->networks))
+        {
+            return [Downtime\Entity::ALL];
+        }
+        else
+        {
+            return $unavailableNetworks;
+        }
     }
 
     public function getGatewaysSupportingNetwork(string $network)
@@ -56,6 +71,19 @@ class CardNetworkMapping
     }
 
     // --------------- Helper functions -------------------------------------
+
+    protected function addAllGatewayDowntimeForAllNetwork()
+    {
+        foreach ($this->networks as $network => $gateway)
+        {
+            $this->networks[$network] = [];
+        }
+
+        foreach ($this->gateways as $gateway => $network)
+        {
+            $this->gateways[$gateway] = [];
+        }
+    }
 
     protected function addAllGatewayDowntimeForNetwork(string $network)
     {
@@ -102,6 +130,10 @@ class CardNetworkMapping
 
             $this->initializeNetworksForGateway($gateway);
         }
+
+        $this->networks[Downtime\Entity::ALL] = array_keys($this->gateways);
+
+        $this->gateways[Downtime\Entity::ALL] = array_keys($this->networks);
     }
 
     protected function initializeNetworksForGateway(string $gateway)

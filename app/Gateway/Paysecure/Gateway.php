@@ -26,7 +26,7 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'paysecure_%s_card_details';
-    const CARD_CACHE_TTL = 0;
+    const CARD_CACHE_TTL = 14400;
 
     protected $gatewayPayment = null;
 

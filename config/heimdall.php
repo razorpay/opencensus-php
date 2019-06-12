@@ -139,6 +139,7 @@ return [
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
             Permission::EDIT_IIN_RULE                       => '',
+            Permission::EDIT_IIN_RULE_BULK                  => '',
             Permission::EDIT_ACTIVATE_MERCHANT              => [
                 'assignable' => true,
                 'workflow'   => true
