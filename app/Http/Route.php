@@ -714,7 +714,8 @@ final class Route
         'action_diff_get'                          => ['get',      'w-actions/{id}/diff',                            'WorkflowController@getActionDiff'                                  ],
         'action_request_execute'                   => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
-        'workflow_payout_amount_rules'             => ['get',      'workflows/rules',                                'WorkflowController@getWorkflowPayoutAmountRules'                    ],
+        'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
+
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
         'customer_collect_request_fetch_private'   => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
@@ -1718,6 +1719,7 @@ final class Route
         'bulk_invoice_create',
         'banking_account_create',
         'merchant_partner_configs_fetch',
+        'workflow_payout_amount_rules',
     ];
 
     // These will run on internal auth with the assurance

@@ -8,9 +8,9 @@ class Service extends Base\Service
 {
     public function getWorkflowRules()
     {
-        $merchantId = $this->merchant->getMerchantId();
+        $merchantId = $this->merchant->getId();
 
-        $amountRules = $this->core->getWorkflowRulesForMerchant($merchantId);
+        $amountRules = $this->core()->getWorkflowRulesForMerchant($merchantId);
 
         return $amountRules->toArrayPublic();
     }

@@ -6,8 +6,8 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function getWorkflowRulesForMerchant(string $merchantId): array
+    public function getWorkflowRulesForMerchant(string $merchantId)
     {
-       $this->repo->fetchWorkflowRulesForMerchant($merchantId);
+       return $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchantId);
     }
 }

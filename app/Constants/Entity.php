@@ -388,6 +388,7 @@ class Entity
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
+        self::WORKFLOW_PAYOUT_AMOUNT_RULES => \RZP\Models\Workflow\WorkflowPayoutAmountRules::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
