@@ -116,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::TAX,
         self::REFERENCE1,
+        self::SPEED_REQUESTED,
     ];
 
     protected $visible = [
@@ -220,6 +221,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::LAST_ATTEMPTED_AT,
         self::PROCESSED_AT,
+    ];
+
+    protected static $modifiers = [
+        self::SPEED_REQUESTED,
     ];
 
     public function payment()
@@ -330,6 +335,14 @@ class Entity extends Base\PublicEntity
     public function getBaseAmount()
     {
         return $this->getAttribute(self::BASE_AMOUNT);
+    }
+
+    /**
+     * Returns base amount + applicable fee
+     */
+    public function getNetAmount()
+    {
+        return $this->getBaseAmount() + $this->getFee();
     }
 
     public function getCurrency()
@@ -762,6 +775,16 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::REVERSED);
     }
 
+    /**
+     * This is required for checking if a refund is being processed with instant (that is charged) speed
+     *
+     * @return bool
+     */
+    public function isRefundSpeedInstant(): bool
+    {
+        return (in_array($this->getSpeedRequested(), Speed::REFUND_INSTANT_SPEEDS) === true);
+    }
+
     public function getGateway()
     {
         $gateway = $this->getAttribute(self::GATEWAY);
@@ -959,5 +982,13 @@ class Entity extends Base\PublicEntity
         }
 
         return $response;
+    }
+
+    public static function modifySpeedRequested(& $input)
+    {
+        if (isset($input['speed']))
+        {
+            $input['speed_requested'] = $input['speed'];
+        }
     }
 }

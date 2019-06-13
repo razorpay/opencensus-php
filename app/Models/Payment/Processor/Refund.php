@@ -6,6 +6,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Order;
+use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
@@ -26,6 +27,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -332,6 +334,8 @@ trait Refund
         {
             $refundValidator->validateScroogeGatewayRefund($payment);
 
+            $refundValidator->validateInput('scrooge_gateway_refund', $input);
+
             //
             // Doing +1 here, because at gateway side, we decrement attempts with -1,
             // doing this to keep backward compatibility of older refunds as well as scrooge refunds.
@@ -340,9 +344,11 @@ trait Refund
             //
             $refund->setAttempts(($input['attempts'] ?? -1) + 1) ;
 
-            $ftaInput = $input['fta_data'] ?? [];
+            $data = $input['fta_data'] ?? [];
 
-            $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $ftaInput);
+            $data['is_fta'] = $input['is_fta'];
+
+            $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $data);
         }
         catch (\Exception $ex)
         {
@@ -771,9 +777,13 @@ trait Refund
             return null;
         }
 
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);
+        $txnCore = new Transaction\Core;
+
+        list($txn, $feesSplit) = $txnCore->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
+
+        $txnCore->saveFeeDetails($txn, $feesSplit);
 
         $this->trace->info(
             TraceCode::REFUND_TRANSACTION_CREATED,
@@ -1234,6 +1244,15 @@ trait Refund
 
         $refund->setBaseAmount();
 
+        if ($refund->isRefundSpeedInstant() === true)
+        {
+            list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);
+
+            $refund->setFee($fee);
+
+            $refund->setTax($tax);
+        }
+
         $refund->balance()->associate($refund->merchant->primaryBalance);
 
         if ($this->payment->isCaptured() === true)
@@ -1615,7 +1634,7 @@ trait Refund
         ];
 
         if (($merchant->getRefundSource() === RefundSource::CREDITS) and
-            ($balance->getRefundCredits() < $refund->getBaseAmount()))
+            ($balance->getRefundCredits() < $refund->getNetAmount()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
@@ -1624,7 +1643,7 @@ trait Refund
         }
 
         if (($merchant->getRefundSource() === RefundSource::BALANCE) and
-            ($balance->getBalance() < $refund->getBaseAmount()))
+            ($balance->getBalance() < $refund->getNetAmount()))
         {
             if ($type === 'refund')
             {
