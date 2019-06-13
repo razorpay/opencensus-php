@@ -6,22 +6,6 @@ import Spinner from 'rzp/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
-/*
-{
-  "id": "crnt_CdJ6bpQFE0Kgfi",
-  "customer_id": "CSgSa6pi6wvAfa",
-  "merchant_id": "10000000000000",
-  "name": "Test credit note",
-  "description": null,
-  "amount": 5000,
-  "amount_available": 5000,
-  "amount_refunded": 0,
-  "amount_allocated": 0,
-  "currency": "INR",
-  "created_at": 1559561988,
-  "updated_at": 1559561988
-}
-*/
 export default ({ isLoading, creditNote }) => {
   return (
     <div class="content-wrapper content-sm txn-details">

@@ -27,7 +27,7 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
             name="schedule_change_at"
             className="Input--vTop"
             onChange={props.onRadioChange}
-            defaultValue={props.fields.schedule_change_at || 'now'}
+            defaultValue={props.fields.schedule_change_at}
           />
         )}
       </React.Fragment>

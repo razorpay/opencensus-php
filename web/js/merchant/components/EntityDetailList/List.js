@@ -105,7 +105,7 @@ export default class EntityDetailList extends Component {
         isChargeAttemptFailed = true;
       }
 
-      this.INVOICE_MAP[item.created_at] = index;
+      this.INVOICE_MAP[item.created_at || 'upcoming'] = index;
 
       list.push(
         <EntityRow
@@ -173,16 +173,22 @@ export default class EntityDetailList extends Component {
 
     const createdAtList = [...creditNotes, ...items]
       .map(note => note.created_at)
-      .sort();
+      .sort()
+      .reverse();
 
-    return createdAtList.map(id => {
+    const components = createdAtList.map(id => {
       const creditNoteLoc = this.CREDIT_NOTE_MAP[id],
         invoiceLoc = this.INVOICE_MAP[id];
 
-      if (creditNoteLoc) return creditNoteList[creditNoteLoc];
+      if (creditNoteLoc !== void 0) {
+        return creditNoteList[creditNoteLoc];
+      }
 
       return rowList[invoiceLoc];
     });
+
+    components.unshift(rowList[this.INVOICE_MAP['upcoming']]);
+    return components;
   };
 
   render() {

@@ -14,14 +14,15 @@ import Plan from 'merchant/models/Plan';
 
 import { fetchPlan } from 'merchant/modules/plans';
 import { deleteAddOn } from 'merchant/modules/addons';
-import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { fetchCustomer } from 'merchant/modules/customers';
-import { showNotification } from 'rzp/modules/notifications';
 import { openModal, closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
+import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import {
   fetchInvoices,
+  fetchCreditNote,
   paymentManualAttempt,
   fetchScheduledChanges,
   cancelUpdateSubscription,
@@ -75,6 +76,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
       creditNotes: [],
       scheduledChanges: {
         isLoading: false,
+        data: null,
+        plan: null,
       },
     };
   }
@@ -186,8 +189,14 @@ export default class SubscriptionDetailsContainer extends React.Component {
   }
 
   // Fetch list of invoices for subscriptions id
-  fetchInvoicesList(subscriptionId) {
-    return this.props.fetchInvoices(subscriptionId).then(data => {
+  fetchInvoicesList(subscriptionId, isCreditNoteAvl = false) {
+    const promise = [this.props.fetchInvoices(subscriptionId)];
+
+    if (isCreditNoteAvl) {
+      promise.push(fetchCreditNote(subscriptionId));
+    }
+
+    return Promise.all(promise).then(([data, creditNotes]) => {
       if (data.data && !this.state.curInvoiceIndex) {
         const invoicesItems = data.data.items;
 
@@ -206,6 +215,12 @@ export default class SubscriptionDetailsContainer extends React.Component {
             }
           });
         }
+      }
+
+      if (creditNotes && creditNotes.data.items) {
+        this.setState({
+          creditNotes: creditNotes.data.items,
+        });
       }
     });
   }
@@ -273,7 +288,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
             }
           );
 
-          this.fetchInvoicesList(id);
+          this.fetchInvoicesList(id, true);
         });
       })
       .catch(({ errors }) => {
@@ -558,8 +573,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
         this.setState({
           scheduledChanges: {
-            data: {},
-            plan: {},
+            data: null,
+            plan: null,
             isLoading: false,
           },
         });

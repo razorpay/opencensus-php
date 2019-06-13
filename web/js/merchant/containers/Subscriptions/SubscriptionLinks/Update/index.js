@@ -68,14 +68,20 @@ export default class UpdateSubscription extends Component {
         return resp;
       })
       .then(resp => {
+        const fields = {
+          id,
+          plan_id: resp.plan_id,
+          quantity: resp.quantity,
+          start_at: resp.start_at,
+          total_count: resp.total_count,
+        };
+
+        if (['authenticated', 'active', 'created'].includes(resp.status)) {
+          fields.schedule_change_at = 'now';
+        }
+
         this.setState({
-          fields: {
-            id,
-            plan_id: resp.plan_id,
-            quantity: resp.quantity,
-            start_at: resp.start_at,
-            total_count: resp.total_count,
-          },
+          fields,
           prevSubscription: {
             ...resp,
           },
