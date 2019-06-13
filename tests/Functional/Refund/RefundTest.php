@@ -1468,7 +1468,7 @@ class RefundTest extends TestCase
 
         // Atom has been on boarded to Scrooge,
         // Changing this since in scrooge flow it will remain in created until cron picks up FTA for processing
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -1955,7 +1955,7 @@ class RefundTest extends TestCase
         $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
     }
 
-    public function testVoidRefundFailureCapturedPaymentReversal()
+    public function testInstantRefundFailureCapturedPaymentReversal()
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
@@ -1979,6 +1979,8 @@ class RefundTest extends TestCase
 
             return $content;
         });
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well

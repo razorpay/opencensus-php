@@ -495,6 +495,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TAX);
     }
 
+    public function getPricingFeatures()
+    {
+        return [];
+    }
+
+    public function getMethod()
+    {
+        return $this->payment->getMethod();
+    }
+
     protected function getAcquirerDataAttribute()
     {
         $acquirerData = [];
