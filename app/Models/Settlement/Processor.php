@@ -439,7 +439,8 @@ class Processor extends Base\Core
         $this->trace->count(
             Metric::SETTLEMENTS_CREATED_TOTAL,
             [
-                Metric::CHANNEL => $channel
+                Metric::CHANNEL => $channel,
+                Metric::MODE    => $this->mode,
             ],
             $response['settlement_count']
         );
@@ -447,7 +448,8 @@ class Processor extends Base\Core
         $this->trace->count(
             Metric::TRANSACTIONS_PICKED_FOR_SETTLEMENT_TOTAL,
             [
-                Metric::CHANNEL => $channel
+                Metric::CHANNEL => $channel,
+                Metric::MODE    => $this->mode,
             ],
             $response['txn_count']
         );
