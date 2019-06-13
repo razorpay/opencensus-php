@@ -72,19 +72,18 @@ class Refund extends Base
     {
         $refund = $this->source;
 
-        $settledBy = $refund->payment->getSettledBy();
-
         $netAmount = $refund->getBaseAmount() + $this->fees;
 
-        if ((($settledBy !== 'Razorpay') or ($refund->isDirectSettlementRefund() === true)) and
+        //
+        // Net amount is 0, only in a single case when payment's settledby is not razorpay and
+        // direct settlement refund is true, provided speed of refund is not instant/optimum
+        // in which case we will deduct the whole amount + fees as listed above
+        //
+        if (($refund->payment->getSettledBy() !== 'Razorpay') and
+            ($refund->isDirectSettlementRefund() === true) and
             ($refund->isRefundSpeedInstant() === false))
         {
             $netAmount = 0;
-        }
-
-        if (in_array($refund->getSpeedRequested(), RefundSpeed::REFUND_INSTANT_SPEEDS))
-        {
-            list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
         }
 
         return $netAmount;

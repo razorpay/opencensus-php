@@ -1248,42 +1248,27 @@ class Service extends Base\Service
                                             'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
                                         ]);
 
-                                    $processor->revertPaymentToRefundableState(
-                                        $refund->payment,
-                                        $refund
-                                    );
+                                    $processor->revertPaymentToRefundableState($refund);
                                 }
 
                                 break;
 
                             case 'fee_only_reversal_event':
 
+                                //
+                                // In optimum flow - we would have debit amount + fees in the transaction,
+                                // on failure - we have to reverse the whole amount since, gateway will directly settle
+                                // in case of DirectSettlementRefund - but the refund status will remain as is and not change
+                                //
                                 if ($refund->isDirectSettlementRefund() === true)
                                 {
                                     $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
                                 }
                                 else
                                 {
-                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund, true);
-                                }
+                                    $feeOnlyReversal = true;
 
-                                if ($refund->payment->hasBeenCaptured() === true)
-                                {
-                                    $this->trace->info(
-                                        TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
-                                        [
-                                            'refund_id'                    => $refundId,
-                                            'payment_id'                   => $refund->payment->getId(),
-                                            'payment_status'               => $refund->payment->getStatus(),
-                                            'payment_refund_status'        => $refund->payment->getRefundStatus(),
-                                            'payment_amount_refunded'      => $refund->payment->getAmountRefunded(),
-                                            'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
-                                        ]);
-
-                                    $processor->revertPaymentToRefundableState(
-                                        $refund->payment,
-                                        $refund
-                                    );
+                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund, $feeOnlyReversal);
                                 }
                         }
 

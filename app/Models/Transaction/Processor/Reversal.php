@@ -71,14 +71,17 @@ class Reversal extends Base
     {
         $this->credit = $this->source->getAmount() + $this->source->getFee();
 
-        // Deducting only refund's debit amount
+        // Deducting only refund's debit amount in the forward transaction
+        // case 1 is when we are reversing the refund amount + fees -> in which case we credit only what has been debited
+        // case 2 is when we are reversing only the refund fees -> in which case we credit only the fees that has been debited
         if ($this->source->getEntityType() === 'refund')
         {
             if ($this->source->getAmount() === $this->source->entity->getAmount())
             {
                 $this->credit = $this->source->entity->transaction->getDebit();
             }
-            else if ($this->source->getFee() === $this->source->entity->getFee())
+            else if (($this->source->getAmount() === 0) and
+                     ($this->source->getFee() === $this->source->entity->getFee()))
             {
                 $this->credit = $this->source->entity->transaction->getFee();
             }

@@ -88,12 +88,13 @@ trait Refund
         return $refund;
     }
 
-    protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input) {
-        return (isset($input[RefundEntity::SPEED]) === true) and
-            (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-            (($payment->getMethod() !== Payment\Method::CARD) or
-                ($this->payment->isCaptured() === false) or
-                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false));
+    protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
+    {
+        return ((isset($input[RefundEntity::SPEED]) === true) and
+                (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
+                (($payment->getMethod() !== Payment\Method::CARD) or
+                 ($this->payment->isCaptured() === false) or
+                 ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false)));
     }
 
     protected function pushMetrics()
@@ -589,7 +590,7 @@ trait Refund
         if ($this->isFundTransferAttemptRefund($refund, $payment, $ftaInput) === true)
         {
             $verifyRefundResult = $this->prepareScroogeRefundResponse([],
-                                                      false,
+                                                                      false,
                                                                       null,
                                                                       Payment\Action::VERIFY,
                                                                       ErrorCode::REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED);
@@ -599,11 +600,16 @@ trait Refund
         {
             if ((isset($ftaInput[RefundConstants::IS_FTA]) === true) and ($ftaInput[RefundConstants::IS_FTA] === true))
             {
-                $verifyRefundResult = $this->prepareScroogeRefundResponse([],
+                $verifyRefundResult = $this->prepareScroogeRefundResponse(
+                    [
+                        Payment\Gateway::GATEWAY_VERIFY_RESPONSE =>
+                        'Instant refund request failed because of insufficient data'
+                    ],
                     false,
                     null,
                     Payment\Action::VERIFY,
-                    ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
+                    ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA
+                );
 
                 return $verifyRefundResult;
             }
@@ -840,9 +846,11 @@ trait Refund
                 'gateway'    => $refund->getGateway()
             ]);
 
+        //
         // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
         // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this,
-        // the third case is Refund Credits - which we will be handling soon
+        // Todo: the third case is Refund Credits - which needs to be handled soon
+        //
         if (($refund->payment->hasBeenCaptured() === false) or
             (($refund->transaction->getDebit() === 0) and
              ($refund->transaction->getCreditType() === Transaction\CreditType::DEFAULT)))
@@ -879,7 +887,13 @@ trait Refund
 
                     $refund->setTax(0);
 
-                    if ($feeOnlyReversal === false)
+                    //
+                    // [Instant Refunds] - optimum flow
+                    // In case of direct settlement refunds we are creating a reversal transaction -
+                    // to reverse the fees and amount, since gateway will settle the amount directly
+                    //
+                    if (($feeOnlyReversal === false) and
+                        ($refund->isDirectSettlementRefund() === false))
                     {
                         $refund->setStatus(Payment\Refund\Status::REVERSED);
                     }
@@ -890,9 +904,7 @@ trait Refund
                         TraceCode::REFUND_FEE_AND_TAX_RESET_TO_ZERO,
                         [
                             'refund_id'    => $refund->getId(),
-                            'current_fee'  => $refund->getFees(),
                             'previous_fee' => $fee,
-                            'current_tax'  => $refund->getTax(),
                             'previous_tax' => $tax,
                         ]);
 
@@ -1459,10 +1471,10 @@ trait Refund
         {
             if ((isset($data[RefundConstants::IS_FTA]) === true) and ($data[RefundConstants::IS_FTA] === true))
             {
-                return (new ScroogeResponse())
-                    ->setSuccess(false)
-                    ->setStatusCode(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA)
-                    ->toArray();
+                return (new ScroogeResponse())->setSuccess(false)
+                                              ->setStatusCode(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA)
+                                              ->setGatewayResponse('Instant refund request failed because of insufficient data')
+                                              ->toArray();
             }
 
             return $this->callGatewayRefundFunction($payment, $data, $retry);
@@ -1818,7 +1830,7 @@ trait Refund
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
         }
-        else if ((in_array($refund->getSpeedRequested(), RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
+        else if (($refund->isRefundSpeedInstant() === true) and
                  ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true))
         {
             $cardInput = $this->getCardIdInput($payment, $input);
@@ -2056,8 +2068,7 @@ trait Refund
         $refunded = false;
 
         // Initializing for non scrooge refunds
-        $data[RefundConstants::IS_FTA] = (isset($data[RefundConstants::IS_FTA]) === false) ?
-            false : $data[RefundConstants::IS_FTA];
+        $data[RefundConstants::IS_FTA] = $data[RefundConstants::IS_FTA] ?? false;
 
         try
         {

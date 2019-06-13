@@ -2757,8 +2757,10 @@ class Processor
     // 2. refund_status: {full to partial} {full to null} {partial to null}
     // 3. status: {refunded to captured} only in the case of amount_refunded being changed from full to partial/null
     //
-    public function revertPaymentToRefundableState(Payment\Entity $payment, Payment\Refund\Entity $refund)
+    public function revertPaymentToRefundableState(Payment\Refund\Entity $refund)
     {
+        $payment = $refund->payment;
+
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $refund)
         {
             $this->trace->info(

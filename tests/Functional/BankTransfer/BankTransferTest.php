@@ -1988,7 +1988,7 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('initiated', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 

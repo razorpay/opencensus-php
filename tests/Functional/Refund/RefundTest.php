@@ -1468,7 +1468,7 @@ class RefundTest extends TestCase
 
         // Atom has been on boarded to Scrooge,
         // Changing this since in scrooge flow it will remain in created until cron picks up FTA for processing
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('initiated', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -2121,7 +2121,7 @@ class RefundTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(null, $payment['refund_status']);
-        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('partial', $payment['refund_status']);
+        $this->assertEquals(3470, $payment['amount_refunded']);
     }
 }

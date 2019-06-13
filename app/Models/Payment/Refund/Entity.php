@@ -919,7 +919,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatus($response, $publicStatusFeatureEnabled)
+    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false)
     {
         $refundStatus = $this->getStatus();
 
