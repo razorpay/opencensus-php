@@ -53,7 +53,7 @@ trait Refund
      */
     public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
-        if ($this->isValidInstantRefundsRequest($payment, $input) === true)
+        if ($this->isInvalidInstantRefundsRequest($payment, $input) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED);
@@ -87,11 +87,12 @@ trait Refund
         return $refund;
     }
 
-    protected function isValidInstantRefundsRequest(Payment\Entity $payment, array $input)
-    {
+    protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input) {
         return (isset($input[RefundEntity::SPEED]) === true) and
             (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-            (($payment->getMethod() !== Payment\Method::CARD) or ($this->payment->isCaptured() === false));
+            (($payment->getMethod() !== Payment\Method::CARD) or
+                ($this->payment->isCaptured() === false) or
+                ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false));
     }
 
     protected function pushMetrics()

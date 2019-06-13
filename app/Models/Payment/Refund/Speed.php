@@ -9,7 +9,6 @@ class Speed
     const NORMAL  = 'normal';
 
     const REFUND_INSTANT_SPEEDS = [
-        self::INSTANT,
         self::OPTIMUM,
     ];
 }
