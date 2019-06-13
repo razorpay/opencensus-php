@@ -3181,4 +3181,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return false;
     }
+
+    public function isReconciled()
+    {
+        if (($this->hasTransaction() === true) and
+            ($this->transaction->isReconciled() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
