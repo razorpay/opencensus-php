@@ -6,9 +6,9 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Merchant;
-use RZP\Models\Admin\Role;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
+use RZP\Models\Admin\Role;
 
 class Validator extends Base\Validator
 {
@@ -78,7 +78,8 @@ class Validator extends Base\Validator
         }
         else if ($product === Product::BANKING)
         {
-            $dynamicRoles = (new Role\Service())->getRoleNamesForMerchant();
+            $dynamicRoles = (new Role\Service())->getBankingRolesForMerchant();
+
             $dashboardRoles = array_merge($dynamicRoles,User\Role::BANKING_ROLES);
         }
         else

@@ -137,6 +137,10 @@ class Entity extends Base\Entity
 
     public function getMerchantRoleNames()
     {
-        return  ['Finance L1','Finance L2', 'Finance L3'];
+        return  [
+            'Finance L1',
+            'Finance L2',
+            'Finance L3',
+        ];
     }
 }

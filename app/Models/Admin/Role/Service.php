@@ -45,7 +45,7 @@ class Service extends Base\Service
         return $role->toArrayPublic();
     }
 
-    public function getRoleNamesForMerchant()
+    public function getBankingRolesForMerchant(): array
     {
         return (new Entity)->getMerchantRoleNames();
     }
@@ -84,13 +84,5 @@ class Service extends Base\Service
         $role = $this->core()->edit($role, $input);
 
         return $role->toArrayPublic();
-    }
-
-    public function getAllRolesForOrg(): array
-    {
-        $orgID = $this->merchant->getOrgId();
-        $roles = $this->repo->role->fetchRolesForOrgWithoutPermissions($orgID);
-
-        return $roles->toArrayPublic();
     }
 }
