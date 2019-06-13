@@ -4977,3 +4977,19 @@ ALTER TABLE balance
 
 ALTER TABLE paysecure
     MODIFY COLUMN hkey TEXT DEFAULT NULL;
+
+ALTER TABLE `refunds`
+	ADD COLUMN `speed_requested` VARCHAR(50) NOT NULL DEFAULT 'normal' AFTER `attempts`,
+	ADD COLUMN `speed_processed` VARCHAR(50) DEFAULT NULL AFTER `speed_requested`,
+	ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `speed_processed`,
+	ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`,
+	ADD INDEX `refunds_speed_requested_index` (`speed_requested`),
+	ADD INDEX `refunds_speed_processed_index` (`speed_processed`);
+
+ALTER TABLE `transactions`
+    MODIFY COLUMN `fee` INT(10) NOT NULL,
+    MODIFY COLUMN `tax` INT(10) DEFAULT NULL;
+
+ALTER TABLE `reversals`
+    ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
+    ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
