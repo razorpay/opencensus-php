@@ -33,6 +33,7 @@ return [
             Permission::CONFIRM_USER => [
                 'assignable'  => true,
             ],
+            Permission::CANCEL_BATCH => 'cancel batch',
         ],
 
         PermissionCategory::RAZORX => [
