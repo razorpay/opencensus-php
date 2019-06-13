@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Workflow\WorkflowPayoutAmountRules;
+namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use RZP\Models\Workflow\Base;
 
@@ -11,7 +11,7 @@ class Repository extends Base\Repository
     public function fetchWorkflowRulesForMerchant(string $merchantId)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->merchantId($merchantId)
                     ->get();
     }
 }

@@ -239,9 +239,6 @@ class Name
 
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';
-    const EDIT_PAYOUT                         = 'edit_payout';
-    const BULK_APPROVE_REJECT_PAYOUT          = 'bulk_approve_reject_payout';
-    const VIEW_PAYOUT                         = 'view_payout';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

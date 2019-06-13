@@ -37,19 +37,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantRolesForOrg($orgId)
-    {
-        //Hard coding the roles for now.
-        $rblroles = (new Entity)->getMerchantRoleNames();
-        return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->whereIn(Entity::NAME, $rblroles)
-                    ->with('permissions')
-                    ->get();
-    }
-
-
-
     public function validateOrgHasNoSuchRole(Entity $role, Org\Entity $org)
     {
         $roleExists = $this->newQuery()

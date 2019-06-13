@@ -658,7 +658,6 @@ final class Route
         'org_fieldmap_delete'                      => ['delete',   'field-map/{id}',                                 'OrganizationController@deleteOrgFieldMap'                          ],
         'role_create'                              => ['post',     'roles',                                          'OrganizationController@createRole'                                 ],
         'role_get_multiple'                        => ['get',      'roles',                                          'OrganizationController@getMultipleRoles'                           ],
-        'role_get_for_merchant'                    => ['get',      'roles/merchant',                                 'OrganizationController@getRolesForMerchant'                        ],
         'role_get'                                 => ['get',      'roles/{id}',                                     'OrganizationController@getRole'                                    ],
         'role_edit'                                => ['put',      'roles/{id}',                                     'OrganizationController@putRole'                                    ],
         'role_delete'                              => ['delete',   'roles/{id}',                                     'OrganizationController@deleteRole'                                 ],
@@ -1722,8 +1721,10 @@ final class Route
         'workflow_payout_amount_rules',
     ];
 
+    //
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
+    //
     public static $admin = [
         'org_get',
         'org_get_multiple',

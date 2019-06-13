@@ -1,21 +1,22 @@
 <?php
 
-namespace RZP\Models\Workflow\WorkflowPayoutAmountRules;
+namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
 {
     use SoftDeletes;
 
-    const MERCHANT_ID    = 'merchant_id';
-    const ENTITY_ID      = 'entity_id';
-    const ENTITY_TYPE    = 'entity_type';
-    const CONDITION      = 'condition';
-    const X_AMOUNT       = 'x_amount';
-    const Y_AMOUNT       = 'y_amount';
-    const WORKFLOW_ID    = 'workflow_id';
+    const MERCHANT_ID = 'merchant_id';
+    const ENTITY_ID   = 'entity_id';
+    const ENTITY_TYPE = 'entity_type';
+    const CONDITION   = 'condition';
+    const X_AMOUNT    = 'x_amount';
+    const Y_AMOUNT    = 'y_amount';
+    const WORKFLOW_ID = 'workflow_id';
 
     protected $generateIdOnCreate = false;
 
@@ -65,13 +66,7 @@ class Entity extends Base\Entity
         self::DELETED_AT,
     ];
 
-    protected static $sign = 'workflw';
     protected $entity = 'workflow_payout_amount_rules';
-
-    public function getMerchantID()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
 
     public function getCondition()
     {
