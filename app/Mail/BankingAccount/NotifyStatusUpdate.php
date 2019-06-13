@@ -3,6 +3,7 @@
 
 namespace RZP\Mail\BankingAccount;
 
+use RZP\Models\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -13,18 +14,22 @@ class NotifyStatusUpdate extends Mailable
 {
     protected $data;
 
-    public function __construct(array $data)
+    protected $merchant;
+
+    public function __construct(array $data, Merchant\Entity $merchant)
     {
         parent::__construct();
+
+        $this->merchant = $merchant;
 
         $this->data = $data;
     }
 
     protected function addRecipients()
     {
-        $toEmail = $this->data['contact_email'];
+        $toEmail = $this->merchant->email;
 
-        $toName = $this->data['contact_name'];
+        $toName = $this->merchant->name;
 
         $this->to($toEmail, $toName);
 
@@ -85,7 +90,13 @@ class NotifyStatusUpdate extends Mailable
 
     protected function addMailData()
     {
-        $this->with($this->data);
+        $data = [
+            'contact_name'   => $this->merchant->name,
+            'contact_email'  => $this->merchant->email,
+            'status'         => $this->data['status'],
+        ];
+
+        $this->with($data);
 
         return $this;
     }

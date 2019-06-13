@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use RZP\Mail\BankingAccount\NotifyStatusUpdate;
 
 class Service extends Base\Service
 {
@@ -73,6 +74,10 @@ class Service extends Base\Service
 
                 return null;
         }
+
+        $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant());
+
+        Mail::queue($mail);
 
         return $account->toArrayPublic();
     }
