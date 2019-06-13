@@ -119,7 +119,6 @@ class Entity extends Base\PublicEntity
         self::FEE,
         self::TAX,
         self::REFERENCE1,
-        self::SPEED_REQUESTED,
     ];
 
     protected $visible = [
@@ -920,7 +919,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatus($response)
+    protected function getPublicStatus($response, $publicStatusFeatureEnabled)
     {
         $refundStatus = $this->getStatus();
 
@@ -935,7 +934,8 @@ class Entity extends Base\PublicEntity
 
         if (($response[self::STATUS] === Status::PENDING) and
             ($isScrooge === true) and
-            (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true))
+            ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
+             ($publicStatusFeatureEnabled === true)))
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
@@ -982,10 +982,14 @@ class Entity extends Base\PublicEntity
 
         $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
+        $publicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
+
         if (($displayRefundPublicStatus === true) or
-            ($this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS) === true))
+            ($publicStatusFeatureEnabled === true) or
+            ($cardTransferRefundFeatureEnabled === true))
         {
-            $scroogeResponse = $this->getPublicStatus($response);
+            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled);
 
             return $scroogeResponse;
         }
