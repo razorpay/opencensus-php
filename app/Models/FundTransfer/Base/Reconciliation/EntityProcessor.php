@@ -15,10 +15,12 @@ use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
+/**
+ * @property Attempt\Core core
+ */
 abstract class EntityProcessor extends Base\Core
 {
     /**
@@ -51,6 +53,8 @@ abstract class EntityProcessor extends Base\Core
         parent::__construct();
 
         $this->fta = $fta;
+
+        $this->core = new Attempt\Core;
 
         $this->source = $fta->source;
 
@@ -91,11 +95,9 @@ abstract class EntityProcessor extends Base\Core
             return;
         }
 
-        $this->updateSourceEntity();
+        $this->core->updateSourceEntity($this->fta);
 
-        $this->updateMerchantEntity();
-
-        $this->updateTransactionEntity();
+        $this->core->updateMerchantEntity($this->fta, $this->holdFunds);
     }
 
     protected function updateAttemptEntity()
@@ -167,61 +169,6 @@ abstract class EntityProcessor extends Base\Core
         $this->repo->saveOrFail($this->fta);
     }
 
-    protected function updateSourceEntity()
-    {
-        $statusNamespace = $this->getStatusClass($this->fta);
-
-        $statusClass = new $statusNamespace;
-
-        $isInternalError = $statusClass::isInternalError($this->fta);
-
-        $bankStatusCode = $this->fta->getBankStatusCode();
-
-        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode);
-
-        $ftaData = [
-            'bank_account_id'   => $this->fta->getBankAccountId(),
-            'vpa_id'            => $this->fta->getVpaId(),
-            'merchant_id'       => $this->fta->getMerchantId(),
-            'fta_id'            => $this->fta->getId(),
-            'source_id'         => $this->source->getId(),
-            'beneficiary_name'  => null,
-            'utr'               => $this->fta->getUtr(),
-            'mode'              => $this->fta->getMode(),
-            'remarks'           => $this->fta->getRemarks(),
-            'fta_status'        => $this->fta->getStatus(),
-            'bank_status_code'  => $bankStatusCode,
-            'internal_error'    => $isInternalError,
-            'failure_reason'    => $publicErrorMessage,
-        ];
-
-        $this->postFtaRecon($this->source, $ftaData);
-    }
-
-    protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)
-    {
-        // Source entity might update the transaction but because we would have already fetched
-        // the transaction from source earlier. Then if we try to access $this->source->transaction now,
-        // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
-        $this->source->load(Entity::TRANSACTION);
-
-        $this->source->transaction->setReconciledAt($this->reconciledAt);
-
-        $this->source->transaction->setReconciledType($reconciledType);
-
-        $this->source->transaction->saveOrFail();
-    }
-
-    protected function updateMerchantEntity()
-    {
-        if ($this->holdFunds === true)
-        {
-            $this->fta->merchant->setHoldFunds(true);
-
-            $this->repo->saveOrFail($this->fta->merchant);
-        }
-    }
-
     protected function getAttemptStatus(): array
     {
         $status = $this->fta->getStatus();
@@ -253,7 +200,7 @@ abstract class EntityProcessor extends Base\Core
             }
         }
 
-        $statusNamespace = $this->getStatusClass($this->fta);
+        $statusNamespace = $this->core->getStatusClass($this->fta);
 
         $statusClass = new $statusNamespace;
 
@@ -261,12 +208,21 @@ abstract class EntityProcessor extends Base\Core
 
         $failureStatuses = $statusClass::getFailureStatus();
 
+        $bankStatusFailedCode = $bankStatusCode;
+
+        //Converting status code to integer in case if it is numeric
+        //Since array keys of success and failure statuses get set as int if they are numeric
+        if (is_numeric($bankStatusFailedCode) === true)
+        {
+            $bankStatusFailedCode = (int)$bankStatusFailedCode;
+        }
+
         if ((in_array($bankStatusCode, $successStatuses, true) === true) and
             (empty($utr) === false))
         {
             $status = Attempt\Status::PROCESSED;
         }
-        else if (in_array($bankStatusCode, $failureStatuses, true) === true)
+        else if (in_array($bankStatusFailedCode, $failureStatuses, true) === true)
         {
             $status = Attempt\Status::FAILED;
 
@@ -365,18 +321,6 @@ abstract class EntityProcessor extends Base\Core
         return true;
     }
 
-    protected function getStatusClass(Attempt\Entity $fta)
-    {
-        $channel = $fta->getChannel();
-
-        if ($fta->shouldUseGateway() === true)
-        {
-             return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
-        }
-
-        return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
-    }
-
     protected function getMerchantEmail(Merchant\Entity $merchant): string
     {
         if ($merchant->isLinkedAccount() === true)
@@ -385,41 +329,5 @@ abstract class EntityProcessor extends Base\Core
         }
 
         return $merchant->getEmail();
-    }
-
-    /**
-     * @param       $source
-     * @param array $ftaData
-     */
-    protected function postFtaRecon($source, array $ftaData)
-    {
-        $this->trace->info(
-            TraceCode::FTA_SOURCE_PROCESSING_DATA,
-            $ftaData);
-
-        try
-        {
-            $entityType = $source->getEntity();
-
-            $sourceCoreClass = Entity::getEntityNamespace($entityType) . '\\Core';
-
-            $sourceCore = new $sourceCoreClass();
-
-            if (method_exists($sourceCore, 'updateStatusAfterFtaRecon') === false)
-            {
-                return;
-            }
-
-            $sourceCore->updateStatusAfterFtaRecon($source, $ftaData);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
-                $ftaData
-            );
-        }
     }
 }

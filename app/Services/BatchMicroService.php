@@ -39,6 +39,8 @@ class BatchMicroService
 
     protected $client;
 
+    protected $repo;
+
     const BATCH_URLS = [
         'download'  => 'download',
         'batch'     => 'batch',
@@ -51,6 +53,8 @@ class BatchMicroService
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->repo   = $this->app['repo'];
 
         $this->mode = (isset($this->app['rzp.mode']) === true) ? $this->app['rzp.mode'] : 'live';
 
@@ -101,6 +105,8 @@ class BatchMicroService
         $batchResponse['id'] = 'batch_' . $batchResponse['id'];
 
         $batchResponse['status'] = $this->statusClusterMapping($batchResponse['status']);
+
+        $batchResponse[Batch\Entity::TYPE] = $input[Batch\Entity::TYPE];
 
         return $batchResponse;
     }
@@ -542,6 +548,13 @@ class BatchMicroService
     {
         $merchantId = $input['merchant_id'] ?? null;
 
+        $merchant = null;
+
+        if ($merchantId !== null)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        }
+        
         $fetchResult = array(
             'entity' => 'collection',
             'count' => 0,
@@ -551,7 +564,7 @@ class BatchMicroService
         switch ($entity)
         {
             case self::BATCH_SERVICE:
-                $fetchResult = $this->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $merchantId);
+                $fetchResult = $this->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $merchant);
                 break;
 
             case self::FILE_STORE:
@@ -586,6 +599,11 @@ class BatchMicroService
 
     public function shouldBatchServiceBeCalled(): bool
     {
+        if ($this->batchServiceConfig['mock'] === true)
+        {
+            return false;
+        }
+
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             return true;

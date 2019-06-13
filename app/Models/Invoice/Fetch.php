@@ -28,6 +28,7 @@ class Fetch extends BaseFetch
             Entity::ORDER_ID          => 'sometimes|string|max:20',
             Entity::ENTITY_TYPE       => 'sometimes|string|nullable',
             Entity::STATUSES          => 'sometimes|sequential_array|min:1|max:6|custom',
+            Entity::INTERNATIONAL     => 'filled|boolean',
             self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user',
         ],
     ];
@@ -39,6 +40,7 @@ class Fetch extends BaseFetch
             Entity::RECEIPT,
             Entity::CUSTOMER_ID,
             Entity::ENTITY_TYPE,
+            Entity::INTERNATIONAL,
         ],
         AuthType::PROXY_AUTH => [
             Entity::BATCH_ID,
@@ -82,6 +84,7 @@ class Fetch extends BaseFetch
     const COMMON_FIELDS = [
         Entity::STATUS,
         Entity::STATUSES,
+        Entity::INTERNATIONAL,
         Entity::TYPE,
         Entity::TYPES,
         Entity::MERCHANT_ID,

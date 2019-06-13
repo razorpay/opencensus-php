@@ -22,10 +22,7 @@ class CardProcessor extends BaseProcessor
             $this->createPaymentDowntime($network, $gatewayDowntimes);
         }
 
-        if (empty($unavailableNetworks) === true)
-        {
-            $this->endOngoingDowntimes();
-        }
+        $this->endOngoingDowntimes($unavailableNetworks);
     }
 
     protected function calculateUnavailableNetworks(Collection $gatewayDowntimes)
@@ -39,7 +36,13 @@ class CardProcessor extends BaseProcessor
 
         foreach ($gatewayDowntimes as $gatewayDowntime)
         {
-            $mapping->addDowntime($gatewayDowntime->getGateway(), $gatewayDowntime->getNetwork());
+            // Gateway downtimes created without network field is created as `Unknown`
+            // hence we are considering `Unknown` and `All` as same.
+            if ((in_array($gatewayDowntime->getIssuer(), [GatewayDowntime::ALL, GatewayDowntime::UNKNOWN])) and
+                (in_array($gatewayDowntime->getCardType(), [GatewayDowntime::ALL, GatewayDowntime::UNKNOWN])))
+            {
+                $mapping->addDowntime($gatewayDowntime->getGateway(), $gatewayDowntime->getNetwork());
+            }
         }
 
         return $mapping->getUnavailableNetworks();
@@ -87,6 +90,10 @@ class CardProcessor extends BaseProcessor
     protected function calculateDowntimePeriodForNetwork(string $network, Collection $gatewayDowntimes)
     {
         $supportingGateways = (new CardNetworkMapping)->getGatewaysSupportingNetwork($network);
+
+        // Gateway downtime can also be created as gateway = ALL which
+        // gets skipped while filtering affectingGatewayDowntimes
+        $supportingGateways = array_merge($supportingGateways, [GatewayDowntime::ALL]);
 
         $affectingGatewayDowntimes = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, $supportingGateways);
 

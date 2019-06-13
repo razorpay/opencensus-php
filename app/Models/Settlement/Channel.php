@@ -32,7 +32,7 @@ class Channel
             Payment\Gateway::WALLET_JIOMONEY,
             Payment\Gateway::WALLET_OPENWALLET,
         ],
-        self::ATOM => [
+        self::ATOM  => [
             Payment\Gateway::ATOM
         ],
         self::ICICI => [
@@ -40,7 +40,7 @@ class Channel
             Payment\Gateway::NETBANKING_ICICI,
             Payment\Gateway::UPI_ICICI,
         ],
-        self::AXIS => [
+        self::AXIS  => [
             Payment\Gateway::AXIS_MIGS,
             Payment\Gateway::AXIS_GENIUS,
         ],
@@ -160,6 +160,18 @@ class Channel
         ];
     }
 
+    /**
+     * Givens list of channels which has healthCheck implemented
+     *
+     * @return array
+     */
+    public static function getChannelsWithHealthCheck(): array
+    {
+        return [
+            self::YESBANK,
+        ];
+    }
+
     public static function getGateways($channel)
     {
         return self::$gateways[$channel];
@@ -186,5 +198,13 @@ class Channel
     public static function exists($channel)
     {
         return defined(get_class() . '::' . strtoupper($channel));
+    }
+
+    public static function validate(string $channel)
+    {
+        if (in_array($channel, self::getChannels(), true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid channel name: ' . $channel);
+        }
     }
 }

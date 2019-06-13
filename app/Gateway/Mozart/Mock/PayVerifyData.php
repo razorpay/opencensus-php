@@ -17,7 +17,7 @@ class PayVerifyData extends Base\Mock\Server
                     'rrn' => '09321',
                     'txnStatus' => 'SUCCESS',
                     'paymentId' => $entities['payment']['id'],
-                    'amount' => $entities['payment']['amount'],
+                    'amount' => $entities['payment']['amount'] / 100,
                     'hash' => 'abcd',
                     '_raw' => '',
                 ],
@@ -68,6 +68,26 @@ class PayVerifyData extends Base\Mock\Server
                 '_raw' => null
                 ],
             ];
+
+        return $response;
+    }
+
+    public function netbanking_cub($entities)
+    {
+        $response = [
+            'next'              => [],
+            'error'             => null,
+            'success'           => true,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'data'              => [
+                '_raw'            => 'dummy_raw_value',
+                'paymentId'       => $entities['payment']['id'],
+                'bank_payment_id' => '999999',
+                'amount'          => $entities['payment']['amount'] / 100,
+                'status'          => 'callback_successful',
+            ],
+        ];
 
         return $response;
     }

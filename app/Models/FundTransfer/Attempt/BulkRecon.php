@@ -62,7 +62,6 @@ class BulkRecon extends Base\Core
                         return $this->processEntities();
                     },
                     self::MUTEX_LOCK_TIMEOUT,
-
                     ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
 
         $this->sendReconciliationSummaryMail($data);

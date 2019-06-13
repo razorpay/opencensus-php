@@ -85,7 +85,11 @@ class Gateway extends Base\Gateway
                 $this->assertAmount($expectedAmount, $actualAmount);
             }
 
-            $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
+            // assert paymentId only if trackid is set in callback request
+            if (isset($gatewayContent[Fields::TRACK_ID]) === true)
+            {
+                $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
+            }
         }
 
         $this->repo->saveOrFail($gatewayPayment);

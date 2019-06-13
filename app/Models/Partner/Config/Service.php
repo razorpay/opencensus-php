@@ -152,6 +152,15 @@ class Service extends Base\Service
         return $config->toArrayPublic();
     }
 
+    public function fetchConfigByPartner(): array
+    {
+        (new Merchant\Validator)->validateIsPartner($this->merchant);
+
+        $configs = $this->core()->fetchAllConfigsByPartner($this->merchant);
+
+        return $configs->toArrayPublic();
+    }
+
     /**
      * @param array $input
      *

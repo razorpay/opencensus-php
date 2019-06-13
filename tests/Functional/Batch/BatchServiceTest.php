@@ -85,7 +85,7 @@ class BatchServiceTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
-        $this->mockRazorX(__FUNCTION__, "batch_service_payment_link", "on");
+        $this->mockRazorX(__FUNCTION__,  'batch_service_payment_link_updated', "on");
 
         $this->ba->proxyAuth();
 
@@ -102,6 +102,15 @@ class BatchServiceTest extends TestCase
     public function testBatchRawAPIUpdateSettings()
     {
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBatchAdminFetchNoResult()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('merchant',['id' => 'CWIYz6Yfu8tqZv']);
 
         $this->startTest();
     }

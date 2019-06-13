@@ -2,9 +2,11 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
-class VerifyRefundData
+use RZP\Gateway\Base;
+
+class VerifyRefundData extends Base\Mock\Server
 {
-    public static function bajajfinserv($entities)
+    public function bajajfinserv($entities)
     {
         $response = [
             'data' =>
@@ -39,7 +41,7 @@ class VerifyRefundData
         return $response;
     }
 
-    public static function wallet_phonepe($entities)
+    public function wallet_phonepe($entities)
     {
         $response = [
             'data'=>
@@ -65,6 +67,32 @@ class VerifyRefundData
             'next'=> [],
             'success'=> true,
         ];
+        return $response;
+    }
+
+    public function upi_airtel($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'code' => '0',
+                    'errorCode' => 000,
+                    'message' => 'successful',
+                    'rrn' => '987654321',
+                    'txnStatus' => 'SUCCESS',
+                    'hdnOrderID' => $entities['payment']['id'],
+                    'amount' => $entities['payment']['amount'],
+                    'hash' => 'abcd',
+                    '_raw' => '{\"rrn\":\"910501000856\",\"txnStatus\":\"SUCCESS\",\"hdnOrderID\":\"ablxasaasbajahskajkg\",\"hash\":\"6256e8a43ba4e56eac1ef8c1faaad0c7236595e3638d74dd7c30e787dc00235624a5d2920230cf5478c88d616474abd1185c236b3c30107f7c931fb7070e20d9\",\"messageText\":\"\",\"code\":\"0\",\"errorCode\":\"000\",\"txnId\":\"ablxasaasbajahskajkg\"',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+
+        $this->content($response, 'verify_refund');
+
         return $response;
     }
 

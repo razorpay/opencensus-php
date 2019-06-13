@@ -148,6 +148,8 @@ class PricingTest extends TestCase
 
     public function testAddPricingPlanBankTransferRuleWithoutMaxFee()
     {
+        $this->markTestSkipped('Skipped the validation to allow 0-pricing for bank transfers.');
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
@@ -157,6 +159,8 @@ class PricingTest extends TestCase
 
     public function testAddPricingPlanBankTransferRuleWithoutPercentRate()
     {
+        $this->markTestSkipped('Skipped the validation to allow 0-pricing for bank transfers.');
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
@@ -1234,5 +1238,16 @@ class PricingTest extends TestCase
             }
             return true;
         });
+    }
+
+    public function testAddPricingPlanRuleWithFeatureRefund()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
     }
 }

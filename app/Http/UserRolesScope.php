@@ -7,7 +7,7 @@ use RZP\Models\User\Role;
 class UserRolesScope
 {
     /**
-     * @see https://docs.razorpay.com/v1/page/team-support
+     * @see https://razorpay.com/docs/v1/page/team-support
      */
     protected $routeUserRoleMap = [];
 
@@ -69,7 +69,8 @@ class UserRolesScope
                 Role::OPERATIONS,
                 Role::FINANCE,
                 Role::LINKED_ACCOUNT_OWNER,
-                Role::LINKED_ACCOUNT_ADMIN
+                Role::LINKED_ACCOUNT_ADMIN,
+                Role::SUPPORT,
             ],
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],

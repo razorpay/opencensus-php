@@ -412,6 +412,13 @@ class BankTransferTest extends TestCase
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
 
         $refund = $this->getLastEntity('refund', true);
+
+        // Adding this since post reconciliation, we update the status at scrooge side,
+        // post which scrooge sends an update status request to API
+//        $this->scroogeUpdateRefundStatus($refund, Refund\Status::PROCESSED);
+
+//        $refund = $this->getLastEntity('refund', true);
+
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertNotNull($refund['processed_at']);
         $this->assertEquals(1, $refund['attempts']);

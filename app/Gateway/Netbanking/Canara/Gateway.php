@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->createRequest($content);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_REQUEST, $content);
 
         return $request;
     }
@@ -81,6 +81,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->saveCallbackResponse($content, $input['payment']);
 
+        $this->verifyCallback($input, $gatewayPayment);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input,$acquirerData);
@@ -106,6 +108,8 @@ class Gateway extends Base\Gateway
 
         $amount = $this->formatAmount($input['payment'][Payment\Entity::AMOUNT] / 100);
 
+        $fee = $this->formatAmount($input['payment_fee'] / 100);
+
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
             RequestFields::CLIENT_CODE                   => Constants::CLIENT_CODE,
@@ -119,7 +123,7 @@ class Gateway extends Base\Gateway
             RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::DATE                          => $date,
             RequestFields::FLDREF1                       => $merchantName,
-            RequestFields::FLDREF2                       => $input['payment_fee']
+            RequestFields::FLDREF2                       => $fee,
         ];
 
         return $data;
@@ -236,6 +240,25 @@ class Gateway extends Base\Gateway
     }
 
     // -------------------------- Verify helper methods ------------------------------
+
+    protected function verifyCallback($input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+    }
 
     protected function sendPaymentVerifyRequest($verify)
     {
@@ -410,5 +433,21 @@ class Gateway extends Base\Gateway
     public function formatAmount($amount)
     {
         return number_format($amount, 2, '.', '');
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+        array $content = [])
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'data'       => $content
+            ]);
     }
 }

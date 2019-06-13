@@ -92,6 +92,8 @@ class Gateway extends Base\Gateway
 
         $action = camel_case($this->entity . '_' . $this->action);
 
+        $gatewayServer->request($content, $action);
+
         $response = $gatewayServer->{$action}($content);
 
         return $response;

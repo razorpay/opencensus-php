@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 
 use RZP\Models\FundAccount;
@@ -20,6 +21,15 @@ class FundAccountController extends Controller
     public function get(string $id)
     {
         $entity = $this->service()->fetch($id, $this->input);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function createPublic()
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->createPublic($input);
 
         return ApiResponse::json($entity);
     }

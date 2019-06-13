@@ -91,6 +91,7 @@ class Entity extends Base\Entity
         Entity::DEVICE_ID,
         Entity::HANDLE,
         Entity::RRN,
+        Entity::NETWORK_TRANSACTION_ID,
         Entity::GATEWAY_ERROR_CODE,
         Entity::GATEWAY_ERROR_DESCRIPTION,
         Entity::CREATED_AT,

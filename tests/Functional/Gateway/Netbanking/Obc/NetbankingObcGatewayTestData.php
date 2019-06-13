@@ -52,9 +52,9 @@ return [
 
     'netbankingPaymentFailed' => [
         'amount'          => 50000,
-        'status'          => null,
-        'bank_payment_id' => null,
-        'account_number'  => null
+        'status'          => 'N',
+        'bank_payment_id' => '9999999999',
+        'account_number'  => '1234567890'
     ],
 
     'netbankingPaymentFailedVerifySuccess' => [
@@ -124,10 +124,10 @@ return [
         'amount'          => 50000,
         'action'          => 'authorize',
         'bank'            => 'ORBC',
-        'bank_payment_id' => null,
-        'status'          => null,
+        'bank_payment_id' => '9999999999',
+        'status'          => 'Y',
         'reference1'      => null,
-        'received'        => false,
+        'received'        => true,
     ],
 
     'testVerifyCallbackFailure' => [

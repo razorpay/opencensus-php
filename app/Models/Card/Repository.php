@@ -188,10 +188,15 @@ class Repository extends Base\Repository
 
         $IdColumn = $this->dbColumn(Entity::ID);
 
+        $createdAt  = $this->dbColumn(Entity::CREATED_AT);
+
+        $timestamp = time() - Payment\Entity::PAYMENT_WINDOW;
+
         return $this->newQuery()
                     ->leftJoin($paymentTable, $IdColumn, $paymentCardIdColumn)
                     ->whereNull($paymentCardIdColumn)
                     ->where(Entity::VAULT, '=', $vault)
+                    ->where($createdAt, '<=', $timestamp)
                     ->limit($limit)
                     ->select($cardData)
                     ->get();

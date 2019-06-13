@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|string',
-        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi|nullable|alpha|max:10',
+        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi,paylater|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::AUTH_TYPE           => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
@@ -65,7 +65,8 @@ class Validator extends Base\Validator
         'addPlanRulePricingMethod',
         'addPlanRuleMinAndMaxFee',
         'addPlanRulePayoutFundTransfer',
-        'addPlanRuleBankTransfer',
+        // Skipped for now as it blocks the creation of 0-pricing rules.
+        // 'addPlanRuleBankTransfer',
     ];
 
     protected static $fetchRules = [
@@ -213,7 +214,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateaddPlanRuleBankTransfer($input)
+    protected function validateAddPlanRuleBankTransfer($input)
     {
         // Bank Transfer payments can't be rejected, so
         // a percent rate rule is always required for the
@@ -261,10 +262,14 @@ class Validator extends Base\Validator
 
             if (in_array($mode, $validModes, true) === false)
             {
-                Exception\BadRequestValidationFailureException(
-                    'Payout mode should be NEFT/IMPS/RTGS/IFT');
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payout mode should be NEFT/IMPS/RTGS/IFT',
+                    'mode',
+                    [
+                        'mode'  => $mode,
+                        'input' => $input,
+                    ]);
             }
-
         }
     }
 
@@ -288,6 +293,15 @@ class Validator extends Base\Validator
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARDLESS_EMI)
         {
             if (CardlessEmi::exists($input[Entity::PAYMENT_ISSUER]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Provider selected for cardless emi should be valid');
+            }
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::PAYLATER)
+        {
+            if (Payment\Processor\PayLater::exists($input[Entity::PAYMENT_ISSUER]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Provider selected for cardless emi should be valid');

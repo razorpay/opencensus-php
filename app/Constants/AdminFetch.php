@@ -39,13 +39,25 @@ class AdminFetch
     {
         return [
             Entity::REPORTING_LOGS => [
-                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+                'consumer'         => Fetch::FIELD_MERCHANT_ID,
+                'config_id'        => [
+                    Fetch::LABEL        => 'Config Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
             ],
             Entity::REPORTING_CONFIGS => [
-                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+                'consumer'          => Fetch::FIELD_MERCHANT_ID,
+                'report_type'       => [
+                    Fetch::LABEL        => 'Report Type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
             ],
             Entity::REPORTING_SCHEDULES => [
-                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+                'consumer'          => Fetch::FIELD_MERCHANT_ID,
+                'config_id'        => [
+                    Fetch::LABEL        => 'Config Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
             ],
             Entity::SHIELD_RULES => [
                 'is_active'         => [
@@ -569,6 +581,12 @@ class AdminFetch
                     Fetch::LABEL  => 'Txn Reference No',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+            ],
+
+            Entity::MOZART => [
+                'gateway'    => Fetch::FIELD_GATEWAY,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'refund_id'  => Fetch::FIELD_REFUND_ID,
             ],
 
             Entity::CARD => [
@@ -1553,7 +1571,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => Payout\Method::getAll(),
                 ],
-                'mode'            => [
+                'payout_mode' => [
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => FundTransfer\Mode::getAll(),
                 ],
@@ -1567,7 +1585,7 @@ class AdminFetch
                 'fund_account_id' => [],
                 'status'          => [
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMapping),
+                    Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMap),
                 ],
                 'reference_id'    => [],
             ],
@@ -2104,6 +2122,14 @@ class AdminFetch
                         Commission\Status::CREATED,
                         Commission\Status::PROCESSED,
                         Commission\Status::REFUNDED,
+                    ],
+                ],
+                Commission\Entity::MODEL => [
+                    Fetch::LABEL  => 'Model',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Config\CommissionModel::COMMISSION,
+                        Config\CommissionModel::SUBVENTION,
                     ],
                 ],
             ],

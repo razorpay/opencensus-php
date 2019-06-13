@@ -456,7 +456,7 @@ trait Callback
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {
-            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentAuthFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
         else
         {

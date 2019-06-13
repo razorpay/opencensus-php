@@ -1054,6 +1054,17 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * Gets connected applications against given merchant id.
+     * Returns serialized collection of Merchant\AccessMap\Entity.
+     */
+    public function getConnectedApplications(string $merchantId)
+    {
+        $response = (new AccessMap\Service)->getConnectedApplications($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMapOAuthApplication(string $merchantId)
     {
         $input = Request::all();

@@ -5,10 +5,13 @@ namespace RZP\Models\Batch\Processor;
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
+use RZP\Models\Merchant;
+use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Helpers;
+use RZP\Exception\LogicException;
 
 class PaymentLink extends Base
 {
@@ -22,6 +25,19 @@ class PaymentLink extends Base
      * @var bool
      */
     protected $usesNewPlHeader = false;
+
+    protected $defaultEntries = [
+        [
+            'Invoice Number'    => '',
+            'Customer Name'     => 'Testing',
+            'Customer Email'    => 'testing@razorpay.com',
+            'Customer Contact'  => '',
+            'Amount (In Paise)' => '',
+            'Description'       => '',
+            'Expire By'         => '',
+            'Partial Payment'   => '',
+        ]
+    ];
 
     public function __construct(Entity $batch)
     {
@@ -157,5 +173,26 @@ class PaymentLink extends Base
             // Inserting just before amount in paise thingy
             array_splice($headers, 4, 0, Batch\Header::CURRENCY);
         }
+    }
+
+    protected function validateInputFileEntries(array $input): array
+    {
+        if ($this->shouldSkipValidateInputFile())
+        {
+            //
+            // Skips the validation
+            // Return the default Entries
+            // as it will be used for preview
+            //
+            $entries = $this->defaultEntries;
+        }
+        else
+        {
+            $entries = $this->parseFileAndCleanEntries($this->inputFileLocalPath);
+
+            $this->validateEntries($entries, $input);
+        }
+
+        return $entries;
     }
 }

@@ -169,6 +169,9 @@ class Gateway
      */
     protected $route;
 
+    /**
+     * @var $terminal \RZP\Models\Terminal\Entity
+     */
     protected $terminal;
 
     protected $gateway;
@@ -1262,7 +1265,7 @@ class Gateway
             $label = 'Razorpay Payments';
         }
 
-        return str_limit($label, $limit);
+        return str_limit($label, $limit, '');
     }
 
     protected function verifyOtpAttempts($payment, $limit = null)

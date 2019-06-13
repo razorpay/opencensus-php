@@ -60,24 +60,31 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_QUEUE_CAPTURE_DELETE                          = 'PAYMENT_QUEUE_CAPTURE_DELETE';
     const PAYMENT_CAPTURE_ADD_TO_QUEUE                          = 'PAYMENT_CAPTURE_ADD_TO_QUEUE';
     const REFUND_QUEUE_SCROOGE_SUCCESS                          = 'REFUND_QUEUE_SCROOGE_SUCCESS';
+    const REFUND_RECON_QUEUE_SCROOGE_SUCCESS                    = 'REFUND_RECON_QUEUE_SCROOGE_SUCCESS';
     const REFUND_RETRY_QUEUE_SCROOGE_SUCCESS                    = 'REFUND_RETRY_QUEUE_SCROOGE_SUCCESS';
     const REFUND_QUEUE_SCROOGE_REQUEST                          = 'REFUND_QUEUE_SCROOGE_REQUEST';
     const REFUND_RETRY_QUEUE_SCROOGE_REQUEST                    = 'REFUND_RETRY_QUEUE_SCROOGE_REQUEST';
+    const REFUND_RECON_QUEUE_SCROOGE_REQUEST                    = 'REFUND_RECON_QUEUE_SCROOGE_REQUEST';
     const REFUND_QUEUE_SCROOGE_DISPATCH                         = 'REFUND_QUEUE_SCROOGE_DISPATCH';
     const REFUND_QUEUE_SCROOGE_DISPATCH_FAILED                  = 'REFUND_QUEUE_SCROOGE_DISPATCH_FAILED';
     const REFUND_UPDATE_QUEUE_SCROOGE_SUCCESS                   = 'REFUND_UPDATE_QUEUE_SCROOGE_SUCCESS';
     const REFUND_UPDATE_QUEUE_SCROOGE_REQUEST                   = 'REFUND_UPDATE_QUEUE_SCROOGE_REQUEST';
     const REFUND_UPDATE_QUEUE_SCROOGE_DISPATCH                  = 'REFUND_UPDATE_QUEUE_SCROOGE_DISPATCH';
     const REFUND_UPDATE_QUEUE_SCROOGE_DISPATCH_FAILED           = 'REFUND_UPDATE_QUEUE_SCROOGE_DISPATCH_FAILED';
+    const REFUND_RECON_QUEUE_SCROOGE_DISPATCH_FAILED            = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH_FAILED';
     const REFUND_RETRY_QUEUE_SCROOGE_DISPATCH                   = 'REFUND_RETRY_QUEUE_SCROOGE_DISPATCH';
+    const REFUND_RECON_QUEUE_SCROOGE_DISPATCH                   = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH';
+    const REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA          = 'REFUND_RECON_QUEUE_SCROOGE_DISPATCH_METADATA';
     const REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED            = 'REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED';
     const REFUND_SCROOGE_RESPONSE                               = 'REFUND_SCROOGE_RESPONSE';
     const REFUND_SCROOGE_VERIFY_RESPONSE                        = 'REFUND_SCROOGE_VERIFY_RESPONSE';
     const REFUND_SCROOGE_FAILURE_EXCEPTION                      = 'REFUND_SCROOGE_FAILURE_EXCEPTION';
     const REFUND_SCROOGE_JOB_FAILURE_EXCEPTION                  = 'REFUND_SCROOGE_JOB_FAILURE_EXCEPTION';
     const REFUND_RETRY_SCROOGE_JOB_FAILURE_EXCEPTION            = 'REFUND_RETRY_SCROOGE_JOB_FAILURE_EXCEPTION';
-    const REFUND_UPDATE_SCROOGE_JOB_FAILURE_EXCEPTION           = 'REFUND_UPDATE_SCROOGE_JOB_FAILURE_EXCEPTION';
     const REFUND_SCROOGE_QUEUE_DELETE                           = 'REFUND_SCROOGE_QUEUE_DELETE';
+    const REFUND_RECON_SCROOGE_QUEUE_DELETE                     = 'REFUND_RECON_SCROOGE_QUEUE_DELETE';
+    const REFUND_UPDATE_SCROOGE_JOB_FAILURE_EXCEPTION           = 'REFUND_UPDATE_SCROOGE_JOB_FAILURE_EXCEPTION';
+    const REFUND_RECON_SCROOGE_CHUNK_MARK_RECONCILED            = 'REFUND_RECON_SCROOGE_CHUNK_MARK_RECONCILED';
     const REFUND_UPDATE_SCROOGE_QUEUE_DELETE                    = 'REFUND_UPDATE_SCROOGE_QUEUE_DELETE';
     const REFUND_RETRY_SCROOGE_QUEUE_DELETE                     = 'REFUND_RETRY_SCROOGE_QUEUE_DELETE';
     const REFUND_GATEWAY_CALL_NON_SCROOGE_GATEWAY               = 'REFUND_GATEWAY_CALL_NON_SCROOGE_GATEWAY';
@@ -301,6 +308,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_TRANSFER_REQUEST_FAILED                         = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                          = 'NODAL_PAYMENT_STATUS_REQUEST';
     const NODAL_PAYMENT_STATUS_RESPONSE                         = 'NODAL_PAYMENT_STATUS_RESPONSE';
+    const NODAL_HEALTH_CHECK_REQUEST                            = 'NODAL_HEALTH_CHECK_REQUEST';
+    const NODAL_HEALTH_CHECK_RESPONSE                           = 'NODAL_HEALTH_CHECK_RESPONSE';
     const NODAL_REQUEST_FAILED                                  = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED                   = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
     const FTA_SOURCE_PROCESSING_FAILED                          = 'FTA_SOURCE_PROCESSING_FAILED';
@@ -378,7 +387,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_BATCH_NOTIFY_JOB_RECEIVED                     = 'INVOICE_BATCH_NOTIFY_JOB_RECEIVED';
     const INVOICE_BATCH_NOTIFY_JOB_HANDLED                      = 'INVOICE_BATCH_NOTIFY_JOB_HANDLED';
     const INVOICE_BATCH_NOTIFY_JOB_ERROR                        = 'INVOICE_BATCH_NOTIFY_JOB_ERROR';
+    const INVOICE_BATCH_CANCEL_JOB_ERROR                        = 'INVOICE_BATCH_CANCEL_JOB_ERROR';
     const INVOICE_BATCH_NOTIFY_JOB_INV_NOTIFY_ERROR             = 'INVOICE_BATCH_NOTIFY_JOB_INV_NOTIFY_ERROR';
+    const INVOICE_BATCH_CANCEL_JOB_INV_CANCEL_ERROR             = 'INVOICE_BATCH_CANCEL_JOB_INV_CANCEL_ERROR';
+    const INVOICE_BATCH_CANCEL_SUMMARY                          = 'INVOICE_BATCH_CANCEL_SUMMARY';
+    const INVOICE_BATCH_COUNT_ZERO                              = 'INVOICE_BATCH_COUNT_ZERO';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';
@@ -502,6 +515,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEES_BREAKUP_CREATION_FAILED                          = 'FEES_BREAKUP_CREATION_FAILED';
     const FEES_BREAKUP_CREATED                                  = 'FEES_BREAKUP_CREATED';
     const GATEWAY_UPI_REQUEST_CALLBACK                          = 'GATEWAY_UPI_REQUEST_CALLBACK';
+    const REFUND_TRANSACTION_CREATE_RECON                       = 'REFUND_TRANSACTION_CREATE_RECON';
     const REFUND_TRANSACTION_CREATE_FAILED                      = 'REFUND_TRANSACTION_CREATE_FAILED';
     const REFUND_TRANSACTION_CREATE_REQUEST                     = 'REFUND_TRANSACTION_CREATE_REQUEST';
     const GATEWAY_REFUNDED_TXNS_MISSING                         = 'GATEWAY_REFUNDED_TXNS_MISSING';
@@ -1269,6 +1283,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for offers
 
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';
+    const OFFER_CREATE_BULK                                     = 'OFFER_CREATE_BULK';
     const OFFER_DISCOUNT_CREATED                                = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                             = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                                  = 'OFFER_UPDATE_REQUEST';
@@ -1488,6 +1503,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
+    const AWS_SNS_PUBLISH_RESPONSE                              = 'AWS_SNS_PUBLISH_RESPONSE';
 
     const SERVER_ERROR_LOG_RISK                                 = 'SERVER_ERROR_LOG_RISK';
 
@@ -1650,7 +1666,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
     const REFUND_REVERSAL_FAILED                                = 'REFUND_REVERSAL_FAILED';
 
-    const FTA_TRANSFER_DISPATCH                                 = 'FTA_DISPATCH_TRANSFER';
+    const FTA_TRANSFER_DISPATCH                                 = 'FTA_TRANSFER_DISPATCH';
     const FTA_TRANSFER_DISPATCH_FAILED                          = 'FTA_TRANSFER_DISPATCH_FAILED';
     const FTA_MERCHANT_BENE_REG_INIT                            = 'FTA_MERCHANT_BENE_REG_INIT';
     const FTA_MERCHANT_BENE_REG_COMPLETE                        = 'FTA_MERCHANT_BENE_REG_COMPLETE';
@@ -1799,10 +1815,23 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_MULTIPART_PAYLOAD                       = 'BATCH_SERVICE_MULTIPART_PAYLOAD';
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
+    const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
+    const BATCH_SERVICE_BULK_EXCEPTION                          = 'BATCH_SERVICE_BULK_EXCEPTION';
 
     const PAYMENT_ON_HOLD                                       = 'PAYMENT_ON_HOLD';
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
+
+    // Banking account
+    const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
+    const BANKING_ACCOUNT_CREATE                                = 'BANKING_ACCOUNT_CREATE';
+
+    const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
+    const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
+    const GOVERNOR_SERVICE_RETRY                                = 'GOVERNOR_SERVICE_RETRY';
+    const GOVERNOR_SERVICE_ERROR                                = 'GOVERNOR_SERVICE_ERROR';
+    const CAPTURE_VERIFY_ONHOLD_FINISH_ACTION                   = 'CAPTURE_VERIFY_ONHOLD_FINISH_ACTION';
+    const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

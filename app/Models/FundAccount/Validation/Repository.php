@@ -12,4 +12,15 @@ class Repository extends Base\Repository
     protected $expands = [
         Entity::FUND_ACCOUNT,
     ];
+
+    public function getFundAccountValidationsToRetry($time, $count)
+    {
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->where(Entity::RETRY_AT, '<', $time)
+            ->where(Entity::STATUS, "=" , Status::CREATED)
+            ->take($count)
+            ->orderBy(Entity::RETRY_AT, 'asc')
+            ->get()->pluck('id')->all();
+    }
 }

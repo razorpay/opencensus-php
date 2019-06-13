@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis\Transformers;
 
+use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
 
 abstract class Transformer
@@ -42,6 +43,11 @@ abstract class Transformer
     public function toPaisa($value)
     {
         return intval(round(floatval($value) * 100));
+    }
+
+    public function toTimestamp($now = null)
+    {
+        return Carbon::parse($now)->getTimestamp();
     }
 
     public function toUsernameHandle($value)

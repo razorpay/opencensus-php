@@ -2,6 +2,9 @@
 
 namespace RZP\Models\FundAccount\Validation\Processor;
 
+use Carbon\Carbon;
+use Illuminate\Support\Arr;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use Monolog\Logger;
 use RZP\Trace\TraceCode;
@@ -21,6 +24,16 @@ class BankAccount extends Base
         parent::__construct($validation);
     }
 
+    protected static $attemptToRetryAfterSecondsMap = [
+        2 => 1800,       // 30 Minutes
+        3 => 5400,       // 90 Minutes
+        4 => 12600,      // 3 Hours 30 Minutes
+        5 => 27000,      // 7 Hours 30 Minutes
+        6 => 55800,      // 15 Hours 30 Minutes
+        7 => 86400,      // 24 Hours
+        // Thereafter 24 Hours
+    ];
+
     /**
      * @throws Exception\BadRequestException
      */
@@ -34,7 +47,7 @@ class BankAccount extends Base
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
         }
 
         $notFailedFTAs = $this->repo->fund_transfer_attempt->getAttemptBySourceIdAndNotFailed($this->validation->getId(), Table::FUND_ACCOUNT_VALIDATION);
@@ -47,7 +60,7 @@ class BankAccount extends Base
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
         }
     }
 
@@ -255,12 +268,29 @@ class BankAccount extends Base
             'validation_status' => $this->validation->getStatus(),
         ];
 
-        $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR, $traceArray);
+        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR, $traceArray);
 
-        $this->slack->queue(
-            TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR,
-            $traceArray,
-            Constants::slackSettings()
-        );
+        // We need to retry after some time.
+        // This will be done by creating another FTA from retry CRON.
+        $this->setRetryAt();
+    }
+
+    protected function setRetryAt()
+    {
+        // Calculate Retry At value
+        $nextAttempt = $this->validation->getAttempts() + 1;
+
+        $retryAfter = Arr::get(self::$attemptToRetryAfterSecondsMap, $nextAttempt);
+
+        if ($retryAfter == null)
+        {
+            $retryAfter = self::$attemptToRetryAfterSecondsMap[7];
+        }
+
+        $retryAt = Carbon::now(Timezone::IST)->addSeconds($retryAfter)->getTimestamp();
+
+        $this->validation->setRetryAt($retryAt);
+
+        $this->repo->saveOrFail($this->validation);
     }
 }

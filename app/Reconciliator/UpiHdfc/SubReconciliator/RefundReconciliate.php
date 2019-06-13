@@ -25,6 +25,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
+        $refundId = null;
+
         //
         // Here MIS file contains payment (credit) entries as well.
         // As we only process refund (debit) entries with transaction status as 'SUCCESS',
@@ -49,17 +51,17 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         if (empty($row[self::COLUMN_REFUND_ID]) === false)
         {
-            return substr($row[self::COLUMN_REFUND_ID], 0, 14);
+            $refundId = substr($row[self::COLUMN_REFUND_ID], 0, 14);
         }
 
-        return null;
+        return $refundId;
     }
 
     protected function checkIfUnexpectedRefundId($row)
     {
         if ((empty($row[self::COLUMN_TRANSACTION_REMARKS]) === false) and
-            ($row[self::COLUMN_TRANSACTION_REMARKS] === self::APPROVED) and
             (empty($row[self::COLUMN_REFUND_ID]) === false) and
+            (strpos($row[self::COLUMN_TRANSACTION_REMARKS], self::APPROVED) === 0) and
             (strpos($row[self::COLUMN_REFUND_ID], 'UPI') === 0))
         {
             //

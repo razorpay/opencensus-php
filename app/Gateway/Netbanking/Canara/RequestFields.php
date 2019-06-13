@@ -16,8 +16,8 @@ class RequestFields
     const FAILURE_STATIC_FLAG           = 'fldFailStatFlg';
     const DATE                          = 'fldDatTimeTxn';
 
-    const FLDREF1                       = 'fldref1';
-    const FLDREF2                       = 'fldref2';
+    const FLDREF1                       = 'fldRef1';
+    const FLDREF2                       = 'fldRef2';
 
     const CHECKSUM                      = 'checksum';
     const ENCRYPTED_DATA                = 'encdata';

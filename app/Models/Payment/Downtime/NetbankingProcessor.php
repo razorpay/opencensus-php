@@ -22,10 +22,7 @@ class NetbankingProcessor extends BaseProcessor
             $this->createPaymentDowntime($bank, $gatewayDowntimes);
         }
 
-        if (empty($unavailableBanks) === true)
-        {
-            $this->endOngoingDowntimes();
-        }
+        $this->endOngoingDowntimes($unavailableBanks);
     }
 
     protected function calculateUnavailableBanks(Collection $gatewayDowntimes)
@@ -87,6 +84,10 @@ class NetbankingProcessor extends BaseProcessor
     protected function calculateDowntimePeriodForBank(string $bank, Collection $gatewayDowntimes)
     {
         $supportingGateways = (new NetbankingIssuerMapping)->getGatewaysSupportingBank($bank);
+
+        // Gateway downtime can also be created as gateway = ALL which
+        // gets skipped while filtering affectingGatewayDowntimes
+        $supportingGateways = array_merge($supportingGateways, [GatewayDowntime::ALL]);
 
         $affectingGatewayDowntimes = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, $supportingGateways);
 

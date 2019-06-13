@@ -2,7 +2,8 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
-use App;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -23,7 +24,7 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->mutex = App::getFacadeRoot()['api.mutex'];
+        $this->mutex = $this->app['api.mutex'];
 
         $this->fundAccountCore = new FundAccount\Core();
     }
@@ -42,14 +43,13 @@ class Core extends Base\Core
 
         try
         {
-            $validation = $this->createValidationEntity($input, $merchant, function($fundAccountValidation)
-            {
-                $processor = Processor\Factory::get($fundAccountValidation);
+            $fundAccountValidation = $this->createValidationEntity($input, $merchant);
 
-                $processor->preProcessValidation();
+            $processor = Processor\Factory::get($fundAccountValidation);
 
-                (new Metric)->pushCreatedMetrics();
-            });
+            $processor->preProcessValidation();
+
+            (new Metric)->pushCreatedMetrics();
         }
         catch (\Throwable $e)
         {
@@ -58,7 +58,7 @@ class Core extends Base\Core
             throw $e;
         }
 
-        return $validation;
+        return $fundAccountValidation;
     }
 
     public function retry(array $input): array
@@ -98,6 +98,19 @@ class Core extends Base\Core
         ];
     }
 
+    public function retryAllFundAccountValidations(array $input): array
+    {
+        $count = $input['count'] ?? 200;
+
+        $delay = 300;
+
+        $currentTimestamp = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+
+        $fund_account_validation_ids = $this->repo->fund_account_validation->getFundAccountValidationsToRetry($currentTimestamp, $count);
+
+        return $this->retry([Entity::FUND_ACCOUNT_VALIDATION_IDS => $fund_account_validation_ids]);
+    }
+
     /**
      * @param $favId
      * @return bool
@@ -109,18 +122,26 @@ class Core extends Base\Core
             function () use ($favId)
             {
                 // We are fetching entity inside the transaction because it could have been updated by another such process.
-                $fundAccountValidation = $this->repo->fund_account_validation->findByPublicId($favId);
+                $fundAccountValidation = $this->repo->fund_account_validation->findOrFail($favId);
 
                 $processor = Processor\Factory::get($fundAccountValidation);
 
                 $processor->validateRetry();
 
+                $attempt = $fundAccountValidation->getAttempts() + 1;
+
                 $processor->preProcessValidation();
+
+                $fundAccountValidation->setAttempts($attempt);
+
+                $fundAccountValidation->setRetryAt(null);
+
+                $this->repo->saveOrFail($fundAccountValidation);
 
                 return true;
             },
             18000,
-            ErrorCode::FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS);
     }
 
     /**
@@ -171,14 +192,13 @@ class Core extends Base\Core
     /**
      * @param array $input
      * @param Merchant\Entity $merchant
-     * @param callable $callback
      * @return Entity
      */
-    protected function createValidationEntity(array $input, Merchant\Entity $merchant, callable $callback): Entity
+    protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
-        $validation = $this->repo->transaction(function () use ($input, $validation, $callback, $merchant)
+        $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
@@ -222,8 +242,6 @@ class Core extends Base\Core
 
             return $validation;
         });
-
-        call_user_func($callback, $validation);
 
         return $validation;
     }

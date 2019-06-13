@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Transaction;
 
 class Validator extends Base\Validator
 {
@@ -13,6 +14,9 @@ class Validator extends Base\Validator
     protected static $validateRules;
     protected static $validateSuccessRules;
     protected static $fetchAllRules;
+    protected static $handleBeneficiaryRules;
+    protected static $handleBeneficiarySuccessRules;
+    protected static $getBlockedRules;
 
     public function rules()
     {
@@ -94,7 +98,42 @@ class Validator extends Base\Validator
         return $rules;
     }
 
+    public function makeHandleBeneficiaryRules()
+    {
+        $rules = $this->makeRules([
+            Vpa\Entity::USERNAME    => 'required',
+            Vpa\Entity::HANDLE      => 'required',
+            Entity::TYPE            => 'required|in:vpa',
+            Entity::SPAMMED         => 'required',
+            Entity::BLOCKED         => 'required',
+            Transaction\Entity::UPI => 'sometimes|array',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeHandleBeneficiarySuccessRules()
+    {
+        $rules = $this->makeRules([
+            Vpa\Entity::USERNAME => 'required',
+            Vpa\Entity::HANDLE   => 'required',
+            Entity::SPAMMED      => 'required',
+            Entity::BLOCKED      => 'required',
+            Entity::TYPE         => 'required|in:vpa',
+            Entity::BLOCKED_AT   => 'sometimes|nullable|integer',
+        ]);
+
+        return $rules;
+    }
+
     public function makeFetchAllRules()
+    {
+        $rules = $this->makeRules([]);
+
+        return $rules;
+    }
+
+    public function makeGetBlockedRules()
     {
         $rules = $this->makeRules([]);
 

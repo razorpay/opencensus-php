@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
 use RZP\Models\Vpa;
+use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
@@ -14,18 +15,17 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
-use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
  * Class Base
  * @package RZP\Models\Payout\Processor
  */
-abstract class Base extends BaseCore
+class Base extends BaseCore
 {
     /**
      * @var Merchant\Entity
@@ -59,17 +59,12 @@ abstract class Base extends BaseCore
     protected $fees = 0;
 
     /**
-     * @var string|null
-     */
-    protected $channel;
-
-    /**
      * @var Balance\Entity
      */
     protected $balance;
 
     /**
-     * @var BankAccount\Entity|Vpa\Entity
+     * @var BankAccount\Entity|Vpa\Entity|Card\Entity
      */
     protected $fundTransferDestination;
 
@@ -79,47 +74,18 @@ abstract class Base extends BaseCore
 
         $this->setPayoutBalance($input);
 
-        $this->setChannel($input);
-
         $payout = $this->repo->transaction(function () use ($input)
         {
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);
 
-            try
-            {
-                // Create merchant/customer transactions and link it to payout.
-                $this->createTxns($payout);
+            $payoutType = $this->getPayoutType();
 
-                // Create a fund transfer entity where the fund transfers will be processed.
-                // NOTE: Ensure that this is created after transaction creation, so that if
-                // the transaction creation fails because of insufficient funds and we want
-                // to queue the payout instead of failing the complete DB transaction, this
-                // FTA does not get created.
-                $this->createFundTransferAttemptEntity($payout);
-            }
-            catch (Exception\BadRequestException $ex)
-            {
-                //
-                // This needs to be done since while creating a transaction we also associate
-                // the source (payout) with the transaction and then we fail the transaction
-                // creation due to insufficient balance and then later attempt to save the payout.
-                // Payout save fails because we associated the failed transaction with the payout
-                // but we had not actually saved the transaction in the DB.
-                //
-                $payout->transaction()->dissociate();
+            $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                           $payout,
+                                                           $this->fundTransferDestination);
 
-                $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
-
-                if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
-                {
-                    $this->handleInsufficientFunds($ex, $payout);
-                }
-                else
-                {
-                    throw $ex;
-                }
-            }
+            $downstreamProcessor->process();
 
             $this->repo->saveOrFail($payout);
 
@@ -154,17 +120,26 @@ abstract class Base extends BaseCore
         $payout = $this->repo->transaction(
                     function () use ($payout)
                     {
-                        // Create merchant/customer transactions and link it to payout.
-                        $this->createTxns($payout);
-
                         // TODO: Later, we will have to handle active / inactive stuff also here.
                         // Refer the function `fetchAndAssociatePayoutAccount`
                         // Also, this will have to be fixed for MerchantPayout since there the fundTransferDestination
                         // is merchant's bank account.
                         $this->fundTransferDestination = $payout->fundAccount->account;
 
-                        // Create a fund transfer entity where the fund transfers will be processed.
-                        $this->createFundTransferAttemptEntity($payout);
+                        $payoutType = $this->getPayoutType();
+
+                        $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                                       $payout,
+                                                                       $this->fundTransferDestination);
+
+                        //
+                        // Ensure that the queued flag in the payout entity is not set.
+                        // If it is set, it's going to cause issues since the downstream processor
+                        // doesn't throw an error on insufficient funds if queued flag is set.
+                        // If it doesn't throw an error, we'll end up marking it created without actually
+                        // creating any transaction or FTA.
+                        //
+                        $downstreamProcessor->process();
 
                         $payout->setStatus(Payout\Status::CREATED);
 
@@ -274,8 +249,6 @@ abstract class Base extends BaseCore
 
         $payout->customer()->associate($this->customer);
 
-        $payout->setChannel($this->channel);
-
         $this->fetchAndAssociatePayoutAccount($payout, $input);
 
         $this->setMethod($payout);
@@ -317,35 +290,6 @@ abstract class Base extends BaseCore
         return $payout;
     }
 
-    protected function createFundTransferAttemptEntity(Payout\Entity $payout)
-    {
-        $ftaInput = [
-            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
-            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
-            FundTransferAttempt\Entity::MODE      => $payout->getMode(),
-            FundTransferAttempt\Entity::NARRATION => $payout->getNarration(),
-        ];
-
-        $ftaAccount = $this->fundTransferDestination;
-        $ftaCore    = new FundTransferAttempt\Core;
-
-        switch ($ftaAccount->getEntity())
-        {
-            case E::BANK_ACCOUNT:
-                $ftaCore->createWithBankAccount($payout, $ftaAccount, $ftaInput);
-
-                return;
-
-            case E::VPA:
-                $ftaCore->createWithVpa($payout, $ftaAccount, $ftaInput);
-
-                return;
-
-            default:
-                // Throw exception
-        }
-    }
-
     protected function preValidations()
     {
         //
@@ -362,11 +306,16 @@ abstract class Base extends BaseCore
 
     protected function runInputValidations(Payout\Entity $payout, array $input)
     {
-        $validatorOperation = camel_case(class_basename(get_called_class()));
+        $validatorOperation = camel_case($this->getPayoutType());
 
         $validator = $payout->getValidator();
 
         $validator->validateInput(camel_case($validatorOperation), $input);
+    }
+
+    protected function getPayoutType()
+    {
+        return class_basename(get_called_class());
     }
 
     protected function setPayoutBalance(array $input)
@@ -381,53 +330,6 @@ abstract class Base extends BaseCore
         {
             $this->balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
         }
-    }
-
-    protected function createTxns(Payout\Entity $payout)
-    {
-        list ($txn, $feeSplit) = (new Transaction\Processor\Payout($payout))->createTransaction();
-
-        //
-        // In an on-demand payout, whatever payout amount the merchant asks for, we DO NOT create
-        // a payout for that amount. Instead, we deduct some fees from that amount and create the
-        // payout with the REMAINING amount. For example: If a merchant wants a payout of 100rs,
-        // we create a payout of 98rs only and keep the remaining 2rs as fees.
-        //
-        // In case of a normal payout, we add extra fees to the actual payout amount and deduct
-        // that much amount of money from the merchant's balance. For example, if a merchant wants
-        // to do a payout of 100rs, we create a payout of 100rs and then deduct 102rs from his balance.
-        // The 2rs extra is our fees. The reason we don't deduct from the actual payout amount here is
-        // because in most cases normal payout is used to payout some money to a customer (of the merchant).
-        // The customer would always expect a certain amount. (we can have customer fee bearer concept later).
-        //
-        // In case of on-demand, it's basically a customer fee bearer kind of concept, where in the customer
-        // is the actual merchant himself. He bears the fees for the payout to his account. Hence, the payout
-        // happens after deducting the razorpay fees from the actual payout amount. For this reason, we also
-        // reset the payout amount here.
-        //
-        // In both the above cases, we need to ensure that the merchant has enough balance in his account.
-        // The validation for the balance would always be payout's amount + our fees.
-        //
-
-        if ($payout->getPayoutType() === Payout\Entity::ON_DEMAND)
-        {
-            // Here, payout amount is the amount requested by merchant for payout and fees is
-            // levied over it. Also, this fees is deducted from merchant balance. This happens for
-            // merchants who do not have 'es_on_demand' feature enabled. In case of 'es_on_demand'
-            // merchants, payout fees will be deducted from payout amount requested by the merchant.
-            // This is done to allow a merchant to do a payout on requested amount, rather than
-            // calculating fees over it and failing a transaction if merchant does not have enough balance.
-            $payout->setAmount($txn->getAmount());
-        }
-
-        $payout->setFees($txn->getFee());
-        $payout->setTax($txn->getTax());
-
-        $this->repo->saveOrFail($txn);
-
-        (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
-
-        $this->repo->saveOrFail($txn);
     }
 
     /**
@@ -452,11 +354,4 @@ abstract class Base extends BaseCore
 
         $payout->setMethod($method);
     }
-
-    protected function handleInsufficientFunds(Exception\BadRequestException $ex, Payout\Entity $payout)
-    {
-        throw $ex;
-    }
-
-    abstract protected function setChannel($input = []);
 }

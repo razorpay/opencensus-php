@@ -51,6 +51,11 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateItemWithTaxIdInternational()
+    {
+        $this->startTest();
+    }
+
     public function testCreateItemWithTaxGroupId()
     {
         $this->startTest();

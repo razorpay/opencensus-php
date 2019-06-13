@@ -27,6 +27,11 @@ final class Constant
     const ID_SETTINGS_KEY_PREFIX     = 'throttle:t:i:';
 
     /**
+     * Redis key to store the set which contains all the custom level settings
+     */
+    const CUSTOM_SETTINGS_SET        = 'throttle:custom';
+
+    /**
      * Key id -> Mid is kept in cache for faster access
      */
     const KEYID_MID_KEY_PREFIX       = 'throttle:t:km:';

@@ -19,4 +19,5 @@ class Constants
     const BANK_SUB_STATUS_CODE  = 'sub_status_code';
     const TRANSFER_TYPE         = 'transfer_type';
     const LOW_BALANCE_ALERT     = 'low_balance_alert';
+    const BANK_RESPONSE_CODE    = 'bank_response_code';
 }

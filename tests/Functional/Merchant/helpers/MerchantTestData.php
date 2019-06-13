@@ -2155,7 +2155,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 31,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2168,7 +2168,28 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
+                            'issuer' => 'AUBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BACB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
                             'issuer' => 'BBKM',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BDBL',
                         ],
                     ],
                     [
@@ -2189,7 +2210,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DBSS',
+                            'issuer' => 'ESAF',
                         ],
                     ],
                     [
@@ -2203,7 +2224,42 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
+                            'issuer' => 'KCCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'KJSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'MSNU',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'NESF',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
                             'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SURY',
                         ],
                     ],
                     [
@@ -2224,6 +2280,20 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
+                            'issuer' => 'TBSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TJSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
                             'issuer' => 'TNSC',
                         ],
                     ],
@@ -2231,7 +2301,21 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'AUBL',
+                            'issuer' => 'VARA',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ZCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ANDB_C',
                         ],
                     ],
                     [
@@ -2245,7 +2329,14 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'PUNB_C',
+                            'issuer' => 'DLXB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IBKL_C',
                         ],
                     ],
                     [
@@ -2253,6 +2344,34 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'LAVB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PUNB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'RATN_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SVCB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'YESB_C',
                         ],
                     ],
                 ],
@@ -2268,13 +2387,13 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 15,
+                'count' => 32,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer'    => 'HDFC'
+                            'issuer' => 'HDFC',
                         ],
                     ],
                     [
@@ -2288,7 +2407,28 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
+                            'issuer' => 'AUBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BACB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
                             'issuer' => 'BBKM',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BDBL',
                         ],
                     ],
                     [
@@ -2309,7 +2449,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DBSS',
+                            'issuer' => 'ESAF',
                         ],
                     ],
                     [
@@ -2323,7 +2463,42 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
+                            'issuer' => 'KCCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'KJSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'MSNU',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'NESF',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
                             'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SURY',
                         ],
                     ],
                     [
@@ -2344,6 +2519,20 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
+                            'issuer' => 'TBSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TJSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
                             'issuer' => 'TNSC',
                         ],
                     ],
@@ -2351,7 +2540,21 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'AUBL',
+                            'issuer' => 'VARA',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ZCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ANDB_C',
                         ],
                     ],
                     [
@@ -2365,7 +2568,14 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'PUNB_C',
+                            'issuer' => 'DLXB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IBKL_C',
                         ],
                     ],
                     [
@@ -2373,6 +2583,34 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'LAVB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PUNB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'RATN_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SVCB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'YESB_C',
                         ],
                     ],
                 ],
@@ -2471,7 +2709,7 @@ return [
 
     'testGetWalletDowntime' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -2577,19 +2815,36 @@ return [
                         [
                             'issuer'      => [
                                 'ABPB',
+                                'AUBL',
+                                'BACB',
                                 'BBKM',
+                                'BDBL',
                                 'BKDN',
                                 'COSB',
-                                'DBSS',
+                                'ESAF',
                                 'JSBP',
+                                'KCCB',
+                                'KJSB',
+                                'MSNU',
+                                'NESF',
                                 'NKGS',
+                                'SURY',
                                 'SVCB',
                                 'SYNB',
+                                'TBSB',
+                                'TJSB',
                                 'TNSC',
-                                'AUBL',
+                                'VARA',
+                                'ZCBL',
+                                'ANDB_C',
                                 'BARB_C',
+                                'DLXB_C',
+                                'IBKL_C',
+                                'LAVB_C',
                                 'PUNB_C',
-                                'LAVB_C'
+                                'RATN_C',
+                                'SVCB_C',
+                                'YESB_C'
                             ],
                             'scheduled'   => true,
                             'severity'    => 'low',
@@ -3909,6 +4164,17 @@ return [
     ],
 
     'testGetCheckoutPreferencesForCardlessEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForPayLater' => [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',

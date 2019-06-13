@@ -922,6 +922,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Merchant\AccessMap\Entity::class, [
+            // TODO: Why no fake generated id here?
             'merchant_id'     => '10000000000000',
             'entity_type'     => 'application',
             'entity_id'       => '10000000000App',
@@ -1070,6 +1071,13 @@ final class FactoryData
         $factory(\RZP\Gateway\Isg\Entity::class, [
             'id'                => 12345,
             'payment_id'        => 'factory:RZP\Models\Payment\Entity',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Gateway\CardlessEmi\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'gateway'           => 'cardless_emi',
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);

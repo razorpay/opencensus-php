@@ -51,6 +51,7 @@ return [
         'netbanking_canara',
         'netbanking_equitas',
         'netbanking_sbi',
+        'netbanking_cub',
         'netbanking_yesb',
         'paytm',
         'sharp',
@@ -81,6 +82,7 @@ return [
         'p2p_upi_sharp',
         'p2p_upi_axis',
         'paysecure',
+        'paylater',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -117,6 +119,7 @@ return [
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
+    'mock_netbanking_cub'         => env('NETBANKING_CUB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_netbanking_canara'      => env('NETBANKING_CANARA_MOCK'),
     'mock_netbanking_yesb'        => env('NETBANKING_YESB_MOCK'),
@@ -145,6 +148,7 @@ return [
     'mock_isg'                    => env('ISG_MOCK'),
     'mock_paysecure'              => env('PAYSECURE_MOCK'),
     'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
+    'mock_paylater'               => env('PAYLATER_MOCK'),
     'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
@@ -571,7 +575,6 @@ return [
 
     'netbanking_canara' => [
         'test_merchant_id'       => env('NETBANKING_CANARA_GATEWAY_TEST_MERCHANT_ID'),
-        //TODO add these values for live mode
         'key'                    => env('NETBANKING_CANARA_GATEWAY_KEY'),
         'IV'                     => env('NETBANKING_CANARA_GATEWAY_IV'),
     ],

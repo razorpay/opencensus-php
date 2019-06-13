@@ -176,5 +176,4 @@ class Validator extends Base\Validator
 
         return $rules;
     }
-
 }

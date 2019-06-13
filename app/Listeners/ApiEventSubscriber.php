@@ -199,8 +199,6 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        $merchant = $this->getMerchantFromEntity($payment);
-
         if ($payment->hasSubscription() === true)
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
@@ -214,8 +212,6 @@ class ApiEventSubscriber extends Base\Core
     protected function onPaymentFailed($payment)
     {
         $payload = $this->getPaymentPayload($payment);
-
-        $merchant = $this->getMerchantFromEntity($payment);
 
         if ($payment->hasSubscription() === true)
         {
@@ -595,6 +591,15 @@ class ApiEventSubscriber extends Base\Core
             'entity' => $virtualAccountArray,
         ];
 
+        if ($payment->isBankTransfer() === true)
+        {
+            $bankTransfer = $payment->bankTransfer;
+
+            $partialPayload[$bankTransfer->getEntity()] = [
+                'entity' => $bankTransfer->toArrayPublic(),
+            ];
+        }
+
         return $partialPayload;
     }
 
@@ -728,7 +733,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $this->trace->info(TraceCode::WEBHOOK_DISPATCH, $data);
 
-        Webhook::dispatch($data)->using([$this->event]);
+        WebHook::dispatch($data)->using([$this->event]);
     }
 
     protected function getWebhookData(array $payload, WebhookEntity $webhook): array

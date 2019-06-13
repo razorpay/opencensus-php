@@ -115,7 +115,7 @@ trait HeadlessOtp
     }
 
     protected function openHeadlessBrowser(Payment\Entity $payment, $request)
-    {        
+    {
         $originalTermUrl = null;
 
         if (($this->isRupayNetwork($payment) === false) and
@@ -134,9 +134,11 @@ trait HeadlessOtp
         ];
 
         $data = [
-            'payment_id' => $payment->getId(),
-            'request'    => $request,
-            'card'       => $card
+            'payment_id'  => $payment->getId(),
+            'request'     => $request,
+            'card'        => $card,
+            'merchant_id' => $payment->getMerchantId(),
+            'gateway'     => $payment->getGateway(),
         ];
 
         $response = $this->app['card.otpelf']->otpSend($data);
@@ -170,35 +172,8 @@ trait HeadlessOtp
             'iin'          => $payment->card->getIin(),
         ];
 
-        $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_RESPONSE;
+        $this->handleFailedResponse($response, $payment, $traceInput);
 
-        if ((empty($response) === false) and
-            ($response['success'] === false) and
-            (isset($response['error']['reason']) === true))
-        {
-            $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_FAILURE;
-
-            if ((isset($response['error']['fatal']) === true) and
-                ($response['error']['fatal'] === true))
-            {
-                $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
-
-                $traceInput['disable_iin'] = true;
-                $traceCode = TraceCode::HEADLESS_OTP_ELF_FAILURE;
-            }
-
-            if ($response['error']['reason'] === OtpElf::ERROR_TIMEOUT)
-            {
-                $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
-
-                throw new Exception\GatewayTimeoutException(
-                    ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-                    null,
-                    false);
-            }
-        }
-
-        $this->trace->critical($traceCode, $traceInput);
 
         if ($payment->getAuthType() === Payment\AuthType::OTP)
         {
@@ -268,6 +243,14 @@ trait HeadlessOtp
             return [];
         }
 
+        $traceInput = [
+            'elf_response' => $response,
+            'payment_id'   => $payment->getId(),
+            'iin'          => $payment->card->getIin(),
+        ];
+
+        $this->handleFailedResponse($response, $payment, $traceInput);
+
         throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         );
@@ -288,6 +271,18 @@ trait HeadlessOtp
 
             return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
         }
+
+        $traceInput = [
+            'elf_response' => $response,
+            'payment_id'   => $payment->getId(),
+            'iin'          => $payment->card->getIin(),
+        ];
+
+        $this->handleFailedResponse($response, $payment, $traceInput);
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        );
     }
 
     /**
@@ -297,6 +292,39 @@ trait HeadlessOtp
     protected function setHeadlessDummyCallbackUrl(&$content)
     {
         $content['TermUrl'] = 'https://api.razorpay.com';
+    }
+
+    protected function handleFailedResponse($response, $payment, $traceInput)
+    {
+        $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_RESPONSE;
+
+        if ((empty($response) === false) and
+            ($response['success'] === false) and
+            (isset($response['error']['reason']) === true))
+        {
+            $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_FAILURE;
+
+            if ((isset($response['error']['fatal']) === true) and
+                ($response['error']['fatal'] === true))
+            {
+                $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
+
+                $traceInput['disable_iin'] = true;
+                $traceCode = TraceCode::HEADLESS_OTP_ELF_FAILURE;
+            }
+
+            if ($response['error']['reason'] === OtpElf::ERROR_TIMEOUT)
+            {
+                $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
+
+                throw new Exception\GatewayTimeoutException(
+                    ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                    null,
+                    false);
+            }
+        }
+
+        $this->trace->critical($traceCode, $traceInput);
     }
 
     protected function disableIinFlowIfApplicable($payment, $code)

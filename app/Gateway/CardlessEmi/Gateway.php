@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Gateway extends Base\Gateway
@@ -46,9 +47,21 @@ class Gateway extends Base\Gateway
     ];
 
     protected $tokenRequiredProviders = [
-        CardlessEmi::ZESTMONEY,
-        CardlessEmi::EARLYSALARY
+        Payment\Method::CARDLESS_EMI => [
+            CardlessEmi::ZESTMONEY,
+            CardlessEmi::EARLYSALARY,
+        ],
+        Payment\Method::PAYLATER => [
+            PayLater::EPAYLATER,
+        ]
     ];
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->gateway = $terminal['gateway'];
+    }
 
     /**
      * Checks customer's account with provider and sends otp for authentication. This function is called from
@@ -95,6 +108,12 @@ class Gateway extends Base\Gateway
          */
         $this->checkAccountExists($responseArray);
 
+        // in case of method: paylater, there are no emi plans.
+        if ($this->gateway === Payment\Gateway::PAYLATER)
+        {
+            return;
+        }
+
         $this->checkEmiPlansExists($responseArray);
 
         $this->addCacheData($input['contact'], $responseArray);
@@ -137,6 +156,8 @@ class Gateway extends Base\Gateway
         $this->app['cache']->put($key, $url, self::CARD_CACHE_TTL);
     }
 
+
+    //-----------------------------methods called by Payment Processor Begin--------------------------
     /**
      * The Authorization flow consists of two steps : fetch token for customer and then authorize the payment
      */
@@ -200,7 +221,7 @@ class Gateway extends Base\Gateway
 
     public function isTokenRequired()
     {
-        return in_array(strtolower($this->provider), $this->tokenRequiredProviders);
+        return in_array(strtolower($this->provider), $this->tokenRequiredProviders[$this->gateway]);
     }
 
     public function getRedirectRequestData($input, $request)
@@ -329,6 +350,18 @@ class Gateway extends Base\Gateway
         $this->checkRefundSuccess($responseArray);
     }
 
+    public function reverse(array $input)
+    {
+        parent::action($input, Action::REVERSE);
+
+        if ($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER] !== CardlessEmi::FLEXMONEY)
+        {
+            return;
+        }
+
+        return $this->refund($input);
+    }
+
 /*-------------------------------------------------HELPER FUNCTIONS--------------------------------------------------*/
 
     protected function getCheckAccountRequestContent($input)
@@ -346,18 +379,21 @@ class Gateway extends Base\Gateway
         switch (strtolower($this->provider))
         {
             case CardlessEmi::EARLYSALARY:
-                $content[RequestFields::CONTACT] = $input['contact'];
+                $content[RequestFields::MOBILE_NUMBER] = $input['contact'];
                 $content[RequestFields::MERCHANT_CATEGORY_CODE] = $this->terminal[Terminal\Entity::CATEGORY];
                 $content[RequestFields::BILLING_LABEL] = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
                 break;
             case CardlessEmi::ZESTMONEY:
-                $content[RequestFields::CONTACT] = $input['contact'];
+                $content[RequestFields::MOBILE_NUMBER] = $input['contact'];
                 $content[RequestFields::MERCHANT_CATEGORY_CODE] = $this->terminal[Terminal\Entity::CATEGORY];
                 $content[RequestFields::BILLING_LABEL] = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
                 break;
             case CardlessEmi::FLEXMONEY:
-                $content[RequestFields::CONTACT_NUMBER] = $input['contact'];
+                $content[RequestFields::CONTACT] = $input['contact'];
                 break;
+            case PayLater::EPAYLATER:
+                $content[RequestFields::AMOUNT] = (string) ($input['amount']);
+                $content[RequestFields::CONTACT] = substr($input['contact'], -10, 10);
             default:
                 break;
         }
@@ -367,6 +403,8 @@ class Gateway extends Base\Gateway
 
     protected function checkAccountExists($response)
     {
+        $response = $this->modifyResponseErrorFieldForEpayLater($response);
+
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
             ($response[ResponseFields::ERROR_CODE] !== 'OK'))
         {
@@ -377,9 +415,11 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function  fetchToken($input)
+    protected function fetchToken($input)
     {
         $fetchTokenContent = $this->getFetchTokenRequestContent($input);
+
+        $fetchTokenContent = $this->modifyFetchTokenRequest($fetchTokenContent, $input);
 
         $request = $this->getStandardRequestArray($fetchTokenContent);
 
@@ -406,6 +446,13 @@ class Gateway extends Base\Gateway
             ]);
 
         $responseArray = $this->jsonToArray($response->body);
+
+        if ($response->status_code !== 200)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCodes::getInternalErrorCode($responseArray['errors'] ?? '',
+                    ErrorCode::GATEWAY_ERROR_INTERNAL_SERVER_ERROR));
+        }
 
         $this->checkTokenExists($responseArray);
 
@@ -457,10 +504,27 @@ class Gateway extends Base\Gateway
     public function getFetchTokenRequestContent($input)
     {
         return [
-            RequestFields::CONTACT        => $input[Constants\Entity::PAYMENT][Payment\Entity::CONTACT],
+            RequestFields::MOBILE_NUMBER  => $input[Constants\Entity::PAYMENT][Payment\Entity::CONTACT],
             RequestFields::MERCHANT_ID    => $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
             RequestFields::BILLING_LABEL  => $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2]
         ];
+    }
+
+    protected function modifyFetchTokenRequest($request, $input)
+    {
+        switch ($input[Constants\Entity::PAYMENT][Payment\Entity::METHOD])
+        {
+            case Payment\Method::PAYLATER:
+                switch ($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER])
+                {
+                    case PayLater::EPAYLATER:
+                        $request[RequestFields::CONTACT] = substr($request[RequestFields::MOBILE_NUMBER], -10, 10);
+                        unset ($request[RequestFields::MOBILE_NUMBER]);
+                        break;
+                }
+        }
+
+        return $request;
     }
 
     protected function getAuthorizeAttributes($input, $token)
@@ -469,7 +533,6 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT         => $input[Constants\Entity::PAYMENT][Payment\Entity::AMOUNT],
             RequestFields::PAYMENT_ID     => $input[Constants\Entity::PAYMENT][Payment\Entity::ID],
             RequestFields::CURRENCY       => $input[Constants\Entity::PAYMENT][Payment\Entity::CURRENCY],
-            RequestFields::EMI_DURATION   => $input['gateway']['emi_duration'],
             RequestFields::ACTION         => Base\Action::AUTHORIZE,
         ];
 
@@ -478,11 +541,18 @@ class Gateway extends Base\Gateway
 
     protected function modifyAuthorizeRequestContent($input, $content, $token)
     {
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::CARDLESS_EMI:
+                $content[RequestFields::EMI_DURATION] = $input['gateway']['emi_duration'];
+                break;
+        }
+
         switch (strtolower($this->provider))
         {
             case CardlessEmi::FLEXMONEY:
                 $content[RequestFields::CALLBACK_URL] = $input['callbackUrl'];
-                $content[RequestFields::CONTACT_NUMBER] = $input[Constants\Entity::PAYMENT][Payment\Entity::CONTACT];
+                $content[RequestFields::CONTACT] = $input[Constants\Entity::PAYMENT][Payment\Entity::CONTACT];
 
                 $content[RequestFields::MERCHANT_ID] =
                     $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID];
@@ -540,6 +610,9 @@ class Gateway extends Base\Gateway
             case CardlessEmi::EARLYSALARY:
                 $content[RequestFields::TOKEN] = $token;
                 break;
+            case PayLater::EPAYLATER:
+                $content[RequestFields::TOKEN] = $token;
+                break;
             default:
                 break;
         }
@@ -559,9 +632,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest($verify)
     {
-        $content = $this->getVerifyRequestContent($verify->input);
-
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getVerifyRequest($verify->input);
 
         $traceRequest = $this->stripSensitiveHeader($request);
 
@@ -586,6 +657,20 @@ class Gateway extends Base\Gateway
         $responseArray = $this->jsonToArray($response->body);
 
         $verify->verifyResponseContent = $responseArray;
+    }
+
+    protected function getVerifyRequest($input)
+    {
+        if ($this->isProviderEpayLater() === true)
+        {
+            $request = $this->getStandardRequestArray([], 'GET');
+
+            return $request;
+        }
+
+        $content = $this->getVerifyRequestContent($input);
+
+        return $this->getStandardRequestArray($content);
     }
 
     protected function verifyPayment($verify)
@@ -632,6 +717,12 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = $this->getRequestHeaders();
 
+        $replacePairs = [
+            '{id}' => $this->input['payment']['id'] ?? null,
+        ];
+
+        $request['url'] = strtr($request['url'], $replacePairs);
+
         return $request;
     }
 
@@ -641,8 +732,16 @@ class Gateway extends Base\Gateway
 
         $headers = [
             'Content-Type'   => 'application/json',
-            'Authorization'  => 'Basic ' . $token,
         ];
+
+        $tokenType = 'Basic';
+
+        if ($this->isProviderEpayLater() === true)
+        {
+            $tokenType = 'Bearer';
+        }
+
+        $headers['Authorization'] = $tokenType . ' ' . $token;
 
         return $headers;
     }
@@ -704,6 +803,8 @@ class Gateway extends Base\Gateway
 
     protected function checkAuthorizationSuccess($response)
     {
+        $response = $this->modifyResponseErrorFieldForEpayLater($response);
+
         if ((isset($response[ResponseFields::STATUS]) === false) or
              ($response[ResponseFields::STATUS] !== 'authorized') or
             (isset($response[ResponseFields::ERROR_CODE]) === true))
@@ -719,6 +820,8 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
+        $content = $this->modifyResponseErrorFieldForEpayLater($content);
+
         if ((isset($content[ResponseFields::ERROR_CODE]) !== true) or
             ($content[ResponseFields::ERROR_CODE] === 'OK'))
         {
@@ -728,6 +831,8 @@ class Gateway extends Base\Gateway
 
     protected function checkCaptureSuccess($response)
     {
+        $response = $this->modifyResponseErrorFieldForEpayLater($response);
+
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) or
             (isset($response[ResponseFields::STATUS]) === false) or
                 ($response[ResponseFields::STATUS] !== 'captured'))
@@ -739,10 +844,12 @@ class Gateway extends Base\Gateway
 
     protected function checkRefundSuccess($response)
     {
+        $response = $this->modifyResponseErrorFieldForEpayLater($response);
+
         if (((isset($response[ResponseFields::ERROR_CODE]) === true) and
              ($response[ResponseFields::ERROR_CODE] !== 'OK')) or
             (isset($response[ResponseFields::STATUS]) === false) or
-             ($response[ResponseFields::STATUS] !== self::SUCCESS_RESPONSE))
+             (strtolower($response[ResponseFields::STATUS]) !== self::SUCCESS_RESPONSE))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED);
@@ -751,6 +858,8 @@ class Gateway extends Base\Gateway
 
     protected function checkTokenExists($content)
     {
+        $content = $this->modifyResponseErrorFieldForEpayLater($content);
+
         if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
             ($content[ResponseFields::ERROR_CODE] !== 'OK'))
         {
@@ -1049,5 +1158,25 @@ class Gateway extends Base\Gateway
         $secret = $this->config[strtolower($this->provider)]['live_hash_secret'];
 
         return $secret;
+    }
+
+    private function isProviderEpayLater()
+    {
+        return ($this->provider === strtoupper(PayLater::EPAYLATER));
+    }
+
+    protected function modifyResponseErrorFieldForEpayLater($response)
+    {
+        if (isset($response[ResponseFields::EPAYLATER_ERROR_CODE]) === true)
+        {
+            $response[ResponseFields::ERROR_CODE] = $response[ResponseFields::EPAYLATER_ERROR_CODE];
+        }
+
+        if (isset($response[ResponseFields::EPAYLATER_ERROR_DESCRIPTION]) === true)
+        {
+            $response[ResponseFields::ERROR_DESCRIPTION] = $response[ResponseFields::EPAYLATER_ERROR_DESCRIPTION];
+        }
+
+        return $response;
     }
 }

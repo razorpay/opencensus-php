@@ -26,4 +26,13 @@ class ReconciliatorController extends Controller
 
         return ApiResponse::generateResponse($response);
     }
+
+    public function postBulkRefundsReconciliation()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->reconcileRefundsAfterScroogeRecon($input);
+
+        return ApiResponse::generateResponse($response);
+    }
 }

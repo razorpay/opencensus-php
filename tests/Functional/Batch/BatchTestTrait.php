@@ -48,13 +48,13 @@ trait BatchTestTrait
                         true);
     }
 
-    public function createUploadedFileCsv(string $url): UploadedFile
+    public function createUploadedFileCsv(string $url, $fileName = 'file.csv'): UploadedFile
     {
         $mime = 'text/csv';
 
         return new UploadedFile(
             $url,
-            'file.csv',
+            $fileName,
             $mime,
             filesize($url),
             null,

@@ -3,15 +3,14 @@
 namespace RZP\Models\Card;
 
 use Route;
-use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Services\SlackPoster;
+use RZP\Models\FundTransfer;
 
 class Core extends Base\Core
 {
@@ -35,6 +34,37 @@ class Core extends Base\Core
         $card->saveOrFail();
 
         return $card;
+    }
+
+    public function createForFundAccount($input, $merchant)
+    {
+        return $this->repo->transaction(
+            function() use ($input, $merchant)
+            {
+                $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
+
+                $card = $this->create($input, $merchant);
+
+                $cardType = $card->getType();
+                $cardIssuer = $card->getIssuer();
+                $cardVaultToken = $card->getCardVaultToken();
+
+                if (($card->getCardVaultToken() === null) or
+                    ($cardType !== Type::CREDIT) or
+                    (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                        null,
+                        [
+                            'type'              => $cardType,
+                            'issuer'            => $cardIssuer,
+                            'card_vault_token'  => $cardVaultToken,
+                        ]);
+                }
+
+                return $card;
+            });
     }
 
     public function edit($card, $input)
@@ -97,13 +127,13 @@ class Core extends Base\Core
 
     public function createDuplicateCard($input, $merchant)
     {
-        $createInput = array(
+        $createInput = [
             Entity::NUMBER          => $input[Entity::NUMBER],
             Entity::EXPIRY_MONTH    => $input[Entity::EXPIRY_MONTH],
             Entity::EXPIRY_YEAR     => $input[Entity::EXPIRY_YEAR],
             Entity::CVV             => $input[Entity::CVV],
             Entity::NAME            => $input[Entity::NAME],
-        );
+        ];
 
         $card = $this->create($createInput, $merchant);
 

@@ -90,6 +90,36 @@ return [
         ],
     ],
 
+    'testCreatePaymentLinkWithMinAmountIntCurrency' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'amount'        => 10,
+                'currency'      => 'USD',
+                'title'         => 'Sample title',
+                'description'   => 'Sample description',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount must be atleast USD 0.50',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePaymentLinkWithTooLargeAmount' => [
         'request'  => [
             'url'     => '/payment_links',

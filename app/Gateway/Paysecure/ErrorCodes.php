@@ -97,7 +97,7 @@ class ErrorCodes
         self::EC_61   => 'DECLINED (exceeds with)',
         self::EC_62   => 'DECLINED (restricted card)',
         self::EC_65   => 'DECLINED (exceeds frequency)',
-        self::EC_91   => 'ERROR',
+        self::EC_91   => 'Issuer or switch is inoperative',
         self::EC_92   => 'NO ROUTING AVAILABLE',
         self::EC_96   => 'SYSTEM ERROR',
         self::EC_110  => 'NO ACCT',
@@ -111,21 +111,21 @@ class ErrorCodes
         // Check BIN error code mappings
         self::EC_01   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_02   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
-        self::EC_400  => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
+        self::EC_400  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_401  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_402  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_406  => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
         self::EC_407  => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
-        self::EC_408  => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
+        self::EC_408  => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         self::EC_410  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
-        self::EC_412  => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+        self::EC_412  => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
 
         // Callback error code mappings
         self::ACCU100 => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
         self::ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::ACCU400 => ErrorCode::GATEWAY_ERROR_USER_INACTIVE,
         self::ACCU600 => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
-        self::ACCU700 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+        self::ACCU700 => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
         self::ACCU800 => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
 
         // Authorize error code mappings
@@ -146,7 +146,7 @@ class ErrorCodes
         self::EC_61   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
         self::EC_62   => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
         self::EC_65   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
-        self::EC_91   => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
+        self::EC_91   => ErrorCode::GATEWAY_ERROR_ISSUER_UNAVAILABLE,
         self::EC_92   => ErrorCode::GATEWAY_ERROR_ISSUER_UNAVAILABLE,
         self::EC_96   => ErrorCode::GATEWAY_ERROR_GENERIC_ERROR,
         self::EC_110  => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,

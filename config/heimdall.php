@@ -139,6 +139,7 @@ return [
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
             Permission::EDIT_IIN_RULE                       => '',
+            Permission::EDIT_IIN_RULE_BULK                  => '',
             Permission::EDIT_ACTIVATE_MERCHANT              => [
                 'assignable' => true,
                 'workflow'   => true
@@ -572,6 +573,9 @@ return [
             Permission::ADMIN_FILE_UPLOAD            => [
                 'description' => 'Upload a bank file',
             ],
+            Permission::EDIT_THROTTLE_SETTINGS       => [
+                'description'  => 'Edit throttle settings',
+            ],
         ],
 
         // Permissions
@@ -728,7 +732,15 @@ return [
                 'description' => 'Modify subscriptions form admin dashboard',
                 'assignable'  => true
             ]
-        ]
+        ],
+
+        // RazorpayX
+        PermissionCategory::RAZORPAYX_BANKING => [
+            Permission::BANKING_UPDATE_ACCOUNT => [
+                'description' => 'Updating banking account details of the merchant',
+                'assignable'  => true,
+            ],
+        ],
     ],
 
     'workflows' => [

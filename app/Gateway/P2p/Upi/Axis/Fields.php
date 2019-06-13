@@ -73,6 +73,10 @@ class Fields
     const AVAILABLE                     = 'available';
     const IS_CUSTOMER_VPA_VALID         = 'isCustomerVpaValid';
     const CUSTOMER_NAME                 = 'customerName';
+    const SHOULD_BLOCK                  = 'shouldBlock';
+    const SHOULD_SPAM                   = 'shouldSpam';
+    const BLOCKED_VPAS                  = 'blockedVpas';
+    const BLOCKED_AT                    = 'blockedAt';
 
     // ------------------- TRANSACTION ------------- //
     const MERCHANT_REQUEST_ID           = 'merchantRequestId';
@@ -95,6 +99,8 @@ class Fields
     const QUERY_COMMENT                 = 'queryComment';
     const QUERY_REFERENCE_ID            = 'queryReferenceId';
     const QUERY_CLOSING_TIMESTAMP       = 'queryClosingTimestamp';
+    const LIMIT                         = 'limit';
+    const OFFSET                        = 'offset';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';
