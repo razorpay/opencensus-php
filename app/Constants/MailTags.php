@@ -159,6 +159,8 @@ class MailTags
     // Transactions
     const TRANSACTION_CREATED              = 'transaction_created';
 
+    const ACCOUNT_STATUS_UPDATED           = 'account_status_updated';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags
