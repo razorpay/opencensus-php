@@ -6,11 +6,13 @@ use Carbon\Carbon;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\Payment\Gateway;
 
 class PaymentDowntimeTest extends TestCase
 {
     use PaymentTrait;
+    use WebhookTrait;
 
     public function setUp()
     {
@@ -501,6 +503,82 @@ class PaymentDowntimeTest extends TestCase
 
         $downtime = $this->getLastEntity('payment.downtime', true);
         $this->assertNotNull($downtime['end']);
+    }
+
+    public function testWebhookForPaymentDowntimeStartedEvent()
+    {
+        Carbon::setTestNow(Carbon::create(2019, 14, 01));
+
+        $this->createWebhook(['events' => ['payment.downtime.started' => '1',
+                                           'payment.downtime.resolved' => '1']]);
+
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'netbanking',
+                'source'      => 'BANK',
+                'issuer'      => 'SBIN',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($downtime['method'], 'netbanking');
+        $this->assertEquals($downtime['issuer'], 'SBIN');
+        $this->assertEquals($downtime['status'], 'scheduled');
+
+        $this->setInfernoExpectations(['testPaymentDowntimeStartedWebhook']);
+
+        $this->activateDowntimes();
+    }
+
+    public function testWebhookForPaymentDowntimeResolvedEvent()
+    {
+        Carbon::setTestNow(Carbon::create(2019, 14, 01));
+
+        $this->createWebhook(['events' => ['payment.downtime.started' => '1',
+                                           'payment.downtime.resolved' => '1']]);
+
+        $this->ba->adminAuth();
+
+        $addDowntimeRequest = [
+            'content' => [
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(60)->timestamp,
+                'gateway'     => 'ALL',
+                'reason_code' => 'HIGHER_DECLINES',
+                'method'      => 'netbanking',
+                'source'      => 'BANK',
+                'issuer'      => 'SBIN',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($addDowntimeRequest);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals($downtime['method'], 'netbanking');
+        $this->assertEquals($downtime['issuer'], 'SBIN');
+        $this->assertEquals($downtime['status'], 'scheduled');
+
+        $this->setInfernoExpectations(['testPaymentDowntimeStartedWebhook',
+                                       'testPaymentDowntimeResolvedWebhook']);
+
+        // 90 minutes elapsed
+        Carbon::setTestNow(Carbon::now()->addMinutes(90));
+
+        $this->activateDowntimes();
     }
 
     protected function createUpiAllGatewayDowntime()
