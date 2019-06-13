@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use RZP\Models\Pricing\Feature;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Reversal as ReversalModel;
@@ -86,21 +87,19 @@ class Reversal extends Base
         if ($this->source->getFee() > 0)
         {
             $feeParams = [
-                Transaction\FeeBreakup\Entity::NAME       => "refund",
+                Transaction\FeeBreakup\Entity::NAME       => Feature::REFUND,
                 Transaction\FeeBreakup\Entity::AMOUNT     => -1 * ($this->source->getFee() - $this->source->getTax()),
             ];
-
-            $fee = (new Transaction\FeeBreakup\Entity)->build($feeParams);
-
-            $this->feesSplit->push($fee);
 
             $taxParams = [
                 Transaction\FeeBreakup\Entity::NAME       => FeeBreakupName::TAX,
                 Transaction\FeeBreakup\Entity::AMOUNT     => -1 * $this->source->getTax(),
             ];
 
+            $fee = (new Transaction\FeeBreakup\Entity)->build($feeParams);
             $tax = (new Transaction\FeeBreakup\Entity)->build($taxParams);
 
+            $this->feesSplit->push($fee);
             $this->feesSplit->push($tax);
         }
     }

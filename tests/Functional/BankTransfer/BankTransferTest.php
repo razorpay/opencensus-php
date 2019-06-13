@@ -1980,7 +1980,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
 
-        $response = $this->refundPayment($payment['id']);
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -1988,7 +1988,7 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 

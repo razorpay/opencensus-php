@@ -2776,8 +2776,8 @@ class Processor
 
             $baseAmountRefunded = $payment->getBaseAmountRefunded();
 
-            $amountRefunded = $refund->getAmount() - $amountRefunded;
-            $baseAmountRefunded = $refund->getBaseAmount() - $baseAmountRefunded;
+            $amountRefunded = $amountRefunded - $refund->getAmount();
+            $baseAmountRefunded = $baseAmountRefunded - $refund->getBaseAmount();
 
             $payment->setAmountRefunded($amountRefunded);
             $payment->setBaseAmountRefunded($baseAmountRefunded);

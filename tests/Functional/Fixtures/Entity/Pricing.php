@@ -603,7 +603,7 @@ class Pricing extends Base
             'fixed_rate'          => 100,
             'amount_range_active' => 1,
             'amount_range_min'    => 100,
-            'amount_range_max'    => 10000,
+            'amount_range_max'    => 50000,
             'org_id'              => '100000razorpay',
         ];
 

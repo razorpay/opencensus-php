@@ -209,6 +209,8 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
+        $input['is_fta'] = (bool) $input['is_fta'];
+
         $refundValidator = $refund->getValidator();
 
         $refundValidator->validateInput('scrooge_gateway_refund', $input);
@@ -336,6 +338,8 @@ trait Refund
                 [Payment\Gateway::GATEWAY_VERIFY_RESPONSE => 'Refund has already been processed'],
                 true);
         }
+
+        $input['is_fta'] = (bool) $input['is_fta'];
 
         $refundValidator = $refund->getValidator();
 

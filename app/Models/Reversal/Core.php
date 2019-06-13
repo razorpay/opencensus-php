@@ -310,16 +310,11 @@ class Core extends Base\Core
     public function reverseForRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal): Entity
     {
         $reversalInput = [
-            Entity::AMOUNT   => 0,
+            Entity::AMOUNT   => ($feeOnlyReversal === false) ? $refund->getAmount() : 0,
             Entity::FEE      => $refund->getFees(),
             Entity::TAX      => $refund->getTax(),
             Entity::CURRENCY => $refund->getCurrency(),
         ];
-
-        if ($feeOnlyReversal === false)
-        {
-            $reversalInput[Entity::AMOUNT] = $refund->getAmount();
-        }
 
         $reversal = $this->create($reversalInput);
 

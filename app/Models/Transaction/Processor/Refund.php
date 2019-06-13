@@ -87,8 +87,6 @@ class Refund extends Base
             list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
         }
 
-        $netAmount = $netAmount + $this->fees;
-
         return $netAmount;
     }
 
