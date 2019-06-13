@@ -82,6 +82,13 @@ class Refund extends Base
             $netAmount = 0;
         }
 
+        if (in_array($refund->getSpeedRequested(), RefundSpeed::REFUND_INSTANT_SPEEDS))
+        {
+            list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
+        }
+
+        $netAmount = $netAmount + $this->fees;
+
         return $netAmount;
     }
 

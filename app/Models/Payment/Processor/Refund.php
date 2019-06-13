@@ -53,6 +53,12 @@ trait Refund
      */
     public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
+        if ($this->isValidInstantRefundsRequest($payment, $input) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED);
+        }
+
         if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
         {
             throw new Exception\BadRequestException(
@@ -79,6 +85,12 @@ trait Refund
         $this->pushMetrics();
 
         return $refund;
+    }
+
+    protected function isValidInstantRefundsRequest(Payment\Entity $payment, array $input) {
+        return (isset($input[RefundEntity::SPEED]) === true) and
+            (in_array($input[RefundEntity::SPEED],RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
+            (($payment->getMethod() !== Payment\Method::CARD) or ($this->payment->isCaptured() === false));
     }
 
     protected function pushMetrics()
@@ -293,6 +305,8 @@ trait Refund
         $input['attempts'] = $input['attempts'] ?? 0;
 
         $data['refund']['attempts'] = $input['attempts'];
+
+        $data['is_fta']  = $input['is_fta'];
 
         if (isset($input['fta_data']) === true)
         {
@@ -574,6 +588,17 @@ trait Refund
         }
         else
         {
+            if ((isset($ftaInput['is_fta']) === true) and ($ftaInput['is_fta'] === true))
+            {
+                $verifyRefundResult = $this->prepareScroogeRefundResponse([],
+                    false,
+                    null,
+                    Payment\Action::VERIFY,
+                    ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA);
+
+                return $verifyRefundResult;
+            }
+
             $this->setPaymentAndRefundInfo($refund, $payment);
 
             $gateway = $payment->getGateway();
@@ -1379,6 +1404,14 @@ trait Refund
         }
         else
         {
+            if ((isset($data['is_fta']) === true) and ($data['is_fta'] === true))
+            {
+                return (new ScroogeResponse())
+                    ->setSuccess(false)
+                    ->setStatusCode(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA)
+                    ->toArray();
+            }
+
             return $this->callGatewayRefundFunction($payment, $data, $retry);
         }
     }
@@ -1732,7 +1765,8 @@ trait Refund
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
         }
-        else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true)
+        else if ((in_array($refund->getSpeedRequested(), RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
+                 ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true))
         {
             $cardInput = $this->getCardIdInput($payment, $input);
 
@@ -1968,6 +2002,9 @@ trait Refund
 
         $refunded = false;
 
+        // Mocking for non scrooge refunds
+        $data['is_fta'] = (isset($data['is_fta']) === false) ? false : $data['is_fta'];
+
         try
         {
             $fundTransferAttemptInput = $this->getFundTransferAttemptInput($payment);
@@ -1976,7 +2013,7 @@ trait Refund
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
-            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment))
+            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data['is_fta']))
             {
                 $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
             }
@@ -2084,6 +2121,18 @@ trait Refund
 
     protected function isFundTransferAttemptRefund(RefundEntity $refund, Payment\Entity $payment, array $data = []): bool
     {
+        if (isset($data['is_fta']) === true)
+        {
+            if ($data['is_fta'] === false) 
+            {
+                return false;
+            }
+        }
+        else
+        {
+            $data['is_fta'] = false;
+        }
+
         //
         // Refund is explicitly being attempted towards a new bank account or vpa
         // Bank account or vpa input can come from dashboard also, but card_transfer will not come from dashboard.
@@ -2099,7 +2148,7 @@ trait Refund
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true))
+            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data['is_fta']) === true))
         {
             return true;
         }
@@ -2141,10 +2190,14 @@ trait Refund
      *
      * @param RefundEntity $refund
      * @param Payment\Entity $payment
+     * @param bool $ignoreFeatureFlag
      * @return bool
      * @throws \Exception
      */
-    protected function isPaymentCardAndCardTransferRefund(RefundEntity $refund, Payment\Entity $payment): bool
+    protected function isPaymentCardAndCardTransferRefund(
+        RefundEntity $refund,
+        Payment\Entity $payment,
+        bool $ignoreFeatureFlag = false): bool
     {
         //
         // Check if any card FTA already exists, not allowing card fta if any previous card fta exists
@@ -2158,7 +2211,6 @@ trait Refund
         }
 
         if (($payment->hasCard() === true) and
-            ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
             ($payment->card->getCardVaultToken() !== null) and ($payment->isGatewayCaptured() === true))
         {
             $iin = $payment->card->iinRelation;
@@ -2173,6 +2225,12 @@ trait Refund
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true) and
                     (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
+                    if (($ignoreFeatureFlag === false) and
+                        ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                    {
+                        return false;
+                    }
+
                     return true;
                 }
             }

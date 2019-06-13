@@ -93,6 +93,9 @@ class Entity extends Base\PublicEntity
     const FEE                    = 'fee';
     const TAX                    = 'tax';
 
+    const MODE                   = 'mode';
+    const SPEED                  = 'speed';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';

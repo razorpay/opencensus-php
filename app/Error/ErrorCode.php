@@ -1221,4 +1221,8 @@ class ErrorCode
     const GATEWAY_ERROR_AUTHORIZATION_FAILED                                        = 'GATEWAY_ERROR_AUTHORIZATION_FAILED';
     const GATEWAY_ERROR_INVALID_REQUEST_BODY                                        = 'GATEWAY_ERROR_INVALID_REQUEST_BODY';
     const GATEWAY_ERROR_REFUND_TIMED_OUT                                            = 'GATEWAY_ERROR_REFUND_TIMED_OUT';
+
+    // Instant Refunds Error Codes
+    const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED';
+    const BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA                                     = 'BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA';
 }

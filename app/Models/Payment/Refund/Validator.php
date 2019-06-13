@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         'reversals.*.transfer'  => 'required',
         'reversals.*.amount'    => 'required|integer|min:100',
         'reversals.*.notes'     => 'sometimes|notes',
+        'speed'                 => 'sometimes|in:optimum,instant,normal',
     ];
 
     protected static $editStatusRules = [
