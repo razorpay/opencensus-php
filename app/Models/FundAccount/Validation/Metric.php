@@ -4,8 +4,9 @@ namespace RZP\Models\FundAccount\Validation;
 
 use App;
 
-use RZP\Error\Error;
+use RZP\Constants;
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
 
 class Metric extends Base\Core
@@ -15,11 +16,6 @@ class Metric extends Base\Core
     // Metric Names
     const FUND_ACCOUNT_VALIDATION_CREATED           = 'fund_account_validation_created';
     const FUND_ACCOUNT_VALIDATION_FAILED            = 'fund_account_validation_failed';
-
-    const LABEL_TRACE_CODE                      = 'code';
-    const LABEL_TRACE_FIELD                     = 'field';
-    const LABEL_TRACE_SOURCE                    = 'source';
-    const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
 
     public function pushCreatedMetrics()
     {
@@ -40,15 +36,15 @@ class Metric extends Base\Core
         else
         {
             $errorAttributes = [
-                Metric::LABEL_TRACE_CODE         => $e->getCode(),
+                Constants\Metric::LABEL_TRACE_CODE         => $e->getCode(),
             ];
         }
 
         $dimensions = [
-            Metric::LABEL_TRACE_CODE                => array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
-            Metric::LABEL_TRACE_FIELD               => array_get($errorAttributes, Error::FIELD),
-            Metric::LABEL_TRACE_SOURCE              => array_get($errorAttributes, Error::ERROR_CLASS),
-            Metric::LABEL_TRACE_EXCEPTION_CLASS     => get_class($e),
+            Constants\Metric::LABEL_TRACE_CODE                => array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
+            Constants\Metric::LABEL_TRACE_FIELD               => array_get($errorAttributes, Error::FIELD),
+            Constants\Metric::LABEL_TRACE_SOURCE              => array_get($errorAttributes, Error::ERROR_CLASS),
+            Constants\Metric::LABEL_TRACE_EXCEPTION_CLASS     => get_class($e),
         ];
 
         return $dimensions;
