@@ -119,4 +119,38 @@ class VpaTest extends TestCase
                 return explode('@', $item)[0];
             }, $suggestions));
     }
+
+    public function testAssignBankAccount()
+    {
+        $bankAccount = $this->fixtures->createBankAccount([
+            'gateway_data' => [
+                'referenceId' => 'SomeReferenceId'
+            ]
+        ]);
+
+        $vpaId = $this->fixtures->vpa->getPublicId();
+
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->assignBankAccount($vpaId, $bankAccount->getPublicId());
+
+        $this->assertSame($bankAccount->getId(), $this->fixtures->vpa->reload()->getBankAccountId());
+    }
+
+    public function testDeleteVpa()
+    {
+        $vpa = $this->fixtures->createVpa([
+            'default' => false,
+        ]);
+
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->deleteVpa($vpa->getPublicId());
+
+        $this->assertTrue($vpa->refresh()->trashed());
+    }
 }

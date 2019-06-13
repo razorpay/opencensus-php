@@ -27,6 +27,10 @@ class CreateP2pTransactionTable extends Migration
 
             $table->string(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::DEVICE_ID, Entity::ID_LENGTH);
+
+            $table->string(Entity::HANDLE, 50);
+
             $table->string(Entity::PAYER_TYPE, 50);
 
             $table->string(Entity::PAYER_ID, Entity::ID_LENGTH);
@@ -47,6 +51,12 @@ class CreateP2pTransactionTable extends Migration
             $table->string(Entity::MODE, 50);
 
             $table->integer(Entity::AMOUNT);
+
+            $table->integer(Entity::AMOUNT_MINIMUM)
+                  ->nullable();
+
+            $table->integer(Entity::AMOUNT_AUTHORIZED)
+                  ->nullable();
 
             $table->string(Entity::CURRENCY, 10);
 
@@ -81,6 +91,9 @@ class CreateP2pTransactionTable extends Migration
                   ->nullable();
 
             $table->integer(Entity::COMPLETED_AT)
+                  ->nullable();
+
+            $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

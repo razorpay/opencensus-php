@@ -36,4 +36,11 @@ class Core extends Base\Core
 
         return $entity;
     }
+
+    public function deleteAll()
+    {
+        $query = $this->repo->newP2pQuery();
+
+        return $query->delete();
+    }
 }

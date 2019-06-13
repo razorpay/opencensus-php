@@ -34,6 +34,9 @@ class TransactionAction extends Action
                 Fields::TIME_STAMP                  => 'required',
                 Fields::PAY_TYPE                    => 'required',
                 Fields::CURRENCY                    => 'required',
+                Fields::MCC                         => 'sometimes',
+                Fields::REF_URL                     => 'sometimes',
+                Fields::TRANSACTION_REFERENCE       => 'sometimes',
             ],
 
             self::SIGNATURE => [
@@ -44,6 +47,7 @@ class TransactionAction extends Action
                 Fields::MERCHANT_CATEGORY_CODE,
                 Fields::MERCHANT_CUSTOMER_ID,
                 Fields::MERCHANT_REQUEST_ID,
+                Fields::MCC,
                 Fields::PAYEE_NAME,
                 Fields::PAYEE_VPA,
                 Fields::PAY_TYPE,

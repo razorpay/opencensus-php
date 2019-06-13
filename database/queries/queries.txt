@@ -4977,3 +4977,18 @@ ALTER TABLE balance
 
 ALTER TABLE paysecure
     MODIFY COLUMN hkey TEXT DEFAULT NULL;
+
+-- P2P - Fix Transactions #11911
+
+ALTER TABLE `p2p_upi_transactions`
+    ADD `ref_url` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `ref_id`,
+    ADD `mcc` CHAR(4) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `ref_url`;
+
+ALTER TABLE `p2p_transactions`
+    ADD `device_id` CHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL AFTER `customer_id`,
+    ADD `handle` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `device_id`,
+    ADD `amount_minimum` INT(11) NULL DEFAULT NULL AFTER `amount`,
+    ADD `amount_authorized` INT(11) NULL DEFAULT NULL AFTER `amount_minimum`,
+    ADD `deleted_at` INT(11) NULL DEFAULT NULL AFTER `completed_at`;
+
+-- P2P - Fix Transactions #11911
