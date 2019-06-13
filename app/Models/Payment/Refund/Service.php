@@ -1394,7 +1394,8 @@ class Service extends Base\Service
                     [
                         Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? '',
                         Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
-                    ]
+                    ],
+                    'processed_source' => $input[Entity::MODE] ?? '',
                 ]
             ],
 
