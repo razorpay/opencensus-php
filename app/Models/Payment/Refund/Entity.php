@@ -226,10 +226,6 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
     ];
 
-    protected static $modifiers = [
-        self::SPEED_REQUESTED,
-    ];
-
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');
@@ -995,13 +991,5 @@ class Entity extends Base\PublicEntity
         }
 
         return $response;
-    }
-
-    public static function modifySpeedRequested(& $input)
-    {
-        if (isset($input['speed']))
-        {
-            $input['speed_requested'] = $input['speed'];
-        }
     }
 }

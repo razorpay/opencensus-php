@@ -1302,6 +1302,22 @@ trait Refund
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
+        if (($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
+            ($payment->getMethod() === Payment\Method::CARD) and
+            ($this->payment->isCaptured() === true))
+        {
+            $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
+
+            if (empty($input['speed']) === false)
+            {
+                $refund->setSpeedRequested($input['speed']);
+            }
+        }
+        else
+        {
+            $refund->setSpeedRequested(RefundSpeed::NORMAL);
+        }
+
         $refund->merchant()->associate($this->merchant);
 
         $refund->setBaseAmount();
