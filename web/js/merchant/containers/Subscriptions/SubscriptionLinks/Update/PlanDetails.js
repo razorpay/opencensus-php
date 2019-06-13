@@ -4,24 +4,32 @@ import Input from 'component/Input';
 
 export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
   render() {
+    const props = this.props,
+      showScheduleChange =
+        props.status !== 'created' && props.status !== 'authenticated';
+
     return (
       <React.Fragment>
         <PlanDetails
-          plans={this.props.plans}
-          onChangeInPlan={this.props.onChangeInPlan}
-          onDateChange={this.props.onDateChange}
-          onTimeChange={this.props.onTimeChange}
-          fields={this.props.fields}
-          internals={this.props.internals}
+          isEdit
+          status={props.status}
+          plans={props.plans}
+          fields={props.fields}
+          internals={props.internals}
+          onDateChange={props.onDateChange}
+          onTimeChange={props.onTimeChange}
+          onChangeInPlan={props.onChangeInPlan}
         />
-        <Input.Radio
-          label="Apply Changes"
-          name="schedule_change_at"
-          options={CHANGES_OPTIONS}
-          className="Input--vTop"
-          defaultValue={this.props.fields.schedule_change_at}
-          onChange={this.props.onRadioChange}
-        />
+        {showScheduleChange && (
+          <Input.Radio
+            label="Apply Changes"
+            options={CHANGES_OPTIONS}
+            name="schedule_change_at"
+            className="Input--vTop"
+            onChange={props.onRadioChange}
+            defaultValue={props.fields.schedule_change_at || 'now'}
+          />
+        )}
       </React.Fragment>
     );
   }

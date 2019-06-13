@@ -11,8 +11,9 @@ import { Modal, ModalContent } from 'component/Modal';
 import { fetchPlans } from 'merchant/modules/plans';
 import { fetchItems } from 'merchant/modules/items';
 import {
-  updateSubscription,
   fetchSubscription,
+  updateSubscription,
+  fetchScheduledChanges,
 } from 'merchant/modules/subscriptions';
 
 import { showNotification } from 'rzp/modules/notifications';
@@ -41,22 +42,12 @@ export default class UpdateSubscription extends Component {
     super(props);
 
     this.state = {
-      loading: true,
-      currentTab: 0,
-      validTabs: [false, false],
-      fields: {
-        charge_at: null,
-        current_end: null,
-        current_start: null,
-        expire_by: null,
-        plan_id: null,
-        quantity: null,
-        total_count: null,
-        type: null,
-        schedule_change_at: null,
-      },
-      previousSubscription: {},
+      fields: {},
+      isLoading: true,
       internals: {},
+      currentTab: 0,
+      prevSubscription: {},
+      validTabs: [false, false],
     };
   }
 
@@ -70,31 +61,33 @@ export default class UpdateSubscription extends Component {
     this.props
       .fetchSubscription(id)
       .then(resp => {
+        if (resp.has_scheduled_changes) {
+          return fetchScheduledChanges(id);
+        }
+
+        return resp;
+      })
+      .then(resp => {
         this.setState({
           fields: {
             id,
-            type: resp.type,
             plan_id: resp.plan_id,
             quantity: resp.quantity,
             start_at: resp.start_at,
-            charge_at: resp.charge_at,
-            expire_by: resp.expire_by,
             total_count: resp.total_count,
-            current_end: resp.current_end,
-            current_start: resp.current_start,
           },
-          previousSubscription: {
+          prevSubscription: {
             ...resp,
           },
           internals: {
             _startsImmediately: !resp.start_at,
           },
-          loading: false,
+          isLoading: false,
         });
       })
       .catch(({ errors }) => {
         this.setState({
-          loading: false,
+          isLoading: false,
         });
 
         this.props.showNotification({
@@ -116,16 +109,16 @@ export default class UpdateSubscription extends Component {
   isFormChanged() {
     const {
       fields,
-      previousSubscription,
+      prevSubscription,
       internals: { _startsImmediately },
     } = this.state;
 
     return (
-      previousSubscription.plan_id !== fields.plan_id ||
-      previousSubscription.quantity !== fields.quantity ||
-      (previousSubscription.start_at && _startsImmediately) ||
-      previousSubscription.start_at !== fields.start_at ||
-      previousSubscription.total_count !== fields.total_count
+      prevSubscription.plan_id !== fields.plan_id ||
+      prevSubscription.quantity !== fields.quantity ||
+      (prevSubscription.start_at && _startsImmediately) ||
+      prevSubscription.start_at !== fields.start_at ||
+      prevSubscription.total_count !== fields.total_count
     );
   }
 
@@ -135,7 +128,6 @@ export default class UpdateSubscription extends Component {
 
     return (
       this.isFormChanged() &&
-      fields.schedule_change_at &&
       (!!fields.plan_id &&
         (internals._startsImmediately || !!fields.start_at) &&
         (validateTotalCount ? !validateTotalCount(fields.total_count) : true))
@@ -217,37 +209,30 @@ export default class UpdateSubscription extends Component {
   };
 
   prepareForSave = () => {
-    const { fields, internals, previousSubscription } = this.state;
+    const { fields, prevSubscription } = this.state;
 
     const data = {
-      id: previousSubscription.id,
+      id: prevSubscription.id,
     };
 
-    if (previousSubscription.plan_id !== fields.plan_id) {
+    if (prevSubscription.plan_id !== fields.plan_id) {
       data.plan_id = fields.plan_id;
     }
 
-    if (previousSubscription.quantity !== fields.quantity) {
+    if (prevSubscription.quantity !== fields.quantity) {
       data.quantity = fields.quantity;
     }
 
-    if (previousSubscription.total_count !== fields.total_count) {
+    if (prevSubscription.total_count !== fields.total_count) {
       data.total_count = fields.total_count;
     }
 
-    if (
-      previousSubscription.start_at &&
-      previousSubscription.start_at !== fields.start_at
-    ) {
+    if (prevSubscription.start_at !== fields.start_at) {
       data.start_at = fields.start_at;
     }
 
-    if (
-      previousSubscription.start_at &&
-      internals._startsImmediately &&
-      previousSubscription.status === 'created'
-    ) {
-      data.start_at = null;
+    if (fields.schedule_change_at) {
+      data.schedule_change_at = fields.schedule_change_at;
     }
 
     return data;
@@ -282,7 +267,7 @@ export default class UpdateSubscription extends Component {
   };
 
   renderForm = () => {
-    if (this.state.loading) {
+    if (this.state.isLoading) {
       return (
         <div class="page-spinner-container">
           <Spinner />
@@ -295,13 +280,14 @@ export default class UpdateSubscription extends Component {
         return (
           <PlanDetails
             plans={this.props.plans}
-            onChangeInPlan={this.handleChangeInPlan}
+            fields={this.state.fields}
+            internals={this.state.internals}
             onDateChange={this.handleDateChange}
             onTimeChange={this.handleTimeChange}
             onRadioChange={this.handleRadioChange}
-            fields={this.state.fields}
-            internals={this.state.internals}
+            onChangeInPlan={this.handleChangeInPlan}
             ref={form => (this.planDetailsForm = form)}
+            status={this.state.prevSubscription.status}
           />
         );
       }
@@ -311,7 +297,7 @@ export default class UpdateSubscription extends Component {
             fields={this.state.fields}
             internals={this.state.internals}
             plans={this.props.plans.items}
-            previousSubscription={this.state.previousSubscription}
+            prevSubscription={this.state.prevSubscription}
           />
         );
       }

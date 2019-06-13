@@ -73,7 +73,9 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     this.state = {
       creditNotes: [],
-      scheduledChanges: null,
+      scheduledChanges: {
+        isLoading: false,
+      },
     };
   }
 
@@ -247,10 +249,6 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     this.setState({
       isLoading: true,
-      scheduledChanges: {
-        ...this.state.scheduledChanges,
-        isLoading: true,
-      },
     });
 
     fetchItem(id)
@@ -260,8 +258,19 @@ export default class SubscriptionDetailsContainer extends React.Component {
           subscription.customer_id && fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
         ]).then(response => {
-          this.setState({ isLoading: false }, () =>
-            this.fetchScheduledChanges(id)
+          this.setState(
+            {
+              isLoading: false,
+              scheduledChanges: {
+                ...this.state.scheduledChanges,
+                isLoading: subscription.has_scheduled_changes,
+              },
+            },
+            () => {
+              if (subscription.has_scheduled_changes) {
+                this.fetchScheduledChanges(id);
+              }
+            }
           );
 
           this.fetchInvoicesList(id);
@@ -545,6 +554,14 @@ export default class SubscriptionDetailsContainer extends React.Component {
         this.props.showNotification({
           type: 'success',
           message: 'Updated subscription is canceled successfully',
+        });
+
+        this.setState({
+          scheduledChanges: {
+            data: {},
+            plan: {},
+            isLoading: false,
+          },
         });
       })
       .catch(err => {

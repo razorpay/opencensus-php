@@ -9,6 +9,10 @@ import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 import QuantitySelector from './QuantitySelector';
 
 export default class NewSubscriptionLinkPlanDetails extends React.Component {
+  static defaultProps = {
+    isEdit: false,
+  };
+
   constructor({ plans, fields }) {
     super();
     this.plans = getPlans(plans);
@@ -29,15 +33,19 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
   };
 
   render() {
-    const { fields, internals, ...props } = this.props;
-
-    const plans = this.plans;
-
-    const selectedPlan = this.selectedPlan;
+    const { fields, internals, ...props } = this.props,
+      plans = this.plans,
+      selectedPlan = this.selectedPlan;
 
     const dateInMoment = !!fields.start_at
       ? moment(fields.start_at, 'X')
       : undefined;
+
+    let showStartDate = !props.isEdit;
+
+    if (props.isEdit) {
+      showStartDate = props.status === 'created';
+    }
 
     return (
       <>
@@ -71,46 +79,51 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           </div>
         </div>
 
-        <Input.Check
-          label="Start Date"
-          fieldLabel="Immediate, subscriptions starts with the first payment"
-          class="Input--vTop"
-          data-name="_startsImmediately"
-          checked={internals._startsImmediately}
-          required
-        />
-
-        <Input.Group class="InputGroup--inline InputGroup--near">
-          <div class="Input-content">
-            <Input.ToCalendar
-              name="start_at"
-              placeholder="DD-MM-YYYY"
-              allowToday
-              disablePastDates
-              size="half"
-              addonAfter={<i class="i i-date-range" />}
-              disabled={internals._startsImmediately}
-              placement="topLeft"
-              onChange={props.onDateChange('start_at')}
-              defaultValue={dateInMoment}
-              readOnly
+        {showStartDate && (
+          <React.Fragment>
+            <Input.Check
+              label="Start Date"
+              fieldLabel="Immediate, subscriptions starts with the first payment"
+              class="Input--vTop"
+              data-name="_startsImmediately"
+              checked={internals._startsImmediately}
+              disabled={props.isEdit && dateInMoment}
+              required
             />
 
-            {!!fields.start_at && (
-              <Input.TimePicker
-                name="start_at_time"
-                placeholder="HH:MM A"
-                size="half"
-                addonAfter={<i class="i i-time" />}
-                disabled={internals._startsImmediately}
-                onChange={props.onTimeChange('start_at_time')}
-                defaultValue={dateInMoment}
-                readOnly
-              />
-            )}
-            <Description text="Date from which subscription should start" />
-          </div>
-        </Input.Group>
+            <Input.Group class="InputGroup--inline InputGroup--near">
+              <div class="Input-content">
+                <Input.ToCalendar
+                  name="start_at"
+                  placeholder="DD-MM-YYYY"
+                  allowToday
+                  disablePastDates
+                  size="half"
+                  addonAfter={<i class="i i-date-range" />}
+                  disabled={internals._startsImmediately}
+                  placement="topLeft"
+                  onChange={props.onDateChange('start_at')}
+                  defaultValue={dateInMoment}
+                  readOnly
+                />
+
+                {!!fields.start_at && (
+                  <Input.TimePicker
+                    name="start_at_time"
+                    placeholder="HH:MM A"
+                    size="half"
+                    addonAfter={<i class="i i-time" />}
+                    disabled={internals._startsImmediately}
+                    onChange={props.onTimeChange('start_at_time')}
+                    defaultValue={dateInMoment}
+                    readOnly
+                  />
+                )}
+                <Description text="Date from which subscription should start" />
+              </div>
+            </Input.Group>
+          </React.Fragment>
+        )}
 
         <Input
           label="Total Count"
@@ -160,7 +173,7 @@ function getPlans(plans) {
   }));
 }
 
-var planPeriodToMaxCycleMap = {
+const planPeriodToMaxCycleMap = {
   daily: 3650,
   weekly: 520,
   monthly: 120,

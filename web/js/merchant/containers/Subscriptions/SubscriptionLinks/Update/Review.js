@@ -18,7 +18,7 @@ export function changeData({
   prevPlan,
   internals = {},
   updatedPlan,
-  previousSubscription,
+  prevSubscription,
 }) {
   const changes = [];
 
@@ -30,9 +30,7 @@ export function changeData({
   }
 
   if (!prevPlan) {
-    prevSelectedPlan = plans.find(
-      ({ id }) => id === previousSubscription.plan_id
-    );
+    prevSelectedPlan = plans.find(({ id }) => id === prevSubscription.plan_id);
   }
 
   if (prevSelectedPlan.item.name !== currSelectedPlan.item.name) {
@@ -47,24 +45,24 @@ export function changeData({
     });
   }
 
-  if (previousSubscription.quantity !== fields.quantity) {
+  if (prevSubscription.quantity !== fields.quantity) {
     changes.push({
       heading: 'Quantity',
       changes: [
         {
-          current: previousSubscription.quantity,
+          current: prevSubscription.quantity,
           change: fields.quantity,
         },
       ],
     });
   }
 
-  if (previousSubscription.total_count !== fields.total_count) {
+  if (prevSubscription.total_count !== fields.total_count) {
     changes.push({
       heading: 'Count (No of cycles)',
       changes: [
         {
-          current: previousSubscription.total_count,
+          current: prevSubscription.total_count,
           change: fields.total_count,
         },
       ],
@@ -72,14 +70,14 @@ export function changeData({
   }
 
   if (
-    previousSubscription.start_at !== fields.start_at ||
-    (previousSubscription.start_at && internals._startsImmediately)
+    prevSubscription.start_at !== fields.start_at ||
+    (prevSubscription.start_at && internals._startsImmediately)
   ) {
     changes.push({
       heading: 'Start Date',
       changes: [
         {
-          current: getTimeInFormat(previousSubscription.start_at),
+          current: getTimeInFormat(prevSubscription.start_at),
           change: getTimeInFormat(fields.start_at),
         },
       ],
@@ -94,27 +92,23 @@ export function changeSummary({
   fields,
   prevPlan,
   updatedPlan,
-  previousSubscription,
+  prevSubscription,
 }) {
   const currSelectedPlan = updatedPlan
       ? updatedPlan
       : plans.find(({ id }) => id === fields.plan_id),
     prevSelectedPlan = prevPlan
       ? prevPlan
-      : plans.find(({ id }) => id === previousSubscription.plan_id);
+      : plans.find(({ id }) => id === prevSubscription.plan_id);
 
-  let refund =
-    currSelectedPlan.item.amount * fields.quantity -
-    prevSelectedPlan.item.amount * previousSubscription.quantity;
-
-  return [
+  const review = [
     <li>
       <Amount
         value={prevSelectedPlan.item.amount}
         currency={prevSelectedPlan.item.currency}
       />
-      {previousSubscription.quantity > 1
-        ? ` charged every ${previousSubscription.quantity} monthly`
+      {prevSubscription.quantity > 1
+        ? ` charged every ${prevSubscription.quantity} monthly`
         : ' changed for month'}
       <b>
         <i class="i i-arrow-forward" />
@@ -129,30 +123,26 @@ export function changeSummary({
         )}
       </b>
     </li>,
-    fields.schedule_change_at === 'immediately' ? (
-      <li>
-        The changes will take into effect <b>immediately.</b>
-      </li>
-    ) : (
-      <li>
-        The changes will be applied from the next billing cycle i.e{' '}
-        {moment.unix(previousSubscription.end_at).format('DD MMM, YYYY')}
-      </li>
-    ),
-    refund ? (
-      <li>
-        {' '}
-        Refund of{' '}
-        <Amount
-          value={Math.abs(refund)}
-          currency={currSelectedPlan.item.currency}
-        />{' '}
-        has been initiated.{' '}
-      </li>
-    ) : (
-      ''
-    ),
   ];
+
+  if (fields.schedule_change_at) {
+    if (fields.schedule_change_at === 'now') {
+      review.push(
+        <li>
+          The changes will take into effect <b>immediately.</b>
+        </li>
+      );
+    } else {
+      review.push(
+        <li>
+          The changes will be applied from the next billing cycle i.e{' '}
+          {moment.unix(prevSubscription.charge_at).format('DD MMM, YYYY')}
+        </li>
+      );
+    }
+  }
+
+  return review;
 }
 
 const ChangeValue = ({ heading, changes }) => (

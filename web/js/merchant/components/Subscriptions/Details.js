@@ -6,6 +6,7 @@ import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import Definition from 'rzp/ui/Definition';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 
 import { AsyncBtn } from 'component/Button';
@@ -68,8 +69,8 @@ export default props => {
     changeData({
       prevPlan: plan,
       fields: scheduledChanges.data,
+      prevSubscription: subscription,
       updatedPlan: scheduledChanges.plan,
-      previousSubscription: subscription,
     });
 
   return (
@@ -198,6 +199,9 @@ export default props => {
                   </div>
                 </div>
               )}
+
+              {scheduledChanges.isLoading && <PlaceholderLoader />}
+
               {!scheduledChanges.isLoading &&
                 scheduledChanges.data && (
                   <div
