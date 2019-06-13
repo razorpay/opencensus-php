@@ -1197,39 +1197,67 @@ class Service extends Base\Service
 
         try
         {
-            $refund = $this->repo->refund->findOrFailPublic($refundId);
-
-            $gateway = $refund->getGateway();
-
-            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
-            {
-                $refund->getValidator()->validateUpdateScroogeRefundStatus($input);
-
-                if ($input['status'] === Status::PROCESSED)
+            $refund = $this->repo->transaction(
+                function()
+                use ($refundId, $input)
                 {
-                    $this->updateRefund($refund, $input);
+                    $refund = $this->repo->refund->findOrFailPublic($refundId);
 
-                    $refund->setStatusProcessed();
-                    $refund->setGatewayRefunded(true);
-                }
-                else if ($input['status'] === Status::FAILED)
-                {
-                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
-                }
+                    $gateway = $refund->getGateway();
 
-                $this->repo->saveOrFail($refund);
+                    if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
+                    {
+                        $refund->getValidator()->validateUpdateScroogeRefundStatus($input);
 
-                $refund = $refund->toArrayPublic();
-            }
-            else
-            {
-                $this->trace->error(
-                    TraceCode::REFUND_UPDATE_STATUS_NON_SCROOGE_GATEWAY,
-                    [
-                        'refund_id' => $refund->getId(),
-                        'status'    => $refund->getStatus(),
-                    ]);
-            }
+                        if ($input['status'] === Status::PROCESSED)
+                        {
+                            $this->updateRefund($refund, $input);
+
+                            $refund->setStatusProcessed();
+                            $refund->setGatewayRefunded(true);
+                        }
+                        else if ($input['status'] === Status::FAILED)
+                        {
+                            $processor = $this->getNewProcessor($refund->merchant);
+
+                            $processor->reverseRefund($refund);
+
+                            if ($refund->payment->hasBeenCaptured() === true)
+                            {
+                                $this->trace->info(
+                                    TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
+                                    [
+                                        'refund_id'                    => $refundId,
+                                        'payment_id'                   => $refund->payment->getId(),
+                                        'payment_status'               => $refund->payment->getStatus(),
+                                        'payment_refund_status'        => $refund->payment->getRefundStatus(),
+                                        'payment_amount_refunded'      => $refund->payment->getAmountRefunded(),
+                                        'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
+                                    ]);
+
+                                $processor->revertPaymentToRefundableState(
+                                    $refund->payment,
+                                    $refund
+                                );
+                            }
+                        }
+
+                        $this->repo->saveOrFail($refund);
+
+                        $refund = $refund->toArrayPublic();
+                    }
+                    else
+                    {
+                        $this->trace->error(
+                            TraceCode::REFUND_UPDATE_STATUS_NON_SCROOGE_GATEWAY,
+                            [
+                                'refund_id' => $refund->getId(),
+                                'status'    => $refund->getStatus(),
+                            ]);
+                    }
+
+                    return $refund;
+                });
         }
         catch (\Exception $ex)
         {

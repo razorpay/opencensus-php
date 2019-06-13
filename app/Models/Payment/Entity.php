@@ -1813,6 +1813,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAmount() - $this->getAmountTransferred();
     }
 
+    public function getAmountAuthorized()
+    {
+        $this->getAttribute(self::AMOUNT_AUTHORIZED);
+    }
+
     /**
      * Gets adjusted amount with respect to customer fee bearer merchants.
      * This amount is compared against the requested capture amount by merchant

@@ -946,10 +946,12 @@ trait PaymentTrait
         $input['attempts'] = $refund['attempts'] ?? 0;
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
+        $input['is_fta'] = false;
 
         if (isset($data['bank_account']) === true)
         {
             $input['fta_data'] = $data;
+            $input['is_fta'] = true;
         }
 
         $this->ba->scroogeAuth();

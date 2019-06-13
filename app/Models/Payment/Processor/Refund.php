@@ -87,7 +87,8 @@ trait Refund
         return $refund;
     }
 
-    protected function isValidInstantRefundsRequest(Payment\Entity $payment, array $input) {
+    protected function isValidInstantRefundsRequest(Payment\Entity $payment, array $input)
+    {
         return (isset($input[RefundEntity::SPEED]) === true) and
             (in_array($input[RefundEntity::SPEED],RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
             (($payment->getMethod() !== Payment\Method::CARD) or ($this->payment->isCaptured() === false));
