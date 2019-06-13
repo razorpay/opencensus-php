@@ -91,7 +91,6 @@ class Fields
     const REMARKS                       = 'remarks';
     const PAY_TYPE                      = 'payType';
     const AMOUNT                        = 'amount';
-    const MERCHANT_CATEGORY_CODE        = 'mcc';
     const TRANSACTION_TIME_STAMP        = 'transactionTimestamp';
     const GATEWAY_TRANSACTION_ID        = 'gatewayTransactionId';
     const GATEWAY_REFERENCE_ID          = 'gatewayReferenceId';

@@ -14,6 +14,8 @@ class Url
 
     const DELETE_VPA           = '/api/b2/merchants/vpas/deleteVpa';
 
+    const ADD_DEFAULT          = '/api/b2/merchants/vpas/addDefault';
+
     const RAISE_QUERY          = '/api/b2/merchants/transactions/query/raise';
 
     const QUERY_STATUS         = '/api/b2/merchants/transactions/query/status';

@@ -22,6 +22,8 @@ class VpaAction extends Action
 
     const UNBLOCK_VPA                       = 'UNBLOCK_VPA';
 
+    const ADD_DEFAULT                       = 'ADD_DEFAULT';
+
     const LIST_BLOCKED                      = 'GET_BLOCKED';
 
     const MAP = [
@@ -72,6 +74,12 @@ class VpaAction extends Action
             self::DIRECT  => [
                 S2sDirect::METHOD => 'post'
             ],
-        ]
+        ],
+        self::ADD_DEFAULT      => [
+            self::SOURCE  => self::DIRECT,
+            self::DIRECT  => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
     ];
 }
