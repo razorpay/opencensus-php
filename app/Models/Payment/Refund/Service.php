@@ -21,6 +21,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Service extends Base\Service
@@ -1192,7 +1193,7 @@ class Service extends Base\Service
             TraceCode::REFUND_UPDATE_STATUS_REQUEST,
             [
                 'refund_id' => $refundId,
-                'status'    => $input['status'] ?? '',
+                'event'     => $input['event'] ?? '',
             ]);
 
         try
@@ -1209,37 +1210,81 @@ class Service extends Base\Service
                     {
                         $refund->getValidator()->validateUpdateScroogeRefundStatus($input);
 
-                        if ($input['status'] === Status::PROCESSED)
+                        $processor = $this->getNewProcessor($refund->merchant);
+
+                        switch ($input['event'])
                         {
-                            $this->updateRefund($refund, $input);
+                            case 'processed_event':
 
-                            $refund->setStatusProcessed();
-                            $refund->setGatewayRefunded(true);
-                        }
-                        else if ($input['status'] === Status::FAILED)
-                        {
-                            $processor = $this->getNewProcessor($refund->merchant);
+                                $this->updateRefund($refund, $input);
 
-                            $processor->reverseRefund($refund);
+                                $refund->setStatusProcessed();
 
-                            if ($refund->payment->hasBeenCaptured() === true)
-                            {
-                                $this->trace->info(
-                                    TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
-                                    [
-                                        'refund_id'                    => $refundId,
-                                        'payment_id'                   => $refund->payment->getId(),
-                                        'payment_status'               => $refund->payment->getStatus(),
-                                        'payment_refund_status'        => $refund->payment->getRefundStatus(),
-                                        'payment_amount_refunded'      => $refund->payment->getAmountRefunded(),
-                                        'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
-                                    ]);
+                                $refund->setSpeedProcessed(RefundSpeed::NORMAL);
 
-                                $processor->revertPaymentToRefundableState(
-                                    $refund->payment,
-                                    $refund
-                                );
-                            }
+                                if (isset($input[RefundEntity::SPEED_PROCESSED]) === true)
+                                {
+                                    $refund->setSpeedProcessed($input[RefundEntity::SPEED_PROCESSED]);
+                                }
+
+                                $refund->setGatewayRefunded(true);
+
+                                break;
+
+                            case 'failed_event':
+
+                                $processor->reverseRefund($refund);
+
+                                if ($refund->payment->hasBeenCaptured() === true)
+                                {
+                                    $this->trace->info(
+                                        TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
+                                        [
+                                            'refund_id'                    => $refundId,
+                                            'payment_id'                   => $refund->payment->getId(),
+                                            'payment_status'               => $refund->payment->getStatus(),
+                                            'payment_refund_status'        => $refund->payment->getRefundStatus(),
+                                            'payment_amount_refunded'      => $refund->payment->getAmountRefunded(),
+                                            'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
+                                        ]);
+
+                                    $processor->revertPaymentToRefundableState(
+                                        $refund->payment,
+                                        $refund
+                                    );
+                                }
+
+                                break;
+
+                            case 'fee_only_reversal_event':
+
+                                if ($refund->isDirectSettlementRefund() === true)
+                                {
+                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
+                                }
+                                else
+                                {
+                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund, true);
+                                }
+
+                                if ($refund->payment->hasBeenCaptured() === true)
+                                {
+                                    $this->trace->info(
+                                        TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
+                                        [
+                                            'refund_id'                    => $refundId,
+                                            'payment_id'                   => $refund->payment->getId(),
+                                            'payment_status'               => $refund->payment->getStatus(),
+                                            'payment_refund_status'        => $refund->payment->getRefundStatus(),
+                                            'payment_amount_refunded'      => $refund->payment->getAmountRefunded(),
+                                            'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
+                                        ]);
+
+                                    $processor->revertPaymentToRefundableState(
+                                        $refund->payment,
+                                        $refund
+                                    );
+                                }
                         }
 
                         $this->repo->saveOrFail($refund);

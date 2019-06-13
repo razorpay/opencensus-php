@@ -6,6 +6,7 @@ use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Reversal as ReversalModel;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 /**
  * Class Reversal
@@ -55,8 +56,9 @@ class Reversal extends Base
      */
     public function setFeeDefaults()
     {
-        // Don't need to do anything here since default fees related stuff
-        // is already 0 and we don't charge any fees for reversals.
+        $this->fees = 0;
+
+        $this->tax = 0;
     }
 
     /**
@@ -66,15 +68,52 @@ class Reversal extends Base
      */
     public function calculateFees()
     {
-        $this->credit = $this->source->getAmount();
+        $this->credit = $this->source->getAmount() + $this->source->getFee();
+
+        // Deducting only refund's debit amount
+        if ($this->source->getEntityType() === 'refund')
+        {
+            if ($this->source->getAmount() === $this->source->entity->getAmount())
+            {
+                $this->credit = $this->source->entity->transaction->getDebit();
+            }
+            else if ($this->source->getFee() === $this->source->entity->getFee())
+            {
+                $this->credit = $this->source->entity->transaction->getFee();
+            }
+        }
+
+        if ($this->source->getFee() > 0)
+        {
+            $feeParams = [
+                Transaction\FeeBreakup\Entity::NAME       => "refund",
+                Transaction\FeeBreakup\Entity::AMOUNT     => -1 * ($this->source->getFee() - $this->source->getTax()),
+            ];
+
+            $fee = (new Transaction\FeeBreakup\Entity)->build($feeParams);
+
+            $this->feesSplit->push($fee);
+
+            $taxParams = [
+                Transaction\FeeBreakup\Entity::NAME       => FeeBreakupName::TAX,
+                Transaction\FeeBreakup\Entity::AMOUNT     => -1 * $this->source->getTax(),
+            ];
+
+            $tax = (new Transaction\FeeBreakup\Entity)->build($taxParams);
+
+            $this->feesSplit->push($tax);
+        }
     }
 
     public function setOtherDetails()
     {
         parent::setOtherDetails();
 
-        // In case of reversal, this would be 0.
         $this->txn->setApiFee($this->fees);
+
+        $this->txn->setFee(-1 * $this->source->getFee());
+
+        $this->txn->setTax(-1 * $this->source->getTax());
     }
 
     /**

@@ -113,7 +113,11 @@ class Validator extends Base\Validator
         'fta_data.vpa.address'                      => 'required_with:vpa|filled|string',
         'fta_data.card_transfer'                    => 'sometimes|associative_array',
         'fta_data.card_transfer.card_id'            => 'required_with:card_transfer|filled|unsigned_id',
+<<<<<<< HEAD
+        'is_fta'                                    => 'sometimes|bool',
+=======
         'is_fta'                                    => 'sometimes|bool'
+>>>>>>> 85662aa0ced13b34ade877b21c2750170d2f4193
     ];
 
     protected static $createScroogeRefundBulkRules = [
@@ -346,14 +350,14 @@ class Validator extends Base\Validator
         if ((($refund->isCreated() === false) and
             ($refund->isProcessed() === false) and
             ($refund->isInitiated() === false)) or
-            (isset($input['status']) === false))
+            (isset($input['event']) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED,
+                ErrorCode::BAD_REQUEST_REFUND_INVALID_EVENT_TO_PROCESS,
                 Entity::STATUS,
                 [
                     'refund_id' => $refund->getId(),
-                    'status'    => $refund->getStatus(),
+                    'event '    => $refund->getStatus(),
                     'gateway'   => $refund->getGateway(),
                 ]);
         }

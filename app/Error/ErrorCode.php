@@ -646,7 +646,7 @@ class ErrorCode
     const BAD_REQUEST_CARD_REFUND_NOT_ALLOWED                                       = 'BAD_REQUEST_CARD_REFUND_NOT_ALLOWED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS';
-    const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                             = 'BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED';
+    const BAD_REQUEST_REFUND_INVALID_EVENT_TO_PROCESS                               = 'BAD_REQUEST_REFUND_INVALID_EVENT_TO_PROCESS';
     const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                      = 'BAD_REQUEST_REFUND_ALREADY_PROCESSED';
     const BAD_REQUEST_ALL_FTA_NOT_FAILED                                            = 'BAD_REQUEST_ALL_FTA_NOT_FAILED';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                         = 'BAD_REQUEST_REFUND_NOT_IN_CREATED';

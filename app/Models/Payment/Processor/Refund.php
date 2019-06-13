@@ -90,7 +90,7 @@ trait Refund
     protected function isValidInstantRefundsRequest(Payment\Entity $payment, array $input)
     {
         return (isset($input[RefundEntity::SPEED]) === true) and
-            (in_array($input[RefundEntity::SPEED],RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
+            (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
             (($payment->getMethod() !== Payment\Method::CARD) or ($this->payment->isCaptured() === false));
     }
 
@@ -822,7 +822,7 @@ trait Refund
         return $txn;
     }
 
-    public function reverseRefund(Payment\Refund\Entity $refund)
+    public function reverseRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal = false)
     {
         $this->trace->info(
             TraceCode::REFUND_REVERSAL_INITIATED,
@@ -832,51 +832,79 @@ trait Refund
                 'gateway'    => $refund->getGateway()
             ]);
 
-        if ($refund->getTransactionId() === null)
+        // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
+        // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this,
+        // the third case is Refund Credits - which we will be handling soon
+        if (($refund->payment->hasBeenCaptured() === false) or
+            (($refund->transaction->getDebit() === 0) and
+             ($refund->transaction->getCreditType() === Transaction\CreditType::DEFAULT)))
         {
             return null;
         }
 
-        if ($refund->isStatusReversed() === true)
+        if (($refund->isStatusReversed() === true) or
+            (($feeOnlyReversal === true) and ($refund->getFee() === 0)))
         {
             throw new Exception\LogicException(
-                'Attempted to reverse an already reversed refund',
+                'Attempted to reverse an already reversed refund amount/fee',
                 null,
                 [
                     'refund_id'  => $refund->getId(),
                     'status'     => $refund->getStatus(),
                     'payment_id' => $refund->getPaymentId(),
-                    'gateway'    => $refund->getGateway()
+                    'gateway'    => $refund->getGateway(),
+                    'fee'        => $refund->getFee(),
                 ]);
         }
 
         try
         {
             $reversal = $this->repo->transaction(
-                function () use ($refund) {
-                    $reversal = (new Reversal\Core)->reverseForRefund($refund);
+                function () use ($refund, $feeOnlyReversal) {
+                    $reversal = (new Reversal\Core)->reverseForRefund($refund, $feeOnlyReversal);
 
-                    $refund->setStatus(Payment\Refund\Status::REVERSED);
+                    $fee = $refund->getFees();
+
+                    $tax = $refund->getTax();
+
+                    $refund->setFee(0);
+
+                    $refund->setTax(0);
+
+                    if ($feeOnlyReversal === false)
+                    {
+                        $refund->setStatus(Payment\Refund\Status::REVERSED);
+                    }
 
                     $this->repo->saveOrFail($refund);
+
+                    $this->trace->info(
+                        TraceCode::REFUND_FEE_AND_TAX_RESET_TO_ZERO,
+                        [
+                            'refund_id'    => $refund->getId(),
+                            'current_fee'  => $refund->getFees(),
+                            'previous_fee' => $fee,
+                            'current_tax'  => $refund->getTax(),
+                            'previous_tax' => $tax,
+                        ]);
 
                     return $reversal;
                 });
         }
         catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex,
-                    Trace::CRITICAL,
-                    TraceCode::REFUND_REVERSAL_FAILED,
-                    [
-                        'refund_id'  => $refund->getId(),
-                        'status'     => $refund->getStatus(),
-                        'payment_id' => $refund->getPaymentId(),
-                        'gateway'    => $refund->getGateway()
-                    ]);
+        {
+            $this->trace->traceException($ex,
+                Trace::CRITICAL,
+                TraceCode::REFUND_REVERSAL_FAILED,
+                [
+                    'refund_id'  => $refund->getId(),
+                    'status'     => $refund->getStatus(),
+                    'payment_id' => $refund->getPaymentId(),
+                    'gateway'    => $refund->getGateway()
+                ]);
 
-                return null;
-            }
+            return null;
+        }
 
         return $reversal;
     }

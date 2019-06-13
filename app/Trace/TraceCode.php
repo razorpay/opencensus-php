@@ -1668,6 +1668,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
     const REFUND_REVERSAL_FAILED                                = 'REFUND_REVERSAL_FAILED';
+    const REFUND_FEE_AND_TAX_RESET_TO_ZERO                      = 'REFUND_FEE_AND_TAX_RESET_TO_ZERO';
 
     const FTA_TRANSFER_DISPATCH                                 = 'FTA_TRANSFER_DISPATCH';
     const FTA_TRANSFER_DISPATCH_FAILED                          = 'FTA_TRANSFER_DISPATCH_FAILED';
