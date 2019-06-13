@@ -136,7 +136,7 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT =>
             [
                 'post',
-                'customer/vpa/{vpa_id}/assign/{ba_id}',
+                'customer/vpa/{vpa_id}/assign',
                 'VpaController@assignBankAccount'
             ],
         Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY =>

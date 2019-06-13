@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Network;
 use Razorpay\Trace\Logger as Trace;
 
 class Verify extends Base\Core
@@ -390,9 +391,7 @@ class Verify extends Base\Core
             // For verification of captured payment
             if ($payment->hasBeenCaptured() === true)
             {
-                if ((in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === false) or
-                    ((in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === false) and
-                    ($payment->isBharatQr() === true)))
+                if ($this->isPaymentNotApplicableForCaptureVerify($payment) === true)
                 {
                     $payment->setNonVerifiable();
 
@@ -1265,5 +1264,39 @@ class Verify extends Base\Core
     protected function processor($merchant = null)
     {
         return new Payment\Processor\Processor($merchant);
+    }
+
+    protected function isPaymentNotApplicableForCaptureVerify($payment)
+    {
+        $gateway = $payment->getGateway();
+
+        $isNotApplicable = ((Payment\Gateway::isCaptureVerifyEnabledGateway($gateway) === false) or
+                            ((Payment\Gateway::isCaptureVerifyQREnabledGateways($gateway)=== false) and
+                            ($payment->isBharatQr() === true)));
+
+        if ($isNotApplicable === true)
+        {
+            return $isNotApplicable;
+        }
+
+        // If payment is already reconciled, we don't want to verify it
+        if ($payment->isReconciled() === true)
+        {
+            return true;
+        }
+
+        // For Hitachi (Rupay Network), verification call works only for 2 days(172800 sec) after authorization
+        if ($gateway === Payment\Gateway::HITACHI)
+        {
+            if (($payment->hasCard() === true) and ($payment->card->getNetwork() === Network::getFullName(Network::RUPAY)))
+            {
+                if (($payment->hasBeenAuthorized() === true) and (Carbon::now()->getTimestamp() - $payment->getAuthorizeTimestamp() > 172800))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

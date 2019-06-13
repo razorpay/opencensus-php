@@ -4,11 +4,14 @@ namespace RZP\Tests\P2p\Service\UpiAxis\Device;
 
 use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class DeviceTest extends TestCase
 {
+    use TransactionTrait;
+
     public function testInitiateVerification()
     {
         $helper = $this->getDeviceHelper();
@@ -124,6 +127,12 @@ class DeviceTest extends TestCase
 
     public function testDeregister()
     {
+        $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
+        $bankAccount = $this->fixtures->bankAccount(self::DEVICE_1);
+        $vpa         = $this->fixtures->vpa(self::DEVICE_1);
+        $transaction = $this->createPayTransaction();
+        $beneficiary = $this->fixtures->createBeneficiary([]);
+
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
@@ -131,17 +140,15 @@ class DeviceTest extends TestCase
         $this->mockActionContentFunction([
             Device\Action::DEREGISTER => function(& $content)
             {
-                //$content['status'] = 'FAILURE';
+                $this->assertArrayHasKey('payload', $content);
             }]);
-
-        $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
-        $bankAccount = $this->fixtures->bankAccount(self::DEVICE_1);
-        $vpa         = $this->fixtures->vpa(self::DEVICE_1);
 
         $helper->deregisterDevice();
 
         $this->assertTrue($deviceToken->refresh()->trashed());
         $this->assertTrue($bankAccount->refresh()->trashed());
         $this->assertTrue($vpa->refresh()->trashed());
+        $this->assertTrue($transaction->refresh()->trashed());
+        $this->assertNull($this->getDbLastEntity('p2p_beneficiary'));
     }
 }

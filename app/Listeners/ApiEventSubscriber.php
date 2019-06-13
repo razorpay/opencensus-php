@@ -16,6 +16,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Payment\Downtime;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
@@ -485,6 +486,20 @@ class ApiEventSubscriber extends Base\Core
         }
     }
 
+    protected function onPaymentDowntimeStarted(Downtime\Entity $downtime)
+    {
+        $payload = $this->getPaymentDowntimePayload($downtime);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentDowntimeResolved(Downtime\Entity $downtime)
+    {
+        $payload = $this->getPaymentDowntimePayload($downtime);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -706,6 +721,17 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getPaymentDowntimePayload(Downtime\Entity $downtime): array
+    {
+        $payload = [
+            Constants\Entity::PAYMENT_DOWNTIME => [
+                'entity' => $downtime->toArrayPublic(),
+            ]
+        ];
+
+        return $payload;
+    }
+
     protected function prepareAndDispatchWebhook(array $payload)
     {
         $merchantWebhook = $this->activeMerchantWebhook;
@@ -746,7 +772,7 @@ class ApiEventSubscriber extends Base\Core
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
         //
-        $signedAccountId = Merchant\Account\Entity::getSignedId($entity->merchant->getId());
+        $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
@@ -832,7 +858,7 @@ class ApiEventSubscriber extends Base\Core
 
     protected function checkAndSetWebhooksEnabledForEventForAnyApp(): bool
     {
-        $merchantId = $this->mainEntity->merchant->getId();
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
 
         $activeEnabledAppWebhooks = $this->getActiveWebhooksForConnectedApps($merchantId);
 

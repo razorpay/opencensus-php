@@ -147,9 +147,9 @@ class Core extends Base\Core
         return $username;
     }
 
-    public function delete()
+    public function delete(Entity $vpa)
     {
-        return $this->repo->newP2pQuery()->delete();
+        $this->repo->deleteOrFail($vpa);
     }
 
     /**

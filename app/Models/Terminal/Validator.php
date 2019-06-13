@@ -249,6 +249,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
     protected static $cybersourceTerminalRules = [

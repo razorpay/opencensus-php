@@ -372,6 +372,7 @@ class FundAccountValidationTest extends TestCase
         // Queue will be processed by now.
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals(2, $fav['attempts']);
+        $this->assertEquals(null, $fav['retry_at']);
         $this->assertEquals('active', $fav['results']['account_status']);
         $this->assertEquals('Someone', $fav['results']['registered_name']);
 

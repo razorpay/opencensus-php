@@ -2468,7 +2468,7 @@ final class Route
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
-        'invoice_cancel_by_batch'                  => '*',
+        'invoice_cancel_by_batch'                  => Permission::CANCEL_BATCH,
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,

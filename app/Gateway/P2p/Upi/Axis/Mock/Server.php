@@ -60,6 +60,61 @@ class Server extends Mock\Server
         return $response;
     }
 
+    public function vpaAssignBankAccount($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD          => [
+                Fields::VPA_ACCOUNTS => [
+                    [
+                        Fields::ACCOUNT => [
+                            Fields::REFERENCE_ID            => $request[Fields::ACCOUNT_REFERENCE_ID],
+                            Fields::BANK_ACCOUNT_UNIQUE_ID  => str_random(12),
+                        ],
+                        Fields::VPA => $request[Fields::CUSTOMER_VPA],
+                        Fields::IS_DEFAULT => true,
+                    ]
+                ],
+            ],
+            Fields::UDF_PARAMETERS   => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'assignBankAccount');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
+    public function vpaDelete($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD          => [
+                Fields::VPA_ACCOUNTS => [
+                    [
+                        Fields::ACCOUNT => [
+                            Fields::BANK_ACCOUNT_UNIQUE_ID  => str_random(12),
+                        ],
+                        Fields::VPA => $request[Fields::CUSTOMER_PRIMARY_VPA],
+                        Fields::IS_DEFAULT => true,
+                    ]
+                ],
+            ],
+            Fields::UDF_PARAMETERS   => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'assignBankAccount');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
     public function transactionRaiseConcern($request)
     {
         $response = [

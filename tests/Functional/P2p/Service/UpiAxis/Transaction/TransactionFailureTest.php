@@ -289,4 +289,76 @@ class TransactionFailureTest extends TestCase
             UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Your transaction is approved'
         ], $transaction->upi->toArrayPublic());
     }
+
+    public function testCollectIncomingExpired()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createCollectIncomingTransaction();
+
+        $this->mockSdk()->setCallback('CUSTOMER_DEBITED_VIA_COLLECT', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID              => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::GATEWAY_RESPONSE_CODE       => 'U69',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Collect expired',
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertTrue($transaction->isFailed());
+        $this->assertArraySubset([
+            Entity::STATUS            => Status::EXPIRED,
+            Entity::INTERNAL_STATUS   => Status::EXPIRED,
+        ], $transaction->toArray());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'U69',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Collect expired'
+        ], $transaction->upi->toArrayPublic());
+    }
+
+    public function testCollectIncomingRejected()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createCollectTransaction();
+
+        $this->mockSdk()->setCallback('CUSTOMER_CREDITED_VIA_COLLECT', [
+            Fields::AMOUNT                      => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA                   => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA                   => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID              => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                     => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::GATEWAY_RESPONSE_CODE       => 'ZA',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Collect rejected',
+        ]);
+
+        $request = $this->mockSdk()->callback();
+        $response = $helper->callback($this->gateway, $request);
+        $this->assertTrue($response['success']);
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertTrue($transaction->isFailed());
+        $this->assertArraySubset([
+            Entity::STATUS            => Status::REJECTED,
+        ], $transaction->toArrayPublic());
+
+        $this->assertArraySubset([
+            UpiTransaction\Entity::GATEWAY_ERROR_CODE           => 'ZA',
+            UpiTransaction\Entity::GATEWAY_ERROR_DESCRIPTION    => 'Collect rejected'
+        ], $transaction->upi->toArrayPublic());
+    }
+
 }
