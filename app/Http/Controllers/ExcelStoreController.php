@@ -13,46 +13,6 @@ use RZP\Trace\TraceCode;
 
 class ExcelStoreController extends Controller
 {
-
-    public function getView(string $schoolId)
-    {
-        $method = Request::method(); // method will be GET
-        $excelStoreEndPoint = config('services.excel_store.base_url') . 'views' . '/' . $schoolId;
-        $excelStoreAuthToken = config('services.excel_store.secret');
-        $headers = [
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $excelStoreAuthToken,
-        ];
-
-        $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-        $body = '';
-        $respHeaders = [];
-
-        try
-        {
-            $resp = Requests::request(
-                $excelStoreEndPoint,
-                $headers,
-                null,
-                $method
-            );
-
-            $code = $resp->status_code;
-            $body = $resp->body;
-            $respHeaders = $resp->headers->getAll();
-        } catch(\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::EXCEL_STORE_ERROR,
-                compact('excelStoreEndPoint', 'headers', 'method')
-            );
-        }
-
-        return ResponseFactory::make($code, $body, $respHeaders);
-    }
-
     /**
      * Forwards request from <API>/excel_store/* to <excel_store>/* and returns the response
      *
