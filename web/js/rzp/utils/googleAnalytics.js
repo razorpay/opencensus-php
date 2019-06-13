@@ -38,3 +38,41 @@ export const trackhubsContactUpdate = data => {
     data,
   });
 };
+
+/**
+ * Common function to fire all events at once.
+ * @param {Object} - fbData, bingData, liData(linkedin), twiData(twitter)
+ *
+ * Check static dir for to understand track method format.
+ * Refer https://docs.google.com/spreadsheets/d/1VIdNTDbvocP11Fltjhk55aHIgpYchUeCJgwnqElW3vY/edit#gid=0 for the values of specific events.
+ */
+export const fireAnalyticsEvents = ({ ...data }) => {
+  if (data.fbData) {
+    window.rzpAnalytics({
+      name: 'facebook',
+      event: data.fbData,
+    });
+  }
+  if (data.bingData) {
+    window.rzpAnalytics({
+      name: 'bing',
+      event: data.bingData,
+    });
+  }
+  if (data.liData) {
+    let event = {};
+    event.conversionId = data.liData;
+    window.rzpAnalytics({
+      name: 'linkedIn',
+      value: event,
+    });
+  }
+  if (data.twiData) {
+    let event = {};
+    event.txn_id = data.twiData;
+    window.rzpAnalytics({
+      name: 'twitter',
+      value: event,
+    });
+  }
+};

@@ -15,7 +15,10 @@ import { classList, addPrefixToObjectKeys } from 'common/util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateSession } from 'merchant/modules/session';
 import User from 'merchant/models/User';
-import { trackFb, trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
+import {
+  trackhubsContactUpdate,
+  fireAnalyticsEvents,
+} from 'rzp/utils/googleAnalytics';
 import {
   showInstantActivationSuccessModal,
   showKYCDetailsModal,
@@ -23,6 +26,7 @@ import {
 
 import formFields, { BUSINESS_TYPE_OPTIONS } from './L1FormMap';
 import { trackL1FormSuccess, trackL1FormError, trackTnCClick } from './ga_new';
+import BingDataObj from 'rzp/utils/bingDataObj';
 
 function defaultFieldProps(f) {
   const self = this;
@@ -229,10 +233,17 @@ export default class ActivationWizard extends React.Component {
 
         if (isWhitelistFlow) {
           this.props.showInstantActivationSuccessModal();
-          trackFb('activation_complete_success');
+          fireAnalyticsEvents({ fbData: 'activation_complete_success' });
         } else if (isGraylistFlow) {
           this.props.showKYCDetailsModal();
         }
+
+        let data = new BingDataObj('activationform', 'complete', 'success', 1);
+        fireAnalyticsEvents({
+          bingData: data,
+          liData: 987404,
+          twiData: 'o1ua0',
+        }); //fb = false, bing, linkedin, twitter
 
         return this.props.history.replace(`/`);
       })
@@ -246,7 +257,18 @@ export default class ActivationWizard extends React.Component {
 
         trackL1FormError();
 
-        trackFb('activation_complete_error');
+        let dataError = new BingDataObj(
+          'activationform',
+          'complete',
+          'error',
+          1
+        );
+        fireAnalyticsEvents({
+          fbData: 'activation_complete_error',
+          bingData: dataError,
+          liData: 987412,
+          twiData: 'o1ua2',
+        });
 
         if (this.onActivationSuccess) {
           this.onActivationSuccess({ success: false });
@@ -338,7 +360,11 @@ export default class ActivationWizard extends React.Component {
   componentDidMount() {
     this.handleUIUpdate();
 
-    trackFb('activation_start');
+    fireAnalyticsEvents({
+      fbData: 'activation_start',
+      liData: 987396,
+      twiData: 'o1u9z',
+    });
 
     updateHubSpotContactsProperties({
       started: true,
