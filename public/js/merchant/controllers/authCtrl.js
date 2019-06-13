@@ -1,7 +1,5 @@
 'use strict';
 
-import { fireAnalyticsEvents } from 'rzp/utils/googleAnalytics';
-
 //Signin Controller
 app
   .factory('authCallbacks', [
@@ -274,10 +272,23 @@ app
       }
 
       $scope.createAccount = function($valid) {
-        fireAnalyticsEvents({
-          fbData: 'signup_start',
-          liData: 987388,
-          twiData: 'o1u9x',
+        window.rzpAnalytics({
+          name: 'facebook',
+          event: 'signup_start',
+        });
+
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            conversionId: '987388',
+          },
+        });
+
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            txn_id: 'o1u9x',
+          },
         });
 
         window.trackHubs({
