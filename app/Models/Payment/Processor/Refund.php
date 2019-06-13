@@ -30,6 +30,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 /**
@@ -210,7 +211,8 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        $input['is_fta'] = (bool) $input['is_fta'];
+        $input[RefundConstants::IS_FTA] = (isset($input[RefundConstants::IS_FTA]) === true) ?
+            (bool) $input[RefundConstants::IS_FTA] : null;
 
         $refundValidator = $refund->getValidator();
 
@@ -310,7 +312,7 @@ trait Refund
 
         $data['refund']['attempts'] = $input['attempts'];
 
-        $data['is_fta']  = $input['is_fta'];
+        $data[RefundConstants::IS_FTA] = $input[RefundConstants::IS_FTA] ?? null;
 
         if (isset($input['fta_data']) === true)
         {
@@ -340,7 +342,8 @@ trait Refund
                 true);
         }
 
-        $input['is_fta'] = (bool) $input['is_fta'];
+        $input[RefundConstants::IS_FTA] = (isset($input[RefundConstants::IS_FTA]) === true) ?
+            (bool) $input[RefundConstants::IS_FTA] : null;
 
         $refundValidator = $refund->getValidator();
 
@@ -366,7 +369,7 @@ trait Refund
 
             $data = $input['fta_data'] ?? [];
 
-            $data['is_fta'] = $input['is_fta'];
+            $data[RefundConstants::IS_FTA] = $input[RefundConstants::IS_FTA] ?? null;
 
             $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $data);
         }
@@ -594,7 +597,7 @@ trait Refund
         }
         else
         {
-            if ((isset($ftaInput['is_fta']) === true) and ($ftaInput['is_fta'] === true))
+            if ((isset($ftaInput[RefundConstants::IS_FTA]) === true) and ($ftaInput[RefundConstants::IS_FTA] === true))
             {
                 $verifyRefundResult = $this->prepareScroogeRefundResponse([],
                     false,
@@ -1438,7 +1441,7 @@ trait Refund
         }
         else
         {
-            if ((isset($data['is_fta']) === true) and ($data['is_fta'] === true))
+            if ((isset($data[RefundConstants::IS_FTA]) === true) and ($data[RefundConstants::IS_FTA] === true))
             {
                 return (new ScroogeResponse())
                     ->setSuccess(false)
@@ -2036,8 +2039,9 @@ trait Refund
 
         $refunded = false;
 
-        // Mocking for non scrooge refunds
-        $data['is_fta'] = (isset($data['is_fta']) === false) ? false : $data['is_fta'];
+        // Initializing for non scrooge refunds
+        $data[RefundConstants::IS_FTA] = (isset($data[RefundConstants::IS_FTA]) === false) ?
+            false : $data[RefundConstants::IS_FTA];
 
         try
         {
@@ -2047,7 +2051,7 @@ trait Refund
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
-            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data['is_fta']))
+            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]))
             {
                 $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
             }
@@ -2155,16 +2159,15 @@ trait Refund
 
     protected function isFundTransferAttemptRefund(RefundEntity $refund, Payment\Entity $payment, array $data = []): bool
     {
-        if (isset($data['is_fta']) === true)
+        if (isset($data[RefundConstants::IS_FTA]) === true)
         {
-            if ($data['is_fta'] === false) 
-            {
+            if ($data[RefundConstants::IS_FTA] === false) {
                 return false;
             }
         }
         else
         {
-            $data['is_fta'] = false;
+            $data[RefundConstants::IS_FTA] = false;
         }
 
         //
@@ -2182,7 +2185,7 @@ trait Refund
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data['is_fta']) === true))
+            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]) === true))
         {
             return true;
         }
