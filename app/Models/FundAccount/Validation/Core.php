@@ -134,6 +134,8 @@ class Core extends Base\Core
 
                 $fundAccountValidation->setAttempts($attempt);
 
+                $fundAccountValidation->setRetryAt(null);
+
                 $this->repo->saveOrFail($fundAccountValidation);
 
                 return true;
