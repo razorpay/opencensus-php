@@ -1612,7 +1612,7 @@ trait Authorize
         if (($payment->getMethod() == Method::UPI) and
             ($payment->merchant->isTPVRequired() === true))
         {
-            $this->modifyAccountNumberForSpecificBanks($payment,$gatewayInput);
+            $this->modifyAccountNumberForSpecificBanks($payment, $gatewayInput);
         }
 
         // set token for local card saving in gateway input
