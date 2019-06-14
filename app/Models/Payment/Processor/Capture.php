@@ -643,15 +643,7 @@ trait Capture
 
         $this->repo->transaction(function() use ($payment, $txn)
         {
-            $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($txn->getMerchantId());
-
-            $txn->accountBalance()->associate($merchantBalance);
-
-            $merchantBalance->updateBalance($txn);
-
-            $this->repo->balance->updateBalance($merchantBalance);
-
-            $this->repo->saveOrFail($txn);
+            (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn);
         });
     }
 

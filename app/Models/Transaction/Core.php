@@ -1524,4 +1524,23 @@ class Core extends Base\Core
                 ]);
         }
     }
+
+
+    //Async Update Merchant Balance
+    public function asyncUpdateMerchantBalance($payment, $txn)
+    {
+        $processor = $this->getFactory($payment);
+
+        $processor->setTransaction($txn);
+
+        $processor->setMerchantBalanceLockForUpdate();
+
+        $processor->updateCredits();
+
+        $processor->updateBalances();
+
+        $txn->setBalance(null);
+
+        $this->repo->saveOrFail($txn);
+    }
 }
