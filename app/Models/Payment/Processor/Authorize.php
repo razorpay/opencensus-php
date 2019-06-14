@@ -5246,9 +5246,8 @@ trait Authorize
         }
         else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
-            return (Payment\Gateway::supportsPurchase($gateway, $networkCode) == false);
+            return Payment\Gateway::supportsPurchase($gateway, $networkCode);
         }
-
 
         // Additional check for ICICI debit cards on First data terminal
 

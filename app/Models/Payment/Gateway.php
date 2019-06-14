@@ -1735,9 +1735,10 @@ class Gateway
     {
         $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
 
-        if ($supportsPurchase === true && $networkCode!=null)
+        if ( ($supportsPurchase === true) and
+             ($networkCode!=null) )
         {
-            return self::supportsPurchaseForNetwork($gateway, $networkCode);
+            return self::isNetworkNotSupportedForPurchase($gateway, $networkCode);
         }
 
         return $supportsPurchase;
@@ -1790,12 +1791,12 @@ class Gateway
         return true;
     }
 
-    public static function supportsPurchaseForNetwork($gateway, $networkCode)
+    public static function isNetworkNotSupportedForPurchase($gateway, $networkCode)
     {
         // This means that all the networks are supported by the gateway for Purchase.
         if (isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false)
         {
-            return true;
+            return false;
         }
 
         // Get all the networks which are NOT supported by the gateway for Purchase.
@@ -1803,10 +1804,8 @@ class Gateway
 
         // If a given network is in the list of notSupportedNetworks, it means that the network
         // is not supported by the gateway for Purchase.
-        return !(in_array($networkCode, $notSupportedNetworks));
+        return (in_array($networkCode, $notSupportedNetworks, true));
     }
-
-
 
     public static function isPowerWallet($wallet)
     {
