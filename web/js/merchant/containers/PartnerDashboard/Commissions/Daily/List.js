@@ -43,11 +43,6 @@ const transactions = {
   closeModal,
 })
 export default class CommissionsDailyList extends ListContainer {
-  constructor(props) {
-    super(props);
-    this.amountColumn = props.amountColumn;
-  }
-
   onDatesChange = (from, to) => {
     this.search({ from, to });
   };
@@ -96,7 +91,7 @@ export default class CommissionsDailyList extends ListContainer {
         <DataTable
           columns={[
             date,
-            this.amountColumn,
+            this.props.amountColumn,
             volume,
             activeMerchants,
             transactions,
