@@ -72,7 +72,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $transferId = explode('_', $transfers['items'][0]['id'])[1];
 
-        $this->refundPayment($this->payment['id'], null, [], true);
+        $this->refundPayment($this->payment['id'], null,[], [], true);
 
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
 
@@ -114,7 +114,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $transferId = explode('_', $transfers['items'][1]['id'])[1];
 
-        $this->refundPayment($this->payment['id'], null, [], true);
+        $this->refundPayment($this->payment['id'], null,[], [], true);
 
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
 
@@ -145,7 +145,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $transfers = $this->transferPayment($this->payment['id'], $transfers);
 
-        $this->refundPayment($this->payment['id'], 2000, [], true);
+        $this->refundPayment($this->payment['id'], 2000, [], [], true);
 
         $this->checkReversalsSingle($transfers['items']);
 
@@ -172,7 +172,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfers)
         {
-            $this->refundPayment($this->payment['id'], 20000, [], true);
+            $this->refundPayment($this->payment['id'], 20000, [], [], true);
         });
     }
 

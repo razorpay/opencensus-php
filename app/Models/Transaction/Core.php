@@ -597,7 +597,7 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)

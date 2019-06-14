@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         'reversals.*.transfer'  => 'required',
         'reversals.*.amount'    => 'required|integer|min:100',
         'reversals.*.notes'     => 'sometimes|notes',
+        'speed'                 => 'sometimes|filled|in:optimum,normal',
     ];
 
     protected static $editStatusRules = [
@@ -345,10 +346,10 @@ class Validator extends Base\Validator
         if ((($refund->isCreated() === false) and
             ($refund->isProcessed() === false) and
             ($refund->isInitiated() === false)) or
-            (isset($input['status']) === false))
+            (isset($input['event']) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED,
+                ErrorCode::BAD_REQUEST_REFUND_INVALID_EVENT_TO_PROCESS,
                 Entity::STATUS,
                 [
                     'refund_id' => $refund->getId(),

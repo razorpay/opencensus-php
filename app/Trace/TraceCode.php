@@ -89,6 +89,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_RETRY_SCROOGE_QUEUE_DELETE                     = 'REFUND_RETRY_SCROOGE_QUEUE_DELETE';
     const REFUND_GATEWAY_CALL_NON_SCROOGE_GATEWAY               = 'REFUND_GATEWAY_CALL_NON_SCROOGE_GATEWAY';
     const REFUND_UPDATE_STATUS_REQUEST                          = 'REFUND_UPDATE_STATUS_REQUEST';
+    const PAYMENT_STATUS_UPDATE_REQUEST                         = 'PAYMENT_STATUS_UPDATE_REQUEST';
+    const PAYMENT_STATUS_UPDATE_INITIATED                       = 'PAYMENT_STATUS_UPDATE_INITIATED';
+    const PAYMENT_STATUS_UPDATE_COMPLETE                        = 'PAYMENT_STATUS_UPDATE_COMPLETE';
     const REFUND_UPDATE_STATUS_NON_SCROOGE_GATEWAY              = 'REFUND_UPDATE_STATUS_NON_SCROOGE_GATEWAY';
     const REFUND_SCROOGE_INVALID_STATUS_UPDATE                  = 'REFUND_SCROOGE_INVALID_STATUS_UPDATE';
     const REFUND_SCROOGE_STATUS_NOT_SENT                        = 'REFUND_SCROOGE_STATUS_NOT_SENT';
@@ -1665,6 +1668,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
     const REFUND_REVERSAL_FAILED                                = 'REFUND_REVERSAL_FAILED';
+    const REFUND_FEE_AND_TAX_RESET_TO_ZERO                      = 'REFUND_FEE_AND_TAX_RESET_TO_ZERO';
 
     const FTA_TRANSFER_DISPATCH                                 = 'FTA_TRANSFER_DISPATCH';
     const FTA_TRANSFER_DISPATCH_FAILED                          = 'FTA_TRANSFER_DISPATCH_FAILED';

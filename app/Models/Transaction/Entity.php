@@ -530,8 +530,6 @@ class Entity extends Base\PublicEntity
 
     public function setFee($fee)
     {
-        assertTrue ($fee >= 0);
-
         $this->setAttribute(self::FEE, $fee);
     }
 
@@ -602,8 +600,6 @@ class Entity extends Base\PublicEntity
 
     public function setTax($tax)
     {
-        assertTrue($tax >= 0);
-
         $this->setAttribute(self::TAX, $tax);
     }
 

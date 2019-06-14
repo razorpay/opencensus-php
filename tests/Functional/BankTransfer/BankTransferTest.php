@@ -1980,7 +1980,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
 
-        $response = $this->refundPayment($payment['id']);
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 
