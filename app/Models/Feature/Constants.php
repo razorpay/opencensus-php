@@ -357,6 +357,7 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::TEST_MODE_SETTLEMENT            => true,
     ];
 
     // Entity type constants
