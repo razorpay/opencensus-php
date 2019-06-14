@@ -16,14 +16,14 @@ export default class Commission extends GenericEntity {
     });
   };
 
-  fetchSingleDayAggregateData = ({ from }) => {
+  fetchSingleDayAggregateData = ({ from, queryType }) => {
     const to = Number(
       moment(from, 'X')
         .endOf('day')
         .format('X')
     );
 
-    return this.fetchAggregate(from, to, 'aggregate_detail').then(response => {
+    return this.fetchAggregate(from, to, queryType).then(response => {
       if (response.success) {
         return {
           ...response,
