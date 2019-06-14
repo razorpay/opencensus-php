@@ -4993,13 +4993,19 @@ ALTER TABLE `p2p_transactions`
 
 -- P2P - Fix Transactions #11911
 
+ALTER TABLE payouts
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL after purpose_type;
+
+ALTER TABLE pricing
+    MODIFY COLUMN amount_range_max BIGINT UNSIGNED DEFAULT NULL after amount_range_min;
+
 ALTER TABLE `refunds`
-	ADD COLUMN `speed_requested` VARCHAR(50) NOT NULL DEFAULT 'normal' AFTER `attempts`,
-	ADD COLUMN `speed_processed` VARCHAR(50) DEFAULT NULL AFTER `speed_requested`,
-	ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `speed_processed`,
-	ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`,
-	ADD INDEX `refunds_speed_requested_index` (`speed_requested`),
-	ADD INDEX `refunds_speed_processed_index` (`speed_processed`);
+    ADD COLUMN `speed_requested` VARCHAR(50) NOT NULL DEFAULT 'normal' AFTER `attempts`,
+    ADD COLUMN `speed_processed` VARCHAR(50) DEFAULT NULL AFTER `speed_requested`,
+    ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `speed_processed`,
+    ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`,
+    ADD INDEX `refunds_speed_requested_index` (`speed_requested`),
+    ADD INDEX `refunds_speed_processed_index` (`speed_processed`);
 
 ALTER TABLE `transactions`
     MODIFY COLUMN `fee` INT(10) NOT NULL,

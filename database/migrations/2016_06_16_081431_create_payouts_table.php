@@ -66,8 +66,7 @@ class CreatePayoutsTable extends Migration
             $table->string(Payout::PURPOSE_TYPE, 255)
                   ->nullable();
 
-            $table->integer(Payout::AMOUNT)
-                  ->unsigned();
+            $table->unsignedBigInteger(Payout::AMOUNT);
 
             $table->char(Payout::CURRENCY);
 
