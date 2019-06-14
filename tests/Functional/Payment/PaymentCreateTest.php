@@ -1136,22 +1136,28 @@ class PaymentCreateTest extends TestCase
     public function testPaymentFailOnDinersAndDisableMerchant()
     {
         $this->changeEnvToNonTest();
+
         $this->ba->publicLiveAuth();
+
         $this->fixtures->merchant->activate();
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
-
+        // enabling the diners cards
         $this->fixtures->merchant->enableCardNetworks('10000000000000',['dicl']);
+
+        // disabling the terminal as we want to test for "No terminal found"
         $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
-
         $payment = $this->getDefaultPaymentArray();
+
         $payment['card']['number'] = '30569309025904';
 
         $this->doAuthPayment($payment);
 
         $entity = $this->getDbLastEntity('methods', 'live');
 
+        // checking whether diners card got disabled or not for the merchant
         $this->assertEquals(false, $entity->isCardNetworkEnabled('DICL'));
 
     }
@@ -1159,23 +1165,32 @@ class PaymentCreateTest extends TestCase
     public function testPaymentFailOnNetBankingAndDisableMerchant()
     {
         $this->changeEnvToNonTest();
+
         $this->ba->publicLiveAuth();
+
         $this->fixtures->merchant->activate();
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
+        // first payment with hdfc bank
         $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        // disabling the terminal as we want to test for "No terminal found"
         $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
         $this->doAuthPayment($payment);
 
-
+        // second payment with sbi bank
         $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
-        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
+        // disabling the terminal as we want to test for "No terminal found"
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
 
         $this->doAuthPayment($payment);
 
         $methods = $entity = $this->getDbLastEntity('methods', 'live');
+
+        // checking the list of disabled banks for the merchant
         $this->assertEquals(['HDFC','SBIN'], $methods->getDisabledBanks());
     }
 

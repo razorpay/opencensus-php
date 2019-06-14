@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Entity;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -212,22 +213,27 @@ class Selector extends Base\Core
             else if (($payment->isCard() === true) and
                      ($payment->card->isDiners() === true))
             {
-                $merchant = $this->input['merchant'];
+                $merchant = $this->input[Constants::MERCHANT];
+
                 $merchant->methods->setDinersCard(0);
+
                 $merchant->methods->saveOrFail();
 
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
-            else if ($payment['method'] === Method::NETBANKING)
+            else if ($payment[Entity::METHOD] === Method::NETBANKING)
             {
-                $merchant = $this->input['merchant'];
+                $merchant = $this->input[Constants::MERCHANT];
+
                 $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
-                $inputBanks = array($payment['bank']);
+                $inputBanks = array($payment[Entity::BANK]);
+
                 $disabledBanks = array_merge($methods->getDisabledBanks(),$inputBanks);
 
                 $merchant->methods->setDisabledBanks($disabledBanks);
+
                 $merchant->methods->saveOrFail();
 
                 throw new Exception\BadRequestException(
