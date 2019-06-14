@@ -141,6 +141,14 @@ class Status extends Base
 
         $beneName = $response[Constants::BENEFICIARY_NAME] ?? null;
 
+        // capture failed response codes
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            ValidStatus::getFailureStatus(),
+            ValidStatus::getSuccessfulStatus(),
+            ValidStatus::FAILED,
+            $bankSubStatus);
+
         return [
             ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
             ReconConstants::UTR                  => $this->getNullOnEmpty($utr),
@@ -163,6 +171,13 @@ class Status extends Base
         $remark = $response[Constants::REASON][Constants::TEXT] ?? null;
 
         $subCode = $response[Constants::CODE][Constants::SUB_CODE][Constants::VALUE] ?? null;
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            ValidStatus::getFailureStatus(),
+            ValidStatus::getSuccessfulStatus(),
+            ValidStatus::FAILED,
+            $subCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
