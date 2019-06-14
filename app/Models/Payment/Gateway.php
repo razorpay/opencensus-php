@@ -297,6 +297,9 @@ class Gateway
         IFSC::ICIC,
         IFSC::USFB,
         IFSC::IBKL,
+        IFSC::HDFC,
+        IFSC::TMBL,
+        IFSC::IOBA,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
