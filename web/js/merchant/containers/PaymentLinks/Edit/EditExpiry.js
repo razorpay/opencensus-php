@@ -170,7 +170,7 @@ export class DateField extends React.Component {
                     .querySelector('[data-name="expire_by_date"]')
                     .click();
                 }, 10);
-
+              } else {
                 this.props.updateDate && this.props.updateDate(null);
               }
 

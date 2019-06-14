@@ -1,4 +1,5 @@
-import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { setTrackData, fireAnalyticsEvents } from 'rzp/utils/googleAnalytics';
+import BingDataObj from '../../../../../rzp/utils/bingDataObj';
 
 const track = setTrackData({
   eventCategory: 'Dashboard - Instant Activations Onboarding',

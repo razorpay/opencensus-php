@@ -89,14 +89,27 @@
                 }
                 case 'facebook': {
                     if (!checkAnalytics(data)) return;
-
                     analytics.track('fb', data.event, data.value);
-
                    break;
                 }
+                case 'bing': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('bing', data.event);
+                   break;
+                }
+                case 'twitter': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('twitter', '', data.value);
+                   break;
+                }
+                case 'linkedIn': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('linkedin', '', data.value);
+                   break;
+                }
+                
                 default: {
                     if (!checkGa(data)) return;
-
                     ga('old.send',
                         'event',
                         data.eventCategory || undefined,
@@ -243,3 +256,4 @@
         }
 
     </script>
+
