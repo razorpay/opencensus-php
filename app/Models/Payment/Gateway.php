@@ -1733,20 +1733,11 @@ class Gateway
      */
     public static function supportsPurchase($gateway, $networkCode = null): bool
     {
-        $arrayKeys = array_keys(self::$gatewayNetworkPurchaseSupport);
+        $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
 
-        $supportsPurchase = in_array($gateway, $arrayKeys, true);
-
-        if ($supportsPurchase === true)
+        if ($supportsPurchase === true && $networkCode!=null)
         {
-            if ($networkCode === null)
-            {
-                return $supportsPurchase;
-            }
-            else
-            {
-                return self::supportsPurchaseForNetwork($gateway, $networkCode);
-            }
+            return self::supportsPurchaseForNetwork($gateway, $networkCode);
         }
 
         return $supportsPurchase;
@@ -1812,12 +1803,7 @@ class Gateway
 
         // If a given network is in the list of notSupportedNetworks, it means that the network
         // is not supported by the gateway for Purchase.
-        if (in_array($networkCode, $notSupportedNetworks))
-        {
-            return false;
-        }
-
-        return true;
+        return !(in_array($networkCode, $notSupportedNetworks));
     }
 
 
