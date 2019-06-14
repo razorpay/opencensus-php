@@ -5227,17 +5227,20 @@ trait Authorize
         }
 
         $gateway = $payment->getGateway();
+
         $cardId = $payment->getCardId();
         // We handle dual and null terminal mode as the default case
         // In the default case, we check if the card network supports
         // purchase or auth+capture. Example. FSS uses Auth and capture
         // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
         $networkCode = null;
+
         // If payment method is wallet or net banking.
         if ($cardId !== null)
         {
             $networkCode = $payment->card->getNetworkCode();
         }
+
         $terminalMode = $payment->terminal->getMode();
 
         if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
