@@ -13,7 +13,10 @@ import {
   addDropShield,
   removeDropShield,
 } from 'merchant/components/File/Upload';
-import { trackFb, trackhubsContactUpdate } from 'rzp/utils/googleAnalytics';
+import {
+  trackhubsContactUpdate,
+  fireAnalyticsEvents,
+} from 'rzp/utils/googleAnalytics';
 
 import mainFormTabsContent, {
   mainFormTabs,
@@ -25,9 +28,8 @@ import accountFormTabsContent, {
   accountFormFieldNamesMeta,
   BUSINESS_TYPE_OPTIONS,
 } from './AccountActivationFormMap';
-
+import BingDataObj from 'rzp/utils/bingDataObj';
 import * as trackers from 'merchant/containers/Activation/ga_new';
-
 /*
 *             Main-form        LA-form
 * Submited      E F ~S        ~E ~F ~S
@@ -205,7 +207,11 @@ export default class ActivationWizard extends React.Component {
     addDropShield('.Activation--wizard');
 
     if (!this.props.user.isAccepted) {
-      trackFb('KYC_start');
+      fireAnalyticsEvents({
+        fbData: 'KYC_start',
+        liData: 987420,
+        twiData: 'o1ua3',
+      });
       updateHubSpotContactsProperties({ started: true });
     }
   }
@@ -609,7 +615,41 @@ export default class ActivationWizard extends React.Component {
             type: false,
           });
       } else {
-        trackFb(`KYC_complete_${data.data.activation_flow}`);
+        let data = new BingDataObj('kycform', 'complete', 'all', 1);
+
+        /**
+         * Fire fb, bing, linkedin & twitter events
+         */
+        fireAnalyticsEvents(
+          {
+            fbData: 'kyc_complete_all',
+            bingData: data,
+            liData: 987452, //conversionId
+            twiData: 'o1ua7',
+          } //twitter
+        );
+
+        let dataActivation = new BingDataObj(
+          'kycform',
+          'complete',
+          data.data.activation_flow,
+          1
+        );
+
+        let conversionId = this.props.user.instantActivation.isGraylistFlow
+          ? 987428
+          : this.props.user.instantActivation.isWhitelistFlow && 987436;
+
+        let txnId = this.props.user.instantActivation.isGraylistFlow
+          ? 'o1ua4'
+          : this.props.user.instantActivation.isWhitelistFlow && 'o1ua5';
+
+        fireAnalyticsEvents({
+          fbData: `KYC_complete_${data.data.activation_flow}`,
+          bingData: dataActivation,
+          liData: conversionId,
+          twiData: txnId,
+        });
 
         updateHubSpotContactsProperties(
           {

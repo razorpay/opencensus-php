@@ -36,7 +36,6 @@ const transactions = {
 export default class CommissionsDailyList extends ListContainer {
   constructor(props) {
     super(props);
-    this.amountColumn = props.amountColumn;
 
     this.dateColumn = {
       title: 'Date',
@@ -98,7 +97,7 @@ export default class CommissionsDailyList extends ListContainer {
         <DataTable
           columns={[
             this.dateColumn,
-            this.amountColumn,
+            this.props.amountColumn,
             volume,
             activeMerchants,
             transactions,
