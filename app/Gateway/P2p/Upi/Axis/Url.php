@@ -10,6 +10,12 @@ class Url
 
     const VALIDATE_VPA         = '/api/b2/merchants/vpas/validity';
 
+    const ADD_BANK_ACCOUNT     = '/api/b2/merchants/accounts/add';
+
+    const DELETE_VPA           = '/api/b2/merchants/vpas/deleteVpa';
+
+    const ADD_DEFAULT          = '/api/b2/merchants/vpas/addDefault';
+
     const RAISE_QUERY          = '/api/b2/merchants/transactions/query/raise';
 
     const QUERY_STATUS         = '/api/b2/merchants/transactions/query/status';

@@ -87,16 +87,6 @@ class Repository extends Base\Repository
             $query->device($this->context()->getDevice());
         }
 
-        if ($query->getModel()->hasCustomer())
-        {
-            if ($this->context()->isContextDevice() === false)
-            {
-                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_DEVICE_REQUIRED);
-            }
-
-            $query->customer($this->context()->getDevice()->customer);
-        }
-
         if ($query->getModel()->hasMerchant())
         {
             if ($this->context()->isContextMerchant() === false)

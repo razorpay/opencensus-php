@@ -1239,4 +1239,15 @@ class PricingTest extends TestCase
             return true;
         });
     }
+
+    public function testAddPricingPlanRuleWithFeatureRefund()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
 }

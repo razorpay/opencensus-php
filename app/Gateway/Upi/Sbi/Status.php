@@ -53,10 +53,11 @@ class Status
 
         $statuses = [self::SUCCESS];
 
-        if ($action === Action::CALLBACK)
-        {
-            array_push($statuses, self::CBS_DOWN);
-        }
+        //Removing this check for now, till we confirm that this is successful status.
+//        if ($action === Action::CALLBACK)
+//        {
+//            array_push($statuses, self::CBS_DOWN);
+//        }
 
         return in_array($status, $statuses, true);
     }

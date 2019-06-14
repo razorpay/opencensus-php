@@ -168,10 +168,10 @@ class Validator extends Base\Validator
 
         $begin = $input[Entity::BEGIN] ?? $this->entity->getBegin();
 
-        if ($end < $begin)
+        if ($end <= $begin)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Begin : ' . $begin . ' less than end :' . $end);
+                'Begin : ' . $begin . ' greater than end :' . $end);
         }
 
         if ($begin > Entity::END_OF_TIME)

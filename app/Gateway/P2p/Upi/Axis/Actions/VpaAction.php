@@ -14,11 +14,17 @@ class VpaAction extends Action
 
     const VALIDATE_VPA                      = 'VALIDATE_VPA';
 
+    const ADD_BANK_ACCOUNT                  = 'ADD_BANK_ACCOUNT';
+
+    const DELETE_VPA                        = 'DELETE_VPA';
+
     const BLOCK_VPA                         = 'BLOCK_VPA';
 
     const UNBLOCK_VPA                       = 'UNBLOCK_VPA';
 
-    const LIST_BLOCKED                       = 'GET_BLOCKED';
+    const ADD_DEFAULT                       = 'ADD_DEFAULT';
+
+    const LIST_BLOCKED                      = 'GET_BLOCKED';
 
     const MAP = [
         self::VPA_AVAILABILITY => [
@@ -32,9 +38,22 @@ class VpaAction extends Action
                 Fields::ACCOUNT_REFERENCE_ID    => 'required',
             ]
         ],
+
         self::VALIDATE_VPA     => [
             self::SOURCE    => self::DIRECT,
             self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
+        self::ADD_BANK_ACCOUNT => [
+            self::SOURCE    => self::DIRECT,
+            self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
+        self::DELETE_VPA       => [
+            self::SOURCE  => self::DIRECT,
+            self::DIRECT  => [
                 S2sDirect::METHOD => 'post'
             ],
         ],
@@ -55,6 +74,12 @@ class VpaAction extends Action
             self::DIRECT  => [
                 S2sDirect::METHOD => 'post'
             ],
-        ]
+        ],
+        self::ADD_DEFAULT      => [
+            self::SOURCE  => self::DIRECT,
+            self::DIRECT  => [
+                S2sDirect::METHOD => 'post'
+            ],
+        ],
     ];
 }

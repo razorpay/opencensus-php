@@ -297,6 +297,9 @@ class Gateway
         IFSC::ICIC,
         IFSC::USFB,
         IFSC::IBKL,
+        IFSC::HDFC,
+        IFSC::TMBL,
+        IFSC::IOBA,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
@@ -1914,4 +1917,17 @@ class Gateway
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }
+
+    public static function isCaptureVerifyEnabledGateway($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true);
+    }
+
+    public static function isCaptureVerifyQREnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === true);
+
+    }
+
+
 }
