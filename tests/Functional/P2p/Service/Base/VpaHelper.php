@@ -88,6 +88,15 @@ class VpaHelper extends P2pHelper
         return $this->delete($request);
     }
 
+    public function setDefault(string $vpaId)
+    {
+        $this->validationJsonSchemaPath = 'vpa/add';
+
+        $request = $this->request('vpa/%s/default', [$vpaId]);
+
+        return $this->post($request);
+    }
+
     public function fetchVpa(string $vpaId)
     {
         $this->validationJsonSchemaPath = 'vpa/add';

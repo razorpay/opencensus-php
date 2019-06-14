@@ -115,6 +115,33 @@ class Server extends Mock\Server
         return $response;
     }
 
+    public function vpaSetDefault($request)
+    {
+        $response = [
+            Fields::STATUS           => 'SUCCESS',
+            Fields::RESPONSE_CODE    => 'SUCCESS',
+            Fields::RESPONSE_MESSAGE => 'SUCCESS',
+            Fields::PAYLOAD          => [
+                Fields::VPA_ACCOUNTS => [
+                    [
+                        Fields::ACCOUNT => [
+                            Fields::BANK_ACCOUNT_UNIQUE_ID  => str_random(12),
+                        ],
+                        Fields::VPA => $request[Fields::CUSTOMER_PRIMARY_VPA],
+                        Fields::IS_DEFAULT => true,
+                    ]
+                ],
+            ],
+            Fields::UDF_PARAMETERS   => $request[Fields::UDF_PARAMETERS],
+        ];
+
+        $this->content($response, 'setDefault');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
     public function transactionRaiseConcern($request)
     {
         $response = [

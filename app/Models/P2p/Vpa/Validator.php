@@ -17,6 +17,8 @@ class Validator extends Base\Validator
     protected static $checkAvailabilitySuccessRules;
     protected static $deleteRules;
     protected static $deleteSuccessRules;
+    protected static $setDefaultRules;
+    protected static $setDefaultSuccessRules;
     protected static $initiateCheckAvailabilityRules;
 
     public function rules()
@@ -173,6 +175,24 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([
             Entity::USERNAME    => 'required',
         ]);
+
+        return $rules;
+    }
+
+    public function makeSetDefaultRules()
+    {
+        $rules = $this->makePublicIdRules();
+
+        return $rules;
+    }
+
+    public function makeSetDefaultSuccessRules()
+    {
+        $rules = $this->makeRules([
+            Entity::SUCCESS     => 'required|boolean|in:1'
+        ]);
+
+        $rules->arrayRules(Entity::VPA, $this->makeEntityIdRules()->toArray());
 
         return $rules;
     }

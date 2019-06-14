@@ -153,4 +153,27 @@ class VpaTest extends TestCase
 
         $this->assertTrue($vpa->refresh()->trashed());
     }
+
+    public function testSetDefault()
+    {
+        $default = $this->fixtures->vpa;
+
+        $vpa = $this->fixtures->createVpa([
+            'default' => false,
+        ]);
+
+        $this->assertTrue($default->isDefault());
+
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->setDefault($vpa->getPublicId());
+
+        $this->assertTrue($response['default']);
+
+        $this->assertTrue($vpa->refresh()->isDefault());
+
+        $this->assertFalse($default->refresh()->isDefault());
+    }
 }

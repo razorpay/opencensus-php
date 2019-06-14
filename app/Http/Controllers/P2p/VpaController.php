@@ -66,6 +66,17 @@ class VpaController extends Controller
         return $this->response($response);
     }
 
+    public function setDefault()
+    {
+        $input = $this->request()->all();
+
+        $input[Entity::ID] = $this->request()->route('vpa_id');
+
+        $response = $this->service->setDefault($input);
+
+        return $this->response($response);
+    }
+
     public function initiateCheckAvailability()
     {
         $input = $this->request()->all();

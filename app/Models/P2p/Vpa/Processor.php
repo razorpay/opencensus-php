@@ -119,6 +119,36 @@ class Processor extends Base\Processor
         return $vpa->toArrayPublic();
     }
 
+    public function setDefault(array $input): array
+    {
+        $this->initialize(Action::SET_DEFAULT, $input, true);
+
+        $vpa = $this->core->fetch($this->input->get(Entity::ID));
+
+        if ($vpa->isDefault() === true)
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $defaultVpa = $this->core->getDefaultVpa();
+
+        $this->gatewayInput->put(Entity::VPA, $vpa);
+        $this->gatewayInput->put(Entity::DEFAULT, $defaultVpa);
+
+        return $this->callGateway();
+    }
+
+    protected function setDefaultSuccess(array $input): array
+    {
+        $this->initialize(Action::SET_DEFAULT_SUCCESS, $input, true);
+
+        $vpa = $this->core->fetch($this->input->get(Entity::VPA)[Entity::ID]);
+
+        $this->core->setDefaultVpa($vpa);
+
+        return $vpa->toArrayPublic();
+    }
+
     public function initiateCheckAvailability(array $input): array
     {
         $this->initialize(Action::INITIATE_CHECK_AVAILABILITY, $input, true);

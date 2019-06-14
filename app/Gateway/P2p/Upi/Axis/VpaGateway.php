@@ -153,6 +153,29 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         ]);
     }
 
+    public function setDefault(Response $response)
+    {
+        $vpa         = $this->input->get(Entity::VPA);
+        $defaultVpa  = $this->input->get(Entity::DEFAULT);
+
+        $request = $this->initiateS2sRequest(VpaAction::ADD_DEFAULT);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+            Fields::CUSTOMER_VPA            => $vpa[Entity::ADDRESS],
+            Fields::CUSTOMER_PRIMARY_VPA    => $defaultVpa[Entity::ADDRESS],
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $response->setData([
+            Entity::VPA => [
+                Entity::ID  => $vpa[Entity::ID],
+            ],
+            Entity::SUCCESS => true,
+        ]);
+    }
+
     public function validate(Response $response)
     {
         $username = $this->input->get(Entity::USERNAME);
