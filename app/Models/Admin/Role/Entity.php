@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Role;
 
 use App;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\User;
@@ -147,5 +148,14 @@ class Entity extends Base\Entity
         return [
             self::PERMISSIONS,
         ];
+    }
+
+    /**
+     * @param        $query
+     * @param string $product
+     */
+    public function scopeProduct(Builder $query, string $product)
+    {
+        $query->where(self::PRODUCT, '=', $product);
     }
 }
