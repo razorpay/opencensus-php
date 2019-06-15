@@ -5,11 +5,13 @@ namespace RZP\Models\Admin\Role;
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use RZP\Models\Base\Traits\RevisionableTrait;
-use RZP\Models\Admin\Base;
-use RZP\Models\Admin\Org\Entity as Org;
-use RZP\Models\Admin\Permission;
+use RZP\Models\User;
 use RZP\Constants\Table;
+use RZP\Constants\Product;
+use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\Entity
 {
@@ -19,6 +21,7 @@ class Entity extends Base\Entity
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
     const ORG_ID            = 'org_id';
+    const PRODUCT           = 'product';
     const DELETED_AT        = 'deleted_at';
 
     /**
@@ -45,6 +48,7 @@ class Entity extends Base\Entity
         self::ID,
         self::NAME,
         self::DESCRIPTION,
+        self::PRODUCT,
     ];
 
     protected $public = [
@@ -72,6 +76,11 @@ class Entity extends Base\Entity
         self::ID,
         self::ORG_ID,
     ];
+
+    protected $defaults = [
+        self::PRODUCT => Product::PRIMARY,
+    ];
+
     /**
      * Returns all admins in org for role.
      *
@@ -84,6 +93,11 @@ class Entity extends Base\Entity
     public function groups()
     {
         return $this->morphedByMany('RZP\Models\Admin\Group\Entity', 'entity', Table::ROLE_MAP);
+    }
+
+    public function users()
+    {
+        return $this->morphedByMany(User\Entity::class, 'entity', Table::ROLE_MAP);
     }
 
     /**

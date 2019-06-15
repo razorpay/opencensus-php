@@ -5017,19 +5017,9 @@ ALTER TABLE `reversals`
 
 -- Queries for enabling merchant level workflows.
 
--- Create workflow rules table TODO: remove from queries.txt :\
-CREATE TABLE `api_live`.`workflow_payout_amount_rules` (
-  `merchant_id` CHAR(14) NOT NULL,
-  `entity_id` CHAR(14) NULL,
-  `entity_type` VARCHAR(255) NULL,
-  `condition` VARCHAR(45) NULL,
-  `x_amount` INT NULL,
-  `y_amount` INT NULL,
-  `workflow_id` CHAR(14) NULL,
-  `created_at` INT(11) NULL,
-  `updated_at` INT(11) NULL,
-  `deleted_at` INT(11) NULL,
-  PRIMARY KEY (`merchant_id`));
+ALTER TABLE `roles`
+    ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
+    ADD INDEX `roles_product_index` (`product`);
 
 -- Insert roles
 insert into api_live.roles ( `id`, `name`, `description`, `org_id`, `created_at`, `updated_at`)

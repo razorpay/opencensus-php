@@ -38,6 +38,12 @@ class BankingRole
         self::FINANCE_L3,
     ];
 
+    protected static $workflowRoleToNameMap = [
+        self::FINANCE_L1 => 'Finance L1',
+        self::FINANCE_L2 => 'Finance L2',
+        self::FINANCE_L3 => 'Finance L3',
+    ];
+
     public static function exists(string $action): bool
     {
         return defined(get_class() . '::' . strtoupper($action));
