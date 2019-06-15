@@ -10,11 +10,6 @@ class MerchantPayout extends Base
 {
     const DEFAULT_MERCHANT_PAYOUT_CHANNEL = Settlement\Channel::YESBANK;
 
-    protected function setChannel($input = [])
-    {
-        $this->channel = $this->merchant->getChannel();
-    }
-
     protected function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
     {
         $destination = $this->merchant->bankAccount;

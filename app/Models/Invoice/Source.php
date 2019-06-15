@@ -7,6 +7,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Source
 {
     const SELLER_APP = 'seller_app';
+    const EXTENSION  = 'extension';
 
     public static function isSourceValid(string $source): bool
     {

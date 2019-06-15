@@ -15,6 +15,7 @@ use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
@@ -93,6 +94,7 @@ class Gateway
     const WALLET_PHONEPE     = 'wallet_phonepe';
 
     const CARDLESS_EMI       = 'cardless_emi';
+    const PAYLATER           = 'paylater';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -153,6 +155,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
+        self::PAYLATER     => [PayLater::EPAYLATER],
     ];
 
     const POWER_WALLETS = [
@@ -294,6 +297,9 @@ class Gateway
         IFSC::ICIC,
         IFSC::USFB,
         IFSC::IBKL,
+        IFSC::HDFC,
+        IFSC::TMBL,
+        IFSC::IOBA,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
@@ -542,7 +548,6 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
-        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -693,7 +698,11 @@ class Gateway
 
         Method::CARDLESS_EMI => [
             self::CARDLESS_EMI,
-        ]
+        ],
+
+        Method::PAYLATER => [
+            self::PAYLATER,
+        ],
     ];
 
     const CARD_GATEWAYS_LIVE = [
@@ -974,6 +983,7 @@ class Gateway
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::CARDLESS_EMI,
+        self::PAYLATER,
     ];
 
     public static $verifyDisabled = [
@@ -1907,4 +1917,17 @@ class Gateway
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }
+
+    public static function isCaptureVerifyEnabledGateway($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true);
+    }
+
+    public static function isCaptureVerifyQREnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === true);
+
+    }
+
+
 }

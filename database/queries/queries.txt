@@ -4938,6 +4938,13 @@ ALTER TABLE refunds
     CHANGE COLUMN reference6 reversed_at INT(11) UNSIGNED DEFAULT NULL,
     ADD INDEX refunds_reversed_at_index (`reversed_at`);
 
+ALTER TABLE merchant_banks
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
+
+ALTER TABLE terminals
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
+    ADD INDEX `terminals_paylater_index` (paylater);
+
 ALTER TABLE fund_account_validations
     ADD COLUMN attempts TINYINT(1) DEFAULT 1 after batch_fund_transfer_id,
     ADD COLUMN retry_at INTEGER UNSIGNED DEFAULT NULL after batch_fund_transfer_id,
@@ -4971,9 +4978,46 @@ ALTER TABLE balance
 ALTER TABLE paysecure
     MODIFY COLUMN hkey TEXT DEFAULT NULL;
 
+-- P2P - Fix Transactions #11911
+
+ALTER TABLE `p2p_upi_transactions`
+    ADD `ref_url` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `ref_id`,
+    ADD `mcc` CHAR(4) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `ref_url`;
+
+ALTER TABLE `p2p_transactions`
+    ADD `device_id` CHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL AFTER `customer_id`,
+    ADD `handle` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `device_id`,
+    ADD `amount_minimum` INT(11) NULL DEFAULT NULL AFTER `amount`,
+    ADD `amount_authorized` INT(11) NULL DEFAULT NULL AFTER `amount_minimum`,
+    ADD `deleted_at` INT(11) NULL DEFAULT NULL AFTER `completed_at`;
+
+-- P2P - Fix Transactions #11911
+
+ALTER TABLE payouts
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL after purpose_type;
+
+ALTER TABLE pricing
+    MODIFY COLUMN amount_range_max BIGINT UNSIGNED DEFAULT NULL after amount_range_min;
+
+ALTER TABLE `refunds`
+    ADD COLUMN `speed_requested` VARCHAR(50) NOT NULL DEFAULT 'normal' AFTER `attempts`,
+    ADD COLUMN `speed_processed` VARCHAR(50) DEFAULT NULL AFTER `speed_requested`,
+    ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `speed_processed`,
+    ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`,
+    ADD INDEX `refunds_speed_requested_index` (`speed_requested`),
+    ADD INDEX `refunds_speed_processed_index` (`speed_processed`);
+
+ALTER TABLE `transactions`
+    MODIFY COLUMN `fee` INT(10) NOT NULL,
+    MODIFY COLUMN `tax` INT(10) DEFAULT NULL;
+
+ALTER TABLE `reversals`
+    ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
+    ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
+
 -- Queries for enabling merchant level workflows.
 
---Create workflow rules table
+-- Create workflow rules table TODO: remove from queries.txt :\
 CREATE TABLE `api_live`.`workflow_payout_amount_rules` (
   `merchant_id` CHAR(14) NOT NULL,
   `entity_id` CHAR(14) NULL,
@@ -4997,7 +5041,7 @@ insert into api_live.roles ( `id`, `name`, `description`, `org_id`, `created_at`
 
 -- Insert permissions to roles mapping
  insert into api_live.permission_map(permission_id, entity_id, entity_type, enable_workflow) select p.id, r.id, 'role', 0 from api_live.permissions p, api_live.roles r where p.name like '%payout%' and r.name like 'Finance L%' order by r.name, p.name;
- 
+
  -- Insert into workflows
  insert into api_live.workflows (`id`, `org_id`, `name`,`created_at`,`updated_at`)
  values(left(replace(uuid(),'-',''),14),'100000razorpay', 'Single Step Single Checker', unix_timestamp(), unix_timestamp());
@@ -5005,24 +5049,24 @@ insert into api_live.roles ( `id`, `name`, `description`, `org_id`, `created_at`
  values(left(replace(uuid(),'-',''),14),'100000razorpay', 'Single Step Two Checker', unix_timestamp(), unix_timestamp());
  insert into api_live.workflows (`id`, `org_id`, `name`,`created_at`,`updated_at`)
  values(left(replace(uuid(),'-',''),14),'100000razorpay', 'Two Step Two Checker', unix_timestamp(), unix_timestamp());
- 
+
  -- Insert into workflow_steps;
-insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`) 
- select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 1, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w 
+insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`)
+ select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 1, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w
  where r.name = 'Finance L1' and w.name = 'Single Step Single Checker';
- insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`) 
- select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 1, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w 
+ insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`)
+ select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 1, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w
  where (r.name = 'Finance L1' OR r.name = 'Finance L2') and w.name = 'Single Step Two Checker';
- 
- insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`) 
- select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 1, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w 
+
+ insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`)
+ select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 1, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w
  where r.name = 'Finance L1' and w.name = 'Two Step Two Checker';
- insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`) 
- select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 2, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w 
+ insert into api_live.workflow_steps (`id`,`role_id`,`workflow_id`,`reviewer_count`, `op_type`,`level`,`created_at`,`updated_at`)
+ select left(replace(uuid(),'-',''),14), r.id, w.id, 1, 'or', 2, unix_timestamp(), unix_timestamp() from api_live.roles r, api_live.workflows w
  where r.name = 'Finance L2' and w.name = 'Two Step Two Checker';
- 
+
  insert into api_live.workflow_permissions (`permission_id`,`workflow_id`)
-select p.id, w.id from api_live.permissions p, api_live.workflows w 
+select p.id, w.id from api_live.permissions p, api_live.workflows w
 where p.name in ('create_payout','edit_payout', 'bulk_approve_reject_payout') and
  w.name in ('Single Step Single Checker','Single Step Two Checker','Two Step Two Checker')
  order by w.name, p.name;

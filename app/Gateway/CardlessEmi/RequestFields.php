@@ -4,7 +4,7 @@ namespace RZP\Gateway\CardlessEmi;
 
 class RequestFields
 {
-    const CONTACT                = 'mobile_number';
+    const MOBILE_NUMBER          = 'mobile_number';
     const AMOUNT                 = 'amount';
     const MERCHANT_ID            = 'merchant_id';
     const TXN_ID                 = 'client_txn_id';
@@ -19,6 +19,6 @@ class RequestFields
     const USER_IP                = 'user_ip';
     const REFUND_ID              = 'rzp_refund_id';
     const CALLBACK_URL           = 'callback_url';
-    const CONTACT_NUMBER         = 'contact';
+    const CONTACT                = 'contact';
     const CHECKSUM               = 'checksum';
 }

@@ -10,4 +10,11 @@ class ClaimFields
     // TODO is this a typo or actual value
     const TRANSACTION_AMOUNT = 'AMOUT';
     const BANK_REFERENCE_ID  = 'BANKREFNO';
+
+    const COLUMNS = [
+        self::PAYMENT_ID,
+        self::TRANSACTION_AMOUNT,
+        self::BANK_REFERENCE_ID,
+        self::TRANSACTION_DATE,
+    ];
 }

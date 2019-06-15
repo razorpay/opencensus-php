@@ -92,9 +92,6 @@
           <directory>./tests/Functional/Storage/</directory>
       </testsuite>
       <testsuite name = "Features-4 Test Suite">
-          <directory>./tests/Functional/Subscription/</directory>
-      </testsuite>
-      <testsuite name = "Features-5 Test Suite">
           <directory>./tests/Functional/Tax/</directory>
           <directory>./tests/Functional/Transaction/</directory>
           <directory>./tests/Functional/Transfer/</directory>
@@ -135,10 +132,14 @@
           <directory>./tests/Functional/Gateway/Upi/</directory>
           <directory>./tests/Functional/Gateway/Wallet/</directory>
           <directory>./tests/Functional/Gateway/Hdfc/</directory>
+      </testsuite>
+      <testsuite name = "Gateway-3 Test Suite">
           <directory>./tests/Functional/Gateway/Hitachi/</directory>
           <directory>./tests/Functional/Gateway/CardlessEmi</directory>
           <directory>./tests/Functional/Gateway/Mozart/</directory>
+          <directory>./tests/Functional/Gateway/PayLater</directory>
       </testsuite>
+
   </testsuites>
   <listeners>
     <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">

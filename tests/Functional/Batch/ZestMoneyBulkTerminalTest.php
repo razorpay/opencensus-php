@@ -49,12 +49,12 @@ class ZestMoneyBulkTerminalTest extends TestCase
         $terminals = $this->getEntities('terminal', ['count' => $count], true);
 
         $this->assertEquals($terminals['items'][0][Terminal\Entity::MERCHANT_ID], $entries[1][Batch\Header::ZESTMONEY_MERCHANT_ID]);
-        $this->assertEquals($terminals['items'][0][Terminal\Entity::NETWORK_CATEGORY], $entries[1][Batch\Header::ZESTMONEY_CATEGORY]);
+        $this->assertEquals($terminals['items'][0][Terminal\Entity::CATEGORY], $entries[1][Batch\Header::ZESTMONEY_CATEGORY]);
         $this->assertEquals($terminals['items'][0][Terminal\Entity::GATEWAY_MERCHANT_ID], $entries[1][Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID]);
         $this->assertEquals($terminals['items'][0][Terminal\Entity::GATEWAY_MERCHANT_ID2], $entries[1][Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID2]);
 
         $this->assertEquals($terminals['items'][1][Terminal\Entity::MERCHANT_ID], $entries[0][Batch\Header::ZESTMONEY_MERCHANT_ID]);
-        $this->assertEquals($terminals['items'][1][Terminal\Entity::NETWORK_CATEGORY], $entries[0][Batch\Header::ZESTMONEY_CATEGORY]);
+        $this->assertEquals($terminals['items'][1][Terminal\Entity::CATEGORY], $entries[0][Batch\Header::ZESTMONEY_CATEGORY]);
         $this->assertEquals($terminals['items'][1][Terminal\Entity::GATEWAY_MERCHANT_ID], $entries[0][Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID]);
         $this->assertEquals($terminals['items'][1][Terminal\Entity::GATEWAY_MERCHANT_ID2], $entries[0][Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID2]);
 
@@ -70,21 +70,21 @@ class ZestMoneyBulkTerminalTest extends TestCase
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID  => '123',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID2 => '123',
                 Batch\Header::ZESTMONEY_TERMINAL_PASSWORD    => 'password',
-                Batch\Header::ZESTMONEY_CATEGORY             => 'ecommerce',
+                Batch\Header::ZESTMONEY_CATEGORY             => '1234',
             ],
             [
                 Batch\Header::ZESTMONEY_MERCHANT_ID          => '100000Razorpay',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID  => '321',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID2 => '321',
                 Batch\Header::ZESTMONEY_TERMINAL_PASSWORD    => 'password',
-                Batch\Header::ZESTMONEY_CATEGORY             => 'ecommerce',
+                Batch\Header::ZESTMONEY_CATEGORY             => '1234',
 
             ],
             // Should Fail
             [
                 Batch\Header::ZESTMONEY_MERCHANT_ID          => '100000Razorpay',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID2 => '321',
-                Batch\Header::ZESTMONEY_CATEGORY             => 'ecommerce',
+                Batch\Header::ZESTMONEY_CATEGORY             => '1234',
             ],
         ];
     }

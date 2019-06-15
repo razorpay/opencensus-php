@@ -136,8 +136,14 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT =>
             [
                 'post',
-                'customer/vpa/{vpa_id}/assign/{ba_id}',
+                'customer/vpa/{vpa_id}/assign',
                 'VpaController@assignBankAccount'
+            ],
+        Requests::P2P_CUSTOMER_VPA_SET_DEFAULT =>
+            [
+                'post',
+                'customer/vpa/{vpa_id}/default',
+                'VpaController@setDefault'
             ],
         Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY =>
             [
@@ -287,6 +293,7 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_VPA_FETCH_ALL,
         Requests::P2P_CUSTOMER_VPA_FETCH,
         Requests::P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT,
+        Requests::P2P_CUSTOMER_VPA_SET_DEFAULT,
         Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY,
         Requests::P2P_CUSTOMER_VPA_INITIATE_CHECK_AVAILABILITY,
         Requests::P2P_CUSTOMER_VPA_DELETE,

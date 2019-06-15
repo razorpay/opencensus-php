@@ -1,0 +1,30 @@
+<?php
+
+namespace RZP\Events\P2p;
+
+use App;
+use RZP\Models\P2p\Transaction\Entity;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use RZP\Models\P2p\Base\Libraries\Context;
+
+class TransactionCompleted extends Event implements ShouldQueue
+{
+    use SerializesModels;
+
+    public function getName()
+    {
+        return 'customer.transaction.completed';
+    }
+
+    public function getWebhookPaylaod()
+    {
+        return $this->getEntity()->toArrayPartner();
+    }
+
+    public function getNotificationPayload()
+    {
+        return;
+    }
+}
