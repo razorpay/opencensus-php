@@ -20,10 +20,10 @@ class Entity extends Base\Entity
 
     protected $generateIdOnCreate = false;
 
+    protected $entity = 'workflow_payout_amount_rules';
+
     protected $fillable = [
         self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::CONDITION,
         self::X_AMOUNT,
         self::Y_AMOUNT,
@@ -32,8 +32,6 @@ class Entity extends Base\Entity
 
     protected $visible = [
         self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::CONDITION,
         self::X_AMOUNT,
         self::Y_AMOUNT,
@@ -41,23 +39,11 @@ class Entity extends Base\Entity
     ];
 
     protected $public = [
+        self::WORKFLOW_ID,
         self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::CONDITION,
         self::X_AMOUNT,
         self::Y_AMOUNT,
-        self::WORKFLOW_ID,
-    ];
-
-    protected $publicSetters = [
-        self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
-        self::CONDITION,
-        self::X_AMOUNT,
-        self::Y_AMOUNT,
-        self::WORKFLOW_ID,
     ];
 
     protected $dates = [
@@ -66,7 +52,11 @@ class Entity extends Base\Entity
         self::DELETED_AT,
     ];
 
-    protected $entity = 'workflow_payout_amount_rules';
+    protected $amounts = [
+        self::X_AMOUNT,
+        self::Y_AMOUNT,
+    ];
+
 
     public function getCondition()
     {
