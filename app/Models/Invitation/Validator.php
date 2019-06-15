@@ -78,9 +78,7 @@ class Validator extends Base\Validator
         }
         else if ($product === Product::BANKING)
         {
-            $dynamicRoles = (new Role\Service())->getBankingRolesForMerchant();
-
-            $dashboardRoles = array_merge($dynamicRoles,User\Role::BANKING_ROLES);
+            $dashboardRoles = User\BankingRole::getAllRolesForMerchant($merchant);
         }
         else
         {

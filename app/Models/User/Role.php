@@ -2,16 +2,12 @@
 
 namespace RZP\Models\User;
 
+use RZP\Models\Merchant;
 use RZP\Constants\Product;
+use RZP\Exception\LogicException;
 
 class Role
 {
-    protected $productRoles = [];
-
-    public function __construct()
-    {
-        $this->setProductRoles();
-    }
     const MANAGER               = 'manager';
     const OPERATIONS            = 'operations';
     const FINANCE               = 'finance';
@@ -74,12 +70,9 @@ class Role
         self::RBL_AGENT
     ];
 
-    public function setProductRoles()
+    public static function getPrimaryRoles(): array
     {
-        $this->productRoles = [
-            Product::PRIMARY => array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES),
-            Product::BANKING => self::BANKING_ROLES,
-        ];
+        return array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES);
     }
 
     public static function exists(string $action): bool
@@ -87,9 +80,21 @@ class Role
         return defined(get_class() . '::' . strtoupper($action));
     }
 
-    public function validateProductRole(string $role, string $product): bool
+    public static function validateProductRoleForMerchant(string $role, string $product, Merchant\Entity $merchant): bool
     {
-        $productRoles = $this->productRoles[$product];
+        switch ($product)
+        {
+            case Product::PRIMARY:
+                $productRoles = self::getPrimaryRoles();
+                break;
+
+            case Product::BANKING:
+                $productRoles = BankingRole::getAllRolesForMerchant($merchant);
+                break;
+
+            default:
+                throw new LogicException('Logic not defined for product: ' . $product);
+        }
 
         return (in_array($role, $productRoles, true) === true);
     }

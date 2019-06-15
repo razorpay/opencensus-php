@@ -45,11 +45,6 @@ class Service extends Base\Service
         return $role->toArrayPublic();
     }
 
-    public function getBankingRolesForMerchant(): array
-    {
-        return (new Entity)->getMerchantRoleNames();
-    }
-
     public function deleteRole($roleId)
     {
         $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();
