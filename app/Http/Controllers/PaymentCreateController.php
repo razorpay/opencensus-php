@@ -442,7 +442,21 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['request']['method'] === 'redirect')
                 {
+                    $merchant = $this->app['basicauth']->getMerchant();
+
+                    $variant  = $this->app->razorx->getTreatment(
+                                    $merchant->getId(),
+                                    'redirect_form',
+                                    'live'
+                                );
+
+                    if (strtolower($variant) === 'on')
+                    {
+                        return $this->redirectToPaymentPostForm($data);
+                    }
+
                     $response = \Redirect::away($data['request']['url']);
+
                     $response->headers->set('X-Razorpay-TaskId', $data['request']['task_id']);
 
                     return $response;
@@ -608,6 +622,19 @@ class PaymentCreateController extends Controller
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
 
         return View::make('gateway.gatewayPostForm')
+                   ->with('data', $postFormData);
+    }
+
+    protected function redirectToPaymentPostForm($data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+        $postFormData = $data;
+        $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
+        $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
+        $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
+
+        return View::make('public.paymentRedirectPostForm')
                    ->with('data', $postFormData);
     }
 

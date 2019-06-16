@@ -1280,4 +1280,48 @@ class UpiMindgateGatewayTest extends TestCase
             "Gateway Error Code: \n" .
             "Gateway Error Desc: hex2bin(): Input string must be hexadecimal string");
     }
+
+    public function testUpiQrPaymentProcessWithTerminalSecret()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $x = $this->fixtures->terminal->edit($this->bharatQrTerminal['id'],['gateway_secure_secret' => '93158d5892188161a259db660ddb1d0a']);
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQrWithTerminalSecret($qrCodeId);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
 }

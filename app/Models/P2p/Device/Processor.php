@@ -6,8 +6,9 @@ use RZP\Exception;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
-
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Beneficiary;
+use RZP\Models\P2p\Transaction;
 
 /**
  * @property Core $core
@@ -160,9 +161,12 @@ class Processor extends Base\Processor
         $this->repo()->transaction(
             function()
             {
-                (new Vpa\Core)->delete();
-                (new BankAccount\Core)->delete();
-                (new DeviceToken\Core)->delete();
+                (new Vpa\Core)->deleteAll();
+                (new BankAccount\Core)->deleteAll();
+                (new DeviceToken\Core)->deleteAll();
+                (new Transaction\Core)->deleteAll();
+                (new Beneficiary\Core)->deleteAll();
+
             });
 
         return [

@@ -424,6 +424,14 @@ class Transfer extends Base
 
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
 
+        // capture failed response codes
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            Status::getFailureStatus(),
+            Status::getSuccessfulStatus(),
+            $statusCode,
+            $bankSubStatus);
+
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
             ReconConstants::UTR                   => null,
@@ -460,6 +468,13 @@ class Transfer extends Base
         $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
 
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            Status::getFailureStatus(),
+            Status::getSuccessfulStatus(),
+            $statusCode,
+            $bankSubStatus);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
@@ -551,7 +566,7 @@ class Transfer extends Base
                 Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
                 Constants::NAME_WITH_BENEFICIARY_BANK   => 'Someone',
                 Constants::LOW_BALANCE_ALERT            => false,
-                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::TRANSFER_TYPE                => $this->transferType,
                 Constants::ATTEMPT_NO                   => 1,
                 Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
                 Constants::TRANSACTION_STATUS           => [
@@ -571,7 +586,7 @@ class Transfer extends Base
                 Constants::VERSION              => self::VERSION,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
                 Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
-                Constants::REQ_TRANSFER_TYPE    => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::REQ_TRANSFER_TYPE    => $this->transferType,
                 Constants::STATUS_CODE          => Status::AS,
             ],
         ]);

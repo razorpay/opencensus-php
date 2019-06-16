@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const SUCCESS       = 'success';
     const DEVICE_ID     = 'device_id';
     const REFRESHED_AT  = 'refreshed_at';
+    const HANDLE        = 'handle';
     const GATEWAY       = 'gateway';
     const GATEWAY_DATA  = 'gateway_data';
     const CALLBACK      = 'callback';
@@ -56,6 +57,11 @@ class Entity extends Base\PublicEntity
     }
 
     public function hasCustomer(): bool
+    {
+        return false;
+    }
+
+    public function canSoftDelete(): bool
     {
         return false;
     }

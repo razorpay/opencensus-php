@@ -52,7 +52,7 @@ class Format
         self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values',
                         'text/plain', 'inode/x-empty', 'application/octet-stream', 'application/pgp',
                         'text/x-Algol68'],
-        self::ENC   => ['application/octet-stream', 'application/pgp', 'application/zlib'],
+        self::ENC   => ['application/octet-stream', 'application/pgp', 'application/zlib', 'application/x-object'],
         self::JPG   => ['image/jpeg', 'application/pgp'],
         self::JPEG  => ['image/jpeg', 'application/pgp'],
         self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],

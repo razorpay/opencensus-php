@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes',
-        Entity::MC_MPAN                     => 'sometimes|string|size:16',
+        Entity::MC_MPAN                     => 'sometimes|string|size:15',
         Entity::VISA_MPAN                   => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
         Entity::VPA                         => 'sometimes|string|max:255',
@@ -92,6 +92,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::ISG,
     ];
 
     protected static $createValidators = [
@@ -159,7 +160,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3',
-        Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string|size:16',
+        Entity::MC_MPAN                    => 'required_if:type.bharat_qr,1|string|size:15',
         Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
@@ -174,7 +175,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'required|array',
         Entity::TYPE . '.bharat_qr'        => 'required|in:1',
         Entity::TYPE . '.non_recurring'    => 'required|in:1',
-        Entity::MC_MPAN                    => 'required|string|size:16',
+        Entity::MC_MPAN                    => 'required|string|size:15',
         Entity::VISA_MPAN                  => 'required|string|size:16',
         Entity::RUPAY_MPAN                 => 'required|string|size:16',
         Entity::EXPECTED                   => 'sometimes|boolean',
@@ -248,6 +249,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
     protected static $cybersourceTerminalRules = [
@@ -280,6 +282,21 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
+    ];
+
+    protected static $isgEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:isg',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string|max:15',
+        Entity::GATEWAY_TERMINAL_ID        => 'somtimes|string|size:8',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TYPE . '.bharat_qr'        => 'sometimes|in:1',
+        Entity::TYPE . '.non_recurring'    => 'sometimes|in:1',
+        Entity::MC_MPAN                    => 'sometimes|string|size:15',
+        Entity::VISA_MPAN                  => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
+        Entity::EXPECTED                   => 'sometimes|boolean',
+        Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
+        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
     ];
 
     protected static $atomEditTerminalRules = [
@@ -327,7 +344,7 @@ class Validator extends Base\Validator
         Entity::EXPECTED                   => 'sometimes|boolean',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
-        Entity::MC_MPAN                    => 'sometimes|string|size:16',
+        Entity::MC_MPAN                    => 'sometimes|string|size:15',
         Entity::VISA_MPAN                  => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
@@ -486,8 +503,8 @@ class Validator extends Base\Validator
     protected static $netbankingCubTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_cub',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
@@ -1206,6 +1223,12 @@ class Validator extends Base\Validator
         {
             return Method::PAYLATER;
         }
+
+        if (empty($input[Entity::UPI]) === false)
+        {
+            return Method::UPI;
+        }
+
         return null;
     }
 

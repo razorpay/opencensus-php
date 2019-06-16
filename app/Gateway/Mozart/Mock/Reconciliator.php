@@ -8,6 +8,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Mozart\NetbankingSib;
 use RZP\Gateway\Mozart\NetbankingYesb;
+use RZP\Gateway\Mozart\NetbankingCub;
 use RZP\Models\Payment\Gateway as PaymentGateway;
 
 class Reconciliator extends Base\Mock\PaymentReconciliator
@@ -97,6 +98,38 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         }
 
         $formattedData = $this->generateText($data, '|');
+
+        return $formattedData;
+    }
+
+    protected function netbanking_cub($input)
+    {
+        $this->fileExtension = FileStore\Format::TXT;
+
+        $this->fileToWriteName = 'RAZORPAY_2019May';
+
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d/m/Y');
+
+            $col = [
+                NetbankingCub\ReconFields::PAYMENT_ID            => $row['payment']['id'],
+                NetbankingCub\ReconFields::PAYMENT_AMOUNT        => $row['payment']['amount'] / 100,
+                NetbankingCub\ReconFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row['mozart']['raw']),
+                NetbankingCub\ReconFields::PAYMENT_DATE          => $date,
+            ];
+
+            $this->content($col, 'col_payment_cub_nb_recon');
+
+            $data[] = $col;
+        }
+
+        $formattedData = $this->generateText($data, ',');
 
         return $formattedData;
     }

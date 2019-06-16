@@ -313,6 +313,8 @@ class Status extends BaseStatus
             self::ACQUIRING_BANK_CBS_OFFLINE,
             self::INVALID_REQUEST,
             self::FUNDS_ON_HOLD,
+            self::TECHNICAL_ERROR,
+            self::TRANSFER_TIMEOUT,
         ];
     }
 
@@ -323,6 +325,7 @@ class Status extends BaseStatus
     {
         return [
             self::TECHNICAL_ERROR,
+            self::INVALID_REQUEST,
         ];
     }
 

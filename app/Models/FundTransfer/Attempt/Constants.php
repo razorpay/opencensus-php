@@ -22,6 +22,8 @@ final class Constants
 
     const FTA_ID              = 'fta_id';
 
+    const INTERNAL_ERROR      = 'internal_error';
+
     const BANK_PROCESSED_TIME = 'bank_processed_time';
 
     const IMPS_STATUS_CHECK_DISPATCH_TIME = 10;

@@ -35,7 +35,12 @@ class Processor extends Base\Processor
         // For Bank Account, we don't have to hit gateway
         if ($this->input->get(Entity::TYPE) === BankAccount\Entity::BANK_ACCOUNT)
         {
-            $validated = IFSC::validate($this->input->get(BankAccount\Entity::IFSC));
+            $validated = true;
+
+            if ($this->shouldValidateIfsc($this->input->get(BankAccount\Entity::IFSC)))
+            {
+                $validated = IFSC::validate($this->input->get(BankAccount\Entity::IFSC));
+            }
 
             $this->input->put(Entity::VALIDATED, $validated);
 
@@ -72,7 +77,7 @@ class Processor extends Base\Processor
                 break;
 
             case BankAccount\Entity::BANK_ACCOUNT:
-                $beneficiary = (new BankAccount\Core)->createBeneficiary($this->input->toArray());
+                $beneficiary = (new BankAccount\Core)->handleBeneficiary($this->input->toArray());
         }
 
         return $beneficiary->toArrayBeneficiary();
@@ -165,5 +170,21 @@ class Processor extends Base\Processor
         $response[Vpa\Entity::ADDRESS] = Vpa\Entity::toAddress($input);
 
         return $response;
+    }
+
+    protected function shouldValidateIfsc(string $ifsc)
+    {
+        if ($this->isProductionAndLive() === true)
+        {
+            return true;
+        }
+
+        // We are going to whitelist the IFSC code
+        if (starts_with($ifsc, ['AXIS']))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

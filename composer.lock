@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eedeaab5650f58d57e16778376d11fd3",
+    "content-hash": "978b06973dd94bb6b2027e85830439de",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5870,23 +5870,23 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "dev-master",
+            "version": "0.1.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "ebff6f611fb9e16dc647f1c6b1ccadf854f6934e"
+                "reference": "aa071ad5bee263fd49f018f641682bcb9986a9eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/ebff6f611fb9e16dc647f1c6b1ccadf854f6934e",
-                "reference": "ebff6f611fb9e16dc647f1c6b1ccadf854f6934e",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/aa071ad5bee263fd49f018f641682bcb9986a9eb",
+                "reference": "aa071ad5bee263fd49f018f641682bcb9986a9eb",
                 "shasum": ""
             },
             "require": {
                 "laravel/framework": "^5.0",
                 "league/oauth2-server": "^6.0",
                 "php": ">=5.6",
-                "razorpay/spine": "0.1.2",
+                "razorpay/spine": "0.1.3",
                 "zendframework/zend-diactoros": "^1.4"
             },
             "require-dev": {
@@ -5915,10 +5915,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/master",
+                "source": "https://github.com/razorpay/oauth/tree/0.1.1",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2019-03-23T07:30:00+00:00"
+            "time": "2019-06-06T12:04:00+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -6080,16 +6080,16 @@
         },
         {
             "name": "razorpay/spine",
-            "version": "0.1.2",
+            "version": "0.1.3",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "5d2a7cd15c02853ceaa9a3464fe03396b0a5b3bf"
+                "reference": "245e039b3a1d98879006f36d4f2a879c9993426e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/5d2a7cd15c02853ceaa9a3464fe03396b0a5b3bf",
-                "reference": "5d2a7cd15c02853ceaa9a3464fe03396b0a5b3bf",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/245e039b3a1d98879006f36d4f2a879c9993426e",
+                "reference": "245e039b3a1d98879006f36d4f2a879c9993426e",
                 "shasum": ""
             },
             "require": {
@@ -6124,10 +6124,10 @@
                 "spine"
             ],
             "support": {
-                "source": "https://github.com/razorpay/spine/tree/0.1.2",
+                "source": "https://github.com/razorpay/spine/tree/0.1.3",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2019-03-23T07:20:42+00:00"
+            "time": "2019-06-06T10:59:01+00:00"
         },
         {
             "name": "razorpay/trace",
@@ -10298,7 +10298,6 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
-        "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },

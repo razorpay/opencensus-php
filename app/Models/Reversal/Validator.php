@@ -13,7 +13,9 @@ use RZP\Models\Feature\Constants as Feature;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT               => 'required|integer|min:100',
+        Entity::AMOUNT               => 'required|integer|min:0',
+        Entity::FEE                  => 'sometimes|integer|min:0',
+        Entity::TAX                  => 'sometimes|integer|min:0',
         Entity::CHANNEL              => 'sometimes|string|max:30',
         Entity::CURRENCY             => 'required|string|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
