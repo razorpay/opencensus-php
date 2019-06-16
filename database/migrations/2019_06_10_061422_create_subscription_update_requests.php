@@ -17,7 +17,7 @@ class CreateSubscriptionUpdateRequests extends Migration
      */
     public function up()
     {
-        Schema::create(Table::UPDATE_REQUEST, function(Blueprint $table)
+        Schema::create(Table::SUBSCRIPTION_UPDATE_REQUEST, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
