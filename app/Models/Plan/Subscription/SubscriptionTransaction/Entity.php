@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Plan\Subscription\SubscriptionTrasaction;
+namespace RZP\Models\Plan\Subscription\SubscriptionTransaction;
 
 use App;
 
