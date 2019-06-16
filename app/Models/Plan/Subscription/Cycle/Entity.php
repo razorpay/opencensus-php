@@ -19,5 +19,5 @@ class Entity extends Base\PublicEntity
     const CYCLE_NUMBER         = 'cycle_number';
     const SUBSCRIPTION         = 'subscription';
 
-    protected $entity           = 'cycle';
+    protected $entity           = 'subscription_cycle';
 }

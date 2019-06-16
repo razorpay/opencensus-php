@@ -17,5 +17,5 @@ class Entity extends Base\PublicEntity
     const SCHEDULE_CHANGE_AT    = 'schedule_change_at';
     const VERSION_ID            = 'version_id';
 
-    protected $entity = 'update_request';
+    protected $entity = 'subscription_update_request';
 }

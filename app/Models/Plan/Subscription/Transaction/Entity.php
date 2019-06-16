@@ -20,5 +20,5 @@ class Entity extends Base\PublicEntity
     const CREDIT_NOTE_ID        = 'credit_note_id';
     const STATUS                = 'status';
 
-    protected $entity = 'transaction';
+    protected $entity = 'subscription_transaction';
 }

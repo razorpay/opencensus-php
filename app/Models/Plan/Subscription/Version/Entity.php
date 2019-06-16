@@ -27,5 +27,5 @@ class Entity extends Base\PublicEntity
 
     const SUBSCRIPTION         = 'subscription';
 
-    protected $entity           = 'version';
+    protected $entity           = 'subscription_version';
 }
