@@ -512,7 +512,7 @@ class Entity
         self::SUBSCRIPTION_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\UpdateRequest::class,
         self::SUBSCRIPTION_VERSION        => \RZP\Models\Plan\Subscription\Version::class,
         self::SUBSCRIPTION_CYCLE          => \RZP\Models\Plan\Subscription\Cycle::class,
-        self::SUBSCRIPTION_TRANSACTION    => \RZP\Models\Plan\Subscription\Transaction::class
+        self::SUBSCRIPTION_TRANSACTION    => \RZP\Models\Plan\Subscription\SubscriptionTransaction::class
     ];
 
     protected static $repository = [
