@@ -49,7 +49,7 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::BANK_INTERNAL_REFERENCE_NUMBER, 255)
                   ->nullable();
 
-            $table->string(Entity::ACCOUNT_NAME, 255)
+            $table->string(Entity::BENEFICIARY_NAME, 255)
                   ->nullable();
 
             $table->char(Entity::ACCOUNT_CURRENCY, 3)
@@ -80,9 +80,6 @@ class CreateBankingAccountTable extends Migration
                   ->nullable();
 
             $table->string(Entity::BANK_REFERENCE_NUMBER, 255)
-                  ->nullable();
-
-            $table->string(Entity::BENEFICIARY_NAME, 255)
                   ->nullable();
 
             $table->date(Entity::ACCOUNT_ACTIVATION_DATE)

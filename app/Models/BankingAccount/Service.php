@@ -109,7 +109,7 @@ class Service extends Base\Service
         return $this->merchant->bankingAccounts;
     }
 
-    public function processBankAccountInfoNotification(string $channel, array $input)
+    public function processAccountInfoWebhook(string $channel, array $input)
     {
         $this->trace->info(
             TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_REQUEST,
@@ -128,7 +128,8 @@ class Service extends Base\Service
 
                     $bankReference = $rbl->preProcessAccountInfoNotification($input);
 
-                    $bankingAccount = $this->repo->banking_account->findByBankReference($bankReference);
+                    $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel($bankReference,
+                                                                                           Channel::RBL);
 
                     $attributes = $rbl->processAccountInfoNotification($input);
 

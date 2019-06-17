@@ -13,7 +13,6 @@ class Entity extends Base\PublicEntity
     const CHANNEL                           = 'channel';
     const ACCOUNT_NUMBER                    = 'account_number';
     const ACCOUNT_IFSC                      = 'account_ifsc';
-    const ACCOUNT_NAME                      = 'account_name';
     const ACCOUNT_CURRENCY                  = 'account_currency';
     const ACCOUNT_ACTIVATION_DATE           = 'account_activation_date';
     const PINCODE                           = 'pincode';
@@ -69,11 +68,11 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_CITY,
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_COUNTRY,
-        self::ACCOUNT_NAME,
         self::ACCOUNT_ACTIVATION_DATE,
-        self::ACCOUNT_NAME,
-        self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::BENEFICIARY_NAME,
+        self::BANK_INTERNAL_REFERENCE_NUMBER,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL,
     ];
 
     protected $visible = [

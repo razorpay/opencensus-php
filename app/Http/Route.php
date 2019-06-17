@@ -1113,7 +1113,7 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
-        'bank_account_info_webhook'               => ['post',     'banking_accounts/account_webhook/{channel}',                'BankingAccountController@processBankAccountInformation'    ],
+        'bank_account_info_webhook'               => ['post',     'banking_accounts/account_webhook/{channel}',                'BankingAccountController@processAccountInfoWebhook'        ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -2806,7 +2806,7 @@ final class Route
         ],
 
         'rbl' => [
-            'bank_account_info_webhook'
+            'bank_account_info_webhook',
         ],
 
         // BharatQR routes are not authenticated

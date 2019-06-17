@@ -59,7 +59,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
-        Entity::BANK_INTERNAL_STATUS            => 'filled|string',
+        Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
         Entity::STATUS                          => 'filled|string|custom',
         Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
@@ -71,14 +71,16 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
-        Entity::ACCOUNT_NAME                    => 'filled|string',
+        Entity::BENEFICIARY_MOBILE              => 'filled|string',
+        Entity::BENEFICIARY_EMAIL               => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|string',
     ];
 
     protected static $rblUpdateRules = [
-        Entity::ACCOUNT_NUMBER       => 'required_with:account_ifsc|max:40',
-        Entity::ACCOUNT_IFSC         => 'required_with:account_number|size:11',
-        Entity::STATUS               => 'filled|string|custom',
-        Entity::BANK_INTERNAL_STATUS => 'required_if:status,processing,processed,cancelled|string',
+        Entity::ACCOUNT_NUMBER                  => 'required_with:account_ifsc|max:40',
+        Entity::ACCOUNT_IFSC                    => 'required_with:account_number|size:11',
+        Entity::STATUS                          => 'filled|string|custom',
+        Entity::BANK_INTERNAL_STATUS            => 'required_if:status,processing,processed,cancelled|string',
         Entity::STATUS                          => 'filled|string|custom',
         Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
@@ -90,7 +92,9 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
-        Entity::ACCOUNT_NAME                    => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::BENEFICIARY_MOBILE              => 'filled|string',
+        Entity::BENEFICIARY_EMAIL               => 'filled|string',
     ];
 
     // ToDo fix the validator on seeing actual data types in RBL notification
@@ -108,6 +112,8 @@ class Validator extends Base\Validator
         RblFields::COUNTRY           => 'required|string',
         RblFields::REF_NUM_1         => 'required|string|size:5',
         RblFields::ACTIVATION_DATE   => 'required|string',
+        RblFields::PHONE_NUM         => 'required|string',
+        RblFields::EMAIL_ID          => 'required|string',
     ];
 
     /**

@@ -56,6 +56,14 @@ class BankingAccountTest extends TestCase
 
     public function testSuccessBankAccountInfoNotification()
     {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->fixtures->merchant = $merchantDetail->merchant;
+
+        $this->ba->proxyAuth('rzp_test_' . $this->fixtures->merchant['id']);
+
         $this->testCreateBankingAccount();
 
         $this->ba->privateAuth('rzp_test', 'rbl_secret');
@@ -79,6 +87,8 @@ class BankingAccountTest extends TestCase
 
     public function testFailedBankAccountInfoNotification()
     {
+        $this->ba->proxyAuth();
+
         $this->ba->privateAuth('rzp_test', 'rbl_secret');
 
         $this->startTest();

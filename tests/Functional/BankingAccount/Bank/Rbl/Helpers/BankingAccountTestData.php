@@ -15,7 +15,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'channel'     => 'rbl',
                 'status'      => 'created'
             ],
@@ -33,7 +32,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'channel'     => 'rbl',
                 'status'      => 'unserviceable'
             ],
@@ -92,6 +90,8 @@ return [
                         'STATE'             => 'MAHARASH',
                         'COUNTRY'           => 'INDIA',
                         'PINCODE'           => '123456',
+                        'PHONE_NUM'         => '9899807189',
+                        'EMAIL_ID'          => 'test@gmail.com'
                     ],
                     'Header' => [
                         'TranID' => '12345'
@@ -133,6 +133,8 @@ return [
                         'STATE'             => 'MAHARASH',
                         'COUNTRY'           => 'INDIA',
                         'PINCODE'           => '123456',
+                        'PHONE_NUM'         => '9899807189',
+                        'EMAIL_ID'          => 'test@gmail.com'
                     ],
                     'Header' => [
                         'TranID' => '12345'

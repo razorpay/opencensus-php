@@ -21,13 +21,15 @@ class RblFields
     const HEADER                            = 'Header';
     const TRAN_ID                           = 'TranID';
     const STATUS                            = 'Status';
+    const PHONE_NUM                         = 'PHONE_NUM';
+    const EMAIL_ID                          = 'EMAIL_ID';
     const RZP_ALERT_NOTIFICATION_REQUEST    = 'RZPAlertNotiReq';
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
 
     public static $rblFieldsToEntityMap = [
       self::FORACID                 => Entity::ACCOUNT_NUMBER,
       self::IFSC                    => Entity::ACCOUNT_IFSC,
-      self::ACCT_NAME               => Entity::ACCOUNT_NAME,
+      self::ACCT_NAME               => Entity::BENEFICIARY_NAME,
       self::CIF_ID                  => Entity::BANK_INTERNAL_REFERENCE_NUMBER,
       self::ADDR_1                  => Entity::BENEFICIARY_ADDRESS1,
       self::ADDR_2                  => Entity::BENEFICIARY_ADDRESS2,
@@ -37,6 +39,8 @@ class RblFields
       self::COUNTRY                 => Entity::BENEFICIARY_COUNTRY,
       self::PINCODE                 => Entity::PINCODE,
       self::ACTIVATION_DATE         => Entity::ACCOUNT_ACTIVATION_DATE,
-      self::REF_NUM_1               => Entity::BANK_REFERENCE_NUMBER
+      self::REF_NUM_1               => Entity::BANK_REFERENCE_NUMBER,
+      self::EMAIL_ID                => Entity::BENEFICIARY_EMAIL,
+      self::PHONE_NUM               => Entity::BENEFICIARY_MOBILE,
     ];
 }

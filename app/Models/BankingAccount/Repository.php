@@ -8,10 +8,11 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account';
 
-    public function findByBankReference(string $bankReference)
+    public function findByBankReferenceAndChannel(string $bankReference, string $channel)
     {
         return $this->newQuery()
                     ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->firstOrFail();
     }
 }
