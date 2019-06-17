@@ -8,9 +8,12 @@ use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Type;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
+    use Cacheable;
+
     const IIN           = 'iin';
     const CATEGORY      = 'category';
     const NETWORK       = 'network';
