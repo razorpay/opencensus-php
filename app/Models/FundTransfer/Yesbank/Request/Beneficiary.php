@@ -129,13 +129,12 @@ class Beneficiary extends Base
 
             if ($data[Constants::ERROR] === self::RECORD_EXIST_PENDING_APPROVAL)
             {
-                $slackData = [
-                    'channel'        => $this->channel,
-                    'beneficiary_id' => $data['beneficiary_id'],
-
-                ];
-
-                (new SlackNotification)->send($data[Constants::ERROR], $slackData, null, 1);
+                $this->trace->info(TraceCode::RECORD_EXIST_PENDING_APPROVAL,
+                    [
+                        'bank_account_id' => $data['beneficiary_id'],
+                        'channel'         => $this->channel,
+                        'status'          => $data[Constants::ERROR],
+                    ]);
             }
 
             if (($data[Constants::ERROR] !== self::RECORD_EXIST)  and

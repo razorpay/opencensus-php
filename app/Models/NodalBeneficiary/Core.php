@@ -70,17 +70,6 @@ class Core extends Base\Core
                         $nodalBeneficiary->getRegistrationStatus()
                   );
 
-        if (($input[Entity::REGISTRATION_STATUS] === Status::FAILED) and
-            ($nodalBeneficiary->getRegistrationStatus() !== Status::FAILED))
-        {
-            $this->notifyBeneficiaryRegistrationFailure(
-                        $nodalBeneficiary->getRegistrationStatus(),
-                        $input,
-                        $bankAccountId,
-                        $channel
-                 );
-        }
-
         $nodalBeneficiary = $nodalBeneficiary->edit($input);
 
         $this->repo->nodal_beneficiary->saveOrFail($nodalBeneficiary);
@@ -101,22 +90,6 @@ class Core extends Base\Core
                                  );
 
         return $this->repo->nodal_beneficiary->deleteOrFail($nodalBeneficiary);
-    }
-
-    /**
-     * Sends beneficiary registration failure alert
-     * @param string $currentStatus
-     * @param array $input
-     * @param string $bankAccountId
-     * @param string $channel
-     */
-    protected function notifyBeneficiaryRegistrationFailure(string $currentStatus, array $input, string $bankAccountId, string $channel)
-    {
-        $message = ' *ALERT*: Beneficiary status for bank account id: ' .
-                    $bankAccountId . ' on channel ' . $channel .
-                    ' changed from '. $currentStatus . ' to ' . $input[Entity::REGISTRATION_STATUS];
-
-        (new SlackNotification)->send($message, $input, null, 1);
     }
 
     /**
