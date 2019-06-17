@@ -86,7 +86,8 @@ class Service extends Base\Service
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
 
-        switch ($channel) {
+        switch ($channel)
+        {
             case Channel::RBL:
                 $coreMethod = $coreMethod . 'For' . ucfirst($channel);
 

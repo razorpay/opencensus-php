@@ -8,7 +8,7 @@ class Validator
 
     public function __construct($country)
     {
-        $this->country = $$country;
+        $this->country = $country;
     }
 
     public function validate($pincode): bool
