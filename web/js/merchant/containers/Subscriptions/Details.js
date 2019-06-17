@@ -614,25 +614,35 @@ export default class SubscriptionDetailsContainer extends React.Component {
     let invoiceSecView, creditNoteSecView;
 
     // Add 'next_due' invoice in the Invoices list
-    if (!invoices.loading && !invoices.error) {
-      if (this.checkNextDueInvoiceValidity(entity.status, entity.type)) {
+    if (!invoices.loading && !invoices.error && !scheduledChanges.loading) {
+      const subscriptionData = scheduledChanges.data
+          ? scheduledChanges.data
+          : entity,
+        planData = scheduledChanges.plan ? scheduledChanges.plan : plan;
+
+      if (
+        this.checkNextDueInvoiceValidity(
+          subscriptionData.status,
+          subscriptionData.type
+        )
+      ) {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
         let chargeAt;
         chargeAt =
-          entity.status === 'created' &&
-          (entity.type === 0 || entity.type === 2)
-            ? entity.charge_at
+          subscriptionData.status === 'created' &&
+          (subscriptionData.type === 0 || subscriptionData.type === 2)
+            ? subscriptionData.charge_at
             : null;
 
-        if (entity.status === 'pending') {
+        if (subscriptionData.status === 'pending') {
           chargeAt = null;
         }
 
         let nextDueInvoice = this.getUpcomingInvoiceDetails(
           chargeAt,
-          plan.item ? plan.item.amount * entity.quantity : 0,
+          planData.item ? planData.item.amount * subscriptionData.quantity : 0,
           this.state.addons
         );
 
@@ -649,22 +659,32 @@ export default class SubscriptionDetailsContainer extends React.Component {
         Object.keys(entity).length && // Helps to simulate the loader for 'inv_upcoming' invoice
         !invoices.loading // To display upcoming invioce rightly
       ) {
+        const subscriptionData = scheduledChanges.data
+            ? scheduledChanges.data
+            : entity,
+          planData = scheduledChanges.plan ? scheduledChanges.plan : plan;
+
         // inv_upcoming exists only for these subscriptions status only
-        if (this.checkNextDueInvoiceValidity(entity.status, entity.type)) {
+        if (
+          this.checkNextDueInvoiceValidity(
+            subscriptionData.status,
+            subscriptionData.type
+          )
+        ) {
           // Charge at is not available in such type of subscriptions
           let chargeAt =
-            entity.status === 'created' &&
-            (entity.type === 0 || entity.type === 2)
-              ? entity.charge_at
+            subscriptionData.status === 'created' &&
+            (subscriptionData.type === 0 || subscriptionData.type === 2)
+              ? subscriptionData.charge_at
               : null;
 
-          if (entity.status === 'pending') {
+          if (subscriptionData.status === 'pending') {
             chargeAt = null;
           }
 
           invoiceData = this.getUpcomingInvoiceDetails(
             chargeAt,
-            plan.item.amount * entity.quantity,
+            planData.item.amount * subscriptionData.quantity,
             this.state.addons
           );
         } else {
@@ -692,6 +712,19 @@ export default class SubscriptionDetailsContainer extends React.Component {
         }
       }
 
+      let plan = plan,
+        subscription = entity,
+        isInvoiceLoading = invoiceLoading;
+
+      if (this.props.invoice_id === 'inv_upcoming' && invoiceData) {
+        isInvoiceLoading = false;
+      }
+
+      if (this.props.invoice_id === 'inv_upcoming' && scheduledChanges.data) {
+        subscription = scheduledChanges.data;
+        plan = scheduledChanges.plan;
+      }
+
       // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
       // And in this case InvoiceDetails won't show loader but error message
       invoiceSecView = (
@@ -699,9 +732,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
           plan={plan}
           addons={addonsList}
           invoice={invoiceData}
-          subscription={entity}
           mode={this.props.mode}
           onClose={this.secClose}
+          subscription={subscription}
+          isLoading={isInvoiceLoading}
           nextChargeAt={entity.charge_at}
           subscriptionId={this.props.id}
           isValidInvoice={isValidInvoice}
@@ -711,11 +745,6 @@ export default class SubscriptionDetailsContainer extends React.Component {
           ref={comp => (this.invoiceView = comp)}
           statusMsg={makeErrorStatus(invoiceErrors)}
           curInvoiceIndex={this.state.curInvoiceIndex}
-          isLoading={
-            this.props.invoice_id === 'inv_upcoming' && invoiceData
-              ? false
-              : invoiceLoading
-          }
         />
       );
     }

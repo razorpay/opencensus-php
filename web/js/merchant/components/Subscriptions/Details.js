@@ -73,6 +73,12 @@ export default props => {
       updatedPlan: scheduledChanges.plan,
     });
 
+  const subTitle =
+    subscription.total_count &&
+    `${subscription.paid_count} of ${
+      subscription.total_count
+    } invoices charged`;
+
   return (
     <div class="content-wrapper content-sm txn-details SubscriptionLinks--Details">
       {isLoading ? (
@@ -236,13 +242,8 @@ export default props => {
 
               <EntityDetailList
                 mode={mode}
-                subTitle={
-                  subscription.total_count &&
-                  `${subscription.paid_count} of ${
-                    subscription.total_count
-                  } invoices charged`
-                }
                 moreAfterlimit={3}
+                subTitle={subTitle}
                 error={invoices.error}
                 items={invoices.items}
                 title="Invoices detail"

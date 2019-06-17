@@ -109,21 +109,21 @@ export default class EntityDetailList extends Component {
 
       list.push(
         <EntityRow
+          mode={mode}
           key={index}
-          goToLink={goToLink}
-          activeSecEntityId={activeSecEntityId}
-          index={recurringInvoiceIndex}
           item={item}
           loading={loading}
+          goToLink={goToLink}
           isUpfront={isUpfrontInvoice}
-          authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
-          isInvoiceWithAttemptsFailed={isInvoiceWithAttemptsFailed}
-          subscriptionchargeAt={subscriptionchargeAt}
-          onManualAttempt={onManualAttempt}
-          subscriptionStatus={subscriptionStatus}
-          subscriptionType={subscriptionType}
-          mode={mode}
+          index={recurringInvoiceIndex}
           subscriptionId={subscriptionId}
+          onManualAttempt={onManualAttempt}
+          subscriptionType={subscriptionType}
+          activeSecEntityId={activeSecEntityId}
+          subscriptionStatus={subscriptionStatus}
+          subscriptionchargeAt={subscriptionchargeAt}
+          isInvoiceWithAttemptsFailed={isInvoiceWithAttemptsFailed}
+          authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
         />
       );
     }

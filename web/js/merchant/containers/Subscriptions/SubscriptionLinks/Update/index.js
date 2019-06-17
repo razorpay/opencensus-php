@@ -8,6 +8,8 @@ import { ModalAsideNav } from 'component/Wizard';
 import Button, { AsyncBtn } from 'component/Button';
 import { Modal, ModalContent } from 'component/Modal';
 
+import { findBy } from 'rzp/utils/rzp-utils';
+
 import { fetchPlans } from 'merchant/modules/plans';
 import { fetchItems } from 'merchant/modules/items';
 import {
@@ -43,19 +45,20 @@ export default class UpdateSubscription extends Component {
 
     this.state = {
       fields: {},
-      isLoading: true,
       internals: {},
       currentTab: 0,
+      currency: null,
+      isLoading: true,
       prevSubscription: {},
       validTabs: [false, false],
     };
   }
 
-  componentWillMount() {
-    this.props.fetchPlans({ count: 100 });
-    this.props.fetchItems({ count: 100, type: 'invoice' });
-    this.fetchSubscription(this.props.id);
-  }
+  componentWillMount = async () => {
+    await this.props.fetchPlans({ count: 100 });
+    await this.props.fetchItems({ count: 100, type: 'invoice' });
+    await this.fetchSubscription(this.props.id);
+  };
 
   fetchSubscription = (id = this.props.id) => {
     this.props
@@ -80,15 +83,18 @@ export default class UpdateSubscription extends Component {
           fields.schedule_change_at = 'now';
         }
 
+        const selectedPlan = findBy(this.props.plans.items, 'id', resp.plan_id);
+
         this.setState({
           fields,
+          isLoading: false,
           prevSubscription: {
             ...resp,
           },
+          currency: selectedPlan.item.currency,
           internals: {
             _startsImmediately: !resp.start_at,
           },
-          isLoading: false,
         });
       })
       .catch(({ errors }) => {
@@ -283,9 +289,15 @@ export default class UpdateSubscription extends Component {
 
     switch (this.state.currentTab) {
       case 0: {
+        const filteredPlans = this.props.plans;
+
+        filteredPlans.items = filteredPlans.items.filter(
+          plan => plan.item.currency === this.state.currency
+        );
+
         return (
           <PlanDetails
-            plans={this.props.plans}
+            plans={filteredPlans}
             fields={this.state.fields}
             internals={this.state.internals}
             onDateChange={this.handleDateChange}
@@ -314,6 +326,7 @@ export default class UpdateSubscription extends Component {
     const { currentTab } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
     const currentTabMeta = tabsMeta[tabs[currentTab]];
+
     return (
       // need to improve this css styling
       <div class="PaymentLinks--Create SubscriptionLinks--update Wizard">
@@ -372,6 +385,7 @@ export default class UpdateSubscription extends Component {
 
   render() {
     const isModalView = this.props.onClose;
+
     return isModalView ? (
       <Modal
         class="UpdateSubscriptionLink animate-down"
