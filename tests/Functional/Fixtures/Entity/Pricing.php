@@ -332,6 +332,20 @@ class Pricing extends Base
                 'max_fee'             => 300,
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE31zbybacab5',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'paylater',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'max_fee'             => 5000,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         $this->addPricingRulesToDb($rows);
@@ -570,6 +584,26 @@ class Pricing extends Base
             'payment_issuer'      => null,
             'percent_rate'        => 50,
             'fixed_rate'          => 80,
+            'org_id'              => '100000razorpay',
+        ];
+
+        $this->addPricingRulesToDb([$row]);
+    }
+
+    public function createInstantRefundsPricingPlan()
+    {
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbyaE',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'refund',
+            'payment_method'      => 'card',
+            'fixed_rate'          => 100,
+            'amount_range_active' => 1,
+            'amount_range_min'    => 100,
+            'amount_range_max'    => 50000,
             'org_id'              => '100000razorpay',
         ];
 

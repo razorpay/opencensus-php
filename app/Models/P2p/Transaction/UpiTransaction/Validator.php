@@ -30,7 +30,9 @@ class Validator extends Base\Validator
             Entity::GATEWAY_TRANSACTION_ID       => 'string',
             Entity::GATEWAY_REFERENCE_ID         => 'string',
             Entity::RRN                          => 'string',
-            Entity::REF_ID                       => 'string',
+            Entity::REF_ID                       => 'string|max:50',
+            Entity::REF_URL                      => 'string|max:255',
+            Entity::MCC                          => 'string|size:4',
             Entity::GATEWAY_ERROR_CODE           => 'string',
             Entity::GATEWAY_ERROR_DESCRIPTION    => 'string',
             Entity::RISK_SCORES                  => 'string',
@@ -55,6 +57,8 @@ class Validator extends Base\Validator
             Entity::GATEWAY_REFERENCE_ID         => 'sometimes',
             Entity::RRN                          => 'sometimes',
             Entity::REF_ID                       => 'sometimes',
+            Entity::REF_URL                      => 'sometimes',
+            Entity::MCC                          => 'sometimes',
             Entity::GATEWAY_ERROR_CODE           => 'sometimes',
             Entity::GATEWAY_ERROR_DESCRIPTION    => 'sometimes',
             Entity::RISK_SCORES                  => 'sometimes',
@@ -87,6 +91,15 @@ class Validator extends Base\Validator
         ]);
 
         return $rules;
+    }
+
+    public function makeInitiatePayRules()
+    {
+        return $this->makeRules([
+            Entity::REF_ID                       => 'sometimes',
+            Entity::REF_URL                      => 'sometimes',
+            Entity::MCC                          => 'sometimes',
+        ]);
     }
 
     public function makeInitiatePaySuccessRules()

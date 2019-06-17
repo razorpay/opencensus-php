@@ -8,6 +8,7 @@ use libphonenumber\PhoneNumberFormat;
 use App;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
@@ -45,8 +46,8 @@ class Validator extends Base\Validator
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
         '_'                     => 'sometimes|array',
-        'method'                => 'sometimes|in:cardless_emi',
-        'provider'              => 'required_if:method,cardless_emi|custom',
+        'method'                => 'sometimes|in:cardless_emi,paylater',
+        'provider'              => 'required_if:method,cardless_emi,paylater',
     ];
 
     protected static $contactRules = [
@@ -66,6 +67,7 @@ class Validator extends Base\Validator
 
    protected static $globalCreateValidators = [
        Entity::EMAIL,
+       'provider',
    ];
 
     public function __construct($entity = null)
@@ -185,12 +187,38 @@ class Validator extends Base\Validator
         (new static)->validateInput('wallet_app_create', $input);
     }
 
-    public function validateProvider($attribute, $provider)
+    public function validateProvider($input)
     {
-        if (CardlessEmi::exists($provider) === false)
+        if ((empty($input['method']) === true) or
+            (empty($input['provider']) === true))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Provider entered is not valid for cardless emi');
+            return;
+        }
+
+        switch ($input['method'])
+        {
+            case Payment\Method::CARDLESS_EMI:
+                if (CardlessEmi::exists($input['provider']) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Provider is not supported for cardless emi',
+                        'provider',
+                        $input['provider']);
+                }
+                break;
+
+            case Payment\Method::PAYLATER:
+                if (Payment\Processor\PayLater::exists($input['provider']) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Provider is not supported for Pay Later',
+                        'provider',
+                        $input['provider']);
+                }
+                break;
+
+            default:
+                return ;
         }
     }
 }

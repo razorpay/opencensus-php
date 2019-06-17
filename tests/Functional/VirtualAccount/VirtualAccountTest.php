@@ -1214,6 +1214,7 @@ class VirtualAccountTest extends TestCase
     public function testPayVirutalAccountOnBankingBalance()
     {
         $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+        $this->fixtures->merchant->disableMethod('10000000000000', 'bank_transfer');
 
         // Does /ecollect/validate (i.e. payment) api call.
         $this->ba->appAuth();

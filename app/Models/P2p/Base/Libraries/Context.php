@@ -78,6 +78,11 @@ class Context extends ArrayObject
     protected $deviceToken;
 
     /**
+     * @var boolean
+     */
+    protected $shouldRefreshDeviceToken;
+
+    /**
      * @var array
      */
     protected $options = [];
@@ -90,6 +95,8 @@ class Context extends ArrayObject
     public function __construct()
     {
         $this->options = new ArrayBag();
+
+        $this->setShouldRefreshDeviceToken(true);
     }
 
     public function loadWithRequest(Request $request)
@@ -126,6 +133,8 @@ class Context extends ArrayObject
             if ($basicAuth->getDevice() instanceof Device\Entity)
             {
                 $this->setDevice($basicAuth->getDevice());
+
+                $this->validateDeviceTokenForRequest($request);
             }
             else
             {
@@ -237,6 +246,11 @@ class Context extends ArrayObject
     public function setMode(string $mode)
     {
         \Database\DefaultConnection::set($mode);
+
+        // Just to keep things rolling in API Example: Event Handling
+        app()->instance('rzp.mode', $mode);
+
+        app()->get('basicauth')->setMode($mode);
 
         $this->mode = $mode;
     }
@@ -439,5 +453,25 @@ class Context extends ArrayObject
         }
 
         throw $this->badRequestException(ErrorCode::BAD_REQUEST_INVALID_HANDLE);
+    }
+
+    public function setShouldRefreshDeviceToken(bool $value)
+    {
+        $this->shouldRefreshDeviceToken = $value;
+    }
+
+    protected function validateDeviceTokenForRequest(Request $request)
+    {
+        // If device token is present
+        if ($this->getDeviceToken() instanceof Device\DeviceToken\Entity)
+        {
+            if (in_array($request->route()->getName(), ContextMap::SKIP_TOKEN_VALIDATION_ROUTES, true) === false)
+            {
+                if ($this->getDeviceToken()->shouldRefresh() and $this->shouldRefreshDeviceToken)
+                {
+                    throw $this->badRequestException(ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
+                }
+            }
+        }
     }
 }

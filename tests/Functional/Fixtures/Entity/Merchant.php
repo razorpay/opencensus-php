@@ -477,6 +477,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['cardless_emi' => false]);
     }
 
+    public function enablePayLater($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paylater' => true]);
+    }
+
+    public function disablePayLater($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['paylater' => false]);
+    }
+
     public function setDisabledBanks($id = '10000000000000', array $disabledBanks)
     {
         return $this->fixtures->edit('methods', $id, ['disabled_banks' => $disabledBanks]);

@@ -65,4 +65,18 @@ class Core
 
         return $entity;
     }
+
+    public function deleteAll()
+    {
+        $query = $this->repo->newP2pQuery();
+
+        if ($query->getModel()->canSoftDelete() === false)
+        {
+            throw $this->logicException('Can not soft delete the entity', [
+                Entity::ENTITY => $query->getModel()->getP2pEntityName(),
+            ]);
+        }
+
+        return $query->delete();
+    }
 }

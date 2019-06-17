@@ -53,7 +53,7 @@ class VpaHelper extends P2pHelper
     {
         $this->validationJsonSchemaPath = 'vpa/add';
 
-        $request = $this->request('vpa/%s/assign/%s',[$vpaId, $bankId]);
+        $request = $this->request('vpa/%s/assign',[$vpaId]);
 
         $default = [
             'bank_account_id' => $bankId,
@@ -86,6 +86,15 @@ class VpaHelper extends P2pHelper
         $request = $this->request('vpa/%s', [$vpaId]);
 
         return $this->delete($request);
+    }
+
+    public function setDefault(string $vpaId)
+    {
+        $this->validationJsonSchemaPath = 'vpa/add';
+
+        $request = $this->request('vpa/%s/default', [$vpaId]);
+
+        return $this->post($request);
     }
 
     public function fetchVpa(string $vpaId)

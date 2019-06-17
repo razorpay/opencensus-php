@@ -3,9 +3,11 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Request\Service as MerchantRequestService;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -40,6 +42,36 @@ class Service extends Base\Service
         }
 
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $batch->toArrayPublic();
+    }
+
+    /**
+     * for admin route
+     *
+     * @param  string $id
+     * @return array
+     */
+    public function fetchBatchById(string $id): array
+    {
+        if ($this->auth->isAdminAuth() === false)
+        {
+            throw (new \Exception(
+                PublicErrorDescription::BAD_REQUEST_ERROR,
+                PublicErrorCode::BAD_REQUEST_ERROR
+            ));
+        }
+
+        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id);
+
+        if ($responseBatch != null)
+        {
+            $this->app->batchService->prepareBatchItemResponse($responseBatch);
+
+            return $responseBatch;
+        }
+
+        $batch = $this->repo->batch->findByPublicId($id);
 
         return $batch->toArrayPublic();
     }

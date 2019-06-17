@@ -32,6 +32,9 @@ class Validator extends Base\Validator
         Fields::REF10                   => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|string',
         Fields::DATE1                   => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|date_format:"dmY"',
         Fields::DATE2                   => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|date_format:"dmY"',
+        Fields::DISPLAY_DETAILS         => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|in:Y',
+        Fields::DETAILS1                => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|string',
+        Fields::DETAILS2                => 'required_with:' . Fields::CLIENT_ACCOUNT_NUMBER . '|string',
     ];
 
     protected static $verifyRules = [

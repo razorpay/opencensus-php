@@ -2709,7 +2709,7 @@ return [
 
     'testGetWalletDowntime' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -4164,6 +4164,17 @@ return [
     ],
 
     'testGetCheckoutPreferencesForCardlessEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForPayLater' => [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',

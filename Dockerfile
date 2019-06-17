@@ -1,4 +1,6 @@
-FROM razorpay/onggi:php-7.1-apache
+FROM razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
+
+FROM razorpay/onggi:php-7.2-apache
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
@@ -13,13 +15,9 @@ RUN set -eux && \
     # Version has not been bumped in repo move.
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ gnu-libiconv && \
     apk add --allow-untrusted --no-cache libxrender libx11-dev fontconfig zlib-dev \
-    ca-certificates glib ttf-freefont dbus p7zip php7-sockets php7-mysqlnd && \
-    #https://github.com/gliderlabs/docker-alpine/issues/30#issuecomment-372020089
-    update-ca-certificates 2>/dev/null && \
-    cd /tmp && git clone https://github.com/razorpay/docker-alpine-wkhtmltopdf.git && \
-    mv docker-alpine-wkhtmltopdf/wkhtmltopdf /usr/bin/wkhtmltopdf && \
-    chmod +x /usr/bin/wkhtmltopdf && \
-    rm -rf docker-alpine-wkhtmltopdf
+    ca-certificates glib ttf-freefont dbus p7zip php7-sockets php7-mysqlnd wkhtmltopdf
+
+COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
