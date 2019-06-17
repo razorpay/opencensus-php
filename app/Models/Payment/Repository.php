@@ -1051,7 +1051,7 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::AUTHORIZED)
                     ->groupBy(Entity::MERCHANT_ID)
                     ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
     }
@@ -1072,7 +1072,7 @@ class Repository extends Base\Repository
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->groupBy(Entity::MERCHANT_ID)
                     ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
     }

@@ -761,6 +761,8 @@ trait Authorize
 
             $this->validateCardlessEmiIfApplicable($payment, $input);
 
+            $this->validatePayLaterIfApplicable($payment, $input);
+
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
         catch (\Throwable $ex)
@@ -784,6 +786,21 @@ trait Authorize
             return;
         }
 
+        $this->validateContactAndProviderFromToken($payment, $input);
+    }
+
+    protected function validatePayLaterIfApplicable(Payment\Entity $payment, $input)
+    {
+        if ($payment->isPayLater() === false)
+        {
+            return;
+        }
+
+        $this->validateContactAndProviderFromToken($payment, $input);
+    }
+
+    private function validateContactAndProviderFromToken(Payment\Entity $payment, $input)
+    {
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);
@@ -791,7 +808,7 @@ trait Authorize
         if ($cardlessEmiData === null)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Token provided is invalid for cardless emi',
+                'Token provided is invalid for '. $input['method'] ?? 'cardless emi',
                 null,
                 $cardlessEmiData);
         }
@@ -1844,15 +1861,24 @@ trait Authorize
         }
     }
 
+    /*
+     * function gets called processAndReturnTerminal and processAndReturnFees, in this flow
+     * runPaymentMethodRelatedPreProcessing creates cards and tokens which is not used at all.
+     * to avoid this we run the flow in beginTransactionAndRollback
+     */
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
-        $gatewayInput = [];
+        $this->repo->beginTransactionAndRollback(
+            function() use ($payment, $input)
+            {
+                $gatewayInput = [];
 
-        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+                $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->processCurrencyConversions($payment);
+                $this->processCurrencyConversions($payment);
 
-        $this->attachEntityOrigin($payment);
+                $this->attachEntityOrigin($payment);
+            });
     }
 
     /**
@@ -3108,6 +3134,10 @@ trait Authorize
 
             case Payment\Method::CARDLESS_EMI:
                 $this->verifyCardlessEmiEnabled();
+                break;
+
+            case Payment\Method::PAYLATER:
+                $this->verifyPayLaterEnabled();
                 break;
 
             default:
@@ -4919,6 +4949,21 @@ trait Authorize
 
         if (($merchantMethods === null) or
             ($merchantMethods->isCardlessEmiEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyPayLaterEnabled()
+    {
+        /**
+         * @var $merchantMethods \RZP\Models\Merchant\Methods\Entity
+         */
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isPayLaterEnabled() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);

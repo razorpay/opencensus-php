@@ -368,11 +368,12 @@ class Sbi extends Base
             ]
         ];
 
-        $timelines = [];
+        // Retry in 15, 30 and 45 minutes
+        $timelines = [900, 1800, 2700];
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,
-            'channel'   => 'settlements',
+            'channel'   => 'tech_alerts',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'SBI EMI - File Send failure',
             'recipient' => Constants::MAIL_ADDRESSES[Constants::GATEWAY_POD]

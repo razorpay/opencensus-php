@@ -362,6 +362,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayLaterTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateUpiAirtelTerminal()
     {
         $url = '/merchants/10000000000000/terminals';

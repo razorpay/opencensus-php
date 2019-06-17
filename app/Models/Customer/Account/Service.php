@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer;
 
 use Request;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Address;
@@ -223,9 +224,22 @@ class Service extends Base\Service
 
                 $input['contact'] = $contact;
 
-                $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $this->merchant['id']);
+                $method = $input['method'] ?? Payment\Method::CARDLESS_EMI;
 
-                $retData = $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'check_account', $input, $this->mode, $terminal);
+                $terminal = $this->repo
+                                 ->terminal
+                                 ->getByMerchantProviderAndMethod($input['provider'], $this->merchant['id'], $method);
+
+                $gateway = Payment\Gateway::CARDLESS_EMI;
+
+                switch ($method)
+                {
+                    case Payment\Method::PAYLATER:
+                        $gateway = Payment\Gateway::PAYLATER;
+                        break;
+                }
+
+                $retData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
                 if ($retData != null)
                 {

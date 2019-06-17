@@ -96,6 +96,8 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_IFSC,
         self::BANK_INTERNAL_STATUS,
         self::USERNAME,
         self::PASSWORD,

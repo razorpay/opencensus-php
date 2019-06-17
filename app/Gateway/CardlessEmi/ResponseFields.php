@@ -24,4 +24,7 @@ class ResponseFields
     const ENTITY                = 'entity';
     const REDIRECT_URL          = 'redirection_url';
     const EXTRA                 = 'extra';
+
+    const EPAYLATER_ERROR_CODE          = 'errorCode';
+    const EPAYLATER_ERROR_DESCRIPTION   = 'errorDescription';
 }

@@ -178,6 +178,11 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        if ($this->isFileBasedRefund($input['payment']['gateway']) === true)
+        {
+            return;
+        }
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -743,5 +748,16 @@ class Gateway extends Base\Gateway
                 $content['entities']['order']['bank_account']['account_number'] = null;
             }
         }
+    }
+
+    protected function isFileBasedRefund($gateway)
+    {
+        $fileBasedGateways = [
+            Payment\Gateway::NETBANKING_YESB,
+            Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CUB,
+        ];
+
+        return in_array($gateway, $fileBasedGateways, true);
     }
 }
