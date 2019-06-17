@@ -17,8 +17,6 @@ class CreateAccount extends Base
 
     protected $bankingAccountCore;
 
-    protected $bankingAccountRepo;
-
     protected $product;
 
     public function __construct($app)
@@ -30,8 +28,6 @@ class CreateAccount extends Base
         $this->bankAccountCore = new BankAccount\Core;
 
         $this->bankingAccountCore = new BankingAccount\Core;
-
-        $this->bankingAccountRepo = new BankingAccount\Repository;
     }
 
     /**
@@ -108,7 +104,7 @@ class CreateAccount extends Base
                 break;
 
             case Constants::BANKING_ACCOUNT:
-                $this->account = $this->bankingAccountRepo->getBankingAccountEntity($id);
+                $this->account = $this->bankingAccountCore->getBankingAccountEntity($id);
 
                 $request[Constants::BANK_ACCOUNT] = $this->getBankingAccountDetails($this->account);
 

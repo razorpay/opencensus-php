@@ -265,4 +265,9 @@ class Core extends Base\Core
             );
         }
     }
+
+    public function getBankingAccountEntity(string $id)
+    {
+        return $this->repo->banking_account->findOrFailPublic($id);
+    }
 }
