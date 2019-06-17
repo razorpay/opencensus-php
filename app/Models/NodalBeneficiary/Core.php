@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Metric as Metric;
 use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
@@ -69,6 +70,18 @@ class Core extends Base\Core
                         $input[Entity::REGISTRATION_STATUS],
                         $nodalBeneficiary->getRegistrationStatus()
                   );
+
+        if (($input[Entity::REGISTRATION_STATUS] === Status::FAILED) and
+            ($nodalBeneficiary->getRegistrationStatus() !== Status::FAILED))
+        {
+            $this->trace->count(
+                Metric::BENEFICIARY_REGISTRATION_STATUS,
+                [
+                    Metric::CHANNEL => $channel
+                ],
+                1
+            );
+        }
 
         $nodalBeneficiary = $nodalBeneficiary->edit($input);
 

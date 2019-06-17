@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Settlement\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\SlackNotification;
@@ -129,9 +130,8 @@ class Beneficiary extends Base
 
             if ($data[Constants::ERROR] === self::RECORD_EXIST_PENDING_APPROVAL)
             {
-                $this->trace->info(TraceCode::RECORD_EXIST_PENDING_APPROVAL,
+                $this->trace->count(Metric::RECORD_EXIST_PENDING_APPROVAL,
                     [
-                        'bank_account_id' => $data['beneficiary_id'],
                         'channel'         => $this->channel,
                         'status'          => $data[Constants::ERROR],
                     ]);
