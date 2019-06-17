@@ -420,6 +420,11 @@ class Constants
             'display_name'  => 'Smart Collect',
             'documentation' => 'smart-collect',
         ],
+        self::PAYOUT    => [
+            'feature'       => self::PAYOUT,
+            'display_name'  => 'Payouts',
+            'documentation' => 'payouts',
+        ],
         self::REPORT_V2 => [
             'feature'       => self::REPORT_V2,
             'display_name'  => 'Report V2',
