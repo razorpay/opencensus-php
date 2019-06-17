@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
+use RZP\Models\Pincode;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -35,7 +36,8 @@ class Validator extends Base\Validator
     {
         foreach ($input[Entity::PINCODES] as $pincode)
         {
-            if (validate_indian_pincode($pincode) === false)
+            $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
+            if ($pincodeValidator->validate($pincode) === false)
             {
                 throw new BadRequestValidationFailureException(
                     'Pincode is not valid',
