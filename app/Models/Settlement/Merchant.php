@@ -331,6 +331,12 @@ class Merchant
 
         $setl->bankAccount()->associate($this->bankAccount);
 
+        // in case of test mode set settlement status to initiated
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $setl->setStatus(Status::INITIATED);
+        }
+
         $this->setl = $setl;
     }
 
