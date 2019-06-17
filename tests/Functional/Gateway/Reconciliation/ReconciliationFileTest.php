@@ -1866,8 +1866,8 @@ class ReconciliationFileTest extends TestCase
         $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals(3, $batch['total_count']);
-        $this->assertEquals(2, $batch['processed_count']);
-        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(3, $batch['processed_count']);
+        $this->assertEquals(2, $batch['success_count']);
         $this->assertEquals(1, $batch['failure_count']);
 
         $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
