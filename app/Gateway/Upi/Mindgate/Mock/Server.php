@@ -146,7 +146,7 @@ class Server extends Base\Mock\Server
     /**
      * See docs link in README.md for response formatting
      */
-    protected function makeResponse($data)
+    protected function makeResponse($data, $key = null)
     {
         $action = $this->action;
 
@@ -162,7 +162,7 @@ class Server extends Base\Mock\Server
 
         $content = implode('|', $data);
 
-        $content = $this->encrypt($content);
+        $content = $this->encrypt($content, $key);
 
         $response = parent::makeResponse($content);
 
@@ -195,13 +195,13 @@ class Server extends Base\Mock\Server
 
     public function decrypt($data)
     {
-        return $this->getCipherInstance()
+        return $this->getCipherInstance(null)
                     ->decrypt(hex2bin($data));
     }
 
-    protected function encrypt($plaintext)
+    protected function encrypt($plaintext, $key = null)
     {
-        $ciphertext = $this->getCipherInstance()
+        $ciphertext = $this->getCipherInstance($key)
                     ->encrypt($plaintext);
 
         return strtoupper(bin2hex($ciphertext));
@@ -252,6 +252,50 @@ class Server extends Base\Mock\Server
         $this->content($content,'callback');
 
         $response = $this->makeResponse($content);
+
+        $request = [
+            'url'       => '/payment/callback/bharatqr/upi_hdfc',
+            'method'    => 'post',
+            'content'   => [
+                'pgMerchantId' => 'abcd_bharat_qr',
+                'meRes'        => $response->content()
+            ]
+        ];
+
+        return $request;
+    }
+
+    public function getAsyncCallbackContentForBharatQrWithTerminalSecret($qrCodeId, $amount = 100)
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = [
+            random_integer(10),
+            'RZP' .$qrCodeId,
+            $this->formatAmount($amount),
+            '2017:12:01 00:00:02',
+            Status::SUCCESS,
+            'Transaction success',
+            '00',
+            // Approval Number
+            random_integer(5),
+            'sample@icici',
+            // NPCI Reference Id
+            random_integer(16),
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'PNB!10000000000!PNBI1111111!8966829290'
+        ];
+
+        $this->content($content,'callback');
+
+        $key = hex2bin("93158d5892188161a259db660ddb1d0a");
+
+        $response = $this->makeResponse($content, $key);
 
         $request = [
             'url'       => '/payment/callback/bharatqr/upi_hdfc',
@@ -413,7 +457,7 @@ class Server extends Base\Mock\Server
             $response['bank_reference'],
         ];
 
-        return $this->makeResponse($res, Action::VERIFY);
+        return $this->makeResponse($res);
     }
 
     protected function getDefaultVerifyResponse(array $input, $payment): array
@@ -459,7 +503,7 @@ class Server extends Base\Mock\Server
 
         $this->content($response, 'refund');
 
-        return $this->makeResponse($response, Action::REFUND);
+        return $this->makeResponse($response);
     }
 
     protected function getDefaultRefundResponse(array $input, $payment)
@@ -487,11 +531,13 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getCipherInstance()
+    protected function getCipherInstance($key)
     {
         $cipher = new AES(AES::MODE_ECB);
 
-        $cipher->setKey($this->getEncryptionKey());
+        $k = ($key === null ? $this->getEncryptionKey() : $key);
+
+        $cipher->setKey($k);
 
         return $cipher;
     }
@@ -545,6 +591,6 @@ class Server extends Base\Mock\Server
             $response['bank_reference'],
         ];
 
-        return $this->makeResponse($res, Action::VALIDATE_PUSH);
+        return $this->makeResponse($res);
     }
 }

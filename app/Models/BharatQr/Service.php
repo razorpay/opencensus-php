@@ -37,6 +37,25 @@ class Service extends Base\Service
 
         try
         {
+            $terminalDetails = null;
+
+            // In some cases, for decrypting the s2s callback response, we need to fetch secrets from the terminal and
+            // not use the common secret present in config. For such cases, we fetch the corresponding terminal using
+            // the details present in the callback response.
+            if (method_exists($gatewayClass, 'getTerminalDetailsFromCallbackIfApplicable') === true)
+            {
+                $terminalDetails = $gatewayClass->getTerminalDetailsFromCallbackIfApplicable($input);
+            }
+
+            $terminal = null;
+
+            if ($terminalDetails !== null)
+            {
+                $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+
+                $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
+            }
+
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
 
             $qrData = $gatewayResponse['qr_data'];
@@ -49,7 +68,7 @@ class Service extends Base\Service
 
             $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
-            $terminal = $this->getTerminal($gatewayResponse['qr_data']);
+            $terminal = $terminal ?: $this->getTerminal($gatewayResponse['qr_data']);
 
             $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
 

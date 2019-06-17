@@ -92,6 +92,30 @@ class BeneficiaryTest extends TestCase
         ], $response);
     }
 
+    public function testValidateBankAccount()
+    {
+        $helper = $this->getBeneficiaryHelper();
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->validateBankAccount([
+            'ifsc' => 'AXIS0000180',
+        ]);
+
+        $this->assertArraySubset([
+            'validated'         => true,
+            'type'              => 'bank_account',
+            'address'           => '987654321000@AXIS0000180.ifsc.npci',
+            'beneficiary_name'  => 'Razorpay Customer',
+        ], $response);
+
+        $response2 = $helper->validateBankAccount([
+            'ifsc' => 'AXIS0000180',
+        ]);
+
+        $this->assertSame($response['id'], $response2['id']);
+    }
+
     public function testUnblockBeneficiary()
     {
         $helper = $this->getBeneficiaryHelper();

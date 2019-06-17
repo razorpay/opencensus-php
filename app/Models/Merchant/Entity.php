@@ -28,6 +28,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
@@ -983,6 +984,11 @@ class Entity extends Base\PublicEntity
     public function offers()
     {
         return $this->hasMany('RZP\Models\Offer\Entity');
+    }
+
+    public function bankingAccounts()
+    {
+        return $this->hasMany(BankingAccount\Entity::class);
     }
 
     protected function getMaxPaymentAmountAttribute()

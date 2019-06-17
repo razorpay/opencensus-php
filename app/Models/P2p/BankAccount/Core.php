@@ -75,6 +75,29 @@ class Core extends Base\Core
         return $bankAccount;
     }
 
+    public function handleBeneficiary(array $input)
+    {
+        $input[Entity::IFSC] = strtoupper($input[Entity::IFSC]);
+
+        $bankAccount = $this->repo->findByAccountDetails($input[Entity::ACCOUNT_NUMBER], $input[Entity::IFSC]);
+
+        if ($bankAccount instanceof Entity)
+        {
+            if ($bankAccount->isBeneficiary() === false)
+            {
+                throw $this->logicException('Bank account has to be for beneficiary', $bankAccount->only([
+                    Entity::ACCOUNT_NUMBER,
+                    Entity::IFSC,
+                    Entity::DEVICE_ID,
+                ]));
+            }
+
+            return $bankAccount;
+        }
+
+        return $this->createBeneficiary($input);
+    }
+
     public function createBeneficiary(array $input)
     {
         $bankAccount = $this->repo->getEntityObject();

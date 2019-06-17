@@ -29,7 +29,7 @@ trait AssertionTrait
 
     public function assertUpiPinSet(bool $set, $bankAccount)
     {
-        $this->assertSame($set, $bankAccount['creds']['upipin']);
+        $this->assertSame($set, $bankAccount['creds']['upipin']['set']);
     }
 
     public function withFailureResponse(P2pHelper $helper, callable $callback = null, $status = 400)

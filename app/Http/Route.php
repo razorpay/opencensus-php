@@ -32,8 +32,6 @@ final class Route
         // TODO: Check Splunk and remove the write here
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
-        'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'DowntimeController@getMethodDowntimeData'                          ],
-        'downtime_trigger_cron'                    => ['post',     'methods/downtimes/trigger',                      'DowntimeController@triggerDowntimes'                               ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -74,6 +72,8 @@ final class Route
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
+        'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
+        'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger/{status}',            'DowntimeController@triggerDowntimes'                               ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
@@ -629,6 +629,7 @@ final class Route
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
         'offer_create'                             => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
+        'offer_create_bulk'                        => ['post',     'offers/bulk',                                    'OfferController@createOfferBulk'                                   ],
         'offer_update'                             => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_fetch_multiple'                     => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
@@ -1106,6 +1107,7 @@ final class Route
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
         'banking_account_credentials'             => ['post',     'banking_accounts/{id}/credentials',                         'BankingAccountController@storeCredentials'                 ],
+        'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1231,6 +1233,7 @@ final class Route
         'payment_capture',
         'payment_fetch_transfers',
         'payment_transfer',
+        'payments_downtime',
         'payment_fetch_by_id',
         'payment_fetch_multiple',
         'payment_fetch_refunds',
@@ -1372,7 +1375,6 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
-        'merchant_methods_downtime_private',
     ];
 
     // Only routes defined in internalApps go here
@@ -1500,7 +1502,7 @@ final class Route
         'fund_account_validation_retry',
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
-        'downtime_trigger_cron',
+        'payments_downtime_trigger_cron',
         'entity_origin_create',
         'payment_card_vault_migrate',
         'batch_send_mail',
@@ -1719,6 +1721,7 @@ final class Route
         'banking_account_create',
         'merchant_partner_configs_fetch',
         'banking_account_credentials',
+        'banking_accounts_list',
     ];
 
     // These will run on internal auth with the assurance
@@ -2100,6 +2103,7 @@ final class Route
         // throttle settings routes
         'fetch_throttle_settings',
         'edit_throttle_settings',
+        'offer_create_bulk',
     ];
 
     public static $routePermission = [
@@ -2211,8 +2215,9 @@ final class Route
         'terminal_remove_merchant'                 => Permission::TERMINAL_MANAGE_MERCHANT,
         'emi_plan_delete'                          => Permission::DELETE_EMI_PLAN,
         'iin_edit'                                 => Permission::EDIT_IIN_RULE,
-        'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE,
+        'iin_edit_bulk'                            => Permission::EDIT_IIN_RULE_BULK,
         'offer_create'                             => Permission::CREATE_MERCHANT_OFFER,
+        'offer_create_bulk'                        => Permission::CREATE_MERCHANT_OFFER,
         'offer_update'                             => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'                     => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_business_categories'  => '*',
@@ -2465,7 +2470,7 @@ final class Route
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
-        'invoice_cancel_by_batch'                  => '*',
+        'invoice_cancel_by_batch'                  => Permission::CANCEL_BATCH,
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
@@ -2744,7 +2749,7 @@ final class Route
             'scrooge_refund_verify_bulk',
             'payouts_process_queued',
             'scrooge_tagging_backfill',
-            'downtime_trigger_cron',
+            'payments_downtime_trigger_cron',
             'payment_card_vault_migrate',
             'fund_account_validate_retry_all',
         ],
@@ -2926,8 +2931,7 @@ final class Route
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa_old'             => [Feature::ENABLE_VPA_VALIDATE],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
-        'merchant_methods_downtime_private'    => [Feature::EXPOSE_DOWNTIMES],
-
+        'payments_downtime'                    => [Feature::EXPOSE_DOWNTIMES],
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],
         'beta_account_fetch'                   => [Feature::MARKETPLACE],

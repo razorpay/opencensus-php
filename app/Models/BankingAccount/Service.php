@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 
@@ -126,6 +127,11 @@ class Service extends Base\Service
         }
 
         return ['success' => $success];
+    }
+  
+    public function fetchMultiple()
+    {
+        return $this->merchant->bankingAccounts;
     }
 
     /**

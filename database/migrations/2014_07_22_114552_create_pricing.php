@@ -70,8 +70,7 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(Pricing::AMOUNT_RANGE_MAX)
-                  ->unsigned()
+            $table->unsignedBigInteger(Pricing::AMOUNT_RANGE_MAX)
                   ->nullable();
 
             $table->integer(Pricing::PERCENT_RATE)

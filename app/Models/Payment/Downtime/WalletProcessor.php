@@ -16,15 +16,16 @@ class WalletProcessor extends BaseProcessor
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', $this->method);
 
+        $unavailableWallets = [];
+
         foreach ($gatewayDowntimes as $gatewayDowntime)
         {
             $this->createPaymentDowntime($gatewayDowntime);
+
+            $unavailableWallets[] = Gateway::getWalletForGateway($gatewayDowntime->getGateway());
         }
 
-        if ($gatewayDowntimes->isEmpty() === true)
-        {
-            $this->endOngoingDowntimes();
-        }
+        $this->endOngoingDowntimes($unavailableWallets);
     }
 
     protected function createPaymentDowntime(GatewayDowntime $gatewayDowntime): Entity

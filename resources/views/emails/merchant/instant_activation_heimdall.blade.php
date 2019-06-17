@@ -20,7 +20,7 @@
         <dt style="padding: 0.5%;"><b>Payments on your website</b></dt>
 
         <dd>Integrate Razorpay onto your website. You can use the API keys from your dashboard. Want to know how to integrate?</dd>
-        <dd><a href="https://docs.razorpay.com/" target="_blank">Guide to go live</a></dd>
+        <dd><a href="https://razorpay.com/docs/" target="_blank">Guide to go live</a></dd>
     </dl>
 
 

@@ -10,8 +10,8 @@ use RZP\Models\P2p\Transaction\Flow;
 use RZP\Gateway\P2p\Upi\Axis\ErrorMap;
 use RZP\Models\P2p\Transaction\Status;
 use RZP\Models\P2p\Transaction\Entity;
-use RZP\Models\P2p\Transaction\UpiTransaction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
+use RZP\Models\P2p\Transaction\UpiTransaction\Entity as Upi;
 
 class TransactionRequestTransformer extends TransactionTransformer
 {
@@ -40,6 +40,9 @@ class TransactionRequestTransformer extends TransactionTransformer
                     Fields::TIME_STAMP              => $this->getTimestamp(),
                     Fields::UPI_REQUEST_ID          => $this->getUpiRequestId(),
                 ];
+
+                $output = array_merge($output, $this->transformModeSpecific());
+
                 break;
 
             case TransactionAction::REQUEST_MONEY:
@@ -113,6 +116,31 @@ class TransactionRequestTransformer extends TransactionTransformer
         }
     }
 
+    public function transformModeSpecific()
+    {
+        $output = [];
+
+        if (in_array($this->getPayType(), [Fields::INTENT_PAY, Fields::SCAN_PAY]))
+        {
+            if ($this->input[Entity::UPI][Upi::REF_ID])
+            {
+                $output[Fields::TRANSACTION_REFERENCE] = $this->input[Entity::UPI][Upi::REF_ID];
+            }
+
+            if ($this->input[Entity::UPI][Upi::REF_URL])
+            {
+                $output[Fields::REF_URL] = $this->input[Entity::UPI][Upi::REF_URL];
+            }
+
+            if ($this->input[Entity::UPI][Upi::MCC])
+            {
+                $output[Fields::MCC] = $this->input[Entity::UPI][Upi::MCC];
+            }
+        }
+
+        return $output;
+    }
+
     public function getAccountRefenceId()
     {
         return $this->input[Entity::BANK_ACCOUNT][Entity::GATEWAY_DATA][Fields::REFERENCE_ID];
@@ -173,7 +201,7 @@ class TransactionRequestTransformer extends TransactionTransformer
 
     public function getUpiRequestId()
     {
-        return $this->input[Entity::UPI][UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
+        return $this->input[Entity::UPI][Upi::NETWORK_TRANSACTION_ID];
     }
 
     public function getCollectExpiryMinutes()

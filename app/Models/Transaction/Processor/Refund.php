@@ -3,9 +3,11 @@
 namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
+use RZP\Models\Pricing;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\RefundSource;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 
 class Refund extends Base
 {
@@ -70,16 +72,16 @@ class Refund extends Base
     {
         $refund = $this->source;
 
-        $settledBy = $refund->payment->getSettledBy();
+        $netAmount = $refund->getBaseAmount() + $this->fees;
 
-        if ($refund->isDirectSettlementRefund() === false)
-        {
-            $settledBy = 'Razorpay';
-        }
-
-        $netAmount = $refund->getBaseAmount();
-
-        if ($settledBy !== 'Razorpay')
+        //
+        // Net amount is 0, only in a single case when payment's settledby is not razorpay and
+        // direct settlement refund is true, provided speed of refund is not instant/optimum
+        // in which case we will deduct the whole amount + fees as listed above
+        //
+        if (($refund->payment->getSettledBy() !== 'Razorpay') and
+            ($refund->isDirectSettlementRefund() === true) and
+            ($refund->isRefundSpeedInstant() === false))
         {
             $netAmount = 0;
         }
@@ -95,6 +97,11 @@ class Refund extends Base
 
         if ($payment->isCaptured() === true)
         {
+            if ($refund->isRefundSpeedInstant() === true)
+            {
+                list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
+            }
+
             $netAmount = $this->getNetAmount();
 
             $this->debit = $netAmount;

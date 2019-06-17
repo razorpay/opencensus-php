@@ -134,12 +134,14 @@ class Core extends Base\Core
 
                 $fundAccountValidation->setAttempts($attempt);
 
+                $fundAccountValidation->setRetryAt(null);
+
                 $this->repo->saveOrFail($fundAccountValidation);
 
                 return true;
             },
             18000,
-            ErrorCode::FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS);
     }
 
     /**

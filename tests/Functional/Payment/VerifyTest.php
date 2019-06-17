@@ -154,7 +154,7 @@ class VerifyTest extends TestCase
 
     public function testIciciBqrVerify()
     {
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->getTimestamp() - 180;
 
         $this->setMockGatewayTrue();
 
@@ -192,9 +192,69 @@ class VerifyTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testNotVerifiablePaymentForCaptureVerify()
+    {
+        $createdAt = Carbon::now()->getTimestamp() - 173000; // more than 2 days old timestamp
+
+        $verifyAt = Carbon::now()->getTimestamp() - 180;
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create(
+            'terminal', [
+                'id'                   => 'AqdfGh5460opVt',
+                'merchant_id'          => '10000000000000',
+                'gateway'              => 'hitachi',
+                'gateway_merchant_id'  => '250000002',
+                'gateway_merchant_id2' => 'abc@icici',
+                'enabled'              => 1,
+            ]);
+
+        $card = $this->fixtures->create('card' , ['network'=>'RuPay']);
+
+        // Not applicable as hitachi[rupay] payment and more than 2 days old
+        $this->fixtures->create('payment', [
+            'method'        => 'card',
+            'gateway'       => 'hitachi',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'created_at'    => $createdAt,
+            'authorized_at' => $createdAt,
+            'verify_at'     => $verifyAt,
+            'captured_at'   => $createdAt,
+            'card_id'       => $card->getId(),
+            'amount'        => 100,
+            'status'        => 'authorized',
+        ]);
+
+        // Not applicable since reconciled
+        $payment = $this->fixtures->create('payment', [
+            'method'        => 'card',
+            'gateway'       => 'hitachi',
+            'otp_attempts'  => 0,
+            'terminal_id'   => 'AqdfGh5460opVt',
+            'created_at'    => $createdAt,
+            'authorized_at' => $verifyAt,
+            'verify_at'     => $verifyAt,
+            'captured_at'   => $createdAt,
+            'card_id'       => $card->getId(),
+            'amount'        => 1000,
+            'status'        => 'authorized',
+        ]);
+
+        $transaction = $this->fixtures->create('transaction', [
+            'entity_id' => $payment->getId(), 'merchant_id' => '10000000000000',
+            'reconciled_at' => Carbon::now()->getTimestamp()]);
+
+        $this->fixtures->edit('payment',$payment->getId(), ['transaction_id'=> $transaction->getId()]);
+
+        $this->startTest();
+    }
+
     public function testIsgBqrVerify()
     {
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->getTimestamp() - 180;
 
         $this->setMockGatewayTrue();
 
@@ -237,7 +297,7 @@ class VerifyTest extends TestCase
 
     public function testAmexVerify()
     {
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->getTimestamp() - 180;
 
         $this->setMockGatewayTrue();
 
@@ -286,19 +346,19 @@ class VerifyTest extends TestCase
 
     public function testHitachiUpiVerifyShdFail()
     {
-        $createdAt = time() - 180;
+        $createdAt = Carbon::now()->getTimestamp() - 180;
 
         $this->setMockGatewayTrue();
 
         $this->fixtures->create(
             'terminal',
             [
-                'id' => 'AqdfGh5460opVt',
-                'merchant_id' => '10000000000000',
-                'gateway' => 'upi_icici',
-                'gateway_merchant_id' => '250000002',
+                'id'                   => 'AqdfGh5460opVt',
+                'merchant_id'          => '10000000000000',
+                'gateway'              => 'hitachi',
+                'gateway_merchant_id'  => '250000002',
                 'gateway_merchant_id2' => 'abc@icici',
-                'enabled' => 1,
+                'enabled'              => 1,
             ]);
 
         $payment = $this->fixtures->create('payment', [

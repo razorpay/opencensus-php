@@ -207,6 +207,16 @@ class Core extends Base\Core
         $this->verifyRavenOtp($input, $merchant);
 
         if ((empty($input['method']) === false) and
+            ($input['method'] === Payment\Method::PAYLATER))
+        {
+            $token = (new Payment\Service)->generateAndSaveOneTimeTokenWithContact($input);
+
+            return [
+                'success'   => 1,
+                'ott'       => $token,
+            ];
+        }
+        if ((empty($input['method']) === false) and
             ($input['method'] === Payment\Method::CARDLESS_EMI))
         {
             return $this->fetchCardlessEmiPlansForCustomer($input, $merchant);
@@ -671,7 +681,9 @@ class Core extends Base\Core
 
     protected function fetchCardlessEmiPlansForCustomer($input, $merchant)
     {
-        $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $merchant['id']);
+        $terminal = $this->repo
+                         ->terminal
+                         ->getByMerchantProviderAndMethod($input['provider'], $merchant['id'], $input['method']);
 
         list($emiPlans, $loanUrl) =
             $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'get_emi_plans', $input, $this->mode, $terminal);

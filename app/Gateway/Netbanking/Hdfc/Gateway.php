@@ -51,6 +51,8 @@ class Gateway extends Base\Gateway
         'Date'          => 'date',
     ];
 
+    const DISPLAY_DETAILS = 'Y';
+
     /**
      * @param  array $input
      *
@@ -245,6 +247,9 @@ class Gateway extends Base\Gateway
             $data['TxnAmount']                   = Fields::INIT_AMOUNT;
 
             $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
+            $data[Fields::DISPLAY_DETAILS]       = self::DISPLAY_DETAILS;
+            $data[Fields::DETAILS1]              = Fields::MERCHANT_NAME . '~' . $emData[RHeadings::SUB_MERCHANT_NAME];
+            $data[Fields::DETAILS2]              = Fields::MERCHANT_REFERENCE_NO_DETAIL . '~' . $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to

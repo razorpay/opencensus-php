@@ -150,6 +150,42 @@ return [
         ],
     ],
 
+    'testOfferCreateBulk' => [
+        'request' => [
+            'content' => [
+                'offer' => [
+                    'name'                => 'Test Offer over private auth',
+                    'payment_method'      => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network'     => 'VISA',
+                    'issuer'              => 'HDFC',
+                    'international'       => true,
+                    'percent_rate'        => 1000,
+                    'processing_time'     => 86400,
+                    'starts_at'           => 1639758567,
+                    'ends_at'             => 1639758568,
+                    'display_text'        => 'Some more details',
+                    'terms'               => 'Some more details',
+                ],
+                'merchant_ids' => [
+                    '10000000000000',
+                    '100000Razorpay',
+                    'NotARealMercId',
+                ],
+            ],
+            'url'    => '/offers/bulk',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success'  => 2,
+                'failures' => [
+                    'NotARealMercId',
+                ]
+            ],
+        ],
+    ],
+
     'testCreateOfferWithNullMethodAndInvalidIssuer' => [
         'request' => [
             'content' => [
