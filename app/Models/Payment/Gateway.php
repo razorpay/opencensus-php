@@ -1735,8 +1735,7 @@ class Gateway
     {
         $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
 
-        if ( ($supportsPurchase === true) and
-             ($networkCode!=null) )
+        if ($supportsPurchase === true)
         {
             return self::isNetworkNotSupportedForPurchase($gateway, $networkCode);
         }
@@ -1794,7 +1793,7 @@ class Gateway
     public static function isNetworkNotSupportedForPurchase($gateway, $networkCode)
     {
         // This means that all the networks are supported by the gateway for Purchase.
-        if (isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false)
+        if ( (isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false) or ($networkCode === null) )
         {
             return false;
         }
