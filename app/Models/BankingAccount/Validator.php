@@ -9,21 +9,21 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $preCreateRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
+        Entity::CHANNEL => 'required|string|custom',
     ];
 
     protected static $rblAvailabilityRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
+        Entity::CHANNEL => 'required|string|custom',
         Entity::PINCODE => 'required_if:channel,rbl',
     ];
 
     protected static $createRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
+        Entity::CHANNEL => 'required|string|custom',
         Entity::PINCODE => 'required_if:channel,rbl',
     ];
 
     protected static $serviceablePincodeRules = [
-        Entity::CHANNEL         => 'required|string|in:rbl',
+        Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
         Entity::PINCODES        => 'required|array|filled',
     ];
@@ -49,6 +49,11 @@ class Validator extends Base\Validator
                 );
             }
         }
+    }
+
+    protected function validateChannel($attribute, $channel)
+    {
+        Channel::validateChannel($channel);
     }
 
     protected static $editRules = [
