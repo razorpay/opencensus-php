@@ -1104,8 +1104,8 @@ final class Route
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
-        'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
-        'banking_account_merchant_credentials'    => ['post',     'banking_account/{id}/merchant_credentials',                 'BankingAccountController@storeMerchantCredentials'         ],
+        'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
+        'banking_account_credentials'             => ['post',     'banking_accounts/{id}/credentials',                         'BankingAccountController@storeCredentials'                 ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1718,7 +1718,7 @@ final class Route
         'bulk_invoice_create',
         'banking_account_create',
         'merchant_partner_configs_fetch',
-        'banking_account_merchant_credentials'
+        'banking_account_credentials',
     ];
 
     // These will run on internal auth with the assurance

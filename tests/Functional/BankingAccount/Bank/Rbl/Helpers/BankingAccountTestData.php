@@ -74,7 +74,7 @@ return [
 
     'testStoreMerchantCredentials' => [
         'request'  => [
-            'url'     => '/banking_account/{id}/merchant_credentials',
+            'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',
             'content' => [
                 'subcorp_id'            => 'MERCHANT_SUB_CORP',
@@ -91,7 +91,7 @@ return [
 
     'testStoreMerchantCredentialsFailed' => [
         'request'  => [
-            'url'     => '/banking_account/{id}/merchant_credentials',
+            'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',
             'content' => [
                 'subcorp_id'            => 'MERCHANT_SUB_CORP',

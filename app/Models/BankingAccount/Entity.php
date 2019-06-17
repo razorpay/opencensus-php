@@ -18,9 +18,9 @@ class Entity extends Base\PublicEntity
     const FTS_FUND_ACCOUNT_ID                   = 'fts_fund_account_id';
     const BALANCE_ID                            = 'balance_id';
     const BANK_REFERENCE_NUMBER                 = 'bank_reference_number';
-    const SECRET1                               = 'secret1';
-    const SECRET2                               = 'secret2';
-    const USER1                                 = 'user1';
+    const USERNAME                              = 'username';
+    const PASSWORD                              = 'password';
+    const REFERENCE1                            = 'reference1';
     const BENEFICIARY_ADDRESS1                  = 'beneficiary_address1';
     const BENEFICIARY_ADDRESS2                  = 'beneficiary_address2';
     const BENEFICIARY_ADDRESS3                  = 'beneficiary_address3';
@@ -35,6 +35,8 @@ class Entity extends Base\PublicEntity
     const PINCODE_LENGTH    = '6';
 
     const ACCOUNT_TYPE      = 'CURRENT';
+
+    const VAULT_NAMESPACE = 'banking_accounts_creds';
 
     // TODO: need to confirm this length
     const ACCOUNT_NUMBER_LENGTH     = '40';
@@ -58,9 +60,9 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
-        self::SECRET1,
-        self::SECRET2,
-        self::USER1,
+        self::USERNAME,
+        self::PASSWORD,
+        self::REFERENCE1,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_ADDRESS1,
@@ -82,6 +84,9 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
         self::BANK_INTERNAL_STATUS,
+        self::USERNAME,
+        self::PASSWORD,
+        self::REFERENCE1
     ];
 
     protected $public = [
@@ -92,6 +97,9 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
         self::BANK_INTERNAL_STATUS,
+        self::USERNAME,
+        self::PASSWORD,
+        self::REFERENCE1
     ];
 
     protected static $generators = [
@@ -113,6 +121,11 @@ class Entity extends Base\PublicEntity
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setBankInternalStatus(string $internalStatus)
+    {
+        $this->setAttribute(self::BANK_INTERNAL_STATUS, $internalStatus);
     }
 
     public function setFtsFundAccountId(string $fundAccountId)
@@ -187,19 +200,30 @@ class Entity extends Base\PublicEntity
         return self::ACCOUNT_TYPE;
     }
 
-    public function getUser1()
+    public function getUsername()
     {
-        return $this->getAttribute(self::USER1);
+        return $this->getAttribute(self::USERNAME);
     }
 
-    public function getSecret1()
+    public function getPassword()
     {
-        return $this->getAttribute(self::SECRET1);
+        return $this->getAttribute(self::PASSWORD);
     }
 
-    public function getSecret2()
+    public function getReference1()
     {
-        return $this->getAttribute(self::SECRET2);
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    // --------------------------- Mutators ----------------------------------- //
+
+    public function setPasswordAttribute(string $password)
+    {
+        $bankingAccountCore = new Core();
+
+        $token = $bankingAccountCore->tokenizeBankingAccountCredentials($password);
+
+        $this->attributes[self::PASSWORD] = $token;
     }
 
     // --------------------------- Relations ---------------------------------- //

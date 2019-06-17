@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Services\CardVault;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -24,7 +25,7 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->config = $this->app['config']->get('bankingaccount');
+        $this->config = $this->app['config']->get('banking_account');
     }
 
     public function createRblBankingAccount(array $input, Merchant\Entity $merchant): Entity
@@ -65,19 +66,13 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('rbl_create_merchant_token', $input);
 
-        $input[RblFields::SUBCORP_USER_ID] = $this->tokenizeBankingAccountCredentials(
-            $input[RblFields::SUBCORP_USER_ID]);
-
-        $input[RblFields::SUBCORP_USER_PASSWORD] = $this->tokenizeBankingAccountCredentials(
-            $input[RblFields::SUBCORP_USER_PASSWORD]);
-
-        $attributesToSave = $this->getRblAttributesToSave($input);
+        $attributesToSave = RblFields::getRblAttributesToSave($input);
 
         $bankingAccount->edit($attributesToSave);
 
         $this->repo->saveOrFail($bankingAccount);
 
-        return $bankingAccount;
+        return null;
     }
 
     public function createFtsFundAccountForMerchant(Entity $bankingAccount)
@@ -89,9 +84,11 @@ class Core extends Base\Core
         if (isset($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED,
                 null,
-                null,
+                [
+                    'id' => $bankingAccount->getId()
+                ],
                 'FTS fund Account Id could not stored, Please try again!'
             );
         }
@@ -104,13 +101,13 @@ class Core extends Base\Core
         $rbl = $this->config['rbl'];
 
         $credentials = [
-           RblFields::USERNAME                  => $rbl[RblFields::USERNAME],
-           RblFields::PASSWORD                  => $rbl[RblFields::PASSWORD],
-           RblFields::CLIENT_ID                 => $rbl[RblFields::CLIENT_ID],
-           RblFields::CLIENT_SECRET             => $rbl[RblFields::CLIENT_SECRET],
-           RblFields::SUBCORP_ID                => $bankingAccount->getUser1(),
-           RblFields::SUBCORP_USER_ID           => $bankingAccount->getSecret1(),
-           RblFields::SUBCORP_USER_PASSWORD     => $bankingAccount->getSecret2(),
+            RblFields::USERNAME                  => $rbl[RblFields::USERNAME],
+            RblFields::PASSWORD                  => $rbl[RblFields::PASSWORD],
+            RblFields::CLIENT_ID                 => $rbl[RblFields::CLIENT_ID],
+            RblFields::CLIENT_SECRET             => $rbl[RblFields::CLIENT_SECRET],
+            RblFields::SUBCORP_ID                => $bankingAccount->getUsername(),
+            RblFields::SUBCORP_USER_ID           => $bankingAccount->getPassword(),
+            RblFields::SUBCORP_USER_PASSWORD     => $bankingAccount->getReference1(),
        ];
 
        $mozartIdentifier = $rbl[RblFields::MOZART_IDENTIFIER];
@@ -123,9 +120,47 @@ class Core extends Base\Core
        $this->makeSourceAccountRequest($bankingAccount->getId(), $ftsFundAccountId, $body);
     }
 
-    public function getBankingAccountEntity(string $id)
+    public function tokenizeBankingAccountCredentials(string $element)
     {
-        return $this->repo->banking_account->findOrFailPublic($id);
+        $request = [
+            'namespace' => self::VAULT_NAMESPACE,
+            'secret'    => $element
+        ];
+
+        $response = $this->app['card.cardVault']->createVaultToken($request);
+
+        $this->checkForVaultResponseErrors($response);
+
+        return $response[CardVault::TOKEN];
+    }
+
+    public function updateAccountToProcessed(Entity $bankingAccount, string $channel)
+    {
+        switch ($channel)
+        {
+            case Channel::RBL:
+                {
+                    $attributes = [
+                        Entity::STATUS                  => Status::PROCESSED,
+                        Entity::BANK_INTERNAL_STATUS    => RblStatus::CLOSED
+                    ];
+
+                    $this->updateRblBankingAccount($bankingAccount, $attributes);
+
+                    break;
+                }
+
+            default:
+                // not throwing any exception here, since this statement will be executed for valid channels only
+                return;
+        }
+    }
+
+    public function updateBankingAccountWithFtsId(Entity $bankingAccount, $ftsFundAccountId)
+    {
+        $bankingAccount->setFtsFundAccountId($ftsFundAccountId);
+
+        $this->repo->saveOrFail($bankingAccount);
     }
 
     protected function getRblAvailabilityStatus(array $input): string
@@ -160,19 +195,11 @@ class Core extends Base\Core
 
         // in any other case source account creation failed. So we throw an exception here.
         throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_ERROR,
+            ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED,
             null,
             null,
             'Source account creation failed, Try again'
         );
-    }
-
-    protected function createSourceAccount(Entity $bankingAccount, string $ftsFundAccountId, array $content)
-    {
-        $response = $this->app['fts_create_account']->createSourceAccount($bankingAccount->getId(),
-                                                                          Constants\Entity::BANKING_ACCOUNT,
-                                                                          'payout');
-
     }
 
     protected function isPincodeRblServiceable(string $pincode): bool
@@ -196,13 +223,6 @@ class Core extends Base\Core
 
         RblStatus::validate($bankInternalStatus);
         RblStatus::validateInternalBankStatusToStatus($bankInternalStatus, $status);
-    }
-
-    public function updateBankingAccountWithFtsId(Entity $entity, $ftsFundAccountId)
-    {
-        $entity->setFtsFundAccountId($ftsFundAccountId);
-
-        $this->repo->saveOrFail($entity);
     }
 
     /**
@@ -231,48 +251,18 @@ class Core extends Base\Core
         }
     }
 
-    protected function tokenizeBankingAccountCredentials(string $element)
-    {
-        $request = [
-            'namespace' => self::VAULT_NAMESPACE,
-            'secret'    => $element
-        ];
-
-        $response = $this->app['card.cardVault']->createVaultToken($request);
-
-        $this->checkForVaultResponseErrors($response);
-
-        return $response[CardVault::TOKEN];
-    }
-
     protected function checkForVaultResponseErrors(array $response)
     {
         if ($response[CardVault::SUCCESS] === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR_VAULT_TOKENIZE_FAILED,
                 null,
-                null,
+                [
+                    'response' => $response
+                ],
                 'Merchant credentials could not be stored, Please try again!'
             );
         }
-    }
-
-    protected function getRblAttributesToSave(array $input)
-    {
-        $map = RblFields::$rblFieldsToEntityMap;
-
-        $attr = [];
-
-        foreach ($input as $key => $value)
-        {
-            if (isset($map[$key]))
-            {
-                $newKey        = $map[$key];
-                $attr[$newKey] = $value;
-            }
-        }
-
-        return $attr;
     }
 }

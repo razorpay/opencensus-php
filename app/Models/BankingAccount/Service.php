@@ -78,7 +78,7 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
 
-    public function storeMerchantCredentials(string $id, array $input)
+    public function storeCredentials(string $id, array $input)
     {
         $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
 
@@ -101,11 +101,13 @@ class Service extends Base\Service
 
                 try
                 {
-                    $bankingAccount = $this->core->createMerchantTokenForRbl($bankingAccount, $input);
+                    $this->core->createMerchantTokenForRbl($bankingAccount, $input);
 
                     $fundAccountId = $this->core->createFtsFundAccountForMerchant($bankingAccount);
 
                     $this->core->createMerchantSourceAccountForRbl($bankingAccount, $fundAccountId);
+
+                    $this->core->updateAccountToProcessed($bankingAccount, Channel::RBL);
 
                     $success = true;
                 }

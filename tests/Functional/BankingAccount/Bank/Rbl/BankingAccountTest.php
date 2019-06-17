@@ -56,13 +56,21 @@ class BankingAccountTest extends TestCase
 
     public function testStoreMerchantCredentials()
     {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->fixtures->merchant = $merchantDetail->merchant;
+
+        $this->ba->proxyAuth('rzp_test_' . $this->fixtures->merchant['id']);
+
         $this->createBankingAccount();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $dataToReplace = [
           'request' => [
-              'url' => '/banking_account/' . $bankingAccount->getId() . '/merchant_credentials'
+              'url' => '/banking_accounts/' . $bankingAccount->getId() . '/credentials'
           ]
         ];
 
@@ -71,13 +79,15 @@ class BankingAccountTest extends TestCase
 
     public function testStoreMerchantCredentialsFailed()
     {
+        $this->ba->proxyAuth();
+
         $this->createBankingAccount();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $dataToReplace = [
             'request' => [
-                'url' => '/banking_account/' . $bankingAccount->getId() . '/merchant_credentials'
+                'url' => '/banking_accounts/' . $bankingAccount->getId() . '/credentials'
             ]
         ];
 
@@ -88,7 +98,6 @@ class BankingAccountTest extends TestCase
 
         $this->startTest($dataToReplace);
     }
-
 
     protected function createBankingAccount(array $attributes = [])
     {

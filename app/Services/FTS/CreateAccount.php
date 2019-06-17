@@ -17,6 +17,8 @@ class CreateAccount extends Base
 
     protected $bankingAccountCore;
 
+    protected $bankingAccountRepo;
+
     protected $product;
 
     public function __construct($app)
@@ -28,6 +30,8 @@ class CreateAccount extends Base
         $this->bankAccountCore = new BankAccount\Core;
 
         $this->bankingAccountCore = new BankingAccount\Core;
+
+        $this->bankingAccountRepo = new BankingAccount\Repository;
     }
 
     /**
@@ -64,7 +68,7 @@ class CreateAccount extends Base
     public function createSourceAccount(string $id, string $ftsAccountId, array $content,
                                         string $product, string $channel = 'ICICI')
     {
-        $input = $this->makeSourceAccountRequest($product, $ftsAccountId, $channel, $content);
+        $input = $this->getSourceAccountRequestBody($product, $ftsAccountId, $channel, $content);
 
         $response = $this->createAndSendRequest(parent::SOURCE_ACCOUNT_CREATE_URI, 'POST', $input);
 
@@ -104,7 +108,7 @@ class CreateAccount extends Base
                 break;
 
             case Constants::BANKING_ACCOUNT:
-                $this->account = $this->bankingAccountCore->getBankingAccountEntity($id);
+                $this->account = $this->bankingAccountRepo->getBankingAccountEntity($id);
 
                 $request[Constants::BANK_ACCOUNT] = $this->getBankingAccountDetails($this->account);
 
@@ -209,7 +213,7 @@ class CreateAccount extends Base
         }
     }
 
-    protected function makeSourceAccountRequest(string $product, string $fundAccountId, string $channel, array $content)
+    protected function getSourceAccountRequestBody(string $product, string $fundAccountId, string $channel, array $content)
     {
         $request = [
             Constants::PRODUCT              => $product,
