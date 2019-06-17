@@ -154,7 +154,7 @@ class Transfer extends Base
 
         $remark = $response['Header']['Error_Desc'] ?? null;
 
-        $publicFailureReason = ValidStatus::getPublicFailureReason($bankStatus);
+        $publicFailureReason = ValidStatus::getPublicFailureReason($bankStatus, null);
 
         return [
             self::PAYMENT_REF_NO        => $this->getNullOnEmpty($transactionID),

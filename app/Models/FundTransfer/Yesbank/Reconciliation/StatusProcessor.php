@@ -120,7 +120,7 @@ class StatusProcessor extends BaseRowProcessor
         if ($this->reconEntityId === null)
         {
             throw new LogicException(
-                "Recon entity id can not be null",
+                'Recon entity id can not be null',
                 ErrorCode::SERVER_ERROR_INVALID_ATTEMPT_ID,
                 [
                     'response' => $response,
@@ -175,6 +175,8 @@ class StatusProcessor extends BaseRowProcessor
         {
             $this->reconEntity->setBankStatusCode($currentStatus);
         }
+
+        $this->reconEntity->setBankResponseCode($this->parsedData[Constants::BANK_RESPONSE_CODE]);
 
         $this->reconEntity->setBankResponseCode($this->parsedData[Constants::STATUS_CODE]);
 

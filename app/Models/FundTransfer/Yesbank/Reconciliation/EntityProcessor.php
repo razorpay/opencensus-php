@@ -3,7 +3,6 @@
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
 use RZP\Constants\Entity;
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\FundTransfer\Base\Reconciliation\EntityProcessor as BaseEntityProcessor;
 

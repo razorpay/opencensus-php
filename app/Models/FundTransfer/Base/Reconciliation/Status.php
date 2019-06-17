@@ -21,6 +21,32 @@ abstract class Status
     abstract public static function getCriticalErrorRemarks(): array;
 
     /**
+     * checks if the given stauts code and response code are part of the list provided
+     *
+     * @param array  $list
+     * @param string $statusCode
+     * @param null   $responseCode
+     *
+     * @return bool
+     */
+    public static function inStatus(array $list, string $statusCode, $responseCode = null): bool
+    {
+        if (isset($list[$statusCode]) === true)
+        {
+            $responseCodeList = $list[$statusCode];
+
+            if (empty($responseCodeList) === true)
+            {
+                return true;
+            }
+
+            return (in_array($responseCode, $responseCodeList, true) === true);
+        }
+
+        return false;
+    }
+
+    /**
      * Tells whether critical errors are defined for particular channel
      *
      * @return bool
@@ -54,7 +80,9 @@ abstract class Status
         {
             $bankStatusCode = $entity->getBankStatusCode();
 
-            $status = self::isCriticalStatus($bankStatusCode);
+            $bankResponseCode = $entity->getBankResponseCode();
+
+            $status = self::isCriticalStatus($bankStatusCode, $bankResponseCode);
         }
 
         return (bool) $status;
@@ -79,11 +107,13 @@ abstract class Status
         return (bool) $status;
     }
 
-    public static function isCriticalStatus($bankStatusCode): bool
+    public static function isCriticalStatus($bankStatusCode, $bankResponseCode): bool
     {
         $statusCodes = static::getCriticalErrorStatus();
 
-        $isCritical =  (in_array($bankStatusCode, $statusCodes, true) === true);
+        $isCriticalError = self::inStatus($statusCodes, $bankStatusCode, $bankResponseCode);
+
+        $isCritical =  ($isCriticalError === true);
 
         try
         {
@@ -102,15 +132,19 @@ abstract class Status
         return $isCritical;
     }
 
-    public static function getPublicFailureReason($statusCode)
+    public static function getPublicFailureReason($bankStatusCode, $bankResponseCode = null)
     {
-        if (in_array($statusCode, static::getSuccessfulStatus(), true) === true)
+        $successfulStatus = static::getSuccessfulStatus();
+
+        $isSuccessful = self::inStatus($successfulStatus, $bankStatusCode, $bankResponseCode);
+
+        if ($isSuccessful === true)
         {
             return null;
         }
 
         // TODO: Put everything in base. Move it out from child classes
 
-        return "transfer not completed";
+        return 'transfer not completed';
     }
 }

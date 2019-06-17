@@ -22,7 +22,7 @@ use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
 
 class Transfer extends Base
 {
-    const VERSION = "1";
+    const VERSION = '1';
 
     const IFSC_CODE = 'YESB0000022';
 
@@ -71,7 +71,7 @@ class Transfer extends Base
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
 
-        $this->typesWithoutPurposeCode = (in_array($type, [Attempt\Type::BANKING, Attempt\Type::SYNC], true)  === true);
+        $this->typesWithoutPurposeCode = (in_array($type, [Attempt\Type::BANKING, Attempt\Type::SYNC], true) === true);
 
         if (($type === Attempt\Type::BANKING) and ($useCurrentAccount === false))
         {
@@ -238,7 +238,9 @@ class Transfer extends Base
         {
             $this->requestTrace = $gatewayRequest;
 
-            $this->requestTrace['gateway_input']['vpa'] = mask_except_last4($this->requestTrace['gateway_input']['vpa'], 'x');
+            $this->requestTrace['gateway_input']['vpa'] = mask_except_last4(
+                $this->requestTrace['gateway_input']['vpa'],
+                'x');
         }
 
         return $gatewayRequest;
@@ -422,7 +424,7 @@ class Transfer extends Base
 
         $bankReferenceNo = $response[Constants::TRANSACTION_STATUS][Constants::BANK_REFERENCE_NO] ?? null;
 
-        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+        $publicFailureReason = Status::getPublicFailureReason($statusCode, $bankSubStatus);
 
         // capture failed response codes
         $this->captureBankStatusMetric(
@@ -467,7 +469,7 @@ class Transfer extends Base
 
         $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
 
-        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+        $publicFailureReason = Status::getPublicFailureReason($statusCode, $bankSubStatus);
 
         $this->captureBankStatusMetric(
             Channel::YESBANK,
@@ -513,7 +515,7 @@ class Transfer extends Base
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
 
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
-        $utr = (strtolower($utr) !== 'na')? $utr : null;
+        $utr = (strtolower($utr) !== 'na') ? $utr : null;
 
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
@@ -532,10 +534,9 @@ class Transfer extends Base
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
             ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
-            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
-            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($finalResponseCode),
             ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
-            ReconConstants::BANK_SUB_STATUS_CODE  => null,
             ReconConstants::PAYMENT_DATE          => null,
             ReconConstants::TRANSFER_TYPE         => null,
             ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),

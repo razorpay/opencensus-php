@@ -212,7 +212,7 @@ class Status extends Base
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
 
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
-        $utr = (strtolower($utr) !== 'na')? $utr : null;
+        $utr = (strtolower($utr) !== 'na') ? $utr : null;
 
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
@@ -226,15 +226,14 @@ class Status extends Base
 
         $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
 
-        $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($statusCode, $finalResponseCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
             ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
-            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
-            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($finalResponseCode),
             ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
-            ReconConstants::BANK_SUB_STATUS_CODE  => null,
             ReconConstants::PAYMENT_DATE          => null,
             ReconConstants::TRANSFER_TYPE         => null,
             ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
@@ -247,7 +246,9 @@ class Status extends Base
     {
         $bankStatusCode = $fta->getBankStatusCode();
 
-        $publicFailureReason = GatewayStatus::getPublicFailureReason($bankStatusCode);
+        $bankResponseCode = $fta->getBankResponseCode();
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($bankStatusCode, $bankResponseCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $fta->getId(),
@@ -275,7 +276,7 @@ class Status extends Base
 
         return json_encode([
             $this->responseIdentifier => [
-                Constants::VERSION                => "2.0",
+                Constants::VERSION                => '2.0',
                 Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
@@ -331,7 +332,7 @@ class Status extends Base
 
         return json_encode([
             $this->responseIdentifier => [
-                Constants::VERSION                => "2.0",
+                Constants::VERSION                => '2.0',
                 Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
@@ -355,7 +356,7 @@ class Status extends Base
 
         return json_encode([
             $this->responseIdentifier => [
-                Constants::VERSION                => "2.0",
+                Constants::VERSION                => '2.0',
                 Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),

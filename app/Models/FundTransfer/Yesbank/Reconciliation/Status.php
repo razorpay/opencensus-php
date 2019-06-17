@@ -262,7 +262,7 @@ class Status extends BaseStatus
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::COMPLETED,
+            self::COMPLETED => [],
         ];
     }
 
@@ -272,26 +272,26 @@ class Status extends BaseStatus
     public static function getFailureStatus(): array
     {
         return [
-            self::NA,
-            self::AD,
-            self::FAILED,
-            self::RETURNED_FROM_BENEFICIARY,
-            self::INVALID_BENEFICIARY_DETAILS,
-            self::BENEFICIARY_NOT_ACCEPTED,
-            self::INSUFFICIENT_FUND,
-            self::INVALID_TRANSFER_TYPE,
-            self::REQUEST_LIMIT_REACHED,
-            self::BENE_ACCOUNT_BLOCKED,
-            self::BENE_NOT_REGISTERED,
-            self::IMPS_NOT_ENABLED_FOR_REMITTER,
-            self::INVALID_ACCOUNT_DETAILS,
-            self::BAD_GATEWAY,
-            self::ACQUIRING_BANK_CBS_OFFLINE,
-            self::TRANSFER_TIMEOUT,
-            self::INVALID_REQUEST,
-            self::TECHNICAL_ERROR,
-            self::IMPS_NOT_ENABLED_FOR_BENE,
-            self::FUNDS_ON_HOLD,
+            self::NA                            => [],
+            self::AD                            => [],
+            self::FAILED                        => [],
+            self::RETURNED_FROM_BENEFICIARY     => [],
+            self::INVALID_BENEFICIARY_DETAILS   => [],
+            self::BENEFICIARY_NOT_ACCEPTED      => [],
+            self::INSUFFICIENT_FUND             => [],
+            self::INVALID_TRANSFER_TYPE         => [],
+            self::REQUEST_LIMIT_REACHED         => [],
+            self::BENE_ACCOUNT_BLOCKED          => [],
+            self::BENE_NOT_REGISTERED           => [],
+            self::IMPS_NOT_ENABLED_FOR_REMITTER => [],
+            self::INVALID_ACCOUNT_DETAILS       => [],
+            self::BAD_GATEWAY                   => [],
+            self::ACQUIRING_BANK_CBS_OFFLINE    => [],
+            self::TRANSFER_TIMEOUT              => [],
+            self::INVALID_REQUEST               => [],
+            self::TECHNICAL_ERROR               => [],
+            self::IMPS_NOT_ENABLED_FOR_BENE     => [],
+            self::FUNDS_ON_HOLD                 => [],
         ];
     }
 
@@ -301,20 +301,20 @@ class Status extends BaseStatus
     public static function getCriticalErrorStatus(): array
     {
         return [
-            self::NA,
-            self::AD,
-            self::BAD_GATEWAY,
-            self::INSUFFICIENT_FUND,
-            self::INVALID_TRANSFER_TYPE,
-            self::REQUEST_LIMIT_REACHED,
-            self::BENE_NOT_REGISTERED,
-            self::INVALID_ACCOUNT_DETAILS,
-            self::IMPS_NOT_ENABLED_FOR_REMITTER,
-            self::ACQUIRING_BANK_CBS_OFFLINE,
-            self::INVALID_REQUEST,
-            self::FUNDS_ON_HOLD,
-            self::TECHNICAL_ERROR,
-            self::TRANSFER_TIMEOUT,
+            self::NA                            => [],
+            self::AD                            => [],
+            self::BAD_GATEWAY                   => [],
+            self::INSUFFICIENT_FUND             => [],
+            self::INVALID_TRANSFER_TYPE         => [],
+            self::REQUEST_LIMIT_REACHED         => [],
+            self::BENE_NOT_REGISTERED           => [],
+            self::INVALID_ACCOUNT_DETAILS       => [],
+            self::IMPS_NOT_ENABLED_FOR_REMITTER => [],
+            self::ACQUIRING_BANK_CBS_OFFLINE    => [],
+            self::INVALID_REQUEST               => [],
+            self::FUNDS_ON_HOLD                 => [],
+            self::TECHNICAL_ERROR               => [],
+            self::TRANSFER_TIMEOUT              => [],
         ];
     }
 
@@ -403,7 +403,9 @@ class Status extends BaseStatus
     {
         $bankStatusCode = $entity->getBankStatusCode();
 
-        $status = self::isCriticalStatus($bankStatusCode);
+        $bankResponseCode = $entity->getBankResponseCode();
+
+        $status = self::isCriticalStatus($bankStatusCode, $bankResponseCode);
 
         if ($status === true)
         {
@@ -468,19 +470,24 @@ class Status extends BaseStatus
      */
     public static function getRemark(string $code = null)
     {
-        return (isset(self::FAILURE_CODE_INTERNAL_MAPPING[$code]) === true) ? self::FAILURE_CODE_INTERNAL_MAPPING[$code] : null;
+        return (isset(self::FAILURE_CODE_INTERNAL_MAPPING[$code]) === true) ?
+            self::FAILURE_CODE_INTERNAL_MAPPING[$code] :
+            null;
     }
 
-    public static function getPublicFailureReason($bankSubStatus)
+    public static function getPublicFailureReason($bankStatusCode, $bankResponseCode = null)
     {
+        $successfulStatus =  self::getSuccessfulStatus();
+
+        $isSuccessful = self::inStatus($successfulStatus, $bankStatusCode, $bankResponseCode);
         // sub status code will be empty if the request was complete
-        if ((empty($bankSubStatus) === true) || (in_array($bankSubStatus, self::getSuccessfulStatus(), true)))
+        if ($isSuccessful === true)
         {
             return null;
         }
-        else if (in_array($bankSubStatus, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
+        else if (in_array($bankResponseCode, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
         {
-            return self::FAILURE_CODE_PUBLIC_MAPPING[$bankSubStatus];
+            return self::FAILURE_CODE_PUBLIC_MAPPING[$bankResponseCode];
         }
 
         return 'transfer not completed';
