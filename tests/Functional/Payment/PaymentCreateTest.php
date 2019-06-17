@@ -1180,24 +1180,17 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($paymentObj['gateway_captured'] );
     }
 
-    public function testForNullNetworkPaymentOnUpiTerminalModePurchase()
+    public function testPaymentOnNetbankingEbsTerminalModePurchase()
     {
         $this->mockCardVault();
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal',['mode'=>2]);
-        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
-        $this->fixtures->iin->create([
-            'iin' => '555555',
-            'country' => 'IN',
-            'network' => null,
-        ]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal',['mode'=>2]);
         $this->fixtures->terminal->edit(
-            \RZP\Models\Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL,
+            \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL,
             [
                 'mode' => 2,
             ]
         );
-        $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '555555555555558';
+        $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['amount'] = 1000000;
         $content = $this->doAuthPayment($payment);
         $this->assertArrayHasKey('razorpay_payment_id', $content);
