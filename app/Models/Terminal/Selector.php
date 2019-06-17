@@ -217,7 +217,7 @@ class Selector extends Base\Core
 
                 $merchant->methods->setDinersCard(0);
 
-                $merchant->methods->saveOrFail();
+                $this->repo->saveOrFail($merchant->methods);
 
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
@@ -234,10 +234,10 @@ class Selector extends Base\Core
 
                 $merchant->methods->setDisabledBanks($disabledBanks);
 
-                $merchant->methods->saveOrFail();
+                $this->repo->saveOrFail($merchant->methods);
 
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT);
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
             }
             else
             {
