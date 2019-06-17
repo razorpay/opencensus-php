@@ -118,6 +118,7 @@ class Constants
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
+    const TEST_MODE_SETTLEMENT            = 'test_mode_settlement';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -356,6 +357,7 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::TEST_MODE_SETTLEMENT            => true,
     ];
 
     // Entity type constants
