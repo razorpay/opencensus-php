@@ -89,7 +89,7 @@ class Service extends Base\Service
         switch ($channel)
         {
             case Channel::RBL:
-                $coreMethod = $coreMethod . 'For' . ucfirst($channel);
+                $coreMethod = $coreMethod . 'ForRbl';
 
                 $this->core->$coreMethod($input[Entity::PINCODES]);
 
