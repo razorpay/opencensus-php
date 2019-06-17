@@ -237,7 +237,7 @@ class SmartRouting
         }
     }
 
-    private function getUrl($action, $id, $params) : string
+    private function getUrl($action, $id, $params = null) : string
     {
         $url = $this->baseUrl . str_replace_first(':id', $id, $action['url']);
 
