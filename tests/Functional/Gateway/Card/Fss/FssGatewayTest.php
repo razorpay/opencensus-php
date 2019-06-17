@@ -39,4 +39,24 @@ class FssGatewayTest extends BobGatewayTest
 
         $this->doAuthPayment($payment);
     }
+
+    public function testPaymentWithEmptyPaymentId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                unset($content['trackid']);
+            }
+        }, $this->gateway);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        self::assertEquals('authorized',$payment['status']);
+
+    }
 }

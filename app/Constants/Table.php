@@ -69,7 +69,15 @@ class Table
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
-    const SUBSCRIPTION              = 'subscriptions';
+
+    // Subscriptions Tables
+    const SUBSCRIPTION                   = 'subscriptions';
+    const SUBSCRIPTION_CYCLE             = 'subscription_cycles';
+    const SUBSCRIPTION_VERSION           = 'subscription_versions';
+    const SUBSCRIPTION_UPDATE_REQUEST    = 'subscription_update_requests';
+    const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
+    //Subscriptions Tables end
+
     const METHODS                   = 'merchant_banks';
     const BANK_TRANSFER             = 'bank_transfers';
     const GATEWAY_TOKEN             = 'gateway_tokens';

@@ -109,11 +109,13 @@ class TransactionHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function fetchAll()
+    public function fetchAll(array $content = [])
     {
         $this->validationJsonSchemaPath = 'transaction/fetch_all';
 
         $request = $this->request('transactions');
+
+        $this->content($request, [], $content);
 
         return $this->get($request);
     }

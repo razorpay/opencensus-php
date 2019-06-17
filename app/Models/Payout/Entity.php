@@ -16,14 +16,13 @@ use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
-use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
  * @property Customer\Entity    $customer
@@ -641,6 +640,8 @@ class Entity extends Base\PublicEntity
 
     public function setChannel($channel)
     {
+        Channel::validate($channel);
+
         $this->setAttribute(self::CHANNEL, $channel);
     }
 

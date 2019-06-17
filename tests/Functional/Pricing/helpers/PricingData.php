@@ -1307,7 +1307,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 20,
+                        'count' => 21,
                         'rules' => [
                             [],
                         ],
@@ -1443,7 +1443,7 @@ return [
                     [
                         'name'   => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count'  => 20,
+                        'count'  => 21,
                         'rules'  => [
                             [],
                         ],
@@ -1555,7 +1555,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 20,
+                    'rules_count' => 21,
                     'type'        => 'pricing',
                 ],
             ],
@@ -1625,7 +1625,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 20,
+                    'rules_count' => 21,
                     'type'        => 'pricing',
                 ],
             ],
@@ -2225,6 +2225,38 @@ return [
                 'amount_range_min'    => null,
                 'amount_range_max'    => null,
                 'feature'             => 'esautomatic',
+            ],
+        ],
+    ],
+    'testAddPricingPlanRuleWithFeatureRefund' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'refund',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'refund',
             ],
         ],
     ],

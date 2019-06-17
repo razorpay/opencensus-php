@@ -25,6 +25,17 @@ class Core extends Base\Core
                           ->first();
     }
 
+    public function setDefaultVpa(Entity $vpa)
+    {
+        $vpa->setDefault(true);
+
+        $this->handleDefaultVpa($vpa);
+
+        $this->repo->saveOrFail($vpa);
+
+        return $vpa;
+    }
+
     /**
      * @return Entity
      */
@@ -147,9 +158,9 @@ class Core extends Base\Core
         return $username;
     }
 
-    public function delete()
+    public function delete(Entity $vpa)
     {
-        return $this->repo->newP2pQuery()->delete();
+        $this->repo->deleteOrFail($vpa);
     }
 
     /**
@@ -184,6 +195,8 @@ class Core extends Base\Core
             $default->setDefault(false);
 
             $this->repo->saveOrFail($default);
+
+            return $vpa;
         }
 
         // In the end given vpa is not explicitly marked default and

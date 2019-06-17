@@ -10,6 +10,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
@@ -167,10 +168,10 @@ class Validator extends Base\Validator
 
         $begin = $input[Entity::BEGIN] ?? $this->entity->getBegin();
 
-        if ($end < $begin)
+        if ($end <= $begin)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Begin : ' . $begin . ' less than end :' . $end);
+                'Begin : ' . $begin . ' greater than end :' . $end);
         }
 
         if ($begin > Entity::END_OF_TIME)
@@ -217,6 +218,12 @@ class Validator extends Base\Validator
             case Method::UPI:
 
                 $this->validateUpiIssuer($issuer);
+
+                break;
+
+            case Method::PAYLATER:
+
+                $this->validatePaylaterProvider($issuer);
 
                 break;
 
@@ -303,6 +310,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid wallet');
+        }
+    }
+
+    protected function validatePaylaterProvider(string  $issuer = null)
+    {
+        $issuer = strtolower($issuer);
+
+        if (PayLater::exists($issuer) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer . ' is not a valid provider');
         }
     }
 

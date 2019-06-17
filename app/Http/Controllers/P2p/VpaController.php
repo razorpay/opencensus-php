@@ -57,10 +57,22 @@ class VpaController extends Controller
 
     public function assignBankAccount()
     {
+        $input = $this->request()->all();
+
         $input[Entity::ID] = $this->request()->route('vpa_id');
-        $input[Entity::BANK_ACCOUNT_ID] = $this->request()->route('ba_id');
 
         $response = $this->service->assignBankAccount($input);
+
+        return $this->response($response);
+    }
+
+    public function setDefault()
+    {
+        $input = $this->request()->all();
+
+        $input[Entity::ID] = $this->request()->route('vpa_id');
+
+        $response = $this->service->setDefault($input);
 
         return $this->response($response);
     }

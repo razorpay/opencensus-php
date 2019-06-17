@@ -43,6 +43,14 @@ class CreateReversals extends Migration
             $table->integer(Entity::AMOUNT)
                   ->unsigned();
 
+            $table->integer(Entity::FEE)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Entity::TAX)
+                  ->unsigned()
+                  ->default(0);
+
             $table->char(Entity::CURRENCY, 3);
 
             // Todo: Remove null-able after code deploy and backfilling

@@ -4938,6 +4938,13 @@ ALTER TABLE refunds
     CHANGE COLUMN reference6 reversed_at INT(11) UNSIGNED DEFAULT NULL,
     ADD INDEX refunds_reversed_at_index (`reversed_at`);
 
+ALTER TABLE merchant_banks
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
+
+ALTER TABLE terminals
+    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
+    ADD INDEX `terminals_paylater_index` (paylater);
+
 ALTER TABLE fund_account_validations
     ADD COLUMN attempts TINYINT(1) DEFAULT 1 after batch_fund_transfer_id,
     ADD COLUMN retry_at INTEGER UNSIGNED DEFAULT NULL after batch_fund_transfer_id,
@@ -4967,3 +4974,43 @@ ALTER TABLE balance
     ADD COLUMN account_provider VARCHAR(255) DEFAULT NULL AFTER account_type,
     ADD INDEX balance_account_type_index (account_type),
     ADD INDEX balance_account_provider_index (account_provider);
+
+ALTER TABLE paysecure
+    MODIFY COLUMN hkey TEXT DEFAULT NULL;
+
+-- P2P - Fix Transactions #11911
+
+ALTER TABLE `p2p_upi_transactions`
+    ADD `ref_url` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `ref_id`,
+    ADD `mcc` CHAR(4) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `ref_url`;
+
+ALTER TABLE `p2p_transactions`
+    ADD `device_id` CHAR(14) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL AFTER `customer_id`,
+    ADD `handle` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL AFTER `device_id`,
+    ADD `amount_minimum` INT(11) NULL DEFAULT NULL AFTER `amount`,
+    ADD `amount_authorized` INT(11) NULL DEFAULT NULL AFTER `amount_minimum`,
+    ADD `deleted_at` INT(11) NULL DEFAULT NULL AFTER `completed_at`;
+
+-- P2P - Fix Transactions #11911
+
+ALTER TABLE payouts
+    MODIFY COLUMN amount BIGINT UNSIGNED NOT NULL after purpose_type;
+
+ALTER TABLE pricing
+    MODIFY COLUMN amount_range_max BIGINT UNSIGNED DEFAULT NULL after amount_range_min;
+
+ALTER TABLE `refunds`
+    ADD COLUMN `speed_requested` VARCHAR(50) NOT NULL DEFAULT 'normal' AFTER `attempts`,
+    ADD COLUMN `speed_processed` VARCHAR(50) DEFAULT NULL AFTER `speed_requested`,
+    ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `speed_processed`,
+    ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`,
+    ADD INDEX `refunds_speed_requested_index` (`speed_requested`),
+    ADD INDEX `refunds_speed_processed_index` (`speed_processed`);
+
+ALTER TABLE `transactions`
+    MODIFY COLUMN `fee` INT(10) NOT NULL,
+    MODIFY COLUMN `tax` INT(10) DEFAULT NULL;
+
+ALTER TABLE `reversals`
+    ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
+    ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;

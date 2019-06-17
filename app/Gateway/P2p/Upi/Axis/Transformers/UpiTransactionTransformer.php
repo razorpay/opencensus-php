@@ -73,6 +73,22 @@ class UpiTransactionTransformer extends Transformer
                     Entity::HANDLE  => $this->getVpaHandle($this->input[Fields::PAYEE_VPA]),
                 ];
                 break;
+
+            case UpiAction::CUSTOMER_DEBITED_VIA_COLLECT:
+                $output = [
+                    Entity::ACTION  => Action::INCOMING_COLLECT,
+                    Entity::STATUS  => Status::COMPLETED,
+                    Entity::HANDLE  => $this->getVpaHandle($this->input[Fields::PAYER_VPA]),
+                ];
+                break;
+
+            case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
+                $output = [
+                    Entity::ACTION  => Action::INITIATE_PAY,
+                    Entity::STATUS  => Status::COMPLETED,
+                    Entity::HANDLE  => $this->getVpaHandle($this->input[Fields::PAYER_VPA]),
+                ];
+                break;
         }
 
         return $output;

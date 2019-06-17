@@ -95,7 +95,7 @@
 is now active.
 
 </p>
-<p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">In case you haven't integrated our API in your application, the instructions can be found <a href="https://docs.razorpay.com" title="Razorpay Integration Documentation" style="color: #2ba6cb; text-decoration: none;">here</a>. Please ensure that your production website/app is using the live keys generated from the dashboard.</p>
+<p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">In case you haven't integrated our API in your application, the instructions can be found <a href="https://razorpay.com/docs" title="Razorpay Integration Documentation" style="color: #2ba6cb; text-decoration: none;">here</a>. Please ensure that your production website/app is using the live keys generated from the dashboard.</p>
 
 <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">If you face any issues while implementing this, feel free to reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request" style="color: #2ba6cb; text-decoration: none;">here</a>.</p>
 

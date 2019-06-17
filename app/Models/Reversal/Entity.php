@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE           = 'entity_type';
     const BALANCE_ID            = 'balance_id';
     const AMOUNT                = 'amount';
+    const FEE                   = 'fee';
+    const TAX                   = 'tax';
     const CURRENCY              = 'currency';
     const NOTES                 = 'notes';
     const TRANSACTION_ID        = 'transaction_id';
@@ -52,6 +54,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
         self::CURRENCY,
         self::NOTES,
         self::CHANNEL,
@@ -68,6 +72,8 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::BALANCE_ID,
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
         self::CURRENCY,
         self::NOTES,
         self::TRANSFER_ID,
@@ -85,6 +91,8 @@ class Entity extends Base\PublicEntity
         self::TRANSFER_ID,
         self::PAYOUT_ID,
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
         self::CURRENCY,
         self::NOTES,
         self::LINKED_ACCOUNT_NOTES,
@@ -95,10 +103,14 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT => 'int',
+        self::FEE    => 'int',
+        self::TAX    => 'int',
     ];
 
     protected $amounts = [
         self::AMOUNT,
+        self::FEE,
+        self::TAX,
     ];
 
     protected $publicSetters = [
@@ -119,6 +131,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::FEE   => 0,
+        self::TAX   => 0,
         self::NOTES => [],
     ];
 
@@ -176,6 +190,16 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getFee()
+    {
+        return $this->getAttribute(self::FEE);
+    }
+
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
     }
 
     public function getChannel()
@@ -284,6 +308,20 @@ class Entity extends Base\PublicEntity
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setFee(int $fee)
+    {
+        assertTrue($fee >= 0);
+
+        $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setTax(int $tax)
+    {
+        assertTrue($tax >= 0);
+
+        $this->setAttribute(self::TAX, $tax);
     }
 
     // -------------------- End Setters --------------------------

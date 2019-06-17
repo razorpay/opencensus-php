@@ -783,11 +783,15 @@ class Core extends Base\Core
      *
      * @param  Batch\Entity $batch
      */
-    public function cancelInvoicesOfBatch(Batch\Entity $batch)
+    public function cancelInvoicesOfBatch(array $batch)
     {
         (new Validator)->validateCancelInvoicesOfBatch($batch);
 
-        InvoiceBatchCancelJob::dispatch($this->mode, $batch->getId());
+        $batchId = $batch[Batch\Entity::ID];
+
+        Batch\Entity::verifyIdAndStripSign($batchId);
+
+        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT]);
     }
 
     /**

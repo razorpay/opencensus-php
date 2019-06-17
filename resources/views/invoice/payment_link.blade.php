@@ -113,12 +113,24 @@ $custom_labels                  = $data['custom_labels'];
 
                 if (desc.length < descLength) {
                     desc += '...';
-                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
+                    
+                    button = document.createElement('button');
+                    button.className ="btn-link showmore";
+                    button.onclick = function() { toggleTrimDescription(false); }
+                    button.innerText = "Show More";
                 }
 
             }
 
-            document.getElementById('payment-for').innerHTML = desc + button;
+            var div = document.createElement('div');
+            div.textContent = desc;
+
+            if (button) {
+                div.appendChild(button);
+            }
+
+            document.getElementById('payment-for').innerHTML = "";
+            document.getElementById('payment-for').appendChild(div);
         }
     </script>
 

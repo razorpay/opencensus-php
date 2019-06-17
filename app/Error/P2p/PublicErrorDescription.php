@@ -15,6 +15,7 @@ class PublicErrorDescription extends \RZP\Error\PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE            = 'Merchant is not allowed to use the handle';
     const BAD_REQUEST_DEVICE_DOES_NOT_BELONG_TO_MERCHANT        = 'Device is not registered for the given merchant';
     const BAD_REQUEST_INVALID_MERCHANT_IN_CONTEXT               = 'Invalid merchant set in context';
+    const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                   = 'Token is invalid or expired';
 
     const BAD_REQUEST_DUPLICATE_VPA                             = 'Duplicate VPA address, try a different username';
 
