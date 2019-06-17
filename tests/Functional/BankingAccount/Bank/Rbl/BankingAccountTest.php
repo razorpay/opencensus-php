@@ -60,9 +60,7 @@ class BankingAccountTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $this->fixtures->merchant = $merchantDetail->merchant;
-
-        $this->ba->proxyAuth('rzp_test_' . $this->fixtures->merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
 
         $this->createBankingAccount();
 
@@ -79,8 +77,6 @@ class BankingAccountTest extends TestCase
 
     public function testStoreMerchantCredentialsFailed()
     {
-        $this->ba->proxyAuth();
-
         $this->createBankingAccount();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
