@@ -8,7 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
-use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -1143,11 +1143,11 @@ class PaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->enableTpv();
 
-        $order = $this->fixtures->create('order', ['bank' => ProviderCode::KOTAK, 'account_number' => '923729373']);
+        $order = $this->fixtures->create('order', ['bank' => IFSC::KKBK, 'account_number' => '923729373']);
 
         $payment['amount'] = 1000000;
 
-        $payment['bank'] = ProviderCode::KOTAK;
+        $payment['bank'] = IFSC::KKBK;
 
         $payment['order_id'] = $order->getPublicId();
 

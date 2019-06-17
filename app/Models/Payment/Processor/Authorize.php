@@ -11,7 +11,6 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
-use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Diag\EventCode;
@@ -5659,15 +5658,15 @@ trait Authorize
         // prepend required zeroes in the account number based on bank
         switch ($payment->getBank())
         {
-            case ProviderCode::SBI:
+            case IFSC::SBIN:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
                 break;
 
-            case ProviderCode::KOTAK:
+            case IFSC::KKBK:
                 $accountNumber = str_pad($accountNumber, 14, '0', STR_PAD_LEFT );
                 break;
 
-            case ProviderCode::CENTRALBANK:
+            case IFSC::CBIN:
                 $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
                 break;
 
