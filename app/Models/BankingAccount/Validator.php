@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         foreach ($input[Entity::PINCODES] as $pincode)
         {
             $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
+
             if ($pincodeValidator->validate($pincode) === false)
             {
                 throw new BadRequestValidationFailureException(

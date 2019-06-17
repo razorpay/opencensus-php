@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Cache;
 use Requests;
 use RZP\Exception;
+use RZP\Models\Pincode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\IndianStates;
@@ -147,7 +148,9 @@ class PincodeSearch
 
     public function fetchCityAndStateFromPincode($pincode): array
     {
-        if (validate_indian_pincode($pincode) === false)
+        $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
+
+        if ($pincodeValidator->validate($pincode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $pincode . ' is not correct.');
@@ -177,9 +180,9 @@ class PincodeSearch
         $response = $response['records'][0];
 
         $response = [
-            "city"          => $response['districtname'] ?? null,
-            "state"         => $response['circlename'] ?? null,
-            "state_code"    => IndianStates::getStateCode($response['statename']),
+            'city'          => $response['districtname'] ?? null,
+            'state'         => $response['circlename'] ?? null,
+            'state_code'    => IndianStates::getStateCode($response['statename']),
         ];
 
         $this->cache->put($key, $response, static::CACHE_TTL);
