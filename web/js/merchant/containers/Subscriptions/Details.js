@@ -44,6 +44,12 @@ import TestPaymentModal from './TestPaymentModal';
  * --------------------------------------------------------------------
  * */
 
+const scheduledChangesInitValue = {
+  data: null,
+  plan: null,
+  isLoading: false,
+};
+
 @withRouter
 @connect(
   state => ({
@@ -74,11 +80,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     this.state = {
       creditNotes: [],
-      scheduledChanges: {
-        isLoading: false,
-        data: null,
-        plan: null,
-      },
+      scheduledChanges: scheduledChangesInitValue,
     };
   }
 
@@ -277,7 +279,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
             {
               isLoading: false,
               scheduledChanges: {
-                ...this.state.scheduledChanges,
+                data: null,
+                plan: null,
                 isLoading: subscription.has_scheduled_changes,
               },
             },
@@ -571,13 +574,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           message: 'Updated subscription is canceled successfully',
         });
 
-        this.setState({
-          scheduledChanges: {
-            data: null,
-            plan: null,
-            isLoading: false,
-          },
-        });
+        this.resetScheduledChanges();
       })
       .catch(err => {
         this.props.showNotification({
@@ -586,6 +583,9 @@ export default class SubscriptionDetailsContainer extends React.Component {
         });
       });
   };
+
+  resetScheduledChanges = () =>
+    this.setState({ scheduledChanges: scheduledChangesInitValue });
 
   render() {
     let {
@@ -657,7 +657,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       if (
         this.props.invoice_id === 'inv_upcoming' &&
         Object.keys(entity).length && // Helps to simulate the loader for 'inv_upcoming' invoice
-        !invoices.loading // To display upcoming invioce rightly
+        !invoices.loading // To display upcoming invoice rightly
       ) {
         const subscriptionData = scheduledChanges.data
             ? scheduledChanges.data
