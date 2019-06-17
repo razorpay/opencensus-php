@@ -25,11 +25,11 @@ class DowntimeController extends Controller
      *
      * @return array Summary of actions
      */
-    public function triggerDowntimes()
+    public function triggerDowntimes($status)
     {
         $input = Request::all();
 
-        $data = $this->service(E::PAYMENT_DOWNTIME)->triggerDowntimes($input);
+        $data = $this->service(E::PAYMENT_DOWNTIME)->triggerDowntimes($input, $status);
 
         return ApiResponse::json($data);
     }

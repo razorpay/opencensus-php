@@ -85,6 +85,12 @@ class Repository extends Base\Repository
                       ->where(Entity::BEGIN, '<=', $now)
                       ->where(Entity::STATUS, '=', Status::SCHEDULED);
 
+        $query->where(function ($query)
+        {
+            $query->whereNull(Entity::END)
+                  ->orWhere(Entity::END, '>', Carbon::now()->getTimestamp());
+        });
+
         return $query->get();
     }
 
