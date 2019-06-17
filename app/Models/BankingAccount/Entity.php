@@ -71,7 +71,8 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_ACTIVATION_DATE,
         self::BENEFICIARY_NAME,
         self::BANK_INTERNAL_REFERENCE_NUMBER,
-        self::BENEFICIARY_NAME,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL,
     ];
 
     protected $visible = [
