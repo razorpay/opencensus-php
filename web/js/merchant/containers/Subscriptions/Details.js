@@ -567,21 +567,30 @@ export default class SubscriptionDetailsContainer extends React.Component {
   };
 
   handleCancelUpdateSubscription = id => () => {
-    return cancelUpdateSubscription(id)
-      .then(() => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'Updated subscription is canceled successfully',
-        });
+    return this.context.confirm({
+      header: 'Cancel Update',
+      message: 'Are you sure you want to cancel the update?',
+      affirmativeLabel: 'Yes, cancel',
+      affirmativePendingLabel: 'Canceling...',
+      abortLabel: "No, don't!",
+      action: () => {
+        return cancelUpdateSubscription(id)
+          .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Updated subscription is canceled successfully',
+            });
 
-        this.resetScheduledChanges();
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
+            this.resetScheduledChanges();
+          })
+          .catch(err => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          });
+      },
+    });
   };
 
   resetScheduledChanges = () =>

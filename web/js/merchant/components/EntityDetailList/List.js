@@ -139,24 +139,27 @@ export default class EntityDetailList extends Component {
 
       return (
         <div
-          class="entity-detail-row clickable"
+          class="entity-detail-row clickable credit-note-row"
           onClick={() => goToLink(creditNote.id, index)}
         >
           <div class="row-item content">
-            <div class="detail-row">
-              <div class="row-element left">
-                <Time value={creditNote.created_at} format="MMM DD, YYYY" />
+            <i class="i i-replay item-left" />
+            <div className="item-right">
+              <div class="detail-row">
+                <div class="row-element left">
+                  <Time value={creditNote.created_at} format="MMM DD, YYYY" />
+                </div>
+                <span class="row-element right">
+                  <Amount
+                    currency={creditNote.currency}
+                    value={creditNote.amount}
+                  />
+                </span>
               </div>
-              <span class="row-element right">
-                <Amount
-                  currency={creditNote.currency}
-                  value={creditNote.amount}
-                />
-              </span>
-            </div>
-            <div class="detail-row">
-              <div class="row-element left">
-                Refund due to subscription update.
+              <div class="detail-row">
+                <span class="label--secondary">
+                  Refund due to subscription update.
+                </span>
               </div>
             </div>
           </div>

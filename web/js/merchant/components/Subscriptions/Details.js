@@ -9,7 +9,7 @@ import Definition from 'rzp/ui/Definition';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 
-import { AsyncBtn } from 'component/Button';
+import Button from 'component/Button';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
@@ -220,12 +220,12 @@ export default props => {
                         .unix(subscription.start_at)
                         .format('DD MMM, YYYY')}
                       {!hideCancelUpdate && (
-                        <AsyncBtn.Transparent
+                        <Button.Transparent
                           onClick={cancelUpdateSubscription(subscription.id)}
                           class="pull-right"
                         >
                           Cancel Update
-                        </AsyncBtn.Transparent>
+                        </Button.Transparent>
                       )}
                     </div>
                     <ContentToggler>
