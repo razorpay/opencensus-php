@@ -149,7 +149,7 @@ const entityModalsMap = {
   '/subscriptions/new': {
     component: NewSubscriptionLink,
   },
-  '/subscriptions/update/:id(sub_.+)': {
+  '/subscriptions/:id(sub_.+)/edit': {
     component: UpdateSubscriptionLink,
   },
 };

@@ -94,7 +94,7 @@ export default props => {
               <div class="pull-right" style={style}>
                 <NavLink
                   class="btn btn-primary"
-                  to={`/subscriptions/update/${subscription.id}`}
+                  to={`/subscriptions/${subscription.id}/edit`}
                 >
                   Update
                 </NavLink>
