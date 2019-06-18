@@ -146,7 +146,7 @@ class Validator extends Base\Validator
 
     protected function validateProductRole(array $input)
     {
-        if (empty($input[Entity::ROLE]) === false)
+        if (empty($input[Entity::ROLE]) === true)
         {
             return;
         }
@@ -159,7 +159,10 @@ class Validator extends Base\Validator
 
         if (Role::validateProductRoleForMerchant($role, $product, $merchant) === false)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+                Entity::ROLE,
+                [Entity::ROLE => $role, Entity::PRODUCT => $product]);
         }
     }
 
