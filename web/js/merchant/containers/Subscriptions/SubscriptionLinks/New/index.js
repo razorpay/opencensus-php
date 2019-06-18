@@ -17,7 +17,7 @@ import { isPresent, findBy } from 'rzp/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
-import PlanDetails from './PlanDetails';
+import PlanDetails from '../common/PlanDetails';
 import Review from './Review';
 
 @withRouter

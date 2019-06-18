@@ -6,7 +6,7 @@ import Input, { Label, Description } from 'component/Input';
 
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
-import QuantitySelector from './QuantitySelector';
+import QuantitySelector from '../New/QuantitySelector';
 
 export default class NewSubscriptionLinkPlanDetails extends React.Component {
   static defaultProps = {
@@ -16,12 +16,12 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
   constructor({ plans, fields }) {
     super();
     this.plans = getPlans(plans);
-    this.selectedPlan = getSelectedPlan(this.plans, fields) || {};
+    this.selectedPlan = getSelectedPlan(this.plans, fields);
   }
 
   componentWillReceiveProps({ plans, fields }) {
     this.plans = getPlans(plans);
-    this.selectedPlan = getSelectedPlan(this.plans, fields) || {};
+    this.selectedPlan = getSelectedPlan(this.plans, fields);
   }
 
   validateTotalCount = val => {
@@ -162,7 +162,7 @@ function getInformativeMessage({ interval, period, currency }) {
 }
 
 function getSelectedPlan(plans = [], fields = {}) {
-  return plans.find(({ id }) => id === fields.plan_id);
+  return plans.find(({ id }) => id === fields.plan_id) || {};
 }
 
 function getPlans(plans) {

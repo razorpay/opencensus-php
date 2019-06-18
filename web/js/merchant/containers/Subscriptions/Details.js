@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
@@ -825,7 +824,9 @@ export default class SubscriptionDetailsContainer extends React.Component {
           subscription={subscriptionDetails}
           showAddOnModal={this.showAddOnModal}
           onManualAttempt={this.onManualAttempt}
-          ref={comp => (this.invoiceView = comp)}
+          ref={comp => {
+            this.invoiceView = comp;
+          }}
           statusMsg={makeErrorStatus(invoiceErrors)}
           curInvoiceIndex={this.state.curInvoiceIndex}
         />
@@ -839,7 +840,9 @@ export default class SubscriptionDetailsContainer extends React.Component {
           creditNote={creditNote.data}
           statusMsg={creditNote.statusMsg}
           isLoading={creditNote.isLoading}
-          ref={comp => (this.creditNoteView = comp)}
+          ref={comp => {
+            this.creditNoteView = comp;
+          }}
         />
       );
     }

@@ -158,12 +158,12 @@ const ChangeValue = ({ heading, changes }) => (
     <span class="big-dot-separator" />
     <div>
       <strong>{heading}</strong>
-      {changes.map(e => (
-        <div class="current-change" key={e.current}>
-          {e.current}
+      {changes.map(change => (
+        <div class="current-change" key={change.current}>
+          {change.current}
           <b>
             <i class="i i-arrow-forward" />
-            {e.change}
+            {change.change}
           </b>
         </div>
       ))}

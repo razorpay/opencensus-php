@@ -109,7 +109,7 @@ export default class UpdateSubscription extends Component {
       });
   };
 
-  changeTab = step => _ => {
+  changeTab = step => () => {
     const currentTab = this.state.currentTab + step;
 
     const validTabs = [...this.state.validTabs];
