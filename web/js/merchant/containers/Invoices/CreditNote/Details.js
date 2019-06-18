@@ -10,31 +10,35 @@ import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
 
 @withRouter
 @connect(null, {
-  fetchCreditNote,
   showNotification,
 })
 export default class CreditNoteDetailsContainer extends React.Component {
   constructor(props) {
-    super();
+    super(props);
 
     this.state = {
+      errors: [],
       isLoading: true,
       creditNote: {},
+      statusMsg: {},
     };
   }
 
   componentDidMount() {
-    this.props
-      .fetchCreditNote(this.props.id)
+    fetchCreditNote(this.props.credit_note_id)
       .then(resp => {
         this.setState({
-          creditNote: resp,
+          creditNote: resp.data,
+          isLoading: false,
         });
       })
       .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
+        this.setState({
+          statusMsg: {
+            type: 'error',
+            message: errors,
+          },
+          isLoading: false,
         });
       });
   }

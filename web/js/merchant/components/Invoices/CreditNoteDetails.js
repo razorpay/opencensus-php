@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
+import Alert from 'rzp/ui/Forms/Alert';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
-export default ({ isLoading, creditNote }) => {
+export default ({ isLoading, creditNote, statusMsg }) => {
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -21,19 +22,25 @@ export default ({ isLoading, creditNote }) => {
 
           <div class="SliderPanel__Body">
             <div class="panel-body">
+              <Alert type={statusMsg.type} message={statusMsg.message} />
+
               <EntityDetailRow label="Name">{creditNote.name}</EntityDetailRow>
+
               <EntityDetailRow label="Description">
                 {creditNote.description}
               </EntityDetailRow>
+
               <EntityDetailRow label="Amount">
                 <Amount
                   currency={creditNote.currency}
                   value={creditNote.amount}
                 />
               </EntityDetailRow>
+
               <EntityDetailRow label="Invoice ID">
                 <Link to={`/invoice/${creditNote.id}`}>{creditNote.id}</Link>
               </EntityDetailRow>
+
               <EntityDetailRow label="Status">
                 <InvoiceStatusLabel status={creditNote.status} />
               </EntityDetailRow>

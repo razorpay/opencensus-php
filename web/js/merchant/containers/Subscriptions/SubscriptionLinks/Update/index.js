@@ -118,6 +118,11 @@ export default class UpdateSubscription extends Component {
     this.setState({ currentTab, validTabs });
   };
 
+  handleTabChange = ({ target }) => {
+    const currentTab = Number(target.dataset.index);
+    this.setState({ currentTab });
+  };
+
   isFormChanged() {
     const {
       fields,

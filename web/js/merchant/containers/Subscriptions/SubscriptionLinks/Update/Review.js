@@ -101,29 +101,37 @@ export function changeSummary({
       ? prevPlan
       : plans.find(({ id }) => id === prevSubscription.plan_id);
 
-  const review = [
-    <li>
-      <Amount
-        value={prevSelectedPlan.item.amount}
-        currency={prevSelectedPlan.item.currency}
-      />
-      {prevSubscription.quantity > 1
-        ? ` charged every ${prevSubscription.quantity} monthly`
-        : ' changed for month'}
-      <b>
-        <i class="i i-arrow-forward" />
+  const review = [];
+
+  if (
+    currSelectedPlan.item.amount !== prevSelectedPlan.item.amount ||
+    currSelectedPlan.item.currency !== prevSelectedPlan.item.currency ||
+    prevSubscription.quantity !== fields.quantity
+  ) {
+    review.push(
+      <li>
         <Amount
-          value={currSelectedPlan.item.amount}
-          currency={currSelectedPlan.item.currency}
-        />{' '}
-        {fields.quantity > 1 ? (
-          <>charged every {fields.quantity} monthly</>
-        ) : (
-          <>changed for month </>
-        )}
-      </b>
-    </li>,
-  ];
+          value={prevSelectedPlan.item.amount}
+          currency={prevSelectedPlan.item.currency}
+        />
+        {prevSubscription.quantity > 1
+          ? ` charged every ${prevSubscription.quantity} monthly`
+          : ' changed for month'}
+        <b>
+          <i class="i i-arrow-forward" />
+          <Amount
+            value={currSelectedPlan.item.amount}
+            currency={currSelectedPlan.item.currency}
+          />{' '}
+          {fields.quantity > 1 ? (
+            <>charged every {fields.quantity} monthly</>
+          ) : (
+            <>changed for month </>
+          )}
+        </b>
+      </li>
+    );
+  }
 
   if (fields.schedule_change_at) {
     if (fields.schedule_change_at === 'now') {
