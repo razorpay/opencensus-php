@@ -2,12 +2,17 @@
 
 namespace RZP\Jobs;
 
+use App;
+
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Service as PaymentService;
 
 class MerchantBalanceUpdate extends Job
 {
+    const MUTEX_LOCK_TIMEOUT = 3600; // sec
+
     const RELEASE_WAIT_SECS    = 300;
 
     /**
@@ -36,21 +41,27 @@ class MerchantBalanceUpdate extends Job
         try
         {
             parent::handle();
-            $this->trace->info(
-                TraceCode::MERCHANT_BALANCE_UPDATE_REQUEST,
-                [
-                    'input'       => $this->input,
-                ]
-            );
 
-            $updated = (new PaymentService)->updateMerchantBalance($this->input['payment_id'], $this->input['transaction_id']);
+            $this->mutex = App::getFacadeRoot()['api.mutex'];
 
-            $this->trace->info(
-                TraceCode::MERCHANT_BALANCE_UPDATE_SUCCESSFULL,[
-                    'input'          => $this->input
-                ]);
+            $key = md5(json_encode($this->input));
 
-            $this->delete();
+            $this->mutex->acquireAndRelease(
+                $key,
+                function ()
+                {
+                    (new PaymentService)->updateMerchantBalance($this->input['payment_id'], $this->input['transaction_id']);
+
+                     $this->trace->info(
+                        TraceCode::MERCHANT_BALANCE_UPDATE_SUCCESSFULL,[
+                        'input'          => $this->input
+                    ]);
+
+                    $this->delete();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::ASYN_MERCHANT_BALANCE_UPDATE_IN_PROGRESS);
+
         }
         catch (\Throwable $e)
         {
