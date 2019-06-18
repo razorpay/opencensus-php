@@ -20,42 +20,13 @@ app/Reconciliator/*                                     prashanth.yv@razorpay.co
 
 app/Gateway/*                                           vivek.kumar@razorpay.com
 app/Gateway/Aeps/*                                      albin.george@razorpay.com                               vivek.kumar@razorpay.com
-app/Gateway/Amex/*                                      vivek.kumar@razorpay.com
-app/Gateway/Atom/*                                      vivek.kumar@razorpay.com
-app/Gateway/AxisMigs/*                                  vivek.kumar@razorpay.com
-app/Gateway/Billdesk/*                                  vivek.kumar@razorpay.com
-app/Gateway/Blade/*                                     vivek.kumar@razorpay.com                                harman.singh@razorpay.com
-app/Gateway/Card/Fss/*                                  praveen.patlola@razorpay.com                            junaid.anwer@razorpay.com               harman.singh@razorpay.com
-app/Gateway/Cybersource/*                               vivek.kumar@razorpay.com
-app/Gateway/Ebs/*                                       vivek.kumar@razorpay.com
-app/Gateway/FirstData/*                                 harman.singh@razorpay.com                               vivek.kumar@razorpay.com
-app/Gateway/Hitachi/*                                   vivek.kumar@razorpay.com                                harman.singh@razorpay.com
-app/Gateway/Hdfc/*                                      vivek.kumar@razorpay.com
-app/Gateway/Mobikwik/*                                  vivek.kumar@razorpay.com
-app/Gateway/Sharp/*                                     vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Airtel/*                         vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Axis/*                           vivek.kumar@razorpay.com
+app/Gateway/Card/Fss/*                                  praveen.patlola@razorpay.com                            junaid.anwer@razorpay.com
 app/Gateway/Netbanking/Bob/*                            albin.george@razorpay.com                               vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Corporation/*                    albin.george@razorpay.com                               harman.singh@razorpay.com               vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Federal/*                        vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Hdfc/*                           vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Icici/*                          vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Indusind/*                       vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Kotak/*                          vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Pnb/*                            vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Rbl/*                            vivek.kumar@razorpay.com
+app/Gateway/Netbanking/Corporation/*                    albin.george@razorpay.com                               vivek.kumar@razorpay.com
 app/Gateway/Upi/Icici/*                                 nemo@razorpay.com                                       vivek.kumar@razorpay.com
 app/Gateway/Upi/Mindgate/*                              nemo@razorpay.com                                       vivek.kumar@razorpay.com
 app/Gateway/Upi/Npci/*                                  nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Gateway/Upi/Sbi/*                                   vivek.kumar@razorpay.com
-app/Gateway/Wallet/Airtelmoney/*                        vivek.kumar@razorpay.com
-app/Gateway/Wallet/Freecharge/*                         vivek.kumar@razorpay.com
-app/Gateway/Wallet/Jiomoney/*                           vivek.kumar@razorpay.com
-app/Gateway/Wallet/Mpesa/*                              vivek.kumar@razorpay.com
-app/Gateway/Wallet/Olamoney/*                           vivek.kumar@razorpay.com
 app/Gateway/Wallet/Openwallet/*                         amit.mahbubani@razorpay.com
-app/Gateway/Wallet/Payumoney/*                          vivek.kumar@razorpay.com
-app/Gateway/Wallet/Payzapp/*                            vivek.kumar@razorpay.com
 app/Gateway/Wallet/Sbibuddy/*                           albin.george@razorpay.com                               vivek.kumar@razorpay.com
 
 
