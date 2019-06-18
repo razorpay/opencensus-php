@@ -17,15 +17,18 @@ import { deleteAddOn } from 'merchant/modules/addons';
 import { fetchCustomer } from 'merchant/modules/customers';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { fetchInvoice } from 'merchant/modules/invoices/details';
-import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
+import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
+import {
+  fetchInvoice,
+  fetchCreditNote,
+} from 'merchant/modules/invoices/details';
 import {
   fetchInvoices,
-  fetchCreditNote,
   paymentManualAttempt,
   fetchScheduledChanges,
   cancelUpdateSubscription,
+  fetchSubscriptionCreditNotes,
   fetchSubscription as fetchItem,
 } from 'merchant/modules/subscriptions';
 
@@ -80,6 +83,11 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     this.state = {
       creditNotes: [],
+      creditNote: {
+        data: {},
+        isLoading: false,
+        statusMsg: {},
+      },
       scheduledChanges: scheduledChangesInitValue,
     };
   }
@@ -138,14 +146,36 @@ export default class SubscriptionDetailsContainer extends React.Component {
       this.fetchInvoice(nextProps.invoice_id);
     }
 
-    this.checkSecView(nextProps.invoice_id);
+    if (
+      nextProps.credit_note_id &&
+      nextProps.credit_note_id !== this.props.credit_note_id
+    ) {
+      this.fetchCreditNote(nextProps.credit_note_id);
+    }
+
+    this.checkSecView(nextProps.invoice_id, nextProps.credit_note_id);
   }
 
-  checkSecView(invoiceId) {
-    if (!invoiceId) {
-      // this.setState({secView: false});
-      this.props.compactSlider();
+  checkSecView(invoiceId, creditNoteId) {
+    if (!creditNoteId) {
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.creditNoteView && findDOMNode(this.creditNoteView)) {
+        findDOMNode(this.creditNoteView).classList.add('toggle-slider');
+      }
 
+      this.setState({
+        creditNote: {
+          data: {},
+          isLoading: false,
+          statusMsg: {},
+        },
+      });
+    } else if (this.creditNoteView && findDOMNode(this.creditNoteView)) {
+      // If already opened then close it
+      findDOMNode(this.creditNoteView).classList.remove('toggle-slider');
+    }
+
+    if (!invoiceId) {
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.invoiceView && findDOMNode(this.invoiceView)) {
         findDOMNode(this.invoiceView).classList.add('toggle-slider');
@@ -159,13 +189,52 @@ export default class SubscriptionDetailsContainer extends React.Component {
       // If already opened then close it
       findDOMNode(this.invoiceView).classList.remove('toggle-slider');
     }
+
+    if (!invoiceId && !creditNoteId) {
+      this.props.compactSlider();
+    }
   }
+
+  fetchCreditNote = id => {
+    this.props.expandSlider();
+
+    this.setState({
+      secView: 'credit_note',
+      creditNote: {
+        data: {},
+        statusMsg: {},
+        isLoading: true,
+      },
+    });
+
+    fetchCreditNote(id)
+      .then(resp => {
+        this.setState({
+          creditNote: {
+            statusMsg: {},
+            data: resp.data,
+            isLoading: false,
+          },
+        });
+      })
+      .catch(({ errors }) => {
+        this.setState({
+          creditNote: {
+            ...this.state.creditNote,
+            statusMsg: {
+              type: 'error',
+              message: errors,
+            },
+            isLoading: false,
+          },
+        });
+      });
+  };
 
   // Fetch invoice details
   fetchInvoice(id) {
-    let { invoice } = this.props;
-
     this.props.expandSlider();
+
     this.setState({
       secView: 'invoice',
       invoiceErrors: null,
@@ -195,7 +264,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     const promise = [this.props.fetchInvoices(subscriptionId)];
 
     if (isCreditNoteAvl) {
-      promise.push(fetchCreditNote(subscriptionId));
+      promise.push(fetchSubscriptionCreditNotes(subscriptionId));
     }
 
     return Promise.all(promise).then(([data, creditNotes]) => {
@@ -368,6 +437,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     if (this.invoiceView) {
       findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+    }
+
+    if (this.creditNoteView) {
+      findDOMNode(this.creditNoteView).classList.toggle('toggle-slider');
     }
 
     compactSlider();
@@ -613,6 +686,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       invoice,
       secView,
       isLoading,
+      creditNote,
       creditNotes,
       invoiceErrors,
       invoiceLoading,
@@ -721,8 +795,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
         }
       }
 
-      let plan = plan,
-        subscription = entity,
+      let planDetails = plan,
+        subscriptionDetails = entity,
         isInvoiceLoading = invoiceLoading;
 
       if (this.props.invoice_id === 'inv_upcoming' && invoiceData) {
@@ -730,25 +804,25 @@ export default class SubscriptionDetailsContainer extends React.Component {
       }
 
       if (this.props.invoice_id === 'inv_upcoming' && scheduledChanges.data) {
-        subscription = scheduledChanges.data;
-        plan = scheduledChanges.plan;
+        subscriptionDetails = scheduledChanges.data;
+        planDetails = scheduledChanges.plan;
       }
 
       // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
       // And in this case InvoiceDetails won't show loader but error message
       invoiceSecView = (
         <InvoiceDetail
-          plan={plan}
+          plan={planDetails}
           addons={addonsList}
           invoice={invoiceData}
           mode={this.props.mode}
           onClose={this.secClose}
-          subscription={subscription}
           isLoading={isInvoiceLoading}
           nextChargeAt={entity.charge_at}
           subscriptionId={this.props.id}
           isValidInvoice={isValidInvoice}
           onAddOnDelete={this.deleteAddOn}
+          subscription={subscriptionDetails}
           showAddOnModal={this.showAddOnModal}
           onManualAttempt={this.onManualAttempt}
           ref={comp => (this.invoiceView = comp)}
@@ -758,9 +832,17 @@ export default class SubscriptionDetailsContainer extends React.Component {
       );
     }
 
-    creditNoteSecView = (
-      <CreditNoteDetails ref={comp => (this.creditNoteView = comp)} />
-    );
+    if (secView === 'credit_note') {
+      creditNoteSecView = (
+        <CreditNoteDetails
+          onClose={this.secClose}
+          creditNote={creditNote.data}
+          statusMsg={creditNote.statusMsg}
+          isLoading={creditNote.isLoading}
+          ref={comp => (this.creditNoteView = comp)}
+        />
+      );
+    }
 
     return (
       <div class="multi-content">

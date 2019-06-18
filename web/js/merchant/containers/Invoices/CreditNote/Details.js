@@ -17,7 +17,6 @@ export default class CreditNoteDetailsContainer extends React.Component {
     super(props);
 
     this.state = {
-      errors: [],
       isLoading: true,
       creditNote: {},
       statusMsg: {},
@@ -25,7 +24,7 @@ export default class CreditNoteDetailsContainer extends React.Component {
   }
 
   componentDidMount() {
-    fetchCreditNote(this.props.credit_note_id)
+    fetchCreditNote(this.props.id)
       .then(resp => {
         this.setState({
           creditNote: resp.data,

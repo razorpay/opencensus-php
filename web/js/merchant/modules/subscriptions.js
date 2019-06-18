@@ -18,7 +18,7 @@ const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
 const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
 
-export const fetchCreditNote = id => {
+export const fetchSubscriptionCreditNotes = id => {
   return merchantFetch(`creditnote?subscription_id=${id}`);
 };
 

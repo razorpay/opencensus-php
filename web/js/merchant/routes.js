@@ -97,10 +97,10 @@ const entityDetailsMap = {
     additionalCondition: user => user.isChargeAtWillEnabled,
   },
 
-  '/subscriptions/:id(sub_.+)/:credit_note_id(crnt_.+)': {
-    component: CreditNoteDetails,
-  },
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': {
+    component: SubscriptionDetails,
+  },
+  '/subscriptions/:id(sub_.+)/:credit_note_id(crnt_.+)': {
     component: SubscriptionDetails,
   },
   '/subscriptions/:id(sub_.+)': { component: SubscriptionDetails },
