@@ -450,10 +450,16 @@ class Processor
     {
         $this->verifyCardlessEmiEnabled();
 
-        if ((empty($input['ott']) === false) or
-            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+        if ((empty($input['ott']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false))
         {
-            return null;
+            return;
+        }
+
+        if ((empty($input['emi_duration']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
+        {
+            return;
         }
 
         $merchant = $payment->merchant;
@@ -467,18 +473,16 @@ class Processor
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::CARDLESS_EMI);
 
-        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
-
-        $data = (new Customer\Raven)->sendOtp($input, $merchant);
+        $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
         $coproto = [
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
-                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
-                            ]),
+                    'method'   => 'cardless_emi',
+                    'provider' => $input['provider']
+                ]),
                 'method'  => 'POST',
                 'content' => $input,
             ],
@@ -486,11 +490,24 @@ class Processor
             'theme'      => $payment->merchant->getBrandColorElseDefault(),
             'merchant'   => $merchant->getDbaName(),
             'gateway'    => $this->getEncryptedGatewayText($gateway),
-            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
             'key_id'     => $this->ba->getPublicKey(),
             'version'    => '1',
             'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
         ];
+
+        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        {
+            $coproto['emi_plans'] = [
+                $input['provider'] => $checkAccountData['emi_plans']
+            ];
+            $coproto['lender_branding_url'] = $checkAccountData['lender_branding_url'];
+        }
+        else
+        {
+            (new Customer\Raven)->sendOtp($input, $merchant);
+
+            $coproto['resend_url'] = $this->route->getUrlWithPublicAuth('otp_post');
+        }
 
         return $coproto;
     }
