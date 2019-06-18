@@ -24,10 +24,21 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/', 'UserController@getIndex')->name('dashboard');
 
+    Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
+
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
         ->name('user');
+
+    Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
+        ->where(['path' => '.*'])
+        ->name('extension_merchant')
+        ->middleware(['jwt']);
+
+    Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
+        ->name('extension_user_logout')
+        ->middleware(['jwt']);
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
@@ -53,7 +64,7 @@ Route::group(['middleware' => ['web']], function () {
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
-        
+
         Route::post('/coupons/validate', 'MerchantController@validateCoupon');
     });
 
@@ -62,6 +73,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')
             ->where(['path' => '.*'])
             ->name('merchant');
+
+        Route::post('/extension/generate_token', 'UserController@generateJWT')->name('extension_generate_token');
 
         Route::put('/{mode}/users/{id}/detach', 'MerchantController@removeUser')->name('remove_user');
 

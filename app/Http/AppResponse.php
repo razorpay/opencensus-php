@@ -14,6 +14,7 @@ class AppResponse
         'dashboard',
         'admin_merchant_stats',
         'razorx_catchall',
+        'extension_catchall'
     ];
 
     /**

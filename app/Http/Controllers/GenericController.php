@@ -19,6 +19,13 @@ class GenericController extends Controller
         'x-org-id',
     ];
 
+    const WHITELISTED_ROUTES_REGEX = [
+        '^invoices$',
+        '^currency\/all\/proxy$',
+        'invoices\/inv_[[:alnum:]]{14}\/notify_by\/(?:email|sms)$',
+        '^invoices\/inv_[[:alnum:]]{14}\/cancel$'
+    ];
+
     public function handleAny($mode, $path)
     {
         $allRequestHeaders = Request::header();
@@ -44,5 +51,28 @@ class GenericController extends Controller
         list($error, $data) = $request->send($path, $method);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function handleAnyExtension($mode, $path)
+    {
+        $whiteListedRoutesRegex = implode('|', self::WHITELISTED_ROUTES_REGEX);
+
+        if (preg_match('/' . $whiteListedRoutesRegex . '/', $path, $pathMatches) == true)
+        {
+            $request = new App\Admin\ApiRequestAny([
+                'mode'      => $mode,
+                'headers'   => [
+                    'X-Chrome-Extension'=> true,
+                ],
+            ]);
+
+            $method = Request::method();
+
+            list($error, $data) = $request->send($path, $method);
+
+            return AppResponse::jsonResponse($error, $data);
+        }
+
+        return AppResponse::unauthorizedResponse('Unauthorized.', Request::route()->getName(), $path);
     }
 }

@@ -242,4 +242,53 @@ class UserController extends Controller
 
         return $response;
     }
+
+    /**
+     * Return base template for browser extensions
+     *
+     * @return \Illuminate\Http\Response
+     */
+     public function getBrowserExtensionIndex()
+     {
+        $dashboardCdn = \Config::get('app.cdn_dashboard_url');
+        $data['cdnUrl'] = $dashboardCdn ? substr($dashboardCdn, 0, -10) : "http://static.razorpay.in";
+        return view('extension.index', $data);
+     }
+
+    /**
+     * Generates a JWT token with the context and returns the token to the client.
+     * https://github.com/lcobucci/jwt
+     */
+    public function generateJWT()
+    {
+        list($error, $result) = (new User\Service)->generateJWT();
+
+        return AppResponse::jsonResponse($error, $result);
+    }
+
+    /**
+     * On extension logout if their is any user available we should log the user out.
+     *
+     * @return mixed
+     */
+    public function getExtensionLogout()
+    {
+        $user = Auth::guard('user');
+
+        if (empty($user) === false)
+        {
+            $userDetails = $user->user();
+
+            $traceData = [
+                'id'          => $userDetails->id,
+                'email'       => $userDetails->email,
+            ];
+
+            $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
+
+            $user->logout();
+        }
+
+        return AppResponse::jsonResponse([]);
+    }
 }
