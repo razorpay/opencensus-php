@@ -675,7 +675,7 @@ class GatewayStatus extends BaseStatus
         return $isCritical;
     }
 
-    public static function getPublicFailureReason($bankStatusCode, $bankResponseCode)
+    public static function getPublicFailureReason($bankStatusCode, $bankResponseCode = null)
     {
         $successfulStatus = self::getSuccessfulStatus();
 
