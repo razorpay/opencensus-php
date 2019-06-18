@@ -4,6 +4,12 @@ import { Link } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
+import DataTable from 'rzp/ui/Table/DataTable';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+
+import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
@@ -11,6 +17,12 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 export default class CreditNoteDetails extends React.Component {
   render() {
     const { isLoading, creditNote, statusMsg, onClose } = this.props;
+
+    const refunds = [];
+
+    (creditNote.invoices || []).forEach(invoice => {
+      invoice.refunds.forEach(refund => refunds.push(refund));
+    });
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -56,6 +68,10 @@ export default class CreditNoteDetails extends React.Component {
                 <EntityDetailRow label="Invoice ID">
                   <Link to={`/invoice/${creditNote.id}`}>{creditNote.id}</Link>
                 </EntityDetailRow>
+
+                {creditNote.invoices.length && (
+                  <RefundsList refunds={refunds} />
+                )}
               </div>
             </div>
           </div>
@@ -64,3 +80,39 @@ export default class CreditNoteDetails extends React.Component {
     );
   }
 }
+
+const RefundsList = ({ refunds }) => {
+  const refundsHeading = {
+    title: 'Refund Details',
+    subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
+  };
+
+  return (
+    <div className="full-width-item sub-entity-list">
+      <DataTable
+        title="Refunds"
+        customClass="refunds-table"
+        columns={[refundId, amount, createdAtWithStyle]}
+        items={refunds}
+        showHeaders={false}
+        noStripe={true}
+        panelHeading={refundsHeading}
+      />
+    </div>
+  );
+};
+
+const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
+
+const NumRefunds = ({ refunds, titleCase = false }) => {
+  const refundItems = refunds || [];
+
+  const numRefunds = refundItems.length,
+    refundSuffix = numRefunds === 0 || numRefunds > 1 ? 's' : '';
+
+  return (
+    <span>
+      {numRefunds} {titleCase ? 'R' : 'r'}efund{refundSuffix}
+    </span>
+  );
+};
