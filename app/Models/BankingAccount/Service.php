@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
@@ -103,7 +104,7 @@ class Service extends Base\Service
         if (($this->isStatusChanged($previousStatus, $input[Entity::STATUS]) === true) and
             ($this->notifyStatusChange($previousStatus, $input[Entity::STATUS])) === true)
         {
-            $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant());
+            $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant);
 
             Mail::queue($mail);
         }
