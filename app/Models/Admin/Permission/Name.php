@@ -239,6 +239,9 @@ class Name
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
 
+    //Permissions for enabling maker/checker for payouts
+    const CREATE_PAYOUT                       = 'create_payout';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE              => self::EDIT_MERCHANT_UNARCHIVE,

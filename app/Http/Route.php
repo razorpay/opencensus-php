@@ -717,6 +717,7 @@ final class Route
         'action_diff_get'                          => ['get',      'w-actions/{id}/diff',                            'WorkflowController@getActionDiff'                                  ],
         'action_request_execute'                   => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                    => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
+        'workflow_payout_amount_rules'             => ['get',      'workflows/rules/payout_amount',                  'WorkflowController@getWorkflowPayoutAmountRules'                   ],
 
         // UPI
         'p2p_fetch_private'                        => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -1726,10 +1727,13 @@ final class Route
         'banking_account_create',
         'merchant_partner_configs_fetch',
         'banking_accounts_list',
+        'workflow_payout_amount_rules',
     ];
 
+    //
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
+    //
     public static $admin = [
         'org_get',
         'org_get_multiple',
@@ -2523,6 +2527,11 @@ final class Route
         'governor_rule_chain_list'                 => Permission::VIEW_GATEWAY_RULE,
         'governor_rule_chain_execute'              => Permission::VIEW_GATEWAY_RULE,
         'webhook_fire'                             => Permission::MAKE_API_CALL,
+
+        //Enable maker/checker for payouts
+        'payout_create'                            => Permission::CREATE_PAYOUT,
+        'payout_create_with_otp'                   => Permission::CREATE_PAYOUT,
+
         'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',

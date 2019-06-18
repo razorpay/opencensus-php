@@ -742,6 +742,14 @@ return [
                 'assignable'  => true,
             ],
         ],
+
+        PermissionCategory::PAYOUTS => [
+            Permission::CREATE_PAYOUT => [
+                'description' => 'Merchant can create a new payout',
+                'assignable'  => false,
+                'workflow'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

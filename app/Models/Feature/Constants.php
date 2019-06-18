@@ -183,6 +183,11 @@ class Constants
      */
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
+    /**
+     * Enables workflow feature on Payout for Business Banking (RazorpayX)
+     */
+    const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -359,6 +364,7 @@ class Constants
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
         self::TEST_MODE_SETTLEMENT            => true,
+        self::PAYOUT_WORKFLOWS                => true,
     ];
 
     // Entity type constants
@@ -481,6 +487,11 @@ class Constants
         self::X_PRO_INVITE              => [
             'feature'       => self::X_PRO_INVITE,
             'display_name'  => 'Razorpay X Pro Invite',
+            'documentation' => '',
+        ],
+        self::PAYOUT_WORKFLOWS          => [
+            'feature'       => self::PAYOUT_WORKFLOWS,
+            'display_name'  => 'Razorpay X - Workflows',
             'documentation' => '',
         ],
     ];
