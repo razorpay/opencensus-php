@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         Entity::NOTES                => 'sometimes|notes',
         Entity::BALANCE_ID           => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID      => 'required|public_id',
-        Entity::MODE                 => 'sometimes|nullable|string|custom',
+        Entity::MODE                 => 'sometimes|nullable|string',
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean|custom',
@@ -106,15 +106,24 @@ class Validator extends Base\Validator
 
     protected function validateMode($input)
     {
-        if (empty($input[Entity::MODE]) === true)
-        {
-            return;
-        }
-
         /** @var Entity $payout */
         $payout = $this->entity;
 
-        $mode = $input[Entity::MODE];
+        //
+        // We use mode from the entity and not from the input, because
+        // in case of UPI, we set the mode to UPI in modifiers (called in build).
+        // But this particular validateMode function is not called via build.
+        // It's explicitly called later after build. Since we don't pass input by
+        // reference to build, this function does not have the modified input.
+        // Due to this, we would end up NOT validating mode for UPI.
+        // Hence, we take the mode from the entity directly which would be filled by build.
+        //
+        $mode = $payout->getMode();
+
+        if (empty($mode) === true)
+        {
+            return;
+        }
 
         $fundAccount = $payout->fundAccount;
 
@@ -133,7 +142,7 @@ class Validator extends Base\Validator
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
-        $maxUpiAmount  = FundAccount\Validator::MAX_VPA_AMOUNT;
+        $maxUpiAmount  = FundAccount\Validator::MAX_UPI_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
             (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
