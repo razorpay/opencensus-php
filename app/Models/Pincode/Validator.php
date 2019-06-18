@@ -13,8 +13,8 @@ class Validator
 
     public function validate($pincode): bool
     {
-        return (preg_match(Pincode::REGEX[$this->country], $pincode) === 1) and
+        return ((preg_match(Pincode::REGEX[$this->country], $pincode) === 1) and
             ($pincode <= Pincode::MAX_PINCODE[$this->country]) and
-            ($pincode >= Pincode::MIN_PINCODE[$this->country]);
+            ($pincode >= Pincode::MIN_PINCODE[$this->country]));
     }
 }
