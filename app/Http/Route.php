@@ -2932,6 +2932,7 @@ final class Route
         'virtual_account_fetch'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
+        'bharat_qr_pay_test'                   => [Feature::VIRTUAL_ACCOUNTS, Feature::BHARAT_QR],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa_old'             => [Feature::ENABLE_VPA_VALIDATE],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
