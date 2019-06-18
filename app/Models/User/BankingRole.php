@@ -49,13 +49,12 @@ class BankingRole
         return defined(get_class() . '::' . strtoupper($action));
     }
 
-    public static function getAllRolesForMerchant(Merchant\Entity $merchant): array
+    public static function getAllRolesForMerchant(Merchant\Entity $merchant = null): array
     {
         $bankingRoles = self::$defaultRoles;
 
-        $workflowsEnabled = $merchant->isFeatureEnabled(Feature\Constants::PAYOUT_WORKFLOWS);
-
-        if ($workflowsEnabled === true)
+        if (($merchant !== null) and
+            ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT_WORKFLOWS)))
         {
             $bankingRoles = array_merge($bankingRoles, self::$workflowRoles);
         }

@@ -80,7 +80,7 @@ class Role
         return defined(get_class() . '::' . strtoupper($action));
     }
 
-    public static function validateProductRoleForMerchant(string $role, string $product, Merchant\Entity $merchant): bool
+    public static function validateProductRoleForMerchant(string $role, string $product, Merchant\Entity $merchant = null): bool
     {
         switch ($product)
         {

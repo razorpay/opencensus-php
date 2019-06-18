@@ -154,7 +154,7 @@ class Validator extends Base\Validator
         $role    = $input[Entity::ROLE];
         $product = $input[Entity::PRODUCT];
 
-        /** @var Merchant\Entity $merchant */
+        /** @var Merchant\Entity|null $merchant */
         $merchant = $this->entity->merchant;
 
         if (Role::validateProductRoleForMerchant($role, $product, $merchant) === false)
