@@ -68,6 +68,11 @@ class NotifyStatusUpdate extends Mailable
 
                 break;
 
+            case STATUS::CREATED:
+                $this->view('emails.banking_account.notify_status_created');
+
+                break;
+
             default:
                 throw new LogicException(
                     'Undefined Banking Account status: ' . $status,
@@ -81,7 +86,19 @@ class NotifyStatusUpdate extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Your RazorpayX Current Account is ' . $this->data['status'];
+        $status = $this->data['status'];
+
+        switch ($status)
+        {
+            case STATUS::CREATED:
+                $subject = 'Your request for RazorpayX Current Account has been received';
+
+                break;
+
+            default:
+                $subject = 'Your RazorpayX Current Account is ' . $this->data['status'];
+
+        }
 
         $this->subject($subject);
 

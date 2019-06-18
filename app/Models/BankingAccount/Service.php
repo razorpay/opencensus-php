@@ -44,6 +44,8 @@ class Service extends Base\Service
                 return null;
         }
 
+        $this->notifyUpdate('', [Entity::STATUS => Status::CREATED], $account);
+
         return $account->toArrayPublic();
     }
 
@@ -140,7 +142,7 @@ class Service extends Base\Service
                 break;
 
             default:
-                $result = false;
+                $result = true;
         }
 
         return $result;
