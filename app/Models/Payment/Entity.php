@@ -556,6 +556,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected function modifyContact(& $input)
     {
+        if (in_array($input['method'], [Method::BANK_TRANSFER, Method::UPI]) === true)
+        {
+            return $input['contact'];
+        }
+
         if (empty($input['contact']) === true)
         {
             $isPhoneOptional = $this->merchant->isPhoneOptional();
