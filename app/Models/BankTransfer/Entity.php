@@ -259,15 +259,15 @@ class Entity extends Base\PublicEntity
 
     public function setPublicPayerBankAccountAttribute(array & $array)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::HIDE_VA_PAYER_BANK_DETAIL) === true)
+        {
+            unset($array[self::PAYER_BANK_ACCOUNT]);
+
+            return;
+        }
+
         if ($this->getPayerBankAccountId() !== null)
         {
-            if ($this->merchant->isFeatureEnabled(Feature\Constants::HIDE_VA_PAYER_BANK_DETAIL) === true)
-            {
-                unset($array[self::PAYER_BANK_ACCOUNT]);
-
-                return;
-            }
-
             $array[self::PAYER_BANK_ACCOUNT] = $this->payerBankAccount->toArrayPublic();
         }
     }
