@@ -3,13 +3,17 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
-
 use RZP\Base;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const MIN_CLOSEBY_SECS = 900;
+
     protected static $createRules = [
         Entity::NAME                            => 'filled|string|max:40',
         Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
@@ -19,6 +23,7 @@ class Validator extends Base\Validator
         Entity::RECEIVERS                       => 'bail|required|array|custom',
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
+        Entity::CLOSE_BY                        => 'sometimes|epoch|nullable|custom',
     ];
 
     protected static $editRules = [
@@ -26,6 +31,7 @@ class Validator extends Base\Validator
         Entity::STATUS          => 'sometimes|in:closed',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::NOTES           => 'sometimes|notes',
+        Entity::CLOSE_BY        => 'sometimes|epoch|nullable',
     ];
 
     protected static $bankAccountReceiverOptionRules = [
@@ -94,6 +100,20 @@ class Validator extends Base\Validator
                 [
                     Entity::ID => $this->entity->getId(),
                 ]);
+        }
+    }
+
+    public function validateCloseBy(string $attribute, int $closeBy)
+    {
+        $now = Carbon::now(Timezone::IST);
+
+        $minCloseBy = $now->copy()->addSeconds(self::MIN_CLOSEBY_SECS);
+
+        if ($closeBy < $minCloseBy->getTimestamp())
+        {
+            $message = 'close_by should be at least ' . $minCloseBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 }

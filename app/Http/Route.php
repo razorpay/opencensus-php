@@ -302,6 +302,7 @@ final class Route
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
         'virtual_account_refund_excess'            => ['post',     'virtual_accounts/refund/excess',                 'VirtualAccountController@refundExcessPayments'                     ],
+        'virtual_account_close_cron'               => ['post',     'virtual_accounts/close',                         'VirtualAccountController@closeAccountsByCloseBy'                   ],
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -1474,6 +1475,7 @@ final class Route
         'user_reset_password_token',
         'razorx_guest',
         'virtual_account_refund_excess',
+        'virtual_account_close_cron',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
         'lambda_post_h2h',
@@ -2750,6 +2752,7 @@ final class Route
             'payments_downtime_trigger_cron',
             'payment_card_vault_migrate',
             'fund_account_validate_retry_all',
+            'virtual_account_close_cron',
         ],
 
         'subscriptions' => [

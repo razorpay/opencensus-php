@@ -309,6 +309,15 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
+    public function updateClosedAt(Entity $virtualAccount, int $closedAt)
+    {
+        $virtualAccount->setClosedAt($closedAt);
+
+        $this->repo->saveOrFail($virtualAccount);
+
+        return $virtualAccount;
+    }
+
     protected function verifyBankTransferEnabled(Merchant $merchant)
     {
         $merchantMethods = $merchant->getMethods();

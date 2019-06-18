@@ -46,6 +46,9 @@ class Entity extends Base\PublicEntity
     const TYPES                = 'types';
     const BANK_ACCOUNT         = 'bank_account';
     const NUMERIC              = 'numeric';
+    const CLOSE_BY             = 'close_by';
+
+    const CLOSED_AT            = 'closed_at';
 
     const DELETED_AT           = 'deleted_at';
 
@@ -62,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTOR,
         self::DESCRIPTION,
         self::AMOUNT_EXPECTED,
+        self::CLOSE_BY,
     ];
 
     protected $public = [
@@ -76,6 +80,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::RECEIVERS,
         self::CREATED_AT,
+        self::CLOSE_BY,
+        self::CLOSED_AT,
     ];
 
     protected $publicSetters = [
@@ -105,6 +111,13 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::RECEIVERS,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::CLOSE_BY,
+        self::CLOSED_AT,
     ];
 
     protected static $sign = 'va';
@@ -245,6 +258,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTOR);
     }
 
+    public function getCloseBy()
+    {
+        return $this->getAttribute(self::CLOSE_BY);
+    }
+
     protected function getReceiversAttribute()
     {
         $receivers = [];
@@ -314,6 +332,11 @@ class Entity extends Base\PublicEntity
     public function setAmountReceived(int $amount)
     {
         $this->setAttribute(self::AMOUNT_RECEIVED, $amount);
+    }
+
+    public function setClosedAt(int $closedAt)
+    {
+        $this->setAttribute(self::CLOSED_AT, $closedAt);
     }
 
     protected function setPublicCustomerIdAttribute(array & $array)

@@ -5014,3 +5014,8 @@ ALTER TABLE `transactions`
 ALTER TABLE `reversals`
     ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
     ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
+    ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
+    ADD INDEX virtual_accounts_close_by_index (close_by);

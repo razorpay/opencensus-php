@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -96,5 +97,17 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::BALANCE_ID, $balanceId)
                     ->exists();
+    }
+
+    public function findAccountsToBeClosed()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $query = $this->newQuery()
+                    ->where(Entity::STATUS, '!=', Status::CLOSED)
+                    ->whereNotNull(Entity::CLOSE_BY)
+                    ->where(Entity::CLOSE_BY, '<', $currentTime);
+
+        return $query->get();
     }
 }
