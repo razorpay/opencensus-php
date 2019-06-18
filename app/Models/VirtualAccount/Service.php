@@ -183,9 +183,7 @@ class Service extends Base\Service
 
                 $failure++;
 
-                $failures[] = [
-                    'virtual_account_id' => $virtualAccount->getPublicId(),
-                ];
+                $failures[] = $virtualAccount->getPublicId();
             }
         }
 
