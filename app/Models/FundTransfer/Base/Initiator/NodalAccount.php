@@ -37,6 +37,9 @@ abstract class NodalAccount extends Base\Core
     const RTGS_CUTOFF_HOUR_MAX   = 15;
     const RTGS_CUTOFF_MINUTE_MAX = 45;
 
+    const RTGS_REVISED_CUTOFF_HOUR_MAX   = 17;
+    const RTGS_REVISED_CUTOFF_MINUTE_MAX = 30;
+
     protected $batchFundTransfer = null;
 
     protected $amount = 0;

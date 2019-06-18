@@ -9,6 +9,7 @@ use phpseclib\Crypt\AES;
 use RZP\Models\Base;
 use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -304,5 +305,39 @@ class NodalAccount extends NodalBase\FileProcessor
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    protected function getTransferMode($amount, Merchant\Entity $merchant): string
+    {
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $mode = Mode::NEFT;
+
+        $rtgsMinCutoffTime = Carbon::createFromTime(static::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)->getTimestamp();
+
+        $rtgsMaxCutoffTime = Carbon::createFromTime(
+            static::RTGS_REVISED_CUTOFF_HOUR_MAX,
+            static::RTGS_REVISED_CUTOFF_MINUTE_MAX,
+            0,
+            Timezone::IST)->getTimestamp();
+
+        if ((($now >= $rtgsMinCutoffTime) and
+                ($now <= $rtgsMaxCutoffTime)) and
+            ($amount >= self::MIN_RTGS_AMOUNT))
+        {
+            $mode = Mode::RTGS;
+        }
+
+        //
+        // Need this only for Piggy merchants currently. Hence
+        // the check against parentId and not the merchantId.
+        // Temporary solution. Proper solution coming soon.
+        //
+        if (in_array($merchant->getParentId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $mode = Mode::NEFT;
+        }
+
+        return $mode;
     }
 }
