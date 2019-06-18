@@ -81,7 +81,7 @@ class Constants
             'title'       => 'All new Payment Pages!',
             'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
             'start_ts'    => 1550695523,
-            'end_ts'      => 1553199300,
+            'end_ts'      => 1561984469,
             'icon'        => 'https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
             'buttons'     => [
                 [
@@ -118,8 +118,8 @@ class Constants
         [
             'title'       => 'Instant Settlements',
             'description' => 'Get all your settlements within the same working day with Razorpay Instant Settlements!',
-            'start_ts'    => 1560175200,
-            'end_ts'      => 1560794400,
+            'start_ts'    => 1560870052,
+            'end_ts'      => 1561485608,
             'icon'        => 'settlements',
             'buttons'     => [
                 [
