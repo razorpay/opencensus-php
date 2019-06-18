@@ -302,7 +302,7 @@ final class Route
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
         'virtual_account_refund_excess'            => ['post',     'virtual_accounts/refund/excess',                 'VirtualAccountController@refundExcessPayments'                     ],
-        'virtual_account_close_cron'               => ['post',     'virtual_accounts/close',                         'VirtualAccountController@closeAccountsByCloseBy'                   ],
+        'virtual_account_close_cron'               => ['post',     'virtual_accounts/close',                         'VirtualAccountController@closeVirtualAccountsByCloseBy'            ],
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],

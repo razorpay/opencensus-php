@@ -25,9 +25,9 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function closeAccountsByCloseBy()
+    public function closeVirtualAccountsByCloseBy()
     {
-        $response = $this->service()->closeAccountsByCloseBy();
+        $response = $this->service()->closeVirtualAccountsByCloseBy();
 
         return ApiResponse::json($response);
     }

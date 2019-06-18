@@ -159,11 +159,11 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
-    public function closeAccountsByCloseBy()
+    public function closeVirtualAccountsByCloseBy()
     {
         $virtualAccounts = $this->repo
-                               ->virtual_account
-                               ->fetchAccountsToBeClosed();
+                                ->virtual_account
+                                ->fetchVirtualAccountsToBeClosed();
 
         $success = $failure = 0;
 
@@ -173,7 +173,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->core->closeVirtualAccount($virtualAccount);
+                $this->core->close($virtualAccount);
 
                 $success++;
             }
@@ -209,7 +209,7 @@ class Service extends Base\Service
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $virtualAccount = $this->core->closeVirtualAccount($virtualAccount);
+        $virtualAccount = $this->core->close($virtualAccount);
 
         return $virtualAccount->toArrayPublic();
     }

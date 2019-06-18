@@ -310,7 +310,7 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    public function closeVirtualAccount(Entity $virtualAccount)
+    public function close(Entity $virtualAccount)
     {
         $virtualAccount->getValidator()->validateOfPrimaryBalance();
 

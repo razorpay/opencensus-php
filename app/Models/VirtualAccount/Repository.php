@@ -99,7 +99,7 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
-    public function fetchAccountsToBeClosed()
+    public function fetchVirtualAccountsToBeClosed()
     {
         $currentTime = Carbon::now()->getTimestamp();
 

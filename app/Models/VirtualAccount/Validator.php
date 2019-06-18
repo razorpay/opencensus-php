@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         Entity::RECEIVERS                       => 'bail|required|array|custom',
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
-        Entity::CLOSE_BY                        => 'sometimes|epoch|filled|custom',
+        Entity::CLOSE_BY                        => 'filled|epoch|custom',
     ];
 
     protected static $editRules = [
@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         Entity::STATUS          => 'sometimes|in:closed',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CLOSE_BY        => 'sometimes|epoch|filled|custom',
+        Entity::CLOSE_BY        => 'filled|epoch|custom',
     ];
 
     protected static $bankAccountReceiverOptionRules = [

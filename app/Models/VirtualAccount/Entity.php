@@ -48,7 +48,6 @@ class Entity extends Base\PublicEntity
     const BANK_ACCOUNT         = 'bank_account';
     const NUMERIC              = 'numeric';
     const CLOSE_BY             = 'close_by';
-
     const CLOSED_AT            = 'closed_at';
 
     const DELETED_AT           = 'deleted_at';
