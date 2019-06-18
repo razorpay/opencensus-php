@@ -601,7 +601,7 @@ class GatewayStatus extends BaseStatus
     public static function getFailureStatus(): array
     {
         return [
-            self::STATUS_CODE_FAILURE => array_keys(self::FAILURE_CODE_PUBLIC_MAPPING),
+            self::STATUS_CODE_FAILURE => [],
             self::STATUS_CODE_TIMEOUT => [
                 self::BT_RRC,
                 self::BT_RET,
