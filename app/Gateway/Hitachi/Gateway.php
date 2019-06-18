@@ -701,11 +701,11 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
+        $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
+
         $this->checkResponseAndThrowExceptionIfRequired($verify);
 
         $this->setVerifyStatus($verify);
-
-        $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
     }
 
     protected function checkResponseAndThrowExceptionIfRequired($verify)
