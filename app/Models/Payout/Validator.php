@@ -96,7 +96,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $fundAccountPayoutValidators = [
-        Entity::MODE,
+        'fund_account_mode',
     ];
 
     protected function validateMethod($attribute, $method)
@@ -104,7 +104,7 @@ class Validator extends Base\Validator
         Method::validateMethod($method);
     }
 
-    protected function validateMode($input)
+    protected function validateFundAccountMode($input)
     {
         /** @var Entity $payout */
         $payout = $this->entity;
@@ -120,14 +120,25 @@ class Validator extends Base\Validator
         //
         $mode = $payout->getMode();
 
-        if (empty($mode) === true)
-        {
-            return;
-        }
-
         $fundAccount = $payout->fundAccount;
 
         $accountType = $fundAccount->getAccountType();
+
+        if (empty($mode) === true)
+        {
+            // Going forward, we want to make `mode` mandatory for all payouts, irrespective of anything.
+            if ($accountType === FundAccount\Type::CARD)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The mode field is required for card payouts',
+                    Entity::MODE,
+                    [
+                        'input' => $input
+                    ]);
+            }
+
+            return;
+        }
 
         Mode::validateModeOfAccountType($mode, $accountType);
 
