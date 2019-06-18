@@ -277,6 +277,20 @@ app
           event: 'signup_start',
         });
 
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            conversionId: '987388',
+          },
+        });
+
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            txn_id: 'o1u9x',
+          },
+        });
+
         window.trackHubs({
           name: 'create_contact',
           data: {

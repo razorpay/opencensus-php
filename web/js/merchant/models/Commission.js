@@ -33,8 +33,8 @@ export default class Commission extends GenericEntity {
     });
   };
 
-  fetchDailyAggregateData = ({ from, to }) => {
-    return this.fetchAggregate(from, to, 'aggregate_daily').then(response => {
+  fetchDailyAggregateData = ({ from, to, queryType }) => {
+    return this.fetchAggregate(from, to, queryType).then(response => {
       if (response.success) {
         return {
           ...response,

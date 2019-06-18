@@ -276,7 +276,15 @@ export default class User {
     const currentMerchant = (this.merchants || {})[this.current];
     return (
       !!currentMerchant.partner_type &&
-      (currentMerchant.partner || {}).has_configs
+      (currentMerchant.partner || {}).has_commission_configs
+    );
+  }
+
+  get isHavingSubventionConfigs() {
+    const currentMerchant = (this.merchants || {})[this.current];
+    return (
+      !!currentMerchant.partner_type &&
+      (currentMerchant.partner || {}).has_subvention_configs
     );
   }
 

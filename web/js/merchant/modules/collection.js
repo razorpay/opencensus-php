@@ -163,8 +163,12 @@ export const fetchEmandatePayments = params => {
   return fetchAll(params, Payment, 'PAYMENTS');
 };
 
-export const fetchCommissions = params =>
-  fetchAll(params, Commission, 'COMMISSIONS');
+const fetchCommissions = params => fetchAll(params, Commission, 'COMMISSIONS');
+export const fetchEarnings = params =>
+  fetchCommissions({ ...params, model: 'commission' });
+export const fetchSubventions = params =>
+  fetchCommissions({ ...params, model: 'subvention' });
+
 export const commissionsReducer = makeActionCollectionReducer('COMMISSIONS');
 export const commissionsAggregateReducer = makeCollectionReducer(
   'COMMISSION_AGGREGATE'
