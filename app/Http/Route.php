@@ -625,6 +625,9 @@ final class Route
         'token_fetch_card'                         => ['get',      'tokens/{id}/card',                               'CustomerController@fetchTokenCard'                                 ],
         'addon_fetch_multiple'                     => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                             => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
+        'subscription_update'                      => ['patch',    'subscriptions/{id}',                             'SubscriptionController@updateSubscription'                         ],
+        'subscription_fetch_changes'               => ['get',      'subscriptions/{id}/retrieve_scheduled_changes',  'SubscriptionController@getFetchScheduledChanges'                   ],
+        'subscription_cancel_changes'              => ['post',     'subscriptions/{id}/cancel_scheduled_changes',    'SubscriptionController@getCancelScheduledChanges'                  ],
         'upi_fill_bank'                            => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
@@ -1312,6 +1315,9 @@ final class Route
         'subscription_item_fetch_multiple',
         'subscription_item_update',
         'subscription_item_delete',
+        'subscription_update',
+        'subscription_fetch_changes',
+        'subscription_cancel_changes',
         'p2p_fetch_private',
         'customer_collect_request_fetch_private',
         'payout_purpose_get',
@@ -2926,6 +2932,7 @@ final class Route
         'virtual_account_fetch'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
+        'bharat_qr_pay_test'                   => [Feature::VIRTUAL_ACCOUNTS, Feature::BHARAT_QR],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa_old'             => [Feature::ENABLE_VPA_VALIDATE],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
@@ -3049,7 +3056,10 @@ final class Route
         'subscription_item_fetch',
         'subscription_item_fetch_multiple',
         'subscription_item_update',
-        'subscription_item_delete'
+        'subscription_item_delete',
+        'subscription_update',
+        'subscription_fetch_changes',
+        'subscription_cancel_changes',
     ];
 
     // These routes are redirected after a feature check

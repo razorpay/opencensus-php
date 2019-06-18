@@ -8,7 +8,6 @@ use RZP\Jobs\Job;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
 
 /**
@@ -22,7 +21,7 @@ class BatchIssue extends Job
     /**
      * {@inheritDoc}
      */
-    protected $queueConfigKey = 'invoice';
+    protected $queueConfigKey = 'batch';
 
     /**
      * Batch entity id.
@@ -112,7 +111,7 @@ class BatchIssue extends Job
 
             foreach ($invoices as $invoice)
             {
-                $this->issueInvoiceAndNotify($invoice, $smsNotify, $emailNotify);
+                $this->issueInvoiceAndNotify($invoice, $smsNotify, $emailNotify, $this->batchId);
             }
 
             $timeTaken = microtime(true) - $timeStarted;
@@ -146,11 +145,13 @@ class BatchIssue extends Job
      * @param InvoiceModel\Entity $invoice
      * @param boolean             $smsNotify
      * @param boolean             $emailNotify
+     * @param string              $batchId
      */
     protected function issueInvoiceAndNotify(
         InvoiceModel\Entity $invoice,
         bool $smsNotify,
-        bool $emailNotify)
+        bool $emailNotify,
+        string $batchId)
     {
         // Setting email_status and sms_status as pending so
         // Notifier picks them
@@ -167,7 +168,7 @@ class BatchIssue extends Job
 
         try
         {
-            $this->core->issue($invoice, $invoice->merchant);
+            $this->core->issue($invoice, $invoice->merchant, $batchId);
         }
         catch (\Throwable $e)
         {

@@ -103,6 +103,7 @@ class Constants
     const IRCTC_METHODS                   = 'irctc_methods';
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
+    const TEST_MODE_SETTLEMENT            = 'test_mode_settlement';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
     const IIN_LISTING                     = 'iin_listing';
@@ -356,6 +357,7 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::TEST_MODE_SETTLEMENT            => true,
     ];
 
     // Entity type constants

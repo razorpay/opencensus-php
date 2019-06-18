@@ -30,4 +30,6 @@ final class RazorxTreatment
 
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
+
+    const CHANGE_QUEUE_BATCH_INVOICE = 'change_queue_batch_invoice';
 }

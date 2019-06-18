@@ -3,7 +3,6 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
@@ -11,9 +10,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Jobs\SettlementJob;
 use RZP\Models\BankAccount;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant as MerchantModel;
 
 class Processor extends Base\Core
@@ -154,7 +155,14 @@ class Processor extends Base\Core
             {
                 $this->traceSetlInitiating($channel);
 
-                $setlResponse = $this->createSettlements($channel, $useQueue);
+                if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true))
+                {
+                    $setlResponse = $this->createSettlementsForTestMode($channel);
+                }
+                else
+                {
+                    $setlResponse = $this->createSettlements($channel, $useQueue);
+                }
 
                 if ($useQueue === true)
                 {
@@ -431,7 +439,8 @@ class Processor extends Base\Core
         $this->trace->count(
             Metric::SETTLEMENTS_CREATED_TOTAL,
             [
-                Metric::CHANNEL => $channel
+                Metric::CHANNEL => $channel,
+                Metric::MODE    => $this->mode,
             ],
             $response['settlement_count']
         );
@@ -439,7 +448,8 @@ class Processor extends Base\Core
         $this->trace->count(
             Metric::TRANSACTIONS_PICKED_FOR_SETTLEMENT_TOTAL,
             [
-                Metric::CHANNEL => $channel
+                Metric::CHANNEL => $channel,
+                Metric::MODE    => $this->mode,
             ],
             $response['txn_count']
         );
@@ -528,6 +538,17 @@ class Processor extends Base\Core
         return $this->createSettlementEntities($groupedTxns, $channel);
     }
 
+    protected function createSettlementsForTestMode($channel): array
+    {
+        $mids = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::TEST_MODE_SETTLEMENT]);
+
+        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, $mids, []);
+
+        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+
+        return $this->createSettlementEntities($groupedTxns, $channel);
+    }
+
     protected function preSettlementProcessing(array $input)
     {
         $this->inititalizeVariables($input);
@@ -552,9 +573,8 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements($input, string $channel = null)
     {
-        $isTestMode = $this->isTestMode();
-
-        if ($isTestMode === true)
+        // adding this so test cases can run without below condition
+        if ($this->env === Environment::TESTING)
         {
             return [true, null];
         }
