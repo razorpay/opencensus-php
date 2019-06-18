@@ -77,7 +77,13 @@ class Entity
     const GATEWAY_FILE              = 'gateway_file';
     const BANK_ACCOUNT              = 'bank_account';
     const FILE_HANDLER              = 'file_handler';
-    const SUBSCRIPTION              = 'subscription';
+    // Subscription
+    const SUBSCRIPTION                  = 'subscription';
+    const SUBSCRIPTION_TRANSACTION      = 'subscription_transaction';
+    const SUBSCRIPTION_VERSION          = 'subscription_version';
+    const SUBSCRIPTION_CYCLE            = 'subscription_cycle';
+    const SUBSCRIPTION_UPDATE_REQUEST   = 'subscription_update_request';
+
     const ENTITY_OFFER              = 'entity_offer';
     const FUND_ACCOUNT              = 'fund_account';
     const ENTITY_ORIGIN             = 'entity_origin';
@@ -272,7 +278,7 @@ class Entity
         ],
         self::TERMINAL  => [
             QueryCacheConstants::VERSION => 'v1',
-            QueryCacheConstants::TTL     => 15,
+           QueryCacheConstants::TTL     => 15,
         ],
         self::PRICING  => [
             QueryCacheConstants::VERSION => 'v1',
@@ -285,6 +291,10 @@ class Entity
         self::METHODS  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 15,
+        ],
+        self::IIN  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 60,
         ],
     ];
 
@@ -502,6 +512,11 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
+
+        self::SUBSCRIPTION_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\UpdateRequest::class,
+        self::SUBSCRIPTION_VERSION        => \RZP\Models\Plan\Subscription\Version::class,
+        self::SUBSCRIPTION_CYCLE          => \RZP\Models\Plan\Subscription\Cycle::class,
+        self::SUBSCRIPTION_TRANSACTION    => \RZP\Models\Plan\Subscription\SubscriptionTransaction::class
     ];
 
     protected static $repository = [

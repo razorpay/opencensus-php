@@ -6,7 +6,6 @@ use RZP\Jobs\Job;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Models\Invoice as InvoiceModel;
-use RZP\Jobs\Invoice\Job as InvoiceJob;
 
 /**
  * - Asynchronously sends notification all issued invoices/payment links of given batch.
@@ -97,7 +96,7 @@ class BatchNotify extends Job
         {
             $this->repoManager->saveOrFail($invoice);
 
-            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            BatchJob::dispatch($this->mode, BatchJob::ISSUED, $invoice->getId());
         }
         catch (\Throwable $e)
         {

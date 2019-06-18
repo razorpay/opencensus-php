@@ -73,7 +73,7 @@ final class Route
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
-        'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger',                     'DowntimeController@triggerDowntimes'                               ],
+        'payments_downtime_trigger_cron'           => ['post',     'payments/downtimes/trigger/{status}',            'DowntimeController@triggerDowntimes'                               ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
         'batch_validate_file'                      => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],

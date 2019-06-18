@@ -43,6 +43,7 @@ final class Metric
     // ------------------------- Dimensions -------------------------
 
     const CHANNEL           = 'channel';
+    const MODE              = 'mode';
 
     // ------ Dimension values for failures ------
 

@@ -209,14 +209,18 @@ class Validator extends Base\Validator
     ];
 
     protected static $instantActivationRules = [
-        Entity::BUSINESS_CATEGORY    => 'required|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY => 'sometimes|max:255|custom',
-        Entity::PROMOTER_PAN         => 'required|pan',
-        Entity::BUSINESS_NAME        => 'required|string|max:255',
-        Entity::BUSINESS_MODEL       => 'sometimes|max:255',
-        Entity::BUSINESS_WEBSITE     => 'sometimes|active_url|max:255|nullable',
-        Entity::BUSINESS_DBA         => 'required|string|max:255',
-        Entity::BUSINESS_TYPE        => 'required|numeric|digits_between:1,10',
+        Entity::BUSINESS_CATEGORY          => 'required|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY       => 'sometimes|max:255|custom',
+        Entity::PROMOTER_PAN               => 'required|pan',
+        Entity::BUSINESS_NAME              => 'required|string|max:255',
+        Entity::BUSINESS_MODEL             => 'sometimes|max:255',
+        Entity::BUSINESS_WEBSITE           => 'sometimes|active_url|max:255|nullable',
+        Entity::BUSINESS_DBA               => 'required|string|max:255',
+        Entity::BUSINESS_TYPE              => 'required|numeric|digits_between:1,10',
+        Entity::BUSINESS_OPERATION_ADDRESS => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_STATE   => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY    => 'sometimes|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN     => 'sometimes|max:15',
     ];
 
     protected static $websiteDetailsRules = [

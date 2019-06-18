@@ -983,7 +983,7 @@ class Entity extends Base\PublicEntity
         $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
         $publicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
-        $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
+        $cardTransferRefundFeatureEnabled = $this->isRefundSpeedInstant();
 
         if (($displayRefundPublicStatus === true) or
             ($publicStatusFeatureEnabled === true) or
