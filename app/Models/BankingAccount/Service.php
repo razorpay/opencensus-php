@@ -54,6 +54,8 @@ class Service extends Base\Service
 
         $channel = $bankingAccount->getChannel();
 
+        $previousStatus = $bankingAccount->getStatus();
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_EDIT,
             [
@@ -75,9 +77,7 @@ class Service extends Base\Service
                 return null;
         }
 
-        $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant());
-
-        Mail::queue($mail);
+        $this->notifyUpdate($previousStatus, $input, $bankingAccount);
 
         return $account->toArrayPublic();
     }
@@ -94,5 +94,55 @@ class Service extends Base\Service
             'Banking Account logic undefined for channel: ' . $channel,
             null,
             $input);
+    }
+
+    protected function notifyUpdate(string $previousStatus, array $input, Entity $bankingAccount)
+    {
+        if (($this->isStatusChanged($previousStatus, $input[Entity::STATUS]) === true) and
+            ($this->notifyStatusChange($previousStatus, $input[Entity::STATUS])) === true)
+        {
+            $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant());
+
+            Mail::queue($mail);
+        }
+    }
+
+    protected function isStatusChanged(string $previousStatus, string $newStatus): bool
+    {
+        return $previousStatus !== $newStatus;
+    }
+
+    protected function notifyStatusChange(string $previousStatus, string $newStatus): bool
+    {
+        switch ($newStatus)
+        {
+            case Status::INITIATED:
+                $result = in_array(
+                    $previousStatus,
+                    [Status::PROCESSED, Status::PROCESSING, Status::CANCELLED,],
+                    true) === false;
+
+                break;
+
+            case Status::PROCESSING:
+                $result = $previousStatus === Status::INITIATED;
+
+                break;
+
+            case Status::PROCESSED:
+                $result = $previousStatus === Status::PROCESSING;
+
+                break;
+
+            case Status::CANCELLED:
+                $result = $previousStatus === Status::PROCESSING;
+
+                break;
+
+            default:
+                $result = false;
+        }
+
+        return $result;
     }
 }
