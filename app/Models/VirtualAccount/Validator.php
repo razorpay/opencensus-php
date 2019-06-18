@@ -12,7 +12,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const MIN_CLOSEBY_SECS = 900;
+    // close by while creating a va should be atleast 15 mins ahead of current time
+    const MIN_CLOSE_BY_DIFF = 900;
 
     protected static $createRules = [
         Entity::NAME                            => 'filled|string|max:40',
@@ -23,7 +24,7 @@ class Validator extends Base\Validator
         Entity::RECEIVERS                       => 'bail|required|array|custom',
         Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
         Entity::NOTES                           => 'sometimes|notes',
-        Entity::CLOSE_BY                        => 'sometimes|epoch|nullable|custom',
+        Entity::CLOSE_BY                        => 'sometimes|epoch|filled|custom',
     ];
 
     protected static $editRules = [
@@ -31,7 +32,7 @@ class Validator extends Base\Validator
         Entity::STATUS          => 'sometimes|in:closed',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CLOSE_BY        => 'sometimes|epoch|nullable',
+        Entity::CLOSE_BY        => 'sometimes|epoch|filled|custom',
     ];
 
     protected static $bankAccountReceiverOptionRules = [
@@ -107,7 +108,7 @@ class Validator extends Base\Validator
     {
         $now = Carbon::now(Timezone::IST);
 
-        $minCloseBy = $now->copy()->addSeconds(self::MIN_CLOSEBY_SECS);
+        $minCloseBy = $now->copy()->addSeconds(self::MIN_CLOSE_BY_DIFF);
 
         if ($closeBy < $minCloseBy->getTimestamp())
         {

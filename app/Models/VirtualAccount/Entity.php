@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -79,9 +80,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
         self::RECEIVERS,
-        self::CREATED_AT,
         self::CLOSE_BY,
         self::CLOSED_AT,
+        self::CREATED_AT,
     ];
 
     protected $publicSetters = [
@@ -263,6 +264,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CLOSE_BY);
     }
 
+    public function getClosedAt()
+    {
+        return $this->getAttribute(self::CLOSED_AT);
+    }
+
     protected function getReceiversAttribute()
     {
         $receivers = [];
@@ -359,5 +365,16 @@ class Entity extends Base\PublicEntity
     public function incrementAmountReversed(int $amount)
     {
         $this->increment(self::AMOUNT_REVERSED, $amount);
+    }
+
+    public function isDueToBeClosed()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if (($this->getCloseBy() !== null) and
+            ($this->getCloseBy() < $currentTime) === true)
+        {
+            return true;
+        }
     }
 }

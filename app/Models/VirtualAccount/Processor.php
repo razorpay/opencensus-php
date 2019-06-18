@@ -3,7 +3,6 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -269,28 +268,7 @@ abstract class Processor extends Base\Core
             return false;
         }
 
-        if (($this->checkIfVirtualAccountHasToBeClosed()) === true)
-        {
-            return false;
-        }
-
         return true;
-    }
-
-    protected function checkIfVirtualAccountHasToBeClosed()
-    {
-        if ($this->virtualAccount === null)
-        {
-            return false;
-        }
-
-        $currentTime = Carbon::now()->getTimestamp();
-
-        if (($this->virtualAccount->getCloseBy() !== null) and
-            ($this->virtualAccount->getCloseBy() < $currentTime) === true)
-        {
-            return true;
-        }
     }
 
     protected function useSharedVirtualAccount(Base\PublicEntity $entity): bool
@@ -302,6 +280,11 @@ abstract class Processor extends Base\Core
             ($this->isLiveMode() === true))
         {
            return true;
+        }
+
+        if ($this->virtualAccount->isDueToBeClosed() === true)
+        {
+            return true;
         }
 
         $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();

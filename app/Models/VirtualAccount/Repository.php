@@ -99,14 +99,14 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
-    public function findAccountsToBeClosed()
+    public function fetchAccountsToBeClosed()
     {
         $currentTime = Carbon::now()->getTimestamp();
 
         $query = $this->newQuery()
-                    ->where(Entity::STATUS, '!=', Status::CLOSED)
-                    ->whereNotNull(Entity::CLOSE_BY)
-                    ->where(Entity::CLOSE_BY, '<', $currentTime);
+                      ->where(Entity::STATUS, '=', Status::ACTIVE)
+                      ->whereNotNull(Entity::CLOSE_BY)
+                      ->where(Entity::CLOSE_BY, '<', $currentTime);
 
         return $query->get();
     }

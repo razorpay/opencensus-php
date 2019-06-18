@@ -2,7 +2,6 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -164,23 +163,17 @@ class Service extends Base\Service
     {
         $virtualAccounts = $this->repo
                                ->virtual_account
-                               ->findAccountsToBeClosed();
+                               ->fetchAccountsToBeClosed();
 
         $success = $failure = 0;
 
         $failures = [];
 
-        $currentTime = Carbon::now()->getTimestamp();
-
         foreach ($virtualAccounts as $virtualAccount)
         {
             try
             {
-                $virtualAccount->getValidator()->validateOfPrimaryBalance();
-
-                $this->core->updateStatus($virtualAccount, STATUS::CLOSED);
-
-                $this->core->updateClosedAt($virtualAccount, $currentTime);
+                $this->core->closeVirtualAccount($virtualAccount);
 
                 $success++;
             }
@@ -216,9 +209,7 @@ class Service extends Base\Service
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $virtualAccount->getValidator()->validateOfPrimaryBalance();
-
-        $virtualAccount = $this->core->updateStatus($virtualAccount, STATUS::CLOSED);
+        $virtualAccount = $this->core->closeVirtualAccount($virtualAccount);
 
         return $virtualAccount->toArrayPublic();
     }
