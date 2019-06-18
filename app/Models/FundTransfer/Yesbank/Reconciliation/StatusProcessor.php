@@ -175,10 +175,12 @@ class StatusProcessor extends BaseRowProcessor
         {
             $this->reconEntity->setBankStatusCode($currentStatus);
         }
+        else
+        {
+            $this->reconEntity->setBankStatusCode($this->parsedData[Constants::BANK_STATUS_CODE]);
+        }
 
         $this->reconEntity->setBankResponseCode($this->parsedData[Constants::BANK_RESPONSE_CODE]);
-
-        $this->reconEntity->setBankResponseCode($this->parsedData[Constants::STATUS_CODE]);
 
         $this->reconEntity->setDateTime($this->parsedData[Constants::PAYMENT_DATE]);
 

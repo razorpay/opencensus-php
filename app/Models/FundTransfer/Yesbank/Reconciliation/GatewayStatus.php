@@ -655,7 +655,7 @@ class GatewayStatus extends BaseStatus
         return [];
     }
 
-    public static function isCriticalStatus($bankStatusCode): bool
+    public static function isCriticalStatus($bankStatusCode, $bankResponseCode): bool
     {
         $statusCodes = static::getCriticalErrorStatus();
 

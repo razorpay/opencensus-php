@@ -178,7 +178,7 @@ class Transfer extends Base
      */
     protected function mockGenerateSuccessResponse(): string
     {
-        $status = ValidStatus::getSuccessfulStatus();
+        $status = array_keys(ValidStatus::getSuccessfulStatus());
 
         return json_encode([
             $this->responseIdentifier => [
