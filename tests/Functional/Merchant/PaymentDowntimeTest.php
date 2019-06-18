@@ -68,6 +68,9 @@ class PaymentDowntimeTest extends TestCase
 
         $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
 
+        // Trigger downtime started cron
+        $this->activateDowntimes('started');
+
         $request = [
             'content' => [
                 'end' => strval(Carbon::now()->subMinutes(30)->timestamp),
@@ -81,7 +84,8 @@ class PaymentDowntimeTest extends TestCase
         $downtime = $this->getLastEntity('payment.downtime', true);
         $this->assertNotNull($downtime['end']);
 
-        $this->activateDowntimes();
+        // Trigger downtime resolved cron
+        $this->activateDowntimes('resolved');
 
         $downtime = $this->getLastEntity('payment.downtime', true);
         $this->assertEquals('resolved', $downtime['status']);
@@ -145,7 +149,7 @@ class PaymentDowntimeTest extends TestCase
     {
         $this->testGetUpiDowntimeForAllGateways();
 
-        $this->activateDowntimes();
+        $this->activateDowntimes('started');
 
         $paymentDowntime = $this->getLastEntity('payment.downtime', true);
         $this->assertEquals('started', $paymentDowntime['status']);
@@ -538,7 +542,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->setInfernoExpectations(['testPaymentDowntimeStartedWebhook']);
 
-        $this->activateDowntimes();
+        $this->activateDowntimes('started');
     }
 
     public function testWebhookForPaymentDowntimeResolvedEvent()
@@ -572,13 +576,14 @@ class PaymentDowntimeTest extends TestCase
         $this->assertEquals($downtime['issuer'], 'SBIN');
         $this->assertEquals($downtime['status'], 'scheduled');
 
-        $this->setInfernoExpectations(['testPaymentDowntimeStartedWebhook',
-                                       'testPaymentDowntimeResolvedWebhook']);
+        $this->activateDowntimes('started');
+
+        $this->setInfernoExpectations(['testPaymentDowntimeResolvedWebhook']);
 
         // 90 minutes elapsed
         Carbon::setTestNow(Carbon::now()->addMinutes(90));
 
-        $this->activateDowntimes();
+        $this->activateDowntimes('resolved');
     }
 
     protected function createUpiAllGatewayDowntime()
@@ -649,12 +654,12 @@ class PaymentDowntimeTest extends TestCase
         }
     }
 
-    protected function activateDowntimes()
+    protected function activateDowntimes(string $status)
     {
         $this->ba->appAuth();
 
         $this->makeRequestAndGetContent([
-            'url'     => '/payments/downtimes/trigger',
+            'url'     => '/payments/downtimes/trigger/' . $status,
             'method'  => 'POST',
             'content' => [],
         ]);

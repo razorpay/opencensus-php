@@ -23,7 +23,10 @@ return [
         'email'             => 'a@b.com',
         'contact'           => '+919918899029',
         'notes'             => [
-        'merchant_order_id' => 'random order id',
+            'merchant_order_id'   => 'random order id',
+        ],
+        'acquirer_data'     => [
+            'bank_transaction_id' => '12345678',
         ],
         'gateway'           => 'netbanking_bob',
         'signed'            => false,
@@ -56,7 +59,10 @@ return [
         'email'             => 'a@b.com',
         'contact'           => '+919918899029',
         'notes'             => [
-            'merchant_order_id' => 'random order id',
+            'merchant_order_id'   => 'random order id',
+        ],
+        'acquirer_data'     => [
+            'bank_transaction_id' => '12345678',
         ],
         'gateway'           => 'netbanking_bob',
         'signed'            => false,

@@ -196,6 +196,8 @@ class Gateway
         self::NETBANKING_AXIS   => self::AXIS,
         self::PAYTM             => self::PAYTM,
         self::AMEX              => self::AMEX,
+        self::UPI_MINDGATE      => self::HDFC,
+        self::ISG               => self::HDFC,
     ];
 
     /**
