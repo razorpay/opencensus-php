@@ -27,8 +27,6 @@ class ApiTraceProcessor
 
         $this->addMerchantId($record);
 
-        $this->addKeyId($record);
-
         $this->addDashboardHeaders($record);
 
         return $record;
@@ -74,11 +72,6 @@ class ApiTraceProcessor
     protected function addMerchantId(&$record)
     {
         $record['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
-    }
-
-    protected function addKeyId(&$record)
-    {
-        $record['request']['key_id'] = optional($this->app['basicauth']->getKeyEntity())->getId();
     }
 
     protected function addDashboardHeaders(&$record)
