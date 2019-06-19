@@ -751,13 +751,6 @@ class Gateway
      * @var array
      */
     public static $gatewayNetworkPurchaseSupport = [
-        self::HDFC                  => [],
-        self::AXIS_MIGS             => [],
-        self::AMEX                  => [],
-        self::CYBERSOURCE           => [],
-        self::PAYSECURE             => [],
-        self::FIRST_DATA            => [],
-        self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [
             self::NOT_SUPPORTED     => [Network::RUPAY]
         ],
