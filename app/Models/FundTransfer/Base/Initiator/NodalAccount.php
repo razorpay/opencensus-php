@@ -477,6 +477,10 @@ abstract class NodalAccount extends Base\Core
             $mode = Mode::RTGS;
         }
 
+        if (in_array($merchant->getParentId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $mode = Mode::NEFT;
+        }
         return $mode;
     }
 }
