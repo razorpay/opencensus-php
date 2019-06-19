@@ -11,6 +11,7 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use RZP\Events;
 use RZP\Jobs\Job;
 use RZP\Listeners;
+use RZP\Events\P2p;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -65,6 +66,20 @@ class EventServiceProvider extends ServiceProvider
         QueueEvents\JobExceptionOccurred::class => [
             Listeners\QueueEventListener::class,
         ],
+
+        P2p\TransactionCreated::class => [
+            Listeners\P2pWebhookListener::class,
+            Listeners\P2pNotificationListener::class,
+        ],
+        P2p\TransactionCompleted::class => [
+            Listeners\P2pWebhookListener::class,
+            Listeners\P2pNotificationListener::class,
+        ],
+        P2p\TransactionFailed::class => [
+            Listeners\P2pWebhookListener::class,
+            Listeners\P2pNotificationListener::class,
+        ],
+
     ];
 
     public function boot()

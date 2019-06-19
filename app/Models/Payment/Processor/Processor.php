@@ -450,10 +450,16 @@ class Processor
     {
         $this->verifyCardlessEmiEnabled();
 
-        if ((empty($input['ott']) === false) or
-            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+        if ((empty($input['ott']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false))
         {
-            return null;
+            return;
+        }
+
+        if ((empty($input['emi_duration']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
+        {
+            return;
         }
 
         $merchant = $payment->merchant;
@@ -467,18 +473,16 @@ class Processor
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::CARDLESS_EMI);
 
-        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
-
-        $data = (new Customer\Raven)->sendOtp($input, $merchant);
+        $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
         $coproto = [
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
-                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
-                            ]),
+                    'method'   => 'cardless_emi',
+                    'provider' => $input['provider']
+                ]),
                 'method'  => 'POST',
                 'content' => $input,
             ],
@@ -486,11 +490,24 @@ class Processor
             'theme'      => $payment->merchant->getBrandColorElseDefault(),
             'merchant'   => $merchant->getDbaName(),
             'gateway'    => $this->getEncryptedGatewayText($gateway),
-            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
             'key_id'     => $this->ba->getPublicKey(),
             'version'    => '1',
             'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
         ];
+
+        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        {
+            $coproto['emi_plans'] = [
+                $input['provider'] => $checkAccountData['emi_plans']
+            ];
+            $coproto['lender_branding_url'] = $checkAccountData['lender_branding_url'];
+        }
+        else
+        {
+            (new Customer\Raven)->sendOtp($input, $merchant);
+
+            $coproto['resend_url'] = $this->route->getUrlWithPublicAuth('otp_post');
+        }
 
         return $coproto;
     }
@@ -2749,6 +2766,77 @@ class Processor
             2000);
 
         return $response;
+    }
+
+    //
+    // This function is used to reverse the payment's following attributes:
+    // 1. amount_refunded: amount_refunded - $refund[amount]
+    // 2. refund_status: {full to partial} {full to null} {partial to null}
+    // 3. status: {refunded to captured} only in the case of amount_refunded being changed from full to partial/null
+    //
+    public function revertPaymentToRefundableState(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $refund)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_UPDATE_INITIATED,
+                [
+                    'refund_id'                    => $refund->getId(),
+                    'payment_id'                   => $payment->getId(),
+                    'payment_status'               => $payment->getStatus(),
+                    'payment_refund_status'        => $payment->getRefundStatus(),
+                    'payment_amount_refunded'      => $payment->getAmountRefunded(),
+                    'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                ]);
+
+            $amountRefunded = $payment->getAmountRefunded();
+
+            $baseAmountRefunded = $payment->getBaseAmountRefunded();
+
+            $amountRefunded = $amountRefunded - $refund->getAmount();
+            $baseAmountRefunded = $baseAmountRefunded - $refund->getBaseAmount();
+
+            $payment->setAmountRefunded($amountRefunded);
+            $payment->setBaseAmountRefunded($baseAmountRefunded);
+
+            $this->resetPaymentStatusAndRefundStatus($payment);
+
+            $this->repo->saveOrFail($payment);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_STATUS_UPDATE_COMPLETE,
+                [
+                    'refund_id'                    => $refund->getId(),
+                    'payment_id'                   => $payment->getId(),
+                    'payment_status'               => $payment->getStatus(),
+                    'payment_refund_status'        => $payment->getRefundStatus(),
+                    'payment_amount_refunded'      => $payment->getAmountRefunded(),
+                    'payment_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                ]);
+        },
+        120,
+        ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+        20,
+        1000,
+        2000);
+    }
+
+    protected function resetPaymentStatusAndRefundStatus(Payment\Entity $payment)
+    {
+        // If total amount refund is 0, setting payment's refund status to null
+        if ($payment->getAmountRefunded() === 0)
+        {
+            $payment->setRefundStatus(Payment\RefundStatus::NULL);
+        }
+        // If total amount refund is not 0, setting payment's refund status to partial if not already in partial
+        else if ($payment->getAmountRefunded() !== $payment->getAmountAuthorized())
+        {
+            $payment->setRefundStatus(Payment\RefundStatus::PARTIAL);
+        }
+
+        $payment->setStatus(Payment\Status::CAPTURED);
     }
 
     protected function getUpiStatus(string $id)

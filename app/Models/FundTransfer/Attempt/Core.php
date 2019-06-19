@@ -492,20 +492,9 @@ class Core extends Base\Core
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
             }
 
-            if (empty($input[Entity::UTR]) === false)
-            {
-                $fta->setUtr($input[Entity::UTR]);
-            }
+            $fta = $this->updateFtaWithInput($input, $fta);
 
-            if (empty($input[Entity::MODE]) === false)
-            {
-                $fta->setMode($input[Entity::MODE]);
-            }
-
-            if (empty($input[AttemptConstants::BANK_PROCESSED_TIME]) === false)
-            {
-                $fta->setDateTime($input[AttemptConstants::BANK_PROCESSED_TIME]);
-            }
+            list($beneficiaryName, $internalError) = $this->getDataToUpdateFromInput($input);
 
             $fta->fill($input);
 
@@ -516,7 +505,7 @@ class Core extends Base\Core
 
             $this->repo->fund_transfer_attempt->saveOrFail($fta);
 
-            $this->updateSourceEntity($fta);
+            $this->updateSourceEntityByFta($fta, $beneficiaryName, $internalError);
 
             $this->updateMerchantEntity($fta);
 
@@ -645,6 +634,66 @@ class Core extends Base\Core
         }
     }
 
+    public function updateSourceEntityByFta(Entity $fta, $beneficiaryName, bool $internalError)
+    {
+        $ftaData = [
+            'bank_account_id'   => $fta->getBankAccountId(),
+            'vpa_id'            => $fta->getVpaId(),
+            'merchant_id'       => $fta->getMerchantId(),
+            'fta_id'            => $fta->getId(),
+            'source_id'         => $fta->source->getId(),
+            'beneficiary_name'  => $beneficiaryName,
+            'utr'               => $fta->getUtr(),
+            'mode'              => $fta->getMode(),
+            'remarks'           => $fta->getRemarks(),
+            'fta_status'        => $fta->getStatus(),
+            'is_fts'            => $fta->getIsFTS(),
+            'bank_status_code'  => $fta->getBankStatusCode(),
+            'internal_error'    => $internalError,
+            'failure_reason'    => $fta->getFailureReason(),
+        ];
+
+        $this->sourceReconByFta($fta->source, $ftaData);
+
+        $this->updateTransactionEntity($fta->source);
+    }
+
+    protected function sourceReconByFta($source, array $ftaData)
+    {
+        $this->trace->info(
+            TraceCode::FTA_SOURCE_PROCESSING_DATA,
+            $ftaData);
+
+        try
+        {
+            $entityType = $source->getEntity();
+
+            $sourceCoreClass = EntityConstant::getEntityNamespace($entityType) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateWithDetailsBeforeFtaRecon') === true)
+            {
+                $sourceCore->updateWithDetailsBeforeFtaRecon($source, $ftaData);
+            }
+
+            if (method_exists($sourceCore, 'updateStatusAfterFtaRecon') === true)
+            {
+                $sourceCore->updateStatusAfterFtaRecon($source, $ftaData);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
+                $ftaData
+            );
+        }
+    }
+
+
     /**
      * @param string $channel
      * @param array  $input
@@ -665,5 +714,51 @@ class Core extends Base\Core
         $response = (new $nodalAccountClass)->healthCheck($input);
 
         return $response;
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $fta
+     * @return array
+     */
+    public function getDataToUpdateFromInput(array $input)
+    {
+        $beneficiaryName = null;
+
+        if (empty($input[BankAccountEntity::BENEFICIARY_NAME]) === false)
+        {
+            $beneficiaryName = $input[BankAccountEntity::BENEFICIARY_NAME];
+        }
+
+        $internalError = false;
+
+        if (empty($input[AttemptConstants::INTERNAL_ERROR]) === false)
+        {
+            $internalError = $input[AttemptConstants::INTERNAL_ERROR];
+        }
+
+        return array($beneficiaryName, $internalError);
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $fta
+     * @return Entity
+     */
+    public function updateFtaWithInput(array $input, Entity $fta)
+    {
+        if (empty($input[Entity::UTR]) === false) {
+            $fta->setUtr($input[Entity::UTR]);
+        }
+
+        if (empty($input[Entity::MODE]) === false) {
+            $fta->setMode($input[Entity::MODE]);
+        }
+
+        if (empty($input[AttemptConstants::BANK_PROCESSED_TIME]) === false) {
+            $fta->setDateTime($input[AttemptConstants::BANK_PROCESSED_TIME]);
+        }
+
+        return $fta;
     }
 }

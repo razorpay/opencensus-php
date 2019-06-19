@@ -8,6 +8,7 @@ use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
+use RZP\Models\Admin\Role;
 
 class Validator extends Base\Validator
 {
@@ -77,7 +78,7 @@ class Validator extends Base\Validator
         }
         else if ($product === Product::BANKING)
         {
-            $dashboardRoles = User\Role::BANKING_ROLES;
+            $dashboardRoles = User\BankingRole::getAllRolesForMerchant($merchant);
         }
         else
         {

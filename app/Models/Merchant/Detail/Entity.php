@@ -210,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
         self::SUBMITTED,
         self::SUBMITTED_AT,
+        self::INTERNATIONAL_ACTIVATION_FLOW,
     ];
 
     protected $public = [

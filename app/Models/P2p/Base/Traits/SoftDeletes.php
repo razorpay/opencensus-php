@@ -7,4 +7,9 @@ use Illuminate\Database\Eloquent;
 trait SoftDeletes
 {
     use Eloquent\SoftDeletes;
+
+    public function canSoftDelete(): bool
+    {
+        return true;
+    }
 }

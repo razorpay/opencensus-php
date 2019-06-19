@@ -51,6 +51,8 @@ class Validator extends Base\Validator
         Entity::SOURCE_TYPE    => 'required_with:source_id|string',
         Entity::FAILURE_REASON => 'sometimes|string',
         Entity::MODE           => 'sometimes|string',
+        'beneficiary_name'     => 'sometimes|string',
+        'internal_error'       => 'sometimes|boolean',
         'bank_processed_time'  => 'sometimes|string',
         'fund_transfer_id'     => 'required|int',
         'extra_info'           => 'sometimes|string',

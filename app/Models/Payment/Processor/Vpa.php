@@ -19,7 +19,7 @@ trait Vpa
 
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
 
-        $terminals = $this->repo->terminal->findManyByPublicIds($terminalIds);
+        $terminals = $this->repo->terminal->findManyEnabledByIds($terminalIds);
 
         $count = count($terminals);
 

@@ -26,7 +26,7 @@ class Network
      */
     const DEFAULT_CARD_NETWORKS = 126;
 
-    public static $fullName = array(
+    public static $fullName = [
         self::AMEX    => 'American Express',
         self::DICL    => 'Diners Club',
         self::DISC    => 'Discover',
@@ -37,9 +37,10 @@ class Network
         self::UNKNOWN => 'Unknown',
         self::VISA    => 'Visa',
         self::UNP     => 'Union Pay',
-        self::BAJAJ   => 'Bajaj Finserv',);
+        self::BAJAJ   => 'Bajaj Finserv',
+    ];
 
-    public static $colorCodes = array(
+    public static $colorCodes = [
         self::AMEX    => '#2584C3',
         self::DICL    => '#6C89D9',
         self::MAES    => '#25C395',
@@ -48,9 +49,9 @@ class Network
         self::VISA    => '#C15482',
         self::BAJAJ   => '#0069B4',
         self::UNKNOWN => '#E74C3C'
-    );
+    ];
 
-    public static $networks = array(
+    public static $networks = [
         self::AMEX,
         self::DICL,
         self::JCB,
@@ -61,7 +62,7 @@ class Network
         self::VISA,
         self::DISC,
         self::BAJAJ
-    );
+    ];
 
     public static $cardNetworkMap = [
         Network::AMEX  => 1,
@@ -77,7 +78,7 @@ class Network
 
     // use https://regex101.com/
     // MC bin ranges (222100-272099,510000-559999,590000-599999)
-    public static $networkRegexes = array(
+    public static $networkRegexes = [
         self::BAJAJ => '/^203040/',
         self::MC    => '/^(5[1-5,9][0-9]{3}|222[1-8][0-9]{1}|2229[0-8]|22299|22[3-9][0-9]{2}|2[3-6][0-9]{3}|27[01][0-9]{2}|2720[0-8]|27209)[0-9]{1,}$/',
         self::VISA  => '/^4[0-9]{5,}$/',
@@ -88,9 +89,9 @@ class Network
         self::RUPAY => '/^(508[5-9]|6(069(8[5-9]|9)|07([0-8]|9([0-7]|8[0-4]))|08([0-4]|500)|52([2-9]|1[5-9])|53(0|1[0-4]))|353800)/',
         self::MAES  => '/^(50[1-7,9]|508[0-4]|63|66|6[8-9]|600[0-9]|6010|601[2-9]|60[2-5]|6060|609|61|620|621|6220|6221[0-1])[0-9]{1,}$/',
         self::DISC  => '/^6(?:011|5[0-9]{2})[0-9]{2,}$/',
-    );
+    ];
 
-    public static $unsupportedNetworks = array(
+    public static $unsupportedNetworks = [
 //        self::AMEX,
 //        self::DICL,
         self::DISC,
@@ -98,15 +99,16 @@ class Network
 //        self::MAES,
 //        self::RUPAY,
         self::UNP,
-     );
+    ];
 
-    public static $recurringNetworks = array(
+    public static $recurringNetworks = [
         self::VISA,
         self::MC,
-    );
+    ];
 
-    public static $cvvLength = array(
-        self::AMEX => 4);
+    public static $cvvLength = [
+        self::AMEX => 4
+    ];
 
     /**
      * Detects network on basis of iin.
@@ -263,6 +265,7 @@ class Network
     public static function getSupportedNetworksNamesMap()
     {
         $supported = array_diff(self::$networks, self::$unsupportedNetworks);
+
         return array_intersect_key(self::$fullName, array_flip($supported));
     }
 }

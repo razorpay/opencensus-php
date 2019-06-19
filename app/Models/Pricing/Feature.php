@@ -37,7 +37,8 @@ class Feature
      * @var array
      */
     const OPTIONAL_PRICING = [
-        self::TRANSFER
+        self::TRANSFER,
+        self::REFUND
     ];
 
     public static function validateFeature($feature)

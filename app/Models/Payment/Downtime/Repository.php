@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Downtime;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Payment\Downtime\Constants;
 use RZP\Models\Payment\Method;
 use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Entity as EntityConstants;
@@ -68,17 +69,13 @@ class Repository extends Base\Repository
 
     protected function addMethodSpecificQuery($query, $input)
     {
-        if ($input[Entity::METHOD] === Method::CARD)
+        $method = $input[Entity::METHOD];
+
+        if (array_key_exists($method, Constants::METHOD_QUERY_MAP) === true)
         {
-            $query->where(Entity::NETWORK, $input[Entity::NETWORK]);
-        }
-        else if ($input[Entity::METHOD] === Method::NETBANKING)
-        {
-            $query->where(Entity::ISSUER, $input[Entity::ISSUER]);
-        }
-        else if ($input[Entity::METHOD] === Method::WALLET)
-        {
-            $query->where(Entity::ISSUER, $input[Entity::ISSUER]);
+            $attribute = Constants::METHOD_QUERY_MAP[$method];
+
+            $query->where($attribute, $input[$attribute]);
         }
     }
 
@@ -87,6 +84,12 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->where(Entity::BEGIN, '<=', $now)
                       ->where(Entity::STATUS, '=', Status::SCHEDULED);
+
+        $query->where(function ($query)
+        {
+            $query->whereNull(Entity::END)
+                  ->orWhere(Entity::END, '>', Carbon::now()->getTimestamp());
+        });
 
         return $query->get();
     }
