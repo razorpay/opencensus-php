@@ -567,6 +567,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::CANCELLED);
     }
 
+    public function isStatusBeforeCreate()
+    {
+        return (in_array($this->getStatus(), Status::$preCreateStatuses, true) === true);
+    }
+
     /**
      * This is required for the FTA module.
      * FTA requires the sources to implement `isStatusFailed`
@@ -954,7 +959,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedIdOrNull($attributes[self::TRANSACTION_ID]);
+        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedIdOrNull($this->getTransactionId());
     }
 
     public function setPublicTransactionAttribute(array & $attributes)

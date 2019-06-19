@@ -577,7 +577,6 @@ class Core extends Base\Core
         string $entityName,
         string $permissionName)
     {
-
         $orgId = $this->app['basicauth']->getOrgId();
 
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);

@@ -53,6 +53,17 @@ class Status
         self::CANCELLED,
     ];
 
+    /**
+     * Payout statuses that are prior to the created state.
+     * Transactions and FTA are not created for these payouts yet.
+     *
+     * @var array
+     */
+    public static $preCreateStatuses = [
+        self::QUEUED,
+        self::PENDING,
+    ];
+
     public static function getPublicStatusFromInternalStatus($internalStatus): string
     {
         return static::$internalToPublicStatusMap[$internalStatus] ?? $internalStatus;

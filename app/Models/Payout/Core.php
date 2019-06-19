@@ -685,10 +685,10 @@ class Core extends Base\Core
     protected function dispatchFtaInitiate(Entity $payout)
     {
         //
-        // When we queue a payout, we don't create any transaction or FTA.
-        // We do it later when we actually process that queued payout.
+        // For payouts with status=(queued, pending), we don't create any transaction or FTA.
+        // We do it later when we actually process that payout.
         //
-        if ($payout->isStatusQueued() === true)
+        if ($payout->isStatusBeforeCreate() === true)
         {
             return;
         }

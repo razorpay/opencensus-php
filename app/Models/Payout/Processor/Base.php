@@ -15,6 +15,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Metric;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
@@ -64,6 +65,11 @@ class Base extends BaseCore
     protected $balance;
 
     /**
+     * @var bool
+     */
+    protected $workflowActivated = false;
+
+    /**
      * @var BankAccount\Entity|Vpa\Entity|Card\Entity
      */
     protected $fundTransferDestination;
@@ -76,10 +82,22 @@ class Base extends BaseCore
 
         $payout = $this->repo->transaction(function () use ($input)
         {
-            // Create a payout entity
-            $payout = $this->createPayoutEntity($input);
+            $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
+            {
+                return $this->createPayoutEntity($input);
+            });
+
+            if ($this->workflowActivated === true)
+            {
+                return $payout;
+            }
 
             $payoutType = $this->getPayoutType();
+
+            // Create a payout entity
+            //$payout = $this->createPayoutEntity($input);
+            //
+            //$payoutType = $this->getPayoutType();
 
             $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                            $payout,
@@ -190,6 +208,64 @@ class Base extends BaseCore
         return $this;
     }
 
+    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
+    {
+        $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        // Lol, haha
+        if ($areWorkflowsEnabled === false)
+        {
+            return $createPayoutCallback();
+        }
+
+        //
+        // Workflows module works on org and requires org details to be set in basicauth
+        // The current flows set and override org details at multiple places. We're setting
+        // this here explicitly to avoid bugs and missed flows. Not ideal, but not harmful either.
+        //
+        app('basicauth')->setOrgDetails($this->merchant->org);
+
+        $payout = null;
+
+        try
+        {
+            //
+            // Call the create Payout callback that will return a base Payout entity,
+            // which we further work with.
+            //
+            /** @var Payout\Entity $payout */
+            $payout = $createPayoutCallback();
+
+            //
+            // Initiate the workflow process. If a workflow is triggered successfully,
+            // this function will thrown an EarlyWorkflowResponse exception.
+            //
+            $this->app['workflow']
+                 ->setEntityAndId($payout->getEntity(), $payout->getId())
+                 ->setPermission(Permission\Name::CREATE_PAYOUT)
+                 ->handle((new \stdClass), $payout);
+        }
+        catch (Exception\EarlyWorkflowResponse $ex)
+        {
+            if ($payout === null)
+            {
+                //
+                // Throw a BadRequestException maybe -- something bad happened, payout was deinetely supposed
+                // to be created at this point. Needs debugging.
+                //
+            }
+
+            // Set payout to pending and move on
+            $payout->setStatus(Payout\Status::PENDING);
+
+            $this->repo->saveOrFail($payout);
+
+            $this->workflowActivated = true;
+        }
+
+        return $payout;
+    }
+
     /**
      * Set the customer relation for the Payout.
      * To be used only for the customer wallet use case: customer_id is treated
@@ -240,6 +316,7 @@ class Base extends BaseCore
      * @param array $input
      *
      * @return Payout\Entity
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function createPayoutEntity(array $input)
     {

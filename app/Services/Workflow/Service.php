@@ -387,7 +387,7 @@ class Service
 
         $this->setDiff($diff);
 
-        // Trigger the entite maker/checker (workflow) flow
+        // Trigger the entity maker/checker (workflow) flow
         $workflowAction = $this->trigger();
 
         $workflowAction = json_encode($workflowAction);
