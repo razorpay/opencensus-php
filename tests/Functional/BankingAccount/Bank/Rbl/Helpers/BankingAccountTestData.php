@@ -61,7 +61,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected channel is invalid.',
+                    'description' => 'Not a valid channel: TEST',
                 ],
             ],
             'status_code' => 400,

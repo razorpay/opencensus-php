@@ -408,6 +408,7 @@ final class Route
         'mock_sharp_payment_get'                   => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                        => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
         'mock_card_fss_payment'                    => ['get',      'gateway/mockfss/payment',                        'MockGatewayController@getFssPayment'                               ],
+        'mock_card_fss_payment_post'               => ['post',     'gateway/mockfss/payment',                        'MockGatewayController@getFssPayment'                               ],
         'mock_paysecure_payment'                   => ['post',     'gateway/mockpaysecure/payment',                  'MockGatewayController@postPaysecurePayment'                        ],
         'mock_sharp_payment_submit'                => ['post',     'gateway/mocksharp/payment/submit',               'MockGatewayController@postSharpPayment'                            ],
         'mock_netbanking_payment'                  => ['post',     'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
@@ -1109,6 +1110,7 @@ final class Route
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
 
@@ -1159,6 +1161,7 @@ final class Route
         'mock_cardless_emi_payment',
         'mock_emandate_payment',
         'mock_card_fss_payment',
+        'mock_card_fss_payment_post',
         'mock_paysecure_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
@@ -2106,6 +2109,7 @@ final class Route
         'governor_rule_chain_list',
         'governor_rule_chain_execute',
         'payment_on_hold_bulk_update',
+        'banking_serviceable_pincodes',
         'banking_account_update',
 
         // throttle settings routes
@@ -2982,7 +2986,11 @@ final class Route
         'pricing_add_plan_rule',
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
-        'pricing_update_plan_rule'
+        'pricing_update_plan_rule',
+        'merchant_schedule_bulk',
+        'methods_update_merchants',
+        'merchant_pricing_bulk',
+        'merchant_tags_bulk',
     ];
 
     /**
