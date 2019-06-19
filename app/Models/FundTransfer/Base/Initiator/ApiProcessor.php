@@ -165,6 +165,7 @@ abstract class ApiProcessor extends NodalAccount
 
     public function captureBankStatusMetric(
         string $channel,
+        string $product,
         array $failureStatus,
         array $successStatus,
         $statusCode,
@@ -175,6 +176,7 @@ abstract class ApiProcessor extends NodalAccount
             $this->trace->count(Metric::NODAL_FAILURE_STATUS_CODE, [
                 'channel'            => $channel,
                 'bank_failure_code'  => $bankSubStatus,
+                'product'            => $product,
             ]);
 
             $this->trace->count(Metric::NODAL_FAILURE_COUNT, [

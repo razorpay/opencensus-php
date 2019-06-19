@@ -141,9 +141,11 @@ class Status extends Base
 
         $beneName = $response[Constants::BENEFICIARY_NAME] ?? null;
 
+        $product = $this->entity->getSourceType();
         // capture failed response codes
         $this->captureBankStatusMetric(
             Channel::YESBANK,
+            $product,
             ValidStatus::getFailureStatus(),
             ValidStatus::getSuccessfulStatus(),
             ValidStatus::FAILED,
@@ -172,8 +174,11 @@ class Status extends Base
 
         $subCode = $response[Constants::CODE][Constants::SUB_CODE][Constants::VALUE] ?? null;
 
+        $product = $this->entity->getSourceType();
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
+            $product,
             ValidStatus::getFailureStatus(),
             ValidStatus::getSuccessfulStatus(),
             ValidStatus::FAILED,

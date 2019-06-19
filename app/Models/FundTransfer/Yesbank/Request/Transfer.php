@@ -426,9 +426,12 @@ class Transfer extends Base
 
         $publicFailureReason = Status::getPublicFailureReason($statusCode, $bankSubStatus);
 
+        $product = $this->entity->getSourceType();
+
         // capture failed response codes
         $this->captureBankStatusMetric(
             Channel::YESBANK,
+            $product,
             Status::getFailureStatus(),
             Status::getSuccessfulStatus(),
             $statusCode,
@@ -471,8 +474,11 @@ class Transfer extends Base
 
         $publicFailureReason = Status::getPublicFailureReason($statusCode, $bankSubStatus);
 
+        $product = $this->entity->getSourceType();
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
+            $product,
             Status::getFailureStatus(),
             Status::getSuccessfulStatus(),
             $statusCode,
