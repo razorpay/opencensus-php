@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
@@ -40,7 +39,7 @@ import PlanDetails from './PlanDetails';
     fetchSubscription,
   }
 )
-export default class UpdateSubscription extends Component {
+export default class UpdateSubscription extends React.Component {
   constructor(props) {
     super(props);
 
@@ -56,13 +55,8 @@ export default class UpdateSubscription extends Component {
   }
 
   componentWillMount = async () => {
-    if (!this.props.plans.length) {
-      await this.props.fetchPlans({ count: 100 });
-    }
-
-    if (!this.props.items.length) {
-      await this.props.fetchItems({ count: 100, type: 'addon' });
-    }
+    await this.props.fetchPlans({ count: 100 });
+    await this.props.fetchItems({ count: 100, type: 'addon' });
 
     if (this.props.subscription.entity.id !== this.props.id) {
       await this.fetchSubscription(this.props.id);
@@ -70,23 +64,29 @@ export default class UpdateSubscription extends Component {
       return;
     }
 
-    this.initUpdateSubscription();
+    if (this.props.subscription.entity.has_scheduled_changes) {
+      return this.fetchScheduledChanges(this.props.id);
+    }
+
+    this.initUpdateSubscription(this.props.subscription.entity);
   };
 
-  initUpdateSubscription = () => {
-    const { subscription: { entity: subscription, plan } } = this.props;
+  initUpdateSubscription = subscription => {
+    const { plans } = this.props;
 
     const fields = {
       id: subscription.id,
       plan_id: subscription.plan_id,
       quantity: subscription.quantity,
       start_at: subscription.start_at,
-      total_count: subscription.total_count,
+      remaining_count: subscription.total_count - subscription.paid_count,
     };
 
     if (['active'].includes(subscription.status)) {
       fields.schedule_change_at = 'now';
     }
+
+    const selectedPlan = findBy(plans.items, 'id', subscription.plan_id);
 
     this.setState({
       fields,
@@ -94,11 +94,15 @@ export default class UpdateSubscription extends Component {
       prevSubscription: {
         ...subscription,
       },
-      currency: plan.item.currency,
+      currency: selectedPlan.item.currency,
       internals: {
         _startsImmediately: !subscription.start_at,
       },
     });
+  };
+
+  fetchScheduledChanges = (id = this.props.id) => {
+    return fetchScheduledChanges(id).then(this.initUpdateSubscription);
   };
 
   fetchSubscription = (id = this.props.id) => {
@@ -151,7 +155,7 @@ export default class UpdateSubscription extends Component {
       prevSubscription.quantity !== fields.quantity ||
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
-      prevSubscription.total_count !== fields.total_count
+      prevSubscription.total_count !== fields.remaining_count
     );
   }
 
@@ -163,7 +167,9 @@ export default class UpdateSubscription extends Component {
       this.isFormChanged() &&
       (!!fields.plan_id &&
         (internals._startsImmediately || !!fields.start_at) &&
-        (validateTotalCount ? !validateTotalCount(fields.total_count) : true))
+        (validateTotalCount
+          ? !validateTotalCount(fields.remaining_count)
+          : true))
     );
   };
 
@@ -256,8 +262,8 @@ export default class UpdateSubscription extends Component {
       data.quantity = fields.quantity;
     }
 
-    if (prevSubscription.total_count !== fields.total_count) {
-      data.total_count = fields.total_count;
+    if (prevSubscription.remaining_count !== fields.remaining_count) {
+      data.remaining_count = fields.remaining_count;
     }
 
     if (prevSubscription.start_at !== fields.start_at) {
@@ -300,6 +306,8 @@ export default class UpdateSubscription extends Component {
   };
 
   renderForm = () => {
+    const { prevSubscription } = this.state;
+
     if (this.state.isLoading) {
       return (
         <div class="page-spinner-container">
@@ -310,7 +318,7 @@ export default class UpdateSubscription extends Component {
 
     switch (this.state.currentTab) {
       case 0: {
-        const filteredPlans = this.props.plans;
+        const filteredPlans = { ...this.props.plans };
 
         filteredPlans.items = filteredPlans.items.filter(
           plan => plan.item.currency === this.state.currency
@@ -343,6 +351,10 @@ export default class UpdateSubscription extends Component {
     }
   };
 
+  disableTabCondition = tabIndex => {
+    return tabIndex !== 0 && !this.state.validTabs[tabIndex - 1];
+  };
+
   renderWizard() {
     const { currentTab } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
@@ -351,17 +363,14 @@ export default class UpdateSubscription extends Component {
     return (
       // need to improve this css styling
       <div class="PaymentLinks--Create SubscriptionLinks--update Wizard">
-        {/* updates subscription link tabs */}
         <ModalAsideNav
-          title="Updates Subscription"
+          activeTab={currentTab}
+          disableTabCondition={this.disableTabCondition}
           description={<p>Make changes to your existing subscriptions</p>}
           tabs={tabs}
-          tabClickHandler={this.handleTabChange}
-          activeTab={currentTab}
+          title="Updates Subscription"
           tabsValidity={this.state.validTabs}
-          disableTabCondition={tabIndex =>
-            tabIndex !== 0 && !this.state.validTabs[tabIndex - 1]
-          }
+          tabClickHandler={this.handleTabChange}
         />
         <main class="form-container">
           <div class="title">

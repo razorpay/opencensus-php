@@ -12,9 +12,9 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
       <React.Fragment>
         <PlanDetails
           isEdit
-          status={props.status}
           plans={props.plans}
           fields={props.fields}
+          status={props.status}
           internals={props.internals}
           onDateChange={props.onDateChange}
           onTimeChange={props.onTimeChange}

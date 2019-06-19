@@ -15,6 +15,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
 
   constructor({ plans, fields }) {
     super();
+
     this.plans = getPlans(plans);
     this.selectedPlan = getSelectedPlan(this.plans, fields);
   }
@@ -47,6 +48,10 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
       showStartDate = props.status === 'created';
     }
 
+    const planPlaceholder = props.plans.loading
+      ? 'Loading...'
+      : 'Select a plan';
+
     return (
       <>
         <div class="Input Input--required">
@@ -55,24 +60,21 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
             <div className="Input-elWrapper">
               <TypeAhead
                 options={plans}
-                disabled={props.plans.loading}
                 class="ps-in-modal"
-                searchIndices={['id', 'name', 'description']}
-                placeholder={
-                  props.plans.loading ? 'Loading...' : 'Select a plan'
-                }
-                optionComponent={PlanOption}
-                selectedOptionLabelPath="name"
-                onChange={props.onChangeInPlan}
                 selected={selectedPlan}
+                optionComponent={PlanOption}
+                placeholder={planPlaceholder}
+                disabled={props.plans.loading}
+                onChange={props.onChangeInPlan}
+                selectedOptionLabelPath="name"
+                searchIndices={['id', 'name', 'description']}
               />
             </div>
             {fields.plan_id && (
               <QuantitySelector
-                currency={selectedPlan.currency}
                 rate={selectedPlan.amount}
-                currency={selectedPlan.currency}
                 quantity={fields.quantity}
+                currency={selectedPlan.currency}
                 informativeMessage={getInformativeMessage(selectedPlan)}
               />
             )}
@@ -82,41 +84,41 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
         {showStartDate && (
           <React.Fragment>
             <Input.Check
+              required
               label="Start Date"
-              fieldLabel="Immediate, subscriptions starts with the first payment"
               class="Input--vTop"
               data-name="_startsImmediately"
-              checked={internals._startsImmediately}
               disabled={props.isEdit && dateInMoment}
-              required
+              checked={internals._startsImmediately}
+              fieldLabel="Immediate, subscriptions starts with the first payment"
             />
 
             <Input.Group class="InputGroup--inline InputGroup--near">
               <div class="Input-content">
                 <Input.ToCalendar
-                  name="start_at"
-                  placeholder="DD-MM-YYYY"
-                  allowToday
-                  disablePastDates
-                  size="half"
-                  addonAfter={<i class="i i-date-range" />}
-                  disabled={internals._startsImmediately}
-                  placement="topLeft"
-                  onChange={props.onDateChange('start_at')}
-                  defaultValue={dateInMoment}
                   readOnly
+                  allowToday
+                  size="half"
+                  name="start_at"
+                  disablePastDates
+                  placement="topLeft"
+                  placeholder="DD-MM-YYYY"
+                  defaultValue={dateInMoment}
+                  disabled={internals._startsImmediately}
+                  onChange={props.onDateChange('start_at')}
+                  addonAfter={<i class="i i-date-range" />}
                 />
 
                 {!!fields.start_at && (
                   <Input.TimePicker
+                    readOnly
+                    size="half"
                     name="start_at_time"
                     placeholder="HH:MM A"
-                    size="half"
+                    defaultValue={dateInMoment}
                     addonAfter={<i class="i i-time" />}
                     disabled={internals._startsImmediately}
                     onChange={props.onTimeChange('start_at_time')}
-                    defaultValue={dateInMoment}
-                    readOnly
                   />
                 )}
                 <Description text="Date from which subscription should start" />
@@ -126,17 +128,17 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
         )}
 
         <Input
-          label="Total Count"
-          type="number"
-          description="No. of billing cycles to be charged"
-          size="half"
-          name="total_count"
-          defaultValue={fields.total_count}
-          validator={this.validateTotalCount}
-          disabled={!selectedPlan}
-          min={1}
-          max={planPeriodToMaxCycleMap[(selectedPlan || {}).period]}
           required
+          min={1}
+          size="half"
+          type="number"
+          disabled={!selectedPlan}
+          validator={this.validateTotalCount}
+          description="No. of billing cycles to be charged"
+          max={planPeriodToMaxCycleMap[(selectedPlan || {}).period]}
+          defaultValue={fields.remaining_count || fields.total_count}
+          name={fields.remaining_count ? 'remaining_count' : 'total_count'}
+          label={fields.remaining_count ? 'Remaining Count' : 'Total Count'}
         />
       </>
     );

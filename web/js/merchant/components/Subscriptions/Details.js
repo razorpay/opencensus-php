@@ -90,7 +90,7 @@ export default props => {
           <div class="panel-heading">
             <i class="i i-refresh text-main icon--formal" />{' '}
             <strong>{subscription.id}</strong>
-            <ShowWhen additionalCondition={_ => allowUpdateSubscription}>
+            {allowUpdateSubscription && (
               <div class="pull-right" style={style}>
                 <NavLink
                   class="btn btn-primary"
@@ -99,7 +99,7 @@ export default props => {
                   Update
                 </NavLink>
               </div>
-            </ShowWhen>
+            )}
           </div>
 
           <div class="SliderPanel__Body">

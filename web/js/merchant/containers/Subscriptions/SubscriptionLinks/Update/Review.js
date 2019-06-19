@@ -25,6 +25,16 @@ export function changeData({
   let currSelectedPlan = updatedPlan,
     prevSelectedPlan = prevPlan;
 
+  const totalCountChange = {
+    heading: 'Count (No of cycles)',
+    changes: [
+      {
+        current: prevSubscription.total_count,
+        change: fields.total_count,
+      },
+    ],
+  };
+
   if (!updatedPlan) {
     currSelectedPlan = plans.find(({ id }) => id === fields.plan_id);
   }
@@ -57,16 +67,25 @@ export function changeData({
     });
   }
 
-  if (prevSubscription.total_count !== fields.total_count) {
-    changes.push({
-      heading: 'Count (No of cycles)',
-      changes: [
-        {
-          current: prevSubscription.total_count,
-          change: fields.total_count,
-        },
-      ],
-    });
+  if (
+    !fields.remaining_count &&
+    prevSubscription.total_count !== fields.total_count
+  ) {
+    changes.push(totalCountChange);
+  }
+
+  if (
+    fields.remaining_count &&
+    fields.remaining_count !== prevSubscription.total_count
+  ) {
+    totalCountChange.changes = [
+      {
+        current: prevSubscription.total_count,
+        change: fields.remaining_count,
+      },
+    ];
+
+    changes.push(totalCountChange);
   }
 
   if (
@@ -180,4 +199,5 @@ const Summary = ({ data }) => (
   </div>
 );
 
-const getTimeInFormat = date => moment.unix(date).format('DD MMM, YYYY');
+const getTimeInFormat = date =>
+  moment.unix(date).format('DD MMM, YYYY, hh:mm a');
