@@ -4,15 +4,20 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\Payment\Gateway;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class PaymentDowntimeTest extends TestCase
 {
     use PaymentTrait;
     use WebhookTrait;
+    use MocksDnsTrait;
 
     public function setUp()
     {
