@@ -2796,6 +2796,10 @@ final class Route
             'entity_origin_create',
             'currency_fetch_all_proxy',
             'invoice_update_billing_period',
+            'create_credit_note',
+            'credit_note_list',
+            'credit_note_get',
+            'credit_note_apply',
         ],
 
         'kotak' => [
