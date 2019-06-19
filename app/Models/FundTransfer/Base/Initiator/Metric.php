@@ -10,5 +10,5 @@ final class Metric
 
     const NODAL_SUCCESS_COUNT        = 'nodal_success_count';
 
-    const NODAL_FAILURE_COUNT        = 'nodal_failure_count';
+    const NODAL_PENDING_COUNT        = 'nodal_pending_count';
 }

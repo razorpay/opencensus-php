@@ -428,12 +428,16 @@ class Transfer extends Base
 
         $product = $this->entity->getSourceType();
 
+        $isSuccess = Status::inStatus(Status::getSuccessfulStatus(), $statusCode, $bankSubStatus);
+
+        $isFailure = Status::inStatus(Status::getFailureStatus(), $statusCode, $bankSubStatus);
+
         // capture failed response codes
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
-            Status::getFailureStatus(),
-            Status::getSuccessfulStatus(),
+            $isFailure,
+            $isSuccess,
             $statusCode,
             $bankSubStatus);
 
@@ -476,11 +480,15 @@ class Transfer extends Base
 
         $product = $this->entity->getSourceType();
 
+        $isSuccess = Status::inStatus(Status::getSuccessfulStatus(), $statusCode, $bankSubStatus);
+
+        $isFailure = Status::inStatus(Status::getFailureStatus(), $statusCode, $bankSubStatus);
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
-            Status::getFailureStatus(),
-            Status::getSuccessfulStatus(),
+            $isFailure,
+            $isSuccess,
             $statusCode,
             $bankSubStatus);
 
@@ -536,6 +544,20 @@ class Transfer extends Base
         $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
 
         $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
+
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = GatewayStatus::inStatus(GatewayStatus::getSuccessfulStatus(), $statusCode, $finalResponseCode);
+
+        $isFailure = GatewayStatus::inStatus(GatewayStatus::getFailureStatus(), $statusCode, $finalResponseCode);
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            $product,
+            $isFailure,
+            $isSuccess,
+            $statusCode,
+            $finalResponseCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),

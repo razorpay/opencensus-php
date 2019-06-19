@@ -142,13 +142,18 @@ class Status extends Base
         $beneName = $response[Constants::BENEFICIARY_NAME] ?? null;
 
         $product = $this->entity->getSourceType();
+
+        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), $statusCode, $bankSubStatus);
+
+        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), $statusCode, $bankSubStatus);
+
         // capture failed response codes
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
-            ValidStatus::getFailureStatus(),
-            ValidStatus::getSuccessfulStatus(),
-            ValidStatus::FAILED,
+            $isFailure,
+            $isSuccess,
+            $statusCode,
             $bankSubStatus);
 
         return [
@@ -176,11 +181,15 @@ class Status extends Base
 
         $product = $this->entity->getSourceType();
 
+        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), ValidStatus::FAILED, $subCode);
+
+        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), ValidStatus::FAILED, $subCode);
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
-            ValidStatus::getFailureStatus(),
-            ValidStatus::getSuccessfulStatus(),
+            $isFailure,
+            $isSuccess,
             ValidStatus::FAILED,
             $subCode);
 
@@ -232,6 +241,20 @@ class Status extends Base
         $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
 
         $publicFailureReason = GatewayStatus::getPublicFailureReason($statusCode, $finalResponseCode);
+
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), $statusCode, $finalResponseCode);
+
+        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), $statusCode, $finalResponseCode);
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            $product,
+            $isFailure,
+            $isSuccess,
+            $statusCode,
+            $finalResponseCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),

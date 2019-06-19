@@ -588,10 +588,7 @@ class GatewayStatus extends BaseStatus
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::STATUS_CODE_SUCCESS => [
-                self::COMPLETED,
-                self::COMPLETED2,
-            ],
+            self::STATUS_CODE_SUCCESS => [],
             self::STATUS_CODE_TIMEOUT => [
                 self::BT_TCC
             ],
