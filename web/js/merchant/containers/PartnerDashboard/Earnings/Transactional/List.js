@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchCommissions as fetchAll } from 'merchant/modules/collection';
+import { fetchEarnings as fetchAll } from 'merchant/modules/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import Amount from 'rzp/ui/Amount';
@@ -9,7 +9,7 @@ import Amount from 'rzp/ui/Amount';
 import { commissionId, createdAtShort } from 'rzp/ui/item/pair';
 import { capitalize } from 'rzp/utils/rzp-utils';
 
-import ListFilter from './ListFilter';
+import ListFilter from '../../Commissions/Transactional/ListFilter';
 
 const sourceType = {
   title: 'Source',

@@ -20,21 +20,13 @@ export default class AddInternalNote extends Component {
     let notes = {};
     notes[props.key] = props.value;
 
-    return this.props
-      .onSave(notes)
-      .then(invoice => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'Internal Note added',
-        });
-        this.props.closeModal();
-      })
-      .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
-        });
+    return this.props.onSave(notes).then(invoice => {
+      this.props.showNotification({
+        type: 'success',
+        message: 'Internal Note added',
       });
+      this.props.closeModal();
+    });
   };
 
   render() {

@@ -215,10 +215,13 @@ export default class FlashCheckout extends Component {
               </>
             ) : (
               <div class="description">
-                International card payments are currently available only for
-                payment gateway [which requires website integeration] and not
-                for payment pages, payment links & invoices. We are working on
-                bringing the international support to other products soon
+                Accepting international payments via cards is currently
+                available for Razorpay products – Payment Gateway, Payment
+                Links, Payment Pages, Subscriptions and Invoices.
+                <br />
+                <br />
+                Route Transfers and payments collected via Smart Collect do not
+                have international support.
               </div>
             )}
           </form>

@@ -58,7 +58,7 @@
            if (typeof analytics === 'undefined') {
                 _rzpAQ_fbq.push(data);
                 return false;
-            } 
+            }
 
             clearInterval(_fbqChckr);
             emptyRzpAQ_fbq();
@@ -77,7 +77,7 @@
         window.rzpAnalytics = function (data) {
             // If there's no data, don't track anything
             if (!data) return;
-            
+
             switch (data.name) {
                 case 'set_dimensions': { // Set the dimensions
                     if (!checkGa(data)) return;
@@ -89,14 +89,27 @@
                 }
                 case 'facebook': {
                     if (!checkAnalytics(data)) return;
-                        
                     analytics.track('fb', data.event, data.value);
-
                    break;
                 }
+                case 'bing': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('bing', data.event);
+                   break;
+                }
+                case 'twitter': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('twitter', '', data.value);
+                   break;
+                }
+                case 'linkedIn': {
+                    if (!checkAnalytics(data)) return;
+                    analytics.track('linkedin', '', data.value);
+                   break;
+                }
+
                 default: {
                     if (!checkGa(data)) return;
-
                     ga('old.send',
                         'event',
                         data.eventCategory || undefined,
@@ -111,7 +124,7 @@
                         data.eventLabel || undefined,
                         data.eventValue || undefined
                     )
-                    
+
                     // Sending Ga events to hubspot
                     var hsqData = {
                         id: data.eventCategory + "__" + data.eventAction,
@@ -133,7 +146,7 @@
             switch(data.name) {
                 case 'identify': {
                     _hsq.push(['identify', {
-                        id: data.id, // merchant id
+                        mid: data.id, // merchant id
                         email: data.email, // email
                     }]);
                     break;
@@ -141,7 +154,6 @@
                 case 'create_contact': {
                     _hsq.push(['identify', {
                         email: data.data.email,
-                        id: 'new_signup',
                         signup_start: true
                     }]);
 
@@ -152,7 +164,6 @@
                     setTimeout(function() {
                         _hsq.push(['identify', {
                             email: data.data.email,
-                            id: 'new_signup',
                             signup_start: true
                         }]);
 
@@ -180,68 +191,4 @@
             }
         }
     </script>
-    <script type="text/javascript">
-        var origOpen = XMLHttpRequest.prototype.open;
-        var origSend = XMLHttpRequest.prototype.send;
-        XMLHttpRequest.prototype.open = function (a, b, c, d, e) {
-            if (b.indexOf('hotjar') >= 0) {
-                this.send = function (s) {
-                    try {
-                        var x = JSON.parse(s);
-
-                        // Add MID, email, and contact to the message.
-                        if (x['response'] && typeof x['response']['message'] !== 'undefined') {
-                            if (x['response']['message'] === null) {
-                                x['response']['message'] = '';
-                            }
-
-                            if (typeof x['response']['message'] === 'string') {
-                                x['response']['message'] += '\n\nMID: ' + rzp_user.id;
-                                x['response']['message'] += '\nEmail: ' + ((rzp_user.user && rzp_user.user.email) || rzp_user.email);
-                                x['response']['message'] += '\nContact: ' + ((rzp_user.user && rzp_user.user.contact_mobile) || rzp_user.contact_mobile);
-                                x['response']['message'] += '\nName: ' + rzp_user.business_name;
-                            }
-                        }
-
-                        try {
-                            s = JSON.stringify(x);
-                        } catch (stringifyErr) {}
-
-                        if (x['action'] && (x['action'] === 'create_poll_response' || x['action'] === 'update_poll_response')) {
-                            if (x['response_content']) {
-                                if (typeof x['response_content'] === 'string') {
-                                    try {
-                                        var rc = JSON.parse(x['response_content']);
-                                        if (rc['answers'] && rc['answers'].length) {
-                                            var d = {
-                                                mid: window.rzp_user.current,
-                                                uid: window.rzp_user.user.id,
-                                                feedback: null,
-                                                rating: null
-                                            };
-                                            var a = rc['answers'][0];
-                                            if (a['question'] === 'How would you rate the new dashboard home page?') {
-                                                d.rating = parseInt(a.answer);
-                                            }
-                                            if (rc['answers'].length > 1) {
-                                                a = rc['answers'][1];
-                                                if (a['question'] === 'Please suggest how we can make it better.') {
-                                                d.feedback = a.answer;
-                                                }
-                                            }
-                                            var xhr = new XMLHttpRequest();
-                                            xhr.open('POST', 'https://hooks.zapier.com/hooks/catch/1088429/zk9ygu/', true);
-                                            xhr.send(JSON.stringify(d));
-                                        }
-                                    } catch (e) {}
-                                }
-                            }
-                        }
-                    } catch (e) {}
-                    origSend.apply(this, [s]);
-                }
-            }
-            origOpen.apply(this, [a, b, c, d, e]);
-        }
-
-    </script>
+    @include('partials/xhr_overwrite')

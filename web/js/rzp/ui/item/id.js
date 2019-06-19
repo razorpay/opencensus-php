@@ -9,7 +9,7 @@ const baseUrl = {
   sub: '/subscriptions/',
   trf: '/route/transfers/',
   disp: '/disputes/',
-  acc: '/submerchants/',
+  acc: '/partners/submerchants/',
   token: '/tokens/',
   comm: '/partners/earnings/transactional/',
   rvrsl: '/route/reversals/',

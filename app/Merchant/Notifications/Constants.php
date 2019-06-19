@@ -81,7 +81,7 @@ class Constants
             'title'       => 'All new Payment Pages!',
             'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
             'start_ts'    => 1550695523,
-            'end_ts'      => 1553199300,
+            'end_ts'      => 1561984469,
             'icon'        => 'https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
             'buttons'     => [
                 [
@@ -113,6 +113,23 @@ class Constants
             ],
             'ga'          => [
                 'action' => 'Capital - Announcement',
+            ],
+        ],
+        [
+            'title'       => 'Instant Settlements',
+            'description' => 'Get all your settlements within the same working day with Razorpay Instant Settlements!',
+            'start_ts'    => 1560870052,
+            'end_ts'      => 1561485608,
+            'icon'        => 'settlements',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Request Access',
+                    'url'   => '/settlements#requestearlyaccess',
+                ],
+            ],
+            'filters'     => [
+                'experiments'  => ['announcements_early_settlements_1'],
             ],
         ],
     ];

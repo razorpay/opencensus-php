@@ -6,11 +6,14 @@
         useAnalytics = false;
     }
     if (window.location.hostname=="dashboard.razorpay.com" && window.analytics && useAnalytics) {
-        analytics.init(['ga', 'fb', 'linkedin'], {
-          ga: 'UA-53341507-2',
-          fb: '697927486977350'
-        });
+         analytics.init(['ga', 'fb', 'twitter', 'linkedin', 'bing'], {
+           ga: 'UA-53341507-2',
+           fb: '697927486977350'
+         });
         // Init old key as well
+
+
+
         ga('create', 'UA-53341507-1', 'auto', 'old');
 
         ga('set', 'page', location.pathname + location.hash + location.search);

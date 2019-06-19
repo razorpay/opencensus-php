@@ -15,14 +15,20 @@ export default function PartnerNavLinks() {
         label="Earnings"
         icon="i i-earnings text-primary"
         to="/partners/earnings/daily"
-        exact
         additionalCondition={user =>
-          // these complex conditions are very temporary
-          user.isAllowedView('earnings') &&
-          user.isHavingPartnerConfigs &&
-          (user.isDailyCommissionsEnabled ||
-            user.isTransactionalCommissionsEnabled)
+          user.isAllowedView('earnings') && user.isHavingPartnerConfigs
         }
+        exact
+      />
+
+      <MainNavLink
+        label="Subventions"
+        icon="i i-earnings text-warning"
+        to="/partners/subventions/daily"
+        additionalCondition={user =>
+          user.isAllowedView('earnings') && user.isHavingSubventionConfigs
+        }
+        exact
       />
 
       <MainNavLink
@@ -45,6 +51,17 @@ export default function PartnerNavLinks() {
           user.isPartner('pure_platform')
         }
         exact
+      />
+
+      <MainNavLink
+        label="Reports"
+        icon="i i-books text-danger"
+        to="/partners/reports"
+        isPending={false}
+        // disabling for reseller partner not having partner configs
+        additionalCondition={user =>
+          !user.isPartner('reseller') || user.isHavingPartnerConfigs
+        }
       />
     </>
   );

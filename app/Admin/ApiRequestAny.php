@@ -8,9 +8,11 @@ use Route;
 use Trace;
 use Config;
 use Request;
+use App\Http\Headers;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
+use Lcobucci\JWT\Parser as JWTParser;
 
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
@@ -61,7 +63,7 @@ class ApiRequestAny
         {
             $routeName = Route::currentRouteName();
 
-            if (in_array($routeName, ['merchant', 'admin'], true) === false)
+            if (in_array($routeName, ['merchant', 'admin', 'extension_merchant'], true) === false)
             {
                 // Default
                 $this->clientType = 'user';
@@ -112,7 +114,14 @@ class ApiRequestAny
 
         // === Process client specific headers
 
-        $this->processAuthHeaders();
+        if ($this->clientType === 'extension_merchant')
+        {
+            $this->processExtensionAuthHeaders();
+        }
+        else
+        {
+            $this->processAuthHeaders();
+        }
 
         // === Forward cookies from the api
 
@@ -236,6 +245,45 @@ class ApiRequestAny
         }
 
         return $this;
+    }
+
+    public function processExtensionAuthHeaders()
+    {
+        $jwtToken = Request::header(Headers::JWT_TOKEN);
+
+        $token = (new JWTParser())->parse((string) $jwtToken);
+
+        $merchantId = $token->getClaim('merchant_id');
+
+        $userId = $token->getClaim('user_id');
+
+        $baUser = null;
+
+        $pass = null;
+
+        if (empty($userId) === false)
+        {
+            $this->options['headers']['X-Dashboard-User-Id'] = $userId;
+        }
+
+        if (empty($merchantId) === false)
+        {
+            $baUser = $this->mode . '_' . $merchantId;
+
+            $pass = Config::get('api.auth_pass');
+        }
+
+        if (empty($baUser) === false)
+        {
+            // Set BasicAuth creds
+            if (empty($baUser) === false)
+            {
+                $this->options['auth'] = [
+                    'rzp_' . $baUser,
+                    $pass
+                ];
+            }
+        }
     }
 
     // process body according to content-type

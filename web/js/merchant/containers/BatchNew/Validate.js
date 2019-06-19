@@ -114,5 +114,6 @@ const notificationMsgs = {
     'The batch file is being processed. Please wait as this may take some time.',
   success: 'The batch file has been processed successfully.',
   error: 'Please correct them and upload the file again',
-  exceed: 'The file size exceeds the 1MB limit. Please upload a smaller file.',
+  exceed:
+    'The file size exceeds the maximum size limit. Please upload a smaller file.',
 };

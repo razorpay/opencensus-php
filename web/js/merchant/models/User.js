@@ -276,7 +276,15 @@ export default class User {
     const currentMerchant = (this.merchants || {})[this.current];
     return (
       !!currentMerchant.partner_type &&
-      (currentMerchant.partner || {}).has_configs
+      (currentMerchant.partner || {}).has_commission_configs
+    );
+  }
+
+  get isHavingSubventionConfigs() {
+    const currentMerchant = (this.merchants || {})[this.current];
+    return (
+      !!currentMerchant.partner_type &&
+      (currentMerchant.partner || {}).has_subvention_configs
     );
   }
 
@@ -318,20 +326,14 @@ export default class User {
     return this.getExpStatus('capital_banner');
   }
 
-  get isDailyCommissionsEnabled() {
-    return this.getExpStatus('daily_commissions');
-  }
-
-  get isTransactionalCommissionsEnabled() {
-    return this.getExpStatus('transactional_commissions');
-  }
-
   get isExpireByRequired() {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
   }
 
   get isInttCurrenciesEnabled() {
-    return this.getExpStatus('international_currencies');
+    return (
+      !!this.international && this.getExpStatus('international_currencies')
+    );
   }
 
   get getCurrencyList() {

@@ -47,6 +47,7 @@ class Cors
                 Headers::CSRF_TOKEN,
                 'Content-Type',
             ];
+
             $headers = [
                 'Access-Control-Allow-Origin'       => $originDomain,
                 'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS, PATCH, PUT, DELETE',

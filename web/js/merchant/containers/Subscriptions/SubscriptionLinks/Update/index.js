@@ -61,7 +61,7 @@ export default class UpdateSubscription extends Component {
     }
 
     if (!this.props.items.length) {
-      await this.props.fetchItems({ count: 100, type: 'addons' });
+      await this.props.fetchItems({ count: 100, type: 'addon' });
     }
 
     if (this.props.subscription.entity.id !== this.props.id) {

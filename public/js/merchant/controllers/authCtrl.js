@@ -277,6 +277,20 @@ app
           event: 'signup_start',
         });
 
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            conversionId: '987388',
+          },
+        });
+
+        window.rzpAnalytics({
+          name: 'linkedIn',
+          value: {
+            txn_id: 'o1u9x',
+          },
+        });
+
         window.trackHubs({
           name: 'create_contact',
           data: {
@@ -716,7 +730,9 @@ app
         return $scope.onShowSignin && $scope.onShowSignin();
       };
 
-      $scope.goToSignupLayout = function(signupData = {}) {
+      $scope.goToSignupLayout = function(data) {
+        var signupData = data || {};
+
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
         $scope.rightLayout = false;
@@ -911,10 +927,15 @@ app
                   var parser = document.createElement('a');
                   parser.href = decodeURIComponent(queryParams.next);
 
-                  var hostname = parser.hostname || window.location.hostname;
+                  var hostname = parser.hostname || location.hostname;
 
                   if (/razorpay\.(com|dev|in)$/.test(hostname)) {
-                    window.location.href = parser.href;
+                    location.href = parser.href;
+                    if (parser.origin === location.origin && parser.hash) {
+                      parser.search = '';
+                      history.pushState(null, null, parser.href);
+                      location.reload();
+                    }
                     return false;
                   }
                 }
