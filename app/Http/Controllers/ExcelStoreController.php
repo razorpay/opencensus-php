@@ -23,11 +23,10 @@ class ExcelStoreController extends Controller
     {
         $method = Request::method();
         $input = Request::all() ?: null;
-        $contentType = Request::header('Content-Type');
         $excelStoreEndPoint = config('services.excel_store.base_url') . $path;
         $excelStoreAuthToken = config('services.excel_store.secret');
         $headers = [
-            'Content-Type'  => $contentType,
+            'Content-Type'  => 'application/json',
             'Authorization' => 'Bearer ' . $excelStoreAuthToken,
         ];
 
@@ -45,8 +44,7 @@ class ExcelStoreController extends Controller
             $resp = Requests::request(
                 $excelStoreEndPoint,
                 $headers,
-                // json_encode($input),
-                null,
+                json_encode($input),
                 $method
             );
 
