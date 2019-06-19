@@ -7,7 +7,7 @@ export default function UpdateSubscriptionLinkReview(props) {
   return (
     <div class="SubscriptionLinks--Update-review">
       {changes.map(e => <ChangeValue {...e} />)}
-      <Summary data={summary} />
+      {!!summary.length && <Summary data={summary} />}
     </div>
   );
 }
@@ -77,7 +77,9 @@ export function changeData({
       heading: 'Start Date',
       changes: [
         {
-          current: getTimeInFormat(prevSubscription.start_at),
+          current: prevSubscription.start_at
+            ? getTimeInFormat(prevSubscription.start_at)
+            : 'Immediately',
           change: getTimeInFormat(fields.start_at),
         },
       ],

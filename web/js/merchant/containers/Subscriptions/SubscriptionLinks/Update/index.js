@@ -30,6 +30,7 @@ import PlanDetails from './PlanDetails';
   state => ({
     plans: state.plans,
     items: state.items,
+    subscription: state.subscription,
   }),
   {
     fetchPlans,
@@ -55,9 +56,49 @@ export default class UpdateSubscription extends Component {
   }
 
   componentWillMount = async () => {
-    await this.props.fetchPlans({ count: 100 });
-    await this.props.fetchItems({ count: 100, type: 'invoice' });
-    await this.fetchSubscription(this.props.id);
+    if (!this.props.plans.length) {
+      await this.props.fetchPlans({ count: 100 });
+    }
+
+    if (!this.props.items.length) {
+      await this.props.fetchItems({ count: 100, type: 'addons' });
+    }
+
+    if (this.props.subscription.entity.id !== this.props.id) {
+      await this.fetchSubscription(this.props.id);
+
+      return;
+    }
+
+    this.initUpdateSubscription();
+  };
+
+  initUpdateSubscription = () => {
+    const { subscription: { entity: subscription, plan } } = this.props;
+
+    const fields = {
+      id: subscription.id,
+      plan_id: subscription.plan_id,
+      quantity: subscription.quantity,
+      start_at: subscription.start_at,
+      total_count: subscription.total_count,
+    };
+
+    if (['active'].includes(subscription.status)) {
+      fields.schedule_change_at = 'now';
+    }
+
+    this.setState({
+      fields,
+      isLoading: false,
+      prevSubscription: {
+        ...subscription,
+      },
+      currency: plan.item.currency,
+      internals: {
+        _startsImmediately: !subscription.start_at,
+      },
+    });
   };
 
   fetchSubscription = (id = this.props.id) => {
@@ -70,34 +111,9 @@ export default class UpdateSubscription extends Component {
 
         return resp;
       })
-      .then(resp => {
-        const fields = {
-          id,
-          plan_id: resp.plan_id,
-          quantity: resp.quantity,
-          start_at: resp.start_at,
-          total_count: resp.total_count,
-        };
-
-        if (['active'].includes(resp.status)) {
-          fields.schedule_change_at = 'now';
-        }
-
-        const selectedPlan = findBy(this.props.plans.items, 'id', resp.plan_id);
-
-        this.setState({
-          fields,
-          isLoading: false,
-          prevSubscription: {
-            ...resp,
-          },
-          currency: selectedPlan.item.currency,
-          internals: {
-            _startsImmediately: !resp.start_at,
-          },
-        });
-      })
+      .then(this.initUpdateSubscription)
       .catch(({ errors }) => {
+        console.log(errors);
         this.setState({
           isLoading: false,
         });
