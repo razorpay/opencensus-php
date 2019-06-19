@@ -153,7 +153,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setBankInternalStatus(string $status)
+    public function setBankInternalStatus(string $status = null)
     {
         $this->setAttribute(self::BANK_INTERNAL_STATUS, $status);
     }

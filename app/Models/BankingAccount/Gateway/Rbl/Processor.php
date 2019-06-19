@@ -45,9 +45,14 @@ class Processor extends Gateway\Base\Processor
 
     public function postProcessAccountInfoNotificationResponse(array $input, string $status)
     {
-        $tranId = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::HEADER][Fields::TRAN_ID];
+        $tranId = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::HEADER][Fields::TRAN_ID] ?? null;
 
         $bankStatus = Status::getInternalStatusForBankWebhook($status);
+
+        if (empty($tranId) === true)
+        {
+            $bankStatus = Status::FAILURE;
+        }
 
         $response = [
             Fields::RZP_ALERT_NOTIFICATION_RESPONSE => [

@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $preAccountInfoWebhookRules = [
         Fields::RZP_ALERT_NOTIFICATION_REQUEST                        => 'required',
         Fields::RZP_ALERT_NOTIFICATION_REQUEST . '.' . Fields::BODY   => 'required|array',
-
+        Fields::RZP_ALERT_NOTIFICATION_REQUEST . '.' . Fields::HEADER . '.' . Fields::TRAN_ID   => 'required|string',
     ];
 
     protected static $accountInfoWebhookRules = [
