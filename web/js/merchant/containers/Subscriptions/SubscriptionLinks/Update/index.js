@@ -79,7 +79,7 @@ export default class UpdateSubscription extends Component {
           total_count: resp.total_count,
         };
 
-        if (['authenticated', 'active', 'created'].includes(resp.status)) {
+        if (['active'].includes(resp.status)) {
           fields.schedule_change_at = 'now';
         }
 
@@ -104,7 +104,7 @@ export default class UpdateSubscription extends Component {
 
         this.props.showNotification({
           type: 'error',
-          message: errors[0],
+          message: errors,
         });
       });
   };

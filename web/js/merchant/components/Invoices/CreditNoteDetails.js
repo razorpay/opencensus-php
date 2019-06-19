@@ -65,11 +65,7 @@ export default class CreditNoteDetails extends React.Component {
                   />
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Invoice ID">
-                  <Link to={`/invoice/${creditNote.id}`}>{creditNote.id}</Link>
-                </EntityDetailRow>
-
-                {creditNote.invoices.length && (
+                {!!creditNote.invoices.length && (
                   <RefundsList refunds={refunds} />
                 )}
               </div>
