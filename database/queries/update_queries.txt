@@ -3058,3 +3058,40 @@ gateway_reference_id2 = "TM00000227",
 updated_at = UNIX_TIMESTAMP()
 WHERE id = 350987
 LIMIT 1;
+
+UPDATE payments
+SET payments.status = 'created',
+payments.error_code = null,
+payments.error_description = null,
+payments.internal_error_code = null,
+payments.updated_at = unix_timestamp(NOW())
+WHERE payments.id IN
+(
+'CcCWO6t4Z1LdGW',
+'CcCWOVIDHXA0Yu',
+'CcCZjkNMHMlfMB',
+'CcCZjLZ9mKFb77',
+'CcCa1KWHZnb78m',
+'CcCb18aeKYWqyw',
+'CcCb0k7DgdeUgz',
+'CcCbMfEw7qGyka',
+'CcCWHh74c5qpf4',
+'CcCe6cWI6nJFTK',
+'CcCeHNOxl10lJV',
+'CcCfIwXnE6K4TJ',
+'CcCfFjRc3iIpUg',
+'CcCbWMhTlz7T0A',
+'CcCc4uYglKfz9w',
+'CcCcPYp33X3ebw',
+'CcCcPylSjFlv3B',
+'CcCddDw2jIAdnl',
+'CcCdlnjGLT1Blp',
+'CcCdqkkKznLQkq',
+'CcCdyry3F6fOCX',
+'CcCetIFK7v7zua',
+'CcCfP7CuaxFomh',
+'CcCf6yZlETwgRQ',
+'CcCf7MkUIbCN8Z',
+'CcCfQEuvmOT8PF'
+)
+LIMIT 26;
