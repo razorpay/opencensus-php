@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Models\BankingAccount;
 use RZP\Error\PublicErrorCode;
 
 return [
@@ -33,7 +34,7 @@ return [
         'response' => [
             'content' => [
                 'channel'     => 'rbl',
-                'status'      => 'unserviceable'
+                'status'      => 'created'
             ],
         ],
     ],
@@ -72,7 +73,7 @@ return [
 
     'testSuccessBankAccountInfoNotification' => [
         'request'  => [
-            'url'     => '/banking_accounts/account_webhook/rbl',
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
             'method'  => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [
@@ -115,7 +116,7 @@ return [
 
     'testFailedBankAccountInfoNotification' => [
         'request'  => [
-            'url'     => '/banking_accounts/account_webhook/rbl',
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
             'method'  => 'POST',
             'content' => [
                 'RZPAlertNotiReq' => [
@@ -152,6 +153,24 @@ return [
                         'Status' => 'Failure'
                     ]
                 ]
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccount' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\Gateway\Rbl\Status::CLOSED
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'channel'     => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
             ],
         ],
     ],

@@ -30,18 +30,7 @@ class Service extends Base\Service
                 'input'              => $input,
             ]);
 
-        switch ($channel)
-        {
-            case Channel::RBL:
-                $account = $this->core->createRblBankingAccount($input, $this->merchant);
-
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-                return null;
-        }
+        $account = $this->core->createBankingAccount($input, $this->merchant);
 
         return $account->toArrayPublic();
     }
@@ -49,7 +38,7 @@ class Service extends Base\Service
     public function update(string $id, array $input): array
     {
         /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
         $channel = $bankingAccount->getChannel();
 
@@ -61,18 +50,8 @@ class Service extends Base\Service
                 'input'   => $input,
             ]);
 
-        switch ($channel)
-        {
-            case Channel::RBL:
-                $account = $this->core->updateRblBankingAccount($bankingAccount, $input);
 
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-                return null;
-        }
+        $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         return $account->toArrayPublic();
     }
@@ -85,20 +64,7 @@ class Service extends Base\Service
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
 
-        switch ($channel)
-        {
-            case Channel::RBL:
-                $coreMethod = $coreMethod . 'ForRbl';
-
-                $this->core->$coreMethod($input[Entity::PINCODES]);
-
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-                return null;
-        }
+        $this->core->$coreMethod($input[Entity::PINCODES], $channel);
 
         return ['success' => true];
     }
@@ -117,35 +83,11 @@ class Service extends Base\Service
                 'gateway'       => $channel,
             ]);
 
-        switch ($channel)
-        {
-            case Channel::RBL:
+        Channel::validateChannel($channel);
 
-            try
-                {
-                    $rbl = new RblWebhook();
+        $response = $this->core->processAccountInfoWebhook($channel, $input);
 
-                    $bankReference = $rbl->preProcessAccountInfoNotification($input);
-
-                    $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel($bankReference,
-                                                                                           Channel::RBL);
-
-                    $attributes = $rbl->processAccountInfoNotification($input);
-
-                    $this->core->updateRblBankingAccount($bankingAccount, $attributes);
-
-                    $response = $rbl->postProcessAccountInfoNotificationResponse($input, RblStatus::SUCCESS);
-                }
-                catch (\Exception $e)
-                {
-                    $response = $rbl->postProcessAccountInfoNotificationResponse($input, RblStatus::FAILURE);
-                }
-
-                return $response;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-        }
+        return $response;
     }
 
     /**
@@ -159,6 +101,9 @@ class Service extends Base\Service
         throw new LogicException(
             'Banking Account logic undefined for channel: ' . $channel,
             null,
-            $input);
+            [
+                'input'     => $input,
+                'channel'   => $channel
+            ]);
     }
 }

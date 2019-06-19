@@ -2,22 +2,27 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Redis;
-
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
-    const RBL_PINCODES_REDIS_KEY = 'rbl_pincode_set';
+    protected $processor;
 
-    public function createRblBankingAccount(array $input, Merchant\Entity $merchant): Entity
+    public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
     {
         // TODO: Validate if account does not already exist for the merchant
 
-        $status = $this->getRblAvailabilityStatus($input);
+        $channel = $input[Entity::CHANNEL];
+
+        $processor = $this->getProcessor($channel);
+
+        $bankContent = $processor->validateAndPreProcessInputForAccountCreation($input);
+
+        $input = array_merge($input, $bankContent);
 
         $bankingAccount = new Entity;
 
@@ -25,20 +30,44 @@ class Core extends Base\Core
 
         $bankingAccount->merchant()->associate($merchant);
 
-        $bankingAccount->setStatus($status);
-
         $this->repo->saveOrFail($bankingAccount);
 
         return $bankingAccount;
     }
 
-    public function updateRblBankingAccount(Entity $bankingAccount, array $input): Entity
+    public function processAccountInfoWebhook(string $channel, array $input)
     {
-        (new Validator)->validateInput('rbl_update', $input);
+        $processor = $this->getProcessor($channel);
 
-        $this->checkRblToInternalStatusMapping($input);
+        try
+        {
+            $reference = $processor->preProcessAccountInfoNotification($input);
 
-        $this->checkMerchantIsActivated($bankingAccount);
+            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel($reference, $channel);
+
+            $attributes = $processor->processAccountInfoNotification($input);
+
+            $this->updateBankingAccount($bankingAccount, $attributes);
+
+            $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::PROCESSED);
+        }
+        catch (\Throwable $e)
+        {
+            $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::CANCELLED);
+        }
+
+        return $response;
+    }
+
+    public function updateBankingAccount(Entity $bankingAccount, array $input)
+    {
+        $channel = $bankingAccount->getChannel();
+
+        $processor = $this->getProcessor($channel);
+
+        $processor->validateAccountDetailsBeforeUpdating($input);
+
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
         $bankingAccount = $bankingAccount->edit($input);
 
@@ -47,77 +76,59 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    protected function getRblAvailabilityStatus(array $input): string
+    public function addServiceablePincodes(array $pincodes, string $channel)
     {
-        (new Validator)->validateInput('rbl_availability', $input);
+        $processor = $this->getProcessor($channel);
 
-        $isServiceable = $this->isPincodeRblServiceable($input[Entity::PINCODE]);
-
-        $status = ($isServiceable === true) ? Status::CREATED : Status::UNSERVICEABLE;
-
-        return $status;
+        $processor->addServiceablePincodes($pincodes);
     }
 
-    protected function isPincodeRblServiceable(string $pincode): bool
+    public function deleteServiceablePincodes(array $pincodes, string $channel)
     {
-        $redis = Redis::connection();
+        $processor = $this->getProcessor($channel);
 
-        $isAvailable = $redis->sismember(self::RBL_PINCODES_REDIS_KEY, $pincode);
-
-        return (bool) $isAvailable;
-    }
-
-    public function addServiceablePincodesForRbl(array $pincodes)
-    {
-        $redis = Redis::connection();
-
-        $redis->sadd(self::RBL_PINCODES_REDIS_KEY, $pincodes);
-    }
-
-    public function deleteServiceablePincodesForRbl(array $pincodes)
-    {
-        $redis = Redis::connection();
-
-        $redis->srem(self::RBL_PINCODES_REDIS_KEY, $pincodes);
-    }
-
-    protected function checkRblToInternalStatusMapping(array $input)
-    {
-        if (isset($input[Entity::BANK_INTERNAL_STATUS]) === false)
-        {
-            return;
-        }
-
-        $bankInternalStatus = $input[Entity::BANK_INTERNAL_STATUS];
-        $status             = $input[Entity::STATUS];
-
-        RblStatus::validate($bankInternalStatus);
-        RblStatus::validateInternalBankStatusToStatus($bankInternalStatus, $status);
+        $processor->deleteServiceablePincodes($pincodes);
     }
 
     /**
      * This method is responsible for checking that unless the merchant is L2 activated, no one can update
-     * the status of RBL current account to processed. This to avoid cases of manual error by Bizops.
+     * the status of current account to processed. This to avoid cases of manual error by Bizops.
      *
      * @param Entity $bankingAccount
+     * @param array $input
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function checkMerchantIsActivated(Entity $bankingAccount)
+    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
     {
-        $merchant = $bankingAccount->merchant;
+        $status = $input[Entity::STATUS];
 
-        $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
-
-        if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
+        if ((isset($input[Entity::STATUS]) === true) and
+            ($status === Status::PROCESSED))
         {
-            throw new BadRequestValidationFailureException(
-                'Operation not allowed, merchant is not L2 activated',
-                null,
-                [
-                    'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
-                    'banking_account'            => $bankingAccount->getId(),
-                ]);
+            $merchant = $bankingAccount->merchant;
+
+            $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
+
+            if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Operation not allowed, merchant is not L2 activated',
+                    null,
+                    [
+                        'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
+                        'banking_account'            => $bankingAccount->getId(),
+                    ]);
+            }
         }
+    }
+
+    protected function getProcessor(string $channel): Gateway\Base\Processor
+    {
+        $processor = __NAMESPACE__ . '\\' . 'Gateway';
+
+        $processor .= '\\' . studly_case($channel) . '\\' . 'Processor';
+
+        return new $processor();
     }
 }

@@ -1,8 +1,10 @@
 <?php
 
-namespace RZP\Models\BankingAccount;
+namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
-class RblFields
+use RZP\Models\BankingAccount\Entity;
+
+class Fields
 {
     const FORACID                           = 'FORACID';
     const ACCT_NAME                         = 'ACCT_NAME';

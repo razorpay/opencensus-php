@@ -95,6 +95,33 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateBankingAccount()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_account/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => $merchantDetail->merchant['id'],
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
     protected function createBankingAccount(array $attributes = [])
     {
         $data = [

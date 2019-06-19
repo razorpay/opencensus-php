@@ -1113,7 +1113,7 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
-        'bank_account_info_webhook'               => ['post',     'banking_accounts/account_webhook/{channel}',                'BankingAccountController@processAccountInfoWebhook'        ],
+        'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1517,7 +1517,7 @@ final class Route
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
-        'bank_account_info_webhook',
+        'banking_account_webhook_account_info',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2806,7 +2806,7 @@ final class Route
         ],
 
         'rbl' => [
-            'bank_account_info_webhook',
+            'banking_account_webhook_account_info',
         ],
 
         // BharatQR routes are not authenticated
