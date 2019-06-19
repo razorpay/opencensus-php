@@ -5034,3 +5034,6 @@ ALTER TABLE virtual_accounts
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE `payouts`
+    MODIFY COLUMN `channel` VARCHAR(255) DEFAULT NULL;

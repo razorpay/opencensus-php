@@ -100,7 +100,8 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::BATCH_FUND_TRANSFER_ID, Payout::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Payout::CHANNEL, 8);
+            $table->string(Payout::CHANNEL, 255)
+                  ->nullable();
 
             $table->integer(Payout::ATTEMPTS)
                   ->default(1);
