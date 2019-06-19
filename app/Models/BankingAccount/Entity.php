@@ -25,6 +25,9 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER_LENGTH     = '40';
     const ACCOUNT_IFSC_LENGTH  = '11';
 
+    const PINCODES      = 'pincodes';
+    const ACTION        = 'action';
+
     protected $entity = 'banking_account';
 
     protected static $sign = 'bankacc';
@@ -64,6 +67,8 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_IFSC,
         self::BANK_INTERNAL_STATUS,
     ];
 

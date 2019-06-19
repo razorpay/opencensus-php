@@ -359,7 +359,6 @@ class Notifier extends Base\Core
         {
             $custom = $this->getCustomTemplateAndParamsForSubscriptionRegistration($merchant);
         }
-
         else
         {
             $custom = $this->getCustomRavenTemplateAndParams($merchant);
@@ -443,6 +442,21 @@ class Notifier extends Base\Core
 
                 $template = 'sms.custom_invoice.varthana_finance';
                 $params = [
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_APOLLO_MUNICH:
+                $sender = 'AMHIRZ';
+
+                break;
+
+            case Preferences::MID_SWIGGY_DROPPT:
+                $sender = 'DROPPT';
+                $template = 'sms.custom_invoice.swiggy_droppt';
+                $params = [
+                    'amount'       => $this->invoice->getAmount() / 100,
                     'invoice_link' => $invoiceLink,
                 ];
         }

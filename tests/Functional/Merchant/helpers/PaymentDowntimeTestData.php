@@ -264,6 +264,50 @@ return [
         ],
     ],
 
+    'testPaymentDowntimeStartedWebhook' => [
+        'entity'   => 'event',
+        'event'    => 'payment.downtime.started',
+        'contains' => [
+            'payment.downtime',
+        ],
+        'payload'  => [
+            'payment.downtime' => [
+                'entity' => [
+                    'entity'     => 'payment.downtime',
+                    'method'     => 'netbanking',
+                    'status'     => 'started',
+                    'scheduled'  => false,
+                    'severity'   => 'medium',
+                    'instrument' => [
+                        'bank' => 'SBIN',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPaymentDowntimeResolvedWebhook' => [
+        'entity'   => 'event',
+        'event'    => 'payment.downtime.resolved',
+        'contains' => [
+            'payment.downtime',
+        ],
+        'payload'  => [
+            'payment.downtime' => [
+                'entity' => [
+                    'entity'     => 'payment.downtime',
+                    'method'     => 'netbanking',
+                    'status'     => 'resolved',
+                    'scheduled'  => false,
+                    'severity'   => 'medium',
+                    'instrument' => [
+                        'bank' => 'SBIN',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetWalletDowntimeForSingleGateway' => [
         'request' => [
             'url' => '/payments/downtimes',

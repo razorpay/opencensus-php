@@ -3,9 +3,11 @@
 namespace RZP\Models\Payment\Downtime;
 
 use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\RuntimeManager;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Webhook\Event;
@@ -29,11 +31,26 @@ class Service extends Base\Service
         return $downtimes->toArrayPublic();
     }
 
-    public function triggerDowntimes(array $input): array
+    public function triggerDowntimes(array $input, string $status): array
     {
-        $activateResponse = $this->activateDowntimes();
+        $this->increaseAllowedSystemLimits();
 
-        $resolveResponse = $this->resolveDowntimes();
+        $activateResponse = [];
+
+        $resolveResponse =  [];
+
+        if ($status === Status::STARTED)
+        {
+            $activateResponse = $this->activateDowntimes();
+        }
+        else if ($status === Status::RESOLVED)
+        {
+            $resolveResponse = $this->resolveDowntimes();
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY, null, null);
+        }
 
         return [
             'activated' => $activateResponse,
@@ -117,5 +134,10 @@ class Service extends Base\Service
 
             $this->app['events']->fire('api.payment.downtime.resolved', $eventPayload);
         }
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setTimeLimit(300);
     }
 }

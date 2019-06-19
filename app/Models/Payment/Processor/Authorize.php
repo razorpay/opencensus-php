@@ -1861,15 +1861,24 @@ trait Authorize
         }
     }
 
+    /*
+     * function gets called processAndReturnTerminal and processAndReturnFees, in this flow
+     * runPaymentMethodRelatedPreProcessing creates cards and tokens which is not used at all.
+     * to avoid this we run the flow in beginTransactionAndRollback
+     */
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
-        $gatewayInput = [];
+        $this->repo->beginTransactionAndRollback(
+            function() use ($payment, $input)
+            {
+                $gatewayInput = [];
 
-        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+                $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->processCurrencyConversions($payment);
+                $this->processCurrencyConversions($payment);
 
-        $this->attachEntityOrigin($payment);
+                $this->attachEntityOrigin($payment);
+            });
     }
 
     /**

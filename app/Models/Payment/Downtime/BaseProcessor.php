@@ -9,15 +9,31 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime\Severity;
 use RZP\Models\Gateway\Downtime\ReasonCode;
+use RZP\Models\Payment\Downtime\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class BaseProcessor extends Base\Core
 {
-    protected function endOngoingDowntimes()
+    protected function endOngoingDowntimes(array $unavailableList = [])
     {
         $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethod($this->method);
+
+        /**
+         * Filter out all the downtimes which should be resolved by checking the unavailable list
+         * `issuer` in case of nebanking and wallet
+         * `network` in case of card
+         *
+         * This insures that downtime for `issuers` which are available now i.e which are not in unavailable list
+         * gets resolved
+         */
+        if (array_key_exists($this->method, Constants::METHOD_QUERY_MAP) === true)
+        {
+            $attribute = Constants::METHOD_QUERY_MAP[$this->method];
+
+            $ongoingDowntimes = $ongoingDowntimes->whereNotIn($attribute, $unavailableList);
+        }
 
         foreach ($ongoingDowntimes as $downtime)
         {

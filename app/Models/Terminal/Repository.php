@@ -436,4 +436,12 @@ class Repository extends Base\Repository
                     ->enabled()
                     ->get();
     }
+
+    public function findManyEnabledByIds($ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
+                    ->enabled()
+                    ->get();
+    }
 }

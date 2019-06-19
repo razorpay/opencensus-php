@@ -97,7 +97,7 @@ class DataCleaner
      */
     protected function removeDBConflicts($uniqueRecords)
     {
-        $dbRecords = $this->repo->find($this->uniqueIins);
+        $dbRecords = $this->repo->findMany($this->uniqueIins);
 
         foreach ($dbRecords as $entity)
         {

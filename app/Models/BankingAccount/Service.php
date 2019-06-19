@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
 
 class Service extends Base\Service
@@ -75,6 +76,37 @@ class Service extends Base\Service
         }
 
         return $account->toArrayPublic();
+    }
+
+    public function addOrRemoveServiceablePincodes(array $input, $channel)
+    {
+        $input[Entity::CHANNEL] = $channel;
+
+        (new Validator)->validateInput('serviceable_pincode', $input);
+
+        $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $coreMethod = $coreMethod . 'ForRbl';
+
+                $this->core->$coreMethod($input[Entity::PINCODES]);
+
+                break;
+
+            default:
+                $this->throwUnhandledChannelException($channel, $input);
+
+                return null;
+        }
+
+        return ['success' => true];
+    }
+
+    public function fetchMultiple()
+    {
+        return $this->merchant->bankingAccounts;
     }
 
     /**

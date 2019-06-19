@@ -891,7 +891,7 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $amount = null, $reversals = [], $reverseAll = false)
+    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false)
     {
         $this->ba->privateAuth();
 
@@ -900,6 +900,11 @@ trait PaymentTrait
         if ($amount !== null)
         {
             $content = array('amount' => $amount);
+        }
+
+        if (empty($data['speed']) === false)
+        {
+            $content['speed'] = $data['speed'];
         }
 
         if (empty($reversals) === false)
@@ -930,7 +935,7 @@ trait PaymentTrait
         //TODO: remove merchant id check
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
-            $this->scroogeRefund($refund);
+            $this->scroogeRefund($refund, $data);
         }
 
         return $refund;
@@ -946,10 +951,12 @@ trait PaymentTrait
         $input['attempts'] = $refund['attempts'] ?? 0;
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
+        $input['is_fta'] = $data['is_fta'] ?? false;
 
         if (isset($data['bank_account']) === true)
         {
             $input['fta_data'] = $data;
+            $input['is_fta'] = true;
         }
 
         $this->ba->scroogeAuth();
@@ -975,13 +982,29 @@ trait PaymentTrait
 
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        else if ((isset($refund['amount']) === true) and ($refund['amount'] === 3459))
+        else if (isset($refund['amount']) === true)
         {
-            $this->scroogeUpdateRefundStatus($refund, 'failed');
+            $event = '';
+
+            switch ($refund['amount'])
+            {
+                case 3459:
+                    $event = 'failed_event';
+                    break;
+
+                case 3470:
+                    $event = 'fee_only_reversal_event';
+                    break;
+            }
+
+            if ($event !== '')
+            {
+                $this->scroogeUpdateRefundStatus($refund, $event);
+            }
         }
 
         return $response;
@@ -1005,7 +1028,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $status)
+    protected function scroogeUpdateRefundStatus(array $refund, $event)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1016,7 +1039,7 @@ trait PaymentTrait
             $input['reference_no'] = random_integer(12);
         }
 
-        $input['status'] = $status;
+        $input['event'] = $event;
 
         $this->ba->scroogeAuth();
 
