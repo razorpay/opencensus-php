@@ -2986,7 +2986,11 @@ final class Route
         'pricing_add_plan_rule',
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
-        'pricing_update_plan_rule'
+        'pricing_update_plan_rule',
+        'merchant_schedule_bulk',
+        'methods_update_merchants',
+        'merchant_pricing_bulk',
+        'merchant_tags_bulk',
     ];
 
     /**
