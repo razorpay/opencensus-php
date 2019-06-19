@@ -221,7 +221,7 @@ class NodalAccount extends NodalBase\NodalAccount
             return Mode::IMPS;
         }
 
-        return $this->getRevisedTransferMode($amount, $ba->merchant);
+        return $this->getTransferMode($amount, $ba->merchant);
     }
 
     /**

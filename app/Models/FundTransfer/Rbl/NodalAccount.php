@@ -27,6 +27,13 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->channel = Channel::RBL;
 
         $this->initStats();
+
+        $this->bankingEndTimeRtgs = Carbon::createFromTime(
+                                                self::RTGS_CUTOFF_HOUR_MAX,
+                                                self::RTGS_CUTOFF_MINUTE_MAX,
+                                                0,
+                                                Timezone::IST)
+                                            ->getTimestamp();
     }
 
     public function addBeneficiary(array $input): array
