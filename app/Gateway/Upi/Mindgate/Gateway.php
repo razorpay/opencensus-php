@@ -18,6 +18,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Gateway\Upi\Base\UpiErrorCodes;
+use RZP\Models\Terminal;
 
 class Gateway extends Base\Gateway
 {
@@ -307,6 +308,13 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function getTerminalDetailsFromCallbackIfApplicable($input)
+    {
+        return [
+            Terminal\Entity::GATEWAY_MERCHANT_ID => $input[ResponseFields::CALLBACK_RESPONSE_PGMID]
+        ];
+    }
+
     protected function getQrData(array $input)
     {
         $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
@@ -544,7 +552,14 @@ class Gateway extends Base\Gateway
      */
     protected function getCipherInstance()
     {
-        return new Crypto($this->getEncryptionKey());
+        $key = $this->getEncryptionKey();
+
+        if (empty($this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET]) === false)
+        {
+            $key = $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+        }
+
+        return new Crypto($key);
     }
 
     /**

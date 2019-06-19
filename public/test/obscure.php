@@ -161,6 +161,7 @@ function disableEmptyInputs(form) {
         <td colspan="40">Select EMI Duration</td>
         <td>
             <select name="emi_duration">
+                <option value="">Select EMI duration</option>
                 <option value="3">3 Months @12%</option>
                 <option value="6">6 Months @12%</option>
                 <option value="9">9 Months @14%</option>

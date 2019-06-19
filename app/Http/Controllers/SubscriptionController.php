@@ -273,4 +273,27 @@ class SubscriptionController extends Controller
         throw new LogicException('The request should not have reached here');
     }
 
+    public function updateSubscription(string $id)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function getFetchScheduledChanges(string $id)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function getCancelScheduledChanges(string $id)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
 }

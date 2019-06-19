@@ -113,6 +113,32 @@ class BankTransferTest extends TestCase
         $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 
+    public function testHidePayerDetailsWithFeatureFlag()
+    {
+        $this->testBankTransferProcess();
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/'.$payment['id'].'/bank_transfer',
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('payer_bank_account', $response);
+
+        $this->assertArrayHasKey('id', $response['payer_bank_account']);
+
+        $this->fixtures->merchant->addFeatures(['hide_va_payer_bank_detail']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayNotHasKey('payer_bank_account', $response);
+    }
+
     public function testBankTransferProcessForTinyAmount()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -1980,7 +2006,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
 
-        $response = $this->refundPayment($payment['id']);
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 

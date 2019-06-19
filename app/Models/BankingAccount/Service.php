@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
 
 class Service extends Base\Service
@@ -75,6 +76,11 @@ class Service extends Base\Service
         }
 
         return $account->toArrayPublic();
+    }
+
+    public function fetchMultiple()
+    {
+        return $this->merchant->bankingAccounts;
     }
 
     /**

@@ -120,7 +120,7 @@ class Core extends Base\Core
     {
         $this->repo->gateway_downtime->deleteOrFail($downtime);
 
-        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DELETED, $downtime->toArrayPublic());
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DELETED, $downtime->toArray());
 
         return $downtime;
     }

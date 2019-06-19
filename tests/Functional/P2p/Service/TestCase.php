@@ -53,6 +53,8 @@ class TestCase extends Functional\TestCase
 
         $this->testCurrentTime = Carbon::now();
 
+        $this->setDeviceTokenExpiryValidation(false);
+
         MorphMap::boot();
     }
 
@@ -111,5 +113,10 @@ class TestCase extends Functional\TestCase
         Carbon::setTestNow($now);
 
         return Carbon::now();
+    }
+
+    protected function setDeviceTokenExpiryValidation(bool $value)
+    {
+        $this->app['p2p.ctx']->setShouldRefreshDeviceToken($value);
     }
 }

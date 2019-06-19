@@ -24,27 +24,15 @@ class FundAccountPayout extends Base
         //
         if ($payout->isStatusQueued() === false)
         {
+            //
+            // Ideally, this should be done as part of downstream processor,
+            // but we do it here since, we do not want to dispatch this even if
+            // payout creation flow fails for any reason after downstream processor runs.
+            //
+
             (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
         }
 
         return $payout;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function setChannel($input = [])
-    {
-        $this->channel = Settlement\Channel::YESBANK;
-    }
-
-    protected function handleInsufficientFunds(BadRequestException $ex, Payout\Entity $payout)
-    {
-        if ($payout->toBeQueued() === false)
-        {
-            throw $ex;
-        }
-
-        $payout->setStatus(Payout\Status::QUEUED);
     }
 }

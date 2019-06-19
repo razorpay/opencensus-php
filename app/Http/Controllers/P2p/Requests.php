@@ -25,9 +25,11 @@ class Requests
     const P2P_CUSTOMER_VPA_CREATE                           = 'p2p_customer_vpa_create';
     const P2P_CUSTOMER_VPA_FETCH_ALL                        = 'p2p_customer_vpa_fetch_all';
     const P2P_CUSTOMER_VPA_FETCH                            = 'p2p_customer_vpa_fetch';
+    const P2P_CUSTOMER_VPA_UPDATE                           = 'p2p_customer_vpa_update';
     const P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT              = 'p2p_customer_vpa_assign_bank_account';
     const P2P_CUSTOMER_VPA_INITIATE_CHECK_AVAILABILITY      = 'p2p_customer_vpa_check_initiate_availability';
     const P2P_CUSTOMER_VPA_CHECK_AVAILABILITY               = 'p2p_customer_vpa_check_availability';
+    const P2P_CUSTOMER_VPA_SET_DEFAULT                      = 'p2p_customer_vpa_set_default';
     const P2P_CUSTOMER_VPA_DELETE                           = 'p2p_customer_vpa_delete';
 
     const P2P_CUSTOMER_BENEFICIARIES                        = 'p2p_customer_beneficiaries';

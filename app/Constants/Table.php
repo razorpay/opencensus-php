@@ -69,7 +69,15 @@ class Table
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
-    const SUBSCRIPTION              = 'subscriptions';
+
+    // Subscriptions Tables
+    const SUBSCRIPTION                   = 'subscriptions';
+    const SUBSCRIPTION_CYCLE             = 'subscription_cycles';
+    const SUBSCRIPTION_VERSION           = 'subscription_versions';
+    const SUBSCRIPTION_UPDATE_REQUEST    = 'subscription_update_requests';
+    const SUBSCRIPTION_TRANSACTION       = 'subscription_transactions';
+    //Subscriptions Tables end
+
     const METHODS                   = 'merchant_banks';
     const BANK_TRANSFER             = 'bank_transfers';
     const GATEWAY_TOKEN             = 'gateway_tokens';
@@ -204,9 +212,12 @@ class Table
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
 
+
     const CREDITNOTE           = 'creditnote';
 
     const CREDITNOTE_INVOICE   = 'creditnote_invoices';
+
+    const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,
