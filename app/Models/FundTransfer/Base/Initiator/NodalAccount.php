@@ -456,4 +456,27 @@ abstract class NodalAccount extends Base\Core
 
         return Mode::NEFT;
     }
+
+    protected function getRevisedTransferMode($amount, Merchant\Entity $merchant): string
+    {
+        $rtgsMinCutoffTime = Carbon::createFromTime(static::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)->getTimestamp();
+
+        $rtgsMaxCutoffTime = Carbon::createFromTime(
+            static::RTGS_REVISED_CUTOFF_HOUR_MAX,
+            static::RTGS_REVISED_CUTOFF_MINUTE_MAX,
+            0,
+            Timezone::IST)->getTimestamp();
+
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $mode = Mode::NEFT;
+
+        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
+            ($amount >= self::MIN_RTGS_AMOUNT))
+        {
+            $mode = Mode::RTGS;
+        }
+
+        return $mode;
+    }
 }
