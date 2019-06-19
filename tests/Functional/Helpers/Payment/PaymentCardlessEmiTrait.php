@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use RZP\Models\Payment\Gateway;
+
 trait PaymentCardlessEmiTrait
 {
     public function runPaymentCallbackFlowCardlessEmi($response, & $callback = null, $gateway)
@@ -35,7 +37,31 @@ trait PaymentCardlessEmiTrait
                 'content' => $payment
             ];
 
-            return $this->makeRequestParent($request);
+            if (in_array($responseInput['request']['content']['provider'],
+                    Gateway::$cardlessEmiRedirectFlowProvider) === true)
+            {
+                $newRequest = $this->getFormRequestFromResponse($this->makeRequestParent($request)->getContent(), $url);
+
+                $resp = $this->sendRequest($newRequest);
+
+                $request = [
+                    'url' => $newRequest['content']['callback_url'],
+                    'content' => json_decode(($resp->getContent()), true),
+                    'method' =>  'POST',
+                ];
+
+                $resp = $this->sendRequest($request);
+
+                $data = $this->getPaymentJsonFromCallback($resp->getContent());
+
+                $resp->setContent($data);
+            }
+            else
+            {
+                $resp = $this->makeRequestParent($request);
+            }
+
+            return $resp;
         }
         else
         {

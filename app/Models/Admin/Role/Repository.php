@@ -4,10 +4,11 @@ namespace RZP\Models\Admin\Role;
 
 use Config;
 
-use RZP\Constants\Table;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
@@ -33,6 +34,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->orgId($orgId)
+                    ->product(Product::PRIMARY)
                     ->with('permissions')
                     ->get();
     }

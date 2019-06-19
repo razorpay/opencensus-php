@@ -133,12 +133,13 @@ class Entity
     //
     // Workflow Entities
     //
-    const WORKFLOW              = 'workflow';
-    const WORKFLOW_STEP         = 'workflow_step';
-    const WORKFLOW_ACTION       = 'workflow_action';
-    const ACTION_CHECKER        = 'action_checker';
-    const ACTION_STATE          = 'action_state';
-    const ACTION_COMMENT        = 'action_comment';
+    const WORKFLOW                      = 'workflow';
+    const WORKFLOW_STEP                 = 'workflow_step';
+    const WORKFLOW_ACTION               = 'workflow_action';
+    const ACTION_CHECKER                = 'action_checker';
+    const ACTION_STATE                  = 'action_state';
+    const ACTION_COMMENT                = 'action_comment';
+    const WORKFLOW_PAYOUT_AMOUNT_RULES  = 'workflow_payout_amount_rules';
 
     // Generic comment and state entities
     const COMMENT               = 'comment';
@@ -291,6 +292,10 @@ class Entity
         self::METHODS  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 15,
+        ],
+        self::IIN  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 60,
         ],
     ];
 
@@ -472,22 +477,23 @@ class Entity
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
 
         // heimdall
-        self::ORG                   => \RZP\Models\Admin\Org::class,
-        self::ROLE                  => \RZP\Models\Admin\Role::class,
-        self::ADMIN                 => \RZP\Models\Admin\Admin::class,
-        self::GROUP                 => \RZP\Models\Admin\Group::class,
-        self::ADMIN_LEAD            => \RZP\Models\Admin\AdminLead::class,
-        self::PERMISSION            => \RZP\Models\Admin\Permission::class,
-        self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
-        self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
-        self::ORG_FIELD_MAP         => \RZP\Models\Admin\Org\FieldMap::class,
-        self::WORKFLOW              => \RZP\Models\Workflow::class,
-        self::WORKFLOW_STEP         => \RZP\Models\Workflow\Step::class,
-        self::WORKFLOW_ACTION       => \RZP\Models\Workflow\Action::class,
-        self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
-        self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
-        self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
-        self::STATE_REASON          => \RZP\Models\State\Reason::class,
+        self::ORG                          => \RZP\Models\Admin\Org::class,
+        self::ROLE                         => \RZP\Models\Admin\Role::class,
+        self::ADMIN                        => \RZP\Models\Admin\Admin::class,
+        self::GROUP                        => \RZP\Models\Admin\Group::class,
+        self::ADMIN_LEAD                   => \RZP\Models\Admin\AdminLead::class,
+        self::PERMISSION                   => \RZP\Models\Admin\Permission::class,
+        self::ADMIN_TOKEN                  => \RZP\Models\Admin\Admin\Token::class,
+        self::ORG_HOSTNAME                 => \RZP\Models\Admin\Org\Hostname::class,
+        self::ORG_FIELD_MAP                => \RZP\Models\Admin\Org\FieldMap::class,
+        self::WORKFLOW                     => \RZP\Models\Workflow::class,
+        self::WORKFLOW_STEP                => \RZP\Models\Workflow\Step::class,
+        self::WORKFLOW_ACTION              => \RZP\Models\Workflow\Action::class,
+        self::ACTION_CHECKER               => \RZP\Models\Workflow\Action\Checker::class,
+        self::ACTION_STATE                 => \RZP\Models\Workflow\Action\State::class,
+        self::ACTION_COMMENT               => \RZP\Models\Workflow\Action\Comment::class,
+        self::STATE_REASON                 => \RZP\Models\State\Reason::class,
+        self::WORKFLOW_PAYOUT_AMOUNT_RULES => \RZP\Models\Workflow\PayoutAmountRules::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
