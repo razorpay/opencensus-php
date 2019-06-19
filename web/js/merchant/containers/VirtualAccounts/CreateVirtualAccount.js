@@ -10,6 +10,7 @@ import { closeModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
+import Input, { Label, Description } from 'component/Input';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
@@ -210,6 +211,7 @@ export default class CreateVirtualAccount extends Component {
     return (
       <div>
         <ModalHeader
+          size="small"
           title={
             virtualAccount
               ? 'Virtual Account Created'
@@ -299,6 +301,44 @@ export default class CreateVirtualAccount extends Component {
                   </small>
                 </div>
               )}
+
+              <Input.Check
+                label="Expire On"
+                fieldLabel="No Expiry"
+                class="Input--vTop"
+                data-name="_startsImmediately"
+                // checked={internals._startsImmediately}
+                required
+              />
+
+              <Input.Group class="InputGroup--inline InputGroup--near">
+                <div class="Input-content">
+                  <Input.ToCalendar
+                    name="start_at"
+                    placeholder="DD-MM-YYYY"
+                    allowToday
+                    disablePastDates
+                    size="half"
+                    addonAfter={<i class="i i-date-range" />}
+                    // disabled={internals._startsImmediately}
+                    placement="topLeft"
+                    // onChange={props.onDateChange('start_at')}
+                    // defaultValue={dateInMoment}
+                    readOnly
+                  />
+
+                  <Input.TimePicker
+                    name="start_at_time"
+                    placeholder="HH:MM A"
+                    size="half"
+                    addonAfter={<i class="i i-time" />}
+                    // disabled={internals._startsImmediately}
+                    // onChange={props.onTimeChange('start_at_time')}
+                    // defaultValue={dateInMoment}
+                    readOnly
+                  />
+                </div>
+              </Input.Group>
 
               <div class="form-group">
                 <label class="notes-label">Internal Notes</label>
