@@ -1385,7 +1385,6 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
-        'merchant_methods_downtime_private',
         'create_credit_note',
         'credit_note_list',
         'credit_note_get',
