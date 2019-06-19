@@ -5023,3 +5023,6 @@ ALTER TABLE `reversals`
     ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
     ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
 
+ALTER TABLE `roles`
+    ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
+    ADD INDEX `roles_product_index` (`product`);
