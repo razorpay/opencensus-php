@@ -87,6 +87,8 @@ class Status extends BaseStatus
 
     const FUNDS_ON_HOLD                 = 'FUNDS_ON_HOLD';
 
+    const INTERNAL_SERVER_ERROR         = 'INTERNAL_SERVER_FAILURE';
+
     // Map to the derived state
     const STATUS_MAP = [
         self::SENT_TO_BENEFICIARY => [
@@ -95,6 +97,7 @@ class Status extends BaseStatus
         ],
         self::ON_HOLD             => self::WAIT_FOR_ONE_DAY,
         self::FAILED              => [
+            'ns:E500'    => self::INTERNAL_SERVER_ERROR,
             'ns:E402'    => self::INSUFFICIENT_FUND,
             'ns:E405'    => self::INVALID_TRANSFER_TYPE,
             'ns:E429'    => self::REQUEST_LIMIT_REACHED,
@@ -159,6 +162,7 @@ class Status extends BaseStatus
     // So this mapping will give the corresponding remark based on the sub status code
     //
     const FAILURE_CODE_INTERNAL_MAPPING = [
+        'ns:E500'    => 'Unhandled exception has occurred',
         'ns:E400'    => 'Invalid request sent to bank',
         'ns:E402'    => 'Insufficient Balance in debit account, payment required',
         'ns:E405'    => 'Invalid Transfer Type',
@@ -254,6 +258,7 @@ class Status extends BaseStatus
         'sfms:E70'   => 'Payout failed. Contact support for help.',
         'sfms:E18'   => 'Payout failed. Contact support for help.',
         'ns:E1029'   => 'Payout failed. Contact support for help.',
+        'ns:E500'    => 'Payout failed. Contact support for help.',
     ];
 
     /**
@@ -292,6 +297,7 @@ class Status extends BaseStatus
             self::TECHNICAL_ERROR               => [],
             self::IMPS_NOT_ENABLED_FOR_BENE     => [],
             self::FUNDS_ON_HOLD                 => [],
+            self::INTERNAL_SERVER_ERROR         => [],
         ];
     }
 
@@ -315,6 +321,7 @@ class Status extends BaseStatus
             self::FUNDS_ON_HOLD                 => [],
             self::TECHNICAL_ERROR               => [],
             self::TRANSFER_TIMEOUT              => [],
+            self::INTERNAL_SERVER_ERROR         => [],
         ];
     }
 
@@ -326,6 +333,7 @@ class Status extends BaseStatus
         return [
             self::TECHNICAL_ERROR,
             self::INVALID_REQUEST,
+            self::INTERNAL_SERVER_ERROR,
         ];
     }
 
@@ -340,11 +348,11 @@ class Status extends BaseStatus
     public static function getMerchantFailures(): array
     {
         return [
-            self::BENEFICIARY_NOT_ACCEPTED,
-            self::INVALID_BENEFICIARY_DETAILS,
-            self::BENEFICIARY_NOT_ACCEPTED,
-            self::BENE_ACCOUNT_BLOCKED,
-            self::IMPS_NOT_ENABLED_FOR_BENE,
+            self::BENEFICIARY_NOT_ACCEPTED      => [],
+            self::INVALID_BENEFICIARY_DETAILS   => [],
+            self::BENEFICIARY_NOT_ACCEPTED      => [],
+            self::BENE_ACCOUNT_BLOCKED          => [],
+            self::IMPS_NOT_ENABLED_FOR_BENE     => [],
         ];
     }
 

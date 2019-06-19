@@ -12,16 +12,22 @@ class EntityProcessor extends BaseEntityProcessor
     {
         $bankStatusCode = $this->fta->getBankStatusCode();
 
+        $bankResponseCode = $this->fta->getBankResponseCode();
+
         if ($this->fta->shouldUseGateway() === true)
         {
             $merchantFailures = GatewayStatus::getMerchantFailures();
+
+            $isMerchantError = GatewayStatus::inStatus($merchantFailures, $bankStatusCode, $bankResponseCode);
         }
         else
         {
             $merchantFailures = Status::getMerchantFailures();
+
+            $isMerchantError = Status::inStatus($merchantFailures, $bankStatusCode, $bankResponseCode);
         }
 
-        if (in_array($bankStatusCode, $merchantFailures, true) === true)
+        if ($isMerchantError === true)
         {
             return true;
         }
