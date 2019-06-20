@@ -194,10 +194,13 @@ class Core extends Base\Core
 
                 $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
 
+                $bankingAccounts = $this->repo->merchant->findOrFail($merchant['id'])->bankingAccounts;
+
                 return $merchant +
                     [
                         Merchant\Entity::BANKING_BALANCE => $balance->only([Merchant\Balance\Entity::BALANCE, Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT => $bankAccount->toArrayHosted(),
+                        Merchant\Entity::ACCOUNTS => $bankingAccounts->callOnEveryItem('toArrayPublic'),
                     ];
             },
             $merchants);
