@@ -41,34 +41,34 @@ class Service extends Base\Service
 
     public function approveFundAccountPayout(string $id, array $input): array
     {
+        /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payout->getValidator()->validateApproveRejectPayout();
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
         $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
 
         (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
-        // TODO mark the workflow as approved
-        // get workflow action id and send payload as approved is true
+        (new Core)->approvePayout($payout);
 
         return $payout->toArrayPublic();
     }
 
-    public function bulkApproveFundAccountPayout(array $input)
+    public function bulkApproveFundAccountPayouts(array $input)
     {
         (new Validator)->validateInput('bulk_approve', $input);
+
+        $this->user->validateInput('verify_otp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
         $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
 
         foreach ($payouts as $payout)
         {
-            $payout->getValidator()->validateApproveRejectPayout();
+            $payout->getValidator()->validatePayoutStatusForApproveOrReject();
         }
-
-        $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
-
-        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
         $failedIds = [];
 
@@ -76,8 +76,7 @@ class Service extends Base\Service
         {
             try
             {
-                // TODO mark the workflow as approved
-                // get workflow action id for each payout and send payload as approved is true
+                (new Core)->approvePayout($payout);
             }
             catch (\Throwable $e)
             {
@@ -85,9 +84,7 @@ class Service extends Base\Service
                     $e,
                     Trace::ERROR,
                     TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
-                    [
-                        'payout_id' => $payout->getId(),
-                ]);
+                    ['payout_id' => $payout->getId()]);
 
                 $failedIds[] = $payout->getId();
             }
@@ -101,12 +98,12 @@ class Service extends Base\Service
 
     public function rejectFundAccountPayout(string $id): array
     {
+        /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payout->getValidator()->validateApproveRejectPayout();
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        // TODO mark the workflow as approved
-        // get workflow action id and send payload as approved is false
+        (new Core)->rejectPayout($payout);
 
         return $payout->toArrayPublic();
     }
@@ -128,8 +125,7 @@ class Service extends Base\Service
         {
             try
             {
-                // TODO mark the workflow as approved
-                // get workflow action id for each payout and send payload as approved is false
+                (new Core)->rejectPayout($payout);
             }
             catch (\Throwable $e)
             {

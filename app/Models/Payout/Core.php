@@ -404,6 +404,22 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
+    public function approvePayout(Entity $payout): Entity
+    {
+        //
+        // TODO: mark the workflow as approved
+        // get workflow action id and send payload as approved is true
+        //
+    }
+
+    public function rejectPayout(Entity $payout): Entity
+    {
+        //
+        // TODO: mark the workflow as rejected
+        // get workflow action id and send payload as approved is false
+        //
+    }
+
     protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
     {
         $dispatchedCount = 0;

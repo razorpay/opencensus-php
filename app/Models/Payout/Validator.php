@@ -25,7 +25,6 @@ class Validator extends Base\Validator
     // validation for the actual operation.
     //
     protected static $createRules = [
-        Entity::DESTINATION          => 'required|public_id',
         Entity::PURPOSE              => 'sometimes|string',
         Entity::AMOUNT               => 'sometimes|integer',
         Entity::CURRENCY             => 'sometimes|size:3',
@@ -252,8 +251,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateApproveRejectPayout()
+    public function validatePayoutStatusForApproveOrReject()
     {
+        /** @var Entity $payout */
         $payout = $this->entity;
 
         if ($payout->isStatusPending() === false)

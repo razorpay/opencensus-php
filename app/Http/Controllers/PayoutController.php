@@ -37,7 +37,7 @@ class PayoutController extends Controller
 
     public function bulkApproveFundAccountPayouts()
     {
-        $response = $this->service()->bulkApproveFundAccountPayout($this->input);
+        $response = $this->service()->bulkApproveFundAccountPayouts($this->input);
 
         return ApiResponse::json($response);
     }
