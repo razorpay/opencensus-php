@@ -77,6 +77,16 @@ export default props => {
                   )}
                 />
 
+                <EntityDetailRow
+                  label="Expire By"
+                  value={() => (
+                    <Time
+                      value={virtualaccount.close_by}
+                      format="DD MMM YYYY, hh:mm:ss a"
+                    />
+                  )}
+                />
+
                 {/* Notes */}
                 <EntityDetailRow label="Notes">
                   {virtualaccount.notes &&

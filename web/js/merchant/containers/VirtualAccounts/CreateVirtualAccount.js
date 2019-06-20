@@ -204,14 +204,16 @@ export default class CreateVirtualAccount extends Component {
 
   render() {
     const {
-      handleSubmit,
       untouch,
+      close_by,
       handle = '',
+      handleSubmit,
+      customers = [],
       descriptor = '',
       customersLoading,
-      customers = [],
       onCopy = () => {},
     } = this.props;
+
     const { virtualAccount, internals } = this.state;
 
     let descriptorLimit;
@@ -320,44 +322,48 @@ export default class CreateVirtualAccount extends Component {
                 </div>
               )}
 
-              <Input.Check
-                required
-                label="Expire On"
-                class="Input--vTop"
-                fieldLabel="No Expiry"
-                data-name="__no_expiry"
-                checked={internals.__no_expiry}
-                onChange={this.handleNoExpiry}
-              />
+              <div class="form-group">
+                <label>Expire By</label>
 
-              <Input.Group class="InputGroup--inline InputGroup--near m-b">
-                <div class="Input-content">
-                  <Input.ToCalendar
-                    readOnly
-                    allowToday
-                    size="half"
-                    name="close_by"
-                    disablePastDates
-                    placement="topLeft"
-                    placeholder="DD-MM-YYYY"
-                    defaultValue={dateInMoment}
-                    onChange={this.handleDateChange}
-                    disabled={internals.__no_expiry}
-                    addonAfter={<i class="i i-date-range" />}
-                  />
+                <Input.Check
+                  required
+                  class="Input--vTop"
+                  fieldLabel="No Expiry"
+                  data-name="__no_expiry"
+                  checked={internals.__no_expiry}
+                  onChange={this.handleNoExpiry}
+                />
 
-                  <Input.TimePicker
-                    readOnly
-                    size="half"
-                    name="close_by_time"
-                    placeholder="HH:MM A"
-                    defaultValue={dateInMoment}
-                    disabled={internals.__no_expiry}
-                    onChange={this.handleTimeChange}
-                    addonAfter={<i class="i i-time" />}
-                  />
-                </div>
-              </Input.Group>
+                <Input.Group class="InputGroup--inline InputGroup--near m-b">
+                  <div class="Input-content">
+                    <Input.ToCalendar
+                      readOnly
+                      allowToday
+                      size="half"
+                      name="close_by"
+                      disablePastDates
+                      placement="topLeft"
+                      placeholder="DD-MM-YYYY"
+                      defaultValue={dateInMoment}
+                      onChange={this.handleDateChange}
+                      disabled={internals.__no_expiry}
+                      addonAfter={<i class="i i-date-range" />}
+                    />
+                    {close_by && (
+                      <Input.TimePicker
+                        readOnly
+                        size="half"
+                        name="close_by_time"
+                        placeholder="HH:MM A"
+                        defaultValue={dateInMoment}
+                        disabled={internals.__no_expiry}
+                        onChange={this.handleTimeChange}
+                        addonAfter={<i class="i i-time" />}
+                      />
+                    )}
+                  </div>
+                </Input.Group>
+              </div>
 
               <br />
 
@@ -414,6 +420,19 @@ const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
           <b>{bankAccount.ifsc}</b>
         </div>
       </div>
+
+      {virtualAccount.close_by && (
+        <div class="form-group">
+          <div class="text-muted">Expire By</div>
+          <div>
+            <b>
+              {moment(virtualAccount.close_by * 1000).format(
+                'DD MMM YYYY, hh:mm:ss a'
+              )}
+            </b>
+          </div>
+        </div>
+      )}
 
       <CustomClipboard
         value={`Account Number: ${
