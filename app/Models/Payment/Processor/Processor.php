@@ -1657,6 +1657,8 @@ class Processor
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
+            $gatewayDowntimeError = false;
+
             return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
         }
         catch (Exception\GatewayErrorException $ex)
@@ -1674,8 +1676,8 @@ class Processor
             }
 
             /*
-             * If error indicates gateway downtime, act on it and
-             * check if a downtime entity needs to be created
+             * If error indicates gateway downtime, we might act on it later
+             * so set $gatewayDowntimeError = true
              */
             if ($error->isGatewayDowntimeError() === true)
             {
@@ -1687,11 +1689,40 @@ class Processor
                         'payment_id' => $this->payment->getId()
                     ]);
 
-                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
+                $gatewayDowntimeError = true;
             }
 
             throw $ex;
         }
+        finally
+        {
+            // Gateway Downtime Detection only works on few actions.
+            // Right now failure percentage is not considered on each
+            // action individually, which we might do at later point of time.
+            if ($this->isGatewayDowntimeAction($action) == true)
+            {
+                try
+                {
+                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gateway, $gatewayData, $gatewayDowntimeError);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+            }
+        }
+    }
+
+    public function isGatewayDowntimeAction(string $action)
+    {
+        $gatewayDowntimeActions = [
+            Action::AUTHENTICATE,
+            Action::AUTHORIZE,
+            Action::CALLBACK
+        ];
+
+
+        return in_array($action, $gatewayDowntimeActions, true);
     }
 
     public function isRoutedThroughCps($action, $input): bool

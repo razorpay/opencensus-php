@@ -14,7 +14,7 @@ local time                  = redis.call("time")
 local now                   = time[1] * 1000000 + time[2]
 
 -- Add Comment: How is the Hash Map maintained?
-local updateFailureCount = function(windowLength, now, failureAttemptsHashKey)
+local updateCount = function(windowLength, now, hashKey)
     -- Each sliding time window is divided into 100 fixed time windows.
     -- So: If 300 seconds is the window length and request is received at T=301,
     -- failure count is increased in fixed window=300 and so is for 300 and 302
@@ -25,8 +25,8 @@ local updateFailureCount = function(windowLength, now, failureAttemptsHashKey)
 
     local windowHashKey         = now - (now % fixedWindowLength)
 
-    redis.call('HINCRBY', failureAttemptsHashKey, windowHashKey, 1)
-    redis.call('EXPIRE', failureAttemptsHashKey, tonumber(ARGV[1]))
+    redis.call('HINCRBY', hashKey, windowHashKey, 1)
+    redis.call('EXPIRE', hashKey, tonumber(ARGV[1]))
 end
 
 -- What is happening below?
@@ -107,9 +107,10 @@ for i,v in ipairs(windowLengths) do
     local successHashKey = key..':ALL_ATTEMPTS:'..windowLength
     local failureHashKey = key..':FAILURE_ATTEMPTS:'..windowLength
 
-    -- First increment the failure count because we only check
-    -- if circuit is open in case of failure
-    updateFailureCount(windowLength, now, failureHashKey)
+    -- First increment the failure count and success count
+    -- because we only check if circuit is open in case of a failure.
+    updateCount(windowLength, now, failureHashKey)
+    updateCount(windowLength, now, successHashKey)
 
     table.insert(responseDictionary, getAllAttemptsAndFailureAttemptsInWindow(windowLength, now, successHashKey, failureHashKey));
 end
