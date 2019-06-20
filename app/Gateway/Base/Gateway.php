@@ -1434,13 +1434,9 @@ class Gateway
                     TraceCode::GATEWAY_PAYMENT_ERROR,
                     ['json' => $json]);
 
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_INVALID_JSON,
-                    null,
+                throw new Exception\RuntimeException(
                     'Failed to convert json to array',
-                    [
-                        'json' => $json,
-                    ]);
+                    ['json' => $json]);
         }
     }
 
