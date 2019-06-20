@@ -27,6 +27,7 @@ import NotesFieldArray from 'merchant/components/NotesFieldArray';
 @connect(
   state => {
     const customers = state.customers.items;
+
     return {
       customers,
       notes: selector(state, 'notes'),
@@ -56,15 +57,11 @@ import NotesFieldArray from 'merchant/components/NotesFieldArray';
   form: 'createVirtualAccount',
 })
 export default class CreateVirtualAccount extends Component {
-  constructor(props) {
-    super();
-
-    this.state = {
-      internals: {
-        __no_expiry: true,
-      },
-    };
-  }
+  state = {
+    internals: {
+      __no_expiry: true,
+    },
+  };
 
   componentWillMount() {
     this.props.fetchCustomersForAutocomplete();
@@ -226,7 +223,7 @@ export default class CreateVirtualAccount extends Component {
       }
     }
 
-    const dateInMoment = void 0;
+    const dateInMoment = undefined;
 
     return (
       <div>
