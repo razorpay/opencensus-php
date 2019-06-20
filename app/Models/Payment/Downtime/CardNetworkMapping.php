@@ -21,6 +21,13 @@ class CardNetworkMapping
 
     public function addDowntime(string $gateway, string $network)
     {
+        // Don't process downtime for gateways which are not currently active
+        if ((in_array($gateway, Constants::CARD_GATEWAYS) === false) and
+            ($gateway !== Downtime\Entity::ALL))
+        {
+            return;
+        }
+
         // Gateway downtimes created without network field is created as `Unknown`
         // hence we are considering `Unknown` and `All` as same.
         // For eg. Downtimes created by StatusCake only sends `gateway`
@@ -119,15 +126,14 @@ class CardNetworkMapping
         // Contains deprecated gateways
         // $gateways = Gateway::$methodMap[self::CARD];
 
-        $gateways = array_keys(Gateway::$cardNetworkMap);
+        // These gateways are not being actively used
+        // $gateways = array_keys(Gateway::$cardNetworkMap);
+
+        // We are checking the gateways that are being actively used.
+        $gateways = Constants::CARD_GATEWAYS;
 
         foreach ($gateways as $gateway)
         {
-            if ($gateway === Gateway::SHARP)
-            {
-                continue;
-            }
-
             $this->initializeNetworksForGateway($gateway);
         }
 

@@ -31,7 +31,8 @@ class UpiProcessor extends BaseProcessor
     {
         $gatewaysDown = $gatewayDowntimes->pluck(GatewayDowntime::GATEWAY)->toArray();
 
-        $upiGateways = Gateway::$methodMap[$this->method];
+        // We are checking the gateways that are being actively used.
+        $upiGateways = Constants::UPI_GATEWAYS;
 
         if (in_array(GatewayDowntime::ALL, $gatewaysDown, true) === true)
         {
