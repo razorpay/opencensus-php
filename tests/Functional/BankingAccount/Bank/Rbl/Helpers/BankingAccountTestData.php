@@ -137,9 +137,6 @@ return [
                         'PHONE_NUM'         => '9899807189',
                         'EMAIL_ID'          => 'test@gmail.com'
                     ],
-                    'Header' => [
-                        'TranID' => '12345'
-                    ]
                 ],
             ],
         ],
@@ -147,7 +144,7 @@ return [
             'content' => [
                 'RZPAlertNotiRes' => [
                     'Header' => [
-                        'TranID' => '12345'
+                        'TranID' => null
                     ],
                     'Body' => [
                         'Status' => 'Failure'
