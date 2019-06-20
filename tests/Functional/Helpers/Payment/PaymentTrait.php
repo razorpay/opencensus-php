@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
@@ -2022,7 +2023,9 @@ trait PaymentTrait
 
     protected function mockCardVault($callable = null)
     {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 

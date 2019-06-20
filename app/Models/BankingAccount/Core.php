@@ -75,8 +75,15 @@ class Core extends Base\Core
         return null;
     }
 
-    public function createFtsFundAccountForMerchant(Entity $bankingAccount)
+    public function createOrFetchFtsFundAccountForMerchant(Entity $bankingAccount)
     {
+        $fundAccountId = $bankingAccount->getFtsFundAccountId();
+
+        if ($fundAccountId !== null)
+        {
+            return $fundAccountId;
+        }
+
         $response = $this->app['fts_create_account']->createFundAccount($bankingAccount->getId(),
                                                                         Constants\Entity::BANKING_ACCOUNT,
                                                                         'payout');

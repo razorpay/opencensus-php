@@ -104,7 +104,7 @@ class Service extends Base\Service
                 {
                     $this->core->createMerchantTokenForRbl($bankingAccount, $input);
 
-                    $fundAccountId = $this->core->createFtsFundAccountForMerchant($bankingAccount);
+                    $fundAccountId = $this->core->createOrFetchFtsFundAccountForMerchant($bankingAccount);
 
                     $this->core->createMerchantSourceAccountForRbl($bankingAccount, $fundAccountId);
 
