@@ -1370,7 +1370,9 @@ class Gateway
 
         foreach ($attributes as $key => $value)
         {
-            if (isset($map[$key]))
+            if ((isset($value) === true) and
+                ($value !== '') and
+                (isset($map[$key])))
             {
                 $newKey = $map[$key];
                 $attr[$newKey] = $value;
