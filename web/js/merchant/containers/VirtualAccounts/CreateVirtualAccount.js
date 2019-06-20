@@ -1,75 +1,37 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { TypeAhead } from 'react-power-select';
-import { findBy } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
+import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
+
+import { findBy } from 'rzp/utils/rzp-utils';
+
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { showNotification } from 'rzp/modules/notifications';
-import { closeModal } from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
-import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
-import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
-import Input, { Label, Description } from 'component/Input';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import CustomerCreation from 'merchant/containers/Customers/New';
 import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
+
+import Input, { Label, Description } from 'component/Input';
+
+import { closeModal } from 'rzp/modules/modals';
 import * as ModalActions from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
+
+import { luminateRow } from 'merchant/modules/app';
+import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
+import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
+
+import CustomerCreation from 'merchant/containers/Customers/New';
+
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 
-const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
-  let bankAccount = virtualAccount.receivers[0];
-  return (
-    <div>
-      <p class="text-muted">
-        Share the following information with the customer to accept payments
-      </p>
-
-      <div class="form-group">
-        <div class="text-muted">Account Number</div>
-        <div>
-          <b>{bankAccount.account_number}</b>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <div class="text-muted">Beneficiary Name</div>
-        <div>
-          <b>{virtualAccount.name}</b>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <div class="text-muted">IFSC Code</div>
-        <div>
-          <b>{bankAccount.ifsc}</b>
-        </div>
-      </div>
-
-      <CustomClipboard
-        value={`Account Number: ${
-          bankAccount.account_number
-        }\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
-        onCopy={() => {
-          onCopy(virtualAccount);
-        }}
-      >
-        <button type="button" class="btn btn-primary btn-block">
-          Copy details to Clipboard
-        </button>
-      </CustomClipboard>
-    </div>
-  );
-};
-
-const selector = formValueSelector('createVirtualAccount');
 @connect(
   state => {
     const customers = state.customers.items;
     return {
-      descriptor: selector(state, 'descriptor'),
-      notes: selector(state, 'notes'),
       customers,
+      notes: selector(state, 'notes'),
+      close_by: selector(state, 'close_by'),
+      descriptor: selector(state, 'descriptor'),
       customersLoading: state.customers.loading,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       initialValues: {
@@ -82,8 +44,8 @@ const selector = formValueSelector('createVirtualAccount');
     };
   },
   {
-    luminateRow,
     closeModal,
+    luminateRow,
     showNotification,
     saveVirtualAccount,
     fetchCustomersForAutocomplete,
@@ -94,7 +56,15 @@ const selector = formValueSelector('createVirtualAccount');
   form: 'createVirtualAccount',
 })
 export default class CreateVirtualAccount extends Component {
-  state = {};
+  constructor(props) {
+    super();
+
+    this.state = {
+      internals: {
+        __no_expiry: true,
+      },
+    };
+  }
 
   componentWillMount() {
     this.props.fetchCustomersForAutocomplete();
@@ -186,6 +156,52 @@ export default class CreateVirtualAccount extends Component {
     this.setState({ customerId: option });
   };
 
+  handleDateChange = selectedDate => {
+    const fieldName = 'close_by';
+
+    selectedDate.startOf('day');
+
+    const current = this.props[fieldName]
+      ? moment(this.props[fieldName], 'X')
+      : 0;
+
+    const time = current
+      ? Number(current.format('X')) - Number(current.startOf('day').format('X'))
+      : 0;
+
+    const value = Number(selectedDate.format('X')) + time;
+
+    this.props.change(fieldName, value);
+  };
+
+  handleTimeChange = selectedDate => {
+    let fieldName = 'close_by_time';
+
+    const time =
+      Number(selectedDate.format('X')) -
+      Number(selectedDate.startOf('day').format('X'));
+    fieldName = fieldName.replace('_time', '');
+
+    let current = this.props[fieldName];
+
+    // adding time to current day
+    current = Number(
+      moment(current, 'X')
+        .startOf('day')
+        .format('X')
+    );
+
+    this.props.change(fieldName, current + time);
+  };
+
+  handleNoExpiry = () => {
+    this.setState({
+      internals: {
+        __no_expiry: !this.state.internals.__no_expiry,
+      },
+    });
+  };
+
   render() {
     const {
       handleSubmit,
@@ -196,7 +212,7 @@ export default class CreateVirtualAccount extends Component {
       customers = [],
       onCopy = () => {},
     } = this.props;
-    const { virtualAccount } = this.state;
+    const { virtualAccount, internals } = this.state;
 
     let descriptorLimit;
 
@@ -207,6 +223,8 @@ export default class CreateVirtualAccount extends Component {
         descriptorLimit = 9;
       }
     }
+
+    const dateInMoment = void 0;
 
     return (
       <div>
@@ -303,42 +321,45 @@ export default class CreateVirtualAccount extends Component {
               )}
 
               <Input.Check
-                label="Expire On"
-                fieldLabel="No Expiry"
-                class="Input--vTop"
-                data-name="_startsImmediately"
-                // checked={internals._startsImmediately}
                 required
+                label="Expire On"
+                class="Input--vTop"
+                fieldLabel="No Expiry"
+                data-name="__no_expiry"
+                checked={internals.__no_expiry}
+                onChange={this.handleNoExpiry}
               />
 
-              <Input.Group class="InputGroup--inline InputGroup--near">
+              <Input.Group class="InputGroup--inline InputGroup--near m-b">
                 <div class="Input-content">
                   <Input.ToCalendar
-                    name="start_at"
-                    placeholder="DD-MM-YYYY"
-                    allowToday
-                    disablePastDates
-                    size="half"
-                    addonAfter={<i class="i i-date-range" />}
-                    // disabled={internals._startsImmediately}
-                    placement="topLeft"
-                    // onChange={props.onDateChange('start_at')}
-                    // defaultValue={dateInMoment}
                     readOnly
+                    allowToday
+                    size="half"
+                    name="close_by"
+                    disablePastDates
+                    placement="topLeft"
+                    placeholder="DD-MM-YYYY"
+                    defaultValue={dateInMoment}
+                    onChange={this.handleDateChange}
+                    disabled={internals.__no_expiry}
+                    addonAfter={<i class="i i-date-range" />}
                   />
 
                   <Input.TimePicker
-                    name="start_at_time"
-                    placeholder="HH:MM A"
-                    size="half"
-                    addonAfter={<i class="i i-time" />}
-                    // disabled={internals._startsImmediately}
-                    // onChange={props.onTimeChange('start_at_time')}
-                    // defaultValue={dateInMoment}
                     readOnly
+                    size="half"
+                    name="close_by_time"
+                    placeholder="HH:MM A"
+                    defaultValue={dateInMoment}
+                    disabled={internals.__no_expiry}
+                    onChange={this.handleTimeChange}
+                    addonAfter={<i class="i i-time" />}
                   />
                 </div>
               </Input.Group>
+
+              <br />
 
               <div class="form-group">
                 <label class="notes-label">Internal Notes</label>
@@ -364,3 +385,50 @@ export default class CreateVirtualAccount extends Component {
     );
   }
 }
+
+const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
+  let bankAccount = virtualAccount.receivers[0];
+  return (
+    <div>
+      <p class="text-muted">
+        Share the following information with the customer to accept payments
+      </p>
+
+      <div class="form-group">
+        <div class="text-muted">Account Number</div>
+        <div>
+          <b>{bankAccount.account_number}</b>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="text-muted">Beneficiary Name</div>
+        <div>
+          <b>{virtualAccount.name}</b>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="text-muted">IFSC Code</div>
+        <div>
+          <b>{bankAccount.ifsc}</b>
+        </div>
+      </div>
+
+      <CustomClipboard
+        value={`Account Number: ${
+          bankAccount.account_number
+        }\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
+        onCopy={() => {
+          onCopy(virtualAccount);
+        }}
+      >
+        <button type="button" class="btn btn-primary btn-block">
+          Copy details to Clipboard
+        </button>
+      </CustomClipboard>
+    </div>
+  );
+};
+
+const selector = formValueSelector('createVirtualAccount');

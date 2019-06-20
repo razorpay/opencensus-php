@@ -76,7 +76,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           fieldLabel="Immediate, subscriptions starts with the first payment"
           class="Input--vTop"
           data-name="_startsImmediately"
-          // checked={internals._startsImmediately}
+          checked={internals._startsImmediately}
           required
         />
 
@@ -89,23 +89,25 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
               disablePastDates
               size="half"
               addonAfter={<i class="i i-date-range" />}
-              // disabled={internals._startsImmediately}
+              disabled={internals._startsImmediately}
               placement="topLeft"
               onChange={props.onDateChange('start_at')}
-              // defaultValue={dateInMoment}
+              defaultValue={dateInMoment}
               readOnly
             />
 
-            <Input.TimePicker
-              name="start_at_time"
-              placeholder="HH:MM A"
-              size="half"
-              addonAfter={<i class="i i-time" />}
-              // disabled={internals._startsImmediately}
-              onChange={props.onTimeChange('start_at_time')}
-              // defaultValue={dateInMoment}
-              readOnly
-            />
+            {!!fields.start_at && (
+              <Input.TimePicker
+                name="start_at_time"
+                placeholder="HH:MM A"
+                size="half"
+                addonAfter={<i class="i i-time" />}
+                disabled={internals._startsImmediately}
+                onChange={props.onTimeChange('start_at_time')}
+                defaultValue={dateInMoment}
+                readOnly
+              />
+            )}
             <Description text="Date from which subscription should start" />
           </div>
         </Input.Group>
