@@ -17,4 +17,13 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+    
+    public function postServiceablePincodes(string $channel)
+    {
+        $input = Request::all();
+
+        $result = $this->service()->addOrRemoveServiceablePincodes($input, $channel);
+
+        return ApiResponse::json($result);
+    }
 }

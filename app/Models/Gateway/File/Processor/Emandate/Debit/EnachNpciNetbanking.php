@@ -7,12 +7,10 @@ Use Config;
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
-use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
@@ -33,7 +31,7 @@ class EnachNpciNetbanking extends Base
 
     const FILE_NAME = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
 
-    protected $utilityCode;
+    protected $fileStore;
 
     const STEP = 'debit';
 
@@ -52,19 +50,19 @@ class EnachNpciNetbanking extends Base
 
     protected function formatDataForFile($tokens)
     {
-        $this->setUtilitycodeAttribute($tokens);
-
         $rows = [];
 
         foreach ($tokens as $token)
         {
-            if ($this->isSponsorYesBank($token->terminal) === true)
+            $terminal = $token->terminal;
+
+            if ($this->isSponsorYesBank($terminal) === true)
             {
                 $paymentId = $token['payment_id'];
 
                 $debitDate = Carbon::today(Timezone::IST)->format('dmY');
 
-                $row = [
+                $rows[$terminal->getGatewayMerchantId()][] = [
                     Headings::PAYMENT_ID              => $paymentId,
                     Headings::UMRN                    => $token->getGatewayToken(),
                     Headings::AMOUNT                  => $this->getFormattedAmount($token['payment_amount']),
@@ -72,18 +70,17 @@ class EnachNpciNetbanking extends Base
                     Headings::UTILITY_CODE            => $token->terminal->getGatewayMerchantId(),
                 ];
 
-                $rows[] = $row;
             }
         }
 
         return $rows;
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(array $data)
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        $fileName = strtr(static::FILE_NAME, ['{$date}' => $date, '{$utilityCode}' => $this->utilityCode]);
+        $fileName = strtr(static::FILE_NAME, ['{$date}' => $date, '{$utilityCode}' => $data['utilityCode']]);
 
         return $fileName;
     }
@@ -101,39 +98,6 @@ class EnachNpciNetbanking extends Base
         ];
     }
 
-    /**
-     * For debit payments, we will be following a 9am to 9am cycle.
-     * If a request comes from the cron, begin and end is set as per 12 am to 12 am cycle.
-     * Adding 9 hours here to make the adjustment. If the request is generated manually then this will still
-     * apply as we cannot differentiate between sync and async here. So if we try to generate the file manually
-     * and put the begin and end as 9am to 9am then it will be changed to 6pm to 6pm
-     */
-    public function fetchEntities(): PublicCollection
-    {
-        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-            ->addHours(9)
-            ->getTimestamp();
-
-        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-            ->addHours(9)
-            ->getTimestamp();
-
-        $tokens = $this->repo->token->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
-
-        $paymentIds = $tokens->pluck('payment_id')->toArray();
-
-        $this->trace->info(
-            TraceCode::EMANDATE_DEBIT_REQUEST,
-            [
-                'gateway_file_id' => $this->gatewayFile->getId(),
-                'entity_ids'      => $paymentIds,
-                'begin'           => $begin,
-                'end'             => $end,
-            ]);
-
-        return $tokens;
-    }
-
     protected function isSponsorYesBank($terminal)
     {
         $sponsorBank = strtolower($terminal->getGatewayAcquirer());
@@ -141,21 +105,21 @@ class EnachNpciNetbanking extends Base
         return $sponsorBank === Payment\Gateway::ACQUIRER_YESB;
     }
 
-    protected function setUtilityCodeAttribute($tokens)
-    {
-        $this->utilityCode = $tokens[0]->terminal->getGatewayMerchantId();
-    }
-
     public function sendFile($data)
     {
-        $file = $this->gatewayFile
+        $fileInfo = [];
+
+        $files = $this->gatewayFile
                      ->files()
-                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                     ->first();
+                     ->whereIn(FileStore\Entity::ID, $this->fileStore)
+                     ->get();
 
-        $fullFileName = $file->getName() . '.' . $file->getExtension();
+        foreach ($files as $file)
+        {
+            $fullFileName = $file->getName() . '.' . $file->getExtension();
 
-        $fileInfo = [$fullFileName];
+            $fileInfo[] = $fullFileName;
+        }
 
         $data =  [
             BeamService::BEAM_PUSH_FILES   => $fileInfo,
@@ -163,7 +127,6 @@ class EnachNpciNetbanking extends Base
         ];
 
         // In seconds
-        //TODO
         $timelines = [];
 
         $mailInfo = [
@@ -179,10 +142,56 @@ class EnachNpciNetbanking extends Base
 
     public function createFile($data)
     {
-
         Config::set('excel.csv.enclosure', '');
 
-        parent::createFile($data);
+        // Don't process further if file is already generated
+        if ($this->isFileGenerated() === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $allFilesData = $this->formatDataForFile($data);
+
+            $fileStoreIds = [];
+
+            foreach ($allFilesData as $key => $fileData)
+            {
+                // since file data is grouped based on utility code, it will be part of the file name
+                $fileName = $this->getFileToWriteNameWithoutExt(['utilityCode' => $key]);
+
+                $creator = new FileStore\Creator;
+
+                $creator->extension(static::EXTENSION)
+                        ->content($fileData)
+                        ->name($fileName)
+                        ->store(FileStore\Store::S3)
+                        ->type(static::FILE_TYPE)
+                        ->entity($this->gatewayFile)
+                        ->metadata(static::FILE_METADATA)
+                        ->save();
+
+                $file = $creator->getFileInstance();
+
+                $fileStoreIds[] = $file->getId();
+
+                $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+            }
+
+            $this->fileStore = $fileStoreIds;
+
+            $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
 
         Config::set('excel.csv.enclosure', '"');
     }

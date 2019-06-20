@@ -218,6 +218,20 @@ class Core extends Base\Core
         return (bool) $isAvailable;
     }
 
+    public function addServiceablePincodesForRbl(array $pincodes)
+    {
+        $redis = Redis::connection();
+
+        $redis->sadd(self::RBL_PINCODES_REDIS_KEY, $pincodes);
+    }
+
+    public function deleteServiceablePincodesForRbl(array $pincodes)
+    {
+        $redis = Redis::connection();
+
+        $redis->srem(self::RBL_PINCODES_REDIS_KEY, $pincodes);
+    }
+
     protected function checkRblToInternalStatusMapping(array $input)
     {
         if (isset($input[Entity::BANK_INTERNAL_STATUS]) === false)
