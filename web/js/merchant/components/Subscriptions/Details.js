@@ -49,11 +49,9 @@ export default props => {
 
   const testModeMsg = getTestModeMessage(subscription.status) || {};
 
-  const allowUpdateSubscription = [
-    'authenticated',
-    'active',
-    'created',
-  ].includes(subscription.status);
+  const allowUpdateSubscription = ['authenticated', 'active'].includes(
+    subscription.status
+  );
 
   const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(
     subscription.status

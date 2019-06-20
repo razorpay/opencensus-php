@@ -43,16 +43,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
       : undefined;
 
     let showStartDate = !props.isEdit,
-      totalCountLabel = 'Total Count';
-
-    if (props.isEdit) {
-      const isCreated = props.status === 'created';
-      showStartDate = isCreated;
-
-      if (!isCreated) {
-        totalCountLabel = 'No of cycles to be updated';
-      }
-    }
+      totalCountLabel = 'No of cycles to be updated';
 
     const planPlaceholder = props.plans.loading
       ? 'Loading...'
@@ -142,9 +133,11 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           validator={this.validateTotalCount}
           description="No. of billing cycles to be charged"
           max={planPeriodToMaxCycleMap[(selectedPlan || {}).period]}
-          defaultValue={fields.remaining_count || fields.total_count}
-          name={fields.remaining_count ? 'remaining_count' : 'total_count'}
-          label={fields.remaining_count ? totalCountLabel : 'Total Count'}
+          name={props.isEdit ? 'remaining_count' : 'total_count'}
+          label={props.isEdit ? totalCountLabel : 'Total Count'}
+          defaultValue={
+            props.isEdit ? fields.remaining_count : fields.total_count
+          }
         />
       </>
     );

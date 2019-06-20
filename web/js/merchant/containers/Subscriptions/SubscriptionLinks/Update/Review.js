@@ -25,16 +25,6 @@ export function changeData({
   let currSelectedPlan = updatedPlan,
     prevSelectedPlan = prevPlan;
 
-  const totalCountChange = {
-    heading: 'Count (No of cycles)',
-    changes: [
-      {
-        current: prevSubscription.total_count,
-        change: fields.total_count,
-      },
-    ],
-  };
-
   if (!updatedPlan) {
     currSelectedPlan = plans.find(({ id }) => id === fields.plan_id);
   }
@@ -67,26 +57,17 @@ export function changeData({
     });
   }
 
-  if (
-    !fields.remaining_count &&
-    prevSubscription.total_count !== fields.total_count
-  ) {
-    changes.push(totalCountChange);
-  }
-
-  if (
-    fields.remaining_count &&
-    fields.remaining_count !== prevSubscription.total_count
-  ) {
-    totalCountChange.changes = [
-      {
-        current: prevSubscription.total_count,
-        change: fields.remaining_count,
-      },
-    ];
-
-    changes.push(totalCountChange);
-  }
+  // if (fields.total_count !== prevSubscription.total_count) {
+  //   changes.push({
+  //     heading: 'Count (No of cycles)',
+  //     changes: [
+  //       {
+  //         current: prevSubscription.total_count,
+  //         change: fields.total_count,
+  //       },
+  //     ],
+  //   });
+  // }
 
   if (
     prevSubscription.start_at !== fields.start_at ||

@@ -79,7 +79,7 @@ export default class UpdateSubscription extends React.Component {
       plan_id: subscription.plan_id,
       quantity: subscription.quantity,
       start_at: subscription.start_at,
-      remaining_count: subscription.total_count - subscription.paid_count,
+      remaining_count: subscription.remaining_count,
     };
 
     if (['active'].includes(subscription.status)) {
@@ -155,7 +155,7 @@ export default class UpdateSubscription extends React.Component {
       prevSubscription.quantity !== fields.quantity ||
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
-      prevSubscription.total_count !== fields.remaining_count
+      prevSubscription.remaining_count !== fields.remaining_count
     );
   }
 
@@ -306,9 +306,16 @@ export default class UpdateSubscription extends React.Component {
   };
 
   renderForm = () => {
-    const { prevSubscription } = this.state;
+    const {
+      prevSubscription,
+      fields,
+      internals,
+      isLoading,
+      currentTab,
+      currency,
+    } = this.state;
 
-    if (this.state.isLoading) {
+    if (isLoading) {
       return (
         <div class="page-spinner-container">
           <Spinner />
@@ -316,35 +323,35 @@ export default class UpdateSubscription extends React.Component {
       );
     }
 
-    switch (this.state.currentTab) {
+    switch (currentTab) {
       case 0: {
         const filteredPlans = { ...this.props.plans };
 
         filteredPlans.items = filteredPlans.items.filter(
-          plan => plan.item.currency === this.state.currency
+          plan => plan.item.currency === currency
         );
 
         return (
           <PlanDetails
+            fields={fields}
             plans={filteredPlans}
-            fields={this.state.fields}
-            internals={this.state.internals}
+            internals={internals}
+            status={prevSubscription.status}
             onDateChange={this.handleDateChange}
             onTimeChange={this.handleTimeChange}
             onRadioChange={this.handleRadioChange}
             onChangeInPlan={this.handleChangeInPlan}
             ref={form => (this.planDetailsForm = form)}
-            status={this.state.prevSubscription.status}
           />
         );
       }
       case 1: {
         return (
           <Review
-            fields={this.state.fields}
-            internals={this.state.internals}
+            fields={fields}
+            internals={internals}
             plans={this.props.plans.items}
-            prevSubscription={this.state.prevSubscription}
+            prevSubscription={prevSubscription}
           />
         );
       }
