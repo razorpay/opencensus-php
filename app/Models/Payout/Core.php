@@ -410,6 +410,8 @@ class Core extends Base\Core
         // TODO: mark the workflow as approved
         // get workflow action id and send payload as approved is true
         //
+
+        return $payout;
     }
 
     public function rejectPayout(Entity $payout): Entity
@@ -418,6 +420,8 @@ class Core extends Base\Core
         // TODO: mark the workflow as rejected
         // get workflow action id and send payload as approved is false
         //
+
+        return $payout;
     }
 
     protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)

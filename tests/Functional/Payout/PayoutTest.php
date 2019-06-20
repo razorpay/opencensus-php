@@ -258,8 +258,8 @@ class PayoutTest extends TestCase
     {
         $payout = $this->testCreatePayout();
 
-        $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payouts/approve/'. $payout['id'];
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $this->fixtures->edit(
             'payout',
@@ -268,7 +268,6 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::PENDING,
             ]);
 
-        $this->testData[__FUNCTION__] = $testData;
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -278,8 +277,8 @@ class PayoutTest extends TestCase
     {
         $payout = $this->testCreatePayout();
 
-        $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payouts/approve/'. $payout['id'];
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $this->fixtures->edit(
             'payout',
@@ -288,7 +287,6 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::PENDING,
             ]);
 
-        $this->testData[__FUNCTION__] = $testData;
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -299,7 +297,7 @@ class PayoutTest extends TestCase
         $payout1 = $this->testCreatePayout();
         $payout2 = $this->testCreatePayout();
 
-        $testData = $this->testData[__FUNCTION__];
+        $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         $this->fixtures->edit(
@@ -316,7 +314,6 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::PENDING,
             ]);
 
-        $this->testData[__FUNCTION__] = $testData;
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -326,8 +323,8 @@ class PayoutTest extends TestCase
     {
         $payout = $this->testCreatePayout();
 
-        $testData = $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payouts/reject/'. $payout['id'];
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->fixtures->edit(
             'payout',
@@ -336,7 +333,6 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::PENDING,
             ]);
 
-        $this->testData[__FUNCTION__] = $testData;
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -347,7 +343,7 @@ class PayoutTest extends TestCase
         $payout1 = $this->testCreatePayout();
         $payout2 = $this->testCreatePayout();
 
-        $testData = $this->testData[__FUNCTION__];
+        $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         $this->fixtures->edit(
@@ -364,7 +360,6 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::PENDING,
             ]);
 
-        $this->testData[__FUNCTION__] = $testData;
         $this->ba->proxyAuth();
 
         $this->startTest();

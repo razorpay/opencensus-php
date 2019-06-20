@@ -75,7 +75,7 @@ return [
     'testApprovePayoutWithOtp' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/approve/{id}',
+            'url'     => '/payouts/{id}/approve',
             'content' => [
                 'token' => 'BUIj3m2Nx2VvVj',
                 'otp'   => '0007',
@@ -89,7 +89,7 @@ return [
     'testApprovePayoutWithInvalidOtp' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/approve/{id}',
+            'url'     => '/payouts/{id}/approve',
             'content' => [
                 'token' => 'BUIj3m2Nx2VvVj',
                 'otp'   => '1234',
@@ -113,7 +113,7 @@ return [
     'testApproveBulkPayoutWithOtp' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/approve',
+            'url'     => '/payouts/approve/bulk',
             'content' => [
                 'payout_ids' => [],
                 'token'      => 'BUIj3m2Nx2VvVj',
@@ -131,7 +131,7 @@ return [
     'testRejectPayout' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/reject/{id}',
+            'url'     => '/payouts/{id}/reject',
             'content' => [
                 'token' => 'BUIj3m2Nx2VvVj',
                 'otp'   => '1234',
@@ -147,7 +147,7 @@ return [
     'testBulkRejectPayouts' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/payouts/reject',
+            'url'     => '/payouts/reject/bulk',
             'content' => [
                 'payout_ids' => [],
             ],

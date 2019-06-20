@@ -116,7 +116,7 @@ class Service extends Base\Service
 
         foreach ($payouts as $payout)
         {
-            $payout->getValidator()->validateApproveRejectPayout();
+            $payout->getValidator()->validatePayoutStatusForApproveOrReject();
         }
 
         $failedIds = [];
