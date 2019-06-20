@@ -5,7 +5,7 @@
 redis.replicate_commands()
 
 -- Gets keys and arguments from command
-local key                   = KEYS[1]
+local key                   = KEYS[1]..':SUCCESS'
 local time                  = redis.call("time")
 
 --timeInMicroseconds
