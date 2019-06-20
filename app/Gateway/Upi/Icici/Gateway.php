@@ -81,11 +81,11 @@ class Gateway extends Base\Gateway
      */
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Action::AUTHENTICATE);
 
         if ($this->isBharatQrPayment() === true)
         {
-            $this->createGatewayPaymentEntity($input);
+            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 
             return null;
         }
@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
 
         $attributes[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request =  $this->getAuthorizeRequestArray($input);
 
@@ -163,7 +163,7 @@ class Gateway extends Base\Gateway
             Entity::TYPE => Base\Type::PAY,
         ];
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request =  $this->getPayAuthorizeRequestArray($input);
 

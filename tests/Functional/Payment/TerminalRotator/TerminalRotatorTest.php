@@ -44,6 +44,26 @@ class TerminalRotatorTest extends TestCase
         $this->assertEquals($payment['gateway'], 'cybersource');
     }
 
+    public function testTerminalRotatorForInvalidEnrollementStatus()
+    {
+        // fail the payment with a card that throws invalid enrollment status and
+        // succeed wih another terminal and assert so.
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012001036298889';
+
+        $newTerminalsUsed = $this->doValidPaymentAndFetchUsedTerminals($payment);
+
+        $this->assertEquals(2, count($newTerminalsUsed));
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals($payment['gateway'], 'cybersource');
+    }
+
     public function testCheckoutMultipleAttempts()
     {
         $this->mockCardVault();

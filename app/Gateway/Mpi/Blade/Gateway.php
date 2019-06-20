@@ -74,6 +74,8 @@ class Gateway extends Base\Gateway
      */
     public function authenticate(array $input)
     {
+        parent::action($input, Action::AUTHENTICATE);
+
         $runEnrollmentCheck = $this->runEnrollmentCheckForCard($input);
 
         if ($runEnrollmentCheck === false)
@@ -86,7 +88,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getVeresAttributesToSave($response, $input);
 
-        $this->createGatewayPaymentEntity($attributes, $input);
+        $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
         return $this->decideAuthStepAfterEnroll($input, $response);
     }
@@ -145,28 +147,27 @@ class Gateway extends Base\Gateway
                     return null;
                 }
 
+            default:
+                $this->trace->warning(
+                    TraceCode::GATEWAY_ERROR_ISSUER_AUTHENTICATION_NOT_AVAILABLE,
+                    [
+                        'enrollment_status' => $enrolled,
+                        'isInternational' => $input['card'][Card\Entity::INTERNATIONAL],
+                        'iin' => $input['card'][Card\Entity::IIN]
+                    ]);
+
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE,
-                    $enrolled,
-                    'Invalid enrollment response',
+                    ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                    'enrollment_status' . $enrolled,
+                    'Unexpected response',
                     [
                         'enrollment_status' => $enrolled,
                         'isInternational' => $input['card'][Card\Entity::INTERNATIONAL],
                         'iin' => $input['card'][Card\Entity::IIN]
                     ],
                     null,
-                    BaseGateway\Action::AUTHENTICATE);
-
-            default:
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                    $enrolled,
-                    'Invalid enroll response',
-                    [
-                        'enrollment_status' => $enrolled
-                    ],
-                    null,
-                    BaseGateway\Action::AUTHENTICATE);
+                    Action::AUTHENTICATE,
+                    true);
         }
     }
 
