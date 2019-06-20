@@ -53,7 +53,7 @@ class Service extends Base\Service
     public function update(string $id, array $input): array
     {
         /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
         $channel = $bankingAccount->getChannel();
 
@@ -119,10 +119,10 @@ class Service extends Base\Service
     {
         switch ($newStatus)
         {
-            case Status::INITIATED:
+            case Status::CREATED:
                 $result = in_array(
                     $previousStatus,
-                    [Status::PROCESSED, Status::PROCESSING, Status::CANCELLED,],
+                    [Status::PROCESSED, Status::PROCESSING, Status::CANCELLED, Status::INITIATED, Status::CREATED],
                     true) === false;
 
                 break;
