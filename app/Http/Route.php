@@ -1110,10 +1110,10 @@ final class Route
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
-        'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
         'banking_account_credentials'             => ['post',     'banking_accounts/{id}/credentials',                         'BankingAccountController@storeCredentials'                 ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
+        'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],

@@ -136,21 +136,21 @@ class Service extends Base\Service
         (new Validator)->validateInput('serviceable_pincode', $input);
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
-      
+
         switch ($channel)
         {
             case Channel::RBL:
-
                 $coreMethod = $coreMethod . 'ForRbl';
 
                 $this->core->$coreMethod($input[Entity::PINCODES]);
+
                 break;
 
             default:
                 $this->throwUnhandledChannelException($channel, $input);
-                
+
                 return null;
-         }
+        }
 
         return ['success' => true];
     }

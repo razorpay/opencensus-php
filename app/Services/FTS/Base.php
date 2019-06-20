@@ -100,7 +100,6 @@ class Base
 
         if ($response->status_code === 409)
         {
-            // ToDo check Tracecode with Ratan
             throw new Exception\RecordAlreadyExists(
                 'record already exists',
                 TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
