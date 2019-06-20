@@ -97,15 +97,23 @@ class Validator extends Base\Validator
     ];
 
     protected static $createOtpRules = [
-        // When medium is not sent otp is sent to both mediums.
-        Entity::MEDIUM => 'sometimes|filled|in:sms,email',
-        Entity::ACTION => 'required|filled|in:verify_contact,create_payout,create_payout_batch',
+        // When medium is not sent OTP is sent to both mediums.
+        Entity::MEDIUM        => 'sometimes|filled|in:sms,email',
+        Entity::ACTION        => 'required|filled|in:'
+                                 . 'verify_contact,'
+                                 . 'create_payout,'
+                                 . 'create_payout_batch,'
+                                 . 'approve_payout,'
+                                 . 'approve_payout_bulk,',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'          => 'required_if:action,create_payout|integer|min:100',
-        'account_number'  => 'required_if:action,create_payout,create_payout_batch|alpha_num|between:5,22',
-        'fund_account_id' => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'         => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
+        'amount'              => 'required_if:action,create_payout,approve_payout|integer|min:100',
+        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk|alpha_num|between:5,22',
+        'fund_account_id'     => 'required_if:action,create_payout|public_id|size:17',
+        'purpose'             => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
+        'payout_id'           => 'required_if:action,approve_payout|public_id|size:19',
+        'payout_total_amount' => 'required_if:action,approve_payout_bulk|integer|min:100',
+        'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',
     ];
 
     protected static $verifyOtpRules = [

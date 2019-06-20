@@ -97,7 +97,9 @@ class Raven
             ];
         }
 
-        return $this->sendRequest(self::RAVEN_URLS['generate-otp'], 'post', $input);
+        $response = $this->sendRequest(self::RAVEN_URLS['generate-otp'], 'post', $input);
+
+        return $response;
     }
 
     /**
@@ -105,10 +107,11 @@ class Raven
      * we return mock success response. But conditionally callee can specify
      * if it should not mock test mode behavior.
      *
-     * @param  array        $input
-     * @param  bool|boolean $mockInTestMode
+     * @param array        $input
+     * @param bool|boolean $mockInTestMode
      *
      * @return array
+     * @throws Exception\RuntimeException
      */
     public function sendSms(array $input, bool $mockInTestMode = true): array
     {
