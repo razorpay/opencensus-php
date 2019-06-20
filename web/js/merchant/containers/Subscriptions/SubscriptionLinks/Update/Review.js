@@ -57,17 +57,17 @@ export function changeData({
     });
   }
 
-  // if (fields.total_count !== prevSubscription.total_count) {
-  //   changes.push({
-  //     heading: 'Count (No of cycles)',
-  //     changes: [
-  //       {
-  //         current: prevSubscription.total_count,
-  //         change: fields.total_count,
-  //       },
-  //     ],
-  //   });
-  // }
+  if (fields.total_count !== prevSubscription.total_count) {
+    changes.push({
+      heading: 'Count (No of cycles)',
+      changes: [
+        {
+          current: prevSubscription.total_count,
+          change: fields.total_count,
+        },
+      ],
+    });
+  }
 
   if (
     prevSubscription.start_at !== fields.start_at ||

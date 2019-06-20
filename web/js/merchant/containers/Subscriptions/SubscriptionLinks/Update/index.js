@@ -346,9 +346,17 @@ export default class UpdateSubscription extends React.Component {
         );
       }
       case 1: {
+        const totalCount =
+          prevSubscription.total_count -
+          prevSubscription.paid_count +
+          fields.remaining_count;
+
         return (
           <Review
-            fields={fields}
+            fields={{
+              ...fields,
+              total_count: totalCount,
+            }}
             internals={internals}
             plans={this.props.plans.items}
             prevSubscription={prevSubscription}
