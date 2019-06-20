@@ -3,10 +3,13 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
+use RZP\Models\Bank\IFSC;
+use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -15,11 +18,13 @@ use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PaymentCreateTest extends TestCase
 {
     use OAuthTrait;
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -1129,6 +1134,106 @@ class PaymentCreateTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
+
+
+    public function testPaymentByUpiTpvForSpecificBanks()
+    {
+        // mocking the gateway call to check the bank account in input
+        $this->mockGateway();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $order = $this->fixtures->create('order', ['bank' => IFSC::KKBK, 'account_number' => '923729373']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['bank'] = IFSC::KKBK;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+    }
+
+    protected function mockGateway()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+            Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway,$action,$input,$mode)
+            {
+                $length = strlen($input['order']['account_number']);
+                $this->assertEquals(14, $length);
+            });
+
+        $this->app->instance('gateway', $gateway);
+    }
+    public function testPaymentFailOnDinersAndDisableMerchant()
+    {
+        $this->changeEnvToNonTest();
+
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        // enabling the diners cards
+        $this->fixtures->merchant->enableCardNetworks('10000000000000',['dicl']);
+
+        // disabling the terminal as we want to test for "No terminal found"
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '30569309025904';
+
+        $this->doAuthPayment($payment);
+
+        $entity = $this->getDbLastEntity('methods', 'live');
+
+        // checking whether diners card got disabled or not for the merchant
+        $this->assertEquals(false, $entity->isCardNetworkEnabled('DICL'));
+
+    }
+
+    public function testPaymentFailOnNetBankingAndDisableMerchant()
+    {
+        $this->changeEnvToNonTest();
+
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        // first payment with hdfc bank
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        // disabling the terminal as we want to test for "No terminal found"
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
+
+        $this->doAuthPayment($payment);
+
+        // second payment with sbi bank
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        // disabling the terminal as we want to test for "No terminal found"
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
+
+        $this->doAuthPayment($payment);
+
+        $methods = $entity = $this->getDbLastEntity('methods', 'live');
+
+        // checking the list of disabled banks for the merchant
+        $this->assertEquals(['HDFC','SBIN'], $methods->getDisabledBanks());
+    }
+
 
     public function testForRuPayPaymentOnHitachiTerminalModePurchase()
     {
