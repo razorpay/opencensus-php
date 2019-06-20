@@ -799,7 +799,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'                 => 'success',
                 'gateway_transaction_id' => '100000000000000000000000025236',
                 'error_code'             => '00',
-                'error_message'          => '',
+                'error_message'          => null,
                 'flow'                   => $flow,
                 'apprcode'               => '183217',
             ],

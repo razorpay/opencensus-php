@@ -3,15 +3,20 @@
 namespace RZP\Tests\Functional\FundAccount;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class FundAccountValidationTest extends TestCase
 {
     use AttemptTrait;
+    use MocksDnsTrait;
     use FundAccountTrait;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;

@@ -1419,9 +1419,24 @@ class Gateway extends Base\Gateway
             // This happens because gateway return two json instead of one
             // Till they fix this, we need to apply this hack
 
-            $body = explode('}', $body)[0] . '}';
+            try
+            {
+                $explodedbody = explode('}', $body)[0] . '}';
 
-            $responseArray = $this->jsonToArray($body);
+                $responseArray = $this->jsonToArray($explodedbody);
+            }
+            catch (\Exception $e)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_INVALID_JSON,
+                    null,
+                    'Failed to convert json to array',
+                    [
+                        'json' => $body,
+                    ],
+                    $e);
+            }
+
         }
 
         return $responseArray;

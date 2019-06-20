@@ -146,14 +146,23 @@ class Validator extends Base\Validator
 
     protected function validateProductRole(array $input)
     {
-        if (empty($input['role']) === false)
+        if (empty($input[Entity::ROLE]) === true)
         {
-            $role = new Role();
+            return;
+        }
 
-            if ($role->validateProductRole($input['role'], $input['product']) === false)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
-            }
+        $role    = $input[Entity::ROLE];
+        $product = $input[Entity::PRODUCT];
+
+        /** @var Merchant\Entity|null $merchant */
+        $merchant = $this->entity->merchant;
+
+        if (Role::validateProductRoleForMerchant($role, $product, $merchant) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+                Entity::ROLE,
+                [Entity::ROLE => $role, Entity::PRODUCT => $product]);
         }
     }
 
@@ -185,9 +194,13 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
-        if (Role::exists($role) === false)
+        if ((Role::exists($role) === false) and
+            (BankingRole::exists($role) === false))
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+                Entity::ROLE,
+                [Entity::ROLE => $role]);
         }
     }
 

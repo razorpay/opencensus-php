@@ -3,23 +3,58 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
+use RZP\Models\Pincode;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
     protected static $preCreateRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
+        Entity::CHANNEL => 'required|string|custom',
     ];
 
     protected static $rblAvailabilityRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
+        Entity::CHANNEL => 'required|string|custom',
         Entity::PINCODE => 'required_if:channel,rbl',
     ];
 
     protected static $createRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
+        Entity::CHANNEL => 'required|string|custom',
         Entity::PINCODE => 'required_if:channel,rbl',
     ];
+
+    protected static $serviceablePincodeRules = [
+        Entity::CHANNEL         => 'required|string|custom',
+        Entity::ACTION          => 'required|string|in:add,delete',
+        Entity::PINCODES        => 'required|array|filled',
+    ];
+
+    protected static $serviceablePincodeValidators = [
+        Entity::PINCODES,
+    ];
+
+    public function validatePincodes(array $input)
+    {
+        foreach ($input[Entity::PINCODES] as $pincode)
+        {
+            $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
+
+            if ($pincodeValidator->validate($pincode) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Pincode is not valid',
+                    Entity::PINCODE,
+                    [
+                        Entity::PINCODE => $pincode,
+                    ]
+                );
+            }
+        }
+    }
+
+    protected function validateChannel($attribute, $channel)
+    {
+        Channel::validateChannel($channel);
+    }
 
     protected static $editRules = [
         Entity::ACCOUNT_NUMBER       => 'filled|string|max:40',

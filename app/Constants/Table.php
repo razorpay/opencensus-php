@@ -212,6 +212,8 @@ class Table
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
 
+    const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,
         Entity::AXIS_GENIUS         => self::MIGS,

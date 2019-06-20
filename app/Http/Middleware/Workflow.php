@@ -48,6 +48,7 @@ class Workflow
         Permission::EDIT_MERCHANT_REQUESTS,
         Permission::UPDATE_PRICING_PLAN,
         Permission::MANAGE_RAZORX_OPERATIONS,
+        Permission::CREATE_PAYOUT,
     ];
 
     protected $app;

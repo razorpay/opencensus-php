@@ -91,6 +91,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
+        Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
     ];

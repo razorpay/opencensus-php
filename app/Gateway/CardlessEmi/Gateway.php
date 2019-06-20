@@ -143,6 +143,12 @@ class Gateway extends Base\Gateway
             $url = $responseArray[ResponseFields::REDIRECT_URL];
 
             $key = sprintf(self::REDIRECT_URL_CACHE_KEY, $cacheKey);
+
+            $brandingCacheKey = sprintf(self::BRANDING_URL_CACHE_KEY, $cacheKey);
+
+            $brandingUrl = $responseArray[ResponseFields::EXTRA];
+
+            $this->createCacheData($brandingCacheKey, $brandingUrl);
         }
         else
         {
@@ -151,9 +157,14 @@ class Gateway extends Base\Gateway
             $key = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
         }
 
-        $this->app['cache']->put($emiPlanKey, $emiPlans, self::CARD_CACHE_TTL);
+        $this->createCacheData($emiPlanKey, $emiPlans);
 
-        $this->app['cache']->put($key, $url, self::CARD_CACHE_TTL);
+        $this->createCacheData($key, $url);
+    }
+
+    protected function createCacheData($key, $value, $ttl = self::CARD_CACHE_TTL)
+    {
+        $this->app['cache']->put($key, $value, $ttl);
     }
 
 
