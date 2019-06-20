@@ -380,14 +380,6 @@ class AtomGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            if ($action === 'verify_refund')
-            {
-                $content = '<REFUNDSTATUS>
-                <ERRORCODE>EE</ERRORCODE>
-                <MESSAGE>Refund Not Found</MESSAGE>
-                 </REFUNDSTATUS>';
-            }
-
             if ($action === 'refund')
             {
                 $content['STATUSCODE']         = 'M1';
@@ -404,6 +396,14 @@ class AtomGatewayTest extends TestCase
 
         $this->clearMockFunction();
 
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(2, $refund['attempts']);
+
         $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $updatedRefund = $this->getDbLastEntity('refund');
@@ -411,6 +411,70 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_'.$updatedRefund['id']);
         $this->assertEquals('processed', $updatedRefund['status']);
         $this->assertEquals(1, $refund['attempts']);
+    }
+
+    public function testVerifyRefundForMultipleRefunds()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['STATUSCODE']         = 'M1';
+                $content['STATUSMESSAGE']      = 'Refund is not allowed';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content = '<REFUNDSTATUS>
+	                    <ERRORCODE>00</ERRORCODE>
+	                    <MESSAGE>Refund Found</MESSAGE>
+	                    <DETAILS>
+                        <REFUND>
+                            <TXNID>300044506069</TXNID>
+                            <PRODUCT>RAZORPAY</PRODUCT>
+                            <REFUNDAMOUNT>100.0000</REFUNDAMOUNT>
+                            <REFUNDINITIATEDATE>2019-06-06</REFUNDINITIATEDATE>
+                            <REFUNDPROCESSDATE></REFUNDPROCESSDATE>
+                            <REMARKS></REMARKS>
+                            <MEREFUNDREF>randomrfnd1</MEREFUNDREF>
+                        </REFUND>
+                        <REFUND>
+                            <TXNID>300044506070</TXNID>
+                            <PRODUCT>RAZORPAY</PRODUCT>
+                            <REFUNDAMOUNT>100.0000</REFUNDAMOUNT>
+                            <REFUNDINITIATEDATE>2019-06-06</REFUNDINITIATEDATE>
+                            <REFUNDPROCESSDATE></REFUNDPROCESSDATE>
+                            <REMARKS></REMARKS>
+                            <MEREFUNDREF>randomrfnd2</MEREFUNDREF>
+                        </REFUND>		
+                    </DETAILS>
+                </REFUNDSTATUS> ';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals(2, $refund['attempts']);
     }
 
     public function testVerifyRefundFailedOnGateway()
@@ -426,7 +490,7 @@ class AtomGatewayTest extends TestCase
                 $content = '<REFUNDSTATUS>
                 <ERRORCODE>EE</ERRORCODE>
                 <MESSAGE>Refund Not Found</MESSAGE>
-                 </REFUNDSTATUS>';
+                </REFUNDSTATUS>';
             }
 
             if ($action === 'refund')
@@ -452,7 +516,7 @@ class AtomGatewayTest extends TestCase
                 $content = '<REFUNDSTATUS>
                 <ERRORCODE>EE</ERRORCODE>
                 <MESSAGE>Refund Not Found</MESSAGE>
-                 </REFUNDSTATUS>';
+                </REFUNDSTATUS>';
             }
         });
 

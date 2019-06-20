@@ -356,31 +356,58 @@ class Gateway extends Base\Gateway
 
         if ($verifyRefundResponseArray[VerifyRefundFields::ERRORCODE] === Status::VERIFY_REFUND_SUCCESS)
         {
-            $success = true;
+            $refundArray = $verifyRefundResponseArray[VerifyRefundFields::DETAILS][VerifyRefundFields::REFUND];
 
-            $received = true;
+            $bool = false;
 
-            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
-
-            if ($gatewayEntity !== null)
+            if (isset($refundArray[VerifyRefundFields::TXN_ID]) === true)
             {
-                $gatewayEntity->setSuccess($success);
-
-                $gatewayEntity->setReceived($received);
-
-                $gatewayEntity->setStatus(Status::SUCCESS);
-
-                $this->repo->saveOrFail($gatewayEntity);
+                if ($refundArray[VerifyRefundFields::MEREFUNDREF] === $input['refund']['id'])
+                {
+                    $bool = true;
+                }
             }
             else
             {
-                $attributes = $this->getRefundAttributesFromVerify($verifyRefundResponseArray);
+                foreach ($refundArray as $refund)
+                {
+                    if ($refund[VerifyRefundFields::MEREFUNDREF] === $input['refund']['id'])
+                    {
+                        $bool = true;
 
-                $this->createGatewayPaymentEntity($attributes,'refund');
+                        break;
+                    }
+                }
             }
 
-            return $scroogeResponse->setSuccess(true)
-                                   ->toArray();
+            if ($bool === true)
+            {
+                $success = true;
+
+                $received = true;
+
+                $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+                if ($gatewayEntity !== null)
+                {
+                    $gatewayEntity->setSuccess($success);
+
+                    $gatewayEntity->setReceived($received);
+
+                    $gatewayEntity->setStatus(Status::SUCCESS);
+
+                    $this->repo->saveOrFail($gatewayEntity);
+                }
+                else
+                {
+                    $attributes = $this->getRefundAttributesFromVerify($verifyRefundResponseArray);
+
+                    $this->createGatewayPaymentEntity($attributes,'refund');
+                }
+
+                return $scroogeResponse->setSuccess(true)
+                                       ->toArray();
+            }
         }
 
         return $scroogeResponse->setSuccess(false)
@@ -1128,7 +1155,9 @@ class Gateway extends Base\Gateway
     protected function getGatewayVerifyRefundData(array $verifyRefundFields = [])
     {
         if (empty($verifyRefundFields) === false)
-        {   $refundDetails = $verifyRefundFields[VerifyRefundFields::DETAILS][VerifyRefundFields::REFUND] ?? null;
+        {
+            $refundDetails = $verifyRefundFields[VerifyRefundFields::DETAILS][VerifyRefundFields::REFUND] ?? null;
+
             return [
                 VerifyRefundFields::ERRORCODE            => $verifyRefundFields[VerifyRefundFields::ERRORCODE] ?? null,
                 VerifyRefundFields::MESSAGE              => $verifyRefundFields[VerifyRefundFields::MESSAGE] ?? null,
