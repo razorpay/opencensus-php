@@ -213,7 +213,10 @@ class Gateway extends Base\Gateway
                 $status,
                 ResponseCode::getResponseMessage($status));
 
-            $ex->markSafeRetryTrue();
+            if ($this->action === Action::AUTHENTICATE)
+            {
+                $ex->markSafeRetryTrue();
+            }
 
             throw $ex;
         }
