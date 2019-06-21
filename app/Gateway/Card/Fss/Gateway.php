@@ -6,7 +6,9 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -333,6 +335,19 @@ class Gateway extends Base\Gateway
                 {
                     $requestContent[Fields::ID]       = $this->config['barb']['merchant_id'];
                     $requestContent[Fields::PASSWORD] = $this->config['barb']['terminal_password'];
+                }
+
+                if ($input[E::MERCHANT]->isFeatureEnabled(Feature\Constants::VIJAYA_MERCHANT) === true)
+                {
+                    $requestContent[Fields::UDF6]       = $input[E::MERCHANT][Merchant\Entity::NAME];
+                    $requestContent[Fields::UDF7]       = $input[E::CARD][Card\Entity::NAME];
+                    $requestContent[Fields::UDF8]       = $input[E::PAYMENT][Payment\Entity::EMAIL];
+                    $requestContent[Fields::UDF9]       = $input[E::PAYMENT][Payment\Entity::CONTACT];
+                    $requestContent[Fields::UDF10]      = 'Bangalore, Karnataka';
+                    $requestContent[Fields::UDF11]      = $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100;
+                    $requestContent[Fields::UDF12]      = $input[E::PAYMENT][Payment\Entity::ID];
+                    $requestContent[Fields::UDF13]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2];
+                    $requestContent[Fields::UDF14]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
                 }
 
                 break;
