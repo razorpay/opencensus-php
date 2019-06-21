@@ -206,8 +206,7 @@ export default class RefundModal extends Component {
   };
 
   render() {
-    const { handleSubmit, payment, transfers } = this.props;
-    console.log('Refunds', this.props.refunds);
+    const { handleSubmit, payment, transfers, refunds } = this.props;
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
 
@@ -292,6 +291,21 @@ export default class RefundModal extends Component {
                 class="form-control"
               />
             </div>
+            {refunds.isInstantRefund && (
+              <div class="checkbox">
+                <label>
+                  <Field
+                    name="instant_refund"
+                    component="input"
+                    type="checkbox"
+                  />
+                  <b>Refund Instantly</b>
+                </label>
+                <span class="ir-help">
+                  <i class="i i-help" />
+                </span>
+              </div>
+            )}
             <div class="Modal__actions">
               <button class="btn btn-primary btn-block">
                 Issue <RefundType partial={partial} isTitleCase={true} /> refund
