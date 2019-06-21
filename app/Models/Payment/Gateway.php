@@ -1737,10 +1737,8 @@ class Gateway
         {
             return self::isNetworkSupportedForPurchase($gateway, $networkCode);
         }
-        else
-        {
-            return true;
-        }
+
+        return true;
     }
 
     public static function supportsReverse($gateway)
@@ -1804,7 +1802,7 @@ class Gateway
 
         // If a given network is in the list of notSupportedNetworks, it means that the network
         // is not supported by the gateway for Purchase.
-        return !(in_array($networkCode, $notSupportedNetworks, true));
+        return (in_array($networkCode, $notSupportedNetworks, true) === false);
     }
 
     public static function isPowerWallet($wallet)
