@@ -20,6 +20,12 @@ class Gateway extends Base\Gateway
 
     protected $gateway = Payment\Gateway::CARD_FSS;
 
+    protected $acquirerMethodMap = [
+        Acquirer::SBI => 'post',
+        Acquirer::BOB => 'get',
+        Acquirer::FSS => 'get',
+    ];
+
     /**
      * Fss Gateway has purchase model so framing the request here
      * after persisting the gateway entity.
@@ -36,7 +42,10 @@ class Gateway extends Base\Gateway
 
         $purchaseRequestContent = $this->getPurchaseRequestContent($purchaseRequestFields, $input);
 
-        $request = $this->getPurchaseRequestFieldsArray($purchaseRequestContent, 'get', Action::PURCHASE);
+        $gatewayAcquirer = $this->terminal->getGatewayAcquirer();
+
+        $request = $this->getPurchaseRequestFieldsArray($purchaseRequestContent,
+            $this->acquirerMethodMap[$gatewayAcquirer], Action::PURCHASE);
 
         $purchaseFields = $this->getPurchaseFields($purchaseRequestFields);
 

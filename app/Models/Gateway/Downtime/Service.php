@@ -87,4 +87,10 @@ class Service extends Base\Service
 
         $this->auth->setModeAndDbConnection($mode);
     }
+
+
+    public function purgeKeys()
+    {
+        $this->core()->purgeKeys();
+    }
 }

@@ -79,6 +79,13 @@ class GatewayDowntimeDetection
         return json_decode(array_get($allGatewaySettings, $this->gateway));
     }
 
+    /**
+     * This function returns the array of durations
+     * for which respective downtime should be created.
+     *
+     * This also updates the total attempts and total failure in redis.
+     * @return array
+     */
     public function gatewayDowntimeDurations(): array
     {
         if (empty($this->settings) === true)
@@ -100,21 +107,25 @@ class GatewayDowntimeDetection
         $durations = [];
         for ($i = 0; $i < count($results); $i++)
         {
-            $this->updateDurationIfApplicable(
+            $this->updateDurationIfDowntimeDetected(
                 $results[$i][0], // All Attempts in given time window.
                 $results[$i][1], // Failure Attempts in given time window.
                 // Threshold Failure Percentage in window i from settings configuration.
-                $this->settings[($i/2)][1],
+                $this->settings[($i)][1],
                 // Threshold Attempts in window i from settings configuration.
-                $this->settings[($i/2)][2],
+                $this->settings[($i)][2],
                 // Duration for which downtime has to be created.
-                $this->settings[($i/2)][3],
+                $this->settings[($i)][3],
                 $durations);
         }
 
         return $durations;
     }
 
+    /**
+     * This function increment the total attempts in redis.
+     * which will be used for downtime detection.
+     */
     public function incrementTotalAttempts()
     {
         if (empty($this->settings) === true)
@@ -124,6 +135,28 @@ class GatewayDowntimeDetection
 
         $args = [
             file_get_contents(__DIR__ . '/LuaScripts/AllAttemptsCount.lua'),
+            1,
+            $this->getThrottleKey(),
+        ];
+
+        $this->redis->eval(
+            ...$args,
+            ...$this->getAllWindows()
+        );
+    }
+
+    /**
+     * This function
+     */
+    public function purgeKeys()
+    {
+        if (empty($this->settings) === true)
+        {
+            return;
+        }
+
+        $args = [
+            file_get_contents(__DIR__ . '/LuaScripts/PurgeExpiredCount.lua'),
             1,
             $this->getThrottleKey(),
         ];
@@ -154,12 +187,25 @@ class GatewayDowntimeDetection
             $this->settings);
     }
 
-    protected function updateDurationIfApplicable(int $allAttempts,
-                                      int $totalFailure,
-                                      int $thresholdFailurePercentage,
-                                      int $thresholdAllAttempts,
-                                      int $downtimeDuration,
-                                      array &$durations)
+    /**
+     * This function updates the downtime duration array
+     * if a new downtime is detected for creation.
+     *
+     * @param int $allAttempts All Attempts in given time window.
+     * @param int $totalFailure Failure Attempts in given time window.
+     * @param int $thresholdFailurePercentage Threshold Failure Percentage
+     * in window i from settings configuration.
+     * @param int $thresholdAllAttempts Threshold Attempts in window i
+     * from settings configuration.
+     * @param int $downtimeDuration Duration for which downtime has to be created.
+     * @param array $durations
+     */
+    protected function updateDurationIfDowntimeDetected(int $allAttempts,
+                                                        int $totalFailure,
+                                                        int $thresholdFailurePercentage,
+                                                        int $thresholdAllAttempts,
+                                                        int $downtimeDuration,
+                                                        array &$durations)
     {
         if ($allAttempts < $thresholdAllAttempts)
         {

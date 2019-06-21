@@ -47,6 +47,7 @@ class Gateway extends Base\Gateway
     const PAY = 'PAY';
 
     const FIELD_LENGTH = [
+        Action::AUTHENTICATE  => 17,
         Action::AUTHORIZE     => 17,
         Action::VALIDATE_VPA  => 14,
         Action::REFUND        => 20,
@@ -85,13 +86,13 @@ class Gateway extends Base\Gateway
      */
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Action::AUTHENTICATE);
 
         if ($this->isBharatQrPayment() === true)
         {
             $attributes = $this->getBharatqrGatewayAttributes($input);
 
-            $this->createGatewayPaymentEntity($attributes);
+            $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
             return null;
         }
@@ -109,9 +110,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
-
-        parent::action($input, Action::AUTHORIZE);
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request =  $this->getAuthorizeRequestArray($input);
 
@@ -324,8 +323,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::VPA                   => $input[ResponseFields::PAYER_VA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PAYMENT_ID],
-                                                                        3, 14),
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PAYMENT_ID], 3),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
         ];
 

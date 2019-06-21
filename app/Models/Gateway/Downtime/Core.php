@@ -470,7 +470,10 @@ class Core extends Base\Core
     }
 
     /**
-     * TODO: Add Comment
+     * This function creates the downtime and
+     * update the required metric for downtime detection,
+     * if $gatewayDowntimeError is present. Otherwise
+     * it just update the required metric for downtime detection.
      * @param string $gateway
      * @param array $gatewayData
      * @param bool $gatewayDowntimeError

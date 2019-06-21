@@ -32,6 +32,7 @@ local purgeKeys = function(windowLength, now, hashKey)
     end
 
     if found == true then
+        --TODO: move it outside to delete together for all windows.
         redis.call('HDEL', hashKey, unpack(keysToDelete))
     end
 end

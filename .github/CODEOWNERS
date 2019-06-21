@@ -18,17 +18,7 @@ app/Reconciliator/*                                     prashanth.yv@razorpay.co
 # Gateways
 #
 
-app/Gateway/*                                           vivek.kumar@razorpay.com
-app/Gateway/Aeps/*                                      albin.george@razorpay.com                               vivek.kumar@razorpay.com
-app/Gateway/Card/Fss/*                                  praveen.patlola@razorpay.com                            junaid.anwer@razorpay.com
-app/Gateway/Netbanking/Bob/*                            albin.george@razorpay.com                               vivek.kumar@razorpay.com
-app/Gateway/Netbanking/Corporation/*                    albin.george@razorpay.com                               vivek.kumar@razorpay.com
-app/Gateway/Upi/Icici/*                                 nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Gateway/Upi/Mindgate/*                              nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Gateway/Upi/Npci/*                                  nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Gateway/Wallet/Openwallet/*                         amit.mahbubani@razorpay.com
-app/Gateway/Wallet/Sbibuddy/*                           albin.george@razorpay.com                               vivek.kumar@razorpay.com
-
+app/Gateway/*                                           @razorpay/TechPgIntegrations
 
 #
 # Models
@@ -81,7 +71,7 @@ app/Models/Pricing/*                                    sunny.aggrawal@razorpay.
 app/Models/QrCode/*                                     @razorpay/TechVirtualAccounts
 app/Models/Reversal/*                                   amit.mahbubani@razorpay.com
 app/Models/Risk/*                                       sunny.aggrawal@razorpay.com
-app/Models/Schedule/*                                   @razorpay/TechSettlements
+app/Models/Schedule/*                                   @razorpay/TechSubscriptions                             @razorpay/TechSettlements
 app/Models/Settings/*                                   amit.mahbubani@razorpay.com
 app/Models/Settlement/*                                 @razorpay/TechSettlements
 app/Models/State/*                                      sumeeti.lalwani@razorpay.com                            jitendra.ojha@razorpay.com              praveen.patlola@razorpay.com
@@ -134,45 +124,7 @@ tests/Functional/Transfer/*                             amit.mahbubani@razorpay.
 tests/Functional/User/*                                 sumeeti.lalwani@razorpay.com
 tests/Functional/VirtualAccount/*                       @razorpay/TechVirtualAccounts
 
-tests/Functional/Gateway/*                              vivek.kumar@razorpay.com
-tests/Functional/Gateway/Aeps/*                         albin.george@razorpay.com                               vivek.kumar@razorpay.com
-tests/Functional/Gateway/Amex/*                         vivek.kumar@razorpay.com
-tests/Functional/Gateway/AxisMigs/*                     vivek.kumar@razorpay.com
-tests/Functional/Gateway/Billdesk/*                     vivek.kumar@razorpay.com
-tests/Functional/Gateway/Blade/*                        vivek.kumar@razorpay.com
-tests/Functional/Gateway/Card/Fss                       praveen.patlola@razorpay.com                            junaid.anwer@razorpay.com
-tests/Functional/Gateway/Cybersource/*                  vivek.kumar@razorpay.com
-tests/Functional/Gateway/Ebs/*                          vivek.kumar@razorpay.com
-tests/Functional/Gateway/FirstData/*                    vivek.kumar@razorpay.com
-tests/Functional/Gateway/Hdfc/*                         vivek.kumar@razorpay.com
-tests/Functional/Gateway/Hitachi/*                      vivek.kumar@razorpay.com
-tests/Functional/Gateway/Mobikwik/*                     vivek.kumar@razorpay.com
-tests/Functional/Gateway/Sharp/*                        vivek.kumar@razorpay.com
-tests/Functional/Gateway/Reconciliation/*               prashanth.yv@razorpay.com
-tests/Functional/Gateway/Netbanking/Airtel/*            vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Axis/*              vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Bob/*               albin.george@razorpay.com                               vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Corporation/*       albin.george@razorpay.com                               vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Federal/*           vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Hdfc/*              vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Icici/*             vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Indusind/*          vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Kotak/*             vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Pnb/*               vivek.kumar@razorpay.com
-tests/Functional/Gateway/Netbanking/Rbl/*               vivek.kumar@razorpay.com
-tests/Functional/Gateway/Upi/Icici/*                    nemo@razorpay.com                                       vivek.kumar@razorpay.com
-tests/Functional/Gateway/Upi/Mindgate/*                 nemo@razorpay.com                                       vivek.kumar@razorpay.com
-tests/Functional/Gateway/Upi/Npci/*                     nemo@razorpay.com                                       vivek.kumar@razorpay.com
-tests/Functional/Gateway/Upi/Sbi/*                      vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Airtelmoney/*           vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Freecharge/*            vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Jiomoney/*              vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Mpesa/*                 vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Olamoney/*              vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Openwallet/*            amit.mahbubani@razorpay.com
-tests/Functional/Gateway/Wallet/Payumoney/*             vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Payzapp/*               vivek.kumar@razorpay.com
-tests/Functional/Gateway/Wallet/Sbibuddy/*              albin.george@razorpay.com                               vivek.kumar@razorpay.com
+tests/Functional/Gateway/*                              @razorpay/TechPgIntegrations
 
 
 #

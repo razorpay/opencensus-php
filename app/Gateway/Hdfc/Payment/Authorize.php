@@ -41,12 +41,22 @@ trait Authorize
                 return $this->getFieldsForFormSubmitForRupay();
 
             default:
-                throw new Exception\LogicException(
-                    'Should not have reached here',
-                    null,
+                $this->trace->warning(
+                    TraceCode::GATEWAY_ERROR_ISSUER_AUTHENTICATION_NOT_AVAILABLE,
                     [
                         'enroll_status' => $enrollStatus,
                     ]);
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                    'enrollment_status:' . $enrollStatus,
+                    'Unexpected response',
+                    [
+                        'enroll_status' => $enrollStatus,
+                    ],
+                    null,
+                    Base\Action::AUTHENTICATE,
+                    true);
         }
     }
 
