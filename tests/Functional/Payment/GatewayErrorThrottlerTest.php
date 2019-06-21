@@ -44,7 +44,7 @@ class GatewayErrorThrottlerTest extends TestCase
 
     // ------------------------- Tests -----------------------------------------
 
-    public function testGatewayFailureDowntimeCreate()
+/*    public function testGatewayFailureDowntimeCreate()
     {
         $data = $this->getErrorTestData();
 
@@ -104,7 +104,7 @@ class GatewayErrorThrottlerTest extends TestCase
         $downtime = $this->getLastEntity('gateway_downtime', true);
         $this->assertEquals('sharp', $downtime['gateway']);
         $this->assertEquals(300, $downtime['end'] - $downtime['begin']);
-    }
+    }*/
 
     // ------------------------------ Helpers ----------------------------------
 
