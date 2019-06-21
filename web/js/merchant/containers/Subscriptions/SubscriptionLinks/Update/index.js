@@ -151,11 +151,12 @@ export default class UpdateSubscription extends React.Component {
     } = this.state;
 
     return (
-      prevSubscription.plan_id !== fields.plan_id ||
-      prevSubscription.quantity !== fields.quantity ||
+      (fields.plan_id && prevSubscription.plan_id !== fields.plan_id) ||
+      (fields.quantity && prevSubscription.quantity !== fields.quantity) ||
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
-      prevSubscription.remaining_count !== fields.remaining_count
+      (fields.remaining_count &&
+        prevSubscription.remaining_count !== fields.remaining_count)
     );
   }
 

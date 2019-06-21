@@ -272,7 +272,13 @@ export default class NewSubscriptionLink extends Component {
   isFormValid = () => {
     const { currentTab, fields, internals } = this.state;
     const validateTotalCount = (this.planDetailsForm || {}).validateTotalCount;
-    return isFormValid(currentTab, fields, internals, validateTotalCount);
+    return isFormValid(
+      currentTab,
+      fields,
+      internals,
+      validateTotalCount,
+      this.props.isEdit
+    );
   };
 
   renderForm() {
@@ -399,14 +405,17 @@ function isFormValid(
   formIndex,
   fields,
   internals,
-  validateTotalCount = () => {}
+  validateTotalCount = () => {},
+  isEdit
 ) {
   switch (formIndex) {
     case 0: {
       return (
         !!fields.plan_id &&
         (internals._startsImmediately || !!fields.start_at) &&
-        !validateTotalCount(fields.total_count)
+        !validateTotalCount(
+          isEdit ? fields.remaining_count : fields.total_count
+        )
       );
     }
 
