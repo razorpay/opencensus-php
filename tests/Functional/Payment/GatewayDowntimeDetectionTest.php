@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Error;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -29,6 +30,18 @@ class GatewayDowntimeDetectionTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->mockCardVault();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('On');
     }
 
     public function tearDown()
