@@ -11,6 +11,7 @@
   };
 
   if (localStorage.referrer === 'chrome-extension') {
+    appendLink(base + 'css/extension-popup.css');
     document.write('<script src="' + base + 'extension-entry.js"></script>');
     return;
   }

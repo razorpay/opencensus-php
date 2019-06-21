@@ -8,6 +8,7 @@
 
     // Header
     var header = d.createElement('div');
+    header.setAttribute('class', 'ExtensionPopup-Header');
     var logo = d.createElement('img');
     logo.setAttribute(
       'src',
