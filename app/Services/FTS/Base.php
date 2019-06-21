@@ -85,7 +85,7 @@ class Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    protected function createAndSendRequest(
+    public function createAndSendRequest(
         string $endpoint,
         string $method,
         array $data = []): array

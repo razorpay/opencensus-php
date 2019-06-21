@@ -72,6 +72,8 @@ class BankingAccountTest extends TestCase
           ]
         ];
 
+        $this->mockFundAccountService();
+
         $this->mockCardVault(function ()
         {
             return [

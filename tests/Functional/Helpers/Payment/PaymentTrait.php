@@ -2156,4 +2156,42 @@ trait PaymentTrait
 
         return $content;
     }
+
+    protected function mockFundAccountService($callable = null)
+    {
+        $fts = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $callable = $callable ?: function ($endpoint, $method, $data = [])
+        {
+            switch ($endpoint)
+            {
+                case '/account':
+
+                    $response = [
+                        'body' => [
+                            'fund_account_id' => random_integer(2),
+                        ],
+                        'code' => 201
+                    ];
+
+                    return $response;
+
+                case '/source_account':
+
+                    $response = [
+                            'message' => 'source account registered',
+                        ];
+
+                    return $response;
+
+                default:
+                    return null;
+            }
+        };
+
+        $fts->shouldReceive('createAndSendRequest')
+            ->andReturnUsing($callable);
+
+        $this->app->instance('fts_create_account', $fts);
+    }
 }
