@@ -78,4 +78,9 @@ export default class Payment extends GenericEntity {
       this.capturableAmount = this.amount - this.fee;
     }
   }
+
+  fetchInstantRefund() {
+    console.log('Fetch Instant Refund', this);
+    return true;
+  }
 }

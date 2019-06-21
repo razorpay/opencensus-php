@@ -120,6 +120,8 @@ export default class RefundModal extends Component {
 
   componentDidMount() {
     this.props.onMount && this.props.onMount(this.props.payment);
+    this.props.isInstantRefund &&
+      this.props.isInstantRefund(this.props.payment);
   }
 
   componentWillUnmount() {
@@ -205,7 +207,7 @@ export default class RefundModal extends Component {
 
   render() {
     const { handleSubmit, payment, transfers } = this.props;
-
+    console.log('Refunds', this.props.refunds);
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
 

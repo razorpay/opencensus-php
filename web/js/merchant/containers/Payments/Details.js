@@ -225,10 +225,12 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
-  openRefundModal = payment => {
+  openRefundModal = (payment, refunds) => {
     this.props.openModal({
       component: (
         <RefundModal
+          refunds={refunds}
+          isInstantRefund={this.props.isInstantRefund}
           payment={payment}
           onRefund={this.onPaymentRefund}
           onMount={this.onRefundModalMount}

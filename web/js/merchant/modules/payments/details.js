@@ -10,6 +10,7 @@ const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 const PAYMENT_RESET = 'PAYMENT_RESET';
 const PAYMENT_TRANSFER = 'PAYMENT_TRANSFER';
+const PAYMENT_INSTANT_REFUNDS = 'PAYMENT_INSTANT_REFUNDS';
 
 export const fetchItem = id => {
   let payment = new Payment();
@@ -78,6 +79,13 @@ export const resetPayment = () => {
   };
 };
 
+export const isInstantRefund = payment => {
+  return {
+    type: PAYMENT_INSTANT_REFUNDS,
+    payload: payment.fetchInstantRefund(),
+  };
+};
+
 let initialState = {
   loading: true,
   payment: {
@@ -92,6 +100,7 @@ let initialState = {
     loading: false,
     items: [],
     error: null,
+    isInstantRefund: true,
   },
   transfers: {
     loading: false,
@@ -190,6 +199,30 @@ export default function(state = initialState, action) {
         loading: false,
         items: [],
         error: action.payload.errors,
+      });
+
+    case `${PAYMENT_INSTANT_REFUNDS}::PENDING`:
+      return set(state, 'refunds', {
+        loading: true,
+        items: [],
+        error: null,
+        isInstantRefund: false,
+      });
+
+    case `${PAYMENT_INSTANT_REFUNDS}::SUCCESS`:
+      return set(state, 'refunds', {
+        loading: false,
+        items: [],
+        error: null,
+        isInstantRefund: action.payload,
+      });
+
+    case `${PAYMENT_INSTANT_REFUNDS}::ERROR`:
+      return set(state, 'refunds', {
+        loading: false,
+        items: [],
+        error: action.payload.errors,
+        isInstantRefund: false,
       });
 
     case `${PAYMENT_FETCH_TRANSFERS}::PENDING`:
