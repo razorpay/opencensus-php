@@ -11,13 +11,6 @@ import Configuration from 'merchant/containers/Configuration';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import ApplicationsNew from 'merchant/containers/Applications/new';
 
-const analyticsGoTo = name => {
-  window.rzpAnalytics({
-    eventCategory: 'Dashboard - Settings',
-    eventAction: `Go To - ${name}`,
-  });
-};
-
 @withRouter
 export default class Settings extends Component {
   componentDidMount() {
@@ -82,3 +75,10 @@ export default class Settings extends Component {
     );
   }
 }
+
+const analyticsGoTo = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Settings',
+    eventAction: `Go To - ${name}`,
+  });
+};
