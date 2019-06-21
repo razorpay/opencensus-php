@@ -5266,9 +5266,7 @@ trait Authorize
         }
         else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
-            //If the gateway doesn't support PURCHASE mode on a specific network,
-            //return true to fallback on AuthCapture mode.
-            return Payment\Gateway::supportsPurchase($gateway, $networkCode);
+            return (Payment\Gateway::supportsPurchase($gateway, $networkCode) === false);
         }
 
         // Additional check for ICICI debit cards on First data terminal
