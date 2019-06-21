@@ -320,10 +320,9 @@ export default class CreateVirtualAccount extends Component {
               )}
 
               <div class="form-group">
-                <label>Close By</label>
+                <label>Close By (Optional)</label>
 
                 <Input.Check
-                  required
                   class="Input--vTop"
                   fieldLabel="Disable Auto Close"
                   data-name="__no_expiry"
