@@ -98,6 +98,16 @@ class PaysecureGatewayTest extends TestCase
             }
         );
 
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_message_type')
+                {
+                    $this->assertEquals('SMS', $content);
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
@@ -113,6 +123,16 @@ class PaysecureGatewayTest extends TestCase
 
         $payment['customer_id'] = 'cust_100000customer';
         $payment['token'] = '10002cardtoken';
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_message_type')
+                {
+                    $this->assertEquals('DMS', $content);
+                }
+            }
+        );
 
         $authResponse = $this->doAuthPayment($payment);
 
