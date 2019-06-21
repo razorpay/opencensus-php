@@ -1,5 +1,7 @@
 import HeaderAction from 'rzp/ui/HeaderAction';
 
+import PaymentLinksSettings from 'merchant/components/Reminders/Settings/PaymentLinks';
+
 export default function Reminders() {
   return (
     <div class="content-wrapper content-sm" id="settings-content">
@@ -14,6 +16,8 @@ export default function Reminders() {
           </a>
         </div>
       </HeaderAction>
+
+      <PaymentLinksSettings />
     </div>
   );
 }
