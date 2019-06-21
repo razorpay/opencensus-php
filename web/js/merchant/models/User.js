@@ -336,6 +336,11 @@ export default class User {
     );
   }
 
+  get isRemindersEnabled() {
+    return true; // For testing purpose
+    return this.isFeatureEnabled('reminders');
+  }
+
   get getCurrencyList() {
     return window.currencyList;
   }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
 
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import ApiKeys from 'merchant/containers/Keys/List';
 import Reminders from 'merchant/containers/Reminders';
@@ -48,9 +48,11 @@ export default class Settings extends Component {
             </NavLink>
           </ShowWhen>
 
-          <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
-            Reminders
-          </NavLink>
+          <ShowWhen additionalCondition={user => user.isRemindersEnabled}>
+            <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
+              Reminders
+            </NavLink>
+          </ShowWhen>
 
           <ShowWhen
             featureEnabled="Oauth"
@@ -64,7 +66,11 @@ export default class Settings extends Component {
           <Route path="/config" component={Configuration} />
           <Route path="/webhooks" component={Webhooks} />
           <Route path="/keys" component={ApiKeys} />
-          <Route path="/reminders" component={Reminders} />
+          <ShowWhenRoute
+            path="/reminders"
+            component={Reminders}
+            additionalCondition={user => user.isRemindersEnabled}
+          />
           <Switch>
             <Route exact path="/applications" component={Applications} />
             <Route exact path="/applications/new" component={ApplicationsNew} />
