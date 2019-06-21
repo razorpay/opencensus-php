@@ -72,6 +72,14 @@ class BankingAccountTest extends TestCase
           ]
         ];
 
+        $this->mockCardVault(function ()
+        {
+            return [
+                    'success' => false,
+                    'token'   => 'random'
+            ];
+        });
+
         $this->startTest($dataToReplace);
     }
 
