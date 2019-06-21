@@ -575,7 +575,6 @@ class GatewayStatus extends BaseStatus
         self::ERSP90296                         => 'To Account Number is Invalid',
         self::ERSP90188                         => 'Voucher entry not allowed for this GL account.',
         self::ERSP8014                          => 'Failed to debit from remitter’s account',
-        self::RZP_DUPLICATE_PAYOUT              => 'RZP: A payout with given reference Id already exists',
         self::RZP_FTA_REQUEST_INVALID           => 'RZP: payout fta request is invalid',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'RZP: request encryption failure',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'RZP: payout request failed',

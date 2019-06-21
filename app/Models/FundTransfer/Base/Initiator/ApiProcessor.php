@@ -172,19 +172,21 @@ abstract class ApiProcessor extends NodalAccount
         $statusCode,
         $bankSubStatus)
     {
-        $status = function (bool $success, bool $failure)
+        $status = Metric::CATEGORY_PENDING;
+
+        switch (true)
         {
-            switch (true) {
-                case $success === true:
-                    return 'success';
+            case $isSuccess === true:
+                $status = Metric::CATEGORY_SUCCESS;
+                break;
 
-                case $failure === true:
-                    return 'failed';
+            case $isFailure === true:
+                $status = Metric::CATEGORY_FAILED;
+                break;
 
-                default:
-                    return 'pending';
-            }
-        };
+            default:
+                $status = Metric::CATEGORY_PENDING;
+        }
 
         $this->trace->count(Metric::NODAL_RESPONSE_COUNT, [
             Metric::MODE               => $mode,
@@ -192,7 +194,7 @@ abstract class ApiProcessor extends NodalAccount
             Metric::PRODUCT            => $product,
             Metric::STATUS_CODE        => $statusCode,
             Metric::BANK_FAILURE_CODE  => $bankSubStatus,
-            Metric::STATUS             => $status($isSuccess, $isFailure),
+            Metric::STATUS             => $status,
         ]);
     }
 

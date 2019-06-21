@@ -22,4 +22,11 @@ final class Metric
     const STATUS_CODE       = 'status_code';
 
     const BANK_FAILURE_CODE = 'bank_failure_code';
+
+    // Values
+    const CATEGORY_PENDING = 'pending';
+
+    const CATEGORY_SUCCESS = 'success';
+
+    const CATEGORY_FAILED  = 'failed';
 }
