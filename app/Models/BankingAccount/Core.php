@@ -43,9 +43,9 @@ class Core extends Base\Core
         {
             $reference = $processor->preProcessAccountInfoNotification($input);
 
-            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel($reference, $channel);
-
             $attributes = $processor->processAccountInfoNotification($input);
+
+            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel($reference, $channel);
 
             $this->updateBankingAccount($bankingAccount, $attributes);
 
@@ -123,11 +123,11 @@ class Core extends Base\Core
         }
     }
 
-    protected function getProcessor(string $channel): Gateway\Base\Processor
+    protected function getProcessor(string $channel): Gateway\Base
     {
         $processor = __NAMESPACE__ . '\\' . 'Gateway';
 
-        $processor .= '\\' . studly_case($channel) . '\\' . 'Processor';
+        $processor .= '\\' . studly_case($channel) . '\\' . 'Gateway';
 
         return new $processor();
     }

@@ -5,21 +5,22 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 use Carbon\Carbon;
 
 use RZP\Models\BankingAccount;
-use RZP\Models\BankingAccount\Gateway;
 
-class Processor extends Gateway\Base\Processor
+class Gateway extends BankingAccount\Gateway\Base
 {
     const DATE_FORMAT = 'Y-m-d';
 
-    const RBL_PINCODES_REDIS_KEY = 'rbl_pincode_set';
+    const PINCODES_REDIS_KEY = 'rbl_pincode_set';
 
     public function preProcessAccountInfoNotification(array $input): string
     {
-        (new Validator)->validateInput(Validator::PRE_ACCOUNT_INFO_WEBHOOK, $input);
+        $validator = new Validator;
+
+        $validator->validateInput(Validator::PRE_ACCOUNT_INFO_WEBHOOK, $input);
 
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
-        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $input);
+        $validator->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $input);
 
         // returning the reference field to uniquely identify account BankingAccount\Entity
         $bankReferenceNumber = $input[Fields::REF_NUM_1];
@@ -34,7 +35,7 @@ class Processor extends Gateway\Base\Processor
         $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
 
         $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
-                                                           $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
+                                                        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
 
         $attributes[BankingAccount\Entity::STATUS] = BankingAccount\Status::PROCESSED;
 
@@ -77,19 +78,28 @@ class Processor extends Gateway\Base\Processor
         $this->checkRblToInternalStatusMapping($input);
     }
 
-    public function validateAndPreProcessInputForAccountCreation(array $input)
+    protected function validateInputForAccountCreation(array $input)
     {
         (new Validator)->validateInput(Validator::ACCOUNT_AVAILABILITY, $input);
+    }
 
+    protected function preProcessInputForAccountCreation(array $input)
+    {
         return $this->isPincodeRblServiceable($input[BankingAccount\Entity::PINCODE]);
     }
 
-    // We are not rejecting requests based on the pincode availability for now. This
-    // is being done to store all the leads we get for account creation. Later we can
-    // choose to reject requests directly from here.
+    /**
+     * We are not rejecting requests based on the pincode availability for now.
+     * This is being done to store all the leads we get for account creation.
+     * Later we can choose to reject requests directly from here.
+     *
+     * @param string $pincode
+     *
+     * @return array
+     */
     protected function isPincodeRblServiceable(string $pincode)
     {
-        $availability = parent::isPincodeServiceable($pincode, self::RBL_PINCODES_REDIS_KEY);
+        $availability = parent::isPincodeServiceable($pincode);
 
         return [
             BankingAccount\Entity::STATUS => BankingAccount\Status::CREATED
@@ -131,15 +141,5 @@ class Processor extends Gateway\Base\Processor
         $status = $input[BankingAccount\Entity::STATUS];
 
         Status::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
-    }
-
-    public function addServiceablePincodes(array $pincodes, string $key)
-    {
-        parent::addPincodes($pincodes, self::RBL_PINCODES_REDIS_KEY);
-    }
-
-    public function deleteServiceablePincodes(array $pincodes, string $key)
-    {
-        parent::deletePincodes($pincodes, self::RBL_PINCODES_REDIS_KEY);
     }
 }

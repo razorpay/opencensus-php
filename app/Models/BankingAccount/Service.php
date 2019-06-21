@@ -35,6 +35,15 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
 
+    /**
+     * This function to be used only for admin or internal routes since
+     * we are not fetching banking_account by merchant_id.
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
     public function update(string $id, array $input): array
     {
         /** @var Entity $bankingAccount */
@@ -49,7 +58,6 @@ class Service extends Base\Service
                 'channel' => $channel,
                 'input'   => $input,
             ]);
-
 
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 

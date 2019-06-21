@@ -18,6 +18,26 @@ class Validator extends Base\Validator
         Entity::STATUS  => 'required|custom',
     ];
 
+    protected static $editRules = [
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
+        Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
+        Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
+        Entity::STATUS                          => 'filled|string|custom',
+        Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
+        Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
+        Entity::PINCODE                         => 'filled|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'filled|string',
+        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
+        Entity::BENEFICIARY_STATE               => 'filled|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|string|date',
+        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
+        Entity::BENEFICIARY_MOBILE              => 'filled|string',
+        Entity::BENEFICIARY_EMAIL               => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|string',
+    ];
+
     protected static $serviceablePincodeRules = [
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
@@ -51,26 +71,6 @@ class Validator extends Base\Validator
     {
         Channel::validateChannel($channel);
     }
-
-    protected static $editRules = [
-        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
-        Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
-        Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
-        Entity::STATUS                          => 'filled|string|custom',
-        Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
-        Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
-        Entity::PINCODE                         => 'filled|integer|digits:6',
-        Entity::BENEFICIARY_CITY                => 'filled|string',
-        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
-        Entity::BENEFICIARY_STATE               => 'filled|string',
-        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|string|date',
-        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
-        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
-        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
-        Entity::BENEFICIARY_MOBILE              => 'filled|string',
-        Entity::BENEFICIARY_EMAIL               => 'filled|string',
-        Entity::BENEFICIARY_NAME                => 'filled|string',
-    ];
 
     /**
      * @param string $attribute

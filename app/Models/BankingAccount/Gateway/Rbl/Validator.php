@@ -41,7 +41,6 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC                    => 'required_with:account_number|size:11',
         Entity::STATUS                          => 'filled|string|custom',
         Entity::BANK_INTERNAL_STATUS            => 'required_if:status,processing,processed,cancelled|string|custom',
-        Entity::STATUS                          => 'filled|string|custom',
         Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
         Entity::PINCODE                         => 'filled|integer|digits:6',
