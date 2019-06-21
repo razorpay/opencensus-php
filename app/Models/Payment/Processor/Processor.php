@@ -1689,6 +1689,8 @@ class Processor
                         'payment_id' => $this->payment->getId()
                     ]);
 
+                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
+
                 $gatewayDowntimeError = true;
             }
 
