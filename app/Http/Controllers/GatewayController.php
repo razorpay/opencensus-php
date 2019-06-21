@@ -967,6 +967,8 @@ class GatewayController extends Controller
     {
         $service->purgeKeys();
 
-        return ApiResponse::json([]);
+        return ApiResponse::json([
+            'success' => true
+        ]);
     }
 }

@@ -1521,6 +1521,7 @@ final class Route
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
+        'gateway_downtime_detection_purge_keys',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.

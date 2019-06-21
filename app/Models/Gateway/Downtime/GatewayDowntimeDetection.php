@@ -42,7 +42,7 @@ class GatewayDowntimeDetection
 
     const PREFIX_KEY    = ConfigKey::DOWNTIME_DETECTION;
 
-    public function __construct(string $gateway)
+    public function __construct(string $gateway = null)
     {
         /** @var $app Application */
         $app = App::getFacadeRoot();
@@ -72,11 +72,18 @@ class GatewayDowntimeDetection
         $this->settings = $settings;
     }
 
-    protected function loadSettingsFromRedis(): array
+    protected function loadSettingsFromRedis()
     {
         $allGatewaySettings = $this->redis->hgetall(self::SETTINGS_KEY);
 
-        return json_decode(array_get($allGatewaySettings, $this->gateway));
+        if ($this->gateway !=  null)
+        {
+            return json_decode(array_get($allGatewaySettings, $this->gateway));
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -150,21 +157,35 @@ class GatewayDowntimeDetection
      */
     public function purgeKeys()
     {
-        if (empty($this->settings) === true)
+        $allGatewaySettings = $this->redis->hgetall(self::SETTINGS_KEY);
+
+        foreach ($allGatewaySettings as $gateway => $configuration)
         {
-            return;
+            $this->gateway = $gateway;
+
+            $this->settings = json_decode(array_get($allGatewaySettings, $this->gateway));
+
+            $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_PURGE_INITIATED, [
+                'gateway'                           => $gateway,
+                'settings'                          => $this->settings,
+            ]);
+
+            $args = [
+                file_get_contents(__DIR__ . '/LuaScripts/PurgeExpiredCount.lua'),
+                1,
+                $this->getThrottleKey(),
+            ];
+
+            $this->redis->eval(
+                ...$args,
+                ...$this->getAllWindows()
+            );
+
+            $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_PURGE_COMPLETED, [
+                'gateway'                           => $gateway,
+                'settings'                          => $this->settings,
+            ]);
         }
-
-        $args = [
-            file_get_contents(__DIR__ . '/LuaScripts/PurgeExpiredCount.lua'),
-            1,
-            $this->getThrottleKey(),
-        ];
-
-        $this->redis->eval(
-            ...$args,
-            ...$this->getAllWindows()
-        );
     }
 
     protected function getThrottleKey(): string

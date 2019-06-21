@@ -96,4 +96,16 @@ class GatewayDowntimeDetectionTest extends TestCase
         $this->assertEquals('sharp', $downtime['gateway']);
         $this->assertEquals(600, $downtime['end'] - $downtime['begin']);
     }
+
+    public function testPurge()
+    {
+        $this->ba->cronAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/detection/keys/purge',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+    }
 }

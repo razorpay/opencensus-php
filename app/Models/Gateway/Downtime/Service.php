@@ -91,6 +91,6 @@ class Service extends Base\Service
 
     public function purgeKeys()
     {
-        $this->core()->purgeKeys();
+        (new GatewayDowntimeDetection())->purgeKeys();
     }
 }
