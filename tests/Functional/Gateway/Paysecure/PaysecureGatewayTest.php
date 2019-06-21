@@ -105,6 +105,22 @@ class PaysecureGatewayTest extends TestCase
         return $authResponse;
     }
 
+    public function testLocalCustomersPaymentAuthViaRedirect()
+    {
+        $this->fixtures->iin->edit('607384', ['message_type' => 'DMS']);
+        // Create token and card
+        $payment = $this->payment;
+
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['token'] = '10002cardtoken';
+
+        $authResponse = $this->doAuthPayment($payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+
+        return $authResponse;
+    }
+
     public function testPaymentAuthViaRedirectForBlacklistedMcc()
     {
         $this->addBlacklistConfig(['6012' => '7994']);
