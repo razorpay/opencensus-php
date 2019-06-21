@@ -11,6 +11,7 @@ export default function EarningsDailyList(props) {
     <CommissionsDailyList
       amountColumn={amountColumn}
       queryType="aggregate_daily"
+      dailyEntityRoute="earnings"
       {...props}
     />
   );

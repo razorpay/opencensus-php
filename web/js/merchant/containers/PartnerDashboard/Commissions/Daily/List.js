@@ -13,15 +13,6 @@ import { without } from 'rzp/utils/rzp-utils';
 import AddMerchant from '../../SubMerchant/AddMerchant';
 import ListFilter from './ListFilter';
 
-const date = {
-  title: 'Date',
-  value: item => (
-    <Link to={`/partners/earnings/daily/${item.timestamp}`}>
-      {moment(item.timestamp, 'X').format('ll')}
-    </Link>
-  ),
-};
-
 const volume = {
   title: 'Transaction Amount',
   value: item => <Amount value={item.transactionVolume} currency={'INR'} />,
@@ -43,6 +34,21 @@ const transactions = {
   closeModal,
 })
 export default class CommissionsDailyList extends ListContainer {
+  constructor(props) {
+    super(props);
+
+    this.dateColumn = {
+      title: 'Date',
+      value: item => (
+        <Link
+          to={`/partners/${props.dailyEntityRoute}/daily/${item.timestamp}`}
+        >
+          {moment(item.timestamp, 'X').format('ll')}
+        </Link>
+      ),
+    };
+  }
+
   onDatesChange = (from, to) => {
     this.search({ from, to });
   };
@@ -90,7 +96,7 @@ export default class CommissionsDailyList extends ListContainer {
         <ListFilter onDatesChange={this.onDatesChange} />
         <DataTable
           columns={[
-            date,
+            this.dateColumn,
             this.props.amountColumn,
             volume,
             activeMerchants,
