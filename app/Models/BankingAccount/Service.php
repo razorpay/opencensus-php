@@ -108,7 +108,7 @@ class Service extends Base\Service
 
                     $this->core->createMerchantSourceAccountForRbl($bankingAccount, $fundAccountId);
 
-                    $this->core->updateAccountToProcessed($bankingAccount, Channel::RBL);
+                    $this->core->updateAccountToProcessed($bankingAccount);
 
                     $success = true;
                 }

@@ -141,8 +141,10 @@ class Core extends Base\Core
         return $response[CardVault::TOKEN];
     }
 
-    public function updateAccountToProcessed(Entity $bankingAccount, string $channel)
+    public function updateAccountToProcessed(Entity $bankingAccount)
     {
+        $channel = $bankingAccount->getChannel();
+
         switch ($channel)
         {
             case Channel::RBL:

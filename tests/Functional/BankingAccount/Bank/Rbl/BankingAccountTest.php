@@ -75,7 +75,7 @@ class BankingAccountTest extends TestCase
         $this->mockCardVault(function ()
         {
             return [
-                    'success' => false,
+                    'success' => true,
                     'token'   => 'random'
             ];
         });
