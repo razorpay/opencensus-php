@@ -46,8 +46,6 @@ class GatewayErrorThrottlerTest extends TestCase
 
     public function testGatewayFailureDowntimeCreate()
     {
-        $this->markTestSkipped();
-
         $data = $this->getErrorTestData();
 
         $this->gatewayDown = true;
@@ -69,8 +67,6 @@ class GatewayErrorThrottlerTest extends TestCase
 
     public function testGatewayFailureDowntimeEdit()
     {
-        $this->markTestSkipped();
-
         $this->testGatewayFailureDowntimeCreate();
 
         $downtime1 = $this->getLastEntity('gateway_downtime', true);
@@ -87,8 +83,6 @@ class GatewayErrorThrottlerTest extends TestCase
 
     public function testGatewayFailureDowntimeDuration()
     {
-        $this->markTestSkipped();
-
         $this->setRedisSettings([
             'duration' => 300,
         ]);
