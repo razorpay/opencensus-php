@@ -4833,13 +4833,16 @@ trait Authorize
 
         $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);
 
+        $iin = $this->app['repo']->iin->find($card['iin']);
+
         $this->payment->card()->associate($card);
 
         return array_merge(
             $card->toArray(),
             [
-                'number' => $cardNumber,
-                'cvv' => $cvv
+                'number'       => $cardNumber,
+                'cvv'          => $cvv,
+                'message_type' => $iin['message_type'],
             ]);
     }
 
