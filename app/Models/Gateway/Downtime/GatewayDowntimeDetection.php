@@ -106,6 +106,11 @@ class GatewayDowntimeDetection
             $this->getThrottleKey(),
         ];
 
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_EXECUTING_FAILURE_COUNT, [
+            'key'       => $this->getThrottleKey(),
+            'windows'   => $this->getAllWindows(),
+        ]);
+
         $results = $this->redis->eval(
             ...$args,
             ...$this->getAllWindows()
@@ -145,6 +150,11 @@ class GatewayDowntimeDetection
             1,
             $this->getThrottleKey(),
         ];
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_EXECUTING_ATTEMPTS_COUNT, [
+            'key'       => $this->getThrottleKey(),
+            'windows'   => $this->getAllWindows(),
+        ]);
 
         $this->redis->eval(
             ...$args,
@@ -257,6 +267,15 @@ class GatewayDowntimeDetection
 
             return;
         }
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_ALLOWED, [
+            'all_failure'                       => $allAttempts,
+            'total_failure'                     => $totalFailure,
+            'threshold_failure_percentage'      => $thresholdFailurePercentage,
+            'threshold_all_attempts'            => $thresholdAllAttempts,
+            'downtime_duration'                 => $downtimeDuration,
+            'durations'                         => $durations,
+        ]);
 
         $durations[] = $downtimeDuration;
 
