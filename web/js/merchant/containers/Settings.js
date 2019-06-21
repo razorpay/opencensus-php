@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
 
-import Configuration from 'merchant/containers/Configuration';
+import ShowWhen from 'merchant/components/ShowWhen';
+
 import ApiKeys from 'merchant/containers/Keys/List';
+import Reminders from 'merchant/containers/Reminders';
 import Webhooks from 'merchant/containers/Webhooks/List';
 import Applications from 'merchant/containers/Applications/';
+import Configuration from 'merchant/containers/Configuration';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import ApplicationsNew from 'merchant/containers/Applications/new';
 
 const analyticsGoTo = name => {
@@ -53,6 +55,10 @@ export default class Settings extends Component {
             </NavLink>
           </ShowWhen>
 
+          <NavLink to="/reminders" onClick={() => analyticsGoTo('Reminders')}>
+            Reminders
+          </NavLink>
+
           <ShowWhen
             featureEnabled="Oauth"
             additionalCondition={user => user.isAllowedView('applications')}
@@ -65,6 +71,7 @@ export default class Settings extends Component {
           <Route path="/config" component={Configuration} />
           <Route path="/webhooks" component={Webhooks} />
           <Route path="/keys" component={ApiKeys} />
+          <Route path="/reminders" component={Reminders} />
           <Switch>
             <Route exact path="/applications" component={Applications} />
             <Route exact path="/applications/new" component={ApplicationsNew} />
