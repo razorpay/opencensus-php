@@ -357,6 +357,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE         = 'BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
 
     const CARD_NETWORK_INVALID                                  = 'CARD_NETWORK_INVALID';
+    const IIN_MESSAGE_TYPE_MISSING                              = 'IIN_MESSAGE_TYPE_MISSING';
 
     const CUSTOMER_CREATE                                       = 'CUSTOMER_CREATE';
     const CUSTOMER_EDIT                                         = 'CUSTOMER_EDIT';
