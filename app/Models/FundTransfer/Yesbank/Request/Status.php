@@ -147,12 +147,15 @@ class Status extends Base
 
         $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), $statusCode, $bankSubStatus);
 
+        $mode = $this->entity->getMode();
+
         // capture failed response codes
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
             $isFailure,
             $isSuccess,
+            $mode,
             $statusCode,
             $bankSubStatus);
 
@@ -185,11 +188,14 @@ class Status extends Base
 
         $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), ValidStatus::FAILED, $subCode);
 
+        $mode = $this->entity->getMode();
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
             $isFailure,
             $isSuccess,
+            $mode,
             ValidStatus::FAILED,
             $subCode);
 
@@ -248,11 +254,14 @@ class Status extends Base
 
         $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), $statusCode, $finalResponseCode);
 
+        $mode = $this->entity->getMode();
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
             $isFailure,
             $isSuccess,
+            $mode,
             $statusCode,
             $finalResponseCode);
 

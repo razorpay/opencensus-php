@@ -432,12 +432,15 @@ class Transfer extends Base
 
         $isFailure = Status::inStatus(Status::getFailureStatus(), $statusCode, $bankSubStatus);
 
+        $mode = $this->entity->getMode();
+
         // capture failed response codes
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
             $isFailure,
             $isSuccess,
+            $mode,
             $statusCode,
             $bankSubStatus);
 
@@ -484,11 +487,14 @@ class Transfer extends Base
 
         $isFailure = Status::inStatus(Status::getFailureStatus(), $statusCode, $bankSubStatus);
 
+        $mode = $this->entity->getMode();
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
             $isFailure,
             $isSuccess,
+            $mode,
             $statusCode,
             $bankSubStatus);
 
@@ -551,11 +557,14 @@ class Transfer extends Base
 
         $isFailure = GatewayStatus::inStatus(GatewayStatus::getFailureStatus(), $statusCode, $finalResponseCode);
 
+        $mode = $this->entity->getMode();
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
             $product,
             $isFailure,
             $isSuccess,
+            $mode,
             $statusCode,
             $finalResponseCode);
 

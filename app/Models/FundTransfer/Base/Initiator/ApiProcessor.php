@@ -168,32 +168,32 @@ abstract class ApiProcessor extends NodalAccount
         string $product,
         bool $isFailure,
         bool $isSuccess,
+        $mode,
         $statusCode,
         $bankSubStatus)
     {
-        if ($isFailure === true)
+        $status = function (bool $success, bool $failure)
         {
-            $this->trace->count(Metric::NODAL_FAILURE_STATUS_CODE, [
-                'channel'            => $channel,
-                'bank_failure_code'  => $bankSubStatus,
-                'product'            => $product,
-            ]);
-        }
-        else if ($isSuccess === true)
-        {
-            $this->trace->count(Metric::NODAL_SUCCESS_COUNT, [
-                'channel'            => $channel,
-                'product'            => $product,
-            ]);
-        }
-        else
-        {
-            $this->trace->count(Metric::NODAL_PENDING_COUNT, [
-                'channel'            => $channel,
-                'product'            => $product,
-                'status_code'        => $statusCode,
-            ]);
-        }
+            switch (true) {
+                case $success === true:
+                    return 'success';
+
+                case $failure === true:
+                    return 'failed';
+
+                default:
+                    return 'pending';
+            }
+        };
+
+        $this->trace->count(Metric::NODAL_RESPONSE_COUNT, [
+            Metric::MODE               => $mode,
+            Metric::CHANNEL            => $channel,
+            Metric::PRODUCT            => $product,
+            Metric::STATUS_CODE        => $statusCode,
+            Metric::BANK_FAILURE_CODE  => $bankSubStatus,
+            Metric::STATUS             => $status($isSuccess, $isFailure),
+        ]);
     }
 
     /**
