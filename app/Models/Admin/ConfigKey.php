@@ -47,6 +47,8 @@ class ConfigKey
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
     const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
+    const DOWNTIME_DETECTION                    = self::PREFIX . 'downtime:detection';
+    const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . self::DOWNTIME_DETECTION . ':configuration';
 
     // Gateway level configs
     const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
