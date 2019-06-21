@@ -4794,11 +4794,14 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
+        $iin = $this->app['repo']->iin->find($card['iin']);
+
         return array_merge(
                 $card->toArray(),
                 [
                     'number' => $cardNumber,
-                    'cvv' => $cvv
+                    'cvv' => $cvv,
+                    'message_type' => $iin['message_type'],
                 ]);
     }
 
