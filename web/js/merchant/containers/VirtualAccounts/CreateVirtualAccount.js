@@ -359,6 +359,11 @@ export default class CreateVirtualAccount extends Component {
                     )}
                   </div>
                 </Input.Group>
+
+                <small class="help-block">
+                  If specified, Virtual Account will auto close at the specified
+                  time.
+                </small>
               </div>
 
               <br />
@@ -375,7 +380,7 @@ export default class CreateVirtualAccount extends Component {
               <div class="Modal__actions clearfix">
                 <AsyncButton
                   className="btn btn-primary btn-block"
-                  text="Create"
+                  text="Create Virtual Account"
                   pendingText="Creating..."
                   onClick={handleSubmit(this.save)}
                 />

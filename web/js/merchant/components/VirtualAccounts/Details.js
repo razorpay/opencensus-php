@@ -65,9 +65,19 @@ export default props => {
                   />
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Close By">
+                <EntityDetailRow
+                  label={
+                    virtualaccount.status === 'closed'
+                      ? 'Closed At'
+                      : 'Close By'
+                  }
+                >
                   <Time
-                    value={virtualaccount.close_by}
+                    value={
+                      virtualaccount.status === 'closed'
+                        ? virtualaccount.closed_at
+                        : virtualaccount.close_by
+                    }
                     format="DD MMM YYYY, hh:mm:ss a"
                   />
                 </EntityDetailRow>
