@@ -320,12 +320,12 @@ export default class CreateVirtualAccount extends Component {
               )}
 
               <div class="form-group">
-                <label>Expire By</label>
+                <label>Close By</label>
 
                 <Input.Check
                   required
                   class="Input--vTop"
-                  fieldLabel="No Expiry"
+                  fieldLabel="Disable Auto Close"
                   data-name="__no_expiry"
                   checked={internals.__no_expiry}
                   onChange={this.handleNoExpiry}
@@ -420,7 +420,7 @@ const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
 
       {virtualAccount.close_by && (
         <div class="form-group">
-          <div class="text-muted">Expire By</div>
+          <div class="text-muted">Close By</div>
           <div>
             <b>
               {moment(virtualAccount.close_by * 1000).format(

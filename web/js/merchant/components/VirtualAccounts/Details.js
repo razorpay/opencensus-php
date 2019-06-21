@@ -65,7 +65,7 @@ export default props => {
                   />
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Expire By">
+                <EntityDetailRow label="Close By">
                   <Time
                     value={virtualaccount.close_by}
                     format="DD MMM YYYY, hh:mm:ss a"
