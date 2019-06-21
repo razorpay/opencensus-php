@@ -53,6 +53,24 @@ class Fields
 
     const UDF5                          = 'udf5';
 
+    const UDF6                          = 'udf6';
+
+    const UDF7                          = 'udf7';
+
+    const UDF8                          = 'udf8';
+
+    const UDF9                          = 'udf9';
+
+    const UDF10                         = 'udf10';
+
+    const UDF11                         = 'udf11';
+
+    const UDF12                         = 'udf12';
+
+    const UDF13                         = 'udf13';
+
+    const UDF14                         = 'udf14';
+
     const TRAN_DATA                     = 'trandata';
 
     const TRANPORTAL_ID                 = 'tranportalId';
