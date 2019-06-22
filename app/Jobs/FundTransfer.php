@@ -102,7 +102,7 @@ class FundTransfer extends Job
                                           ->nodal_beneficiary
                                           ->fetchActivatedBeneficiaryDetailsForChannel(
                                               $channel,
-                                              $bankAccount);
+                                              $bankAccount->getId());
 
                 $createdAtWithOffset = $beneficiaryEntity->getCreatedAt() + 60;
 

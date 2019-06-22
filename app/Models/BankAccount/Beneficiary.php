@@ -332,8 +332,8 @@ class Beneficiary extends Base\Core
         $nodalBeneficiary = $this->repo
                                  ->nodal_beneficiary
                                  ->fetchActivatedBeneficiaryDetailsForChannel(
-                                     $bankAccount->getId(),
-                                     $channel
+                                     $channel,
+                                     $bankAccount->getId()
                                  );
 
         $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
