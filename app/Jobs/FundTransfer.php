@@ -41,6 +41,8 @@ class FundTransfer extends Job
     {
         $ftaInitiator = new Initiator;
 
+        $delayTransfer = false;
+
         $data = [
             'fta_id' => $this->ftaId
         ];
@@ -83,8 +85,9 @@ class FundTransfer extends Job
 
             if ($isBeneRegistrationRequired === true)
             {
-                $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus($channel,
-                                                                                                     $bankAccount);
+                $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus(
+                                                                $channel,
+                                                                $bankAccount);
 
                 if ($beneficiaryRegistered === false)
                 {
@@ -92,6 +95,21 @@ class FundTransfer extends Job
 
                     return;
                 }
+
+                //
+                // delaying the transfer only if bene registration is done in this flow
+                //
+                $delayTransfer = true;
+            }
+
+            //
+            // Bene registration form YB requires some time (Max observed is 45 sec)
+            // Because of this we are adding delay of 60 sec, in case we do bene registration in this flow.
+            // TODO: remove this code once verify bene feature is in place
+            //
+            if ($delayTransfer === true)
+            {
+                $this->logAndDelete($data, TraceCode::FTA_TRANSFER_JOB_DELAYED, true);
             }
 
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
