@@ -101,8 +101,8 @@ class FundTransfer extends Job
                 $beneficiaryEntity = $this->repoManager
                                           ->nodal_beneficiary
                                           ->fetchActivatedBeneficiaryDetailsForChannel(
-                                              $channel,
-                                              $bankAccount->getId());
+                                              $bankAccount->getId(),
+                                              $channel);
 
                 $createdAtWithOffset = $beneficiaryEntity->getCreatedAt() + 60;
 
