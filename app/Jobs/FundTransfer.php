@@ -4,6 +4,8 @@ namespace RZP\Jobs;
 
 use App;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use Razorpay\Trace\Logger as Trace;
@@ -96,10 +98,27 @@ class FundTransfer extends Job
                     return;
                 }
 
+                $beneficiaryEntity = $this->repoManager
+                                          ->nodal_beneficiary
+                                          ->fetchActivatedBeneficiaryDetailsForChannel(
+                                              $bankAccount->getId(),
+                                              $channel);
+
                 //
-                // delaying the transfer only if bene registration is done in this flow
+                // using updated at here as bene registration status will keep on updating until it reached `registered` state
                 //
-                $delayTransfer = true;
+                $updatedAtWithOffset = $beneficiaryEntity->getUpdatedAt() + 60;
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                // check if the entity is older than 60 sec
+                if ($updatedAtWithOffset > $currentTime)
+                {
+                    //
+                    // delaying the transfer only if bene registration is done in this flow
+                    //
+                    $delayTransfer = true;
+                }
             }
 
             //
@@ -110,6 +129,8 @@ class FundTransfer extends Job
             if ($delayTransfer === true)
             {
                 $this->logAndDelete($data, TraceCode::FTA_TRANSFER_JOB_DELAYED, true);
+
+                return;
             }
 
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
