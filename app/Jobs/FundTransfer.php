@@ -104,12 +104,15 @@ class FundTransfer extends Job
                                               $bankAccount->getId(),
                                               $channel);
 
-                $createdAtWithOffset = $beneficiaryEntity->getCreatedAt() + 60;
+                //
+                // using updated at here as bene registration status will keep on updating until it reached `registered` state
+                //
+                $updatedAtWithOffset = $beneficiaryEntity->getUpdatedAt() + 60;
 
                 $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
                 // check if the entity is older than 60 sec
-                if ($createdAtWithOffset > $currentTime)
+                if ($updatedAtWithOffset > $currentTime)
                 {
                     //
                     // delaying the transfer only if bene registration is done in this flow
@@ -126,6 +129,8 @@ class FundTransfer extends Job
             if ($delayTransfer === true)
             {
                 $this->logAndDelete($data, TraceCode::FTA_TRANSFER_JOB_DELAYED, true);
+
+                return;
             }
 
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
