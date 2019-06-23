@@ -187,6 +187,47 @@ class Base extends BaseCore
         return $payout;
     }
 
+    public function processPendingPayout(Payout\Entity $payout): Payout\Entity
+    {
+        $payout = $this->repo->transaction(
+            function () use ($payout)
+            {
+                //
+                // TODO: Later, we will have to handle active / inactive stuff also here.
+                // Refer the function `fetchAndAssociatePayoutAccount`
+                //
+                $this->fundTransferDestination = $payout->fundAccount->account;
+
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->fundTransferDestination);
+
+                $downstreamProcessor->process();
+
+                $payout->setStatus(Payout\Status::CREATED);
+
+                $this->repo->saveOrFail($payout);
+
+                $this->trace->info(
+                    TraceCode::PENDING_PAYOUT_CREATED,
+                    [
+                        'payout_id'      => $payout->getId(),
+                        'transaction_id' => $payout->getTransactionId(),
+                        'payout_status'  => $payout->getStatus(),
+                    ]);
+
+                return $payout;
+            });
+
+        //$this->app->events->fire('api.payout.initiated', [$payout]);
+
+        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+
+        return $payout;
+    }
+
     /**
      * Set the merchant context, always required.
      *

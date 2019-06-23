@@ -3,6 +3,7 @@
 namespace RZP\Models\State;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action;
@@ -66,6 +67,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     public function account()

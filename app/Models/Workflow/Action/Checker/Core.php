@@ -79,7 +79,7 @@ class Core extends Base\Core
                 {
                     (new Action\Core)->approveActionForcefully($action, $checkerEntity);
 
-                    $this->executeAction($action, $checkerEntity->getSuperAdminRole());
+                    $this->executeAction($action, $checkerEntity->getSuperAdminRole(), $checkerEntity);
                 }
                 else
                 {
@@ -170,8 +170,12 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL);
         }
 
-        // ADMIN_ID is the checker's ID (current request's checker)
-        $input[Entity::ADMIN_ID] = $checkerEntity->getId();
+        // Legacy, fix
+        if ($checkerType === 'admin')
+        {
+            // ADMIN_ID is the checker's ID (current request's checker)
+            $input[Entity::ADMIN_ID] = $checkerEntity->getId();
+        }
 
         // Set the step for which checker is checking
         $input[Entity::STEP_ID] = $step->getId();
@@ -183,7 +187,11 @@ class Core extends Base\Core
 
         $checker->build($input);
 
-        $checker->admin()->associate($checkerEntity);
+        // Legacy, fix
+        if ($checkerType === 'admin')
+        {
+            $checker->admin()->associate($checkerEntity);
+        }
 
         $checker->checker()->associate($checkerEntity);
 
@@ -218,17 +226,17 @@ class Core extends Base\Core
             }
         });
 
-        $this->executeAction($action, $step->role);
+        $this->executeAction($action, $step->role, $checkerEntity);
 
         return $checker;
     }
 
-    protected function executeAction(Action\Entity $action, Role $role)
+    protected function executeAction(Action\Entity $action, Role $role, Base\PublicEntity $checkerEntity)
     {
         // Currently we can execute from both route and here, will remove route eventually.
         if ($action->getApproved() === true)
         {
-            (new Action\Service)->executeAction($action->getPublicId(), $role);
+            (new Action\Service)->executeAction($action->getPublicId(), $role, $checkerEntity);
         }
     }
 }

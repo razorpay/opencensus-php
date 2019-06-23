@@ -343,6 +343,7 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED                          = 'BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED';
     const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                                  = 'BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                      = 'BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS';
+    const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                     = 'BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS';
     const BAD_REQUEST_PAYOUT_INVALID_STATE                                          = 'BAD_REQUEST_PAYOUT_INVALID_STATE';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';

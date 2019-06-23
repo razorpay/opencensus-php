@@ -12,11 +12,14 @@ use RZP\Models\Customer;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Jobs\QueuedPayouts;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
@@ -386,6 +389,34 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
+    public function processPendingPayout(Entity $payout): Entity
+    {
+        $payoutId = $payout->getId();
+
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                /** @var Validator $payoutValidator */
+                $payoutValidator = $payout->getValidator();
+
+                $payoutValidator->validateProcessingPendingPayout();
+
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processPendingPayout($payout);
+
+                $this->dispatchFtaInitiate($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
     public function cancelPayout(Entity $payout): Entity
     {
         return $this->mutex->acquireAndRelease(
@@ -406,10 +437,55 @@ class Core extends Base\Core
 
     public function approvePayout(Entity $payout): Entity
     {
-        //
-        // TODO: mark the workflow as approved
-        // get workflow action id and send payload as approved is true
-        //
+        /** @var Workflow\Action\Entity|null $workflowAction */
+        $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
+
+        if ($workflowAction === null)
+        {
+            // throw exception. BadRequest. There should have been an open workflow action.
+
+            return $payout;
+        }
+
+        $payout = $this->repo->transaction(function() use ($payout, $workflowAction)
+        {
+            $actionCheckerCreateParams = [
+                Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
+                Workflow\Action\Checker\Entity::APPROVED  => 1, // 1 = true
+            ];
+
+            $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+
+            if (empty($actionChecker) === true)
+            {
+                // Something went wrong, log it?
+
+                return $payout;
+            }
+
+            //
+            // Reload the workflow_action entity. Changes from the previous function calls may not
+            // have been sync'd
+            //
+            $workflowAction->reload();
+
+            //
+            // Check status of workflow_action,
+            // if approved and closed (final) - start processing payout
+            //
+            if ($workflowAction->getApproved() === true)
+            {
+                return $this->processPendingPayout($payout);
+            }
+            else
+            {
+                // Things are wrong...
+
+                return $payout;
+            }
+        });
+
+        $payout->reload();
 
         return $payout;
     }
@@ -421,7 +497,34 @@ class Core extends Base\Core
         // get workflow action id and send payload as approved is false
         //
 
+        // Payout state - mark payout to rejected state.
+
         return $payout;
+    }
+
+    protected function getOpenWorkflowActionForPayout(Entity $payout)
+    {
+        $workflowActions = (new Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+                                $payout->getId(),
+                                $payout->getEntity(),
+                                Permission\Name::CREATE_PAYOUT,
+                                Org\Entity::RAZORPAY_ORG_ID);
+
+        //
+        // There can only be 0 or 1 open workflow actions on a payout
+        // If there are more, it could be due to a bug, and we'd need to debug this
+        // This check can be removed once the code is stable
+        //
+        if ($workflowActions->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'More than 1 open workflow actions found for payout',
+                null,
+                ['payout_id' => $payout->getId(), 'workflow_actions' => $workflowActions->toArray()]);
+        }
+
+        // Returns the single workflow action for the payout, else null if none exist
+        return $workflowActions->first();
     }
 
     protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)

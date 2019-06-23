@@ -591,9 +591,10 @@ class Core extends Base\Core
     public function fetchOpenActionOnEntityOperation(
         string $entityId,
         string $entityName,
-        string $permissionName)
+        string $permissionName,
+        string $orgId = null)
     {
-        $orgId = $this->app['basicauth']->getOrgId();
+        $orgId = $orgId ?: $this->app['basicauth']->getOrgId();
 
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
@@ -603,14 +604,13 @@ class Core extends Base\Core
                              ->toArray()[0];
 
         $actions = $this->repo
-                               ->workflow_action
-                               ->getOpenActionOnEntityOperation(
-                                   $entityId, $entityName, $permissionId);
+                        ->workflow_action
+                        ->getOpenActionOnEntityOperation($entityId, $entityName, $permissionId);
 
         return $actions;
     }
 
-    public function executeAction($action, Admin\Entity $admin, Role\Entity $role = null)
+    public function executeAction($action, PublicEntity $checkerEntity, Role\Entity $role = null)
     {
         list($stateCore, $differCore) = [
             new State\Core,
@@ -658,9 +658,9 @@ class Core extends Base\Core
 
         // Update states
 
-        $this->updateStateAndStateChanger($action, $state, $admin, $role);
+        //$this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
 
-        $stateCore->changeActionState($action, $state, $admin);
+        $stateCore->changeActionState($action, $state, $checkerEntity);
 
         $differCore->updateStateInEs($action->getId(), $state);
 
