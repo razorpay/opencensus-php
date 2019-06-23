@@ -61,6 +61,14 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function findByOrgIdAndName(string $orgId, string $name): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where(Entity::NAME, '=', $name)
+                    ->firstOrFailPublic();
+    }
+
     public function getSuperAdminRoleByOrgId(string $orgId)
     {
         $name = Config::get('heimdall.default_role_name');

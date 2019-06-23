@@ -5,6 +5,7 @@ namespace RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Exception\LogicException;
+use RZP\Trace\TraceCode;
 
 class Role
 {
@@ -89,7 +90,7 @@ class Role
                 break;
 
             case Product::BANKING:
-                $productRoles = BankingRole::getAllRolesForMerchant($merchant);
+                $productRoles = BankingRole::getAllRoles();
                 break;
 
             default:

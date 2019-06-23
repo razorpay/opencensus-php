@@ -14,6 +14,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
+use RZP\Models\Workflow;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
@@ -345,6 +346,11 @@ class Entity extends Base\PublicEntity
     public function reversal()
     {
         return $this->belongsTo(Reversal\Entity::class, self::ID, Reversal\Entity::ENTITY_ID);
+    }
+
+    public function workflowActions()
+    {
+        return $this->hasMany(Workflow\Action\Entity::class);
     }
 
     /**
