@@ -21,7 +21,6 @@ use RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Entity as E;
 
-
 class Core extends Base\Core
 {
     private function buildParams(array $input) : array
@@ -240,12 +239,12 @@ class Core extends Base\Core
     /**
      * This function has to run in a transaction
      *
-     * @param  Entity       $action
-     * @param  Admin\Entity $admin
+     * @param Entity       $action
+     * @param PublicEntity $checkerEntity
      *
      * @return boolean
      */
-    public function checkAndMarkActionApproved(Entity $action, Admin\Entity $admin)
+    public function checkAndMarkActionApproved(Entity $action, PublicEntity $checkerEntity)
     {
         // 1. If action is already approved then return
 
@@ -270,29 +269,31 @@ class Core extends Base\Core
 
         if ($this->isCurrentLevelApproved($action) === true)
         {
-            $this->approveAction($action, $admin);
+            $this->approveAction($action, $checkerEntity);
         }
 
         return true;
     }
 
-    public function approveActionForcefully(Entity $action, Admin\Entity $admin)
+    public function approveActionForcefully(Entity $action, Admin\Entity $checkerEntity)
     {
         if ($action->getApproved() === true)
         {
             return true;
         }
 
-        $this->approveAction($action, $admin);
+        $this->approveAction($action, $checkerEntity);
 
         return true;
     }
 
-    protected function approveAction(Entity $action, Admin\Entity $admin)
+    protected function approveAction(Entity $action, PublicEntity $checkerEntity)
     {
+        //
         // Set the action as approved and create a state change that it has
         // been moved to approved.
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $admin)
+        //
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $checkerEntity)
         {
             $data = [
                 Entity::APPROVED => true,
@@ -307,7 +308,7 @@ class Core extends Base\Core
                 State\Entity::NAME      => State\Name::APPROVED,
             ];
 
-            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $checkerEntity, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -401,7 +402,9 @@ class Core extends Base\Core
     }
 
     /**
-     * This function has to run in a transaction
+     * This function has to be run in a transaction
+     *
+     * @param Entity $action
      */
     public function updateCurrentLevelIfNeeded(Entity $action)
     {
@@ -511,18 +514,24 @@ class Core extends Base\Core
         });
     }
 
-    /*
-        State changes on rejection
-    */
-    public function applyActionRejectionStateChanges($action, Admin\Entity $admin, Role\Entity $role)
+    /**
+     * Handles state changes on rejection
+     *
+     * @param Entity       $action
+     * @param PublicEntity $checkerEntity
+     * @param Role\Entity  $role
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function applyActionRejectionStateChanges(Entity $action, PublicEntity $checkerEntity, Role\Entity $role)
     {
         $state = State\Name::REJECTED;
 
         $actionId = $action->getId();
 
-        (new State\Core)->changeActionState($action, $state, $admin);
+        (new State\Core)->changeActionState($action, $state, $checkerEntity);
 
-        $this->updateStateAndStateChanger($action, $state, $admin, $role);
+        $this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
 
         (new Differ\Core)->updateStateInEs($actionId, $state);
     }
@@ -538,22 +547,29 @@ class Core extends Base\Core
 
     /**
      * This function will now be used instead of updateState so as to
-     * store the information about the person(admin_id, and role_id) who
+     * store the information about the person(admin_id/user_id, and role_id) who
      * was responsible of actually executing the workflow. In case it is a
      * superadmin, then we allow to skip any steps and execute the workflow
      * forcefully. Hence the information about StateChanger. StateChanger
      * information will also be stored in case the workflow was closed or rejected.
+     *
+     * @param Entity           $action
+     * @param string           $state
+     * @param PublicEntity     $checkerEntity
+     * @param Role\Entity|null $role
+     *
+     * @return Entity
      */
     public function updateStateAndStateChanger(
         Entity $action,
         string $state,
-        Admin\Entity $admin,
+        PublicEntity $checkerEntity,
         Role\Entity $role = null
     )
     {
         $input = [
             Entity::STATE                 => $state,
-            Entity::STATE_CHANGER_ID      => $admin->getId(),
+            Entity::STATE_CHANGER_ID      => $checkerEntity->getId(),
             Entity::STATE_CHANGER_ROLE_ID => $role ? $role->getId() : null
         ];
 

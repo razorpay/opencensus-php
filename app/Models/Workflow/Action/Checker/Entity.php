@@ -70,6 +70,11 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
 
+    public function checker()
+    {
+        return $this->morphTo();
+    }
+
     public function action()
     {
         return $this->belongsTo(Action\Entity::class);

@@ -4,10 +4,19 @@ namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\State;
 use RZP\Models\Comment;
+use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Admin\Permission;
 
-
+/**
+ * Class Entity
+ *
+ * @package RZP\Models\Workflow\Action
+ *
+ * @property Permission\Entity $permission
+ * @property Workflow\Entity   $workflow
+ */
 class Entity extends Base\Entity
 {
     const ID                    = 'id';
