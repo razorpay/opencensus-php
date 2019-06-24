@@ -149,60 +149,90 @@ export default class RefundModal extends Component {
       return;
     }
 
-    this.context
-      .confirm({
-        header: 'Are you sure you want to refund this payment?',
-        message: props.reverse_all
-          ? 'Reversals will be automatically created for all transfers on this payment, before the refund'
-          : null,
-        affirmativeLabel: 'Yes, Refund',
-        affirmativePendingLabel: 'Refunding...',
-        abortLabel: "No, don't!",
-        action: () => {
-          let payment = this.props.payment;
-          let data = {
-            amount: rupeesToPaise(props.amount),
-            comment: props.comment,
-            reverse_all: props.reverse_all ? '1' : '0',
-          };
+    if (props.instant_refund) {
+      this.context
+        .confirm({
+          header: 'Do you want to refund this payment?',
+          message: () => (
+            <div>
+              <div class="text-semi-muted">
+                <p>
+                  This payment will be instantly refunded to the customer. A fee
+                  of &#8377; 5(plus taxes) will be charged from your unsettled
+                  balance.
+                </p>
+              </div>
+              <div class="confirm-note">
+                <p>Note</p>
+                <p>
+                  If the instant refund is unsuccessful, the fee will be
+                  reversed. The payment will still be reversed in 5-7 days.
+                </p>
+              </div>
+            </div>
+          ),
+          affirmativeLabel: 'Yes, Refund',
+          affirmativePendingLabel: 'Refunding...',
+          abortLabel: "No, don't!",
+          action: () => {},
+        })
+        .catch(() => {});
+    } else {
+      this.context
+        .confirm({
+          header: 'Are you sure you want to refund this payment?',
+          message: props.reverse_all
+            ? 'Reversals will be automatically created for all transfers on this payment, before the refund'
+            : null,
+          affirmativeLabel: 'Yes, Refund',
+          affirmativePendingLabel: 'Refunding...',
+          abortLabel: "No, don't!",
+          action: () => {
+            let payment = this.props.payment;
+            let data = {
+              amount: rupeesToPaise(props.amount),
+              comment: props.comment,
+              reverse_all: props.reverse_all ? '1' : '0',
+            };
 
-          if (!partial) {
-            data.amount = payment.amount - payment.amount_refunded;
-          }
+            if (!partial) {
+              data.amount = payment.amount - payment.amount_refunded;
+            }
 
-          return this.props
-            .refundPayment(payment, data)
-            .then(() => {
-              this.props.showNotification({
-                type: 'success',
-                message: 'Payment refunded',
-                closeTimeout: 5000,
-              });
-
-              if (typeof this.props.onRefund === 'function') {
-                this.props.onRefund();
-              }
-
-              this.props.afterRefund &&
-                this.props.afterRefund({
-                  amount: data.amount,
-                  partial: partial,
-                  payment: this.props.payment,
-                });
-
-              this.props.closeModal();
-            })
-            .catch(({ errors }) => {
-              errors &&
+            return this.props
+              .refundPayment(payment, data)
+              .then(() => {
                 this.props.showNotification({
-                  type: 'error',
-                  message: errors,
+                  type: 'success',
+                  message: 'Payment refunded',
                   closeTimeout: 5000,
                 });
-            });
-        },
-      })
-      .catch(() => {});
+
+                if (typeof this.props.onRefund === 'function') {
+                  this.props.onRefund();
+                }
+
+                this.props.afterRefund &&
+                  this.props.afterRefund({
+                    amount: data.amount,
+                    partial: partial,
+                    payment: this.props.payment,
+                  });
+
+                this.props.closeModal();
+              })
+              .catch(({ errors }) => {
+                errors &&
+                  this.props.showNotification({
+                    type: 'error',
+                    message: errors,
+                    closeTimeout: 5000,
+                  });
+              });
+          },
+        })
+        .catch(() => {});
+    }
   };
 
   render() {
