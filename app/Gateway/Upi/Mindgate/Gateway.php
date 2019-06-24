@@ -1008,7 +1008,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        $errorCode = UpiErrorCodes::getApiErrorCode($content[ResponseFields::RESPCODE]);
+        $errorCode = ErrorCodes\ErrorCodes::getInternalErrorCode($content[ResponseFields::RESPCODE]);
 
         $scroogeResponse->setStatusCode($errorCode)
                         ->setGatewayVerifyResponse($content)
