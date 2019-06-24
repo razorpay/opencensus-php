@@ -31,6 +31,7 @@ class ErrorCode
     const GATEWAY_ERROR_GENERIC_ERROR                                               = 'GATEWAY_ERROR_GENERIC_ERROR';
     const GATEWAY_ERROR_PAYMENT_FAILED                                              = 'GATEWAY_ERROR_PAYMENT_FAILED';
     const GATEWAY_ERROR_INVALID_JSON                                                = 'GATEWAY_ERROR_INVALID_JSON';
+    const GATEWAY_ERROR_ORDER_EXISTS                                                = 'GATEWAY_ERROR_ORDER_EXISTS';
 
     const GATEWAY_ERROR_SYSTEM_UNAVAILABLE                                          = 'GATEWAY_ERROR_SYSTEM_UNAVAILABLE';
     const GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED                       = 'GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED';
