@@ -275,6 +275,11 @@ return [
             'live_merchant_id'                  => env('BLADE_LIVE_FIRSTDATA_MERCHANT_ID'),
         ],
 
+        'hdfc'  => [
+            'live_mastercard_acq_bin'           => env('BLADE_LIVE_HDFC_MASTERCARD_ACQ_BIN'),
+            'live_visa_acq_bin'                 => env('BLADE_LIVE_HDFC_VISA_ACQ_BIN'),
+        ],
+
         'live_mastercard_merchant_id'           => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID'),
         'live_visa_merchant_id'                 => env('BLADE_LIVE_VISA_MERCHANT_ID'),
 

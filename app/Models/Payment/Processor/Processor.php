@@ -450,10 +450,16 @@ class Processor
     {
         $this->verifyCardlessEmiEnabled();
 
-        if ((empty($input['ott']) === false) or
-            (in_array($input[Payment\Entity::PROVIDER], Payment\Gateway::$cardlessEmiRedirectFlowProvider)))
+        if ((empty($input['ott']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false))
         {
-            return null;
+            return;
+        }
+
+        if ((empty($input['emi_duration']) === false) and
+            (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true))
+        {
+            return;
         }
 
         $merchant = $payment->merchant;
@@ -467,18 +473,16 @@ class Processor
                                                           $merchant[Merchant\Entity::ID],
                                                           Payment\Method::CARDLESS_EMI);
 
-        $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
-
-        $data = (new Customer\Raven)->sendOtp($input, $merchant);
+        $checkAccountData = $this->app['gateway']->call($gateway, 'check_account', $input, $this->mode, $terminal);
 
         $coproto = [
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
                 'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
-                                Payment\Entity::METHOD   => Payment\Method::CARDLESS_EMI,
-                                Payment\Entity::PROVIDER => $input[Payment\Entity::PROVIDER]
-                            ]),
+                    'method'   => 'cardless_emi',
+                    'provider' => $input['provider']
+                ]),
                 'method'  => 'POST',
                 'content' => $input,
             ],
@@ -486,11 +490,24 @@ class Processor
             'theme'      => $payment->merchant->getBrandColorElseDefault(),
             'merchant'   => $merchant->getDbaName(),
             'gateway'    => $this->getEncryptedGatewayText($gateway),
-            'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
             'key_id'     => $this->ba->getPublicKey(),
             'version'    => '1',
             'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
         ];
+
+        if (in_array($input['provider'], Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true)
+        {
+            $coproto['emi_plans'] = [
+                $input['provider'] => $checkAccountData['emi_plans']
+            ];
+            $coproto['lender_branding_url'] = $checkAccountData['lender_branding_url'];
+        }
+        else
+        {
+            (new Customer\Raven)->sendOtp($input, $merchant);
+
+            $coproto['resend_url'] = $this->route->getUrlWithPublicAuth('otp_post');
+        }
 
         return $coproto;
     }
@@ -1640,6 +1657,8 @@ class Processor
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
+            $gatewayDowntimeError = false;
+
             return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
         }
         catch (Exception\GatewayErrorException $ex)
@@ -1657,8 +1676,8 @@ class Processor
             }
 
             /*
-             * If error indicates gateway downtime, act on it and
-             * check if a downtime entity needs to be created
+             * If error indicates gateway downtime, we might act on it later
+             * so set $gatewayDowntimeError = true
              */
             if ($error->isGatewayDowntimeError() === true)
             {
@@ -1671,10 +1690,51 @@ class Processor
                     ]);
 
                 $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
+
+                $gatewayDowntimeError = true;
             }
 
             throw $ex;
         }
+        finally
+        {
+            $variant  = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                'gateway_downtime_detection',
+                $this->mode
+            );
+
+            // Gateway Downtime Detection only works on few actions.
+            // Right now failure percentage is not considered on each
+            // action individually, which we might do at later point of time.
+            // For Example: Action AUTH and CALLBACK both need to succeed
+            // for the payment to be successful. If one is working fine, then
+            // Downtime configuration might now work properly.
+            if ((strtolower($variant) === 'on') and
+                ($this->isGatewayDowntimeAction($action) == true))
+            {
+                try
+                {
+                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gateway, $gatewayData, $gatewayDowntimeError);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+            }
+        }
+    }
+
+    public function isGatewayDowntimeAction(string $action)
+    {
+        $gatewayDowntimeActions = [
+            Action::AUTHENTICATE,
+            Action::AUTHORIZE,
+            Action::CALLBACK
+        ];
+
+
+        return in_array($action, $gatewayDowntimeActions, true);
     }
 
     public function isRoutedThroughCps($action, $input): bool

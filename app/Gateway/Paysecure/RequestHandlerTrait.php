@@ -138,6 +138,17 @@ trait RequestHandlerTrait
         {
             $messageType = $this->input['card']['message_type'];
         }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::IIN_MESSAGE_TYPE_MISSING,
+                [
+                    'iin'        => $this->input['card']['iin'],
+                    'card_id'    => $this->input['card']['id'],
+                    'payment_id' => $this->input['payment']['id'],
+                    'message'    => 'Message type missing for IIN. Defaulted to SMS.',
+                ]);
+        }
 
         $ownerName = $this->getDynamicMerchantName($this->input['merchant'], 22);
 

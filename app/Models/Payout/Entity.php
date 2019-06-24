@@ -103,6 +103,7 @@ class Entity extends Base\PublicEntity
     // Input keys
     const ACCOUNT_NUMBER       = 'account_number';
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
+    const PAYOUT_IDS           = 'payout_ids';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
@@ -586,6 +587,11 @@ class Entity extends Base\PublicEntity
     public function isStatusInitiated()
     {
         return ($this->getStatus() === Status::INITIATED);
+    }
+
+    public function isStatusPending()
+    {
+        return ($this->getStatus() === Status::PENDING);
     }
 
     public function isPendingReconciliation()

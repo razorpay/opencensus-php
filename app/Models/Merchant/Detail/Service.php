@@ -146,6 +146,7 @@ class Service extends Base\Service
 
         $total  = 0;
         $failed = 0;
+        $failedIds = [];
         // Iteratively call core's edit method on each row
         foreach ($rows as $row)
         {
@@ -175,10 +176,12 @@ class Service extends Base\Service
                 $this->trace->traceException($e, null, null, $tracePayload);
 
                 ++$failed;
+
+                $failedIds[] = $merchantId;
             }
         }
 
-        return compact('total', 'failed');
+        return compact('total', 'failed', 'failedIds');
     }
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)

@@ -61,7 +61,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected channel is invalid.',
+                    'description' => 'Not a valid channel: TEST',
                 ],
             ],
             'status_code' => 400,
@@ -69,6 +69,40 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testStoreMerchantCredentials' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testStoreMerchantCredentialsFailed' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
         ],
     ],
 ];
