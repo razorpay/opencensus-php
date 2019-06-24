@@ -143,7 +143,7 @@ abstract class Processor extends Base\Core
             {
                 $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
             }
-            else
+            else if ($entity->payment->hasBeenCaptured() === false)
             {
                 $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
             }
