@@ -12,6 +12,8 @@
 
 Route::get('/status', 'AdminController@getStatus');
 
+Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
+
 // Everything in this group is a unauthenticated route
 // Please take care to not return any sensitive information
 // here
@@ -23,8 +25,6 @@ Route::group(['middleware' => ['web']], function () {
         ->where(['path' => '.*']);
 
     Route::get('/', 'UserController@getIndex')->name('dashboard');
-
-    Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
 
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
