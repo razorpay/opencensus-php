@@ -1221,4 +1221,7 @@ class ErrorCode
     const GATEWAY_ERROR_AUTHORIZATION_FAILED                                        = 'GATEWAY_ERROR_AUTHORIZATION_FAILED';
     const GATEWAY_ERROR_INVALID_REQUEST_BODY                                        = 'GATEWAY_ERROR_INVALID_REQUEST_BODY';
     const GATEWAY_ERROR_REFUND_TIMED_OUT                                            = 'GATEWAY_ERROR_REFUND_TIMED_OUT';
+
+    // excel store error
+    const SERVER_ERROR_EXCEL_STORE_FAILURE                                          = 'SERVER_ERROR_EXCEL_STORE_FAILURE';
 }

@@ -1836,7 +1836,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Excel Store
     const EXCEL_STORE_REQUEST                                   = 'EXCEL_STORE_REQUEST';
     const EXCEL_STORE_RESPONSE                                  = 'EXCEL_STORE_RESPONSE';
-    const EXCEL_STORE_ERROR                                     = 'EXCEL_STORE_ERROR';
 
 
     protected static $messages = [
