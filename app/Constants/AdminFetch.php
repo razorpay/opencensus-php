@@ -1571,7 +1571,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => Payout\Method::getAll(),
                 ],
-                'mode'            => [
+                'payout_mode' => [
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => FundTransfer\Mode::getAll(),
                 ],

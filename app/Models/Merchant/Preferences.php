@@ -45,6 +45,8 @@ class Preferences
     const MID_INDIABULLS_FINANCE    = 'BXdV62dMAbb869';
     const MID_DREAM11               = '6L6z7NYQywAaP0';
     const MID_RBLLENDING            = 'BOX702yaBbEfJo';
+    const MID_APOLLO_MUNICH         = 'BYqeLRvN6FfCCY';
+    const MID_SWIGGY_DROPPT         = 'CTwAEBRfwEjEme';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [

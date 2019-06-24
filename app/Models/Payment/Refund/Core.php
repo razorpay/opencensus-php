@@ -62,6 +62,7 @@ class Core extends Base\Core
                     $data = [
                         Entity::STATUS      => Status::PROCESSED,
                         Entity::REFERENCE1  => $refund->getReference1(),
+                        Entity::MODE        => $ftaData['mode'] ?? '',
                     ];
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data);

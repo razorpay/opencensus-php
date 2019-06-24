@@ -30,6 +30,8 @@ class ErrorCode
     const GATEWAY_ERROR_REQUEST_ERROR                                               = 'GATEWAY_ERROR_REQUEST_ERROR';
     const GATEWAY_ERROR_GENERIC_ERROR                                               = 'GATEWAY_ERROR_GENERIC_ERROR';
     const GATEWAY_ERROR_PAYMENT_FAILED                                              = 'GATEWAY_ERROR_PAYMENT_FAILED';
+    const GATEWAY_ERROR_INVALID_JSON                                                = 'GATEWAY_ERROR_INVALID_JSON';
+    const GATEWAY_ERROR_ORDER_EXISTS                                                = 'GATEWAY_ERROR_ORDER_EXISTS';
 
     const GATEWAY_ERROR_SYSTEM_UNAVAILABLE                                          = 'GATEWAY_ERROR_SYSTEM_UNAVAILABLE';
     const GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED                       = 'GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED';
@@ -341,6 +343,7 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED                          = 'BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED';
     const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                                  = 'BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                      = 'BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS';
+    const BAD_REQUEST_PAYOUT_INVALID_STATE                                          = 'BAD_REQUEST_PAYOUT_INVALID_STATE';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
@@ -646,7 +649,7 @@ class ErrorCode
     const BAD_REQUEST_CARD_REFUND_NOT_ALLOWED                                       = 'BAD_REQUEST_CARD_REFUND_NOT_ALLOWED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS';
-    const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                             = 'BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED';
+    const BAD_REQUEST_REFUND_INVALID_EVENT_TO_PROCESS                               = 'BAD_REQUEST_REFUND_INVALID_EVENT_TO_PROCESS';
     const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                      = 'BAD_REQUEST_REFUND_ALREADY_PROCESSED';
     const BAD_REQUEST_ALL_FTA_NOT_FAILED                                            = 'BAD_REQUEST_ALL_FTA_NOT_FAILED';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                         = 'BAD_REQUEST_REFUND_NOT_IN_CREATED';
@@ -1189,6 +1192,11 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_REDIRECT_NO_INPUT_DETAILS                             = 'BAD_REQUEST_PAYMENT_REDIRECT_NO_INPUT_DETAILS';
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT                                       = 'BAD_REQUEST_PAYMENT_CANNOT_REDIRECT';
 
+    // banking account
+    const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED                          = 'BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED';
+    const BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED                            = 'BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED';
+    const BAD_REQUEST_ERROR_VAULT_TOKENIZE_FAILED                                   = 'BAD_REQUEST_ERROR_VAULT_TOKENIZE_FAILED';
+
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                        = 'GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED';
@@ -1213,9 +1221,9 @@ class ErrorCode
 
     const MERCHANT_ONBOARD_ERROR_TERMINAL_CREATION                                  = 'MERCHANT_ONBOARD_ERROR_TERMINAL_CREATION';
 
-    const FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS                                 = 'FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS';
-    const FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED                                 = 'FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED';
-    const FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA                                    = 'FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS                     = 'BAD_REQUEST_FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED                     = 'BAD_REQUEST_FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA                        = 'BAD_REQUEST_FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA';
 
     const BAD_REQUEST_CPS_ANOTHER_SYNC_IN_PROGRESS                                  = 'BAD_REQUEST_CPS_ANOTHER_SYNC_IN_PROGRESS';
     const GATEWAY_ERROR_AUTHORIZATION_FAILED                                        = 'GATEWAY_ERROR_AUTHORIZATION_FAILED';
@@ -1224,4 +1232,8 @@ class ErrorCode
 
     // excel store error
     const SERVER_ERROR_EXCEL_STORE_FAILURE                                          = 'SERVER_ERROR_EXCEL_STORE_FAILURE';
+
+    // Instant Refunds Error Codes
+    const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED';
+    const BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA                                     = 'BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA';
 }

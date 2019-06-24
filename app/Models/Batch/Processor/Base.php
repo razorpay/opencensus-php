@@ -205,7 +205,15 @@ class Base extends BaseModel\Core
         $validatedUfhFile = $this->createSetOutputFileAndSave($entries, FileStore\Type::BATCH_VALIDATED);
 
         $response = $this->getValidatedEntriesStatsAndPreview($entries);
-        $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
+
+        if ($this->shouldSkipValidateInputFile())
+        {
+            $response += $this->getFileIdAndSignedUrlFromFileEntity($inputUfhFile);
+        }
+        else
+        {
+            $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
+        }
 
         $this->deleteLocalFiles();
 
@@ -1060,6 +1068,19 @@ class Base extends BaseModel\Core
     }
 
     /**
+     * @param FileStore\Entity $ufh
+     *
+     * @return array
+     */
+    public function getFileIdAndSignedUrlFromFileEntity(FileStore\Entity $ufh): array
+    {
+        return [
+            self::FILE_ID    => 'file_' . $ufh->getId(),
+            self::SIGNED_URL => $ufh->getFullFilePath(),
+        ];
+    }
+
+    /**
      * @param string $filePath
      * @param string $type
      * @param bool   $associateBatch - Ref: saveInputFile() for usage
@@ -1420,5 +1441,28 @@ class Base extends BaseModel\Core
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
     {
         return;
+    }
+
+
+    /**
+     *  Checks whether validation needs to be skipped using razorx.
+     *
+     * @return bool
+     */
+    protected function shouldSkipValidateInputFile(): bool
+    {
+        $result = false;
+
+        if ($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true)
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::BATCH_SERVICE_SKIP_VALIDATION,
+                                                        $this->mode
+            );
+
+            $result = (strtolower($variant) === 'on');
+        }
+
+        return $result;
     }
 }

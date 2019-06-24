@@ -3,8 +3,10 @@
 namespace RZP\Models\P2p\Transaction;
 
 use Carbon\Carbon;
-use RZP\Models\P2p\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Vpa;
+use RZP\Models\Customer;
+use RZP\Models\P2p\Base;
 
 /**
  * @property Vpa\Entity $payer
@@ -18,34 +20,38 @@ use RZP\Models\P2p\Vpa;
 class Entity extends Base\Entity
 {
     use Base\Traits\HasMerchant;
-    use Base\Traits\HasCustomer;
+    use Base\Traits\HasDevice;
+    use Base\Traits\HasHandle;
+    use Base\Traits\SoftDeletes;
     use Base\Traits\HasBankAccount;
 
-    const MERCHANT_ID          = 'merchant_id';
-    const CUSTOMER_ID          = 'customer_id';
-    const PAYER_TYPE           = 'payer_type';
-    const PAYER_ID             = 'payer_id';
-    const PAYEE_TYPE           = 'payee_type';
-    const PAYEE_ID             = 'payee_id';
-    const BANK_ACCOUNT_ID      = 'bank_account_id';
-    const METHOD               = 'method';
-    const TYPE                 = 'type';
-    const FLOW                 = 'flow';
-    const MODE                 = 'mode';
-    const AMOUNT               = 'amount';
-    const CURRENCY             = 'currency';
-    const DESCRIPTION          = 'description';
-    const GATEWAY              = 'gateway';
-    const STATUS               = 'status';
-    const INTERNAL_STATUS      = 'internal_status';
-    const ERROR_CODE           = 'error_code';
-    const ERROR_DESCRIPTION    = 'error_description';
-    const INTERNAL_ERROR_CODE  = 'internal_error_code';
-    const PAYER_APPROVAL_CODE  = 'payer_approval_code';
-    const PAYEE_APPROVAL_CODE  = 'payee_approval_code';
-    const INITIATED_AT         = 'initiated_at';
-    const EXPIRE_AT            = 'expire_at';
-    const COMPLETED_AT         = 'completed_at';
+    const MERCHANT_ID                   = 'merchant_id';
+    const CUSTOMER_ID                   = 'customer_id';
+    const PAYER_TYPE                    = 'payer_type';
+    const PAYER_ID                      = 'payer_id';
+    const PAYEE_TYPE                    = 'payee_type';
+    const PAYEE_ID                      = 'payee_id';
+    const BANK_ACCOUNT_ID               = 'bank_account_id';
+    const METHOD                        = 'method';
+    const TYPE                          = 'type';
+    const FLOW                          = 'flow';
+    const MODE                          = 'mode';
+    const AMOUNT                        = 'amount';
+    const AMOUNT_MINIMUM                = 'amount_minimum';
+    const AMOUNT_AUTHORIZED             = 'amount_authorized';
+    const CURRENCY                      = 'currency';
+    const DESCRIPTION                   = 'description';
+    const GATEWAY                       = 'gateway';
+    const STATUS                        = 'status';
+    const INTERNAL_STATUS               = 'internal_status';
+    const ERROR_CODE                    = 'error_code';
+    const ERROR_DESCRIPTION             = 'error_description';
+    const INTERNAL_ERROR_CODE           = 'internal_error_code';
+    const PAYER_APPROVAL_CODE           = 'payer_approval_code';
+    const PAYEE_APPROVAL_CODE           = 'payee_approval_code';
+    const INITIATED_AT                  = 'initiated_at';
+    const EXPIRE_AT                     = 'expire_at';
+    const COMPLETED_AT                  = 'completed_at';
 
     /************** Input  Properties ************/
 
@@ -149,6 +155,7 @@ class Entity extends Base\Entity
         Entity::PAYEE,
         Entity::BANK_ACCOUNT,
         Entity::UPI,
+        Entity::CONCERN,
     ];
 
     protected $defaults = [
@@ -658,16 +665,34 @@ class Entity extends Base\Entity
         return in_array($this->getInternalStatus(), [Status::CREATED]);
     }
 
+    public function isPendingCollect(): bool
+    {
+        return (
+            ($this->getFlow() === Flow::DEBIT) and
+            ($this->getType() === Type::COLLECT) and
+            ($this->getStatus() === Status::CREATED));
+    }
+
     /***************** RELATIONS *****************/
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer\Entity::class);
+    }
+
+    public function associateCustomer(Customer\Entity $handle)
+    {
+        return $this->customer()->associate($handle);
+    }
 
     public function payer()
     {
-        return $this->morphTo(self::PAYER);
+        return $this->morphTo(self::PAYER)->withTrashed();
     }
 
     public function payee()
     {
-        return $this->morphTo(self::PAYEE);
+        return $this->morphTo(self::PAYEE)->withTrashed();
     }
 
     public function upi()
@@ -688,5 +713,46 @@ class Entity extends Base\Entity
     public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = 'customer.transaction';
+    }
+
+    public function toArrayPublic(): array
+    {
+        $array = parent::toArrayPublic();
+
+        $array[self::UPI] = $this->upi->toArrayPublic();
+
+        if (isset($array[self::PAYER]))
+        {
+            $array[self::PAYER] = $this->payer->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::PAYEE]))
+        {
+            $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::BANK_ACCOUNT]))
+        {
+            $array[self::BANK_ACCOUNT] = $this->bankAccount->toArrayPublic();
+        }
+
+        if (isset($array[self::CONCERN]))
+        {
+            $array[self::CONCERN] = $this->concern->toArrayPublic();
+        }
+
+        return $array;
+    }
+
+    public function toArrayPartner(): array
+    {
+        $array = $this->toArrayPublic();
+
+        $array[self::UPI] = $this->upi->toArrayPublic();
+        $array[self::PAYER] = $this->payer->toArrayPublic();
+        $array[self::PAYEE] = $this->payee->toArrayPublic();
+        $array[self::BANK_ACCOUNT] = $this->bankAccount->toArrayPublic();
+
+        return $array;
     }
 }

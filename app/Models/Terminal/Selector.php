@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Entity;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -155,7 +156,6 @@ class Selector extends Base\Core
                 // not contain the sharp terminal and hence, making a call to DB.
                 //
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
-
                 $sortedTerminals = array($terminal);
             }
             else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
@@ -205,11 +205,39 @@ class Selector extends Base\Core
                 }
             }
             else if (($payment->isCard() === true) and
-                     (($payment->card->isDiners() === true) or
-                      ($payment->card->isNetworkUnknown() === true)))
+                     ($payment->card->isNetworkUnknown() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+            else if (($payment->isCard() === true) and
+                     ($payment->card->isDiners() === true))
+            {
+                $merchant = $this->input[Constants::MERCHANT];
+
+                $merchant->methods->setDinersCard(0);
+
+                $this->repo->saveOrFail($merchant->methods);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+            else if ($payment[Entity::METHOD] === Method::NETBANKING)
+            {
+                $merchant = $this->input[Constants::MERCHANT];
+
+                $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+                $inputBanks = array($payment[Entity::BANK]);
+
+                $disabledBanks = array_merge($methods->getDisabledBanks(),$inputBanks);
+
+                $merchant->methods->setDisabledBanks($disabledBanks);
+
+                $this->repo->saveOrFail($merchant->methods);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
             }
             else
             {

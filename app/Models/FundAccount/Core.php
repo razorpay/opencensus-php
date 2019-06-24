@@ -117,9 +117,12 @@ class Core extends Base\Core
                 break;
 
             case Type::CARD:
+                // Card number is validated as part of fund_account create validator itself.
+                $network = Card\Network::detectNetwork(substr($accountInput[Card\Entity::NUMBER], 0, 6));
+
                 // cvv needs to be passed otherwise card creation will fail if it's
                 // not present, hence passing a dummy value. It's not stored anyways.
-                $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv();
+                $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv($network);
 
                 // If the expiry is sent, we use that to validate and such.
                 // If the expiry is not sent, we use a dummy expiry.

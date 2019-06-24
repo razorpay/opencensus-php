@@ -300,6 +300,18 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @return string self::APP_NAME
+     */
+    public function getAppFullName()
+    {
+        $map = [
+            'com.razorpay' => 'Bajaj Application'
+        ];
+
+        return array_get($map, $this->getAppName(), 'Razorpay Mobile Application');
+    }
+
+    /**
      * @return string self::IP
      */
     public function getIp()

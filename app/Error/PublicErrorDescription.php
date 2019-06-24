@@ -370,7 +370,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PURCHASE_ERROR                                            = 'Payment failed';
     const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                              = 'Payment failed';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
-    const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
+    const BAD_REQUEST_ORDER_EXISTS                                              = 'Payment failed';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                     = 'Multiple offers cannot be applied on a single order.';
     const BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED                              = 'Currency is not supported';
@@ -738,8 +738,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DEEMED                                           = 'Refund is in pending status';
 
     const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                             = 'Batch file upload failed due to batch server error';
-    const SERVER_ERROR_BATCH_SERVICE_NOT_FOUND                                  = 'Batch Service is unavailable or cannot connect';
-    const BAD_REQUEST_BATCH_SERVICE_ERROR                                       = 'Bad Request Batch Server Error or Client Error';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 
@@ -766,7 +764,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
     const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Validation error';
-    const GATEWAY_ERROR_NO_ORIGINAL_DEBIT_CREDIT_REQUEST_FOUND                      = 'No original debit or credit request found';
     const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
     const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
@@ -824,4 +821,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
 
     const BAD_REQUEST_RECURRING_TOKEN_EXPIRED                                       = 'Token has expired and cannot be used for recurring payments';
+
+    // Instant refunds
+    const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'Instant refund not supported for the payment';
 }

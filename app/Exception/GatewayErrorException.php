@@ -2,6 +2,7 @@
 
 namespace RZP\Exception;
 
+use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
 
@@ -107,7 +108,7 @@ class GatewayErrorException extends RecoverableException
 
     protected function setSafeRetry($safeRetry)
     {
-        $this->safeRetry = $safeRetry;
+        $this->safeRetry = $safeRetry or ($this->action === Base\Action::AUTHENTICATE);
     }
 
     public function getSafeRetry()

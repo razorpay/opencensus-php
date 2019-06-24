@@ -91,6 +91,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
+        Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
     ];
@@ -249,6 +250,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
     protected static $cybersourceTerminalRules = [
@@ -389,6 +391,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
     ];
 
     protected static $upiAirtelEditTerminalRules = [
@@ -559,6 +562,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
     ];
 
     protected static $upiAxisTerminalRules = [
@@ -719,6 +723,8 @@ class Validator extends Base\Validator
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
@@ -731,6 +737,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
@@ -1222,6 +1230,12 @@ class Validator extends Base\Validator
         {
             return Method::PAYLATER;
         }
+
+        if (empty($input[Entity::UPI]) === false)
+        {
+            return Method::UPI;
+        }
+
         return null;
     }
 

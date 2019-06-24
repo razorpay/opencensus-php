@@ -16,14 +16,13 @@ use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
-use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
  * @property Customer\Entity    $customer
@@ -104,6 +103,7 @@ class Entity extends Base\PublicEntity
     // Input keys
     const ACCOUNT_NUMBER       = 'account_number';
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
+    const PAYOUT_IDS           = 'payout_ids';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
@@ -589,6 +589,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::INITIATED);
     }
 
+    public function isStatusPending()
+    {
+        return ($this->getStatus() === Status::PENDING);
+    }
+
     public function isPendingReconciliation()
     {
         return $this->isStatusInitiated();
@@ -641,6 +646,8 @@ class Entity extends Base\PublicEntity
 
     public function setChannel($channel)
     {
+        Channel::validate($channel);
+
         $this->setAttribute(self::CHANNEL, $channel);
     }
 

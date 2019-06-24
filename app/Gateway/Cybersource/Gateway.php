@@ -134,7 +134,7 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Base\Action::AUTHENTICATE);
 
         // directly send authorize request for 2nd recurring payment
         if ($this->isSecondRecurringPaymentRequest($input) === true)
@@ -187,14 +187,18 @@ class Gateway extends Base\Gateway
                         'status'    => Status::AUTHORIZE_FAILED,
                     ], false);
 
-                    throw new Exception\LogicException(
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                        'enrollment_status:' . $authenticateInit['veresEnrolled'],
                         'Unexpected response',
-                        null,
                         [
                             'payment_id'        => $input['payment']['id'],
                             'reason_code'       => $authenticateInit['reason_code'],
                             'enrollment_status' => $authenticateInit['veresEnrolled'],
-                        ]);
+                        ],
+                        null,
+                        Action::AUTHENTICATE,
+                        true);
                 }
 
                 // enrolled card. return OTP page request.

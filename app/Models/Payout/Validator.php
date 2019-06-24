@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
@@ -24,7 +25,6 @@ class Validator extends Base\Validator
     // validation for the actual operation.
     //
     protected static $createRules = [
-        Entity::DESTINATION          => 'required|public_id',
         Entity::PURPOSE              => 'sometimes|string',
         Entity::AMOUNT               => 'sometimes|integer',
         Entity::CURRENCY             => 'sometimes|size:3',
@@ -46,7 +46,7 @@ class Validator extends Base\Validator
      */
     protected static $fundAccountPayoutRules = [
         Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT               => 'required|integer|min:100|max:500000000',
+        Entity::AMOUNT               => 'required|integer|min:100|max:10000000000',
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::BALANCE_ID           => 'sometimes|filled|size:14',
@@ -93,6 +93,18 @@ class Validator extends Base\Validator
     protected static $merchantPayoutOnDemandRules = [
         Entity::AMOUNT   => 'required|integer|min:100',
         Entity::CURRENCY => 'required|size:3',
+    ];
+
+    protected static $bulkApproveRules = [
+        Entity::PAYOUT_IDS       => 'required|array',
+        Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
+        User\Entity::OTP         => 'required|filled|min:4',
+        User\Entity::TOKEN       => 'required|unsigned_id',
+    ];
+
+    protected static $bulkRejectRules = [
+        Entity::PAYOUT_IDS       => 'required|array',
+        Entity::PAYOUT_IDS. '.*' => 'required|public_id|size:19',
     ];
 
     protected static $fundAccountPayoutValidators = [
@@ -236,6 +248,24 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT);
+        }
+    }
+
+    public function validatePayoutStatusForApproveOrReject()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusPending() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_INVALID_STATE,
+                null,
+                [
+                    'id'     => $payout->getId(),
+                    'status' => $payout->getStatus(),
+                ]
+            );
         }
     }
 

@@ -83,6 +83,10 @@ class SlackNotification extends Base\Core
                 $channel = Config::get('slack.channels.' . $slackChannel);
             }
 
+            $data += [
+                'mode' => $this->mode,
+            ];
+
             // Send Slack Notification only for Live mode in Production
             if ($this->mode === Mode::LIVE)
             {

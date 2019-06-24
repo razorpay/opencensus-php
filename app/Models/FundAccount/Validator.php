@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Models\Feature;
 
 /**
@@ -22,12 +23,16 @@ class Validator extends Base\Validator
     const MAX_VPA_AMOUNT = 10000000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID  => 'sometimes|public_id',
-        Entity::CONTACT_ID   => 'sometimes|public_id',
-        Entity::ACCOUNT_TYPE => 'required|string|custom',
-        Entity::VPA          => 'sometimes|associative_array',
-        Entity::BANK_ACCOUNT => 'sometimes|associative_array',
-        Entity::CARD         => 'sometimes|associative_array|custom',
+        Entity::CUSTOMER_ID                         => 'sometimes|public_id',
+        Entity::CONTACT_ID                          => 'sometimes|public_id',
+        Entity::ACCOUNT_TYPE                        => 'required|string|custom',
+        Entity::VPA                                 => 'sometimes|associative_array',
+        Entity::BANK_ACCOUNT                        => 'sometimes|associative_array',
+        Entity::CARD                                => 'sometimes|associative_array|custom',
+        // This is required to even create the card because we need to fill a
+        // dummy cvv and that requires network and that requires card number.
+        // The other card details are validated as part of card creation.
+        Entity::CARD . '.' . Card\Entity::NUMBER    => 'required_with:card|numeric|luhn|digits_between:12,19',
     ];
 
     protected static $beforeCreateRules = [

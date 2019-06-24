@@ -43,6 +43,7 @@ class Metric
     const LABEL_TRACE_CODE                      = 'code';
     const LABEL_TRACE_FIELD                     = 'field';
     const LABEL_TRACE_SOURCE                    = 'source';
+    const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
     const LABEL_TRACE_CONTEXT_CODE              = 'context_code';
     const LABEL_TRACE_LEVEL                     = 'level';
     const LABEL_TRACE_LEVEL_NAME                = 'level_name';

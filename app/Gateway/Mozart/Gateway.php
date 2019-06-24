@@ -736,17 +736,24 @@ class Gateway extends Base\Gateway
 
     protected function checkTpvAndModifyOrder(& $content, $input)
     {
-        if (($this->action === Action::PAY_INIT) and ($input['merchant']->isTPVRequired() === false))
+        if ($this->action === Action::PAY_INIT)
         {
-            if (isset($content['entities']['order']['account_number']) === true)
+            $isTpvEnabled = $input['merchant']->isTPVRequired();
+
+            if ($isTpvEnabled === false)
             {
-                $content['entities']['order']['account_number'] = null;
+                if (isset($content['entities']['order']['account_number']) === true)
+                {
+                    $content['entities']['order']['account_number'] = null;
+                }
+
+                if (isset($content['entities']['order']['bank_account']['account_number']) === true)
+                {
+                    $content['entities']['order']['bank_account']['account_number'] = null;
+                }
             }
 
-            if (isset($content['entities']['order']['bank_account']['account_number']) === true)
-            {
-                $content['entities']['order']['bank_account']['account_number'] = null;
-            }
+            $content['entities']['gateway']['features']['tpv'] = $isTpvEnabled;
         }
     }
 
