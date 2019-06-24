@@ -31,21 +31,23 @@ export default class PaymentLinksSettings extends React.Component {
           <div class="panel-section--theme">
             <div class="panel-heading">
               <span className="title">Reminders for payment links</span>
+
               <SwitchField
                 class="m-l"
                 type="prime"
-                defaultValue="No"
-                enabledLabel="Enabled"
-                disabledLabel="Enable"
                 checked={settings.checked}
                 onChange={this.handleToggle}
               />
+              <span class="status-text">
+                {settings.checked ? 'Enabled' : 'Disabled'}
+              </span>
 
               <p class="description">
                 Send automated reminders to unpaid payment links and get paid on
                 time.
               </p>
             </div>
+
             {settings.checked && <div class="panel-body" />}
           </div>
         </div>

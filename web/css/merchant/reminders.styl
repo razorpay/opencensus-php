@@ -1,9 +1,19 @@
+$primary = #538FF0
+
 .reminders-settings--payment_links {
   button.checkbox-knob {
     margin-left: 25px 
   }
 
+  .status-text {
+    margin-left: 10px
+    vertical-align: middle
+  }
+
   &.enabled {
-      
+      .status-text {
+        color: $primary
+        font-weight: bold
+      }
   }
 }
