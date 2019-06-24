@@ -1,19 +1,31 @@
 $primary = #538FF0
 
-.reminders-settings--payment_links {
-  button.checkbox-knob {
-    margin-left: 25px 
-  }
+.reminders-settings {
+  .reminders-setting {
+    button.checkbox-knob {
+      margin-left: 25px 
+    }
 
-  .status-text {
-    margin-left: 10px
-    vertical-align: middle
-  }
+    .status-text {
+      margin-left: 10px
+      vertical-align: middle
+    }
 
-  &.enabled {
-      .status-text {
-        color: $primary
-        font-weight: bold
+    &.enabled {
+        .status-text {
+          color: $primary
+          font-weight: bold
+        }
+    }
+
+    &_footer {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+
+      .description {
+        width: 70%;
       }
+    }
   }
 }

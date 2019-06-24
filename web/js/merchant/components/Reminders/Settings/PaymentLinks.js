@@ -1,9 +1,11 @@
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 
+import Footer from './common/Footer';
+
 export default class PaymentLinksSettings extends React.Component {
   state = {
     settings: {
-      checked: false,
+      checked: true,
     },
   };
 
@@ -18,12 +20,16 @@ export default class PaymentLinksSettings extends React.Component {
     });
   };
 
+  prepareToSave = () => {};
+
+  saveSettings = () => {};
+
   render() {
     const { settings } = this.state;
 
     return (
       <div
-        class={`reminders-settings--payment_links ${
+        class={`reminders-setting reminders-settings--payment_links ${
           settings.checked ? 'enabled' : 'disabled'
         }`}
       >
@@ -48,7 +54,14 @@ export default class PaymentLinksSettings extends React.Component {
               </p>
             </div>
 
-            {settings.checked && <div class="panel-body" />}
+            {settings.checked && (
+              <div class="panel-body">
+                <Footer
+                  reminderTime="10AM - 12AM"
+                  onSaveClick={this.saveSettings}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
