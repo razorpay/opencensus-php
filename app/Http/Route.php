@@ -1111,8 +1111,13 @@ final class Route
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
 
         // Excel Store Proxy APIs
-        'excel_store_view'                        => ['get',      'excel-store/views/{id}',                                     'ExcelStoreController@getView'                             ],
-        'excel_store_bridge'                      => ['any',      'excel-store/{path?}',                                        'ExcelStoreController@any'                                 ],
+        'excel_store_list_pages'                  => ['get',      'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
+        'excel_store_create_page'                 => ['post',     'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
+        'excel_store_update_page'                 => ['put',      'excel-store/pages/{id}',                                    'ExcelStoreController@dummy'                                  ],
+        'excel_store_get_records'                 => ['get',      'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_update_records'              => ['put',      'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_delete_records'              => ['delete',   'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_page_by_url'                 => ['get',      'excel-store/pages/{url}',                                   'ExcelStoreController@dummy'                                  ],
     ];
 
     public static $public = [
@@ -1184,7 +1189,6 @@ final class Route
         'currency_fetch_all',
         'payment_validate_account',
         'fund_account_create_public',
-        // 'excel_store_view',
     ];
 
     public static $device = [
@@ -2106,7 +2110,13 @@ final class Route
         'edit_throttle_settings',
 
         // Excel Store routes
-        'excel_store_bridge',
+        'excel_store_list_pages',
+        'excel_store_create_page',
+        'excel_store_update_page',
+        'excel_store_get_records',
+        'excel_store_update_records',
+        'excel_store_delete_records',
+        'excel_store_page_by_url',
 
         'offer_create_bulk',
     ];
@@ -2531,7 +2541,14 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
-        'excel_store_bridge'                       => Permission::ACCESS_EXCEL_STORE,
+
+        'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_update_page'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_get_records'                  => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_update_records'               => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_delete_records'               => Permission::ACCESS_EXCEL_STORE,
+        'excel_store_page_by_url'                  => Permission::ACCESS_EXCEL_STORE,
     ];
 
     public static $direct = [
@@ -2595,7 +2612,6 @@ final class Route
         'payment_redirect_to_authorize_get',
         'payment_redirect_to_authorize_post',
         'gateway_payment_callback_upi_airtel',
-        'excel_store_view',
     ];
 
     /**
@@ -3062,7 +3078,13 @@ final class Route
     ];
 
     const EXCEL_STORE_PROXY_ROUTES = [
-        'excel_store_bridge',
+        'excel_store_list_pages',
+        'excel_store_create_page',
+        'excel_store_update_page',
+        'excel_store_get_records',
+        'excel_store_update_records',
+        'excel_store_delete_records',
+        'excel_store_page_by_url',
     ];
 
     // These routes are redirected after a feature check
