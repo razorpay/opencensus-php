@@ -738,8 +738,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DEEMED                                           = 'Refund is in pending status';
 
     const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                             = 'Batch file upload failed due to batch server error';
-    const SERVER_ERROR_BATCH_SERVICE_NOT_FOUND                                  = 'Batch Service is unavailable or cannot connect';
-    const BAD_REQUEST_BATCH_SERVICE_ERROR                                       = 'Bad Request Batch Server Error or Client Error';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 
