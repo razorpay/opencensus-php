@@ -403,14 +403,6 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals($refund['id'], $response['refund_id']);
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals(2, $refund['attempts']);
-
-        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
-
-        $updatedRefund = $this->getDbLastEntity('refund');
-
-        $this->assertEquals($refund['id'], 'rfnd_'.$updatedRefund['id']);
-        $this->assertEquals('processed', $updatedRefund['status']);
-        $this->assertEquals(1, $refund['attempts']);
     }
 
     public function testVerifyRefundForMultipleRefunds()
