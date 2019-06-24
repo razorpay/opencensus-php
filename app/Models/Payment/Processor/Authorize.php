@@ -5249,6 +5249,21 @@ trait Authorize
             return false;
         }
 
+        $gateway = $payment->getGateway();
+
+        $cardId = $payment->getCardId();
+        // We handle dual and null terminal mode as the default case
+        // In the default case, we check if the card network supports
+        // purchase or auth+capture. Example. FSS uses Auth and capture
+        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
+        $networkCode = null;
+
+        // If payment method is wallet or net banking.
+        if ($cardId !== null)
+        {
+            $networkCode = $payment->card->getNetworkCode();
+        }
+
         $terminalMode = $payment->terminal->getMode();
 
         if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
@@ -5257,13 +5272,10 @@ trait Authorize
         }
         else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
-            return false;
+            return (Payment\Gateway::supportsPurchase($gateway, $networkCode) === false);
         }
 
-        $gateway = $payment->getGateway();
-
         // Additional check for ICICI debit cards on First data terminal
-        $cardId = $payment->getCardId();
 
         if (($cardId !== null) and
             ($gateway === Payment\Gateway::FIRST_DATA))
@@ -5279,18 +5291,6 @@ trait Authorize
             {
                 return false;
             }
-        }
-
-        // We handle dual and null terminal mode as the default case
-        // In the default case, we check if the card network supports
-        // purchase or auth+capture. Example. FSS uses Auth and capture
-        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
-        $networkCode = null;
-
-        // If payment method is wallet or net banking.
-        if ($cardId !== null)
-        {
-            $networkCode = $payment->card->getNetworkCode();
         }
 
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
