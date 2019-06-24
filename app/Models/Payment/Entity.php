@@ -556,7 +556,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected function modifyContact(& $input)
     {
-        if (in_array($input['method'], [Method::BANK_TRANSFER, Method::UPI]) === true)
+        // Do not modify contact in case of bank transfer and bharat qr
+        // because in these cases contact is not passed in payment request
+        // input but rather it is set internally from customer table.
+        if (empty($input['receiver']) === false)
         {
             return $input['contact'];
         }
