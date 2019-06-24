@@ -425,6 +425,15 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::REVERSED
             ]);
 
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        $this->fixtures->edit(
+            'nodal_beneficiary',
+            $nodalBeneficiary['id'],
+            [
+                'updated_at' => $nodalBeneficiary['updated_at'] - 70,
+            ]);
+
         $this->fixtures->edit(
             'fund_transfer_attempt',
             $payoutAttempt['id'],
@@ -444,7 +453,7 @@ class PayoutTest extends TestCase
         $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(Payout\Status::PROCESSED, $newPayout['status']);
-        $this->assertEquals(Attempt\Status::PROCESSED, $payoutAttempt['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $newPayoutAttempt['status']);
 
         // Verify attempt entity
         $this->assertEquals($newPayout['attempts'], 1);
@@ -453,6 +462,55 @@ class PayoutTest extends TestCase
         $this->assertNull($newPayout['fund_account_id']);
         $this->assertNotNull($newPayout['batch_fund_transfer_id']);
         $this->assertNotNull($newPayoutAttempt['batch_fund_transfer_id']);
+        $this->assertEquals($newPayout['batch_fund_transfer_id'], $newPayoutAttempt['batch_fund_transfer_id']);
+        $this->assertEquals($payout['amount'], $newPayout['amount']);
+
+        // ----- End of testing payout retry for failed payouts ------ //
+
+        return $newPayout;
+    }
+
+    public function testRetryDelayedMerchantOnDemandPayout()
+    {
+        $payout = $this->testCreateMerchantPayoutOnDemand();
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::REVERSED
+            ]);
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $payoutAttempt['id'],
+            [
+                'status' => Attempt\Status::FAILED
+            ]);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+
+        $this->retryPayout($payout['id']);
+
+        $newPayout = $this->getLastEntity('payout', true);
+
+        $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Payout\Status::PROCESSING, $newPayout['status']);
+        $this->assertEquals(Attempt\Status::CREATED, $newPayoutAttempt['status']);
+
+        // Verify attempt entity
+        $this->assertEquals($newPayout['attempts'], 1);
+        $this->assertEquals($newPayout['id'], $newPayoutAttempt['source']);
+        $this->assertEquals($newPayout['merchant_id'], $newPayoutAttempt['merchant_id']);
+        $this->assertNull($newPayout['fund_account_id']);
+        $this->assertNull($newPayout['batch_fund_transfer_id']);
+        $this->assertNull($newPayoutAttempt['batch_fund_transfer_id']);
         $this->assertEquals($newPayout['batch_fund_transfer_id'], $newPayoutAttempt['batch_fund_transfer_id']);
         $this->assertEquals($payout['amount'], $newPayout['amount']);
 
