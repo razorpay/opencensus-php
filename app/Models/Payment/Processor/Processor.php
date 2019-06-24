@@ -1686,7 +1686,10 @@ class Processor
                     Trace::INFO,
                     TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
                     [
-                        'payment_id' => $this->payment->getId()
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => $gateway,
+                        'action'     => $action,
+                        'method'     => $gatewayData['payment']['method'],
                     ]);
 
                 $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
