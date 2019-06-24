@@ -142,10 +142,14 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
-            throw new Exception\GatewayErrorException(
+            $ex = new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+
+            $ex->markSafeRetryTrue();
+
+            throw $ex;
         }
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
@@ -181,10 +185,14 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
-            throw new Exception\GatewayErrorException(
+            $ex = new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+
+            $ex->markSafeRetryTrue();
+
+            throw $ex;
         }
 
         return $this->getIntentRequest($input, $response);
