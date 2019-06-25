@@ -39,6 +39,9 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Merchant\Detail\Repository       $merchant_detail
  * @property Models\BankingAccount\Repository        $banking_account
  * @property Models\Admin\Role\Repository            $role
+ * @property Models\Admin\Permission\Repository      $permission
+ * @property Models\Workflow\Action\Repository       $workflow_action
+ * @property Models\Workflow\Step\Repository         $workflow_step
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

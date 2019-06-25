@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use RZP\Base\BuilderEx;
 use RZP\Models\State;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Step;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Action\Checker;
 
@@ -131,6 +135,36 @@ class Repository extends Base\Repository
                 })
               ->where('workflow_actions.state', '=', State\Name::OPEN)
               ->whereIn('workflow_steps.role_id', $adminRoleIds);
+    }
+
+    public function getPendingActionsOnRoleIds(PublicEntity $entity, string $permissionId, array $roleIds = [])
+    {
+        $workflowStepTable = Table::WORKFLOW_STEP;
+
+        $stateColumn          = $this->dbColumn(Entity::STATE);
+        $workflowId           = $this->dbColumn(Entity::WORKFLOW_ID);
+        $currentLevel         = $this->dbColumn(Entity::CURRENT_LEVEL);
+
+        $wfStepLevelColumn      = $this->repo->workflow_step->dbColumn(Step\Entity::LEVEL);
+        $wfStepRoleIdColumn     = $this->repo->workflow_step->dbColumn(Step\Entity::ROLE_ID);
+        $wfStepWorkflowIdColumn = $this->repo->workflow_step->dbColumn(Step\Entity::WORKFLOW_ID);
+
+        /** @var BuilderEx $query */
+        $query = $this->newQuery()
+                        ->where(Entity::ENTITY_ID, $entity->getId())
+                        ->where(Entity::ENTITY_NAME, $entity->getEntity())
+                        ->where($stateColumn, State\Name::OPEN)
+                        ->where(Entity::PERMISSION_ID, $permissionId);
+
+        $query->join($workflowStepTable,
+            function($join) use ($wfStepWorkflowIdColumn, $wfStepLevelColumn, $currentLevel, $workflowId)
+                {
+                    $join->on($workflowId, '=', $wfStepWorkflowIdColumn)
+                         ->on($currentLevel, '=', $wfStepLevelColumn);
+                })
+             ->whereIn($wfStepRoleIdColumn, $roleIds);
+
+        return $query->get();
     }
 
     public function addQueryParamActionsChecked($query, $params)
