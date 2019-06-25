@@ -375,6 +375,7 @@ class Entity
         self::DISPUTE_REASON            => \RZP\Models\Dispute\Reason::class,
         self::MERCHANT_DETAIL           => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION           => \RZP\Models\Terminal\Action::class,
+        self::BANKING_ACCOUNT           => \RZP\Models\BankingAccount::class,
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,

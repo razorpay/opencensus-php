@@ -17,4 +17,16 @@ class Status
 
         return ((defined($key) === true) and (constant($key) === $status));
     }
+
+    public static function getAll()
+    {
+        return [
+            self::CREATED,
+            self::INITIATED,
+            self::PROCESSING,
+            self::CANCELLED,
+            self::PROCESSED,
+            self::UNSERVICEABLE,
+        ];
+    }
 }

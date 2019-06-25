@@ -24,4 +24,12 @@ class Channel
             throw new BadRequestValidationFailureException('Not a valid channel: ' . $channel);
         }
     }
+
+    public static function getAll()
+    {
+        return [
+            self::YESBANK,
+            self::RBL,
+        ];
+    }
 }

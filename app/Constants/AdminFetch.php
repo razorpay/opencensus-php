@@ -6,6 +6,7 @@ use RZP\Base\Fetch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\FundTransfer;
+use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
 use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
@@ -414,6 +415,24 @@ class AdminFetch
                         'customer',
                         'merchant',
                     ],
+                ],
+            ],
+
+            Entity::BANKING_ACCOUNT => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'account_number' => [
+                    Fetch::LABEL => 'Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BankingAccount\Status::getAll(),
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BankingAccount\Channel::getAll(),
                 ],
             ],
 
