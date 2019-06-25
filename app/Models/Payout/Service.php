@@ -286,6 +286,21 @@ class Service extends Base\Service
         ];
     }
 
+    public function getDashboardSummary(): array
+    {
+        $queued = $this->getQueuedPayoutsSummary();
+
+        $pending = [];
+
+        $scheduled = [];
+
+        return [
+            'queued'    => $queued,
+            'pending'   => $pending,
+            'scheduled' => $scheduled,
+        ];
+    }
+
     public function processDispatchForQueuedPayouts(array $input)
     {
         $merchantIdsWhitelist = $input['merchant_ids'] ?? [];
@@ -305,6 +320,7 @@ class Service extends Base\Service
 
     public function cancelPayout(string $payoutId)
     {
+        /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
 
         $payout = $this->core->cancelPayout($payout);
