@@ -14,17 +14,7 @@ class Time extends Component {
   constructor(props) {
     super(props);
 
-    const { value = moment(), format = 'DD MMM YYYY', ...otherProps } = props;
-
-    const isRelative = (this.isRelative = 'relative' in otherProps);
-
-    const date =
-      typeof value === 'string' ? new moment(value) : moment.unix(value); // value could be of format = 2018-06-15T11:04:45Z
-
-    this.state = {
-      date,
-      displayText: isRelative ? date.fromNow() : date.format(format),
-    };
+    this.state = this.getInitTime(props);
 
     this.timer = null;
   }
@@ -59,23 +49,25 @@ class Time extends Component {
     window.clearInterval(this.timer);
   }
 
+  getInitTime = (props = this.props) => {
+    const { value = moment(), format = 'DD MMM YYYY', ...otherProps } = props;
+
+    const isRelative = (this.isRelative = 'relative' in otherProps);
+
+    const date =
+      typeof value === 'string' ? new moment(value) : moment.unix(value); // value could be of format = 2018-06-15T11:04:45Z
+
+    return {
+      date,
+      displayText: isRelative ? date.fromNow() : date.format(format),
+    };
+  };
+
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.value !== this.props.value) {
-      const {
-        value = moment(),
-        format = 'DD MMM YYYY',
-        ...otherProps
-      } = nextProps;
+      const data = this.getInitTime(nextProps);
 
-      const isRelative = (this.isRelative = 'relative' in otherProps);
-
-      const date =
-        typeof value === 'string' ? new moment(value) : moment.unix(value); // value could be of format = 2018-06-15T11:04:45Z
-
-      this.setState({
-        date,
-        displayText: isRelative ? date.fromNow() : date.format(format),
-      });
+      this.setState(data);
     }
   }
 
