@@ -282,6 +282,15 @@ abstract class Processor extends Base\Core
            return true;
         }
 
+        if ($this->virtualAccount->isDueToBeClosed() === true)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED,
+                $entity->toArray());
+
+            return true;
+        }
+
         $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
 
         $merchantMethods = $merchant->getMethods();
