@@ -8,7 +8,7 @@ class Url
 
     const LIVE_DOMAIN       = 'https://pingupi.axisbank.co.in';
 
-    const AUTHORIZE         = '/WebPaymentS2S/Merchant/requestCollect/';
+    const AUTHENTICATE      = '/WebPaymentS2S/Merchant/requestCollect/';
 
     const FETCH_TOKEN       = '/WebPaymentS2S/Merchant/MerchantToken';
 

@@ -1623,6 +1623,14 @@ trait Authorize
             $gatewayInput['order'] = $payment->order->toArray();
         }
 
+        // modify account number in gateway input for some banks
+        // to be called only in case of upi tpv transactions
+        if (($payment->getMethod() == Method::UPI) and
+            ($payment->merchant->isTPVRequired() === true))
+        {
+            $this->modifyAccountNumberForSpecificBanks($payment, $gatewayInput);
+        }
+
         // set token for local card saving in gateway input
         $gatewayInput['token'] = $payment->getGlobalOrLocalTokenEntity();
 
@@ -4786,11 +4794,14 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
+        $iin = $this->app['repo']->iin->find($card['iin']);
+
         return array_merge(
                 $card->toArray(),
                 [
                     'number' => $cardNumber,
-                    'cvv' => $cvv
+                    'cvv' => $cvv,
+                    'message_type' => $iin['message_type'],
                 ]);
     }
 
@@ -4822,13 +4833,16 @@ trait Authorize
 
         $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);
 
+        $iin = $this->app['repo']->iin->find($card['iin']);
+
         $this->payment->card()->associate($card);
 
         return array_merge(
             $card->toArray(),
             [
-                'number' => $cardNumber,
-                'cvv' => $cvv
+                'number'       => $cardNumber,
+                'cvv'          => $cvv,
+                'message_type' => $iin['message_type'],
             ]);
     }
 
@@ -5235,6 +5249,21 @@ trait Authorize
             return false;
         }
 
+        $gateway = $payment->getGateway();
+
+        $cardId = $payment->getCardId();
+        // We handle dual and null terminal mode as the default case
+        // In the default case, we check if the card network supports
+        // purchase or auth+capture. Example. FSS uses Auth and capture
+        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
+        $networkCode = null;
+
+        // If payment method is wallet or net banking.
+        if ($cardId !== null)
+        {
+            $networkCode = $payment->card->getNetworkCode();
+        }
+
         $terminalMode = $payment->terminal->getMode();
 
         if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
@@ -5243,13 +5272,10 @@ trait Authorize
         }
         else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
-            return false;
+            return (Payment\Gateway::supportsPurchase($gateway, $networkCode) === false);
         }
 
-        $gateway = $payment->getGateway();
-
         // Additional check for ICICI debit cards on First data terminal
-        $cardId = $payment->getCardId();
 
         if (($cardId !== null) and
             ($gateway === Payment\Gateway::FIRST_DATA))
@@ -5265,18 +5291,6 @@ trait Authorize
             {
                 return false;
             }
-        }
-
-        // We handle dual and null terminal mode as the default case
-        // In the default case, we check if the card network supports
-        // purchase or auth+capture. Example. FSS uses Auth and capture
-        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
-        $networkCode = null;
-
-        // If payment method is wallet or net banking.
-        if ($cardId !== null)
-        {
-            $networkCode = $payment->card->getNetworkCode();
         }
 
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
@@ -5686,5 +5700,31 @@ trait Authorize
         });
 
         $gatewayInput['payment_fee'] = $fee;
+    }
+
+    protected function modifyAccountNumberForSpecificBanks($payment, array & $gatewayInput)
+    {
+        $accountNumber = $gatewayInput['order']['account_number'];
+
+        // prepend required zeroes in the account number based on bank
+        switch ($payment->getBank())
+        {
+            case IFSC::SBIN:
+                $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
+                break;
+
+            case IFSC::KKBK:
+                $accountNumber = str_pad($accountNumber, 14, '0', STR_PAD_LEFT );
+                break;
+
+            case IFSC::CBIN:
+                $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
+                break;
+
+            default:
+                break;
+        }
+
+        $gatewayInput['order']['account_number'] = $accountNumber;
     }
 }
