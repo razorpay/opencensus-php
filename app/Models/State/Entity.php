@@ -13,6 +13,7 @@ use RZP\Models\State\Reason;
 class Entity extends Base\PublicEntity
 {
     const ADMIN_ID             = 'admin_id';
+    const USER_ID              = 'user_id';
     const ACTION_ID            = 'action_id';
     const NAME                 = 'name';
     const ENTITY_TYPE          = 'entity_type';
@@ -33,6 +34,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ADMIN_ID,
         self::MERCHANT_ID,
+        self::USER_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::REJECTION_REASONS,
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ADMIN_ID,
         self::MERCHANT_ID,
+        self::USER_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::REJECTION_REASONS,

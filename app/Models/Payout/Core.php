@@ -442,7 +442,10 @@ class Core extends Base\Core
 
         if ($workflowAction === null)
         {
-            // throw exception. BadRequest. There should have been an open workflow action.
+            //
+            // throw exception. BadRequest.
+            // There should have been an open workflow action.
+            //
 
             return $payout;
         }

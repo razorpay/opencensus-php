@@ -8,11 +8,13 @@ use RZP\Models\Workflow\Action;
 
 class Entity extends Base\Entity
 {
-    const ID             = 'id';
-    const ACTION_ID      = 'action_id';
-    const ADMIN_ID       = 'admin_id';
-    const STEP_ID        = 'step_id';
-    const APPROVED       = 'approved';
+    const ID           = 'id';
+    const ACTION_ID    = 'action_id';
+    const ADMIN_ID     = 'admin_id';
+    const CHECKER_TYPE = 'checker_type';
+    const CHECKER_ID   = 'checker_id';
+    const STEP_ID      = 'step_id';
+    const APPROVED     = 'approved';
 
     // APPROVED column values
     const APPROVED_ENUM = [
@@ -36,6 +38,8 @@ class Entity extends Base\Entity
     protected $visible = [
         self::ID,
         self::ADMIN_ID,
+        self::CHECKER_TYPE,
+        self::CHECKER_ID,
         self::ADMIN,
         self::ACTION_ID,
         self::STEP_ID,
