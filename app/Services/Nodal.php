@@ -117,10 +117,10 @@ class Nodal
             {
                 $this->trace->error(TraceCode::NODAL_INTEGRATION_ERROR, $data);
 
-                throw new Exception\IntegrationException('NodalService Timed out', $data);
+                throw new Exception\IntegrationException('NodalService Timed out', null, $data);
             }
 
-            throw new Exception\IntegrationException($e->getMessage(), $data);
+            throw new Exception\IntegrationException($e->getMessage(), null, $data);
         }
     }
 }
