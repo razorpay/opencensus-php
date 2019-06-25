@@ -1,20 +1,19 @@
 <?php
 
+
 namespace RZP\Jobs;
 
-use Razorpay\Trace\Logger as Trace;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\LogicException;
+use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\BankAccount\Type;
 use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
-use RZP\Models\BankAccount\Beneficiary;
 
-class BeneficiaryRegistration extends Job
+class BeneficiaryVerification extends Job
 {
-    const MAX_ALLOWED_ATTEMPTS = 5;
-
-    const RETRY_INTERVAL       = 300;
+    const RETRY_INTERVAL       = 4;
 
     /**
      * @var string
@@ -31,9 +30,16 @@ class BeneficiaryRegistration extends Job
      */
     protected $bankAccountId;
 
-    public function __construct(string $mode, string $channel, string $bankAccountId)
+    /*
+     * @var string
+     */
+    protected $ftaId;
+
+    public function __construct(string $mode, string $channel, string $bankAccountId, string $ftaId = null)
     {
         parent::__construct($mode);
+
+        $this->ftaId          = $ftaId;
 
         $this->channel        = $channel;
 
@@ -54,7 +60,7 @@ class BeneficiaryRegistration extends Job
                 return;
             }
 
-            $this->traceData(TraceCode::ATTEMPTING_BENEFICIARY_REGISTRATION);
+            $this->traceData(TraceCode::ATTEMPTING_BENEFICIARY_VERIFICATION);
 
             $bankAccount = $this->repoManager->bank_account->getBankAccountById($this->bankAccountId);
 
@@ -64,7 +70,7 @@ class BeneficiaryRegistration extends Job
             // No live bank account exists for the merchant: BcqrSKvM8bIq2g
             if (empty($bankAccount) === true)
             {
-                $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG);
+                $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_VERIFY);
 
                 return;
             }
@@ -84,15 +90,10 @@ class BeneficiaryRegistration extends Job
                 return;
             }
 
-            $status = (new Beneficiary)->registerBeneficiaryThroughApi($bankAccount, $this->channel);
-
-            if ($status === true)
-            {
-                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $this->channel);
-            }
+            $status = (new Beneficiary)->verifyBeneficiaryThroughApi($bankAccount, $this->channel);
 
             $this->traceData(
-                TraceCode::BENEFICIARY_REGISTRATION_ATTEMPT_STATUS,
+                TraceCode::BENEFICIARY_VERIFY_ATTEMPT_STATUS,
                 [
                     'status'=> $status
                 ]);
@@ -102,26 +103,24 @@ class BeneficiaryRegistration extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BENEFICIARY_REGISTRATION_ATTEMPT_FAILED,
+                TraceCode::BENEFICIARY_VERIFY_ATTEMPT_FAILED,
                 [
                     'channel'         => $this->channel,
                     'attempt_count'   => $this->attempts(),
                     'bank_account_id' => $this->bankAccountId,
                 ]);
 
-            if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
-            {
-                $this->traceData(TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY);
+            $this->traceData(TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY);
 
-                $this->release(self::RETRY_INTERVAL);
-            }
+            $this->release(self::RETRY_INTERVAL);
+
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BENEFICIARY_REGISTRATION_PROCESS_FAILED,
+                TraceCode::BENEFICIARY_VERIFY_PROCESS_FAILED,
                 [
                     'channel'             => $this->channel,
                     'attempt_count'       => $this->attempts(),
@@ -130,6 +129,11 @@ class BeneficiaryRegistration extends Job
         }
         finally
         {
+            if (empty($this->ftaId) === false)
+            {
+                FundTransfer::dispatch($this->mode, $this->ftaId);
+            }
+
             $this->delete();
         }
     }

@@ -94,6 +94,17 @@ class FundTransfer extends Job
                 }
             }
 
+            $beneficiaryVerified = (new Beneficiary)->verifyBeneficiaryOnChannelAndGetStatus($channel, $bankAccount);
+
+            if ($beneficiaryVerified === false)
+            {
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel, $this->ftaId);
+
+                $this->logAndDelete($data);
+
+                return;
+            }
+
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
         }
         catch (\Throwable $e)
