@@ -40,22 +40,13 @@ export default props => {
               <AccountDetails virtualaccount={virtualaccount} onCopy={onCopy} />
 
               <div style={{ margin: '24px 0' }}>
-                <EntityDetailRow
-                  label="Amount Paid"
-                  value={() => (
-                    <Amount
-                      value={virtualaccount.amount_paid}
-                      currency={'INR'}
-                    />
-                  )}
-                />
+                <EntityDetailRow label="Amount Paid">
+                  <Amount value={virtualaccount.amount_paid} currency={'INR'} />
+                </EntityDetailRow>
 
-                <EntityDetailRow
-                  label="Status"
-                  value={() => (
-                    <VirtualAccountStatusLabel status={virtualaccount.status} />
-                  )}
-                />
+                <EntityDetailRow label="Status">
+                  <VirtualAccountStatusLabel status={virtualaccount.status} />
+                </EntityDetailRow>
 
                 <EntityDetailRow
                   label="Account Description"
@@ -67,15 +58,29 @@ export default props => {
                   value={virtualaccount.customer_id}
                 />
 
+                <EntityDetailRow label="Created At">
+                  <Time
+                    value={virtualaccount.created_at}
+                    format="DD MMM YYYY, hh:mm:ss a"
+                  />
+                </EntityDetailRow>
+
                 <EntityDetailRow
-                  label="Created At"
-                  value={() => (
-                    <Time
-                      value={virtualaccount.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
+                  label={
+                    virtualaccount.status === 'closed'
+                      ? 'Closed At'
+                      : 'Close By'
+                  }
+                >
+                  <Time
+                    value={
+                      virtualaccount.status === 'closed'
+                        ? virtualaccount.closed_at
+                        : virtualaccount.close_by
+                    }
+                    format="DD MMM YYYY, hh:mm:ss a"
+                  />
+                </EntityDetailRow>
 
                 {/* Notes */}
                 <EntityDetailRow label="Notes">

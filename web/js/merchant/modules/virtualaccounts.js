@@ -37,6 +37,7 @@ export const fetchVAPayments = id => {
 
 export const saveVirtualAccount = params => {
   const virtualAccount = new VirtualAccount(params);
+
   return {
     type: virtualAccount.isNew ? VIRTUAL_ACCOUNT_CREATE : VIRTUAL_ACCOUNT_EDIT,
     payload: virtualAccount.save(),
