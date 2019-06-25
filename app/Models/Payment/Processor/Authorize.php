@@ -357,6 +357,13 @@ trait Authorize
 
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
 
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
+                $payment,
+                null,
+                $gatewayInput['authenticate'] ?? []
+            );
+
             $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED, $payment);
 
             return $request;
