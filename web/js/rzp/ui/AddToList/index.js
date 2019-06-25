@@ -1,44 +1,55 @@
 import debounce from 'rzp/utils/debounce';
 
 export default class AddToList extends React.Component {
-  static defaultProps = {
-    maxLength: null,
-    ChildComponent: {},
-    AddButton: {},
-  };
-
   constructor(props) {
     super(props);
 
     this.state = {
-      list: [],
+      list: props.defaultData || [],
     };
 
-    this.handleAddButton = debounce(this.handleAddButton.bind(this), 300);
+    this.handleAddButton = debounce(this._handleAddButton.bind(this), 300);
   }
 
-  handleAddButton(data) {
+  _handleAddButton() {
+    const newList = [...this.state.list];
+    newList.push(this.props.placeholderData);
+
     this.setState(
       {
-        list: [...this.state.list, { ...this.props.defaultData }],
+        list: newList,
       },
       () => {
-        if (this.props.onAdd) {
-          this.props.onAdd(data);
-        }
+        this.props.onUpdate && this.props.onUpdate(this.state.list);
       }
     );
   }
 
-  render() {
-    const { AddButton, ChildComponent, maxLength, className } = this.props;
+  handleRemove = index => () => {
+    this.setState({
+      list: this.state.list.splice(index, 1),
+    });
+  };
 
-    const showAddBtn = maxLength && this.state.list.length < maxLength;
+  render() {
+    const {
+      addButton: AddButton,
+      item: ChildComponent,
+      maxItems,
+      className,
+    } = this.props;
+
+    const showAddBtn = maxItems && this.state.list.length < maxItems;
 
     return (
       <div class={`add-to-list ${className}`}>
         {this.state.list.map((props, idx) => (
-          <ChildComponent id={idx} {...props} />
+          <ChildComponent
+            id={idx}
+            key={idx}
+            {...props}
+            onRemove={this.handleRemove(idx)}
+          />
         ))}
 
         {showAddBtn && <AddButton onClick={this.handleAddButton} />}
