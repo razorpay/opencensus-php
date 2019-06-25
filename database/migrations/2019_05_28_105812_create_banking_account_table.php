@@ -47,6 +47,15 @@ class CreateBankingAccountTable extends Migration
 
             $table->char(Entity::BANK_REFERENCE_NUMBER, 5);
 
+            $table->string(Entity::USERNAME, 255)
+                  ->nullable();
+
+            $table->string(Entity::PASSWORD, 255)
+                  ->nullable();
+
+            $table->string(Entity::REFERENCE1, 255)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

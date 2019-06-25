@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Metric as Metric;
 use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
@@ -73,12 +74,13 @@ class Core extends Base\Core
         if (($input[Entity::REGISTRATION_STATUS] === Status::FAILED) and
             ($nodalBeneficiary->getRegistrationStatus() !== Status::FAILED))
         {
-            $this->notifyBeneficiaryRegistrationFailure(
-                        $nodalBeneficiary->getRegistrationStatus(),
-                        $input,
-                        $bankAccountId,
-                        $channel
-                 );
+            $this->trace->count(
+                Metric::BENEFICIARY_REGISTRATION_STATUS,
+                [
+                    Metric::CHANNEL => $channel
+                ],
+                1
+            );
         }
 
         $nodalBeneficiary = $nodalBeneficiary->edit($input);
@@ -101,22 +103,6 @@ class Core extends Base\Core
                                  );
 
         return $this->repo->nodal_beneficiary->deleteOrFail($nodalBeneficiary);
-    }
-
-    /**
-     * Sends beneficiary registration failure alert
-     * @param string $currentStatus
-     * @param array $input
-     * @param string $bankAccountId
-     * @param string $channel
-     */
-    protected function notifyBeneficiaryRegistrationFailure(string $currentStatus, array $input, string $bankAccountId, string $channel)
-    {
-        $message = ' *ALERT*: Beneficiary status for bank account id: ' .
-                    $bankAccountId . ' on channel ' . $channel .
-                    ' changed from '. $currentStatus . ' to ' . $input[Entity::REGISTRATION_STATUS];
-
-        (new SlackNotification)->send($message, $input, null, 1);
     }
 
     /**

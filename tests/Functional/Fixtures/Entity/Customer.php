@@ -95,6 +95,18 @@ class Customer extends Base
             'created_at'    => 1500000002,
         ],
         [
+            'id'            => '100000rpaycard',
+            'token'         => '10002cardtoken',
+            'customer_id'   => '100000customer',
+            'method'        => 'card',
+            'bank'          => null,
+            'wallet'        => null,
+            'recurring'     => false,
+            'card_id'       => '10000000rucard',
+            'used_at'       => 10,
+            'created_at'    => 1500000002,
+        ],
+        [
             'id'            => '100001custcard',
             'token'         => '10001cardtoken',
             'customer_id'   => '100000customer',

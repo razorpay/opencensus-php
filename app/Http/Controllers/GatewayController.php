@@ -962,4 +962,13 @@ class GatewayController extends Controller
         // Route class check on empty string
         return '';
     }
+
+    protected function purgeGatewayDowntimeDetectionKeys(Downtime\Service $service)
+    {
+        $service->purgeKeys();
+
+        return ApiResponse::json([
+            'success' => true
+        ]);
+    }
 }

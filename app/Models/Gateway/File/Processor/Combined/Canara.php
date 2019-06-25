@@ -57,6 +57,8 @@ class Canara extends Base
             $amount['claims'] = number_format($amount['claims'], 2, '.', '');
 
             $count['claims'] = count($data['claims']);
+
+            $claimsFile = $this->getFileData(FileStore\Type::CANARA_NETBANKING_CLAIMS);
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
@@ -74,6 +76,7 @@ class Canara extends Base
             'amount'      => $amount,
             'count'       => $count,
             'refundsFile' => $refundsFile,
+            'claimsFile'  => $claimsFile,
             'date'        => $date,
             'emails'      => $this->gatewayFile->getRecipients(),
         ];
