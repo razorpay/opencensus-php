@@ -21,6 +21,8 @@ export default props => {
     onCopy = () => {},
   } = props;
 
+  const isClosed = virtualaccount.status === 'closed';
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -65,16 +67,10 @@ export default props => {
                   />
                 </EntityDetailRow>
 
-                <EntityDetailRow
-                  label={
-                    virtualaccount.status === 'closed'
-                      ? 'Closed At'
-                      : 'Close By'
-                  }
-                >
+                <EntityDetailRow label={isClosed ? 'Closed At' : 'Close By'}>
                   <Time
                     value={
-                      virtualaccount.status === 'closed'
+                      isClosed
                         ? virtualaccount.closed_at
                         : virtualaccount.close_by
                     }

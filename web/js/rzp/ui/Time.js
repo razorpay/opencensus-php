@@ -59,6 +59,26 @@ class Time extends Component {
     window.clearInterval(this.timer);
   }
 
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.value !== this.props.value) {
+      const {
+        value = moment(),
+        format = 'DD MMM YYYY',
+        ...otherProps
+      } = nextProps;
+
+      const isRelative = (this.isRelative = 'relative' in otherProps);
+
+      const date =
+        typeof value === 'string' ? new moment(value) : moment.unix(value); // value could be of format = 2018-06-15T11:04:45Z
+
+      this.setState({
+        date,
+        displayText: isRelative ? date.fromNow() : date.format(format),
+      });
+    }
+  }
+
   render() {
     const { date, displayText } = this.state,
       { format, value, relative, ...props } = this.props,
