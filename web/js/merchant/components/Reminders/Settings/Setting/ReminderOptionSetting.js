@@ -7,11 +7,12 @@ import AddToList from 'rzp/ui/AddToList';
 export default class ReminderOptionSetting extends React.Component {
   render() {
     const {
+      name,
       isExpiry,
+      onRemove,
+      onChange,
       maxSelections,
       remindersList,
-      onChange,
-      onRemove,
     } = this.props;
 
     const DEFAULT_DATA = {

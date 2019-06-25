@@ -10,8 +10,8 @@ export default class PaymentLinksSettings extends React.Component {
         sms: false,
         email: false,
       },
-      withExpiry: [],
-      withOutExpiry: [],
+      withExpiry: [1, 2],
+      withOutExpiry: [1, 2],
       maxNoReminders: 3,
       scheduledTime: '10AM - 12AM',
     },
@@ -60,6 +60,7 @@ export default class PaymentLinksSettings extends React.Component {
               <div class="panel-body">
                 <ReminderOptionSetting
                   isExpiry
+                  name="with_expiry"
                   remindersList={REMINDERS_LIST}
                   onChange={this.onChange('withExpiry')}
                   maxSelections={settings.maxNoReminders}
@@ -67,6 +68,7 @@ export default class PaymentLinksSettings extends React.Component {
                 />
 
                 <ReminderOptionSetting
+                  name="with_out_expiry"
                   maxSelections={settings.maxNoReminders}
                   onChange={this.onChange('withOutExpiry')}
                   selectedReminders={settings.withOutExpiry}

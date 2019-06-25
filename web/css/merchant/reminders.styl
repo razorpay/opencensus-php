@@ -20,9 +20,10 @@ $primary = #538FF0
 
     .setting {
       display: flex;
+      margin-bottom: 30px
 
       label {
-        width: 50%;
+        width: 35%;
       }
     }
 
@@ -35,5 +36,27 @@ $primary = #538FF0
         width: 70%;
       }
     }
+  }
+}
+
+.removable-select {
+  &:not(:last-child) {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: none;
+  }
+  
+  .field {
+    display: inline
+  }
+  
+  i.i-close {
+    margin-left: 10px;
+    border: 1px solid;
+    border-radius: 50%;
+    padding: 1px 3px;
+    vertical-align: middle;
   }
 }
