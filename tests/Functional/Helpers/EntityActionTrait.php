@@ -72,6 +72,8 @@ trait EntityActionTrait
 
     protected function createWebhook(array $input = array())
     {
+        $this->setupMockDns();
+
         $defaultInput = array(
             'url' => 'http://webhook.com/v1/dummy/route',
             'events' => [

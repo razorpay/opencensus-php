@@ -4195,4 +4195,26 @@ class MerchantTest extends TestCase
         $this->assertNull($testKeyValue);
         $this->assertNotNull($liveKeyValue);
     }
+
+    public function testBeneficiaryRegisterApiYesbankWithMailNotQueued()
+    {
+        Mail::fake();
+
+        $this->ba->cronAuth();
+
+        $this->fixtures->create('bank_account');
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   =>  [
+                'duration'   => 1200,
+                'send_email' => false,
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        Mail::assertNotQueued(BeneficiaryFileMail::class);
+    }
 }

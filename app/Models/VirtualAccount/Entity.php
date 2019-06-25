@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -46,6 +47,8 @@ class Entity extends Base\PublicEntity
     const TYPES                = 'types';
     const BANK_ACCOUNT         = 'bank_account';
     const NUMERIC              = 'numeric';
+    const CLOSE_BY             = 'close_by';
+    const CLOSED_AT            = 'closed_at';
 
     const DELETED_AT           = 'deleted_at';
 
@@ -62,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTOR,
         self::DESCRIPTION,
         self::AMOUNT_EXPECTED,
+        self::CLOSE_BY,
     ];
 
     protected $public = [
@@ -75,6 +79,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
         self::RECEIVERS,
+        self::CLOSE_BY,
+        self::CLOSED_AT,
         self::CREATED_AT,
     ];
 
@@ -105,6 +111,13 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::RECEIVERS,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::CLOSE_BY,
+        self::CLOSED_AT,
     ];
 
     protected static $sign = 'va';
@@ -245,6 +258,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTOR);
     }
 
+    public function getCloseBy()
+    {
+        return $this->getAttribute(self::CLOSE_BY);
+    }
+
+    public function getClosedAt()
+    {
+        return $this->getAttribute(self::CLOSED_AT);
+    }
+
     protected function getReceiversAttribute()
     {
         $receivers = [];
@@ -316,6 +339,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_RECEIVED, $amount);
     }
 
+    public function setClosedAt(int $closedAt)
+    {
+        $this->setAttribute(self::CLOSED_AT, $closedAt);
+    }
+
     protected function setPublicCustomerIdAttribute(array & $array)
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
@@ -336,5 +364,16 @@ class Entity extends Base\PublicEntity
     public function incrementAmountReversed(int $amount)
     {
         $this->increment(self::AMOUNT_REVERSED, $amount);
+    }
+
+    public function isDueToBeClosed()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if (($this->getCloseBy() !== null) and
+            ($this->getCloseBy() < $currentTime) === true)
+        {
+            return true;
+        }
     }
 }

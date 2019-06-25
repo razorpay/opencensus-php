@@ -52,5 +52,4 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     {
         return $row[ReconFields::BANK_REFERENCE_NO] ?? null;
     }
-
 }

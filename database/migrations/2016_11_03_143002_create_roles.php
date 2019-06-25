@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Role\Entity as Role;
 use RZP\Models\Admin\Org\Entity as Org;
 
@@ -24,7 +25,11 @@ class CreateRoles extends Migration
                   ->primary();
 
             $table->string(Role::NAME);
+
             $table->string(Role::DESCRIPTION);
+
+            $table->string(Role::PRODUCT)
+                  ->default(Product::PRIMARY);
 
             $table->char(Role::ORG_ID, Role::ID_LENGTH);
 
@@ -42,6 +47,7 @@ class CreateRoles extends Migration
                   ->on(Table::ORG);
 
             $table->index(Role::CREATED_AT);
+            $table->index(Role::PRODUCT);
         });
     }
 
