@@ -98,19 +98,21 @@ return [
                         'TranID' => '12345'
                     ]
                 ],
+
+    'testStoreMerchantCredentials' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
             ],
         ],
         'response' => [
             'content' => [
-                'RZPAlertNotiRes' => [
-                    'Header' => [
-                        'TranID' => '12345'
-                    ],
-                    'Body' => [
-                        'Status' => 'Success'
-                    ]
-                ]
-            ],
+                'success' => true,
+            ]
         ],
     ],
 
@@ -154,6 +156,23 @@ return [
         ],
     ],
 
+    'testStoreMerchantCredentialsFailed' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+
     'testUpdateBankingAccount' => [
         'request'  => [
             'url'     => '/banking_account',
@@ -168,6 +187,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'channel'     => 'rbl',
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+                'success' => false,
             ],
         ],
     ],

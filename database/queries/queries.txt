@@ -4981,7 +4981,10 @@ ALTER TABLE banking_accounts
     ADD COLUMN beneficiary_address3 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address2,
     ADD COLUMN beneficiary_address1 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address3,
     ADD COLUMN account_activation_date DATE DEFAULT NULL AFTER bank_reference_number,
-    ADD INDEX bank_reference_number_index (bank_reference_number);
+    ADD INDEX bank_reference_number_index (bank_reference_number),
+    ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
+    ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
+    ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
@@ -5036,6 +5039,11 @@ ALTER TABLE `transactions`
 ALTER TABLE `reversals`
     ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
     ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
+    ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
+    ADD INDEX virtual_accounts_close_by_index (close_by);
 
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,

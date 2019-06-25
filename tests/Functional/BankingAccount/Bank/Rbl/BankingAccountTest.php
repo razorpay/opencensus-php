@@ -2,12 +2,12 @@
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Entity;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BankingAccountTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
     use DbEntityFetchTrait;
 
     public function setUp()
@@ -66,7 +66,7 @@ class BankingAccountTest extends TestCase
 
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->ba->proxyAuth('rzp_test_' .  $merchantId);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->testCreateBankingAccount();
 
@@ -87,6 +87,35 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
+    }
+
+    public function testStoreMerchantCredentials()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' .  $merchantDetail->merchant['id']);
+
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $dataToReplace = [
+          'request' => [
+              'url' => '/banking_accounts/' . $bankingAccount->getId() . '/credentials'
+          ]
+        ];
+
+        $this->mockFundAccountService();
+
+        $this->mockCardVault(function ()
+        {
+            return [
+                    'success' => true,
+                    'token'   => 'random'
+            ];
+        });
     }
 
     public function testFailedBankAccountInfoNotification()
@@ -119,6 +148,26 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testStoreMerchantCredentialsFailed()
+    {
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getId() . '/credentials'
+            ]
+        ];
+
+        $this->mockCardVault(function ()
+        {
+            return ['success' => false];
+        });
 
         $this->startTest($dataToReplace);
     }

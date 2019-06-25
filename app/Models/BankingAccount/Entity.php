@@ -72,6 +72,15 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER_LENGTH             = '40';
     const ACCOUNT_IFSC_LENGTH               = '11';
 
+    const USERNAME                          = 'username';
+    const PASSWORD                          = 'password';
+    const REFERENCE1                        = 'reference1';
+
+    const ACCOUNT_TYPE                      = 'CURRENT';
+
+    const VAULT_NAMESPACE                   = 'banking_accounts_creds';
+
+
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
 
@@ -93,6 +102,9 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
+        self::USERNAME,
+        self::PASSWORD,
+        self::REFERENCE1,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_ADDRESS1,
@@ -118,6 +130,9 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
         self::STATUS,
         self::BANK_INTERNAL_STATUS,
+        self::USERNAME,
+        self::PASSWORD,
+        self::REFERENCE1
     ];
 
     protected $public = [
@@ -130,6 +145,9 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
         self::BANK_INTERNAL_STATUS,
+        self::USERNAME,
+        self::PASSWORD,
+        self::REFERENCE1
     ];
 
     protected static $generators = [
@@ -153,9 +171,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setBankInternalStatus(string $status = null)
+    public function setBankInternalStatus(string $internalStatus)
     {
-        $this->setAttribute(self::BANK_INTERNAL_STATUS, $status);
+        $this->setAttribute(self::BANK_INTERNAL_STATUS, $internalStatus);
+    }
+
+    public function setFtsFundAccountId(string $fundAccountId)
+    {
+        $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $fundAccountId);
     }
 
     // -------------------------- Getters ------------------------------------ //
@@ -173,6 +196,92 @@ class Entity extends Base\PublicEntity
     public function getBankReferenceNumber()
     {
         return $this->getAttribute(self::BANK_REFERENCE_NUMBER);
+    }
+
+    public function getAccountIfsc()
+    {
+        return $this->getAttribute(self::ACCOUNT_IFSC);
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getBeneficiaryName()
+    {
+        return $this->getAttribute(self::BENEFICIARY_NAME);
+    }
+
+    public function getBeneficiaryCity()
+    {
+        return $this->getAttribute(self::BENEFICIARY_CITY);
+    }
+
+    public function getBeneficiaryEMail()
+    {
+        return $this->getAttribute(self::BENEFICIARY_EMAIL);
+    }
+
+    public function getBeneficiaryState()
+    {
+        return $this->getAttribute(self::BENEFICIARY_STATE);
+    }
+
+    public function getBeneficiaryMobile()
+    {
+        return $this->getAttribute(self::BENEFICIARY_MOBILE);
+    }
+
+    public function getBeneficiaryAddress1()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
+    }
+
+    public function getBeneficiaryCountry()
+    {
+        return $this->getAttribute(self::BENEFICIARY_COUNTRY);
+    }
+
+    public function getBankName()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getFtsFundAccountId()
+    {
+        return $this->getAttribute(self::FTS_FUND_ACCOUNT_ID);
+    }
+
+    public function getAccountType()
+    {
+        return self::ACCOUNT_TYPE;
+    }
+
+    public function getUsername()
+    {
+        return $this->getAttribute(self::USERNAME);
+    }
+
+    public function getPassword()
+    {
+        return $this->getAttribute(self::PASSWORD);
+    }
+
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    // --------------------------- Mutators ----------------------------------- //
+
+    public function setPasswordAttribute(string $password)
+    {
+        $bankingAccountCore = new Core();
+
+        $token = $bankingAccountCore->tokenizeBankingAccountCredentials($password);
+
+        $this->attributes[self::PASSWORD] = $token;
     }
 
     // --------------------------- Relations ---------------------------------- //

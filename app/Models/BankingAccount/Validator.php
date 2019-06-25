@@ -36,6 +36,9 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'filled|string',
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
         Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::USERNAME                        => 'filled|string',
+        Entity::PASSWORD                        => 'filled|string',
+        Entity::REFERENCE1                      => 'filled|string',
     ];
 
     protected static $serviceablePincodeRules = [
@@ -71,6 +74,13 @@ class Validator extends Base\Validator
     {
         Channel::validateChannel($channel);
     }
+
+    // ToDo Need to make the rules stricter
+    protected static $rblCreateMerchantTokenRules = [
+        RblFields::SUBCORP_ID               => 'required|string',
+        RblFields::SUBCORP_USER_ID          => 'required|string',
+        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
+    ];
 
     /**
      * @param string $attribute

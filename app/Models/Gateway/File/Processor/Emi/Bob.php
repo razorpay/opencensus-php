@@ -58,12 +58,14 @@ class Bob extends Base
                 $subventionAmount = $this->getFormattedAmount($amount);
             }
 
+            $merchantDbaName =  $merchant->getDbaName() ?: 'Razorpay Payments';
+
             $formattedData[] = [
                 'LOYALTY_TRANSACTIONID'            => $emiPayment->getId(),
                 'ISSUER'                           => 'Bank of Baroda',
                 'ACQUIRER'                         => $acquirer,
                 'MANUFACTURER_NAME'                => '',
-                'MERCHANT_NAME'                    => 'Razorpay Payments',
+                'MERCHANT_NAME'                    => $merchantDbaName,
                 'STORE_NAME'                       => '',
                 'STORE_CITY'                       => '',
                 'STORE_STATE'                      => '',

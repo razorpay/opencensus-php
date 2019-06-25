@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -62,6 +63,56 @@ class Service extends Base\Service
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         return $account->toArrayPublic();
+    }
+  
+    public function storeCredentials(string $id, array $input)
+    {
+        $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
+
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
+            [
+                'id'        => $id,
+                'channel'   => $channel
+            ]);
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+                // Here 3 API calls are being made, if any of the call fails or for some reason we are
+                // not able to persist the response, we will ask the merchant to enter his credentials
+                // again and make the 3 calls. Later we can separate these calls and have some retry logic
+                // at our end.
+
+                try
+                {
+                    $this->core->createMerchantTokenForRbl($bankingAccount, $input);
+
+                    $fundAccountId = $this->core->createOrFetchFtsFundAccountForMerchant($bankingAccount);
+
+                    $this->core->createMerchantSourceAccountForRbl($bankingAccount, $fundAccountId);
+
+                    $this->core->updateAccountToProcessed($bankingAccount);
+
+                    $success = true;
+                }
+                catch (\Throwable $ex)
+                {
+                    $success = false;
+
+                    $this->trace->traceException($ex, Trace::CRITICAL);
+                }
+
+                break;
+
+            default:
+                $this->throwUnhandledChannelException($channel, $input);
+
+        }
+
+        return ['success' => $success];
     }
 
     public function addOrRemoveServiceablePincodes(array $input, $channel)
