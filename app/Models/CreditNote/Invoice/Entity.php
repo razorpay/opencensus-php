@@ -8,19 +8,19 @@ use RZP\Models\Payment\Refund;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const CUSTOMER_ID       = 'customer_id';
-    const CREDITNOTE_ID     = 'creditnote_id';
-    const INVOICE_ID        = 'invoice_id';
-    const AMOUNT            = 'amount';
-    const REFUND_ID         = 'refund_id';
-    const STATUS            = 'status';
+    const ID            = 'id';
+    const MERCHANT_ID   = 'merchant_id';
+    const CUSTOMER_ID   = 'customer_id';
+    const CREDITNOTE_ID = 'creditnote_id';
+    const INVOICE_ID    = 'invoice_id';
+    const AMOUNT        = 'amount';
+    const REFUND_ID     = 'refund_id';
+    const STATUS        = 'status';
 
-    const CREATED_AT        = 'created_at';
-    const UPDATED_AT        = 'updated_at';
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
 
-    const STATUS_REFUNDED   = 'refunded';
+    const STATUS_REFUNDED = 'refunded';
 
     protected $entity = 'creditnote_invoice';
 

@@ -34,7 +34,7 @@ class ViewDataSerializer extends Base\Core
         {
             $invoiceId = $creditNoteInvoice->getPublicInvoiceId();
 
-            if(isset($invoiceSerialized[$invoiceId]) === false)
+            if (isset($invoiceSerialized[$invoiceId]) === false)
             {
                 $invoiceSerialized[$invoiceId] = [];
             }
@@ -47,11 +47,9 @@ class ViewDataSerializer extends Base\Core
 
         foreach ($invoiceSerialized as $key => $row)
         {
-            $serializedForPublic[Entity::INVOICES][] = [Entity::INVOICE_ID => $key , 'refunds' => $row];
+            $serializedForPublic[Entity::INVOICES][] = [Entity::INVOICE_ID => $key, 'refunds' => $row];
         }
 
         return $serializedForPublic;
     }
-
-
 }

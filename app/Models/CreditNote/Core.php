@@ -15,21 +15,20 @@ use RZP\Models\Payment\Processor\Processor;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\CreditNote\Invoice as creditNoteInvoice;
 
-
-
 class Core extends Base\Core
 {
     public function create(Merchant\Entity $merchant, array $input): Entity
     {
-        $customer_id = $input[Entity::CUSTOMER_ID];
 
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($customer_id, $merchant);
+        (new Validator)->validateInput("pre_create", $input);
+
+        $customerId = $input[Entity::CUSTOMER_ID];
+
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
 
         $this->checkForSubscription($input, $customer);
 
         $creditnote = (new Entity)->build($input);
-
-        $this->fillNecessaryFields($creditnote, $input);
 
         $creditnote->merchant()->associate($merchant);
 
@@ -50,16 +49,11 @@ class Core extends Base\Core
             if ($subscription->getCustomerId() !== $customer->getId())
             {
                 throw new BadRequestValidationFailureException(
-                     ' Subscription customer id does not match '.$input[Entity::CUSTOMER_ID]);
+                    'Subscription customer id does not match ' . $input[Entity::CUSTOMER_ID]);
             }
 
             $input[Entity::SUBSCRIPTION_ID] = Subscription\Entity::stripDefaultSign($input[Entity::SUBSCRIPTION_ID]);
         }
-    }
-
-    protected function fillNecessaryFields(Entity $creditNote, array $input)
-    {
-        $creditNote->setAmountAvailable($creditNote->getAmount());
     }
 
     public function apply(Entity $creditNote, Merchant\Entity $merchant, array $input): Entity
@@ -70,10 +64,10 @@ class Core extends Base\Core
         {
             $this->validateCreditNoteAmountAvailable($creditNote, $input[Entity::INVOICES]);
 
-            $this->validateInvoicesAndPayments( $input[Entity::INVOICES], $merchant, $creditNote);
+            $this->validateInvoicesAndPayments($input[Entity::INVOICES], $merchant, $creditNote);
         }
-        return $creditNote;
 
+        return $creditNote;
     }
 
     protected function validateCreditNoteAmountAvailable(Entity $creditNote, array $input)
@@ -103,7 +97,7 @@ class Core extends Base\Core
     }
 
 
-    protected function validateInvoiceAndRefundAmount(array $row, Merchant\Entity $merchant,Entity $creditNote)
+    protected function validateInvoiceAndRefundAmount(array $row, Merchant\Entity $merchant, Entity $creditNote)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($row[Entity::INVOICE_ID], $merchant);
 
@@ -143,7 +137,7 @@ class Core extends Base\Core
             if ($invoice->getSubscriptionId() !== $creditNote->getSubscriptionId())
             {
                 throw new BadRequestValidationFailureException(
-                    Entity::SUBSCRIPTION . ' does not match with the invoice '.$invoice->getPublicId());
+                    Entity::SUBSCRIPTION . ' does not match with the invoice ' . $invoice->getPublicId());
             }
         }
     }
@@ -160,7 +154,7 @@ class Core extends Base\Core
 
         foreach ($payments as $payment)
         {
-            $totalPayments +=  $payment->getAmount();
+            $totalPayments += $payment->getAmount();
         }
 
         if ($refundAmount > $totalPayments)
@@ -181,8 +175,7 @@ class Core extends Base\Core
         Invoice\Entity $invoice)
     {
         $this->repo->transaction(
-            function() use ($payments, $creditNote, $merchant, $invoice, $refundAmount)
-            {
+            function() use ($payments, $creditNote, $merchant, $invoice, $refundAmount) {
                 $paymentProcessor = new Processor($merchant);
 
                 foreach ($payments as $payment)
@@ -222,11 +215,13 @@ class Core extends Base\Core
             creditNoteInvoice\Entity::AMOUNT => $refund->getAmount(),
         ];
 
-        $creditNoteInvoiceCore  = (new creditNoteInvoice\Core());
+        $creditNoteInvoiceCore = (new creditNoteInvoice\Core());
 
         $creditNoteInvoiceCore->create($input, $refund, $creditNote, $merchant, $invoice);
 
         $creditNote->calculateAndSetAmountRefundedAndAvailable($refund->getAmount());
+
+        $creditNote->setAppropriateStatus();
 
         $this->repo->saveOrFail($creditNote);
     }

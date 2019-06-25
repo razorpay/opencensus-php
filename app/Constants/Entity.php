@@ -106,7 +106,6 @@ class Entity
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
     const MERCHANT_INVOICE          = 'merchant_invoice';
     const CREDITNOTE_INVOICE        = 'creditnote_invoice';
-    const CREDITNOTEINVOICE         = 'creditnote_invoice';
     const NODAL_BENEFICIARY         = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS         = 'payment_analytics';
     const SETTLEMENT_DETAILS        = 'settlement_details';

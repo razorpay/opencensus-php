@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\CreditNote\Entity;
+use RZP\Models\CreditNote\Status;
 
 class CreateCreditNoteTable extends Migration
 {
@@ -47,6 +48,9 @@ class CreateCreditNoteTable extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
+            $table->string(Entity::STATUS, 24)
+                  ->default(Status::CREATED);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
@@ -58,6 +62,8 @@ class CreateCreditNoteTable extends Migration
             $table->index(Entity::SUBSCRIPTION_ID);
 
             $table->index(Entity::CREATED_AT);
+
+            $table->index(Entity::STATUS);
         });
     }
 

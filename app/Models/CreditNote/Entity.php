@@ -12,34 +12,30 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const MERCHANT_ID       = 'merchant_id';
-    const CUSTOMER_ID       = 'customer_id';
-    const SUBSCRIPTION_ID   = 'subscription_id';
-    const NAME              = 'name';
-    const DESCRIPTION       = 'description';
-    const AMOUNT            = 'amount';
-    const AMOUNT_AVAILABLE  = 'amount_available';
-    const AMOUNT_REFUNDED   = 'amount_refunded';
-    const AMOUNT_ALLOCATED  = 'amount_allocated';
-    const CURRENCY          = 'currency';
+    const MERCHANT_ID      = 'merchant_id';
+    const CUSTOMER_ID      = 'customer_id';
+    const SUBSCRIPTION_ID  = 'subscription_id';
+    const NAME             = 'name';
+    const DESCRIPTION      = 'description';
+    const AMOUNT           = 'amount';
+    const AMOUNT_AVAILABLE = 'amount_available';
+    const AMOUNT_REFUNDED  = 'amount_refunded';
+    const AMOUNT_ALLOCATED = 'amount_allocated';
+    const CURRENCY         = 'currency';
+    const STATUS           = 'status';
 
-    const ACTION = 'action';
-
-    const INVOICES = 'invoices';
-
-    const INVOICE_ID = 'invoice_id';
-
-
-
+    const ACTION       = 'action';
+    const INVOICES     = 'invoices';
+    const INVOICE_ID   = 'invoice_id';
     const SUBSCRIPTION = 'subscription';
+
+
 
     protected $entity = 'creditnote';
 
     protected $generateIdOnCreate = true;
 
     protected static $sign = 'crnt';
-
-
 
     protected $visible = [
         self::ID,
@@ -68,6 +64,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::AMOUNT_REFUNDED  => 0,
         self::AMOUNT_ALLOCATED => 0,
+        self::STATUS           => Status::CREATED,
     ];
 
     protected $public = [
@@ -99,6 +96,9 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
     ];
 
+    protected static $generators = [
+        self::AMOUNT_AVAILABLE,
+    ];
 
     public function merchant()
     {
@@ -120,7 +120,6 @@ class Entity extends Base\PublicEntity
      * implementing a morphMany association on the
      * 'source' key
      */
-
 
     public function getAmount()
     {
@@ -162,11 +161,31 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
     }
 
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
     public function calculateAndSetAmountRefundedAndAvailable($refundedAmount)
     {
         $this->setAmountAvailable($this->getAmountAvailable() - $refundedAmount);
 
         $this->setAmountRefunded($this->getAmountRefunded() + $refundedAmount);
+    }
+
+    public function setAppropriateStatus()
+    {
+        if ($this->getAmountAvailable() === 0)
+        {
+            $this->setStatus(Status::PRCOESSED);
+        }
+
+        if (($this->getAmountAvailable() > 0 === true) and
+            ($this->getAmountAvailable() < $this->getAmount() === true))
+        {
+            $this->setStatus(Status::PARTIALLY_PROCESSED);
+        }
+
     }
 
     protected function setPublicSubscriptionIdAttribute(array & $array)
@@ -184,5 +203,10 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
+    }
+
+    protected function generateAmountAvailable(array $input)
+    {
+        $this->setAttribute(self::AMOUNT_AVAILABLE, $input[self::AMOUNT]);
     }
 }

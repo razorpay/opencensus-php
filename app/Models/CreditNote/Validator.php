@@ -12,16 +12,25 @@ use RZP\Constants\Entity as PublicEntity;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::CUSTOMER_ID => 'required|public_id|size:19',
+        Entity::CUSTOMER_ID     => 'required|public_id|size:19',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|size:14|nullable',
-        Entity::NAME        => 'required|string|max:255',
-        Entity::DESCRIPTION => 'sometimes|string|max:2048',
-        Entity::AMOUNT      => 'required|mysql_unsigned_int|min_amount',
-        Entity::CURRENCY    => 'required|currency',
+        Entity::NAME            => 'required|string|max:255||utf8',
+        Entity::DESCRIPTION     => 'sometimes|string|max:2048|utf8',
+        Entity::AMOUNT          => 'required|mysql_unsigned_int|min_amount',
+        Entity::CURRENCY        => 'required|currency',
+    ];
+
+    protected static $preCreateRules = [
+        Entity::CUSTOMER_ID     => 'required|public_id|size:19',
+        Entity::SUBSCRIPTION_ID => 'sometimes|public_id|size:18|nullable',
+        Entity::NAME            => 'required|string|max:255|utf8',
+        Entity::DESCRIPTION     => 'sometimes|string|max:2048|utf8',
+        Entity::AMOUNT          => 'required|mysql_unsigned_int|min_amount',
+        Entity::CURRENCY        => 'required|currency',
     ];
 
     protected static $applyRules = [
-        Entity::ACTION =>  'required|string|max:20|in:refund',
+        Entity::ACTION   =>  'required|string|max:20|in:refund',
         Entity::INVOICES => 'required|sequential_array|min:1|custom',
     ];
 
@@ -61,5 +70,4 @@ class Validator extends Base\Validator
             $this->validateInputValues('min_amount_check', $inputAmount);
         }
     }
-
 }
