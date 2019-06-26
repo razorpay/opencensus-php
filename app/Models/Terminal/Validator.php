@@ -1162,7 +1162,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function matchGatewayForNewTerminal($new, $existing)
+    protected function matchGatewayForNewTerminal(Entity $new, Entity $existing)
     {
         // If 1 exists, then another should not be added for the same gateway for same emi periods
         if (($new->getGateway() === $existing->getGateway()) and
@@ -1174,7 +1174,8 @@ class Validator extends Base\Validator
             ($new->getCurrency() === $existing->getCurrency()) and
             ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
             ($new->getCategory() === $existing->getCategory()) and
-            ($new->getEmiSubvention() === $existing->getEmiSubvention()))
+            ($new->getEmiSubvention() === $existing->getEmiSubvention()) and
+            ($new->isInternational() === $existing->isInternational()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
