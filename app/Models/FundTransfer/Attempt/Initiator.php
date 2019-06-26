@@ -3,12 +3,14 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
-
 use Monolog\Logger;
+use App\Trace\Trace;
+
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\FundTransfer;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
@@ -17,7 +19,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
-use \RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
@@ -61,11 +63,15 @@ class Initiator extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, self::FTA_PURPOSE);
 
+        $purpose ='';
+
         if ($channel === Channel::YESBANK)
         {
             if ((isset($input[Entity::PURPOSE]) === true) and (Purpose::isValid($input[Entity::PURPOSE])))
             {
                 $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE]);
+
+                $purpose = $input[Entity::PURPOSE];
             }
             else
             {
@@ -83,11 +89,11 @@ class Initiator extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
-            function() use ($input, $channel)
+            function() use ($input, $channel, $purpose)
             {
                 RuntimeManager::setMemoryLimit('1024M');
 
-                return $this->processBankTransfers($input, $channel);
+                return $this->processBankTransfers($input, $channel, $purpose);
             },
             $mutexTimeout,
             ErrorCode::BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS);
@@ -96,13 +102,14 @@ class Initiator extends Base\Core
     /**
      * @param array $input
      * @param string $channel
+     * @param string $purpose
      * @return array
      */
-    protected function processBankTransfers(array $input, string $channel): array
+    protected function processBankTransfers(array $input, string $channel, string $purpose): array
     {
         $this->trace->info(TraceCode::FTA_PROCESS_BEGIN);
 
-        return $this->repo->transaction(function() use ($input, $channel)
+        return $this->repo->transaction(function() use ($input, $channel, $purpose)
         {
             (new Validator)->validateInput('initiate_fund_transfer', $input);
 
@@ -137,8 +144,18 @@ class Initiator extends Base\Core
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_ENTITIES_FETCHED);
 
-            $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
+            $data[$channel] = 0;
 
+            if (($channel === Channel::YESBANK) and ($purpose === Purpose::SETTLEMENT))
+            {
+                $attemptIds = $attempts->pluck(Entity::ID);
+
+                return $this->dispatchTransfersForSettlement($channel, $attemptIds, $data);
+            }
+            else
+            {
+                $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
+            }
             return $data;
         });
     }
@@ -451,5 +468,31 @@ class Initiator extends Base\Core
         }
 
         return [true, null];
+    }
+
+    protected function dispatchTransfersForSettlement(string $channel, array $attemptIds, array $data)
+    {
+        foreach ($attemptIds as $id)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT,  $data);
+
+                FundTransfer::dispatch($this->mode, $id);
+
+                $data[$channel]++;
+
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::CRITICAL,
+                    TraceCode::FTA_TRANSFER_DISPATCH_FAILED
+                );
+            }
+        }
+        return $data;
     }
 }
