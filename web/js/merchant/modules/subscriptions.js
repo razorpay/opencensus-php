@@ -19,7 +19,9 @@ const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
 const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
 
 export const fetchSubscriptionCreditNotes = id => {
-  return merchantFetch(`creditnote?subscription_id=${id}`);
+  return merchantFetch(
+    `creditnote?subscription_id=${id}&status[]=processed&status[]=partially_processed`
+  );
 };
 
 export const fetchSubscriptions = params =>

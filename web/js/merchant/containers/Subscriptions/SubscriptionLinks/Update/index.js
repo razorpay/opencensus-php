@@ -117,7 +117,6 @@ export default class UpdateSubscription extends React.Component {
       })
       .then(this.initUpdateSubscription)
       .catch(({ errors }) => {
-        console.log(errors);
         this.setState({
           isLoading: false,
         });
@@ -232,6 +231,7 @@ export default class UpdateSubscription extends React.Component {
         .startOf('day')
         .format('X')
     );
+
     const target = {
       name: fieldName,
       value: current + time,
@@ -308,12 +308,12 @@ export default class UpdateSubscription extends React.Component {
 
   renderForm = () => {
     const {
-      prevSubscription,
       fields,
+      currency,
       internals,
       isLoading,
       currentTab,
-      currency,
+      prevSubscription,
     } = this.state;
 
     if (isLoading) {
@@ -432,14 +432,18 @@ export default class UpdateSubscription extends React.Component {
   render() {
     const isModalView = this.props.onClose;
 
-    return isModalView ? (
-      <Modal
-        class="UpdateSubscriptionLink animate-down"
-        onClose={this.props.onClose}
-      >
-        <ModalContent>{this.renderWizard({ isModalView })}</ModalContent>
-      </Modal>
-    ) : (
+    if (isModalView) {
+      return (
+        <Modal
+          class="UpdateSubscriptionLink animate-down"
+          onClose={this.props.onClose}
+        >
+          <ModalContent>{this.renderWizard({ isModalView })}</ModalContent>
+        </Modal>
+      );
+    }
+
+    return (
       <div class="StandAloneContainer">
         {this.renderWizard({ isModalView })}
       </div>
