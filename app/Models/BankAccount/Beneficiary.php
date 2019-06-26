@@ -370,6 +370,13 @@ class Beneficiary extends Base\Core
      */
     public function registerBeneficiaryOnChannelAndGetStatus(string $channel, Entity $bankAccount): bool
     {
+        $status = $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
+
+        if ($status === true)
+        {
+            return $status;
+        }
+
         $data = [
             'bank_account_id'  => $bankAccount->getId(),
             'channel'          => $channel,
@@ -452,11 +459,11 @@ class Beneficiary extends Base\Core
     protected function checkBeneficiaryVerificationStatus($bankAccount, $channel): bool
     {
         $nodalBeneficiary = $this->repo
-            ->nodal_beneficiary
-            ->fetchActivatedBeneficiaryDetailsForChannel(
-                $bankAccount->getId(),
-                $channel
-            );
+                                 ->nodal_beneficiary
+                                 ->fetchActivatedBeneficiaryDetailsForChannel(
+                                     $bankAccount->getId(),
+                                     $channel
+                                 );
 
         $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
 

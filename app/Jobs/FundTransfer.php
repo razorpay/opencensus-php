@@ -98,50 +98,16 @@ class FundTransfer extends Job
                     return;
                 }
 
-                $beneficiaryEntity = $this->repoManager
-                                          ->nodal_beneficiary
-                                          ->fetchActivatedBeneficiaryDetailsForChannel(
-                                              $bankAccount->getId(),
-                                              $channel);
+                $beneficiaryVerified = (new Beneficiary)->verifyBeneficiaryOnChannelAndGetStatus($channel, $bankAccount);
 
-                //
-                // using updated at here as bene registration status will keep on updating until it reached `registered` state
-                //
-                $updatedAtWithOffset = $beneficiaryEntity->getUpdatedAt() + 60;
-
-                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
-
-                // check if the entity is older than 60 sec
-                if ($updatedAtWithOffset > $currentTime)
+                if ($beneficiaryVerified === false)
                 {
-                    //
-                    // delaying the transfer only if bene registration is done in this flow
-                    //
-                    $delayTransfer = true;
+                    (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel, $this->ftaId);
+
+                    $this->logAndDelete($data);
+
+                    return;
                 }
-            }
-
-            //
-            // Bene registration form YB requires some time (Max observed is 45 sec)
-            // Because of this we are adding delay of 60 sec, in case we do bene registration in this flow.
-            // TODO: remove this code once verify bene feature is in place
-            //
-            if ($delayTransfer === true)
-            {
-                $this->logAndDelete($data, TraceCode::FTA_TRANSFER_JOB_DELAYED, true);
-
-                return;
-            }
-
-            $beneficiaryVerified = (new Beneficiary)->verifyBeneficiaryOnChannelAndGetStatus($channel, $bankAccount);
-
-            if ($beneficiaryVerified === false)
-            {
-                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel, $this->ftaId);
-
-                $this->logAndDelete($data);
-
-                return;
             }
 
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
