@@ -8,14 +8,14 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    protected static $preCreateRules = [
+    protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
 
     protected static $createRules = [
         Entity::CHANNEL => 'required|string|custom',
+        Entity::STATUS  => 'required|in:created',
         Entity::PINCODE => 'required_if:channel,rbl',
-        Entity::STATUS  => 'required|custom',
     ];
 
     protected static $editRules = [
@@ -23,9 +23,9 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
         Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
         Entity::STATUS                          => 'filled|string|custom',
-        Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
+        Entity::BANK_REFERENCE_NUMBER           => 'filled|string',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
-        Entity::PINCODE                         => 'filled|integer|digits:6',
+        Entity::BENEFICIARY_PIN                 => 'filled|integer|digits:6',
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
         Entity::BENEFICIARY_STATE               => 'filled|string',

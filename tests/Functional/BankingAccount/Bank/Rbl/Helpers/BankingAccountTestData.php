@@ -28,7 +28,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'channel' => 'rbl',
-                'pincode' => '899090',
+                'pincode' => '462016',
             ],
         ],
         'response' => [
@@ -44,7 +44,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The pincode field is required when channel is rbl.',
+                    'description' => 'The pincode field is required.',
                 ],
             ],
             'status_code' => 400,
@@ -98,6 +98,21 @@ return [
                         'TranID' => '12345'
                     ]
                 ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
 
     'testStoreMerchantCredentials' => [
         'request'  => [
@@ -156,6 +171,56 @@ return [
         ],
     ],
 
+    'testUpdateAccountOpeningInfoWebhookDetailsForMissedWebhook' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS                           => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::BANK_INTERNAL_STATUS             => BankingAccount\Gateway\Rbl\Status::CLOSED,
+                BankingAccount\Entity::ACCOUNT_IFSC                     => 'HDFC0000090',
+                BankingAccount\Entity::ACCOUNT_NUMBER                   => '309002180853',
+                BankingAccount\Entity::BENEFICIARY_NAME                 => 'INTERNET BANKING CA',
+                BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER   => 'random',
+                BankingAccount\Entity::BANK_REFERENCE_NUMBER            => 'tobefilled',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS1             => 'RAM NAGAR',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS2             => 'ADARSHA LANE',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS3             => '.',
+                BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE          => '2019-06-22',
+                BankingAccount\Entity::BENEFICIARY_CITY                 => 'MUMBAI',
+                BankingAccount\Entity::BENEFICIARY_STATE                => 'MAHARASH',
+                BankingAccount\Entity::BENEFICIARY_COUNTRY              => 'INDIA',
+                BankingAccount\Entity::BENEFICIARY_MOBILE               => '9899807189',
+                BankingAccount\Entity::BENEFICIARY_EMAIL                => 'test@gmail.com',
+                BankingAccount\Entity::BENEFICIARY_PIN                  => '560030',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+                'bank_internal_status' => 'closed',
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountToUnserviceable' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                 BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
+            ],
+        ],
+    ],
+
     'testStoreMerchantCredentialsFailed' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/credentials',
@@ -168,7 +233,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'success' => false,
             ]
         ],
     ],
@@ -178,7 +243,7 @@ return [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
-                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::STATUS               => BankingAccount\Status::PROCESSED,
                 BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\Gateway\Rbl\Status::CLOSED
             ],
         ],
@@ -187,7 +252,6 @@ return [
                 'merchant_id' => '10000000000000',
                 'channel'     => 'rbl',
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
-                'success' => false,
             ],
         ],
     ],

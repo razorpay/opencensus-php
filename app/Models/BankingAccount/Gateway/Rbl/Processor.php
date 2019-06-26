@@ -6,29 +6,22 @@ use Carbon\Carbon;
 
 use RZP\Models\BankingAccount;
 
-class Gateway extends BankingAccount\Gateway\Base
+class Processor extends BankingAccount\Gateway\Processor
 {
     const DATE_FORMAT = 'Y-m-d';
 
     const PINCODES_REDIS_KEY = 'rbl_pincode_set';
 
-    public function preProcessAccountInfoNotification(array $input): string
+    public function preProcessAccountInfoNotification(array $input)
     {
-        $validator = new Validator;
-
-        $validator->validateInput(Validator::PRE_ACCOUNT_INFO_WEBHOOK, $input);
+        (new Validator)->validateInput(Validator::PRE_ACCOUNT_INFO_WEBHOOK, $input);
 
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
-        $validator->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $input);
-
-        // returning the reference field to uniquely identify account BankingAccount\Entity
-        $bankReferenceNumber = $input[Fields::REF_NUM_1];
-
-        return $bankReferenceNumber;
+        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $input);
     }
 
-    public function processAccountInfoNotification(array $input)
+    public function processAccountInfoNotification(array $input): array
     {
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
@@ -40,6 +33,8 @@ class Gateway extends BankingAccount\Gateway\Base
         $attributes[BankingAccount\Entity::STATUS] = BankingAccount\Status::PROCESSED;
 
         $attributes[BankingAccount\Entity::BANK_INTERNAL_STATUS] = Status::CLOSED;
+
+        $attributes[BankingAccount\Entity::BANK_REFERENCE_NUMBER] = $input[Fields::REF_NUM_1];
 
         return $attributes;
     }
@@ -71,11 +66,20 @@ class Gateway extends BankingAccount\Gateway\Base
         return $response;
     }
 
-    public function validateAccountDetailsBeforeUpdating(array $input)
+    public function validateAccountBeforeUpdating(array $input)
     {
-        (new Validator)->validateInput(Validator::ACCOUNT_UPDATE, $input);
+        $keys = [
+            BankingAccount\Entity::BANK_INTERNAL_STATUS,
+            BankingAccount\Entity::STATUS,
+            BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER,
+            BankingAccount\Entity::BANK_REFERENCE_NUMBER,
+        ];
 
-        $this->checkRblToInternalStatusMapping($input);
+        $attributes = array_only($input, $keys);
+
+        (new Validator)->validateInput(Validator::ACCOUNT_UPDATE, $attributes);
+
+        $this->checkRblToInternalStatusMapping($attributes);
     }
 
     protected function validateInputForAccountCreation(array $input)

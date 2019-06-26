@@ -17,7 +17,7 @@ class Channel
         return ((defined($key) === true) and (constant($key) === $channel));
     }
 
-    public static function validateChannel($channel)
+    public static function validateChannel(string $channel = null)
     {
         if (self::isValid($channel) === false)
         {

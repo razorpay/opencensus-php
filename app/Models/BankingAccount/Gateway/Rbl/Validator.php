@@ -3,7 +3,9 @@
 namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use RZP\Base;
+use RZP\Models\Pincode;
 use RZP\Models\BankingAccount\Entity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -11,6 +13,11 @@ class Validator extends Base\Validator
     const PRE_ACCOUNT_INFO_WEBHOOK    = 'pre_account_info_webhook';
     const ACCOUNT_UPDATE              = 'account_update';
     const ACCOUNT_AVAILABILITY        = 'availability';
+
+    protected static $availabilityRules = [
+        Entity::CHANNEL => 'required|string|in:rbl',
+        Entity::PINCODE => 'required|custom',
+    ];
 
     protected static $preAccountInfoWebhookRules = [
         Fields::RZP_ALERT_NOTIFICATION_REQUEST                                                  => 'required',
@@ -20,7 +27,7 @@ class Validator extends Base\Validator
 
     protected static $accountInfoWebhookRules = [
         Fields::ACCT_NAME       => 'required|string',
-        Fields::FORACID         => 'required|string',
+        Fields::FORACID         => 'required|string|max:40',
         Fields::IFSC            => 'required|alpha_num|size:11',
         Fields::PINCODE         => 'required|integer|digits:6',
         Fields::ADDR_1          => 'required|string',
@@ -37,28 +44,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $accountUpdateRules = [
-        Entity::ACCOUNT_NUMBER                  => 'required_with:account_ifsc|max:40',
-        Entity::ACCOUNT_IFSC                    => 'required_with:account_number|size:11',
         Entity::STATUS                          => 'filled|string|custom',
         Entity::BANK_INTERNAL_STATUS            => 'required_if:status,processing,processed,cancelled|string|custom',
         Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
-        Entity::PINCODE                         => 'filled|integer|digits:6',
-        Entity::BENEFICIARY_CITY                => 'filled|string',
-        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
-        Entity::BENEFICIARY_STATE               => 'filled|string',
-        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|string|date',
-        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
-        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
-        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
-        Entity::BENEFICIARY_NAME                => 'filled|string',
-        Entity::BENEFICIARY_MOBILE              => 'filled|string',
-        Entity::BENEFICIARY_EMAIL               => 'filled|string',
-    ];
-
-    protected static $availabilityRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
-        Entity::PINCODE => 'required_if:channel,rbl',
     ];
 
     protected function validateStatus(string $attribute, string $status = null)
@@ -69,5 +58,21 @@ class Validator extends Base\Validator
     protected function validateBankInternalStatus(string $attribute, string $bankInternalStatus = null)
     {
         Status::validate($bankInternalStatus);
+    }
+
+    protected function validatePincode(string $attribute, string $pincode)
+    {
+        $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
+
+        if ($pincodeValidator->validate($pincode) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Pincode is not valid',
+                Entity::PINCODE,
+                [
+                    Entity::PINCODE => $pincode,
+                ]
+            );
+        }
     }
 }

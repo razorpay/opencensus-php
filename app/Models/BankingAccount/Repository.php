@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
+use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
@@ -14,5 +15,13 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->firstOrFail();
+    }
+
+    public function getBankingAccountOfMerchant(Merchant\Entity $merchant, string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->first();
     }
 }

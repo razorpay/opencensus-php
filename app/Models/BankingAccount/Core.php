@@ -27,9 +27,21 @@ class Core extends Base\Core
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
     {
-        // TODO: Validate if account does not already exist for the merchant
+        (new Validator)->setStrictFalse()->validateInput('pre_process', $input);
 
         $channel = $input[Entity::CHANNEL];
+
+        // Currently we are just checking if there exists even one account of the merchant for the selected
+        // channel. If we find any such account we will just return the account and wont create a new one.
+        // But later when a merchant will start having more than one current account in the same channel
+        // this logic will have to be handled.
+
+        $bankingAccount = $this->repo->banking_account->getBankingAccountOfMerchant($merchant, $channel);
+
+        if ($bankingAccount !== null)
+        {
+            return $bankingAccount;
+        }
 
         $processor = $this->getProcessor($channel);
 
@@ -50,15 +62,18 @@ class Core extends Base\Core
 
     public function processAccountInfoWebhook(string $channel, array $input)
     {
+        Channel::validate($channel);
+
         $processor = $this->getProcessor($channel);
 
         try
         {
-            $reference = $processor->preProcessAccountInfoNotification($input);
+            $processor->preProcessAccountInfoNotification($input);
 
             $attributes = $processor->processAccountInfoNotification($input);
 
-            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel($reference, $channel);
+            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel(
+                                                                $attributes[Entity::BANK_REFERENCE_NUMBER], $channel);
 
             $this->updateBankingAccount($bankingAccount, $attributes);
 
@@ -72,13 +87,13 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function updateBankingAccount(Entity $bankingAccount, array $input)
+    public function  updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
 
         $processor = $this->getProcessor($channel);
 
-        $processor->validateAccountDetailsBeforeUpdating($input);
+        $processor->validateAccountBeforeUpdating($input);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
@@ -274,11 +289,11 @@ class Core extends Base\Core
         }
     }
 
-    protected function getProcessor(string $channel): Gateway\Base
+    protected function getProcessor(string $channel): Gateway\Processor
     {
         $processor = __NAMESPACE__ . '\\' . 'Gateway';
 
-        $processor .= '\\' . studly_case($channel) . '\\' . 'Gateway';
+        $processor .= '\\' . studly_case($channel) . '\\' . 'Processor';
 
         return new $processor();
     }

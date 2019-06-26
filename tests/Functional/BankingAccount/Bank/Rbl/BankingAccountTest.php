@@ -29,6 +29,17 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateBankingAccountTwiceForSameMerchant()
+    {
+        $testData = $this->testData['testCreateBankingAccount'];
+
+        $bankingAccount = $this->startTest($testData);
+
+        $bankingAccountTwo = $this->startTest($testData);
+
+        $this->assertEquals($bankingAccount['id'], $bankingAccountTwo['id']);
+    }
+
     public function testCreateBankingAccountWithUnserviceablePincode()
     {
         $this->startTest();
@@ -54,7 +65,7 @@ class BankingAccountTest extends TestCase
         });
     }
 
-    public function testSuccessBankAccountInfoNotification()
+    public function testSuccessBankAccountInfoNotification(string $id = null)
     {
         $attribute =
             [
@@ -70,9 +81,11 @@ class BankingAccountTest extends TestCase
 
         $this->testCreateBankingAccount();
 
-        $this->ba->privateAuth('rzp_test', 'rbl_secret');
-
         $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('created', $bankingAccount->getStatus());
+
+        $this->ba->privateAuth('rzp_test', 'rbl_secret');
 
         $dataToReplace = [
             'request' => [
@@ -85,6 +98,55 @@ class BankingAccountTest extends TestCase
                 ]
             ]
         ];
+
+        return $this->startTest($dataToReplace);
+    }
+
+    public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
+    {
+        $response = $this->testFailedBankAccountInfoNotification();
+
+        $this->assertEquals('Failure', $response['RZPAlertNotiRes']['Body']['Status']);
+
+        $response = $this->testSuccessBankAccountInfoNotification();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('processed', $bankingAccount->getStatus());
+
+        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
+    }
+
+    public function testFailedBankAccountInfoNotification()
+    {
+        $this->ba->privateAuth('rzp_test', 'rbl_secret');
+
+        return $this->startTest();
+    }
+
+    public function testUpdateAccountOpeningInfoWebhookDetailsForMissedWebhook()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->createBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_account/' . $bankingAccount->getPublicId(),
+                'content' => [
+                    'bank_reference_number' => $bankingAccount->getBankReferenceNumber(),
+                ],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
     }
@@ -118,13 +180,6 @@ class BankingAccountTest extends TestCase
         });
     }
 
-    public function testFailedBankAccountInfoNotification()
-    {
-        $this->ba->privateAuth('rzp_test', 'rbl_secret');
-
-        $this->startTest();
-    }
-
     public function testUpdateBankingAccount()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -150,6 +205,46 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateBankingAccountToUnserviceable()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_account/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::UNSERVICEABLE, $bankingAccount->getStatus());
+    }
+
+    public function testUpdateBankingAccountToInitiated()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_account/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::INITIATED, $bankingAccount->getStatus());
     }
 
     public function testStoreMerchantCredentialsFailed()

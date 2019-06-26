@@ -20,15 +20,10 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        (new Validator)->setStrictFalse()->validateInput('pre_create', $input);
-
-        $channel = $input[Entity::CHANNEL];
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
-                'channel'            => $channel,
-                'input'              => $input,
+                'input' => $input,
             ]);
 
         $account = $this->core->createBankingAccount($input, $this->merchant);
@@ -141,8 +136,6 @@ class Service extends Base\Service
                 'input'         => $input,
                 'gateway'       => $channel,
             ]);
-
-        Channel::validateChannel($channel);
 
         $response = $this->core->processAccountInfoWebhook($channel, $input);
 

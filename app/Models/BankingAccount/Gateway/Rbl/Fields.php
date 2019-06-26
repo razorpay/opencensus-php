@@ -39,7 +39,7 @@ class Fields
       self::CITY                    => Entity::BENEFICIARY_CITY,
       self::STATE                   => Entity::BENEFICIARY_STATE,
       self::COUNTRY                 => Entity::BENEFICIARY_COUNTRY,
-      self::PINCODE                 => Entity::PINCODE,
+      self::PINCODE                 => Entity::BENEFICIARY_PIN,
       self::ACTIVATION_DATE         => Entity::ACCOUNT_ACTIVATION_DATE,
       self::REF_NUM_1               => Entity::BANK_REFERENCE_NUMBER,
       self::EMAIL_ID                => Entity::BENEFICIARY_EMAIL,
