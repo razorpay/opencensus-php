@@ -121,8 +121,7 @@ trait RequestHandlerTrait
 
         $date = $paymentDate->format('md');
 
-        // Random 6 digit number
-        $systemTraceAuditNumber = sprintf('%06d', mt_rand(1, 999999));
+        $systemTraceAuditNumber = $this->generateStan();
 
         // In UAT they want us to pass 6012
         $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
@@ -487,4 +486,26 @@ trait RequestHandlerTrait
         return $xmlResponseArray;
     }
     //---------------- Soap Request related functions end --------------------
+
+    // Used to generate the system trace audit number
+    // This needs to be a unique value for all the transactions happening in an hour.
+    // So, we use the redis INCR function which acts as a counter and set it's expiry to 1 hour
+    protected function generateStan()
+    {
+        $currentValue = $this->app['cache']->store($this->secureCacheDriver)->get(self::GATEWAY_PAYSECURE_STAN_HOURLY);
+
+        if ($currentValue === null)
+        {
+            $currentValue = 1;
+
+            // Setting the initial value to 1 with ttl of 1 hour
+            $this->app['cache']->store($this->secureCacheDriver)->set(self::GATEWAY_PAYSECURE_STAN_HOURLY, $currentValue, 60);
+        }
+        else
+        {
+            $currentValue = $this->app['cache']->store($this->secureCacheDriver)->increment(self::GATEWAY_PAYSECURE_STAN_HOURLY);
+        }
+
+        return sprintf('%06d', $currentValue);
+    }
 }
