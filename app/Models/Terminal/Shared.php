@@ -73,6 +73,7 @@ class Shared
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_ICICI_TPV_TERMINAL             = '100UPIICTpvTml';
     const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';
     const UPI_RBL_RAZORPAY_TERMINAL          = '100UPIRBLTrmnl';
     const UPI_AXIS_TPV_RAZORPAY_TERMINAL     = '100UPIAXISTpvl';

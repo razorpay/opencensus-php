@@ -1618,9 +1618,15 @@ trait Authorize
         // Adding fee calculation as part of gateway input only if applicable
         $this->addFeeIfApplicable($payment, $gatewayInput);
 
-        if ($payment->hasOrder())
+        if ($payment->hasOrder() === true)
         {
             $gatewayInput['order'] = $payment->order->toArray();
+            $orderBankAccount = $payment->order->bankAccount;
+
+            if ($orderBankAccount !== null)
+            {
+                $gatewayInput['order']['bank_account'] = $orderBankAccount->toArray();
+            }
         }
 
         // modify account number in gateway input for some banks
