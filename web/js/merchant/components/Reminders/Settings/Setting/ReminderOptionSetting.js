@@ -2,9 +2,27 @@ import Button from 'component/Button';
 
 import { SelectField } from 'ui/Field';
 
-import AddToList from 'rzp/ui/AddToList';
+import ListAdder from 'rzp/ui/AddToList';
 
 export default class ReminderOptionSetting extends React.Component {
+  state = {};
+
+  onChange = id => e => {
+    this.setState({
+      [`${this.props.name}_${id}`]: e.target.value,
+    });
+  };
+
+  renderRemovableSelect = (props = {}) => {
+    return (
+      <RemovableSelect
+        {...props}
+        onChange={this.onChange(props.id)}
+        value={this.state[`${this.props.name}_${props.id}`]}
+      />
+    );
+  };
+
   render() {
     const {
       name,
@@ -28,11 +46,11 @@ export default class ReminderOptionSetting extends React.Component {
           {isExpiry ? 'For links with expiry' : 'For links without expiry'}
         </label>
 
-        <AddToList
-          AddButton={AddButton}
-          maxLength={maxSelections}
-          defaultData={DEFAULT_DATA}
-          ChildComponent={RemovableSelect}
+        <ListAdder
+          addButton={AddButton}
+          maxItems={maxSelections}
+          placeholderData={DEFAULT_DATA}
+          item={this.renderRemovableSelect}
         />
       </div>
     );
