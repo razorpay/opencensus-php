@@ -80,7 +80,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
             if ($attempt->hasCard() === true)
             {
-                if ($attempt->card->getType() === Type::CREDIT)
+                $iin = $attempt->card->iinRelation;
+
+                if (($iin !== null) and ($iin->getType() === Type::CREDIT))
                 {
                     $transfer->disableLogs();
                 }
@@ -95,7 +97,6 @@ class NodalAccount extends NodalBase\NodalAccount
                     continue;
                 }
             }
-
             try
             {
                 // Calling init will reset all the data of previous request
