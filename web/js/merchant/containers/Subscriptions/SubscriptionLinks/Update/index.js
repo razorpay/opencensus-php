@@ -347,10 +347,19 @@ export default class UpdateSubscription extends React.Component {
         );
       }
       case 1: {
-        const totalCount =
-          prevSubscription.total_count -
-          prevSubscription.paid_count +
-          fields.remaining_count;
+        let totalCount = prevSubscription.total_count;
+
+        if (prevSubscription.remaining_count !== fields.remaining_count) {
+          if (prevSubscription.remaining_count < fields.remaining_count) {
+            totalCount +=
+              fields.remaining_count - prevSubscription.remaining_count;
+          } else if (
+            prevSubscription.remaining_count > fields.remaining_count
+          ) {
+            totalCount -=
+              prevSubscription.remaining_count - fields.remaining_count;
+          }
+        }
 
         return (
           <Review
