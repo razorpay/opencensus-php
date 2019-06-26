@@ -872,6 +872,20 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
     ];
 
+    protected static $matchAttributes = [
+        Entity::ID,
+        Entity::GATEWAY,
+        Entity::GATEWAY_ACQUIRER,
+        Entity::EMI,
+        Entity::EMI_DURATION,
+        Entity::TYPE,
+        Entity::CURRENCY,
+        Entity::NETWORK_CATEGORY,
+        Entity::CATEGORY,
+        Entity::EMI_SUBVENTION,
+        Entity::INTERNATIONAL,
+    ];
+
     public function validateType()
     {
         $type = $this->entity->getType();
@@ -1164,18 +1178,11 @@ class Validator extends Base\Validator
 
     protected function matchGatewayForNewTerminal(Entity $new, Entity $existing)
     {
-        // If 1 exists, then another should not be added for the same gateway for same emi periods
-        if (($new->getGateway() === $existing->getGateway()) and
-            ($new->getId() !== $existing->getId()) and
-            ($new->getGatewayAcquirer() === $existing->getGatewayAcquirer()) and
-            ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
-            ($new->getEmiDuration() === $existing->getEmiDuration()) and
-            ($new->getType() === $existing->getType()) and
-            ($new->getCurrency() === $existing->getCurrency()) and
-            ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
-            ($new->getCategory() === $existing->getCategory()) and
-            ($new->getEmiSubvention() === $existing->getEmiSubvention()) and
-            ($new->isInternational() === $existing->isInternational()))
+        $newMatch = array_only($new->toArray(), self::$matchAttributes);
+        $oldMatch = array_only($existing->toArray(), self::$matchAttributes);
+
+        // Not using strict check since that would check for order as well.
+        if ($newMatch == $oldMatch)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
