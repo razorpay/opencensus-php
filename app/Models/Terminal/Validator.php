@@ -873,7 +873,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $matchAttributes = [
-        Entity::ID,
         Entity::GATEWAY,
         Entity::GATEWAY_ACQUIRER,
         Entity::EMI,
@@ -1179,13 +1178,24 @@ class Validator extends Base\Validator
     protected function matchGatewayForNewTerminal(Entity $new, Entity $existing)
     {
         $newMatch = array_only($new->toArray(), self::$matchAttributes);
-        $oldMatch = array_only($existing->toArray(), self::$matchAttributes);
+        $existingMatch = array_only($existing->toArray(), self::$matchAttributes);
 
-        // Not using strict check since that would check for order as well.
-        if ($newMatch == $oldMatch)
+        $newId = $new->getId();
+        $existingId = $existing->getId();
+
+        // Not using strict check since that would check for order as well and that might not match.
+        if (($newMatch == $existingMatch) and
+            ($newId !== $existingId))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
+                ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY,
+                null,
+                [
+                    'new_id'            => $newId,
+                    'existing_id'       => $existingId,
+                    'new_match'         => $newMatch,
+                    'existing_match'    => $existingMatch,
+                ]);
         }
     }
 
