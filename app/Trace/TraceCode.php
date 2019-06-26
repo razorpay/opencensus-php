@@ -303,10 +303,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_JOB_ERROR                                   = 'DASHBOARD_JOB_ERROR';
 
     const NODAL_BEN_ADD_REQUEST                                 = 'NODAL_BEN_ADD_REQUEST';
+    const NODAL_BEN_VERIFY_REQUEST                              = 'NODAL_BEN_VERIFY_REQUEST';
     const NODAL_TRANSFER_REQUEST                                = 'NODAL_TRANSFER_REQUEST';
     const NODAL_TRANSFER_RESPONSE                               = 'NODAL_TRANSFER_RESPONSE';
     const NODAL_FAILURE_RESPONSE                                = 'NODAL_FAILURE_RESPONSE';
     const NODAL_BEN_ADD_RESPONSE                                = 'NODAL_BEN_ADD_RESPONSE';
+    const NODAL_BEN_VERIFY_RESPONSE                             = 'NODAL_BEN_VERIFY_RESPONSE';
     const NODAL_FAILED_RESPONSE                                 = 'NODAL_FAILED_RESPONSE';
     const NODAL_TRANSFER_REQUEST_FAILED                         = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                          = 'NODAL_PAYMENT_STATUS_REQUEST';
