@@ -157,13 +157,14 @@ class Repository extends Base\Repository
                         ->where($stateColumn, State\Name::OPEN)
                         ->where(Entity::PERMISSION_ID, $permissionId);
 
-        $query->join($workflowStepTable,
-            function($join) use ($wfStepWorkflowIdColumn, $wfStepLevelColumn, $currentLevel, $workflowId)
+        $query->join(
+            $workflowStepTable,
+            function(JoinClause $join) use ($wfStepWorkflowIdColumn, $wfStepLevelColumn, $currentLevel, $workflowId)
                 {
                     $join->on($workflowId, '=', $wfStepWorkflowIdColumn)
                          ->on($currentLevel, '=', $wfStepLevelColumn);
                 })
-             ->whereIn($wfStepRoleIdColumn, $roleIds);
+              ->whereIn($wfStepRoleIdColumn, $roleIds);
 
         return $query->get();
     }

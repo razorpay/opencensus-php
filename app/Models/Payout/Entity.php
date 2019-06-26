@@ -15,15 +15,19 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Workflow;
+use RZP\Models\Admin\Org;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
+use RZP\Base\RepositoryManager;
+use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Feature\Constants as Features;
 
 /**
  * @property Customer\Entity    $customer
@@ -103,6 +107,7 @@ class Entity extends Base\PublicEntity
 
     const PENDING_ON_ME    = 'pending_on_me';
     const PENDING_ON_ROLES = 'pending_on_roles';
+    const PENDING_ON_USER  = 'pending_on_user';
 
     // Input keys
     const ACCOUNT_NUMBER       = 'account_number';
@@ -208,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::TRANSACTION_ID,
         self::TRANSACTION,
+        self::PENDING_ON_USER,
         self::NOTES,
         self::FEES,
         self::TAX,
@@ -246,6 +252,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
         self::FUND_ACCOUNT,
+        self::PENDING_ON_USER,
         self::REVERSAL,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
@@ -835,6 +842,40 @@ class Entity extends Base\PublicEntity
     public function getInternalStatusAttribute()
     {
         return $this->getStatus();
+    }
+
+    public function setPublicPendingOnUserAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        /** @var RepositoryManager $repo */
+        $repo = app('repo');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::PENDING_ON_USER]);
+
+            return;
+        }
+
+        if (($basicAuth->getUser() === null) or
+            ($this->merchant === null) or
+            ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === false))
+        {
+            return;
+        }
+
+        $userRoleIds = $basicAuth->getUser()->roles()->allRelatedIds()->toArray();
+
+        $permissionId = $repo->permission
+                             ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
+                             ->first();
+
+        $pendingActions = $repo->workflow_action
+                               ->getPendingActionsOnRoleIds($this, $permissionId, $userRoleIds);
+
+        $attributes[self::PENDING_ON_USER] = ($pendingActions->count() > 0);
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
