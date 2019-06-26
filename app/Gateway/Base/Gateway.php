@@ -81,6 +81,15 @@ class Gateway
     const LIBRESSL_READ_ERROR_STRING = 'cURL error 56: LibreSSL SSL_read: SSL_ERROR_SYSCALL';
 
     /**
+     * Actions for which gateway action can be retried on next terminal safely.
+     */
+    const RETRIABLE_ACTIONS = [
+        Action::AUTHENTICATE,
+        Action::OTP_GENERATE,
+        Action::VALIDATE_VPA,
+    ];
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -671,12 +680,24 @@ class Gateway
             //
             if (Utility::checkTimeout($e))
             {
-                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+                $ex = new Exception\GatewayTimeoutException($e->getMessage(), $e);
+
+                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                {
+                    $ex->markSafeRetryTrue();
+                }
             }
             else
             {
-                throw new Exception\GatewayRequestException($e->getMessage(), $e);
+                $ex = new Exception\GatewayRequestException($e->getMessage(), $e);
+
+                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                {
+                    $ex->markSafeRetryTrue();
+                }
             }
+
+            throw $ex;
         }
 
         $this->validateResponse($response);
@@ -779,6 +800,11 @@ class Gateway
 
             $data = ['status_code' => $response->status_code, 'body' => $response->body];
             $e->setData($data);
+
+            if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+            {
+                $e->markSafeRetryTrue();
+            }
 
             throw $e;
         }
@@ -1434,13 +1460,9 @@ class Gateway
                     TraceCode::GATEWAY_PAYMENT_ERROR,
                     ['json' => $json]);
 
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_INVALID_JSON,
-                    null,
+                throw new Exception\RuntimeException(
                     'Failed to convert json to array',
-                    [
-                        'json' => $json,
-                    ]);
+                    ['json' => $json]);
         }
     }
 

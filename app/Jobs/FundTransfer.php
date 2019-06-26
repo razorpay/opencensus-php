@@ -4,6 +4,8 @@ namespace RZP\Jobs;
 
 use App;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use Razorpay\Trace\Logger as Trace;
@@ -40,6 +42,8 @@ class FundTransfer extends Job
     public function handle()
     {
         $ftaInitiator = new Initiator;
+
+        $delayTransfer = false;
 
         $data = [
             'fta_id' => $this->ftaId
@@ -83,8 +87,9 @@ class FundTransfer extends Job
 
             if ($isBeneRegistrationRequired === true)
             {
-                $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus($channel,
-                                                                                                     $bankAccount);
+                $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus(
+                                                                $channel,
+                                                                $bankAccount);
 
                 if ($beneficiaryRegistered === false)
                 {
@@ -92,6 +97,40 @@ class FundTransfer extends Job
 
                     return;
                 }
+
+                $beneficiaryEntity = $this->repoManager
+                                          ->nodal_beneficiary
+                                          ->fetchActivatedBeneficiaryDetailsForChannel(
+                                              $bankAccount->getId(),
+                                              $channel);
+
+                //
+                // using updated at here as bene registration status will keep on updating until it reached `registered` state
+                //
+                $updatedAtWithOffset = $beneficiaryEntity->getUpdatedAt() + 60;
+
+                $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+                // check if the entity is older than 60 sec
+                if ($updatedAtWithOffset > $currentTime)
+                {
+                    //
+                    // delaying the transfer only if bene registration is done in this flow
+                    //
+                    $delayTransfer = true;
+                }
+            }
+
+            //
+            // Bene registration form YB requires some time (Max observed is 45 sec)
+            // Because of this we are adding delay of 60 sec, in case we do bene registration in this flow.
+            // TODO: remove this code once verify bene feature is in place
+            //
+            if ($delayTransfer === true)
+            {
+                $this->logAndDelete($data, TraceCode::FTA_TRANSFER_JOB_DELAYED, true);
+
+                return;
             }
 
             $beneficiaryVerified = (new Beneficiary)->verifyBeneficiaryOnChannelAndGetStatus($channel, $bankAccount);

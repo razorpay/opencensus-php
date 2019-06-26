@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
@@ -2022,7 +2023,9 @@ trait PaymentTrait
 
     protected function mockCardVault($callable = null)
     {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 
@@ -2152,5 +2155,43 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function mockFundAccountService($callable = null)
+    {
+        $fts = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $callable = $callable ?: function ($endpoint, $method, $data = [])
+        {
+            switch ($endpoint)
+            {
+                case '/account':
+
+                    $response = [
+                        'body' => [
+                            'fund_account_id' => random_integer(2),
+                        ],
+                        'code' => 201
+                    ];
+
+                    return $response;
+
+                case '/source_account':
+
+                    $response = [
+                            'message' => 'source account registered',
+                        ];
+
+                    return $response;
+
+                default:
+                    return null;
+            }
+        };
+
+        $fts->shouldReceive('createAndSendRequest')
+            ->andReturnUsing($callable);
+
+        $this->app->instance('fts_create_account', $fts);
     }
 }

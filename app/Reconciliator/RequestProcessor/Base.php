@@ -124,7 +124,7 @@ class Base extends Core
         self::NETBANKING_CUB         => [''],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
-        self::NETBANKING_CANARA      => [],
+        self::NETBANKING_CANARA      => ['canarabank@canarabank.com'],
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],

@@ -97,12 +97,13 @@ class Repository extends Base\Repository
     public function fetchPastScheduledDowntimesToResolve(int $now)
     {
         $query = $this->newQuery()
-                      ->where(Entity::STATUS, '=', Status::STARTED)
                       ->where(function ($query) use ($now)
                       {
                         $query->whereNotNull(Entity::END)
                               ->where(Entity::END, '<=', $now);
                       });
+
+        $query->whereIn(Entity::STATUS, [Status::SCHEDULED, Status::STARTED]);
 
         return $query->get();
     }

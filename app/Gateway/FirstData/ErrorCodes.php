@@ -139,7 +139,7 @@ class ErrorCodes
         'N:-42325'        => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
         'N:-42920'        => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
         'N:-5002'         => ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,
-        'N:-5003'         => ErrorCode::BAD_REQUEST_ORDER_EXISTS,
+        'N:-5003'         => ErrorCode::GATEWAY_ERROR_ORDER_EXISTS,
         'N:-5004'         => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_CAPTURE,
         'N:-5005'         => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK,
         'N:-5008'         => ErrorCode::BAD_REQUEST_ORDER_DOES_NOT_EXIST,
@@ -210,7 +210,7 @@ class ErrorCodes
         // Added by us to handle unexpected behaviour
 
         'N:100'           => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
-        'N:5003'          => ErrorCode::BAD_REQUEST_ORDER_EXISTS,
+        'N:5003'          => ErrorCode::GATEWAY_ERROR_ORDER_EXISTS,
         'N:02'            => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
         'N:03'            => ErrorCode::BAD_REQUEST_MERCHANT_INVALID,
         'N:05'            => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,

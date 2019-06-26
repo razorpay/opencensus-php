@@ -24,6 +24,12 @@ abstract class Beneficiary extends BaseCore
     {
         $response = $this->registerBeneficiary($bankAccounts);
 
+        if ((array_key_exists('send_email', $input) === true) and
+            ((bool)$input['send_email'] === false))
+        {
+            return $response;
+        }
+
         $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
 
         $mailData = array_merge($response, [BankAccount::RECIPIENT_EMAILS => $recipientEmails]);

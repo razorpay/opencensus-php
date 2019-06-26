@@ -9,6 +9,15 @@ class BankingAccountController extends Controller
 {
     use Traits\HasCrudMethods;
 
+    public function storeCredentials(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->storeCredentials($id, $input);
+
+        return ApiResponse::json($response);
+    }
+    
     public function postServiceablePincodes(string $channel)
     {
         $input = Request::all();
