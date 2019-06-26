@@ -50,9 +50,21 @@ class BankingRole
         return (in_array($role, self::$workflowRoles, true) === true);
     }
 
-    public static function getNameForWorkflowRole(string $roleId)
+    public static function getNameForWorkflowRole(string $roleId): string
     {
         return self::$workflowRoleToNameMap[$roleId];
+    }
+
+    public static function getNamesForWorkflowRoles(array $roleIdentifiers): array
+    {
+        $names = [];
+
+        foreach ($roleIdentifiers as $roleId)
+        {
+            $names[] = self::getNameForWorkflowRole($roleId);
+        }
+
+        return $names;
     }
 
     public static function exists(string $action): bool

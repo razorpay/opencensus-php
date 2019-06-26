@@ -101,6 +101,9 @@ class Entity extends Base\PublicEntity
     const CONTACT_EMAIL = 'contact_email';
     const CONTACT_TYPE  = 'contact_type';
 
+    const PENDING_ON_ME    = 'pending_on_me';
+    const PENDING_ON_ROLES = 'pending_on_roles';
+
     // Input keys
     const ACCOUNT_NUMBER       = 'account_number';
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';

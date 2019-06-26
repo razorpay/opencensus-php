@@ -6,11 +6,16 @@ use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
+use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
+use RZP\Models\Workflow\Action;
+use RZP\Models\User\BankingRole;
 
 class Repository extends Base\Repository
 {
@@ -247,6 +252,49 @@ class Repository extends Base\Repository
         $query->where($contactEmailColumn, $contactEmail);
     }
 
+    protected function addQueryParamPendingOnRoles(BuilderEx $query, array $params)
+    {
+        $pendingOnRoles = $params[Entity::PENDING_ON_ROLES];
+
+        $pendingRoleIds = $this->repo->role->fetchIdsByOrgIdNames(
+            Org\Entity::RAZORPAY_ORG_ID,
+            BankingRole::getNamesForWorkflowRoles($pendingOnRoles));
+
+        $this->filterByRoleIds($query, $pendingRoleIds->pluck('id')->toArray());
+    }
+
+    protected function addQueryParamPendingOnMe(BuilderEx $query, array $params)
+    {
+        $pendingOnMe = (bool) ($params[Entity::PENDING_ON_ME] ?? false);
+
+        if ($pendingOnMe === false)
+        {
+            return;
+        }
+
+        $userRoleIds = $this->auth->getUser()->roles()->allRelatedIds()->toArray();
+
+        $this->filterByRoleIds($query, $userRoleIds);
+    }
+
+    protected function filterByRoleIds(BuilderEx $query, array $roleIds)
+    {
+        $permissionId = ''; // Resolve from name
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryWorkflowAction($query);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+        $wfActionStateColumn        = $this->repo->workflow_action->dbColumn(Action\Entity::STATE);
+        $wfActionPermissionIdColumn = $this->repo->workflow_action->dbColumn(Action\Entity::PERMISSION_ID);
+        $wfStepRoleIdColumn         = $this->repo->workflow_step->dbColumn(Step\Entity::ROLE_ID);
+
+        $query->where($statusColumn, Status::PENDING)
+              ->where($wfActionStateColumn, State\Name::OPEN)
+            //->where($wfActionPermissionIdColumn, $permissionId)
+              ->whereIn($wfStepRoleIdColumn, $roleIds);
+    }
+
     protected function joinQueryFundAccount(BuilderEx $query)
     {
         $faTable = $this->repo->fund_account->getTableName();
@@ -290,6 +338,31 @@ class Repository extends Base\Repository
                 $join->on($contactIdColumn, $faSourceIdColumn);
                 $join->where($faSourceTypeColumn, E::CONTACT);
             });
+    }
+
+    protected function joinQueryWorkflowAction(BuilderEx $query)
+    {
+        $wfActionTable = $this->repo->workflow_action->getTableName();
+
+        if ($query->hasJoin($wfActionTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $wfActionTable,
+            function(JoinClause $join)
+            {
+                $entityIdColumn   = $this->repo->workflow_action->dbColumn(Action\Entity::ENTITY_ID);
+                $entityNameColumn = $this->repo->workflow_action->dbColumn(Action\Entity::ENTITY_NAME);
+
+                $idColumn = $this->dbColumn(Entity::ID);
+
+                $join->on($idColumn, $entityIdColumn)
+                     ->where($entityNameColumn, E::PAYOUT);
+            });
+
+        $this->repo->workflow_action->joinQueryWorkflowStep($query);
     }
 
     /**

@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use Illuminate\Database\Query\JoinClause;
+
 use RZP\Base\BuilderEx;
 use RZP\Models\State;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
-use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Action\Checker;
@@ -185,6 +186,31 @@ class Repository extends Base\Repository
         $query->select($attributes)
               ->join($checkerTable, $aId, '=', $cActionId)
               ->where($cAdminId, '=', $adminId);
+    }
+
+    public function joinQueryWorkflowStep(BuilderEx $query)
+    {
+        $workflowStepTable = $this->repo->workflow_step->getTableName();
+
+        if ($query->hasJoin($workflowStepTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $workflowStepTable,
+            function(JoinClause $join)
+            {
+                $workflowId           = $this->dbColumn(Entity::WORKFLOW_ID);
+                $currentLevel         = $this->dbColumn(Entity::CURRENT_LEVEL);
+
+                $wfStepLevelColumn      = $this->repo->workflow_step->dbColumn(Step\Entity::LEVEL);
+                $wfStepWorkflowIdColumn = $this->repo->workflow_step->dbColumn(Step\Entity::WORKFLOW_ID);
+
+
+                $join->on($workflowId, '=', $wfStepWorkflowIdColumn)
+                     ->on($currentLevel, '=', $wfStepLevelColumn);
+            });
     }
 
     /**
