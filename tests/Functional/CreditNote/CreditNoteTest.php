@@ -54,6 +54,37 @@ class CreditNoteTest extends TestCase
         $this->startTest();
     }
 
+    public function testApplyCreditNoteWithSingleInvoiceAndFullAmount()
+    {
+        $testDataCreate = & $this->testData['testCreateCreditNote'];
+
+        $testDataCreate['request']['content']['amount'] = 1000;
+
+        $testDataCreate['response']['content']['amount'] = '1000';
+
+        $testDataCreate['response']['content']['amount_available'] = '1000';
+
+        $this->testCreateCreditNote();
+
+        $creditNote = $this->getLastEntity('creditnote', true);
+
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/creditnote/'.$creditNote['id'].'/apply';
+
+        $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
+
+        $this->startTest();
+    }
+
     protected function createOrder(array $overrideWith = [])
     {
         $order = $this->fixtures
