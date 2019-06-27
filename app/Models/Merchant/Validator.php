@@ -1107,6 +1107,8 @@ class Validator extends Base\Validator
      * service layer repository's fetch etc only understands BALANCE_ID.
      *
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateAndTranslateAccountNumberForBanking(array & $input)
     {
