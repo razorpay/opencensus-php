@@ -27,6 +27,7 @@ class CreateBankingAccountTable extends Migration
                   ->nullable();
 
             $table->string(Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_NUMBER_LENGTH)
+                  ->unique()
                   ->nullable();
 
             $table->string(Entity::STATUS, 255)

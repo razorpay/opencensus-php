@@ -4971,6 +4971,7 @@ ALTER TABLE banking_accounts
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
     ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
+    ADD UNIQUE INDEX banking_accounts_account_number_unique (account_number);
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
