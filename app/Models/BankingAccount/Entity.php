@@ -88,7 +88,6 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::BANK_INTERNAL_STATUS,
         self::USERNAME,
-        self::PASSWORD,
         self::REFERENCE1
     ];
 
