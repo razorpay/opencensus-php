@@ -1923,6 +1923,7 @@ trait Authorize
                     'message'     => $e->getMessage(),
                     'entity_type' => $payment->getEntity(),
                     'entity_id'   => $payment->getId(),
+                    'stack_trace' => $e->getTraceAsString(),
                 ]);
         }
     }
