@@ -19,10 +19,6 @@ Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtensio
         ->name('extension_merchant')
         ->middleware(['jwt']);
 
-Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
-        ->name('extension_user_logout')
-        ->middleware(['jwt']);
-
 Route::get('/extension/jwt/validate', 'UserController@validateJWT')
         ->name('extension_validate_jwt')
         ->middleware(['jwt']);
@@ -44,6 +40,10 @@ Route::group(['middleware' => ['web']], function () {
         ->where(['path' => '.*'])
         ->name('user');
 
+    Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
+        ->name('extension_user_logout')
+        ->middleware(['jwt']);
+    
     // Org
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/org', 'AdminController@getOrg');
