@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow;
 
+use RZP\Models\Admin;
+use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Step;
 
@@ -55,5 +57,30 @@ class Repository extends Base\Repository
                     ->whereIn($pid, $permissionIds)
                     ->whereNull(Entity::DELETED_AT)
                     ->pluck(Entity::ID);
+    }
+
+    public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId)
+    {
+        $permissionTable               = $this->repo->permission->getTableName();
+        $workflowStepTable             = $this->repo->workflow_step->getTableName();
+        $workflowPayoutAmountRuleTable = $this->repo->workflow_payout_amount_rules->getTableName();
+
+        // Workflow table columns
+        $workflowId = $this->dbColumn(Entity::ID);
+        $orgId      = $this->dbColumn(Entity::ORG_ID);
+
+        // Workflow Permission table columns
+        $workflowPermissionsWorkflowId   = Table::WORKFLOW_PERMISSION. '.workflow_id';
+        $workflowPermissionsPermissionId = Table::WORKFLOW_PERMISSION. '.permission_id';
+
+        /** @var BuilderEx $query */
+        $query = $this->newQuery()
+                      ->with('steps', 'steps.role', 'payoutAmountRules')
+                      ->join(Table::WORKFLOW_PERMISSION, $workflowId, '=', $workflowPermissionsWorkflowId)
+                      ->where($orgId, Admin\Org\Entity::RAZORPAY_ORG_ID)
+                      ->whereNull(Entity::DELETED_AT)
+                      ->where($workflowPermissionsPermissionId, $permissionId);
+
+        return $query->get();
     }
 }

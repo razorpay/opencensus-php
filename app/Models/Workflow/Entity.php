@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\PayoutAmountRules;
 
 class Entity extends Base\Entity
 {
@@ -16,9 +17,10 @@ class Entity extends Base\Entity
     const ORG_ID      = 'org_id';
     const DELETED_AT  = 'deleted_at';
 
-    const PERMISSIONS = 'permissions';
-    const STEPS       = 'steps';
-    const LEVELS      = 'levels';
+    const PERMISSIONS         = 'permissions';
+    const STEPS               = 'steps';
+    const PAYOUT_AMOUNT_RULES = 'payoutAmountRules';
+    const LEVELS              = 'levels';
 
     protected static $sign = 'workflow';
 
@@ -29,6 +31,7 @@ class Entity extends Base\Entity
     protected $embeddedRelations = [
         self::STEPS,
         self::PERMISSIONS,
+        self::PAYOUT_AMOUNT_RULES,
     ];
 
     protected $fillable = [
@@ -44,6 +47,7 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::STEPS,
         self::PERMISSIONS,
+        self::PAYOUT_AMOUNT_RULES,
     ];
 
     protected $public = [
@@ -53,6 +57,7 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::STEPS,
         self::PERMISSIONS,
+        self::PAYOUT_AMOUNT_RULES,
     ];
 
     protected $publicSetters = [
@@ -73,6 +78,11 @@ class Entity extends Base\Entity
     public function steps()
     {
         return $this->hasMany('RZP\Models\Workflow\Step\Entity');
+    }
+
+    public function payoutAmountRules()
+    {
+        return $this->hasMany(PayoutAmountRules\Entity::class);
     }
 
     public function permissions()

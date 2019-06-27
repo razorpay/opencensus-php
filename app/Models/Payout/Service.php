@@ -12,6 +12,8 @@ use RZP\Models\Reversal;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -284,6 +286,26 @@ class Service extends Base\Service
             'total_amount'  => $totalAmount,
             'total_fees'    => $totalFees,
         ];
+    }
+
+    /**
+     * Return a summary of workflows for RazorpayX dashboard consumption.
+     *
+     * Works ONLY for create_payout workflows right now.
+     *
+     * @return array
+     */
+    public function getWorkflowSummary(): array
+    {
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
+                             ->first();
+
+
+        $workflows = $this->repo->workflow->fetchBankingWorkflowSummaryForPermissionId($permissionId);
+
+        return $workflows->toArray();
     }
 
     public function getDashboardSummary(): array

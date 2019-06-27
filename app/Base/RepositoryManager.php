@@ -12,36 +12,38 @@ use RZP\Constants\Entity;
 use RZP\Base\Database\MySqlConnection;
 
 /**
- * @property Models\Plan\Subscription\Repository     $subscription
- * @property Models\Terminal\Repository              $terminal
- * @property Models\Invoice\Repository               $invoice
- * @property Models\Tax\Repository                   $tax
- * @property Models\Payment\Repository               $payment
- * @property Models\Payment\Refund\Repository        $refund
- * @property Models\Merchant\Repository              $merchant
- * @property Models\Batch\Repository                 $batch
- * @property Models\BankAccount\Repository           $bank_account
- * @property Models\Merchant\Account\Repository      $account
- * @property Models\PaymentLink\Repository           $payment_link
- * @property Models\Feature\Repository               $feature
- * @property Models\Order\Repository                 $order
- * @property Models\Payment\Analytics\Repository     $payment_analytics
- * @property Models\Transaction\Repository           $transaction
- * @property Models\Vpa\Repository                   $vpa
- * @property Models\Contact\Repository               $contact
- * @property Models\FundAccount\Repository           $fund_account
- * @property Models\Merchant\Balance\Repository      $balance
- * @property Models\Transaction\Statement\Repository $statement
- * @property Models\FundAccount\Repository           $customer_balance
- * @property Models\FundAccount\Validation\Repository $fund_account_validation
- * @property Models\FundTransfer\Attempt\Repository  $fund_transfer_attempt
- * @property Models\Payout\Repository                $payout
- * @property Models\Merchant\Detail\Repository       $merchant_detail
- * @property Models\BankingAccount\Repository        $banking_account
- * @property Models\Admin\Role\Repository            $role
- * @property Models\Admin\Permission\Repository      $permission
- * @property Models\Workflow\Action\Repository       $workflow_action
- * @property Models\Workflow\Step\Repository         $workflow_step
+ * @property Models\Plan\Subscription\Repository          $subscription
+ * @property Models\Terminal\Repository                   $terminal
+ * @property Models\Invoice\Repository                    $invoice
+ * @property Models\Tax\Repository                        $tax
+ * @property Models\Payment\Repository                    $payment
+ * @property Models\Payment\Refund\Repository             $refund
+ * @property Models\Merchant\Repository                   $merchant
+ * @property Models\Batch\Repository                      $batch
+ * @property Models\BankAccount\Repository                $bank_account
+ * @property Models\Merchant\Account\Repository           $account
+ * @property Models\PaymentLink\Repository                $payment_link
+ * @property Models\Feature\Repository                    $feature
+ * @property Models\Order\Repository                      $order
+ * @property Models\Payment\Analytics\Repository          $payment_analytics
+ * @property Models\Transaction\Repository                $transaction
+ * @property Models\Vpa\Repository                        $vpa
+ * @property Models\Contact\Repository                    $contact
+ * @property Models\FundAccount\Repository                $fund_account
+ * @property Models\Merchant\Balance\Repository           $balance
+ * @property Models\Transaction\Statement\Repository      $statement
+ * @property Models\FundAccount\Repository                $customer_balance
+ * @property Models\FundAccount\Validation\Repository     $fund_account_validation
+ * @property Models\FundTransfer\Attempt\Repository       $fund_transfer_attempt
+ * @property Models\Payout\Repository                     $payout
+ * @property Models\Merchant\Detail\Repository            $merchant_detail
+ * @property Models\BankingAccount\Repository             $banking_account
+ * @property Models\Admin\Role\Repository                 $role
+ * @property Models\Admin\Permission\Repository           $permission
+ * @property Models\Workflow\Action\Repository            $workflow_action
+ * @property Models\Workflow\Step\Repository              $workflow_step
+ * @property Models\Workflow\Repository                   $workflow
+ * @property Models\Workflow\PayoutAmountRules\Repository $workflow_payout_amount_rules
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {
