@@ -88,6 +88,17 @@ export default props => {
     classNames.push('clickable');
   }
 
+  let isChargedInvoice = false;
+  (item.notes || []).forEach(note => {
+    if (
+      isChargedInvoice === false &&
+      note.type &&
+      note.type.includes('upgrade')
+    ) {
+      isChargedInvoice = true;
+    }
+  });
+
   return (
     <div
       class={classNames.join(' ')}
@@ -131,7 +142,11 @@ export default props => {
               <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
             ) : (
               <span class="label--secondary">
-                {index ? `Recurring payment # ${index}` : ''}
+                {index
+                  ? isChargedInvoice
+                    ? 'Charged due to subscription update'
+                    : `Recurring payment # ${index}`
+                  : ''}
                 {index && isUpfront ? ', ' : ''}
                 {isUpfront ? 'Upfront Amount' : ''}
               </span>
