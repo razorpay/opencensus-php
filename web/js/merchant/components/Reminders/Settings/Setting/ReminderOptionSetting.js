@@ -2,67 +2,78 @@ import Button from 'component/Button';
 
 import { SelectField } from 'ui/Field';
 
-import ListAdder from 'rzp/ui/AddToList';
-
 export default class ReminderOptionSetting extends React.Component {
-  state = {};
+  constructor(props) {
+    super();
 
-  onChange = id => e => {
+    this.name = props.name;
+
+    this.state = {
+      [this.name]: [],
+    };
+  }
+
+  handleChange = id => e => {
+    const newList = [...this.state[this.name]];
+    newList[id] = e.target.value;
+
     this.setState({
-      [`${this.props.name}_${id}`]: e.target.value,
+      [this.name]: newList,
     });
   };
 
-  renderRemovableSelect = (props = {}) => {
-    return (
-      <RemovableSelect
-        {...props}
-        onChange={this.onChange(props.id)}
-        value={this.state[`${this.props.name}_${props.id}`]}
-      />
-    );
+  handleRemove = value => () => {
+    this.setState({
+      [this.name]: this.state[this.name].filter(val => val !== value),
+    });
+  };
+
+  handleAddButton = () => {
+    const newList = [...this.state[this.name]];
+    newList.push(0);
+
+    this.setState({
+      [this.name]: newList,
+    });
   };
 
   render() {
-    const {
-      name,
-      isExpiry,
-      onRemove,
-      onChange,
-      maxSelections,
-      remindersList,
-    } = this.props;
+    const { isExpiry, maxSelections, remindersList } = this.props;
 
-    const DEFAULT_DATA = {
-      name,
-      onRemove,
-      onChange,
-      options: remindersList,
-    };
+    const label = isExpiry
+      ? 'For links with expiry'
+      : 'For links without expiry';
+
+    const showAddBtn =
+      maxSelections && this.state[this.name].length < maxSelections;
 
     return (
       <div class="setting">
-        <label>
-          {isExpiry ? 'For links with expiry' : 'For links without expiry'}
-        </label>
+        <label>{label}</label>
 
-        <ListAdder
-          addButton={AddButton}
-          maxItems={maxSelections}
-          placeholderData={DEFAULT_DATA}
-          item={this.renderRemovableSelect}
-        />
+        <div class="add-to-list">
+          {this.state[this.name].map((value, idx) => (
+            <RemovableSelect
+              required
+              options={remindersList}
+              name={`${this.name}_${value}`}
+              onChange={this.handleChange(idx)}
+              onRemove={this.handleRemove(value)}
+            />
+          ))}
+
+          {showAddBtn && (
+            <Button.Transparent onClick={this.handleAddButton}>
+              Add Reminder
+            </Button.Transparent>
+          )}
+        </div>
       </div>
     );
   }
 }
 
-const AddButton = props => (
-  <Button.Transparent {...props}> Add Reminder </Button.Transparent>
-);
-
 const RemovableSelect = ({
-  id,
   name,
   options,
   onRemove,
@@ -73,14 +84,15 @@ const RemovableSelect = ({
   <div class="removable-select">
     <SelectField
       required
+      name={name}
+      value={value}
       disabled={disabled}
       onChange={onChange}
-      name={`${name}[${id}]`}
       defaultValue={defaultValue}
     >
-      {options.map(({ id, value }) => (
+      {options.map(({ id, value: label }) => (
         <option key={id} value={id}>
-          {value}
+          {label}
         </option>
       ))}
     </SelectField>
