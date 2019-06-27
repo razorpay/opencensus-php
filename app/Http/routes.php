@@ -19,8 +19,12 @@ Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtensio
         ->name('extension_merchant')
         ->middleware(['jwt']);
 
-    Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
+Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
         ->name('extension_user_logout')
+        ->middleware(['jwt']);
+
+Route::get('/extension/jwt/validate', 'UserController@validateJWT')
+        ->name('extension_validate_jwt')
         ->middleware(['jwt']);
 
 // Everything in this group is a unauthenticated route

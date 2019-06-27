@@ -291,4 +291,9 @@ class UserController extends Controller
 
         return AppResponse::jsonResponse([]);
     }
+
+    public function validateJWT()
+    {
+        return ['success' => true];
+    }
 }
