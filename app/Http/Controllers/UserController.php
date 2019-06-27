@@ -275,7 +275,7 @@ class UserController extends Controller
     {
         $user = Auth::guard('user');
 
-        if (empty($user) === false)
+        if (empty($user->user()) === false)
         {
             $userDetails = $user->user();
 
