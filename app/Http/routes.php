@@ -14,6 +14,15 @@ Route::get('/status', 'AdminController@getStatus');
 
 Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
 
+Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
+        ->where(['path' => '.*'])
+        ->name('extension_merchant')
+        ->middleware(['jwt']);
+
+    Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
+        ->name('extension_user_logout')
+        ->middleware(['jwt']);
+
 // Everything in this group is a unauthenticated route
 // Please take care to not return any sensitive information
 // here
@@ -30,15 +39,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
         ->name('user');
-
-    Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
-        ->where(['path' => '.*'])
-        ->name('extension_merchant')
-        ->middleware(['jwt']);
-
-    Route::get('/extension/user/logout', 'UserController@getExtensionLogout')
-        ->name('extension_user_logout')
-        ->middleware(['jwt']);
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
