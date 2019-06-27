@@ -29,8 +29,6 @@ class Entity extends Base\PublicEntity
     const INVOICE_ID   = 'invoice_id';
     const SUBSCRIPTION = 'subscription';
 
-
-
     protected $entity = 'creditnote';
 
     protected $generateIdOnCreate = true;
@@ -185,7 +183,6 @@ class Entity extends Base\PublicEntity
         {
             $this->setStatus(Status::PARTIALLY_PROCESSED);
         }
-
     }
 
     protected function setPublicSubscriptionIdAttribute(array & $array)

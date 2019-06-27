@@ -30,7 +30,6 @@ class CreditNoteTest extends TestCase
         $this->startTest();
     }
 
-
     public function testApplyCreditNoteWithSingleInvoice()
     {
         $this->testCreateCreditNote();
@@ -56,7 +55,7 @@ class CreditNoteTest extends TestCase
 
     public function testApplyCreditNoteWithSingleInvoiceAndFullAmount()
     {
-        $testDataCreate = & $this->testData['testCreateCreditNote'];
+        $testDataCreate = &$this->testData['testCreateCreditNote'];
 
         $testDataCreate['request']['content']['amount'] = 1000;
 

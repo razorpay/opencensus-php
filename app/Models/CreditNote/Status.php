@@ -10,14 +10,23 @@ class Status
     const PARTIALLY_PROCESSED = 'partially_processed';
     const PRCOESSED           = 'processed';
 
-
-    public static function isStatusValid($status): bool
+    /**
+     * @param string $status
+     *
+     * @return bool
+     */
+    public static function isStatusValid(string $status): bool
     {
         $key = __CLASS__ . '::' . strtoupper($status);
 
         return ((defined($key) === true) and (constant($key) === $status));
     }
 
+    /**
+     * @param string $status
+     *
+     * @throws BadRequestValidationFailureException
+     */
     public static function checkStatus(string $status)
     {
         if (self::isStatusValid($status) === false)

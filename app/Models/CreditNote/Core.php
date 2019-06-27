@@ -20,7 +20,7 @@ class Core extends Base\Core
 {
     public function create(Merchant\Entity $merchant, array $input): Entity
     {
-        (new Validator)->validateInput("pre_create", $input);
+        (new Validator)->validateInput('pre_create', $input);
 
         $customerId = $input[Entity::CUSTOMER_ID];
 
@@ -77,7 +77,9 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateInvoicesAndPaymentsAndRefund(array $invoiceInputs, Merchant\Entity $merchant, Entity $creditNote)
+    protected function validateInvoicesAndPaymentsAndRefund(array $invoiceInputs,
+                                                            Merchant\Entity $merchant,
+                                                            Entity $creditNote)
     {
         foreach ($invoiceInputs as $invoiceInput)
         {
@@ -87,8 +89,9 @@ class Core extends Base\Core
         }
     }
 
-
-    protected function validateInvoiceAndRefundAmount(array $invoiceInput, Merchant\Entity $merchant, Entity $creditNote)
+    protected function validateInvoiceAndRefundAmount(array $invoiceInput,
+                                                      Merchant\Entity $merchant,
+                                                      Entity $creditNote)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceInput[Entity::INVOICE_ID], $merchant);
 
@@ -102,10 +105,10 @@ class Core extends Base\Core
 
         $refundAmount = $invoiceInput[Entity::AMOUNT];
 
-        if (($invoice->getAmount() < $refundAmount) === true)
+        if (($refundAmount > $invoice->getAmountPaid()) === true)
         {
             throw new BadRequestValidationFailureException(
-                $invoice->getPublicId() . ' amount lesser than refund amount');
+                'Cannot refund the amount since the the refund amount exceeds total payments');
         }
 
         if ($invoice->getStatus() !== Status::PAID)
@@ -119,18 +122,11 @@ class Core extends Base\Core
             throw new BadRequestValidationFailureException(
                 $invoice->getPublicId() . ' and credit note currency does not match');
         }
-
-        if (($refundAmount > $invoice->getAmountPaid()) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'Cannot refund the amount since the the refund amount exceeds total payments');
-        }
-
     }
 
     protected function validateInvoiceAndEntity(Invoice\Entity $invoice, Entity $creditNote)
     {
-        if (($creditNote->getSubscriptionId() !== null))
+        if ($creditNote->getSubscriptionId() !== null)
         {
             if ($invoice->getSubscriptionId() !== $creditNote->getSubscriptionId())
             {
@@ -168,7 +164,7 @@ class Core extends Base\Core
                 {
                     $currentPaymentAmount = $payment->getAmount();
 
-                    if (($refundAmount <= $currentPaymentAmount) === true)
+                    if ($refundAmount <= $currentPaymentAmount)
                     {
                         $refund = $paymentProcessor->refundCapturedPayment($payment, array(Entity::AMOUNT => $refundAmount));
 
@@ -176,7 +172,6 @@ class Core extends Base\Core
 
                         return;
                     }
-
                     else
                     {
                         $refund = $paymentProcessor->refundCapturedPayment($payment, array(Entity::AMOUNT => $currentPaymentAmount));
@@ -205,7 +200,7 @@ class Core extends Base\Core
         $creditNoteInvoiceCore->create($input, $refund, $creditNote, $merchant, $invoice);
 
         $this->repo->transaction(
-            function () use ($creditNote , $refund)
+            function () use ($creditNote, $refund)
             {
                 $this->repo->creditnote->lockForUpdateAndReload($creditNote);
 
