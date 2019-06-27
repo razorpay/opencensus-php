@@ -25,7 +25,7 @@ return [
                 'name'       => 'Test credit note',
                 'amount'       => '1000000',
                 'description'     => 'test description',
-                'amount_available'   => 1000000,
+                'amount_available'   => '1000000',
                 'amount_refunded'   => 0,
                 'amount_allocated'   => 0,
             ],
