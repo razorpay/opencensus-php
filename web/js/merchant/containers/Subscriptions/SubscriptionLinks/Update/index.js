@@ -79,12 +79,17 @@ export default class UpdateSubscription extends React.Component {
       plan_id: subscription.plan_id,
       quantity: subscription.quantity,
       start_at: subscription.start_at,
-      remaining_count: subscription.remaining_count,
       customer_notify: subscription.customer_notify,
     };
 
     if (['active'].includes(subscription.status)) {
       fields.schedule_change_at = 'now';
+    }
+
+    if (['authenticated'].includes(subscription.status)) {
+      fields.total_count = subscription.total_count;
+    } else {
+      fields.remaining_count = subscription.remaining_count;
     }
 
     const selectedPlan = findBy(plans.items, 'id', subscription.plan_id);
@@ -281,6 +286,10 @@ export default class UpdateSubscription extends React.Component {
       data.customer_notify = fields.customer_notify ? '1' : '0';
     }
 
+    if (prevSubscription.total_count != fields.total_count) {
+      data.total_count = fields.total_count;
+    }
+
     return data;
   };
 
@@ -355,7 +364,10 @@ export default class UpdateSubscription extends React.Component {
       case 1: {
         let totalCount = prevSubscription.total_count;
 
-        if (prevSubscription.remaining_count !== fields.remaining_count) {
+        if (
+          prevSubscription.remaining_count !== fields.remaining_count &&
+          prevSubscription.status !== 'authenticated'
+        ) {
           if (prevSubscription.remaining_count < fields.remaining_count) {
             totalCount +=
               fields.remaining_count - prevSubscription.remaining_count;
