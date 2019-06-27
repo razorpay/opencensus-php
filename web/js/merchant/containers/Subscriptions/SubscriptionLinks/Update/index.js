@@ -278,7 +278,7 @@ export default class UpdateSubscription extends React.Component {
     }
 
     if (prevSubscription.customer_notify != fields.customer_notify) {
-      data.customer_notify = fields.customer_notify;
+      data.customer_notify = fields.customer_notify ? '1' : '0';
     }
 
     return data;

@@ -22,11 +22,11 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
         />
 
         <Input.Check
+          className="Input--vTop"
           label="Notify Customer"
           name="customer_notify"
-          className="Input--vTop"
           checked={props.fields.customer_notify}
-          fieldLabel="Notify customer for this update and future changes."
+          fieldLabel="Notify customer for this update and future charges."
         />
 
         {showScheduleChange && (
