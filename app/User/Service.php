@@ -571,6 +571,14 @@ class Service extends Base\Service
         {
             $genericUser = (new Helper)->createdGenericUser($data);
         }
+        else
+        {
+            $email = $input['email'] ?? '';
+            $this->trace->info(
+                TraceCode::USER_LOGIN_FAILURE,
+                ['error' => $error, 'email' => $email]);
+        }
+
 
         return [$error, $genericUser];
     }
