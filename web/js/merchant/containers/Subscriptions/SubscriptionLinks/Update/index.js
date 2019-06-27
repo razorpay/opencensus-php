@@ -80,6 +80,7 @@ export default class UpdateSubscription extends React.Component {
       quantity: subscription.quantity,
       start_at: subscription.start_at,
       remaining_count: subscription.remaining_count,
+      customer_notify: subscription.customer_notify,
     };
 
     if (['active'].includes(subscription.status)) {
@@ -155,7 +156,8 @@ export default class UpdateSubscription extends React.Component {
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
       (fields.remaining_count &&
-        prevSubscription.remaining_count !== fields.remaining_count)
+        prevSubscription.remaining_count !== fields.remaining_count) ||
+      prevSubscription.customer_notify !== fields.customer_notify
     );
   }
 
@@ -273,6 +275,10 @@ export default class UpdateSubscription extends React.Component {
 
     if (fields.schedule_change_at) {
       data.schedule_change_at = fields.schedule_change_at;
+    }
+
+    if (prevSubscription.customer_notify != fields.customer_notify) {
+      data.customer_notify = fields.customer_notify;
     }
 
     return data;

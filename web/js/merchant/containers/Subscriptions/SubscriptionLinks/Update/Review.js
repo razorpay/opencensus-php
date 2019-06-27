@@ -86,6 +86,18 @@ export function changeData({
     });
   }
 
+  if (prevSubscription.customer_notify !== fields.customer_notify) {
+    changes.push({
+      heading: 'Notify to Customer',
+      changes: [
+        {
+          current: String(prevSubscription.customer_notify).toUpperCase(),
+          change: String(fields.customer_notify).toUpperCase(),
+        },
+      ],
+    });
+  }
+
   return changes;
 }
 

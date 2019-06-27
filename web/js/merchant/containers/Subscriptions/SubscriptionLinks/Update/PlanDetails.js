@@ -20,12 +20,21 @@ export default class UpdateSubscriptionLinkPlanDetails extends React.Component {
           onTimeChange={props.onTimeChange}
           onChangeInPlan={props.onChangeInPlan}
         />
+
+        <Input.Check
+          label="Notify Customer"
+          name="customer_notify"
+          className="Input--vTop"
+          checked={props.fields.customer_notify}
+          fieldLabel="Notify customer for this update and future changes."
+        />
+
         {showScheduleChange && (
           <Input.Radio
             label="Apply Changes"
+            className="Input--vTop"
             options={CHANGES_OPTIONS}
             name="schedule_change_at"
-            className="Input--vTop"
             onChange={props.onRadioChange}
             defaultValue={props.fields.schedule_change_at}
           />
