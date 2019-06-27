@@ -13,7 +13,6 @@ use Lib\PhoneBook;
 
 use RZP\Jobs;
 use RZP\Exception;
-use RZP\Diag\EventCode;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -22,6 +21,7 @@ use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
+use RZP\Diag\EventCode;
 use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;

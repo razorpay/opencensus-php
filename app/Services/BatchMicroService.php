@@ -7,6 +7,7 @@ use Requests;
 use RZP\Exception;
 use RZP\Models\Batch;
 use GuzzleHttp\Client;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -55,7 +56,7 @@ class BatchMicroService
 
         $this->repo   = $this->app['repo'];
 
-        $this->mode = (isset($this->app['rzp.mode']) === true) ? $this->app['rzp.mode'] : 'live';
+        $this->mode = (isset($this->app['rzp.mode']) === true) ? $this->app['rzp.mode'] : Mode::LIVE;
 
         $this->batchServiceConfig = $this->app['config']->get('applications.batch');
 
@@ -71,9 +72,9 @@ class BatchMicroService
 
     public function forwardToBatchServiceRequest(array $input, Merchant\Entity $merchant, FileStore\Entity $ufhFile = null)
     {
-        $data = array(
+        $data = [
             'batchTypeId' => $input[Batch\Entity::TYPE],
-        );
+        ];
 
         $this->checkAndInsert('name', $input, $data);
 
@@ -85,12 +86,13 @@ class BatchMicroService
         }
         else
         {
-            $multipartData = array([
-                                       'name'     => 'multipartFile',
-                                       'contents' => fopen($ufhFile->getFullFilePath(), 'r'),
-                                       'filename' => $ufhFile->getName() . '.' . $ufhFile->getExtension(),
-                                   ]
-            );
+            $multipartData = [
+                [
+                    'name'     => 'multipartFile',
+                    'contents' => fopen($ufhFile->getFullFilePath(), 'r'),
+                    'filename' => $ufhFile->getName() . '.' . $ufhFile->getExtension(),
+                ]
+            ];
 
             $relativeUri = '/'. self::BATCH_URLS['batch'] . '?' . http_build_query($data);
         }
@@ -160,7 +162,6 @@ class BatchMicroService
      * @param Merchant\Entity $merchant
      *
      * @return array
-     * @throws Exception\ServerNotFoundException
      */
     public function forwardNotify(string $batchId, array $input,Merchant\Entity $merchant): array
     {
@@ -278,16 +279,16 @@ class BatchMicroService
                  ->merchantId($merchant->getId())
                  ->getFile();
 
-        $storeHandler = array(
+        $storeHandler = [
             'location' => $accessor->get()->getLocation(),
             'store'    => $accessor->get()->getStore(),
             'bucket'   => $accessor->get()->getBucket(),
             'region'   => $accessor->get()->getRegion(),
             'mimeType' => $accessor->get()->getMime(),
             'fileSize' => $accessor->get()->getSize(),
-        );
+        ];
 
-        $multipartData = array(
+        $multipartData = [
             [
                 'name'     => 'batchTypeId',
                 'contents' => $input[Batch\Entity::TYPE],
@@ -296,7 +297,7 @@ class BatchMicroService
                 'name'     => 'storeHandler',
                 'contents' => json_encode($storeHandler),
             ],
-        );
+        ];
 
         if (isset($input['config']))
         {
@@ -485,11 +486,11 @@ class BatchMicroService
     {
         if ($batchOrFileStore === 'batch')
         {
-            $urlComponent = array(self::BATCH_URLS['batch'], Batch\Entity::verifyIdAndStripSign($id), self::BATCH_URLS['download']);
+            $urlComponent = [self::BATCH_URLS['batch'], Batch\Entity::verifyIdAndStripSign($id), self::BATCH_URLS['download']];
         }
         else
         {
-            $urlComponent = array(self::BATCH_URLS['filestore'], $id, self::BATCH_URLS['download']);
+            $urlComponent = [self::BATCH_URLS['filestore'], $id, self::BATCH_URLS['download']];
         }
 
         $relativeUrl = implode('/', $urlComponent);
@@ -508,7 +509,7 @@ class BatchMicroService
         return $response;
     }
 
-    public function getFileStores(array $fetchResult, array $input, string $merchantId = null): array
+    public function getFileStores(array $fetchResult, array $input): array
     {
         $fileResults =  $this->getFileStoreById(null, $input);
 
@@ -565,12 +566,12 @@ class BatchMicroService
         {
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
         }
-        
-        $fetchResult = array(
+
+        $fetchResult = [
             'entity' => 'collection',
             'count' => 0,
-            'items' => array(),
-        );
+            'items' => [],
+        ];
 
         switch ($entity)
         {
@@ -579,7 +580,7 @@ class BatchMicroService
                 break;
 
             case self::FILE_STORE:
-                $fetchResult = $this->getFileStores($fetchResult, $input, $merchantId);
+                $fetchResult = $this->getFileStores($fetchResult, $input);
                 break;
 
             default:
