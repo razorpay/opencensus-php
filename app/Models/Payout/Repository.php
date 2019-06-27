@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Payout;
@@ -83,6 +84,23 @@ class Repository extends Base\Repository
                     ->whereNotNull(Entity::UTR)
                     ->merchantId($merchantId)
                     ->get();
+    }
+
+    /**
+     * @param User\Entity $user
+     *
+     * @return int
+     */
+    public function fetchCountOfPayoutsPendingOnUser(User\Entity $user): int
+    {
+        /** @var BuilderEx $query */
+        $query = $this->newQuery();
+
+        $userRoleIds = $user->roles()->allRelatedIds()->toArray();
+
+        $this->filterByRoleIds($query, $userRoleIds);
+
+        return $query->count();
     }
 
     public function updateStatus(Base\PublicCollection $payouts, string $status)

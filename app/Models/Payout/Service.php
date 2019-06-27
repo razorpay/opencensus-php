@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Feature\Constants as Features;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -312,7 +313,18 @@ class Service extends Base\Service
     {
         $queued = $this->getQueuedPayoutsSummary();
 
-        $pending = [];
+        $pending   = [];
+        $scheduled = [];
+
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === true)
+        {
+            $user = $this->auth->getUser();
+
+            $pending = [
+                'count' => $this->repo->payout->fetchCountOfPayoutsPendingOnUser($user),
+            ];
+        }
+
 
         $scheduled = [];
 
