@@ -15,7 +15,6 @@ class EventCode
         'name'  => 'order.creation.processed'
     ];
 
-
     // payment flow events
     const PAYMENT_CREATION_INITIATED                    = [
         'group' => 'initiation',

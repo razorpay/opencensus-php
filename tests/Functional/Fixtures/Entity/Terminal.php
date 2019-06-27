@@ -2570,6 +2570,16 @@ class Terminal extends Base
         return $this->createSharedUpiMindgateTerminal($attributes);
     }
 
+    public function createSharedUpiICICITpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_ICICI_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiIciciTerminal($attributes);
+    }
+
     public function createSharedUpiMindgateIntentTpvTerminal(array $attributes = [])
     {
         $attributes = [
