@@ -159,11 +159,11 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $col = [
                 WalletPhonepe\ReconFields::PAYMENT_TYPE         => 'PAYMENT',
                 WalletPhonepe\ReconFields::RZP_ID               => $row['payment']['id'],
+                WalletPhonepe\ReconFields::ORDER_ID             => $row['payment']['id'],
                 WalletPhonepe\ReconFields::PHONEPE_ID           => $this->fetchFieldFromJsonData(
                                                                             $row['mozart']['raw'],
                                                                             'providerReferenceId'),
                 WalletPhonepe\ReconFields::FROM                 => $date,
-                WalletPhonepe\ReconFields::INSTRUMENT           => 'WALLET_REDEMPTION',
                 WalletPhonepe\ReconFields::CREATION_DATE        => $date,
                 WalletPhonepe\ReconFields::TRANSACTION_DATE     => $date,
                 WalletPhonepe\ReconFields::SETTLEMENT_DATE      => $date,
