@@ -3,11 +3,12 @@
 namespace RZP\Models\CreditNote;
 
 use RZP\Models\Base;
+use RZP\Models\Invoice;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Models\Invoice;
 use RZP\Models\Invoice\Status;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Plan\Subscription;
@@ -19,14 +20,13 @@ class Core extends Base\Core
 {
     public function create(Merchant\Entity $merchant, array $input): Entity
     {
-
         (new Validator)->validateInput("pre_create", $input);
 
         $customerId = $input[Entity::CUSTOMER_ID];
 
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
 
-        $this->checkForSubscription($input, $customer);
+        $this->checkAndFillForSubscription($input);
 
         $creditnote = (new Entity)->build($input);
 
@@ -39,19 +39,10 @@ class Core extends Base\Core
         return $creditnote;
     }
 
-
-    protected function checkForSubscription(array & $input, Customer\Entity $customer)
+    protected function checkAndFillForSubscription(array & $input)
     {
         if (isset($input[Entity::SUBSCRIPTION_ID]) === true)
         {
-            $subscription = $this->repo->subscription->findByPublicIdAndMerchant($input[Entity::SUBSCRIPTION_ID], $this->merchant);
-
-            if ($subscription->getCustomerId() !== $customer->getId())
-            {
-                throw new BadRequestValidationFailureException(
-                    'Subscription customer id does not match ' . $input[Entity::CUSTOMER_ID]);
-            }
-
             $input[Entity::SUBSCRIPTION_ID] = Subscription\Entity::stripDefaultSign($input[Entity::SUBSCRIPTION_ID]);
         }
     }
@@ -64,7 +55,7 @@ class Core extends Base\Core
         {
             $this->validateCreditNoteAmountAvailable($creditNote, $input[Entity::INVOICES]);
 
-            $this->validateInvoicesAndPayments($input[Entity::INVOICES], $merchant, $creditNote);
+            $this->validateInvoicesAndPaymentsAndRefund($input[Entity::INVOICES], $merchant, $creditNote);
         }
 
         return $creditNote;
@@ -86,20 +77,20 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateInvoicesAndPayments(array $input, Merchant\Entity $merchant, Entity $creditNote)
+    protected function validateInvoicesAndPaymentsAndRefund(array $input, Merchant\Entity $merchant, Entity $creditNote)
     {
-        foreach ($input as $row)
+        foreach ($input as $invoiceInput)
         {
-            $this->validateInvoiceAndRefundAmount($row, $merchant, $creditNote);
+            $this->validateInvoiceAndRefundAmount($invoiceInput, $merchant, $creditNote);
 
-            $this->validatePaymentsAndRefundAmount($row, $merchant, $creditNote);
+            $this->doPaymentRefund($invoiceInput, $merchant, $creditNote);
         }
     }
 
 
-    protected function validateInvoiceAndRefundAmount(array $row, Merchant\Entity $merchant, Entity $creditNote)
+    protected function validateInvoiceAndRefundAmount(array $invoiceInput, Merchant\Entity $merchant, Entity $creditNote)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($row[Entity::INVOICE_ID], $merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceInput[Entity::INVOICE_ID], $merchant);
 
         $this->validateInvoiceAndEntity($invoice, $creditNote);
 
@@ -109,7 +100,7 @@ class Core extends Base\Core
                 $invoice->getPublicId() . ' customer does not match credit note customer');
         }
 
-        $refundAmount = $row[Entity::AMOUNT];
+        $refundAmount = $invoiceInput[Entity::AMOUNT];
 
         if (($invoice->getAmount() < $refundAmount) === true)
         {
@@ -128,6 +119,13 @@ class Core extends Base\Core
             throw new BadRequestValidationFailureException(
                 $invoice->getPublicId() . ' and credit note currency does not match');
         }
+
+        if (($refundAmount > $invoice->getAmountPaid()) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Cannot refund the amount since the the refund amount exceeds total payments');
+        }
+
     }
 
     protected function validateInvoiceAndEntity(Invoice\Entity $invoice, Entity $creditNote)
@@ -142,29 +140,15 @@ class Core extends Base\Core
         }
     }
 
-    protected function validatePaymentsAndRefundAmount(array $row, Merchant\Entity $merchant, Entity $creditNote)
+    protected function doPaymentRefund(array $invoiceInput, Merchant\Entity $merchant, Entity $creditNote)
     {
-        $refundAmount = $row[Entity::AMOUNT];
+        $refundAmount = $invoiceInput[Entity::AMOUNT];
 
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($row[Entity::INVOICE_ID], $merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceInput[Entity::INVOICE_ID], $merchant);
 
         $payments = $invoice->payments;
 
-        $totalPayments = 0;
-
-        foreach ($payments as $payment)
-        {
-            $totalPayments += $payment->getAmount();
-        }
-
-        if ($refundAmount > $totalPayments)
-        {
-            throw new BadRequestValidationFailureException(
-                'Cannot refund the amount since the the refund amount exceeds total payments');
-        }
-
         $this->selectAndRefundPayments($payments, $refundAmount, $merchant, $creditNote, $invoice);
-
     }
 
     protected function selectAndRefundPayments(
@@ -199,7 +183,6 @@ class Core extends Base\Core
 
                         $refundAmount = $refundAmount - $currentPaymentAmount;
                     }
-
                 }
             });
     }
@@ -219,11 +202,16 @@ class Core extends Base\Core
 
         $creditNoteInvoiceCore->create($input, $refund, $creditNote, $merchant, $invoice);
 
-        $creditNote->calculateAndSetAmountRefundedAndAvailable($refund->getAmount());
+        $this->repo->transaction(
+            function () use ($creditNote , $refund)
+            {
+                $this->repo->creditnote->lockForUpdateAndReload($creditNote);
 
-        $creditNote->setAppropriateStatus();
+                $creditNote->calculateAndSetAmountRefundedAndAvailable($refund->getAmount());
 
-        $this->repo->saveOrFail($creditNote);
+                $creditNote->setAppropriateStatus();
+
+                $this->repo->saveOrFail($creditNote);
+            });
     }
-
 }

@@ -27,7 +27,7 @@ class Service extends Base\Service
         $creditnote = $this->repo->creditnote
             ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        (new Validator)->validateInput('apply', $input);
+        $creditnote->getValidator()->validateInput('apply', $input);
 
         $creditnote = $this->core()->apply($creditnote, $this->merchant, $input);
 

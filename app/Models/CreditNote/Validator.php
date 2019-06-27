@@ -36,7 +36,11 @@ class Validator extends Base\Validator
 
     protected static $applyItemsRules = [
         Entity::INVOICE_ID =>  'required|public_id|size:18',
-        Entity::AMOUNT     => 'required|mysql_unsigned_int|min_amount',
+        Entity::AMOUNT     => 'required|mysql_unsigned_int|custom',
+    ];
+
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
     ];
 
     public function validateInvoices($attribute, $value)
@@ -56,18 +60,15 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMinAmount(array $input)
+    public function validateAmount($attribute, $amount)
     {
-        if (empty($input[Entity::AMOUNT]) === false)
-        {
-            $currency = $this->entity->getCurrency();
+        $currency = $this->entity->getCurrency();
 
-            $inputAmount = [
-                Entity::AMOUNT   => $input[Entity::AMOUNT],
-                Entity::CURRENCY => $currency,
-            ];
+        $inputAmount = [
+            Entity::AMOUNT   => $amount,
+            Entity::CURRENCY => $currency,
+        ];
 
-            $this->validateInputValues('min_amount_check', $inputAmount);
-        }
+        $this->validateInputValues('min_amount_check', $inputAmount);
     }
 }

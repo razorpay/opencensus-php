@@ -36,5 +36,4 @@ class Core extends Base\Core
 
         return $creditNoteInvoice;
     }
-
 }
