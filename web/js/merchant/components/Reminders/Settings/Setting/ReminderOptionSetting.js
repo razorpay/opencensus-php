@@ -9,15 +9,33 @@ export default class ReminderOptionSetting extends React.Component {
     this.name = props.name;
 
     this.state = {
-      [this.name]: [],
+      options: props.remindersList,
+      [this.name]: props.selectedReminders,
     };
   }
 
-  handleChange = id => e => {
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.remindersList.length !== this.props.remindersList.length) {
+      this.setState({
+        options: remindersList,
+      });
+    }
+
+    if (nextProps.selectedReminders !== this.prop.selectedReminders) {
+      this.setState({
+        [this.name]: nextProps.selectedReminders,
+      });
+    }
+  }
+
+  handleChange = id => (e, { value }) => {
     const newList = [...this.state[this.name]];
-    newList[id] = e.target.value;
+    newList[id] = value;
+
+    const newOptions = this.state.options.filter(option => option.id !== value);
 
     this.setState({
+      options: newOptions,
       [this.name]: newList,
     });
   };
@@ -38,7 +56,8 @@ export default class ReminderOptionSetting extends React.Component {
   };
 
   render() {
-    const { isExpiry, maxSelections, remindersList } = this.props;
+    const { isExpiry, maxSelections } = this.props,
+      { options } = this.state;
 
     const label = isExpiry
       ? 'For links with expiry'
@@ -55,7 +74,9 @@ export default class ReminderOptionSetting extends React.Component {
           {this.state[this.name].map((value, idx) => (
             <RemovableSelect
               required
-              options={remindersList}
+              key={idx}
+              value={value}
+              options={options}
               name={`${this.name}_${value}`}
               onChange={this.handleChange(idx)}
               onRemove={this.handleRemove(value)}
@@ -73,23 +94,9 @@ export default class ReminderOptionSetting extends React.Component {
   }
 }
 
-const RemovableSelect = ({
-  name,
-  options,
-  onRemove,
-  onChange,
-  disabled,
-  defaultValue,
-}) => (
+const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
   <div class="removable-select">
-    <SelectField
-      required
-      name={name}
-      value={value}
-      disabled={disabled}
-      onChange={onChange}
-      defaultValue={defaultValue}
-    >
+    <SelectField required {...otherProps}>
       {options.map(({ id, value: label }) => (
         <option key={id} value={id}>
           {label}
