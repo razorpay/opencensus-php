@@ -8,6 +8,8 @@ class RequestHeader
 
     const USER_AGENT                    = 'user-agent';
 
+    const CONTENT_TYPE                  = 'Content-Type';
+
     // Dashboard Headers
     const ADMIN_TOKEN                   = 'x-admin-token';
 
@@ -48,4 +50,5 @@ class RequestHeader
     const X_Batch_Id                    = 'x-batch-id';
     const X_IDEMPOTENT_KEY              = 'X-Idempotent-Key';
 
+    const X_TASK_ID                     = 'X-Task-ID';
 }

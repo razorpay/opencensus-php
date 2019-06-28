@@ -13,7 +13,6 @@ use Lib\PhoneBook;
 
 use RZP\Jobs;
 use RZP\Exception;
-use RZP\Diag\EventCode;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -22,6 +21,7 @@ use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
+use RZP\Diag\EventCode;
 use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
@@ -1618,9 +1618,15 @@ trait Authorize
         // Adding fee calculation as part of gateway input only if applicable
         $this->addFeeIfApplicable($payment, $gatewayInput);
 
-        if ($payment->hasOrder())
+        if ($payment->hasOrder() === true)
         {
             $gatewayInput['order'] = $payment->order->toArray();
+            $orderBankAccount = $payment->order->bankAccount;
+
+            if ($orderBankAccount !== null)
+            {
+                $gatewayInput['order']['bank_account'] = $orderBankAccount->toArray();
+            }
         }
 
         // modify account number in gateway input for some banks
@@ -1917,6 +1923,7 @@ trait Authorize
                     'message'     => $e->getMessage(),
                     'entity_type' => $payment->getEntity(),
                     'entity_id'   => $payment->getId(),
+                    'stack_trace' => $e->getTraceAsString(),
                 ]);
         }
     }
