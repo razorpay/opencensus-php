@@ -351,8 +351,7 @@ class Gateway extends Base\Gateway
 
         $verifyRefundResponseArray = json_decode(json_encode($xmlResponse), true);
 
-        $scroogeResponse->setGatewayVerifyResponse($decryptedResponse)
-                        ->setGatewayKeys($this->getGatewayVerifyRefundData($verifyRefundResponseArray));
+        $scroogeResponse->setGatewayVerifyResponse($decryptedResponse);
 
         if ($verifyRefundResponseArray[VerifyRefundFields::ERRORCODE] === Status::VERIFY_REFUND_SUCCESS)
         {
@@ -406,6 +405,7 @@ class Gateway extends Base\Gateway
                 }
 
                 return $scroogeResponse->setSuccess(true)
+                                       ->setGatewayKeys($this->getGatewayVerifyRefundData($verifyRefundResponseArray))
                                        ->toArray();
             }
         }
