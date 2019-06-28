@@ -2,93 +2,76 @@ import Button from 'component/Button';
 
 import { SelectField } from 'ui/Field';
 
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+
 export default class ReminderOptionSetting extends React.Component {
-  constructor(props) {
-    super();
+  handleChange = id => e => {
+    const newList = [...this.props.selectedReminders];
+    newList[id] = Number(e.target.value);
 
-    this.name = props.name;
-
-    this.state = {
-      options: props.remindersList,
-      [this.name]: props.selectedReminders,
-    };
-  }
-
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (nextProps.remindersList.length !== this.props.remindersList.length) {
-      this.setState({
-        options: remindersList,
-      });
-    }
-
-    if (nextProps.selectedReminders !== this.prop.selectedReminders) {
-      this.setState({
-        [this.name]: nextProps.selectedReminders,
-      });
-    }
-  }
-
-  handleChange = id => (e, { value }) => {
-    const newList = [...this.state[this.name]];
-    newList[id] = value;
-
-    const newOptions = this.state.options.filter(option => option.id !== value);
-
-    this.setState({
-      options: newOptions,
-      [this.name]: newList,
-    });
+    this.props.onChange(newList);
   };
 
   handleRemove = value => () => {
-    this.setState({
-      [this.name]: this.state[this.name].filter(val => val !== value),
-    });
+    const newList = this.props.selectedReminders.filter(val => val !== value);
+
+    this.props.onChange(newList);
   };
 
   handleAddButton = () => {
-    const newList = [...this.state[this.name]];
-    newList.push(0);
+    const { props } = this;
 
-    this.setState({
-      [this.name]: newList,
-    });
+    const newList = [...props.selectedReminders];
+
+    const nextOptions = filterOptions(
+      props.remindersList,
+      props.selectedReminders
+    );
+
+    newList.push(nextOptions[0].id);
+
+    this.props.onChange(newList);
   };
 
   render() {
-    const { isExpiry, maxSelections } = this.props,
-      { options } = this.state;
+    const {
+      name,
+      isExpiry,
+      maxSelections,
+      selectedReminders,
+      remindersList,
+    } = this.props;
 
     const label = isExpiry
       ? 'For links with expiry'
       : 'For links without expiry';
 
     const showAddBtn =
-      maxSelections && this.state[this.name].length < maxSelections;
+      maxSelections && selectedReminders.length < maxSelections;
 
     return (
       <div class="setting">
-        <label>{label}</label>
+        <EntityDetailRow label={label}>
+          <div class="add-to-list">
+            {selectedReminders.map((value, idx) => (
+              <RemovableSelect
+                required
+                key={idx}
+                value={value}
+                name={`${name}_${value}`}
+                onChange={this.handleChange(idx)}
+                onRemove={this.handleRemove(value)}
+                options={filterOptions(remindersList, selectedReminders, value)}
+              />
+            ))}
 
-        <div class="add-to-list">
-          {this.state[this.name].map((value, idx) => (
-            <RemovableSelect
-              required
-              key={idx}
-              value={value}
-              options={options}
-              name={`${this.name}_${value}`}
-              onChange={this.handleChange(idx)}
-              onRemove={this.handleRemove(value)}
-            />
-          ))}
-
-          {showAddBtn && (
-            <Button.Transparent onClick={this.handleAddButton}>
-              Add Reminder
-            </Button.Transparent>
-          )}
-        </div>
+            {showAddBtn && (
+              <Button.Transparent onClick={this.handleAddButton}>
+                Add Reminder
+              </Button.Transparent>
+            )}
+          </div>
+        </EntityDetailRow>
       </div>
     );
   }
@@ -107,3 +90,11 @@ const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
     <i class="i-close" onClick={onRemove} />
   </div>
 );
+
+function filterOptions(options, selectedReminders, currVal) {
+  return options.filter(({ id }) => {
+    if (currVal !== undefined && id === currVal) return true;
+
+    return !selectedReminders.includes(id);
+  });
+}

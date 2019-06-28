@@ -10,10 +10,16 @@ export default class PaymentLinksSettings extends React.Component {
         sms: false,
         email: false,
       },
+      maxNoReminders: 3,
       withExpiry: [1, 2],
       withOutExpiry: [1, 2],
-      maxNoReminders: 3,
-      scheduledTime: '10AM - 12AM',
+      advancedSettings: {
+        scheduledTime: '10AM - 12AM',
+        channels: {
+          sms: true,
+          email: false,
+        },
+      },
     },
   };
 
@@ -31,12 +37,18 @@ export default class PaymentLinksSettings extends React.Component {
     });
   };
 
-  onChange = type => e => {
+  onChange = type => list => {
     this.setState({
       settings: {
         ...this.state.settings,
-        [type]: [this.state.settings[type], e.target.value],
+        [type]: list,
       },
+    });
+  };
+
+  handleRemove = value => () => {
+    this.setState({
+      [this.name]: this.state[this.name].filter(val => val !== value),
     });
   };
 
@@ -58,26 +70,28 @@ export default class PaymentLinksSettings extends React.Component {
 
             {checked && (
               <div class="panel-body">
-                <ReminderOptionSetting
-                  isExpiry
-                  name="with_expiry"
-                  remindersList={REMINDERS_LIST}
-                  onChange={this.onChange('withExpiry')}
-                  maxSelections={settings.maxNoReminders}
-                  selectedReminders={settings.withExpiry}
-                />
+                <div class="reminder-setting__reminder-options-settings">
+                  <ReminderOptionSetting
+                    isExpiry
+                    name="with_expiry"
+                    remindersList={REMINDERS_LIST}
+                    onChange={this.onChange('withExpiry')}
+                    maxSelections={settings.maxNoReminders}
+                    selectedReminders={settings.withExpiry}
+                  />
 
-                <ReminderOptionSetting
-                  name="with_out_expiry"
-                  maxSelections={settings.maxNoReminders}
-                  onChange={this.onChange('withOutExpiry')}
-                  selectedReminders={settings.withOutExpiry}
-                  remindersList={REMINDERS_LIST_WITHOUT_EXPIRY}
-                />
+                  <ReminderOptionSetting
+                    name="with_out_expiry"
+                    maxSelections={settings.maxNoReminders}
+                    onChange={this.onChange('withOutExpiry')}
+                    selectedReminders={settings.withOutExpiry}
+                    remindersList={REMINDERS_LIST_WITHOUT_EXPIRY}
+                  />
+                </div>
 
                 <Footer
                   onSaveClick={this.onSaveClick}
-                  scheduledTime={settings.scheduledTime}
+                  scheduledTime={settings.advancedSettings.scheduledTime}
                 />
               </div>
             )}
