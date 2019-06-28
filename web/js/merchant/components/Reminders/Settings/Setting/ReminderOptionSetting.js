@@ -11,7 +11,7 @@ export default class ReminderOptionSetting extends React.Component {
     const newList = [...this.props.selectedReminders];
     newList[id] = option;
 
-    this.props.onChange(newList);
+    this.props.onChange(newList, option, this.props.name);
   };
 
   handleRemove = value => () => {
@@ -42,8 +42,8 @@ export default class ReminderOptionSetting extends React.Component {
       name,
       isExpiry,
       maxSelections,
-      selectedReminders,
       remindersList,
+      selectedReminders,
     } = this.props;
 
     const label = isExpiry
@@ -57,21 +57,20 @@ export default class ReminderOptionSetting extends React.Component {
       <div class="setting">
         <EntityDetailRow label={label}>
           <div class="add-to-list">
-            {selectedReminders.map((selectedOption, idx) => (
-              <RemovableSelect
-                required
-                key={idx}
-                name={`${name}_${selectedOption.value}`}
-                onChange={this.handleChange(idx)}
-                onRemove={this.handleRemove(selectedOption)}
-                selected={selectedOption}
-                options={filterOptions(
-                  remindersList,
-                  selectedReminders,
-                  selectedOption
-                )}
-              />
-            ))}
+            {selectedReminders.map((selectedOption, idx) => {
+              return (
+                <RemovableSelect
+                  required
+                  key={idx}
+                  options={remindersList}
+                  selected={selectedOption}
+                  onChange={this.handleChange(idx)}
+                  highlightedOption={selectedOption}
+                  name={`${name}_${selectedOption.value}`}
+                  onRemove={this.handleRemove(selectedOption)}
+                />
+              );
+            })}
 
             {showAddBtn && (
               <Button.Transparent onClick={this.handleAddButton}>
@@ -93,6 +92,7 @@ const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
       showClear={false}
       searchEnabled={false}
       optionLabelPath="label"
+      className="removable-power-select"
     />
 
     <span class="close-btn" onClick={onRemove}>
@@ -101,10 +101,10 @@ const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
   </div>
 );
 
-function filterOptions(options, selectedReminders, selectedOption) {
+const filterOptions = (options, selectedReminders, selectedOption) => {
   return options.filter(option => {
     if (selectedOption && option.value === selectedOption.value) return true;
 
     return !findBy(selectedReminders, 'value', option.value);
   });
-}
+};

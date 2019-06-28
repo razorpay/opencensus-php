@@ -57,14 +57,34 @@ $primary = #538FF0
   }
 
   .PowerSelect {
+    border: 1px solid #D8DBDC
+    border-radius: 0
+    height: 30px
     width: 100%
     margin: 0
     z-index: 0
-    border: 1px solid #D8DBDC
-    border-radius: 0
     
     &--focused {
       border-color: $primary
+      
+      + .close-btn {
+        border-color: $primary
+      }
+    }
+    
+    .PowerSelect__Trigger {
+      height: 30px
+
+      .PowerSelect__TriggerLabel {
+        height: 30px
+        line-height: 1
+        margin: 0
+      }
+    }
+
+    .PowerSelect__TriggerStatus {
+      height: 30px
+      padding-top: 0
     }
   }
 
@@ -81,6 +101,25 @@ $primary = #538FF0
       display: block;
       line-height: 1;
       margin-top: 2px;
+    }
+  }
+}
+
+.removable-power-select__Menu {
+  .PowerSelect__Option {
+    font-size: 14px;	
+    line-height: 17px;
+    margin: 8px;
+    padding: 0;
+    
+    &--disabled {
+      color: #B2B9BC;
+    }
+
+    &--highlighted, &:hover {
+      background: transparent;
+      font-weight: bold;
+      color: #657278;
     }
   }
 }

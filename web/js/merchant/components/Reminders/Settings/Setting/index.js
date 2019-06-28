@@ -1,33 +1,46 @@
+import { findBy } from 'rzp/utils/rzp-utils';
+
 import Header from './Header';
 import Footer from './Footer';
 import AdvancedSettings from './AdvancedSettings';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
 export default class PaymentLinksSettings extends React.Component {
-  state = {
-    checked: true,
-    settings: {
-      channels: {
-        sms: false,
-        email: false,
-      },
-      maxNoReminders: 5,
-      withExpiry: [],
-      withOutExpiry: [
-        { value: '1', label: 'Remind 1 day after issue date' },
-        { value: '2', label: 'Remind 2 day after issue date' },
-      ],
-      advancedSettings: {
-        scheduledTime: '10AM - 12PM',
+  constructor(props) {
+    super();
+
+    this.state = {
+      checked: true,
+      settings: {
         channels: {
-          sms: 0,
-          email: 1,
+          sms: false,
+          email: false,
+        },
+        maxNoReminders: 5,
+        withExpiry: [],
+        withOutExpiry: [
+          { value: '1', label: 'Remind 1 day after issue date' },
+          { value: '2', label: 'Remind 2 day after issue date' },
+        ],
+        advancedSettings: {
+          scheduledTime: '10AM - 12PM',
+          channels: {
+            sms: 0,
+            email: 1,
+          },
         },
       },
-    },
-  };
-
-  componentDidMount() {}
+      remindersList: [
+        {
+          value: '0',
+          label: 'Remind on due date',
+          disabled: false,
+        },
+        ...REMINDERS_LIST_WITHOUT_EXPIRY,
+      ],
+      withoutExprityRemindersList: [...REMINDERS_LIST_WITHOUT_EXPIRY],
+    };
+  }
 
   handleToggle = () => {
     this.setState({
@@ -41,12 +54,20 @@ export default class PaymentLinksSettings extends React.Component {
     });
   };
 
-  onChange = type => list => {
+  onChange = type => (list, option, name) => {
+    const listType =
+      name === 'with_expiry' ? 'remindersList' : 'withoutExprityRemindersList';
+
     this.setState({
       settings: {
         ...this.state.settings,
         [type]: list,
       },
+      [listType]: this.state[listType].map(reminder => {
+        reminder.disabled = findBy(list, 'value', reminder.value);
+
+        return reminder;
+      }),
     });
   };
 
@@ -68,7 +89,12 @@ export default class PaymentLinksSettings extends React.Component {
   };
 
   render() {
-    const { settings, checked } = this.state,
+    const {
+        settings,
+        checked,
+        remindersList,
+        withoutExprityRemindersList,
+      } = this.state,
       { type } = this.props;
 
     return (
@@ -89,7 +115,7 @@ export default class PaymentLinksSettings extends React.Component {
                   <ReminderOptionSetting
                     isExpiry
                     name="with_expiry"
-                    remindersList={REMINDERS_LIST}
+                    remindersList={remindersList}
                     onChange={this.onChange('withExpiry')}
                     maxSelections={settings.maxNoReminders}
                     selectedReminders={settings.withExpiry}
@@ -100,7 +126,7 @@ export default class PaymentLinksSettings extends React.Component {
                     maxSelections={settings.maxNoReminders}
                     onChange={this.onChange('withOutExpiry')}
                     selectedReminders={settings.withOutExpiry}
-                    remindersList={REMINDERS_LIST_WITHOUT_EXPIRY}
+                    remindersList={withoutExprityRemindersList}
                   />
                 </div>
 
@@ -123,15 +149,10 @@ export default class PaymentLinksSettings extends React.Component {
 }
 
 const REMINDERS_LIST_WITHOUT_EXPIRY = [
-  { value: '1', label: 'Remind 1 day after issue date' },
-  { value: '2', label: 'Remind 2 day after issue date' },
-  { value: '3', label: 'Remind 3 day after issue date' },
-  { value: '4', label: 'Remind 4 day after issue date' },
-  { value: '5', label: 'Remind 5 day after issue date' },
-  { value: '6', label: 'Remind 6 day after issue date' },
-];
-
-const REMINDERS_LIST = [
-  { value: 0, label: 'Remind on due date' },
-  ...REMINDERS_LIST_WITHOUT_EXPIRY,
+  { value: '1', label: 'Remind 1 day after issue date', disabled: false },
+  { value: '2', label: 'Remind 2 day after issue date', disabled: false },
+  { value: '3', label: 'Remind 3 day after issue date', disabled: false },
+  { value: '4', label: 'Remind 4 day after issue date', disabled: false },
+  { value: '5', label: 'Remind 5 day after issue date', disabled: false },
+  { value: '6', label: 'Remind 6 day after issue date', disabled: false },
 ];

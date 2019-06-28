@@ -1,14 +1,12 @@
 import Input from 'component/Input';
 
-import { SelectField } from 'ui/Field';
-
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default ({ channels, onChannelChange }) => (
   <div class="setting">
-    <ContentToggler show>
+    <ContentToggler>
       Advanced settings
       <div>
         <EntityDetailRow label="Channels">
