@@ -357,14 +357,11 @@ class Gateway extends Base\Gateway
         {
             $refundArray = $verifyRefundResponseArray[VerifyRefundFields::DETAILS][VerifyRefundFields::REFUND];
 
-            $bool = false;
+            $refundFound = false;
 
-            if (isset($refundArray[VerifyRefundFields::TXN_ID]) === true)
+            if (isset($refundArray[VerifyRefundFields::MEREFUNDREF]) === true)
             {
-                if ($refundArray[VerifyRefundFields::MEREFUNDREF] === $input['refund']['id'])
-                {
-                    $bool = true;
-                }
+                $refundFound = ($refundArray[VerifyRefundFields::MEREFUNDREF] === $input['refund']['id'])? true : false;
             }
             else
             {
@@ -372,18 +369,18 @@ class Gateway extends Base\Gateway
                 {
                     if ($refund[VerifyRefundFields::MEREFUNDREF] === $input['refund']['id'])
                     {
-                        $bool = true;
+                        $refundFound = true;
+
+                        $refundArray = $refund;
 
                         break;
                     }
                 }
             }
 
-            if ($bool === true)
+            if ($refundFound === true)
             {
-                $success = true;
-
-                $received = true;
+                $success = $received = true;
 
                 $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
 
@@ -404,8 +401,12 @@ class Gateway extends Base\Gateway
                     $this->createGatewayPaymentEntity($attributes,'refund');
                 }
 
+                $refundArray[VerifyRefundFields::MESSAGE] = $verifyRefundResponseArray[VerifyRefundFields::MESSAGE];
+
+                $refundArray[VerifyRefundFields::ERRORCODE] = $verifyRefundResponseArray[VerifyRefundFields::ERRORCODE];
+
                 return $scroogeResponse->setSuccess(true)
-                                       ->setGatewayKeys($this->getGatewayVerifyRefundData($verifyRefundResponseArray))
+                                       ->setGatewayKeys($this->getGatewayVerifyRefundData($refundArray))
                                        ->toArray();
             }
         }
@@ -1156,19 +1157,17 @@ class Gateway extends Base\Gateway
     {
         if (empty($verifyRefundFields) === false)
         {
-            $refundDetails = $verifyRefundFields[VerifyRefundFields::DETAILS][VerifyRefundFields::REFUND] ?? null;
-
             return [
                 VerifyRefundFields::ERRORCODE            => $verifyRefundFields[VerifyRefundFields::ERRORCODE] ?? null,
                 VerifyRefundFields::MESSAGE              => $verifyRefundFields[VerifyRefundFields::MESSAGE] ?? null,
-                VerifyRefundFields::TXN_ID               => $refundDetails[VerifyRefundFields::TXN_ID] ?? null,
-                VerifyRefundFields::PRODUCT              => $refundDetails[VerifyRefundFields::PRODUCT] ?? null,
+                VerifyRefundFields::TXN_ID               => $verifyRefundFields[VerifyRefundFields::TXN_ID] ?? null,
+                VerifyRefundFields::PRODUCT              => $verifyRefundFields[VerifyRefundFields::PRODUCT] ?? null,
                 VerifyRefundFields::REFUND_INITIATE_DATE =>
-                    $refundDetails[VerifyRefundFields::REFUND_INITIATE_DATE] ?? null,
+                    $verifyRefundFields[VerifyRefundFields::REFUND_INITIATE_DATE] ?? null,
                 VerifyRefundFields::REFUNDPROCESSDATE    =>
-                    $refundDetails[VerifyRefundFields::REFUNDPROCESSDATE] ?? null,
-                VerifyRefundFields::REMARKS              => $refundDetails[VerifyRefundFields::REMARKS] ?? null,
-                VerifyRefundFields::MEREFUNDREF          => $refundDetails[VerifyRefundFields::MEREFUNDREF] ?? null,
+                    $verifyRefundFields[VerifyRefundFields::REFUNDPROCESSDATE] ?? null,
+                VerifyRefundFields::REMARKS              => $verifyRefundFields[VerifyRefundFields::REMARKS] ?? null,
+                VerifyRefundFields::MEREFUNDREF          => $verifyRefundFields[VerifyRefundFields::MEREFUNDREF] ?? null,
             ];
         }
         return [];
