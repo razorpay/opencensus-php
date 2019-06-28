@@ -419,9 +419,9 @@ class AdminFetch
             ],
 
             Entity::BANKING_ACCOUNT => [
-                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
-                'account_number' => [
-                    Fetch::LABEL => 'Account Number',
+                'merchant_id'     => Fetch::FIELD_MERCHANT_ID,
+                'account_number'  => [
+                    Fetch::LABEL  => 'Account Number',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'status' => [
