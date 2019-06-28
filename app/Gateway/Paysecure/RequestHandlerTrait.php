@@ -492,18 +492,20 @@ trait RequestHandlerTrait
     // So, we use the redis INCR function which acts as a counter and set it's expiry to 1 hour
     protected function generateStan()
     {
-        $currentValue = $this->app['cache']->store($this->secureCacheDriver)->get(self::GATEWAY_PAYSECURE_STAN_HOURLY);
+        $cacheDriver = $this->app['cache']->store($this->secureCacheDriver);
 
-        if ($currentValue === null)
+        $currentValue = (int)($cacheDriver->get(self::GATEWAY_PAYSECURE_STAN_HOURLY));
+
+        if ($currentValue === 999999)
         {
             $currentValue = 1;
 
             // Setting the initial value to 1 with ttl of 1 hour
-            $this->app['cache']->store($this->secureCacheDriver)->set(self::GATEWAY_PAYSECURE_STAN_HOURLY, $currentValue, 60);
+            $cacheDriver->forever(self::GATEWAY_PAYSECURE_STAN_HOURLY, $currentValue);
         }
         else
         {
-            $currentValue = $this->app['cache']->store($this->secureCacheDriver)->increment(self::GATEWAY_PAYSECURE_STAN_HOURLY);
+            $currentValue = $cacheDriver->increment(self::GATEWAY_PAYSECURE_STAN_HOURLY);
         }
 
         return sprintf('%06d', $currentValue);
