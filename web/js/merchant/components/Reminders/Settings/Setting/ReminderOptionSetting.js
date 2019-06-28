@@ -11,7 +11,7 @@ export default class ReminderOptionSetting extends React.Component {
     const newList = [...this.props.selectedReminders];
     newList[id] = option;
 
-    this.props.onChange(newList, option, this.props.name);
+    this.props.onChange(newList, this.props.name);
   };
 
   handleRemove = value => () => {
@@ -74,7 +74,7 @@ export default class ReminderOptionSetting extends React.Component {
 
             {showAddBtn && (
               <Button.Transparent onClick={this.handleAddButton}>
-                Add Reminder
+                <i class="i i-plus" /> Add Reminder
               </Button.Transparent>
             )}
           </div>

@@ -1,10 +1,25 @@
+import { connect } from 'react-redux';
+
 import { findBy } from 'rzp/utils/rzp-utils';
 
-import Header from './Header';
-import Footer from './Footer';
+import * as ModalActions from 'rzp/modules/modals';
+
 import AdvancedSettings from './AdvancedSettings';
+import EmailPreviewModal from './EmailPreviewModal';
+import Footer from './Footer';
+import Header from './Header';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
+@connect(
+  state => {
+    return {
+      user: state.session.user,
+    };
+  },
+  {
+    ...ModalActions,
+  }
+)
 export default class PaymentLinksSettings extends React.Component {
   constructor(props) {
     super();
@@ -54,7 +69,7 @@ export default class PaymentLinksSettings extends React.Component {
     });
   };
 
-  onChange = type => (list, option, name) => {
+  onChange = type => (list, name) => {
     const listType =
       name === 'with_expiry' ? 'remindersList' : 'withoutExprityRemindersList';
 
@@ -85,6 +100,21 @@ export default class PaymentLinksSettings extends React.Component {
           },
         },
       },
+    });
+  };
+
+  showReminderEMailPreview = () => {
+    this.props.openModal({
+      size: 'large',
+      className: 'reminders-email-preivew-modal',
+      component: (
+        <EmailPreviewModal
+          onClose={this.props.closeModal}
+          subject={this.props.emailDetails.subject}
+          businessName={this.props.user.business_name}
+          contentList={this.props.emailDetails.contentList}
+        />
+      ),
     });
   };
 
@@ -137,6 +167,7 @@ export default class PaymentLinksSettings extends React.Component {
 
                 <Footer
                   onSaveClick={this.onSaveClick}
+                  onPreviewClick={this.showReminderEMailPreview}
                   scheduledTime={settings.advancedSettings.scheduledTime}
                 />
               </div>
