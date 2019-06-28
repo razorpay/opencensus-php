@@ -45,23 +45,39 @@ $primary = #538FF0
 }
 
 .removable-select {
+  display: flex;
+  align-items: center;
+  max-width: 300px;
+
   &:not(:last-child) {
     margin-bottom: 15px;
   }
-  
-  label {
-    display: none;
+
+  .PowerSelect {
+    width: 100%
+    margin: 0
+    z-index: 0
+    border: 1px solid #D8DBDC
+    border-radius: 0
+    
+    &--focused {
+      border-color: $primary
+    }
   }
-  
-  .field {
-    display: inline
-  }
-  
-  i.i-close {
+
+  .close-btn {
+    border-radius: 75%;
+    background-color: #FFFFFF;
+    border: 1px solid #D8DBDC;
+    display: inline-block;
+    padding: 0px 2px;
     margin-left: 10px;
-    border: 1px solid;
-    border-radius: 50%;
-    padding: 1px 3px;
-    vertical-align: middle;
+  
+    i.i-close {
+      color: #58666E;
+      display: block;
+      line-height: 1;
+      margin-top: 2px;
+    }
   }
 }

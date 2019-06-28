@@ -1,5 +1,3 @@
-import { findBy } from 'rzp/utils/rzp-utils';
-
 import Header from './Header';
 import Footer from './Footer';
 import AdvancedSettings from './AdvancedSettings';
@@ -15,7 +13,10 @@ export default class PaymentLinksSettings extends React.Component {
       },
       maxNoReminders: 5,
       withExpiry: [],
-      withOutExpiry: [3, 5],
+      withOutExpiry: [
+        { value: '1', label: 'Remind 1 day after issue date' },
+        { value: '2', label: 'Remind 2 day after issue date' },
+      ],
       advancedSettings: {
         scheduledTime: '10AM - 12PM',
         channels: {
@@ -108,15 +109,15 @@ export default class PaymentLinksSettings extends React.Component {
 }
 
 const REMINDERS_LIST_WITHOUT_EXPIRY = [
-  { id: 1, value: 'Remind 1 day after issue date' },
-  { id: 2, value: 'Remind 2 day after issue date' },
-  { id: 3, value: 'Remind 3 day after issue date' },
-  { id: 4, value: 'Remind 4 day after issue date' },
-  { id: 5, value: 'Remind 5 day after issue date' },
-  { id: 6, value: 'Remind 6 day after issue date' },
+  { value: '1', label: 'Remind 1 day after issue date' },
+  { value: '2', label: 'Remind 2 day after issue date' },
+  { value: '3', label: 'Remind 3 day after issue date' },
+  { value: '4', label: 'Remind 4 day after issue date' },
+  { value: '5', label: 'Remind 5 day after issue date' },
+  { value: '6', label: 'Remind 6 day after issue date' },
 ];
 
 const REMINDERS_LIST = [
-  { id: 0, value: 'Remind on due date' },
+  { value: 0, label: 'Remind on due date' },
   ...REMINDERS_LIST_WITHOUT_EXPIRY,
 ];

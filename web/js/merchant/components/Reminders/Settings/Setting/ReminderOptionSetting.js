@@ -1,19 +1,23 @@
+import { findBy } from 'rzp/utils/rzp-utils';
+
 import Button from 'component/Button';
 
-import { SelectField } from 'ui/Field';
+import { PowerSelect } from 'react-power-select';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReminderOptionSetting extends React.Component {
-  handleChange = id => e => {
+  handleChange = id => ({ option }) => {
     const newList = [...this.props.selectedReminders];
-    newList[id] = Number(e.target.value);
+    newList[id] = option;
 
     this.props.onChange(newList);
   };
 
   handleRemove = value => () => {
-    const newList = this.props.selectedReminders.filter(val => val !== value);
+    const newList = this.props.selectedReminders.filter(
+      selectedReminder => selectedReminder.value !== value
+    );
 
     this.props.onChange(newList);
   };
@@ -28,7 +32,7 @@ export default class ReminderOptionSetting extends React.Component {
       props.selectedReminders
     );
 
-    newList.push(nextOptions[0].id);
+    newList.push(nextOptions[0]);
 
     this.props.onChange(newList);
   };
@@ -53,15 +57,19 @@ export default class ReminderOptionSetting extends React.Component {
       <div class="setting">
         <EntityDetailRow label={label}>
           <div class="add-to-list">
-            {selectedReminders.map((value, idx) => (
+            {selectedReminders.map((selectedOption, idx) => (
               <RemovableSelect
                 required
                 key={idx}
-                value={value}
-                name={`${name}_${value}`}
+                name={`${name}_${selectedOption.value}`}
                 onChange={this.handleChange(idx)}
-                onRemove={this.handleRemove(value)}
-                options={filterOptions(remindersList, selectedReminders, value)}
+                onRemove={this.handleRemove(selectedOption)}
+                selected={selectedOption}
+                options={filterOptions(
+                  remindersList,
+                  selectedReminders,
+                  selectedOption
+                )}
               />
             ))}
 
@@ -79,22 +87,24 @@ export default class ReminderOptionSetting extends React.Component {
 
 const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
   <div class="removable-select">
-    <SelectField required {...otherProps}>
-      {options.map(({ id, value: label }) => (
-        <option key={id} value={id}>
-          {label}
-        </option>
-      ))}
-    </SelectField>
+    <PowerSelect
+      {...otherProps}
+      options={options}
+      showClear={false}
+      searchEnabled={false}
+      optionLabelPath="label"
+    />
 
-    <i class="i-close" onClick={onRemove} />
+    <span class="close-btn" onClick={onRemove}>
+      <i class="i-close" />
+    </span>
   </div>
 );
 
-function filterOptions(options, selectedReminders, currVal) {
-  return options.filter(({ id }) => {
-    if (currVal !== undefined && id === currVal) return true;
+function filterOptions(options, selectedReminders, selectedOption) {
+  return options.filter(option => {
+    if (selectedOption && option.value === selectedOption.value) return true;
 
-    return !selectedReminders.includes(id);
+    return !findBy(selectedReminders, 'value', option.value);
   });
 }
