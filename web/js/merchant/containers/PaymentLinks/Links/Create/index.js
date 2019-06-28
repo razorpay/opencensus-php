@@ -23,9 +23,13 @@ import { onChangeNotes } from 'component/Input/PairList';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { updatePLInReduxList } from 'merchant/modules/invoices/list';
+import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { luminateRow } from 'merchant/modules/app';
 
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
+
+import Spinner from 'rzp/ui/Spinner';
 
 const FORM_FIELDS = {
   title: 'Payment Link',
@@ -138,6 +142,7 @@ function WizardFields(field) {
 @withRouter
 @connect(state => state.session, {
   updatePLInReduxList,
+  fetchInvoice,
   showNotification,
   openModal,
   closeModal,
@@ -172,7 +177,56 @@ export default class CreateNewContainer extends React.Component {
     trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
   }
 
+  fetchIfIntentDuplicate(invoiceId) {
+    this.setState({
+      fetchingInvoice: true,
+    });
+
+    this.props
+      .fetchInvoice(invoiceId)
+      .then(data => {
+        // TODO: Update data in state
+        console.log('DATA....', data);
+
+        this.setState({
+          fetchingInvoice: false,
+          dirty: {
+            currency: data.currency,
+            description: data.description,
+            amount: data.amount / 100,
+            partial_payment: data.partial_payment | 0,
+            sms_notify: data.sms_notify | 0,
+            email_notify: data.email_notify | 0,
+            email: data.customer_details.email,
+            contact: data.customer_details.contact,
+            expire_by: '',
+            notes: Object.keys(data.notes).map(key => ({
+              key,
+              value: data.notes[key],
+            })),
+          },
+          _name: {
+            hasNoExpiry: !data.expire_by,
+            expire_by_date: moment(data.expire_by * 1000),
+          },
+        });
+      })
+      .catch(err => {
+        console.log('ERR..', err);
+
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  }
+
   componentDidMount() {
+    const searchQuery = getURLQueryParams(this.props.location.search);
+    if (searchQuery.duplicate_id) {
+      this.fetchIfIntentDuplicate(searchQuery.duplicate_id);
+    }
+
     this.toggleDisableState();
   }
 
@@ -500,6 +554,7 @@ export default class CreateNewContainer extends React.Component {
           closePaymentLinkForm('Cancel');
         }}
         disableSubmit={this.state.disableSubmit}
+        fetchingInvoice={this.state.fetchingInvoice}
       />
     );
 
@@ -525,7 +580,7 @@ class CreateWizard extends React.Component {
   };
 
   render() {
-    const { disableSubmit, mode } = this.props;
+    const { disableSubmit, mode, fetchingInvoice } = this.props;
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -540,33 +595,41 @@ class CreateWizard extends React.Component {
             </Alert.Warning>
           )}
 
-          {/* FORM */}
-          <Form
-            class="PaymentLinks--Create-Form"
-            onChange={this.props.onChange}
-            layout="tabular"
-            key={FORM_FIELDS.title}
-          >
-            {this.props.content}
-          </Form>
+          {fetchingInvoice ? (
+            <div className="page-center">
+              <Spinner />
+            </div>
+          ) : (
+            /* FORM */
+            <Form
+              class="PaymentLinks--Create-Form"
+              onChange={this.props.onChange}
+              layout="tabular"
+              key={FORM_FIELDS.title}
+            >
+              {this.props.content}
+            </Form>
+          )}
         </main>
 
-        {/* FORM FOOTER */}
-        <footer>
-          {/* Action Button 1 */}
-          {this.props.isModalView && (
-            <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
-          )}
+        {!fetchingInvoice && (
+          /* FORM FOOTER */
+          <footer>
+            {/* Action Button 1 */}
+            {this.props.isModalView && (
+              <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
+            )}
 
-          {/* Action Button 2 */}
-          <AsyncBtn.Primary
-            onClick={this.props.onCreate}
-            pendingState={'Creating...'}
-            disabled={disableSubmit}
-          >
-            Create {FORM_FIELDS.title}
-          </AsyncBtn.Primary>
-        </footer>
+            {/* Action Button 2 */}
+            <AsyncBtn.Primary
+              onClick={this.props.onCreate}
+              pendingState={'Creating...'}
+              disabled={disableSubmit}
+            >
+              Create {FORM_FIELDS.title}
+            </AsyncBtn.Primary>
+          </footer>
+        )}
       </div>
     );
   }
