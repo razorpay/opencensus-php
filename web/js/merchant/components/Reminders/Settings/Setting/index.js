@@ -1,5 +1,8 @@
+import { findBy } from 'rzp/utils/rzp-utils';
+
 import Header from './Header';
 import Footer from './Footer';
+import AdvancedSettings from './AdvancedSettings';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
 export default class PaymentLinksSettings extends React.Component {
@@ -10,11 +13,11 @@ export default class PaymentLinksSettings extends React.Component {
         sms: false,
         email: false,
       },
-      maxNoReminders: 3,
-      withExpiry: [1, 2],
-      withOutExpiry: [1, 2],
+      maxNoReminders: 5,
+      withExpiry: [],
+      withOutExpiry: [3, 5],
       advancedSettings: {
-        scheduledTime: '10AM - 12AM',
+        scheduledTime: '10AM - 12PM',
         channels: {
           sms: true,
           email: false,
@@ -89,6 +92,8 @@ export default class PaymentLinksSettings extends React.Component {
                   />
                 </div>
 
+                <AdvancedSettings {...settings.advancedSettings} />
+
                 <Footer
                   onSaveClick={this.onSaveClick}
                   scheduledTime={settings.advancedSettings.scheduledTime}
@@ -106,9 +111,9 @@ const REMINDERS_LIST_WITHOUT_EXPIRY = [
   { id: 1, value: 'Remind 1 day after issue date' },
   { id: 2, value: 'Remind 2 day after issue date' },
   { id: 3, value: 'Remind 3 day after issue date' },
-  { id: 4, value: 'Remind 5 day after issue date' },
-  { id: 5, value: 'Remind 7 day after issue date' },
-  { id: 6, value: 'Remind 14 day after issue date' },
+  { id: 4, value: 'Remind 4 day after issue date' },
+  { id: 5, value: 'Remind 5 day after issue date' },
+  { id: 6, value: 'Remind 6 day after issue date' },
 ];
 
 const REMINDERS_LIST = [
