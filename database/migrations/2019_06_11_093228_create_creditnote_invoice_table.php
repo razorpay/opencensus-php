@@ -21,17 +21,17 @@ class CreateCreditNoteInvoiceTable extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+            $table->string(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
+            $table->string(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::CREDITNOTE_ID, Entity::ID_LENGTH);
+            $table->string(Entity::CREDITNOTE_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::INVOICE_ID, Entity::ID_LENGTH);
+            $table->string(Entity::INVOICE_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::REFUND_ID, Entity::ID_LENGTH);
+            $table->string(Entity::REFUND_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::STATUS, 16);
+            $table->string(Entity::STATUS, 16);
 
             $table->bigInteger(Entity::AMOUNT)
                   ->unsigned();

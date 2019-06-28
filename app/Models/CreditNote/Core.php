@@ -61,13 +61,13 @@ class Core extends Base\Core
         return $creditNote;
     }
 
-    protected function validateCreditNoteAmountAvailable(Entity $creditNote, array $input)
+    protected function validateCreditNoteAmountAvailable(Entity $creditNote, array $invoiceInputs)
     {
         $totalRefundAmount = 0;
 
-        foreach ($input as $row)
+        foreach ($invoiceInputs as $invoiceInput)
         {
-            $totalRefundAmount += $row[Entity::AMOUNT];
+            $totalRefundAmount += $invoiceInput[Entity::AMOUNT];
         }
 
         if (($creditNote->getAmountAvailable() < $totalRefundAmount) === true)
@@ -77,9 +77,9 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateInvoicesAndPaymentsAndRefund(array $input, Merchant\Entity $merchant, Entity $creditNote)
+    protected function validateInvoicesAndPaymentsAndRefund(array $invoiceInputs, Merchant\Entity $merchant, Entity $creditNote)
     {
-        foreach ($input as $invoiceInput)
+        foreach ($invoiceInputs as $invoiceInput)
         {
             $this->validateInvoiceAndRefundAmount($invoiceInput, $merchant, $creditNote);
 
@@ -146,7 +146,9 @@ class Core extends Base\Core
 
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceInput[Entity::INVOICE_ID], $merchant);
 
-        $payments = $invoice->payments;
+        $payments = $invoice->payments()
+                            ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
+                            ->get();
 
         $this->selectAndRefundPayments($payments, $refundAmount, $merchant, $creditNote, $invoice);
     }
