@@ -8,7 +8,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default ({ channels, onChannelChange }) => (
   <div class="setting">
-    <ContentToggler>
+    <ContentToggler show>
       Advanced settings
       <div>
         <EntityDetailRow label="Channels">
@@ -17,18 +17,24 @@ export default ({ channels, onChannelChange }) => (
               <Input.Check
                 name="sms"
                 fieldLabel="SMS"
-                defaultValue="0"
-                checked={channels.sms}
-                onChange={onChannelChange}
+                defaultValue={channels.sms}
+                onChange={onChannelChange('sms')}
               />
 
               <Input.Check
                 name="email"
                 defaultValue="0"
                 fieldLabel="Email"
-                checked={channels.email}
-                onChange={onChannelChange}
+                defaultValue={channels.email}
+                onChange={onChannelChange('email')}
               />
+            </div>
+
+            <div class="m-t">
+              <small>
+                Customers will receive email or SMS only if the details are
+                mentioned during the creation of a payment link
+              </small>
             </div>
           </Input.Group>
         </EntityDetailRow>

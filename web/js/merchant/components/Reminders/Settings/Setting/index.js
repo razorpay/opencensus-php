@@ -20,8 +20,8 @@ export default class PaymentLinksSettings extends React.Component {
       advancedSettings: {
         scheduledTime: '10AM - 12PM',
         channels: {
-          sms: true,
-          email: false,
+          sms: 0,
+          email: 1,
         },
       },
     },
@@ -50,9 +50,20 @@ export default class PaymentLinksSettings extends React.Component {
     });
   };
 
-  handleRemove = value => () => {
+  handleChannelChange = type => e => {
+    const { settings } = this.state;
+
     this.setState({
-      [this.name]: this.state[this.name].filter(val => val !== value),
+      settings: {
+        ...settings,
+        advancedSettings: {
+          ...settings.advancedSettings,
+          channels: {
+            ...settings.advancedSettings.channels,
+            [type]: e.target.value ? '1' : '0',
+          },
+        },
+      },
     });
   };
 
@@ -93,7 +104,10 @@ export default class PaymentLinksSettings extends React.Component {
                   />
                 </div>
 
-                <AdvancedSettings {...settings.advancedSettings} />
+                <AdvancedSettings
+                  {...settings.advancedSettings}
+                  onChannelChange={this.handleChannelChange}
+                />
 
                 <Footer
                   onSaveClick={this.onSaveClick}
