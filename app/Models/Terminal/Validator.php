@@ -1180,6 +1180,9 @@ class Validator extends Base\Validator
         $newMatch = array_only($new->toArray(), self::$matchAttributes);
         $existingMatch = array_only($existing->toArray(), self::$matchAttributes);
 
+        ksort($newMatch);
+        ksort($existingMatch);
+
         $newId = $new->getId();
         $existingId = $existing->getId();
 

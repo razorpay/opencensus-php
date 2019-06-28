@@ -970,7 +970,6 @@ trait Capture
 
             $this->updateVirtualAccountStatusForOrder($payment);
         }
-
     }
 
     /*
