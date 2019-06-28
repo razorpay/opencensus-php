@@ -83,6 +83,7 @@ class Gateway
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
+    const UPI_CITI               = 'upi_citi';
 
     const CARD_FSS               = 'card_fss';
 
@@ -833,6 +834,7 @@ class Gateway
         self::UPI_RBL,
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
+        self::UPI_CITI,
     ];
 
     public static $headless = [
@@ -1262,6 +1264,7 @@ class Gateway
         Gateway::UPI_YESBANK,
         Gateway::UPI_AIRTEL,
         Gateway::WALLET_PHONEPE,
+        Gateway::UPI_CITI,
     ];
 
     /**

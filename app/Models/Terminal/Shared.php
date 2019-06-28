@@ -109,6 +109,7 @@ class Shared
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
     const UPI_AIRTEL_RAZORPAY_TERMINAL       = '100UPIArtlTmnl';
+    const UPI_CITI_RAZORPAY_TERMINAL         = '100UPICitiTmnl';
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';
 
     protected static $shared = array(
