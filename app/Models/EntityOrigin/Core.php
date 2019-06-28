@@ -60,6 +60,7 @@ class Core extends Base\Core
                     'message'           => $e->getMessage(),
                     Entity::ENTITY_TYPE => $entity->getEntity(),
                     Entity::ENTITY_ID   => $entity->getId(),
+                    'stack_trace'       => $e->getTraceAsString(),
                 ]);
         }
     }
@@ -158,12 +159,6 @@ class Core extends Base\Core
         $entityOrigin->origin()->associate($originEntity);
 
         $entityOrigin->entity()->associate($entity);
-
-        // @todo : Remove later, not required
-        $this->trace->info(TraceCode::ORIGIN_CREATED,
-            [
-                Entity::ID => $entityOrigin->getId(),
-            ]);
 
         return $entityOrigin;
     }

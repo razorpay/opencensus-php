@@ -533,6 +533,11 @@ class Gateway extends Base\Gateway
             RequestFields::SPID             => $this->getSpid(),
         ];
 
+        if ($this->isCorporateBanking() === true)
+        {
+            unset($requestData[RequestFields::SPID]);
+        }
+
         return array_merge($baseRequestData, $requestData);
     }
 
@@ -1043,6 +1048,7 @@ class Gateway extends Base\Gateway
                 return $this->config['live_hash_secret_tpv'];
 
             case $this->config['live_merchant_id2_corp']:
+            case $this->config['live_merchant_id2_corp_karvy']:
                 return $this->config['live_hash_secret_corp'];
 
             case $this->config['live_merchant_id2']:

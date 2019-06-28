@@ -314,6 +314,11 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function postProcessServerCallback($input): array
+    {
+        return ['success' => true];
+    }
+
     public function getTerminalDetailsFromCallbackIfApplicable($input)
     {
         return [
