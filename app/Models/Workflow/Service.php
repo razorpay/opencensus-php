@@ -96,8 +96,7 @@ class Service extends Base\Service
 
         $permissionId = $permissionIds[0];
 
-        $workflows = (new Action\Core)->getWorkflowsForPermission(
-            $permissionId, $orgId);
+        $workflows = (new Action\Core)->getWorkflowsForPermission($permissionId, $orgId);
 
         return ($workflows->isEmpty() === false);
     }

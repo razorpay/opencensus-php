@@ -5047,3 +5047,7 @@ ALTER TABLE `action_checker`
 ALTER TABLE action_state
 	ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
 	ADD INDEX action_state_user_id_index (user_id);
+
+ALTER TABLE `workflow_payout_amount_rules`
+    CHANGE COLUMN x_amount min_amount BIGINT UNSIGNED DEFAULT NULL,
+    CHANGE COLUMN y_amount max_amount BIGINT UNSIGNED DEFAULT NULL;

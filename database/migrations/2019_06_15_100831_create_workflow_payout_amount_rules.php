@@ -25,10 +25,10 @@ class CreateWorkflowPayoutAmountRules extends Migration
             $table->string(Entity::CONDITION, 255)
                   ->nullable();
 
-            $table->unsignedBigInteger(Entity::X_AMOUNT)
+            $table->unsignedBigInteger(Entity::MIN_AMOUNT)
                   ->nullable();
 
-            $table->unsignedBigInteger(Entity::Y_AMOUNT)
+            $table->unsignedBigInteger(Entity::MAX_AMOUNT)
                   ->nullable();
 
             $table->char(Entity::WORKFLOW_ID, Entity::ID_LENGTH);

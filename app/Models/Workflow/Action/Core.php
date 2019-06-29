@@ -59,8 +59,6 @@ class Core extends Base\Core
         // More than one workflow could be found.
         $workflow = $workflows->first();
 
-        $params[Entity::WORKFLOW_ID] = $workflow->getId();
-
         $params[Entity::PERMISSION_ID] = $permissionId;
 
         $params[Entity::DIFFER] = $input;
@@ -80,12 +78,40 @@ class Core extends Base\Core
 
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
+        // Evaluate for workflow rules
+        $evaluatedWorkflow = $this->evaluateWorkflowRulesIfDefined($routePermission, $params[Entity::ENTITY_ID]);
+
+        //
+        // Override $workflow with $evaluatedWorkflow if it's non-null
+        // This means that a rule evaluation resulted in another workflow being
+        // picked up.
+        //
+        $workflow = $evaluatedWorkflow ?: $workflow;
+
+        $params[Entity::WORKFLOW_ID] = $workflow->getId();
+
         // TODO:: add code for actual verification of maker_type here
         $params[Entity::MAKER_TYPE] = $input[Entity::MAKER_TYPE] ?: null;
 
         $params[Entity::MAKER_ID] = $input[Entity::MAKER_ID] ?: null;
 
         return $params;
+    }
+
+    private function evaluateWorkflowRulesIfDefined(string $permission, string $entityId)
+    {
+        //
+        // Workflow rules only apply to the create_payout permission for now
+        // Very custom, non-generic and ugly logic
+        //
+        if ($permission !== Permission\Name::CREATE_PAYOUT)
+        {
+            return null;
+        }
+
+        $merchant = app('basicauth')->getMerchant();
+
+        return (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($entityId, $merchant);
     }
 
     /*
@@ -101,6 +127,7 @@ class Core extends Base\Core
         $makerClass = E::getEntityClass($input[Entity::MAKER_TYPE]);
 
         $params = [
+            Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
             Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
             Entity::MAKER_ID        => $makerClass::$strip($input[Entity::MAKER_ID]),
             Entity::MAKER_TYPE      => $input[Entity::MAKER_TYPE],
@@ -222,10 +249,11 @@ class Core extends Base\Core
      * This checks for if the permission is present for the organisation
      * and if a workflow is mapped gainst the permission.
      *
-     * @param array $permissions
+     * @param string $permissionId
      * @param string $orgId
+     *
      * @return array
-     **/
+     */
     public function getWorkflowsForPermission(string $permissionId, string $orgId)
     {
         // Implicit check for workflow in the organisation against permission ids.
