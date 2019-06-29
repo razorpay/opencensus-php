@@ -89,9 +89,9 @@ class Repository extends Base\Repository
     /**
      * @param User\Entity $user
      *
-     * @return int
+     * @return array
      */
-    public function fetchCountOfPayoutsPendingOnUser(User\Entity $user): int
+    public function fetchSummaryOfPayoutsPendingOnUser(User\Entity $user): array
     {
         /** @var BuilderEx $query */
         $query = $this->newQuery();
@@ -100,7 +100,10 @@ class Repository extends Base\Repository
 
         $this->filterByRoleIds($query, $userRoleIds);
 
-        return $query->count();
+        return [
+            'count'        => $query->count(),
+            'total_amount' => (int) $query->sum(Entity::AMOUNT),
+        ];
     }
 
     public function updateStatus(Base\PublicCollection $payouts, string $status)

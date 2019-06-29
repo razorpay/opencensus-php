@@ -320,13 +320,8 @@ class Service extends Base\Service
         {
             $user = $this->auth->getUser();
 
-            $pending = [
-                'count' => $this->repo->payout->fetchCountOfPayoutsPendingOnUser($user),
-            ];
+            $pending = $this->repo->payout->fetchSummaryOfPayoutsPendingOnUser($user);
         }
-
-
-        $scheduled = [];
 
         return [
             'queued'    => $queued,
