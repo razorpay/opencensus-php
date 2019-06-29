@@ -79,7 +79,7 @@ class Core extends Base\Core
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
         // Evaluate for workflow rules
-        $evaluatedWorkflow = $this->evaluateWorkflowRulesIfDefined($routePermission, $params[Entity::ENTITY_ID]);
+        $evaluatedWorkflow = $this->evaluateWorkflowRulesIfDefined($input);
 
         //
         // Override $workflow with $evaluatedWorkflow if it's non-null
@@ -98,11 +98,13 @@ class Core extends Base\Core
         return $params;
     }
 
-    private function evaluateWorkflowRulesIfDefined(string $permission, string $entityId)
+    private function evaluateWorkflowRulesIfDefined(array $input)
     {
+        $permission = $input[Differ\Entity::PERMISSION];
+
         //
         // Workflow rules only apply to the create_payout permission for now
-        // Very custom, non-generic and ugly logic
+        // Very custom, non-generic and ugly logic follows
         //
         if ($permission !== Permission\Name::CREATE_PAYOUT)
         {
@@ -111,7 +113,13 @@ class Core extends Base\Core
 
         $merchant = app('basicauth')->getMerchant();
 
-        return (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($entityId, $merchant);
+        //
+        // The amount attribute will definitely exist in the request payload at this point
+        // If it doesn't, Payout validators will fail before the code reaches the workflow layer
+        //
+        $amount = $input[Differ\Entity::PAYLOAD]['amount'];
+
+        return (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
     }
 
     /*
@@ -127,7 +135,6 @@ class Core extends Base\Core
         $makerClass = E::getEntityClass($input[Entity::MAKER_TYPE]);
 
         $params = [
-            Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
             Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
             Entity::MAKER_ID        => $makerClass::$strip($input[Entity::MAKER_ID]),
             Entity::MAKER_TYPE      => $input[Entity::MAKER_TYPE],
@@ -668,13 +675,33 @@ class Core extends Base\Core
         // the actual code (Controller@action) runs.
         $this->initAuthDetails($authDetails);
 
-        $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
-
         $state = State\Name::EXECUTED;
 
-        if ($internalResponse->getStatusCode() !== 200)
+        $permissionName = $action->permission->getName();
+
+        //
+        // Should the original request be replayed?
+        // If yes, the original payload is passed to the controller action
+        //
+        $replayOriginalRequest = true;
+
+        //
+        // In some circumstances (like create_payout), we have custom logic on how to process
+        // workflow action execution, instead of simply replaying the original request.
+        //
+        if ($permissionName === Permission\Name::CREATE_PAYOUT)
         {
-            $state = State\Name::FAILED;
+            $replayOriginalRequest = false;
+        }
+
+        if ($replayOriginalRequest === true)
+        {
+            $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
+
+            if ($internalResponse->getStatusCode() !== 200)
+            {
+                $state = State\Name::FAILED;
+            }
         }
 
         // The connection is being reset in here because after executing the App::call

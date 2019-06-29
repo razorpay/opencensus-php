@@ -155,6 +155,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function createPayoutFromCustomerWallet(
         array $input,
@@ -200,6 +201,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function createPayoutFromPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Entity
     {
@@ -478,7 +480,9 @@ class Core extends Base\Core
             //
             if ($workflowAction->getApproved() === true)
             {
-                return $this->processPendingPayout($payout);
+                $payout = $this->processPendingPayout($payout);
+
+                return $payout;
             }
             else
             {
@@ -487,8 +491,6 @@ class Core extends Base\Core
                 return $payout;
             }
         });
-
-        $payout->reload();
 
         return $payout;
     }

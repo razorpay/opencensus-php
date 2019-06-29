@@ -8,19 +8,14 @@ use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function fetchWorkflowForMerchantIfDefined(string $payoutId, Merchant\Entity $merchant)
+    public function fetchWorkflowForMerchantIfDefined(int $amount, Merchant\Entity $merchant)
     {
-        /** @var Payout\Entity $payout */
-        $payout = $this->repo->payout->findByIdAndMerchant($payoutId, $merchant);
-
         $rules = $this->repo->workflow_payout_amount_rules->fetchWorkflowRulesForMerchant($merchant->getId());
 
         //
         // Filter the rules to match exactly one and return if found
         // If no rules were defined, or no match was found, return null
         //
-        $amount = $payout->getAmount();
-
         /** @var Entity|null $workflowRule */
         $workflowRule = $this->filterRulesByAmount($rules, $amount);
 

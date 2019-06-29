@@ -53,7 +53,7 @@ class Service extends Base\Service
 
         (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
 
-        (new Core)->approvePayout($payout);
+        $payout = (new Core)->approvePayout($payout);
 
         return $payout->toArrayPublic();
     }
