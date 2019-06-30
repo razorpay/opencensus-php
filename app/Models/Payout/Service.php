@@ -79,7 +79,7 @@ class Service extends Base\Service
         {
             try
             {
-                (new Core)->approvePayout($payout);
+                $payout = (new Core)->approvePayout($payout);
             }
             catch (\Throwable $e)
             {
@@ -106,7 +106,7 @@ class Service extends Base\Service
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        (new Core)->rejectPayout($payout);
+        $payout = (new Core)->rejectPayout($payout);
 
         return $payout->toArrayPublic();
     }
@@ -128,7 +128,7 @@ class Service extends Base\Service
         {
             try
             {
-                (new Core)->rejectPayout($payout);
+                $payout = (new Core)->rejectPayout($payout);
             }
             catch (\Throwable $e)
             {

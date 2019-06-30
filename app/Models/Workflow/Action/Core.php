@@ -504,7 +504,10 @@ class Core extends Base\Core
 
         if (isset($input[Entity::STATE_CHANGER_ID]) === true)
         {
-            $stateChanger = $this->repo->admin->findOrFailPublic($input[Entity::STATE_CHANGER_ID]);
+            // Type can be user or admin
+            $stateChangerType = $input[Entity::STATE_CHANGER_TYPE];
+
+            $stateChanger = $this->repo->$stateChangerType->findOrFailPublic($input[Entity::STATE_CHANGER_ID]);
 
             $action->stateChanger()->associate($stateChanger);
         }
@@ -605,6 +608,7 @@ class Core extends Base\Core
         $input = [
             Entity::STATE                 => $state,
             Entity::STATE_CHANGER_ID      => $checkerEntity->getId(),
+            Entity::STATE_CHANGER_TYPE    => $checkerEntity->getEntity(),
             Entity::STATE_CHANGER_ROLE_ID => $role ? $role->getId() : null
         ];
 
@@ -713,7 +717,7 @@ class Core extends Base\Core
 
         // Update states
 
-        //$this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
+        $this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
 
         $stateCore->changeActionState($action, $state, $checkerEntity);
 

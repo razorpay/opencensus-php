@@ -5055,3 +5055,8 @@ ALTER TABLE `workflow_payout_amount_rules`
 ALTER TABLE payouts
     ADD COLUMN rejected_at INT(11) DEFAULT NULL AFTER `reversed_at`,
     ADD INDEX payouts_rejected_at_index (rejected_at);
+
+ALTER TABLE `workflow_actions`
+    ADD COLUMN `state_changer_type` VARCHAR(255) DEFAULT NULL AFTER state_changer_id,
+	MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
+    DROP FOREIGN KEY workflow_actions_state_changer_id_foreign;

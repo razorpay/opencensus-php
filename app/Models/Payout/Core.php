@@ -419,6 +419,27 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
+    protected function processRejectPayout(Entity $payout): Entity
+    {
+        $payoutId = $payout->getId();
+
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                $payout->setStatus(Status::REJECTED);
+
+                $this->repo->saveOrFail($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
     public function cancelPayout(Entity $payout): Entity
     {
         return $this->mutex->acquireAndRelease(
@@ -439,70 +460,83 @@ class Core extends Base\Core
 
     public function approvePayout(Entity $payout): Entity
     {
-        /** @var Workflow\Action\Entity|null $workflowAction */
-        $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
-
-        if ($workflowAction === null)
-        {
-            //
-            // throw exception. BadRequest.
-            // There should have been an open workflow action.
-            //
-
-            return $payout;
-        }
-
-        $payout = $this->repo->transaction(function() use ($payout, $workflowAction)
-        {
-            $actionCheckerCreateParams = [
-                Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
-                Workflow\Action\Checker\Entity::APPROVED  => 1, // 1 = true
-            ];
-
-            $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
-
-            if (empty($actionChecker) === true)
-            {
-                // Something went wrong, log it?
-
-                return $payout;
-            }
-
-            //
-            // Reload the workflow_action entity. Changes from the previous function calls may not
-            // have been sync'd
-            //
-            $workflowAction->reload();
-
-            //
-            // Check status of workflow_action,
-            // if approved and closed (final) - start processing payout
-            //
-            if ($workflowAction->getApproved() === true)
-            {
-                $payout = $this->processPendingPayout($payout);
-
-                return $payout;
-            }
-            else
-            {
-                // Things are wrong...
-
-                return $payout;
-            }
-        });
+        $payout = $this->processWorkflowActionOnPayout($payout, true);
 
         return $payout;
     }
 
     public function rejectPayout(Entity $payout): Entity
     {
-        //
-        // TODO: mark the workflow as rejected
-        // get workflow action id and send payload as approved is false
-        //
+        $payout = $this->processWorkflowActionOnPayout($payout, false);
 
-        // Payout state - mark payout to rejected state.
+        return $payout;
+    }
+
+    protected function processWorkflowActionOnPayout(Entity $payout, bool $approve): Entity
+    {
+        /** @var Workflow\Action\Entity|null $workflowAction */
+        $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
+
+        $action = ($approve === true) ? 'approve' : 'reject';
+
+        if ($workflowAction === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'No further actions can be performed on this payout',
+                null,
+                ['action' => $action, 'payout_id' => $payout->getId()]);
+        }
+
+        $payout = $this->repo->transaction(
+            function() use ($payout, $workflowAction, $approve, $action)
+            {
+                $actionCheckerCreateParams = [
+                    Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
+                    Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                ];
+
+                $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+
+                if (empty($actionChecker) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                        null,
+                        [
+                            'create_params'       => $actionCheckerCreateParams,
+                            'payout_id'           => $payout->getId(),
+                            'workflows_action_id' => $workflowAction->getId(),
+                            'action'              => $action,
+                        ]);
+                }
+
+                //
+                // Reload the workflow_action entity. Changes from the previous function calls
+                // may not have been sync'd
+                //
+                $workflowAction->reload();
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
+                    [
+                        'workflow_action' => $workflowAction,
+                        'action'          => $action,
+                        'payout_id'       => $payout->getId(),
+                    ]);
+
+                if (($approve === true) and
+                    ($workflowAction->getApproved() === true))
+                {
+                    $payout = $this->processPendingPayout($payout);
+                }
+                else if (($approve === false) and
+                        ($workflowAction->isRejected() === true))
+                {
+                    $payout = $this->processRejectPayout($payout);
+                }
+
+                return $payout;
+            });
 
         return $payout;
     }
