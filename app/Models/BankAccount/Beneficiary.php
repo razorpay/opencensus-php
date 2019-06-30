@@ -304,6 +304,14 @@ class Beneficiary extends Base\Core
      */
     public function verifyBeneficiaryThroughApi(Entity $bankAccount, string $channel)
     {
+        $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
+
+        // Beneficiary verification failed, since beneficiary is not registered yet
+        if ($status === false)
+        {
+            return $status;
+        }
+
         $bankAccounts = (new PublicCollection)->push($bankAccount);
 
         $this->verifyBeneficiary($bankAccounts, $channel);
@@ -313,7 +321,7 @@ class Beneficiary extends Base\Core
         if ($status === false)
         {
             throw new LogicException(
-                'Beneficiary registration failed',
+                'Beneficiary verification failed',
                 null,
                 [
                     'channel'         => $channel,
@@ -370,6 +378,15 @@ class Beneficiary extends Base\Core
      */
     public function registerBeneficiaryOnChannelAndGetStatus(string $channel, Entity $bankAccount): bool
     {
+        // If Beneficiary is already registered then return status true.
+        $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
+
+        if ($status === true)
+        {
+            return $status;
+        }
+
+        // If Beneficiary is already verified then return status true.
         $status = $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
 
         if ($status === true)
@@ -402,6 +419,7 @@ class Beneficiary extends Base\Core
      */
     public function verifyBeneficiaryOnChannelAndGetStatus(string $channel, Entity $bankAccount): bool
     {
+        // If beneficiary is already verified then return status true.
         $status = $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
 
         if ($status === true)
@@ -441,6 +459,11 @@ class Beneficiary extends Base\Core
                                      $channel
                                  );
 
+        if ($nodalBeneficiary === null)
+        {
+            return false;
+        }
+
         $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
 
         if ($registrationStatus === Status::REGISTERED)
@@ -464,6 +487,11 @@ class Beneficiary extends Base\Core
                                      $bankAccount->getId(),
                                      $channel
                                  );
+
+        if ($nodalBeneficiary === null)
+        {
+            return false;
+        }
 
         $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
 

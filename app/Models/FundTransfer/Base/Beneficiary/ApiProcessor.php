@@ -43,7 +43,7 @@ abstract class ApiProcessor extends Beneficiary
         $this->process($bankAccounts, 'VERIFY');
 
         $response = [
-            'body'           => 'Beneficiaries registration request sent to ' . ucfirst($this->channel),
+            'body'           => 'Beneficiaries verification request sent to ' . ucfirst($this->channel),
             'channel'        => $this->channel,
             'register_count' => $bankAccounts->count(),
             'total_count'    => $bankAccounts->count(),

@@ -43,8 +43,6 @@ class FundTransfer extends Job
     {
         $ftaInitiator = new Initiator;
 
-        $delayTransfer = false;
-
         $data = [
             'fta_id' => $this->ftaId
         ];
@@ -83,6 +81,7 @@ class FundTransfer extends Job
                 return;
             }
 
+            // Checks if registration is required based on product and account type
             $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
 
             if ($isBeneRegistrationRequired === true)
