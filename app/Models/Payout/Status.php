@@ -18,6 +18,7 @@ class Status
 
     const CREATED       = 'created';
     const PENDING       = 'pending';
+    const REJECTED      = 'rejected';
     const REVERSED      = 'reversed';
     const QUEUED        = 'queued';
     const CANCELLED     = 'cancelled';
@@ -34,6 +35,7 @@ class Status
         self::INITIATED => self::PROCESSING,
         self::PROCESSED => self::PROCESSED,
         self::REVERSED  => self::REVERSED,
+        self::REJECTED  => self::REJECTED,
         self::QUEUED    => self::QUEUED,
         self::CANCELLED => self::CANCELLED,
     ];
@@ -49,6 +51,7 @@ class Status
         self::PENDING,
         self::PROCESSED,
         self::REVERSED,
+        self::REJECTED,
         self::QUEUED,
         self::CANCELLED,
     ];

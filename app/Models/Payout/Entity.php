@@ -71,6 +71,7 @@ class Entity extends Base\PublicEntity
     const PENDING_AT             = 'pending_at';
     const PROCESSED_AT           = 'processed_at';
     const REVERSED_AT            = 'reversed_at';
+    const REJECTED_AT            = 'rejected_at';
     const QUEUED_AT              = 'queued_at';
     const CANCELLED_AT           = 'cancelled_at';
     const SETTLED_ON             = 'settled_on';
@@ -151,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::SETTLED_ON,
@@ -189,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::SETTLED_ON,
@@ -233,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::PENDING_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
     ];
@@ -268,6 +272,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::TRANSACTION,
@@ -309,6 +314,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::INITIATED_AT,
@@ -541,6 +547,11 @@ class Entity extends Base\PublicEntity
     public function getReversedAt()
     {
         return $this->getAttribute(self::REVERSED_AT);
+    }
+
+    public function getRejectedAt()
+    {
+        return $this->getAttribute(self::REJECTED_AT);
     }
 
     public function getQueuedAt()
@@ -785,6 +796,11 @@ class Entity extends Base\PublicEntity
     public function setReversedAt($date)
     {
         $this->setAttribute(self::REVERSED_AT, $date);
+    }
+
+    public function setRejectedAt($date)
+    {
+        $this->setAttribute(self::REJECTED_AT, $date);
     }
 
     public function setQueuedAt($date)
@@ -1131,6 +1147,14 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::REVERSED_AT]);
+        }
+    }
+
+    public function setPublicRejectedAtAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::REJECTED_AT]);
         }
     }
 

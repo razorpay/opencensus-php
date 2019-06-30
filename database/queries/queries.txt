@@ -5051,3 +5051,7 @@ ALTER TABLE action_state
 ALTER TABLE `workflow_payout_amount_rules`
     CHANGE COLUMN x_amount min_amount BIGINT UNSIGNED DEFAULT NULL,
     CHANGE COLUMN y_amount max_amount BIGINT UNSIGNED DEFAULT NULL;
+
+ALTER TABLE payouts
+    ADD COLUMN rejected_at INT(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD INDEX payouts_rejected_at_index (rejected_at);
