@@ -480,7 +480,6 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
-
             [
                 'id'             => '1CEmiPricingR1',
                 'plan_id'        => '10ZeroPricingP',
