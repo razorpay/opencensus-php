@@ -1038,6 +1038,17 @@ class Service extends Base\Service
         return $methods['enabled'];
     }
 
+    public function getOrgDetails(string $id): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($id, [CE::ORG]);
+
+        $org = $merchant->org->toArrayPublic();
+
+        $org[Org\Entity::PRIMARY_HOST_NAME] = $merchant->org->getPrimaryHostName();
+
+        return $org;
+    }
+
     public function setPaymentBanks($id, $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
