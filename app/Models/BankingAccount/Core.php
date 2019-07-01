@@ -75,7 +75,7 @@ class Core extends Base\Core
             $attributes = $processor->processAccountInfoNotification($input);
 
             $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel(
-                                                                $attributes[Entity::BANK_REFERENCE_NUMBER], $channel);
+                                                                $channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
             $this->updateBankingAccount($bankingAccount, $attributes);
 
@@ -174,7 +174,7 @@ class Core extends Base\Core
     public function tokenizeBankingAccountCredentials(string $element)
     {
         $request = [
-            'namespace' => self::VAULT_NAMESPACE,
+            'namespace' => Entity::VAULT_NAMESPACE,
             'secret'    => $element
         ];
 
@@ -195,7 +195,7 @@ class Core extends Base\Core
                 {
                     $attributes = [
                         Entity::STATUS                  => Status::PROCESSED,
-                        Entity::BANK_INTERNAL_STATUS    => RblStatus::CLOSED
+                        Entity::BANK_INTERNAL_STATUS    => Gateway\Rbl\Status::CLOSED
                     ];
 
                     $this->updateRblBankingAccount($bankingAccount, $attributes);
@@ -214,6 +214,25 @@ class Core extends Base\Core
         $bankingAccount->setFtsFundAccountId($ftsFundAccountId);
 
         $this->repo->saveOrFail($bankingAccount);
+    }
+
+    public function getBankingAccountEntity(string $id)
+    {
+        return $this->repo->banking_account->findOrFailPublic($id);
+    }
+
+    public function addServiceablePincodes(array $pincodes, string $channel)
+    {
+        $processor = $this->getProcessor($channel);
+
+        $processor->addServiceablePincodes($pincodes);
+    }
+
+    public function deleteServiceablePincodes(array $pincodes, string $channel)
+    {
+        $processor = $this->getProcessor($channel);
+
+        $processor->deleteServiceablePincodes($pincodes);
     }
 
     protected function makeSourceAccountRequest(string $id, string $ftsAccountId, array $content,
@@ -242,20 +261,6 @@ class Core extends Base\Core
             null,
             'Source account creation failed, Try again'
         );
-    }
-
-    public function addServiceablePincodes(array $pincodes, string $channel)
-    {
-        $processor = $this->getProcessor($channel);
-
-        $processor->addServiceablePincodes($pincodes);
-    }
-
-    public function deleteServiceablePincodes(array $pincodes, string $channel)
-    {
-        $processor = $this->getProcessor($channel);
-
-        $processor->deleteServiceablePincodes($pincodes);
     }
 
     /**
@@ -311,10 +316,5 @@ class Core extends Base\Core
                 'Merchant credentials could not be stored, Please try again!'
             );
         }
-    }
-
-    public function getBankingAccountEntity(string $id)
-    {
-        return $this->repo->banking_account->findOrFailPublic($id);
     }
 }

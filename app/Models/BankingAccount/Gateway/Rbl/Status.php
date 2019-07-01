@@ -22,10 +22,19 @@ class Status
     const FAILURE           = 'Failure';
 
     protected static $bankToInternalStatusMap = [
-        BankingAccount\Status::PROCESSING     => [self::OPEN, self::DRAFT, self::REWORK, self::VERIFIED,
-                                                  self::DISCREPANCY],
-        BankingAccount\Status::PROCESSED      => [self::CLOSED],
-        BankingAccount\Status::CANCELLED      => [self::CANCELLED],
+        BankingAccount\Status::PROCESSING     => [
+            self::OPEN,
+            self::DRAFT,
+            self::REWORK,
+            self::VERIFIED,
+            self::DISCREPANCY
+        ],
+        BankingAccount\Status::PROCESSED      => [
+            self::CLOSED
+        ],
+        BankingAccount\Status::CANCELLED      => [
+            self::CANCELLED
+        ],
         BankingAccount\Status::INITIATED      => [],
         BankingAccount\Status::UNSERVICEABLE  => [],
         BankingAccount\Status::CREATED        => [],
@@ -68,12 +77,12 @@ class Status
         if (in_array($bankStatus, $statusList, true) === false)
         {
             throw new BadRequestValidationFailureException(
-                 'bank internal status ' . $bankStatus . ' cannot be passed with status ' . $status,
+                'bank internal status ' . $bankStatus . ' cannot be passed with status ' . $status,
                 BankingAccount\Entity::BANK_INTERNAL_STATUS,
-              [
-                  BankingAccount\Entity::BANK_INTERNAL_STATUS => $bankStatus,
-                  BankingAccount\Entity::STATUS               => $status
-              ]);
+                [
+                    BankingAccount\Entity::BANK_INTERNAL_STATUS => $bankStatus,
+                    BankingAccount\Entity::STATUS               => $status
+                ]);
         }
     }
 

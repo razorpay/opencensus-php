@@ -76,27 +76,24 @@ class Entity extends Base\PublicEntity
     const PASSWORD                          = 'password';
     const REFERENCE1                        = 'reference1';
 
-    const ACCOUNT_TYPE                      = 'CURRENT';
+    const ACCOUNT_TYPE                      = 'current';
 
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
 
     protected $entity = 'banking_account';
 
-    protected static $sign = 'bankacc';
+    protected static $sign = 'bacc';
 
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::CHANNEL,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
         self::STATUS,
         self::PINCODE,
-        self::FTS_FUND_ACCOUNT_ID,
-        self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
         self::USERNAME,
