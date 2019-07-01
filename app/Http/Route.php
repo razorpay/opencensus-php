@@ -1091,6 +1091,10 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+        'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
+        'credit_note_list'                         => ['get',      'creditnote',                                     'CreditNoteController@list'                                         ],
+        'credit_note_get'                          => ['get',      'creditnote/{id}',                                'CreditNoteController@get'                                          ],
+        'credit_note_apply'                        => ['post',     'creditnote/{id}/apply',                          'CreditNoteController@apply'                                        ],
 
         // Governor Proxy APIs - Namespace
         'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                            'GovernorController@createNamespace'                        ],
@@ -1391,6 +1395,10 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'create_credit_note',
+        'credit_note_list',
+        'credit_note_get',
+        'credit_note_apply',
     ];
 
     // Only routes defined in internalApps go here
@@ -2812,6 +2820,10 @@ final class Route
             'entity_origin_create',
             'currency_fetch_all_proxy',
             'invoice_update_billing_period',
+            'create_credit_note',
+            'credit_note_list',
+            'credit_note_get',
+            'credit_note_apply',
         ],
 
         'kotak' => [
