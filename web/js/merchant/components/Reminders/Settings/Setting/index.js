@@ -20,30 +20,20 @@ import ReminderOptionSetting from './ReminderOptionSetting';
     ...ModalActions,
   }
 )
-export default class PaymentLinksSettings extends React.Component {
+export default class ReminderSetting extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   constructor(props) {
     super();
+
+    this.typeInLowerCase = String(props.type).toLowerCase();
 
     this.state = {
       checked: true,
       settings: {
-        channels: {
-          sms: false,
-          email: false,
-        },
-        maxNoReminders: 5,
-        withExpiry: [],
-        withOutExpiry: [
-          { value: '1', label: 'Remind 1 day after issue date' },
-          { value: '2', label: 'Remind 2 day after issue date' },
-        ],
-        advancedSettings: {
-          scheduledTime: '10AM - 12PM',
-          channels: {
-            sms: 0,
-            email: 1,
-          },
-        },
+        ...initState,
       },
       remindersList: [
         {
@@ -57,9 +47,45 @@ export default class PaymentLinksSettings extends React.Component {
     };
   }
 
+  saveToggleChange = () => {
+    return this.props
+      .saveToggleChange(``)
+      .then(() => {
+        this.setState({
+          checked: !this.state.checked,
+        });
+
+        this.props.showNotification({
+          type: 'success',
+          message: `Reminders disabled for ${this.typeInLowerCase}`,
+        });
+      })
+      .catch(({ errors }) => {
+        this.setState({
+          checked: !this.state.checked,
+        });
+
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   handleToggle = () => {
-    this.setState({
-      checked: !this.state.checked,
+    if (!this.state.checked) {
+      return this.saveToggleChange();
+    }
+
+    this.context.confirm({
+      header: `Disable reminders for all ${this.typeInLowerCase} ?`,
+      message: `There are ${this.props.totalUnpaidLinks} existing unpaid ${
+        this.typeInLowerCase
+      } that have reminders scheduled.`,
+      affirmativeLabel: 'Yes, disable',
+      affirmativePendingLabel: 'Disabling...',
+      abortLabel: 'No, don’t!',
+      action: this.saveToggleChange,
     });
   };
 
@@ -187,3 +213,23 @@ const REMINDERS_LIST_WITHOUT_EXPIRY = [
   { value: '5', label: 'Remind 5 day after issue date', disabled: false },
   { value: '6', label: 'Remind 6 day after issue date', disabled: false },
 ];
+
+const initState = {
+  channels: {
+    sms: false,
+    email: false,
+  },
+  maxNoReminders: 5,
+  withExpiry: [],
+  withOutExpiry: [
+    { value: '1', label: 'Remind 1 day after issue date' },
+    { value: '2', label: 'Remind 2 day after issue date' },
+  ],
+  advancedSettings: {
+    scheduledTime: '10AM - 12PM',
+    channels: {
+      sms: 0,
+      email: 1,
+    },
+  },
+};
