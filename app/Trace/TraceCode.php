@@ -1130,6 +1130,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_END_FILE_PARSING                                = 'RECON_END_FILE_PARSING';
     const RECON_BATCH_CREATION_FAILED                           = 'RECON_BATCH_CREATION_FAILED';
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
+    const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -1845,6 +1846,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
 
+
+    const CREDITNOTE_CREATE_REQUEST                                 = 'CREDITNOTE_CREATE_REQUEST';
+    const CREDITNOTE_APPLY_REQUEST                                  = 'CREDITNOTE_APPLY_REQUEST';
+    const CREDITNOTE_APPLIED                                        = 'CREDITNOTE_APPLIED';
+    const CREDITNOTE_INVOICE_CREATE_REQUEST                         = 'CREDITNOTE_INVOICE_CREATE_REQUEST';
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
     const BANKING_ACCOUNT_CREATE                                = 'BANKING_ACCOUNT_CREATE';

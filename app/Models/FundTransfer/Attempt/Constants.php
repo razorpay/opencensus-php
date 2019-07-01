@@ -35,4 +35,8 @@ final class Constants
     const ALLOWED_PRODUCTS_ON_FTS = [
         EntityConstatns::REFUND,
     ];
+
+    const VIRTUAL_ACCOUNT_IFSC = [
+        'YESB0CMSNOC'
+    ];
 }

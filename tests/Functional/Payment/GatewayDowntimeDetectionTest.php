@@ -21,6 +21,8 @@ class GatewayDowntimeDetectionTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeDetectionTestData.php';
+
         parent::setUp();
 
         $this->redis = Redis::connection()->client();
@@ -120,5 +122,19 @@ class GatewayDowntimeDetectionTest extends TestCase
         ];
 
         $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testPutGatewayDowntimeRedisConf()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetGatewayDowntimeRedisConf()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 }

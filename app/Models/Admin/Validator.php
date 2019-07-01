@@ -72,6 +72,14 @@ class Validator extends Base\Validator
         ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
     ];
 
+    protected static $setGatewayDowntimeRedisKeysRules = [
+        'config:downtime:detection:configuration'             => 'required|array',
+        'config:downtime:detection:configuration.*.key'       => 'required|string',
+        'config:downtime:detection:configuration.*.value'     => 'required|array',
+        'config:downtime:detection:configuration.*.value.*'   => 'required|array|size:4',
+        'config:downtime:detection:configuration.*.value.*.*' => 'required|string',
+    ];
+
     protected static $updateRedisKeysRules = [
         'key'   => 'required|in:config:fts_channels,config:heartbeat_routes',
         'value' => 'array',
