@@ -110,7 +110,7 @@ class Payment extends Base
         }
 
 
-        $this->transaction->setBalanceUpdated(true);
+        $this->txn->setBalanceUpdated(true);
 
         return true;
 
