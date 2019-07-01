@@ -87,6 +87,127 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutForVirtualAccountWhenModeIsNotPresent(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create(
+            'bank_account',
+            [
+                'id'           => '1000000lvirtba',
+                'ifsc'         => 'YESB0CMSNOC',
+            ]);
+
+        $this->fixtures->edit(
+            'fund_account', '100000000000fa',
+            [
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lvirtba'
+            ]);
+
+        $this->bankAccount->setIfsc('YESB0CMSNOC');
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        //If Mode is not sent in the request NEFT will be the mode of attempt.
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
+    public function testCreatePayoutForVirtualAccountWhenModeIsPresent(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create(
+            'bank_account',
+            [
+                'id'           => '1000000lvirtba',
+                'ifsc'         => 'YESB0CMSNOC',
+            ]);
+
+        $this->fixtures->edit(
+            'fund_account', '100000000000fa',
+            [
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lvirtba'
+            ]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        //If Mode is sent in request the attempt should be in NEFT mode and Payout mode will remain the sent mode.
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        $this->assertEquals('IFT', $payout['mode']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
     public function testCreateMerchantPayoutOnDemand()
     {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
