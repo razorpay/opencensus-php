@@ -1,16 +1,20 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
+
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
+import Alert from 'rzp/ui/Forms/Alert';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
-import ShowWhen from 'merchant/components/ShowWhen';
+
+import * as InvoiceActions from 'merchant/modules/invoices/list';
+
 import DocsLink from 'merchant/components/DocsLink';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
-import ListContainer from 'merchant/containers/ListContainer';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import * as InvoiceActions from 'merchant/modules/invoices/list';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
+
+import ListContainer from 'merchant/containers/ListContainer';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
@@ -39,6 +43,7 @@ export default class PaymentLinksContainer extends ListContainer {
 
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
+
     if (label && label.length > 0) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Payment Links',
@@ -64,14 +69,21 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   render() {
-    let { loading, invoices, user, mode } = this.props;
-    let status = this.state.status;
+    let { loading, invoices, user, mode } = this.props,
+      { status } = this.state;
 
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
+            <span class="btn btn-link">
+              <span class="badge bg-success m-r">new</span>
+
+              <Link to="/reminders">Reminder Settings</Link>
+            </span>
+
             <DocsLink url="https://razorpay.com/docs/payment-links/" />
+
             <ShowWhen
               additionalCondition={user =>
                 (mode !== 'live' || !user.isRejected) &&
