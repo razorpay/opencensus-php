@@ -684,6 +684,18 @@ class PaymentCreateController extends Controller
 
     protected function logPaymentRequestEvent(array $input)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $input,
+            'merchant' => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ]
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $properties);
     }
 }

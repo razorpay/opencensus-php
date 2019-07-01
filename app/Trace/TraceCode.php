@@ -1130,6 +1130,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_END_FILE_PARSING                                = 'RECON_END_FILE_PARSING';
     const RECON_BATCH_CREATION_FAILED                           = 'RECON_BATCH_CREATION_FAILED';
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
+    const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -1832,9 +1833,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_GATEWAY_REQUEST                                   = 'P2P_GATEWAY_REQUEST';
     const P2P_GATEWAY_RESPONSE                                  = 'P2P_GATEWAY_RESPONSE';
 
-    const SUBSCRIPTION_PAYMENT_NOTIFY                           = "SUBSCRIPTION_PAYMENT_NOTIFY";
+    const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
-    const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+    const SELECTED_TERMINAL_IDS                                 = 'SELECTED_TERMINAL_IDS';
 
     // Core Payment Service tracecodes
     const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
@@ -1859,6 +1860,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
 
+
+    const CREDITNOTE_CREATE_REQUEST                                 = 'CREDITNOTE_CREATE_REQUEST';
+    const CREDITNOTE_APPLY_REQUEST                                  = 'CREDITNOTE_APPLY_REQUEST';
+    const CREDITNOTE_APPLIED                                        = 'CREDITNOTE_APPLIED';
+    const CREDITNOTE_INVOICE_CREATE_REQUEST                         = 'CREDITNOTE_INVOICE_CREATE_REQUEST';
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
     const BANKING_ACCOUNT_CREATE                                = 'BANKING_ACCOUNT_CREATE';
@@ -1870,6 +1876,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GOVERNOR_SERVICE_ERROR                                = 'GOVERNOR_SERVICE_ERROR';
     const CAPTURE_VERIFY_ONHOLD_FINISH_ACTION                   = 'CAPTURE_VERIFY_ONHOLD_FINISH_ACTION';
     const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
+
+    // Mozart Service
+    const MOZART_SERVICE_UNEXPECTED_RESPONSE                    = 'MOZART_SERVICE_UNEXPECTED_RESPONSE';
+    const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
+    const MOZART_SERVICE_RESPONSE                               = 'MOZART_SERVICE_RESPONSE';
+    const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
