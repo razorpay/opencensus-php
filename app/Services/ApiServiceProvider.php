@@ -299,6 +299,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerFTSRegisterAccount();
 
         $this->registerFTSFundTransfer();
+
+        $this->registerMozart();
     }
 
     /**
@@ -339,6 +341,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_register_account',
             'fts_fund_transfer',
             'diag',
+            'mozart',
         ];
     }
 
@@ -469,6 +472,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mutex->setRedisClient(Redis::Connection());
 
             return $mutex;
+        });
+    }
+
+    protected function registerMozart()
+    {
+        $this->app->bind('mozart', function($app)
+        {
+            $mock = $app['config']->get('applications.mozart.mock');
+
+            $implementation = $mock ? Mock\Mozart::class : Mozart::class;
+
+            return new $implementation($app);
         });
     }
 
