@@ -467,6 +467,8 @@ final class Route
         'set_redis_keys'                           => ['put',      'redis/keys',                                     'AdminController@setRedisKeys'                                      ],
         'get_redis_key'                            => ['get',      'redis/key',                                      'AdminController@getRedisKey'                                       ],
         'update_redis_keys'                        => ['patch',    'redis/keys',                                     'AdminController@updateRedisKeys'                                   ],
+        'set_gateway_downtime_conf'                => ['put',      'gateway/downtime/conf',                          'AdminController@setGatewayDowntimeConf'                            ],
+        'get_gateway_downtime_conf'                => ['get',      'gateway/downtime/conf',                          'AdminController@getGatewayDowntimeConf'                            ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
@@ -2107,6 +2109,8 @@ final class Route
         'set_redis_keys',
         'get_redis_key',
         'update_redis_keys',
+        'set_gateway_downtime_conf',
+        'get_gateway_downtime_conf',
 
         'partner_config_create',
         'partner_config_fetch',
@@ -2529,6 +2533,8 @@ final class Route
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
         'set_redis_keys'                           => '*',
+        'set_gateway_downtime_conf'                => '*',
+        'get_gateway_downtime_conf'                => '*',
         'get_redis_key'                            => '*',
         'update_redis_keys'                        => '*',
         // TODO fix the permissions later after discussing
