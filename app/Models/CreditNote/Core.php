@@ -103,18 +103,18 @@ class Core extends Base\Core
                 $invoice->getPublicId() . ' customer does not match credit note customer');
         }
 
+        if ($invoice->getStatus() !== Status::PAID)
+        {
+            throw new BadRequestValidationFailureException(
+                $invoice->getPublicId() . ' is not in paid state');
+        }
+
         $refundAmount = $invoiceInput[Entity::AMOUNT];
 
         if (($refundAmount > $invoice->getAmountPaid()) === true)
         {
             throw new BadRequestValidationFailureException(
                 'Cannot refund the amount since the the refund amount exceeds total payments');
-        }
-
-        if ($invoice->getStatus() !== Status::PAID)
-        {
-            throw new BadRequestValidationFailureException(
-                $invoice->getPublicId() . ' is not in paid state');
         }
 
         if ($invoice->getCurrency() !== $creditNote->getCurrency())
