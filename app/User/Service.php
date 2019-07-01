@@ -298,6 +298,7 @@ class Service extends Base\Service
             'token'         => $token,
             'email'         => $user->email,
             'name'          => $user->name,
+            'merchant_id'   => $currentMerchant->id,
             'role'          => $currentMerchant->role,
             'merchant_name' => $currentMerchant->name,
             'logo'          => $currentMerchant->logo_url
