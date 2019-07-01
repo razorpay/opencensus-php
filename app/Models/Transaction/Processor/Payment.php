@@ -100,16 +100,17 @@ class Payment extends Base
         {
             return false;
         }
-
-        if ($this->source->isLateBalanceUpdate() === true)
+        else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
+        {
+            return false;
+        }
+        else if ($this->source->isLateBalanceUpdate() === true)
         {
             return false;
         }
 
-        if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
-        {
-            return false;
-        }
+
+        $this->transaction->setBalanceUpdated(true);
 
         return true;
 

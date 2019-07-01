@@ -588,11 +588,13 @@ trait Capture
             // Currently, since we are doing this only for Dream11, we are not handling credits.
             // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
             //
-            // if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
-            //     ($payment->getMerchantId() === Preferences::MID_DREAM11))
-            // {
-            //     $payment->setLateBalanceUpdate();
-            // }
+
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
+                (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
+                ($payment->getMerchantId() === Preferences::MID_DREAM11)))
+            {
+                $payment->setLateBalanceUpdate();
+            }
 
             list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
 

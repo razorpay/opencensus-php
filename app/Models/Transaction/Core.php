@@ -1541,6 +1541,8 @@ class Core extends Base\Core
 
         $txn->setBalance(null);
 
+        $txn->setBalanceUpdated(true);
+
         $this->repo->saveOrFail($txn);
     }
 }

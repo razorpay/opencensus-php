@@ -1786,7 +1786,12 @@ class Service extends Base\Service
     public function updateMerchantBalance(string $paymentId, string $transactionId)
     {
         $payment = $this->repo->payment->find($paymentId);
-        $transaction = $this->repo->transaction->find($transactionId);
+        $transaction = $payment->transaction;
+
+        if ($transaction->isBalanceUpdated() === true)
+        {
+            return;
+        }
 
         $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction);
     }
