@@ -138,6 +138,7 @@ export default class NotificationsDropdown extends Component {
       <div className="media media-action" key={idx}>
         <NotificationCard
           {...n}
+          user={user}
           lastReadTS={this.state.lastReadTS}
           trackAnnouncement={trackAnnouncement}
         />
@@ -226,6 +227,7 @@ function getAgoLabel(ts) {
 }
 
 const NotificationCard = ({
+  user,
   icon,
   start_ts,
   end_ts,
@@ -269,9 +271,25 @@ const NotificationCard = ({
             const isExternal = /^http(s)?:\/\//.test(btn.url);
             const isHash = !isExternal && btn.url.indexOf('#') === 0;
 
-            let internalUrl = isHash
-              ? `${location.href}${btn.url}`
-              : `#/app${btn.url}`;
+            let URL = btn.url;
+
+            if (btn.url_query_params) {
+              URL = `${URL}?`;
+
+              btn.url_query_params.forEach((param, i) => {
+                const data = getQueryData(param, user);
+
+                if (i === 0) {
+                  URL = `${URL}${param}=${data}`;
+
+                  return;
+                }
+
+                URL = `${URL}&${param}=${data}`;
+              });
+            }
+
+            let internalUrl = isHash ? `${location.href}${URL}` : `#/app${URL}`;
 
             return (
               <a
@@ -286,7 +304,7 @@ const NotificationCard = ({
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`
                   );
                 }}
-                href={isExternal ? btn.url : internalUrl}
+                href={isExternal ? URL : internalUrl}
                 target={isExternal ? '_blank' : ''}
               >
                 <b>
@@ -311,4 +329,23 @@ const iconMap = {
   subscription: 'i-refresh',
   smartcollect: 'i-account-balance',
   reports: 'i-books',
+};
+
+const getQueryData = (param, user) => {
+  switch (param) {
+    case 'mid': {
+      const merchant = user.merchants[user.current];
+
+      return merchant.id;
+    }
+    case 'business_name': {
+      return user.business_name;
+    }
+    case 'email': {
+      return user.email;
+    }
+    default: {
+      return null;
+    }
+  }
 };
