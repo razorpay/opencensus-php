@@ -146,6 +146,12 @@ class Core extends Base\Core
                             ->where(Payment\Entity::STATUS, '=', Payment\Status::CAPTURED)
                             ->get();
 
+        if ($payments->count() === 0)
+        {
+            throw new BadRequestValidationFailureException(
+                $invoice->getPublicId() . ' does not have any captured payments');
+        }
+
         $this->selectAndRefundPayments($payments, $refundAmount, $merchant, $creditNote, $invoice);
     }
 
