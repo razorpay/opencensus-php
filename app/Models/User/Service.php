@@ -17,6 +17,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
+use RZP\Error\PublicErrorDescription;
 
 class Service extends Base\Service
 {
@@ -295,7 +296,31 @@ class Service extends Base\Service
 
     public function login(array $input): array
     {
-        return (new Core)->login($input);
+        try
+        {
+            return (new Core)->login($input);
+        }
+        catch (\ErrorException $exception)
+        {
+            $data = $exception->getTrace();
+
+            $data = array_map(function($log){
+                return [
+                    'file'     => $log['file'] ?? '',
+                    'line'     => $log['line'] ?? '',
+                    'function' => $log['function'] ?? '',
+                ];
+            }, $data);
+
+            throw new Exception\ServerErrorException(
+                PublicErrorDescription::SERVER_ERROR_USER_LOGIN_FAILURE,
+                ErrorCode::SERVER_ERROR_USER_LOGIN_FAILURE,
+                [
+                    'email'       => $input['email'] ?? '',
+                    'message'     => $exception->getMessage(),
+                    'stack_trace' => $data,
+                ]);
+        }
     }
 
     public function get(string $id): array
