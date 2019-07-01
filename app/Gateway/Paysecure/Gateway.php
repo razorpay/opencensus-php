@@ -28,7 +28,8 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'paysecure_%s_card_details';
     const CARD_CACHE_TTL = 14400;
 
-    const GATEWAY_PAYSECURE_STAN_HOURLY = 'gateway_paysecure_stan_hourly';
+    const GATEWAY_PAYSECURE_STAN      = 'gateway_paysecure_stan';
+    const GATEWAY_PAYSECURE_STAN_LOCK = 'gateway_paysecure_stan_lock';
 
     protected $gatewayPayment = null;
 

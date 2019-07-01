@@ -6,6 +6,7 @@ use SoapVar;
 use SoapFault;
 use SoapHeader;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -489,23 +490,27 @@ trait RequestHandlerTrait
 
     // Used to generate the system trace audit number
     // This needs to be a unique value for all the transactions happening in an hour.
-    // So, we use the redis INCR function which acts as a counter and set it's expiry to 1 hour
+    // We use the redis INCR function which acts as a counter and set it's expiry to the next day
+    //
+    // Assumptions:
+    // 1. No two redis pipelines would be initiated at the exact same moment
+    // 2. There would not be more than 999999 PaySecure payments happening within a day
     protected function generateStan()
     {
-        $cacheDriver = $this->app['cache']->store($this->secureCacheDriver);
+        $timestampToExpire = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
-        $currentValue = (int)($cacheDriver->get(self::GATEWAY_PAYSECURE_STAN_HOURLY));
+        $redis = Redis::connection()->client();
 
-        if ($currentValue === 999999)
+        list($currentValue, $ttl) = $redis->pipeline(
+            function ($pipe)
+            {
+                $pipe->incr(self::GATEWAY_PAYSECURE_STAN);
+                $pipe->ttl(self::GATEWAY_PAYSECURE_STAN);
+            });
+
+        if ($ttl === -1)
         {
-            $currentValue = 1;
-
-            // Setting the initial value to 1 with ttl of 1 hour
-            $cacheDriver->forever(self::GATEWAY_PAYSECURE_STAN_HOURLY, $currentValue);
-        }
-        else
-        {
-            $currentValue = $cacheDriver->increment(self::GATEWAY_PAYSECURE_STAN_HOURLY);
+            $redis->expireat(self::GATEWAY_PAYSECURE_STAN, $timestampToExpire);
         }
 
         return sprintf('%06d', $currentValue);
