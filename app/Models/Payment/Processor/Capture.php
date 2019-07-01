@@ -610,9 +610,9 @@ trait Capture
             {
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
-
-            $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
         });
+
+        $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
