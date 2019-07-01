@@ -85,7 +85,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $bankingAccount->getStatus());
 
-        $this->ba->privateAuth('rzp_test', 'rbl_secret');
+        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $dataToReplace = [
             'request' => [
@@ -119,7 +119,7 @@ class BankingAccountTest extends TestCase
 
     public function testFailedBankAccountInfoNotification()
     {
-        $this->ba->privateAuth('rzp_test', 'rbl_secret');
+        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         return $this->startTest();
     }

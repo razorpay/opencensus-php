@@ -269,10 +269,8 @@ class Core extends Base\Core
      */
     protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
     {
-        $status = $input[Entity::STATUS];
-
         if ((isset($input[Entity::STATUS]) === true) and
-            ($status === Status::ACTIVATED))
+            ($input[Entity::STATUS] === Status::ACTIVATED))
         {
             $merchant = $bankingAccount->merchant;
 
