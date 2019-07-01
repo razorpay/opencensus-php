@@ -182,11 +182,7 @@ class StatusProcessor extends BaseRowProcessor
 
         $this->reconEntity->setRemarks($this->parsedData[Constants::REMARKS]);
 
-        // Set Mode only if Mode is present in response
-        if (empty($this->parsedData[Constants::MODE]) === false)
-        {
-            $this->reconEntity->setMode($this->parsedData[Constants::MODE]);
-        }
+        $this->reconEntity->setMode($this->parsedData[Constants::MODE]);
 
         if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatus)
         {
