@@ -78,9 +78,6 @@ class Entity extends Base\PublicEntity
 
     const ACCOUNT_TYPE                      = 'CURRENT';
 
-    const VAULT_NAMESPACE                   = 'banking_accounts_creds';
-
-
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
 
@@ -122,32 +119,49 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        self::CHANNEL,
-        self::MERCHANT_ID,
-        self::ACCOUNT_NUMBER,
-        self::ACCOUNT_IFSC,
-        self::PINCODE,
-        self::BANK_REFERENCE_NUMBER,
         self::STATUS,
-        self::BANK_INTERNAL_STATUS,
+        self::PINCODE,
+        self::CHANNEL,
         self::USERNAME,
-        self::PASSWORD,
-        self::REFERENCE1
+        self::REFERENCE1,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::BALANCE_ID,
+        self::MERCHANT_ID,
+        self::ACCOUNT_IFSC,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_CURRENCY,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL,
+        self::BENEFICIARY_CITY,
+        self::BENEFICIARY_STATE,
+        self::FTS_FUND_ACCOUNT_ID,
+        self::BENEFICIARY_ADDRESS1,
+        self::BENEFICIARY_ADDRESS2,
+        self::BENEFICIARY_ADDRESS3,
+        self::BANK_INTERNAL_STATUS,
+        self::BANK_REFERENCE_NUMBER,
+        self::BENEFICIARY_COUNTRY,
+        self::BENEFICIARY_NAME,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL,
+        self::ACCOUNT_ACTIVATION_DATE,
+        self::BANK_INTERNAL_REFERENCE_NUMBER,
     ];
 
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::MERCHANT_ID,
         self::CHANNEL,
-        self::BANK_REFERENCE_NUMBER,
         self::STATUS,
+        self::MERCHANT_ID,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
-        self::BANK_INTERNAL_STATUS,
-        self::USERNAME,
-        self::PASSWORD,
-        self::REFERENCE1
+        self::ACCOUNT_CURRENCY,
+        self::BENEFICIARY_EMAIL,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_NAME,
+        self::BANK_REFERENCE_NUMBER,
     ];
 
     protected static $generators = [

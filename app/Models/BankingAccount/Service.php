@@ -151,7 +151,7 @@ class Service extends Base\Service
     protected function throwUnhandledChannelException(string $channel, array $input)
     {
         throw new LogicException(
-            'Banking Account logic undefined for channel: ' . $channel,
+            'Banking Account logic undefined for channel',
             null,
             [
                 'input'     => $input,

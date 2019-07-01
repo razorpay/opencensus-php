@@ -16,6 +16,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
+    const VAULT_NAMESPACE = 'banking_accounts_creds';
+
     protected $processor;
 
     public function __construct()

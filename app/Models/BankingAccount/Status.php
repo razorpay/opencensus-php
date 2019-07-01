@@ -21,9 +21,9 @@ class Status
         return ((defined($key) === true) and (constant($key) === $status));
     }
 
-    public static function validate($status)
+    public static function validate(string $status = null)
     {
-        if ((self::isValidStatus($status) === false))
+        if (self::isValidStatus($status) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Not a valid Razorpay Banking status',
