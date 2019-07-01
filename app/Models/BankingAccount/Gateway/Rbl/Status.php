@@ -29,6 +29,7 @@ class Status
         BankingAccount\Status::INITIATED      => [],
         BankingAccount\Status::UNSERVICEABLE  => [],
         BankingAccount\Status::CREATED        => [],
+        BankingAccount\Status::ACTIVATED      => [],
     ];
 
     protected static $internalToBankStatusForWebhookMap = [

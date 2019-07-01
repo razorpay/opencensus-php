@@ -151,6 +151,33 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testUpdateAccountInfoWebhookInternally()
+    {
+        $this->ba->proxyAuth();
+
+        $this->testCreateBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('created', $bankingAccount->getStatus());
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber()
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testStoreMerchantCredentials()
     {
         $attribute = ['activation_status' => 'activated'];

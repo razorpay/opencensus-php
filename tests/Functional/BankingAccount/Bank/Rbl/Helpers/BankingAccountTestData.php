@@ -114,6 +114,49 @@ return [
         ],
     ],
 
+    'testUpdateAccountInfoWebhookInternally'  => [
+        'request'  => [
+            'url'     => '/banking_accounts/internal/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'FORACID'           => '309002180853',
+                        'ACCT_NAME'         => 'INTERNET BANKING CA',
+                        'CIF_ID'            => 'CIF_ID',
+                        'ACTIVATION_DATE'   => '22-MAY-2019',
+                        'REF_NUM_1'         => '15597',
+                        'IFSC'              => 'HDFC0000090',
+                        'ADDR_1'            => 'RAM NAGAR',
+                        'ADDR_2'            => 'ADARSHA LANE',
+                        'ADDR_3'            => '.',
+                        'CITY'              => 'MUMBAI',
+                        'STATE'             => 'MAHARASH',
+                        'COUNTRY'           => 'INDIA',
+                        'PINCODE'           => '123456',
+                        'PHONE_NUM'         => '9899807189',
+                        'EMAIL_ID'          => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '12345'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testStoreMerchantCredentials' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/credentials',

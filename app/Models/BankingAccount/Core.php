@@ -270,7 +270,7 @@ class Core extends Base\Core
         $status = $input[Entity::STATUS];
 
         if ((isset($input[Entity::STATUS]) === true) and
-            ($status === Status::PROCESSED))
+            ($status === Status::ACTIVATED))
         {
             $merchant = $bankingAccount->merchant;
 
