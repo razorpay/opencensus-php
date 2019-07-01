@@ -133,6 +133,8 @@ class FundTransfer extends Job
                 return;
             }
 
+            $ftaInitiator->setModeAndDefaultConnection($this->mode);
+
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
         }
         catch (\Throwable $e)
