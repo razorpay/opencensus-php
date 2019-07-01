@@ -619,24 +619,39 @@ trait Capture
 
     protected function handleAsyncUpdateBalanceIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false)
+        try
         {
-            return;
+
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false)
+            {
+                return;
+            }
+
+            $input = [
+                'payment_id' => $payment->getId(),
+                'mode'        => $this->mode,
+            ];
+
+            $this->trace->info(
+                TraceCode::MERCHANT_BALANCE_UPDATE_INIT,
+                [
+                    'input' => $input,
+                ]);
+
+            Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
         }
+         catch (\Throwable $e)
+        {
+            $this->trace->critical(
+                TraceCode::MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED,
+                [
+                    'payment_id' => $payment->getId(),
+                    'message'    => $e->getMessage(),
+                ]);
 
-        $input = [
-            'payment_id' => $payment->getId(),
-            'transaction_id' => $txn->getId(),
-            'mode'        => $this->mode,
-        ];
-
-        $this->trace->info(
-            TraceCode::MERCHANT_BALANCE_UPDATE_INIT,
-            [
-                'input' => $input,
-            ]);
-
-        Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
+            $this->updateMerchantBalance($payment, $transaction);
+        }
     }
 
     public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn)

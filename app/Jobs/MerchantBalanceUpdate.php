@@ -50,7 +50,7 @@ class MerchantBalanceUpdate extends Job
                 $key,
                 function ()
                 {
-                    (new PaymentService)->updateMerchantBalance($this->input['payment_id'], $this->input['transaction_id']);
+                    (new PaymentService)->updateMerchantBalance($this->input['payment_id']);
 
                      $this->trace->info(
                         TraceCode::MERCHANT_BALANCE_UPDATE_SUCCESSFULL,[

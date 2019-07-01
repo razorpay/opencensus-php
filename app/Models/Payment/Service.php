@@ -1783,12 +1783,13 @@ class Service extends Base\Service
         return $updated;
     }
 
-    public function updateMerchantBalance(string $paymentId, string $transactionId)
+    public function updateMerchantBalance(string $paymentId)
     {
         $payment = $this->repo->payment->find($paymentId);
         $transaction = $payment->transaction;
 
-        if ($transaction->isBalanceUpdated() === true)
+        if (($transaction === null) or
+            ($transaction->isBalanceUpdated() === true))
         {
             return;
         }

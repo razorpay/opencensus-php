@@ -98,6 +98,9 @@ class Payment extends Base
         //
         if ($this->source->isAuthorized() === true)
         {
+            // in authorize transaction we set to balance updated as true since there is no actual balance update.
+            $this->txn->setBalanceUpdated(true);
+
             return false;
         }
         else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
@@ -106,6 +109,9 @@ class Payment extends Base
         }
         else if ($this->source->isLateBalanceUpdate() === true)
         {
+            // in late balance update we do it on the fly and setting it to true for backward compatiablility
+            $this->txn->setBalanceUpdated(true);
+
             return false;
         }
 
