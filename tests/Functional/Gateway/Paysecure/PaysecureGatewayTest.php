@@ -135,6 +135,20 @@ class PaysecureGatewayTest extends TestCase
         // We can't check the value of ttl, since it depends on the current time and it changes every second
         $this->assertEquals(2, $counter);
         $this->assertGreaterThan(0, $ttl);
+
+        $redis->set(Gateway::GATEWAY_PAYSECURE_STAN, 999999);
+
+        $this->testPaymentAuthViaRedirect();
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_stan')
+                {
+                    // Assert that the stan gets resetted to 0 once it reaches 999999
+                    $this->assertEquals('000000', $content);
+                }
+            }
+        );
     }
 
     public function testLocalCustomersPaymentAuthViaRedirect()

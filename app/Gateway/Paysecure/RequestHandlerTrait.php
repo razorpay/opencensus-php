@@ -508,6 +508,9 @@ trait RequestHandlerTrait
                 $pipe->ttl(self::GATEWAY_PAYSECURE_STAN);
             });
 
+        // If within a day, the counter crosses the 999999 limit, this falls back to start from 0
+        $currentValue = $currentValue % 1000000;
+
         if ($ttl === -1)
         {
             $redis->expireat(self::GATEWAY_PAYSECURE_STAN, $timestampToExpire);

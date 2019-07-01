@@ -43,6 +43,8 @@ class Server extends Base\Mock\Server
 
         $this->content($data[Paysecure\Fields::TERMINAL_OWNER_NAME], 'validate_terminal_owner_name');
 
+        $this->content($data[Paysecure\Fields::STAN], 'validate_stan');
+
         $redirectUrl = $this->route->getUrlWithPublicAuth('mock_paysecure_payment');
 
         $redirectUrl .= '&AccuCardholderId=89172389132&AccuGuid=6089d50e-e012-1160-8b3b-0ab8de556755'
