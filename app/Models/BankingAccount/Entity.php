@@ -78,6 +78,8 @@ class Entity extends Base\PublicEntity
 
     const ACCOUNT_TYPE                      = 'current';
 
+    const VAULT_NAMESPACE                   = 'banking_accounts_creds';
+
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
 
@@ -112,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
+        self::FTS_FUND_ACCOUNT_ID,
     ];
 
     protected $visible = [
