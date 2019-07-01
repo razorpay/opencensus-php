@@ -144,6 +144,8 @@ class Constants
                     'url_query_params' => ['mid', 'business_name', 'email']
                 ],
             ],
+            'start_ts'    => 1561981341,
+            'end_ts'      => 1567338141,
             'filters'     => [
                 'experiments'  => ['checkout_survey'],
             ],
