@@ -20,5 +20,4 @@ class CreditNoteController extends Controller
 
         return ApiResponse::json($response);
     }
-
 }

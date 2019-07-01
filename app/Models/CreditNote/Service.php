@@ -24,8 +24,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::CREDITNOTE_APPLY_REQUEST, $input);
 
-        $creditnote = $this->repo->creditnote
-            ->findByPublicIdAndMerchant($id, $this->merchant);
+        $creditnote = $this->repo->creditnote->findByPublicIdAndMerchant($id, $this->merchant);
 
         $creditnote->getValidator()->validateInput('apply', $input);
 
@@ -38,16 +37,14 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $creditnotes = $this->repo->creditnote
-            ->fetch($input, $this->merchant->getId());
+        $creditnotes = $this->repo->creditnote->fetch($input, $this->merchant->getId());
 
         return $creditnotes->toArrayPublic();
     }
 
     public function fetch(string $id)
     {
-        $creditnote = $this->repo->creditnote
-            ->findByPublicIdAndMerchant($id, $this->merchant);
+        $creditnote = $this->repo->creditnote->findByPublicIdAndMerchant($id, $this->merchant);
 
         return (new ViewDataSerializer($creditnote))->serializeForPublic();
     }

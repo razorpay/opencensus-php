@@ -30,12 +30,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $applyRules = [
-        Entity::ACTION   =>  'required|string|max:20|in:refund',
+        Entity::ACTION   => 'required|string|max:20|in:refund',
         Entity::INVOICES => 'required|sequential_array|min:1|custom',
     ];
 
     protected static $applyItemsRules = [
-        Entity::INVOICE_ID =>  'required|public_id|size:18',
+        Entity::INVOICE_ID => 'required|public_id|size:18',
         Entity::AMOUNT     => 'required|mysql_unsigned_int|custom',
     ];
 
