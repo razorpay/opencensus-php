@@ -2,7 +2,7 @@ import { Fragment, Component } from 'react';
 import PropTypes from 'prop-types';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
@@ -21,6 +21,7 @@ import {
   isAddressValid,
   calculateTax,
   isBlank,
+  getURLQueryParams,
 } from 'rzp/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -162,6 +163,29 @@ export default class InvoicesNewContainer extends Component {
     };
   }
 
+  fetchIfIntentDuplicate(invoiceId) {
+    return this.props
+      .fetchInvoice(invoiceId)
+      .then(data => {
+        console.log('DATA..', data);
+
+        // Resetting values to initial state
+        data.id = '';
+        data.receipt_no = '';
+        data.status = 'draft';
+
+        return data;
+      })
+      .catch(err => {
+        console.log('ERR..', err);
+
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  }
+
   isPaymentLink(invoice) {
     if (invoice.type !== 'link') {
       return;
@@ -225,6 +249,7 @@ export default class InvoicesNewContainer extends Component {
     let promises = [];
 
     let invoiceId = this.props.match.params.id;
+    const searchQuery = getURLQueryParams(this.props.location.search);
 
     if (invoiceId) {
       promises.push(
@@ -239,6 +264,8 @@ export default class InvoicesNewContainer extends Component {
           return invoice;
         })
       );
+    } else if (searchQuery.duplicate_id) {
+      promises.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
     } else {
       this.props.initializeInvoice();
 
@@ -2190,6 +2217,19 @@ export default class InvoicesNewContainer extends Component {
                                 <div class="col-xs-8">Save Invoice</div>
                               </div>
                             </AsyncButton>
+                          )}
+                          {this.props.invoice.id && (
+                            <NavLink
+                              class="btn btn-default btn-block btn-lg"
+                              to={`/invoices/new?duplicate_id=${invoice.id}`}
+                            >
+                              <div class="row inv__optiongroupbutton">
+                                <div class="col-xs-4">
+                                  <i class="i i-copy" />
+                                </div>
+                                <div class="col-xs-8">Copy Invoice</div>
+                              </div>
+                            </NavLink>
                           )}
                           {(isNew || isDraft) && (
                             <button
