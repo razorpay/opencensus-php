@@ -21,7 +21,15 @@ abstract class Status
     abstract public static function getCriticalErrorRemarks(): array;
 
     /**
-     * checks if the given stauts code and response code are part of the list provided
+     * checks if the given status code and response code are part of the list provided
+     * list should be in format
+     * statusCode => [
+     *  subCode1,
+     *  subCode2,
+     * ]
+     *
+     * if sub code list is empty then only status code will be respected
+     * else both combination of code and sub code will derive the status
      *
      * @param array  $list
      * @param string $statusCode

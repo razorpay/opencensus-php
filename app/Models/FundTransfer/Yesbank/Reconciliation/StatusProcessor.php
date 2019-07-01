@@ -159,7 +159,7 @@ class StatusProcessor extends BaseRowProcessor
     {
         $this->updateUtrOnReconEntity();
 
-        $currentStatus = $this->reconEntity->getBankStatusCode();
+        $currentStatusCode = $this->reconEntity->getBankStatusCode();
 
         $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -173,7 +173,7 @@ class StatusProcessor extends BaseRowProcessor
         if (($this->parsedData[Constants::BANK_RESPONSE_CODE] === self::NOT_FOUND) and
             ($initiatedTimeWithOffset > $currentTimestamp))
         {
-            $this->reconEntity->setBankStatusCode($currentStatus);
+            $this->reconEntity->setBankStatusCode($currentStatusCode);
         }
         else
         {
@@ -188,7 +188,7 @@ class StatusProcessor extends BaseRowProcessor
 
         $this->reconEntity->setMode($this->parsedData[Constants::MODE]);
 
-        if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatus)
+        if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatusCode)
         {
             $this->reconEntity->setStatus(AttemptStatus::INITIATED);
         }

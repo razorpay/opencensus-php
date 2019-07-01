@@ -332,7 +332,6 @@ class GatewayStatus extends BaseStatus
         self::ERSP90296                         => 'Payout failed. Contact support for help.',
         self::ERSP90188                         => 'Payout failed. Contact support for help.',
         self::ERSP8014                          => 'Payout failed. Contact support for help.',
-        self::RZP_DUPLICATE_PAYOUT              => 'Duplicate reference id passed. Reference id needs to be unique',
         self::RZP_FTA_REQUEST_INVALID           => 'Payout failed. Contact support for help.',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'Payout failed. Contact support for help.',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'Payout request timed out. Try again later',
@@ -609,7 +608,6 @@ class GatewayStatus extends BaseStatus
     {
        return [
            self::STATUS_CODE_FAILURE => [
-               self::RZP_DUPLICATE_PAYOUT,
                self::RZP_FTA_REQUEST_INVALID,
                self::RZP_REQUEST_ENCRYPTION_FAILURE,
                self::RZP_RESPONSE_DECRYPTION_FAILED,
