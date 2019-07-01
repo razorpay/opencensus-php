@@ -18,20 +18,30 @@ use RZP\Gateway\Upi\Mindgate\ResponseFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const ORDER_ID              = 'order_id';
+    const ORDER_ID                  = 'order_id';
 
-    const TXN_REFERENCE_NUMBER  = 'txn_ref_no_rrn';
+    const TXN_REFERENCE_NUMBER      = 'txn_ref_no_rrn';
 
-    const SETTLEMENT_DATE       = 'settlement_date';
+    const SETTLEMENT_DATE           = 'settlement_date';
 
-    const CURRENCY              = 'currency';
+    const CURRENCY                  = 'currency';
 
-    const COLUMN_PAYMENT_AMOUNT = 'transaction_amount';
+    const COLUMN_PAYMENT_AMOUNT     = 'transaction_amount';
 
     // This field is manually added in MIS file by FinOps, for creating unexpected payment
-    const CALLBACK_KEY          = 'callback_key';
+    // callback key is MeRes data received in callback
+    const CALLBACK_KEY              = 'callback_key';
 
-    const UPI_MERCHANT_ID       = 'upi_merchant_id';
+    // This field is manually added in MIS for creating unexpected payment against a reference number (rrn)
+    // use this only if we don't have callback key. Its the RRN of the payment to be created but still taking in input
+    // as a confirmation token of unexpected payment creation.
+    const UNEXPECTED_PAYMENT_REF_ID = 'unexpected_payment_ref_id';
+
+    const UPI_MERCHANT_ID           = 'upi_merchant_id';
+
+    const TRANSACTION_REQ_DATE      = 'transaction_req_date';
+
+    const PAYER_VPA                 = 'payer_vpa';
 
     /**
      * If we are not able to find payment id to reconcile,
@@ -43,7 +53,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        $paymentId =  $row[self::ORDER_ID];
+        $paymentId = $row[self::ORDER_ID];
 
         if (empty($paymentId) === true)
         {
@@ -133,80 +143,87 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         // help of this CALLBACK_KEY.
         //
 
-        if (empty($row[self::CALLBACK_KEY]) === false)
+        try
         {
-            $input = [
-                ResponseFields::CALLBACK_RESPONSE_KEY   => $row[self::CALLBACK_KEY],
-                ResponseFields::CALLBACK_RESPONSE_PGMID => $row[self::UPI_MERCHANT_ID],
-            ];
-
-            try
+            if (empty($row[self::CALLBACK_KEY]) === false)
             {
-                $response = $this->processUnexpectedPayment($input, Gateway::UPI_MINDGATE);
+                $input = [
+                    ResponseFields::CALLBACK_RESPONSE_KEY   => $row[self::CALLBACK_KEY],
+                    ResponseFields::CALLBACK_RESPONSE_PGMID => $row[self::UPI_MERCHANT_ID],
+                ];
 
-                if (empty($response['payment_id']) === false)
-                {
-                    $paymentId = $response['payment_id'];
+                $response = $this->processUnexpectedPayment($input);
 
-                    $this->trace->info(
-                        TraceCode::RECON_INFO,
-                        [
-                            'infoCode'           => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
-                            'payment_id'         => $paymentId,
-                            'rrn'                => $rrn,
-                            'gateway_payment_id' => $gatewayPaymentId,
-                            'gateway'            => $this->gateway,
-                        ]);
-                }
-                else
-                {
-                    $this->trace->info(
-                        TraceCode::RECON_INFO_ALERT,
-                        [
-                            'infoCode'   => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
-                            'rrn'        => $rrn,
-                            'payment_id' => $gatewayPaymentId,
-                            'gateway'    => $this->gateway,
-                        ]);
-                }
             }
-            catch (\Exception $ex)
+            else if (empty($row[self::UNEXPECTED_PAYMENT_REF_ID]) === false)
             {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                $response = $this->processUnexpectedPaymentWithoutCallbackKey($row);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
                     [
-                        'rrn'        => $rrn,
-                        'payment_id' => $gatewayPaymentId,
-                        'gateway'    => $this->gateway,
-                    ]
-                );
+                        'info_code'     => Base\InfoCode::UNEXPECTED_PAYMENT,
+                        'rrn'           => $rrn,
+                        'payment_id'    => $gatewayPaymentId,
+                        'row'           => $row,
+                        'gateway'       => $this->gateway
+                    ]);
+
+                //
+                // Setting this unprocessed row as success as we receive such direct settlements daily.
+                // And as these payments are expected, not counting them as failure.
+                //
+                $this->setFailUnprocessedRow(false);
+
+                return $paymentId;
+            }
+
+            if (empty($response['payment_id']) === false)
+            {
+                $paymentId = $response['payment_id'];
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'infoCode'              => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                        'payment_id'            => $paymentId,
+                        'rrn'                   => $rrn,
+                        'gateway_payment_id'    => $gatewayPaymentId,
+                        'gateway'               => $this->gateway,
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                        'rrn'           => $rrn,
+                        'payment_id'    => $gatewayPaymentId,
+                        'gateway'       => $this->gateway,
+                    ]);
             }
         }
-        else
+        catch (\Exception $ex)
         {
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
                 [
-                    'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
-                    'rrn'        => $rrn,
-                    'payment_id' => $gatewayPaymentId,
-                    'row'        => $row,
-                    'gateway'    => $this->gateway
-                ]);
-
-            //
-            // Setting this unprocessed row as success as we receive such direct settlements daily.
-            // And as these payments are expected, not counting them as failure.
-            //
-            $this->setFailUnprocessedRow(false);
+                    'rrn'           => $rrn,
+                    'payment_id'    => $gatewayPaymentId,
+                    'gateway'       => $this->gateway,
+                ]
+            );
         }
 
         return $paymentId;
     }
 
-    public function processUnexpectedPayment($input, $gatewayDriver)
+    public function processUnexpectedPayment($input, $gatewayDriver = Gateway::UPI_MINDGATE)
     {
         $gatewayObject = new Mindgate\Gateway;
 
@@ -215,6 +232,39 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $paymentId = $gatewayObject->getPaymentIdFromServerCallback($input);
 
         $response = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+
+        return $response;
+    }
+
+    public function processUnexpectedPaymentWithoutCallbackKey($input, $gatewayDriver = Gateway::UPI_MINDGATE)
+    {
+        //
+        // Prepared callback input required for creating unexpected payment
+        //
+        $callbackInput = [
+            'payment_id'            => $input[self::ORDER_ID],
+            'amount'                => $input[self::COLUMN_PAYMENT_AMOUNT],
+            'txn_auth_date'         => $input[self::TRANSACTION_REQ_DATE],
+            'status'                => 'SUCCESS',
+            'status_description'    => 'Transaction success',
+            'respcode'              => '00',
+            'approval_no'           => 'NA',
+            'payer_va'              => $input[self::PAYER_VPA],
+            'npci_upi_txn_id'       => $input[self::TXN_REFERENCE_NUMBER],
+            'pgMerchantId'          => $input[self::UPI_MERCHANT_ID],
+        ];
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'                  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                'rrn'                       => $input[self::TXN_REFERENCE_NUMBER],
+                'gateway_payment_id'        => $input[self::ORDER_ID],
+                'unexpected_payment_ref_id' => $input[self::UNEXPECTED_PAYMENT_REF_ID],
+                'gateway'                   => $this->gateway,
+            ]);
+
+        $response = (new Payment\Service)->unexpectedCallback($callbackInput, $input[self::ORDER_ID], $gatewayDriver);
 
         return $response;
     }

@@ -1234,4 +1234,72 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals(['HDFC','SBIN'], $methods->getDisabledBanks());
     }
 
+
+    public function testForRuPayPaymentOnHitachiTerminalModePurchase()
+    {
+        $this->mockCardVault();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'RuPay',
+        ]);
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 2,
+            ]
+        );
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+        $payment['amount'] = 1000000;
+        $content = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $paymentObj = $this->getLastEntity('payment', true);
+        $this->assertNull($paymentObj['gateway_captured'] );
+    }
+
+    public function testForMasterCardPaymentOnHitachiTerminalModePurchase()
+    {
+        $this->mockCardVault();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+        ]);
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 2,
+            ]
+        );
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+        $payment['amount'] = 1000000;
+        $content = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $paymentObj = $this->getLastEntity('payment', true);
+        $this->assertTrue($paymentObj['gateway_captured'] );
+    }
+
+    public function testPaymentOnNetbankingEbsTerminalModePurchase()
+    {
+        $this->mockCardVault();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal',['mode'=>2]);
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL,
+            [
+                'mode' => 2,
+            ]
+        );
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['amount'] = 1000000;
+        $content = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $paymentObj = $this->getLastEntity('payment', true);
+        $this->assertTrue($paymentObj['gateway_captured'] );
+    }
 }

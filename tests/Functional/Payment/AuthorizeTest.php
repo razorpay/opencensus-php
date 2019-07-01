@@ -1194,9 +1194,9 @@ class AuthorizeTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_mindgate');
 
         $this->assertTrue($response['success']);
-        $this->assertArrayHasKey('payment_id', $response);
 
-        $newPayment = $this->getEntityById('payment', $response['payment_id'], true);
+        $newPayment = $this->getLastEntity('payment', true);
+        $this->assertNotEquals($newPayment['id'], $payment['id']);
 
         $this->assertEquals('upi_mindgate', $newPayment['gateway']);
         $this->assertNotEquals($newPayment['id'], $payment['id']);

@@ -326,6 +326,10 @@ class AttemptTest extends TestCase
 
         Carbon::setTestNow($now);
 
+        $this->fixtures->edit('iin',411111, ['type' => 'debit']);
+
+        $card = $this->fixtures->create('card');
+
         $this->fixtures->edit('balance', '10000000000000', ['balance' => 40000000]);
 
         $payment = $this->fixtures->create('payment');
@@ -339,8 +343,6 @@ class AttemptTest extends TestCase
                 'base_amount' => $payment->getAmount(),
                 'gateway'     => 'upi_axis',
             ]);
-
-        $card = $this->fixtures->create('card');
 
         $this->fixtures->create(
             'fund_transfer_attempt',

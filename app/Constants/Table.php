@@ -197,7 +197,9 @@ class Table
 
     const SETTING               = 'settings';
 
-    const BANKING_ACCOUNT       = 'banking_accounts';
+    // Banking Accounts Tables
+    const BANKING_ACCOUNT                 = 'banking_accounts';
+    const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
 
     // P2P Service Tables
     const P2P_DEVICE            = 'p2p_devices';
@@ -211,6 +213,11 @@ class Table
     const P2P_TRANSACTION       = 'p2p_transactions';
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
+
+
+    const CREDITNOTE           = 'creditnote';
+
+    const CREDITNOTE_INVOICE   = 'creditnote_invoices';
 
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 

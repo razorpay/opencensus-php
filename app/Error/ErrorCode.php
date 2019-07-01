@@ -31,6 +31,7 @@ class ErrorCode
     const GATEWAY_ERROR_GENERIC_ERROR                                               = 'GATEWAY_ERROR_GENERIC_ERROR';
     const GATEWAY_ERROR_PAYMENT_FAILED                                              = 'GATEWAY_ERROR_PAYMENT_FAILED';
     const GATEWAY_ERROR_INVALID_JSON                                                = 'GATEWAY_ERROR_INVALID_JSON';
+    const GATEWAY_ERROR_ORDER_EXISTS                                                = 'GATEWAY_ERROR_ORDER_EXISTS';
 
     const GATEWAY_ERROR_SYSTEM_UNAVAILABLE                                          = 'GATEWAY_ERROR_SYSTEM_UNAVAILABLE';
     const GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED                       = 'GATEWAY_ERROR_PAYMENT_DECLINED_TERMINAL_NOT_ALLOWED';
@@ -421,6 +422,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                    = 'BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING';
     const BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT                   = 'BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT';
     const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                                   = 'BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH';
+    const BAD_REQUEST_FTA_AMOUNT_MODE_MISMATCH                                      = 'BAD_REQUEST_FTA_AMOUNT_MODE_MISMATCH';
     const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                         = 'BAD_REQUEST_PAYMENT_FULLY_PAIDOUT';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                        = 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED';
     const BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED';
@@ -990,6 +992,7 @@ class ErrorCode
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
+    const SERVER_ERROR_USER_LOGIN_FAILURE                                           = 'SERVER_ERROR_USER_LOGIN_FAILURE';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
@@ -1191,6 +1194,11 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_REDIRECT_NO_INPUT_DETAILS                             = 'BAD_REQUEST_PAYMENT_REDIRECT_NO_INPUT_DETAILS';
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT                                       = 'BAD_REQUEST_PAYMENT_CANNOT_REDIRECT';
 
+    // banking account
+    const BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED                          = 'BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED';
+    const BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED                            = 'BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED';
+    const BAD_REQUEST_ERROR_VAULT_TOKENIZE_FAILED                                   = 'BAD_REQUEST_ERROR_VAULT_TOKENIZE_FAILED';
+
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                        = 'GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED';
@@ -1227,4 +1235,10 @@ class ErrorCode
     // Instant Refunds Error Codes
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED';
     const BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA                                     = 'BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA';
+
+    // Mozart Service
+    const SERVER_ERROR_MOZART_SERVICE_ERROR                                         = 'SERVER_ERROR_MOZART_INTEGRATION';
+    const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
+    const SERVER_ERROR_MOZART_SERVICE_FAILURE                                       = 'SERVER_ERROR_MOZART_SERVICE_FAILURE';
+    const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
 }

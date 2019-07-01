@@ -749,6 +749,18 @@ class Gateway
         self::HITACHI               => [],
     ];
 
+    /**
+     * Card gateways which support purchase mechanism for at
+     * least one card network.
+     *
+     * @var array
+     */
+    public static $gatewayNetworkPurchaseSupport = [
+        self::HITACHI               => [
+            self::NOT_SUPPORTED     => [Network::RUPAY]
+        ],
+    ];
+
     public static $bankTransferProviderGateway = [
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
@@ -1706,6 +1718,29 @@ class Gateway
         }
     }
 
+    /**
+     * If network code is null, the function returns back whether the
+     * given gateway has support for Purchase or not.
+     * If network code is not null, the functions returns back whether
+     * the given gateway has support for Purchase for the given
+     * network.
+     *
+     * @param string $gateway
+     * @param string $networkCode
+     * @return bool
+     */
+    public static function supportsPurchase($gateway, $networkCode = null): bool
+    {
+        $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
+
+        if ($supportsPurchase === true)
+        {
+            return self::isNetworkSupportedForPurchase($gateway, $networkCode);
+        }
+
+        return true;
+    }
+
     public static function supportsReverse($gateway)
     {
         return in_array($gateway, self::$reverse, true);
@@ -1751,6 +1786,23 @@ class Gateway
         }
 
         return true;
+    }
+
+    public static function isNetworkSupportedForPurchase($gateway, $networkCode)
+    {
+        // This means that all the networks are supported by the gateway for Purchase.
+        if ((isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false) or
+            ($networkCode === null))
+        {
+            return true;
+        }
+
+        // Get all the networks which are NOT supported by the gateway for Purchase.
+        $notSupportedNetworks = self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED];
+
+        // If a given network is in the list of notSupportedNetworks, it means that the network
+        // is not supported by the gateway for Purchase.
+        return (in_array($networkCode, $notSupportedNetworks, true) === false);
     }
 
     public static function isPowerWallet($wallet)

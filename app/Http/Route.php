@@ -302,6 +302,7 @@ final class Route
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
         'virtual_account_refund_excess'            => ['post',     'virtual_accounts/refund/excess',                 'VirtualAccountController@refundExcessPayments'                     ],
+        'virtual_account_close_cron'               => ['post',     'virtual_accounts/close',                         'VirtualAccountController@closeVirtualAccountsByCloseBy'            ],
         'webhook_create'                           => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                             => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                            => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -466,6 +467,8 @@ final class Route
         'set_redis_keys'                           => ['put',      'redis/keys',                                     'AdminController@setRedisKeys'                                      ],
         'get_redis_key'                            => ['get',      'redis/key',                                      'AdminController@getRedisKey'                                       ],
         'update_redis_keys'                        => ['patch',    'redis/keys',                                     'AdminController@updateRedisKeys'                                   ],
+        'set_gateway_downtime_conf'                => ['put',      'gateway/downtime/conf',                          'AdminController@setGatewayDowntimeConf'                            ],
+        'get_gateway_downtime_conf'                => ['get',      'gateway/downtime/conf',                          'AdminController@getGatewayDowntimeConf'                            ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
@@ -585,6 +588,7 @@ final class Route
         'gateway_downtime_vajra_webhook'           => ['post',     'gateway/downtimes/webhook/vajra',                'GatewayController@postGatewayDowntimeVajraWebhook'                 ],
         'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
+        'gateway_downtime_detection_purge_keys'    => ['post',     'gateway/downtimes/detection/keys/purge',         'GatewayController@purgeGatewayDowntimeDetectionKeys'                      ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                      => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
@@ -1089,6 +1093,10 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+        'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
+        'credit_note_list'                         => ['get',      'creditnote',                                     'CreditNoteController@list'                                         ],
+        'credit_note_get'                          => ['get',      'creditnote/{id}',                                'CreditNoteController@get'                                          ],
+        'credit_note_apply'                        => ['post',     'creditnote/{id}/apply',                          'CreditNoteController@apply'                                        ],
 
         // Governor Proxy APIs - Namespace
         'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                            'GovernorController@createNamespace'                        ],
@@ -1114,6 +1122,7 @@ final class Route
         'governor_rule_chain_execute'             => ['post',     '{source}/rule_engine/execute/rule_chain/{namespace}',       'GovernorController@executeChains'                          ],
 
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
+        'banking_account_credentials'             => ['post',     'banking_accounts/{id}/credentials',                         'BankingAccountController@storeCredentials'                 ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
@@ -1388,6 +1397,10 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'create_credit_note',
+        'credit_note_list',
+        'credit_note_get',
+        'credit_note_apply',
     ];
 
     // Only routes defined in internalApps go here
@@ -1488,6 +1501,7 @@ final class Route
         'user_reset_password_token',
         'razorx_guest',
         'virtual_account_refund_excess',
+        'virtual_account_close_cron',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
         'lambda_post_h2h',
@@ -1520,6 +1534,7 @@ final class Route
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
+        'gateway_downtime_detection_purge_keys',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1742,6 +1757,7 @@ final class Route
         'bulk_invoice_create',
         'banking_account_create',
         'merchant_partner_configs_fetch',
+        'banking_account_credentials',
         'banking_accounts_list',
         'workflow_payout_amount_rules',
     ];
@@ -2093,6 +2109,8 @@ final class Route
         'set_redis_keys',
         'get_redis_key',
         'update_redis_keys',
+        'set_gateway_downtime_conf',
+        'get_gateway_downtime_conf',
 
         'partner_config_create',
         'partner_config_fetch',
@@ -2515,6 +2533,8 @@ final class Route
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
         'set_redis_keys'                           => '*',
+        'set_gateway_downtime_conf'                => '*',
+        'get_gateway_downtime_conf'                => '*',
         'get_redis_key'                            => '*',
         'update_redis_keys'                        => '*',
         // TODO fix the permissions later after discussing
@@ -2782,6 +2802,8 @@ final class Route
             'payments_downtime_trigger_cron',
             'payment_card_vault_migrate',
             'fund_account_validate_retry_all',
+            'virtual_account_close_cron',
+            'gateway_downtime_detection_purge_keys',
         ],
 
         'subscriptions' => [
@@ -2804,6 +2826,10 @@ final class Route
             'entity_origin_create',
             'currency_fetch_all_proxy',
             'invoice_update_billing_period',
+            'create_credit_note',
+            'credit_note_list',
+            'credit_note_get',
+            'credit_note_apply',
         ],
 
         'kotak' => [

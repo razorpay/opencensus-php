@@ -87,6 +87,127 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutForVirtualAccountWhenModeIsNotPresent(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create(
+            'bank_account',
+            [
+                'id'           => '1000000lvirtba',
+                'ifsc'         => 'YESB0CMSNOC',
+            ]);
+
+        $this->fixtures->edit(
+            'fund_account', '100000000000fa',
+            [
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lvirtba'
+            ]);
+
+        $this->bankAccount->setIfsc('YESB0CMSNOC');
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        //If Mode is not sent in the request NEFT will be the mode of attempt.
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
+    public function testCreatePayoutForVirtualAccountWhenModeIsPresent(): array
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->create(
+            'bank_account',
+            [
+                'id'           => '1000000lvirtba',
+                'ifsc'         => 'YESB0CMSNOC',
+            ]);
+
+        $this->fixtures->edit(
+            'fund_account', '100000000000fa',
+            [
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lvirtba'
+            ]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lvirtba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        //If Mode is sent in request the attempt should be in NEFT mode and Payout mode will remain the sent mode.
+        $this->assertEquals('NEFT', $payoutAttempt['mode']);
+        $this->assertEquals('IFT', $payout['mode']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
     public function testCreateMerchantPayoutOnDemand()
     {
         $this->fixtures->merchant->addFeatures([Constants::ES_ON_DEMAND]);
@@ -425,6 +546,15 @@ class PayoutTest extends TestCase
                 'status' => Payout\Status::REVERSED
             ]);
 
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        $this->fixtures->edit(
+            'nodal_beneficiary',
+            $nodalBeneficiary['id'],
+            [
+                'updated_at' => $nodalBeneficiary['updated_at'] - 70,
+            ]);
+
         $this->fixtures->edit(
             'fund_transfer_attempt',
             $payoutAttempt['id'],
@@ -444,7 +574,7 @@ class PayoutTest extends TestCase
         $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(Payout\Status::PROCESSED, $newPayout['status']);
-        $this->assertEquals(Attempt\Status::PROCESSED, $payoutAttempt['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $newPayoutAttempt['status']);
 
         // Verify attempt entity
         $this->assertEquals($newPayout['attempts'], 1);
@@ -453,6 +583,55 @@ class PayoutTest extends TestCase
         $this->assertNull($newPayout['fund_account_id']);
         $this->assertNotNull($newPayout['batch_fund_transfer_id']);
         $this->assertNotNull($newPayoutAttempt['batch_fund_transfer_id']);
+        $this->assertEquals($newPayout['batch_fund_transfer_id'], $newPayoutAttempt['batch_fund_transfer_id']);
+        $this->assertEquals($payout['amount'], $newPayout['amount']);
+
+        // ----- End of testing payout retry for failed payouts ------ //
+
+        return $newPayout;
+    }
+
+    public function testRetryDelayedMerchantOnDemandPayout()
+    {
+        $payout = $this->testCreateMerchantPayoutOnDemand();
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->fixtures->edit(
+            'payout',
+            $payout['id'],
+            [
+                'status' => Payout\Status::REVERSED
+            ]);
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $payoutAttempt['id'],
+            [
+                'status' => Attempt\Status::FAILED
+            ]);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+
+        $this->retryPayout($payout['id']);
+
+        $newPayout = $this->getLastEntity('payout', true);
+
+        $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Payout\Status::PROCESSING, $newPayout['status']);
+        $this->assertEquals(Attempt\Status::CREATED, $newPayoutAttempt['status']);
+
+        // Verify attempt entity
+        $this->assertEquals($newPayout['attempts'], 1);
+        $this->assertEquals($newPayout['id'], $newPayoutAttempt['source']);
+        $this->assertEquals($newPayout['merchant_id'], $newPayoutAttempt['merchant_id']);
+        $this->assertNull($newPayout['fund_account_id']);
+        $this->assertNull($newPayout['batch_fund_transfer_id']);
+        $this->assertNull($newPayoutAttempt['batch_fund_transfer_id']);
         $this->assertEquals($newPayout['batch_fund_transfer_id'], $newPayoutAttempt['batch_fund_transfer_id']);
         $this->assertEquals($payout['amount'], $newPayout['amount']);
 

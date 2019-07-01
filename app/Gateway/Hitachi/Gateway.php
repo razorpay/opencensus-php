@@ -165,11 +165,6 @@ class Gateway extends Base\Gateway
         {
             $callbackData = $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
 
-            if ($input['terminal']['mode'] === Terminal\Mode::PURCHASE)
-            {
-                $this->call(Base\Action::ADVICE, $input);
-            }
-
             return $callbackData;
         }
 

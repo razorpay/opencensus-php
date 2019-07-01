@@ -520,8 +520,8 @@ class Gateway extends Base\Gateway
         if ((isset($VERes[VERes::ERROR]) === true) and
             (count($VERes[VERes::ERROR]) !== 0))
         {
-            $msg = 'Error message: ' . $error[VERes::ERROR_MSG] . ' ' .
-                   'Error detail: ' . $error[VERes::ERROR_DETAILS];
+            $msg = 'Error message: ' . $VERes[VERes::ERROR_MSG] . ' ' .
+                   'Error detail: ' . $VERes[VERes::ERROR_DETAILS];
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -872,6 +872,11 @@ class Gateway extends Base\Gateway
         $gateway = $input['payment']['gateway'];
 
         $network = $input['card']['network_code'];
+
+        if ($gateway === PaymentEntity\Gateway::HDFC)
+        {
+            return $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
+        }
 
         switch ($network)
         {

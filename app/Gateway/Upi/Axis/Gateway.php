@@ -143,7 +143,10 @@ class Gateway extends Base\Gateway
                 'response'     => $content,
                 'gateway'      => $this->gateway,
                 'payment_id'   => $input['payment']['id'],
-            ]);
+            ],
+            null,
+            Action::AUTHENTICATE,
+            true);
     }
 
     /*
@@ -175,7 +178,10 @@ class Gateway extends Base\Gateway
             Error\ErrorCode::GATEWAY_ERROR_TOKEN_NOT_FOUND,
             null,
             null,
-            ['response' => $response]);
+            ['response' => $response],
+            null,
+            Action::AUTHENTICATE,
+            true);
     }
 
     /**
@@ -285,10 +291,17 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ErrorCodes::getErrorCode($status, $content);
 
-            throw new Exception\GatewayErrorException(
+            $ex = new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ErrorCodeMap::getResponseMessage($status));
+
+            if ($this->action === Action::AUTHENTICATE)
+            {
+                $ex->markSafeRetryTrue();
+            }
+
+            throw $ex;
         }
     }
 

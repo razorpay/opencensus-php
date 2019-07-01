@@ -124,7 +124,7 @@ class Base extends Core
         self::NETBANKING_CUB         => [''],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
-        self::NETBANKING_CANARA      => [],
+        self::NETBANKING_CANARA      => ['canarabank@canarabank.com'],
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
@@ -153,7 +153,7 @@ class Base extends Core
         self::UPI_HULK               => [],
         self::AMEX                   => [],
         self::ISG                    => [],
-        self::PHONEPE                => ['reports@phonepe.com'],
+        self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
 
         // Used when someone from the team needs to send the

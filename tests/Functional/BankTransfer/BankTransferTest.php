@@ -526,6 +526,57 @@ class BankTransferTest extends TestCase
         $this->assertEquals(4000000, $payment['amount_refunded']);
     }
 
+    public function testBankTransferWithoutModifyingContact()
+    {
+        $this->fixtures->edit(
+            'customer',
+            '100000customer',
+            ['contact' => '000000000']
+        );
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->fixtures->base->editEntity(
+            'virtual_account',
+            $virtualAccount['id'],
+            [
+                'customer_id' => '100000customer'
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
+
+        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+    }
+
     public function testBankTransferImpsWithNbin()
     {
         $accountNumber = $this->bankAccount['account_number'];
