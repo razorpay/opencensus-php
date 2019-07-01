@@ -87,7 +87,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function  updateBankingAccount(Entity $bankingAccount, array $input)
+    public function updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
 

@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use Carbon\Carbon;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 
 class Processor extends BankingAccount\Gateway\Processor
@@ -47,6 +48,12 @@ class Processor extends BankingAccount\Gateway\Processor
 
         if (empty($tranId) === true)
         {
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID,
+                [
+                    'channel' => BankingAccount\Channel::RBL,
+                    'input'   => $input,
+                ]);
+
             $bankStatus = Status::FAILURE;
         }
 

@@ -3,8 +3,9 @@
 namespace RZP\Models\BankingAccount\Gateway;
 
 use Redis;
+use RZP\Models\Base;
 
-class Processor
+class Processor extends Base\Core
 {
     const PINCODES_REDIS_KEY = 'pincode_set';
 
