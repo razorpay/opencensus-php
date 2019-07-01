@@ -107,6 +107,11 @@ class PayoutTest extends TestCase
 
         $this->bankAccount->setIfsc('YESB0CMSNOC');
 
+        // Setting the mock carbon timestamp to 1 minute less than today's ending timing i.e. 6:14 PM
+        $endTime = Carbon::createFromTimestamp(Carbon::today(Timezone::IST)->hour(18)->minute(14)->getTimestamp());
+
+        Carbon::setTestNow($endTime);
+
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
