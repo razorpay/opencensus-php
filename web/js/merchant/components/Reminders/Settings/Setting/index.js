@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
+import { withRouter, Prompt } from 'react-router-dom';
 
-import { findBy } from 'rzp/utils/rzp-utils';
+import { findBy, objectDiff, isBlank } from 'rzp/utils/rzp-utils';
 
 import * as ModalActions from 'rzp/modules/modals';
 
@@ -10,6 +11,7 @@ import Footer from './Footer';
 import Header from './Header';
 import ReminderOptionSetting from './ReminderOptionSetting';
 
+@withRouter
 @connect(
   state => {
     return {
@@ -28,10 +30,14 @@ export default class ReminderSetting extends React.Component {
   constructor(props) {
     super();
 
+    this.changeRoute = false;
     this.typeInLowerCase = String(props.type).toLowerCase();
 
     this.state = {
       checked: true,
+      __stashed_settings__: {
+        ...initState,
+      },
       settings: {
         ...initState,
       },
@@ -105,7 +111,7 @@ export default class ReminderSetting extends React.Component {
         [type]: list,
       },
       [listType]: this.state[listType].map(reminder => {
-        reminder.disabled = findBy(list, 'value', reminder.value);
+        reminder.disabled = !!findBy(list, 'value', reminder.value);
 
         return reminder;
       }),
@@ -144,6 +150,29 @@ export default class ReminderSetting extends React.Component {
     });
   };
 
+  isChanged = () => {
+    return !isBlank(
+      objectDiff(this.state.__stashed_settings__, this.state.settings)
+    );
+  };
+
+  handleRouteChange = location => {
+    this.context.confirm({
+      header: 'Discard unsaved changes?',
+      message:
+        'You have made changes to the reminder schedule.  All changes will be lost.',
+      affirmativeLabel: 'Discard',
+      abortLabel: 'Cancel',
+      action: () => {
+        this.changeRoute = true;
+
+        this.props.history.push(location.pathname);
+      },
+    });
+
+    return this.changeRoute;
+  };
+
   render() {
     const {
         settings,
@@ -167,6 +196,11 @@ export default class ReminderSetting extends React.Component {
 
             {checked && (
               <div class="panel-body">
+                <Prompt
+                  when={this.isChanged()}
+                  message={this.handleRouteChange}
+                />
+
                 <div class="reminder-setting__reminder-options-settings">
                   <ReminderOptionSetting
                     isExpiry
@@ -215,10 +249,6 @@ const REMINDERS_LIST_WITHOUT_EXPIRY = [
 ];
 
 const initState = {
-  channels: {
-    sms: false,
-    email: false,
-  },
   maxNoReminders: 5,
   withExpiry: [],
   withOutExpiry: [
