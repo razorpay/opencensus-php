@@ -1236,7 +1236,6 @@ class ErrorCode
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED';
     const BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA                                     = 'BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA';
 
-
     // Mozart Service
     const SERVER_ERROR_MOZART_SERVICE_ERROR                                         = 'SERVER_ERROR_MOZART_INTEGRATION';
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
