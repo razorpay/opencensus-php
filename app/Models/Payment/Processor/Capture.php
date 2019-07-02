@@ -612,7 +612,7 @@ trait Capture
             }
         });
 
-        $transaction = $$payment->transaction;
+        $transaction = $payment->transaction;
 
         if ($transaction !== null)
         {
