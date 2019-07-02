@@ -4,7 +4,6 @@ namespace RZP\Trace;
 
 use App;
 use Request;
-use RZP\Exception;
 
 class ApiTraceProcessor
 {
@@ -86,24 +85,12 @@ class ApiTraceProcessor
 
     protected function addRouteNameForExceptions(& $record)
     {
-        if ($this->isExceptionRecord($record) === true)
+        // If this is an exception, a stack key is present in the context array
+        $stackPresent = isset($record['context']['stack']);
+
+        if ($stackPresent === true)
         {
-            $record['request']['route_name'] = $this->app['router']->currentRouteName();
+            $record['request']['route_name'] = $this->app['router']->currentRouteName() ?? '';
         }
-    }
-
-    protected function isExceptionRecord(array $record): bool
-    {
-        if (isset($record['context']['class']))
-        {
-            $pos = strpos($record['context']['class'], 'RZP\Exception');
-
-            if ($pos === 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
