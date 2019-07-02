@@ -4971,10 +4971,6 @@ ALTER TABLE banking_accounts
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
     ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
-    ADD UNIQUE INDEX banking_accounts_account_number_unique (account_number);
-    ADD INDEX banking_accounts_fts_fund_account_id_index (fts_fund_account_id);
-    ADD INDEX banking_accounts_balance_id_index (balance_id);
-    ADD INDEX banking_accounts_bank_reference_number_index (bank_reference_number);
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
@@ -5042,3 +5038,9 @@ ALTER TABLE `roles`
 ALTER TABLE transactions
     CHANGE reference5 balance_updated TINYINT(4),
     ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE banking_accounts
+    ADD UNIQUE INDEX banking_accounts_account_number_unique (account_number),
+    ADD INDEX banking_accounts_fts_fund_account_id_index (fts_fund_account_id),
+    ADD INDEX banking_accounts_balance_id_index (balance_id),
+    ADD INDEX banking_accounts_bank_reference_number_index (bank_reference_number);
