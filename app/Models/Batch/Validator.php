@@ -78,7 +78,7 @@ class Validator extends Base\Validator
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                    => 'required|in:payment_link',
         Entity::NAME                    => 'filled|string|max:255',
-        Entity::FILE                    => 'required_without:file_id|file|max:30720' . self::DEFAULT_MIME_RULE,
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
         Invoice\Entity::DRAFT           => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
@@ -264,10 +264,10 @@ class Validator extends Base\Validator
 
     // This is not a copy paste of above ^ rules!
     protected static $payoutTypeRowRules = [
-        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|string',
+        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|alpha_num|between:5,22',
         Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
         Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
+        Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:10000000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
         Header::PAYOUT_MODE                 => 'required|string|custom',
         Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',

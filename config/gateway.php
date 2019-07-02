@@ -275,6 +275,11 @@ return [
             'live_merchant_id'                  => env('BLADE_LIVE_FIRSTDATA_MERCHANT_ID'),
         ],
 
+        'hdfc'  => [
+            'live_mastercard_acq_bin'           => env('BLADE_LIVE_HDFC_MASTERCARD_ACQ_BIN'),
+            'live_visa_acq_bin'                 => env('BLADE_LIVE_HDFC_VISA_ACQ_BIN'),
+        ],
+
         'live_mastercard_merchant_id'           => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID'),
         'live_visa_merchant_id'                 => env('BLADE_LIVE_VISA_MERCHANT_ID'),
 
@@ -641,8 +646,10 @@ return [
         'test_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_CORP'),
         'test_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_CORP'),
 
-        'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
-        'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
+        'live_hash_secret_corp'        => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
+        'live_merchant_id2_corp'       => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
+
+        'live_merchant_id2_corp_karvy' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP_KARVY'),
 
         // Aditiya birla direct settlement TID
         'live_merchant_id2_aditiya_birla_direct' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_AB_DIRECT'),

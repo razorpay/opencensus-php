@@ -21,6 +21,36 @@ class Gateway extends Fss\Gateway
         return $this->authorizeMock($input);
     }
 
+    protected function putMockPaymentGatewayUrl(array & $request, $route)
+    {
+        $gateway = $this->gateway;
+
+        $gatewayAcquirer = $this->terminal->getGatewayAcquirer();
+
+        if ($gatewayAcquirer === Fss\Acquirer::SBI)
+        {
+            $route = 'mock_card_fss_payment_post';
+        }
+        else
+        {
+            $route = 'mock_' . $gateway . '_payment';
+        }
+
+        $url = $this->route->getUrlWithPublicAuth($route);
+
+        if (($request['method'] === 'get') or ($gatewayAcquirer === 'sbin'))
+        {
+            // The key thing now is to replace the url from gateway to our mock one!
+            $parts = parse_url($request['url']);
+
+            $url = $url . '&' .$parts['query'];
+
+            $request['url'] = $url;
+        }
+
+        $request['url'] = $url;
+    }
+
     /**
      * @param array  $content
      * @param string $method

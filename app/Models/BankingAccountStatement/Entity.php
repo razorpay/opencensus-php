@@ -1,0 +1,256 @@
+<?php
+
+namespace RZP\Models\BankingAccountStatement;
+
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Transaction;
+use RZP\Models\BankingAccount;
+use RZP\Models\Currency\Currency;
+
+class Entity extends Base\PublicEntity
+{
+    const CHANNEL               = 'channel';
+    const MERCHANT_ID           = 'merchant_id';
+    const ACCOUNT_NUMBER        = 'account_number';
+    const BANK_TRANSACTION_ID   = 'bank_transaction_id';
+    const AMOUNT                = 'transaction_amount';
+    const CURRENCY              = 'transaction_currency';
+    const TYPE                  = 'transaction_type';
+    const DESCRIPTION           = 'description';
+    const CATEGORY              = 'category';
+    /**
+     * Generated at bank side, Denotes the order in which a
+     * particular transaction has occurred at a given point in time
+     */
+    const BANK_SERIAL_NUMBER    = 'bank_serial_number';
+    /**
+     * This is the populated only in cases of Cheques and Demand Drafts
+     */
+    const BANK_INSTRUMENT_ID    = 'bank_instrument_id';
+    const BALANCE               = 'balance';
+    const BALANCE_CURRENCY      = 'balance_currency';
+    const ENTITY_ID             = 'entity_id';
+    const ENTITY_TYPE           = 'entity_type';
+    const TRANSACTION_ID        = 'transaction_id';
+    const POSTED_DATE           = 'posted_date';
+    const TRANSACTION_DATE      = 'transaction_date';
+
+    // Relation names/attributes
+    const SOURCE                = 'source';
+
+    protected static $sign = 'bas';
+
+    protected $generateIdOnCreate = true;
+
+    protected $entity = 'banking_account_statement';
+
+    protected $fillable = [
+        self::CHANNEL,
+        self::ACCOUNT_NUMBER,
+        self::BANK_TRANSACTION_ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::TYPE,
+        self::DESCRIPTION,
+        self::CATEGORY,
+        self::BANK_SERIAL_NUMBER,
+        self::BANK_INSTRUMENT_ID,
+        self::BALANCE,
+        self::BALANCE_CURRENCY,
+        self::POSTED_DATE,
+        self::TRANSACTION_DATE,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::CHANNEL,
+        self::MERCHANT_ID,
+        self::ACCOUNT_NUMBER,
+        self::BANK_TRANSACTION_ID,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::TYPE,
+        self::DESCRIPTION,
+        self::CATEGORY,
+        self::BANK_SERIAL_NUMBER,
+        self::BANK_INSTRUMENT_ID,
+        self::BALANCE,
+        self::BALANCE_CURRENCY,
+        self::POSTED_DATE,
+        self::TRANSACTION_DATE,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::TRANSACTION_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    protected $public = [
+        self::CHANNEL,
+        self::ACCOUNT_NUMBER,
+        self::BANK_TRANSACTION_ID,
+        self::TRANSACTION_ID,
+        self::DESCRIPTION,
+    ];
+
+    protected $casts = [
+        self::AMOUNT            => 'int',
+        self::BALANCE           => 'int',
+    ];
+
+    protected $defaults = [
+        self::CURRENCY          => Currency::INR,
+        self::BALANCE_CURRENCY  => Currency::INR,
+    ];
+
+    // Relations
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction\Entity::class);
+    }
+
+    public function source()
+    {
+        return $this->morphTo(self::SOURCE, self::ENTITY_TYPE, self::ENTITY_ID);
+    }
+
+    public function bankingAccount()
+    {
+        return $this->belongsTo(BankingAccount\Entity::class);
+    }
+
+    // Setters and Getters
+
+    public function setAccountNumber(string $accountNumber)
+    {
+        $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    public function setChannel(string $channel)
+    {
+        Channel::validate($channel);
+
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setBankTransactionId(string $banktransactionId)
+    {
+        $this->setAttribute(self::BANK_TRANSACTION_ID, $banktransactionId);
+    }
+
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setCurrency(string $currency)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
+    }
+
+    public function setType(string $type)
+    {
+        Type::validate($type);
+
+        $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setDescription(string $description)
+    {
+        $this->setAttribute(self::DESCRIPTION, $description);
+    }
+
+    public function setCategory(string $category)
+    {
+        Category::validate($category);
+
+        $this->setAttribute(self::CATEGORY, $category);
+    }
+
+    public function setSerialNumber(string $serialNumber)
+    {
+        $this->setAttribute(self::BANK_SERIAL_NUMBER, $serialNumber);
+    }
+
+    public function setInstrumentId(string $instrumentId)
+    {
+        $this->setAttribute(self::BANK_INSTRUMENT_ID, $instrumentId);
+    }
+
+    public function setBalance(int $balance)
+    {
+        $this->setAttribute(self::BALANCE, $balance);
+    }
+
+    public function setBalanceCurrency(string $currency)
+    {
+        $this->setAttribute(self::BALANCE_CURRENCY, $currency);
+    }
+
+    public function setPostedDate($date)
+    {
+        $this->setAttribute(self::POSTED_DATE, $date);
+    }
+
+    public function setTransactionDate($date)
+    {
+        $this->setAttribute(self::TRANSACTION_DATE, $date);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getPostedDate()
+    {
+        return $this->getAttribute(self::POSTED_DATE);
+    }
+
+    public function getTransactionDate()
+    {
+        return $this->getAttribute(self::TRANSACTION_DATE);
+    }
+
+    public function getBankTransactionId()
+    {
+        return $this->getAttribute(self::BANK_TRANSACTION_ID);
+    }
+
+    public function getSerialNumber()
+    {
+        return $this->getAttribute(self::BANK_SERIAL_NUMBER);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getBalance()
+    {
+        return $this->getAttribute(self::BALANCE);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+}

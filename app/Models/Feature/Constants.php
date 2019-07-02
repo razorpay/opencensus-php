@@ -119,6 +119,7 @@ class Constants
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
+    const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
     
     /**
@@ -364,6 +365,7 @@ class Constants
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
         self::TEST_MODE_SETTLEMENT            => true,
+        self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
     ];
 

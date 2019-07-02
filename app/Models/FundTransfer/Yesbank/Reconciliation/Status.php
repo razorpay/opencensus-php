@@ -147,6 +147,7 @@ class Status extends BaseStatus
             'flex:E307'  => self::TECHNICAL_ERROR,
             'flex:E8036' => self::INVALID_REQUEST,
             'atom:E307'  => self::TECHNICAL_ERROR,
+            'ns:E500'    => self::TECHNICAL_ERROR,
         ],
     ];
 
@@ -211,6 +212,7 @@ class Status extends BaseStatus
         'sfms:E18'   => 'Rejected by SFMS',
         'ns:E1029'   => 'IMPS is not enabled for the remitter',
         'sfms:E62'   => 'Transaction accepted by RBI but beneficiary bank rejected it.',
+        'ns:E500'    => 'internal server error',
     ];
 
     const FAILURE_CODE_PUBLIC_MAPPING = [

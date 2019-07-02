@@ -518,7 +518,7 @@ class Terminal extends Base
                 Type::RECURRING_NON_3DS => '1',
             ],
             'shared'                    => 1,
-            'gateway_merchant_id'       => 'random',
+            'gateway_merchant_id'       => 'shared_utility_code',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -526,6 +526,17 @@ class Terminal extends Base
         //$this->create($attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDirectEnachNpciNetbankingTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                        => 'EnachNbNpciTnl',
+            'merchant_id'               => '10000000000000',
+            'gateway_merchant_id'       => 'direct_utility_code',
+        ];
+
+        return $this->createSharedEnachNpciNetbankingTerminal($attributes);
     }
 
     public function createDirectEnachRblTerminal(array $attributes = [])
@@ -2557,6 +2568,16 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
+    public function createSharedUpiICICITpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_ICICI_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiIciciTerminal($attributes);
     }
 
     public function createSharedUpiMindgateIntentTpvTerminal(array $attributes = [])

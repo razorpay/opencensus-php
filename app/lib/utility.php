@@ -444,6 +444,41 @@ function escape_html_attribute(string $str)
     }, $str);
 }
 
+if (! function_exists('checkRequestTimeout'))
+{
+    /**
+     * Checks whether the requests exception that we caught
+     * is actually because of timeout in the network call.
+     *
+     * @param Requests_Exception $e The caught requests exception
+     *
+     * @return boolean              true/false
+     */
+    function checkRequestTimeout(\Requests_Exception $e)
+    {
+        $msg = $e->getMessage();
+        $msg = strtolower($msg);
+
+        //
+        // check if timeout has occurred
+        //
+        if ((strpos($msg, 'operation timed out') !== false) or
+            (strpos($msg, 'network is unreachable') !== false) or
+            (strpos($msg, 'name or service not known') !== false) or
+            (strpos($msg, 'failed to connect') !== false) or
+            (strpos($msg, 'could not resolve host') !== false) or
+            (strpos($msg, 'resolving timed out') !== false) or
+            (strpos($msg, 'name lookup timed out') !== false) or
+            (strpos($msg, 'connection timed out') !== false) or
+            (strpos($msg, 'aborted due to timeout') !== false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+}
+
 if (! function_exists('isJson'))
 {
     function isJson($string)

@@ -4967,7 +4967,10 @@ ALTER TABLE payouts
 
 ALTER TABLE banking_accounts
     ADD COLUMN bank_internal_status VARCHAR(255) DEFAULT NULL AFTER status,
-    ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status);
+    ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status),
+    ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
+    ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
+    ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
@@ -5023,6 +5026,15 @@ ALTER TABLE `reversals`
     ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
     ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
 
+ALTER TABLE virtual_accounts
+    ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
+    ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
+    ADD INDEX virtual_accounts_close_by_index (close_by);
+
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE transactions
+    CHANGE reference5 balance_updated TINYINT(4),
+    ALGORITHM=INPLACE, LOCK=NONE;

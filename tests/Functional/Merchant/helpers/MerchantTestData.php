@@ -4429,4 +4429,17 @@ return [
         ],
     ],
 
+    'testGetOrgDetails' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/org',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'id'                => 'org_100000razorpay',
+                'primary_host_name' => 'dashboard.razorpay.in',
+            ],
+        ],
+    ],
 ];

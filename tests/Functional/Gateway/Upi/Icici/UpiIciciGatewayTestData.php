@@ -46,6 +46,31 @@ return [
         ],
     ],
 
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'upi',
+                'bank_account'   => [
+                    'name'           => 'Test User',
+                    'account_number' => '04030403040304',
+                    'ifsc'           => 'RATN0000001'
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testPaymentWithExpiryPublicAuth'   => [
         'response'  => [
             'content'     => [
