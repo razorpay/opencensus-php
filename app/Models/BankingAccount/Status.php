@@ -18,7 +18,7 @@ class Status
         return ((defined($key) === true) and (constant($key) === $status));
     }
 
-    public static function getAll()
+    public static function getAll(): array
     {
         return [
             self::CREATED,

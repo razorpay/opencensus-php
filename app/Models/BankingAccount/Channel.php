@@ -25,7 +25,7 @@ class Channel
         }
     }
 
-    public static function getAll()
+    public static function getAll(): array
     {
         return [
             self::YESBANK,
