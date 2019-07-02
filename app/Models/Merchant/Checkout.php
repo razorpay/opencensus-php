@@ -87,6 +87,8 @@ class Checkout
 
         $this->checkAndFillGatewayDowntime($merchant, $data);
 
+        $this->checkAndFillPaymentDowntime($merchant, $data);
+
         $this->fillEnabledFeatures($merchant, $data);
 
         return $data;
@@ -790,6 +792,7 @@ class Checkout
                 {
                     $data['downtime'] = $downtimeData;
                 }
+
             }
         }
         catch (\Throwable $ex)
@@ -797,6 +800,27 @@ class Checkout
             $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
         }
     }
+
+    public function checkAndFillPaymentDowntime(Merchant\Entity $merchant, array & $data)
+    {
+        try
+        {
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+            {
+                $downtimeData = (new Downtime\Service)->getDowntimeDataForMerchant();
+                if (empty($downtimeData) === false)
+                {
+                    $data['payment_downtime'] = $downtimeData;
+                }
+            }
+        }
+
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
+        }
+    }
+
 
     protected function fillEnabledFeatures(Merchant\Entity $merchant, array & $data)
     {
