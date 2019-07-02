@@ -612,7 +612,7 @@ trait Capture
             }
         });
 
-        $this->handleAsyncUpdateBalanceIfApplicable($payment, $txn);
+        $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
