@@ -563,13 +563,6 @@ abstract class Base extends BaseCore
 
     public function updateMerchantBalance()
     {
-        if ($this->txn->getNetAmount() === 0)
-        {
-            $this->repo->balance->updateBalance($this->merchantBalance);
-
-            return;
-        }
-
         $this->merchantBalance->updateBalance($this->txn);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
