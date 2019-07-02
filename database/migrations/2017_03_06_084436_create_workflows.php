@@ -27,7 +27,8 @@ class CreateWorkflows extends Migration
 
             $table->char(Workflow::ORG_ID, Workflow::ID_LENGTH);
 
-            $table->char(Workflow::MERCHANT_ID, Workflow::ID_LENGTH);
+            $table->char(Workflow::MERCHANT_ID, Workflow::ID_LENGTH)
+                  ->nullable();
 
             $table->foreign(Workflow::ORG_ID)
                   ->references(Org::ID)

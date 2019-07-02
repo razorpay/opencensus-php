@@ -44,229 +44,229 @@ pipeline:
         exclude: [deployment, pull_request]
         include: [push]
 # This suite is supposed to use default ES index
-#  application_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql
-#      - DB_TEST_HOST=mysql
-#      - DB_AUTH_HOST=mysql
-#      - DB_LIVE_DATABASE=api_live_application
-#      - DB_TEST_DATABASE=api_test_application
-#      - DB_AUTH_DATABASE=api_auth_applicaiton
-#      - REDIS_HOST=redis
-#      - REDIS_LABS_HOST=redis
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  features_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql
-#      - DB_TEST_HOST=mysql
-#      - DB_AUTH_HOST=mysql
-#      - DB_LIVE_DATABASE=api_live_feature_1
-#      - DB_TEST_DATABASE=api_test_feature_1
-#      - DB_AUTH_DATABASE=api_auth_feature_1
-#      - REDIS_HOST=redis2
-#      - REDIS_LABS_HOST=redis2
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_features_1_
-#      - ES_ENTITY_TYPE_PREFIX=testing_features_1_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  feature_2_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql
-#      - DB_TEST_HOST=mysql
-#      - DB_AUTH_HOST=mysql
-#      - DB_LIVE_DATABASE=api_live_feature_2
-#      - DB_TEST_DATABASE=api_test_feature_2
-#      - DB_AUTH_DATABASE=api_auth_feature_2
-#      - REDIS_HOST=redis3
-#      - REDIS_LABS_HOST=redis3
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_features_2_
-#      - ES_ENTITY_TYPE_PREFIX=testing_features_2_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  feature_3_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql2
-#      - DB_TEST_HOST=mysql2
-#      - DB_AUTH_HOST=mysql2
-#      - DB_LIVE_DATABASE=api_live_feature_3
-#      - DB_TEST_DATABASE=api_test_feature_3
-#      - DB_AUTH_DATABASE=api_auth_feature_3
-#      - REDIS_HOST=redis4
-#      - REDIS_LABS_HOST=redis4
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_features_3_
-#      - ES_ENTITY_TYPE_PREFIX=testing_features_3_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  feature_4_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql2
-#      - DB_TEST_HOST=mysql2
-#      - DB_AUTH_HOST=mysql2
-#      - DB_LIVE_DATABASE=api_live_feature_4
-#      - DB_TEST_DATABASE=api_test_feature_4
-#      - DB_AUTH_DATABASE=api_auth_feature_4
-#      - REDIS_HOST=redis5
-#      - REDIS_LABS_HOST=redis5
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_features_4_
-#      - ES_ENTITY_TYPE_PREFIX=testing_features_4_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-4 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  gateway_3_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql2
-#      - DB_TEST_HOST=mysql2
-#      - DB_AUTH_HOST=mysql2
-#      - DB_LIVE_DATABASE=api_live_feature_5
-#      - DB_TEST_DATABASE=api_test_feature_5
-#      - DB_AUTH_DATABASE=api_auth_feature_5
-#      - REDIS_HOST=redis6
-#      - REDIS_LABS_HOST=redis6
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_features_5_
-#      - ES_ENTITY_TYPE_PREFIX=testing_features_5_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  payment_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql3
-#      - DB_TEST_HOST=mysql3
-#      - DB_AUTH_HOST=mysql3
-#      - DB_LIVE_DATABASE=api_live_payment
-#      - DB_TEST_DATABASE=api_test_payment
-#      - DB_AUTH_DATABASE=api_auth_payment
-#      - REDIS_HOST=redis7
-#      - REDIS_LABS_HOST=redis7
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_payments_
-#      - ES_ENTITY_TYPE_PREFIX=testing_payments_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  gateway_1_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql3
-#      - DB_TEST_HOST=mysql3
-#      - DB_AUTH_HOST=mysql3
-#      - DB_LIVE_DATABASE=api_live_gateway1
-#      - DB_TEST_DATABASE=api_test_gateway1
-#      - DB_AUTH_DATABASE=api_auth_gateway1
-#      - REDIS_HOST=redis8
-#      - REDIS_LABS_HOST=redis8
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_gateway_1_
-#      - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
-#  gateway_2_test_suite:
-#    group: A
-#    image: razorpay/onggi:php-7.2
-#    pull: true
-#    secrets: [docker_username, docker_password, git_token, rzp_api]
-#    environment:
-#      - DB_LIVE_HOST=mysql3
-#      - DB_TEST_HOST=mysql3
-#      - DB_AUTH_HOST=mysql3
-#      - DB_LIVE_DATABASE=api_live_gateway2
-#      - DB_TEST_DATABASE=api_test_gateway2
-#      - DB_AUTH_DATABASE=api_auth_gateway2
-#      - REDIS_HOST=redis9
-#      - REDIS_LABS_HOST=redis9
-#      - ES_HOST=elasticsearch
-#      - ES_AUDIT_HOST=elasticsearch
-#      - ES_ENTITY_INDEX_PREFIX=testing_gateway_2_
-#      - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
-#    commands:
-#      - sleep 10
-#      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
-#    when:
-#      event:
-#        exclude: [deployment, tag, pull_request]
-#        include: [push]
+  application_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_application
+      - DB_TEST_DATABASE=api_test_application
+      - DB_AUTH_DATABASE=api_auth_applicaiton
+      - REDIS_HOST=redis
+      - REDIS_LABS_HOST=redis
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  features_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_feature_1
+      - DB_TEST_DATABASE=api_test_feature_1
+      - DB_AUTH_DATABASE=api_auth_feature_1
+      - REDIS_HOST=redis2
+      - REDIS_LABS_HOST=redis2
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_1_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_1_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  feature_2_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql
+      - DB_TEST_HOST=mysql
+      - DB_AUTH_HOST=mysql
+      - DB_LIVE_DATABASE=api_live_feature_2
+      - DB_TEST_DATABASE=api_test_feature_2
+      - DB_AUTH_DATABASE=api_auth_feature_2
+      - REDIS_HOST=redis3
+      - REDIS_LABS_HOST=redis3
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_2_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_2_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  feature_3_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_3
+      - DB_TEST_DATABASE=api_test_feature_3
+      - DB_AUTH_DATABASE=api_auth_feature_3
+      - REDIS_HOST=redis4
+      - REDIS_LABS_HOST=redis4
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_3_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_3_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  feature_4_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_4
+      - DB_TEST_DATABASE=api_test_feature_4
+      - DB_AUTH_DATABASE=api_auth_feature_4
+      - REDIS_HOST=redis5
+      - REDIS_LABS_HOST=redis5
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_4_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_4_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-4 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  gateway_3_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql2
+      - DB_TEST_HOST=mysql2
+      - DB_AUTH_HOST=mysql2
+      - DB_LIVE_DATABASE=api_live_feature_5
+      - DB_TEST_DATABASE=api_test_feature_5
+      - DB_AUTH_DATABASE=api_auth_feature_5
+      - REDIS_HOST=redis6
+      - REDIS_LABS_HOST=redis6
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_features_5_
+      - ES_ENTITY_TYPE_PREFIX=testing_features_5_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  payment_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql3
+      - DB_TEST_HOST=mysql3
+      - DB_AUTH_HOST=mysql3
+      - DB_LIVE_DATABASE=api_live_payment
+      - DB_TEST_DATABASE=api_test_payment
+      - DB_AUTH_DATABASE=api_auth_payment
+      - REDIS_HOST=redis7
+      - REDIS_LABS_HOST=redis7
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_payments_
+      - ES_ENTITY_TYPE_PREFIX=testing_payments_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  gateway_1_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql3
+      - DB_TEST_HOST=mysql3
+      - DB_AUTH_HOST=mysql3
+      - DB_LIVE_DATABASE=api_live_gateway1
+      - DB_TEST_DATABASE=api_test_gateway1
+      - DB_AUTH_DATABASE=api_auth_gateway1
+      - REDIS_HOST=redis8
+      - REDIS_LABS_HOST=redis8
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_gateway_1_
+      - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  gateway_2_test_suite:
+    group: A
+    image: razorpay/onggi:php-7.2
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=mysql3
+      - DB_TEST_HOST=mysql3
+      - DB_AUTH_HOST=mysql3
+      - DB_LIVE_DATABASE=api_live_gateway2
+      - DB_TEST_DATABASE=api_test_gateway2
+      - DB_AUTH_DATABASE=api_auth_gateway2
+      - REDIS_HOST=redis9
+      - REDIS_LABS_HOST=redis9
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+      - ES_ENTITY_INDEX_PREFIX=testing_gateway_2_
+      - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
   build:
     image: plugins/docker
     group: A
