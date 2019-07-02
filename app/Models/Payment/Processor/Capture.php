@@ -612,7 +612,12 @@ trait Capture
             }
         });
 
-        $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+        $transaction = $$payment->transaction;
+
+        if ($transaction !== null)
+        {
+            $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+        }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
@@ -621,15 +626,13 @@ trait Capture
     {
         try
         {
-
-
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false)
             {
                 return;
             }
 
             $input = [
-                'payment_id' => $payment->getId(),
+                'payment_id'  => $payment->getId(),
                 'mode'        => $this->mode,
             ];
 
