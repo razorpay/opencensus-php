@@ -101,6 +101,8 @@ class CreateBankingAccountTable extends Migration
             $table->index(Entity::BANK_INTERNAL_STATUS);
 
             $table->index(Entity::BANK_REFERENCE_NUMBER);
+
+            $table->index(Entity::ACCOUNT_NUMBER);
         });
     }
 

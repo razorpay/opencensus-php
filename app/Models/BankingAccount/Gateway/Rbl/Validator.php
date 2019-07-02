@@ -41,7 +41,7 @@ class Validator extends Base\Validator
         Fields::REF_NUM_1       => 'required|string|size:5',
         Fields::ACTIVATION_DATE => 'required|string',
         Fields::PHONE_NUM       => 'required|string',
-        Fields::EMAIL_ID        => 'required|string',
+        Fields::EMAIL_ID        => 'required|email',
     ];
 
     protected static $accountUpdateRules = [

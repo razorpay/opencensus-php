@@ -134,7 +134,7 @@ class CreateAccount extends Base
             Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
             Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),
-            Constants::BENEFICIARY_EMAIL          => $ba->getBeneficiaryEMail(),
+            Constants::BENEFICIARY_EMAIL          => $ba->getBeneficiaryEmail(),
             Constants::BENEFICIARY_STATE          => $ba->getBeneficiaryState(),
             Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
             Constants::IS_VIRTUAL_ACCOUNT         => $ba->isVirtual(),
@@ -148,8 +148,7 @@ class CreateAccount extends Base
     {
         return [
             Constants::IFSC_CODE                  => $ba->getAccountIfsc(),
-            Constants::ACCOUNT_TYPE               => $ba->getAccountType(),
-            Constants::ACCOUNT_TYPE               => $ba->getAccountType(),
+            Constants::ACCOUNT_TYPE               => strtoupper($ba->getAccountType()),
             Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
             Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),

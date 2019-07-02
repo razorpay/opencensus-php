@@ -34,10 +34,8 @@ class Service extends Base\Service
     /**
      * This function to be used only for admin or internal routes since
      * we are not fetching banking_account by merchant_id.
-     *
      * @param string $id
-     * @param array  $input
-     *
+     * @param array $input
      * @return array
      */
     public function update(string $id, array $input): array
@@ -59,15 +57,15 @@ class Service extends Base\Service
 
         return $account->toArrayPublic();
     }
-  
+
     public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
         $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
             [
-                'id'            => $id,
-                'channel'       => $bankingAccount->getChannel(),
+                'id'      => $id,
+                'channel' => $bankingAccount->getChannel(),
             ]);
 
         $content = $this->core->storeCredentials($bankingAccount, $input);
@@ -100,8 +98,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_REQUEST,
             [
-                'input'         => $input,
-                'gateway'       => $channel,
+                'input'   => $input,
+                'gateway' => $channel,
             ]);
 
         $response = $this->core->processAccountInfoWebhook($channel, $input);

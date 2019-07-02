@@ -68,38 +68,34 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_NAME                  = 'beneficiary_name';
 
 
-    const PINCODE_LENGTH                    = '6';
-    const ACCOUNT_NUMBER_LENGTH             = '40';
-    const ACCOUNT_IFSC_LENGTH               = '11';
+    const PINCODE_LENGTH                    = 6;
+    const ACCOUNT_NUMBER_LENGTH             = 40;
+    const ACCOUNT_IFSC_LENGTH               = 11;
 
     const USERNAME                          = 'username';
     const PASSWORD                          = 'password';
     const REFERENCE1                        = 'reference1';
 
-    const ACCOUNT_TYPE                      = 'CURRENT';
+    const ACCOUNT_TYPE                      = 'current';
 
     const VAULT_NAMESPACE                   = 'banking_accounts_creds';
-
 
     const PINCODES      = 'pincodes';
     const ACTION        = 'action';
 
     protected $entity = 'banking_account';
 
-    protected static $sign = 'bankacc';
+    protected static $sign = 'bacc';
 
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::CHANNEL,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
         self::STATUS,
         self::PINCODE,
-        self::FTS_FUND_ACCOUNT_ID,
-        self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
         self::USERNAME,
@@ -118,51 +114,55 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
+        self::FTS_FUND_ACCOUNT_ID,
     ];
 
     protected $visible = [
         self::ID,
-        self::CHANNEL,
-        self::MERCHANT_ID,
-        self::ACCOUNT_NUMBER,
-        self::ACCOUNT_IFSC,
-        self::PINCODE,
-        self::BANK_REFERENCE_NUMBER,
         self::STATUS,
-        self::BANK_INTERNAL_STATUS,
+        self::PINCODE,
+        self::CHANNEL,
         self::USERNAME,
-        self::PASSWORD,
-        self::REFERENCE1
+        self::REFERENCE1,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::BALANCE_ID,
+        self::MERCHANT_ID,
+        self::ACCOUNT_IFSC,
+        self::ACCOUNT_NUMBER,
+        self::ACCOUNT_CURRENCY,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL,
+        self::BENEFICIARY_CITY,
+        self::BENEFICIARY_STATE,
+        self::FTS_FUND_ACCOUNT_ID,
+        self::BENEFICIARY_ADDRESS1,
+        self::BENEFICIARY_ADDRESS2,
+        self::BENEFICIARY_ADDRESS3,
+        self::BANK_INTERNAL_STATUS,
+        self::BANK_REFERENCE_NUMBER,
+        self::BENEFICIARY_COUNTRY,
+        self::BENEFICIARY_NAME,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_EMAIL,
+        self::ACCOUNT_ACTIVATION_DATE,
+        self::BANK_INTERNAL_REFERENCE_NUMBER,
     ];
 
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::MERCHANT_ID,
         self::CHANNEL,
-        self::BANK_REFERENCE_NUMBER,
         self::STATUS,
+        self::MERCHANT_ID,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
-        self::BANK_INTERNAL_STATUS,
-        self::USERNAME,
-        self::PASSWORD,
-        self::REFERENCE1
-    ];
-
-    protected static $generators = [
+        self::ACCOUNT_CURRENCY,
+        self::BENEFICIARY_EMAIL,
+        self::BENEFICIARY_MOBILE,
+        self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
     ];
-
-    // -------------------------- Generators --------------------------------- //
-
-    public function generateBankReferenceNumber()
-    {
-        // TODO: fix.
-        $id = substr(time(), 0, 5);
-
-        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $id);
-    }
 
     // ---------------------------- Setters ----------------------------------- //
 
@@ -184,6 +184,11 @@ class Entity extends Base\PublicEntity
     public function setPassword(string $password)
     {
         $this->setAttribute([self::PASSWORD], $password);
+    }
+
+    public function setBankReferenceNumber(string $bankReferenceNumber)
+    {
+        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $bankReferenceNumber);
     }
 
     // -------------------------- Getters ------------------------------------ //

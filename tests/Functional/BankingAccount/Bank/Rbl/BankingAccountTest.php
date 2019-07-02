@@ -86,7 +86,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('created', $bankingAccount->getStatus());
 
-        $this->ba->privateAuth('rzp_test', 'rbl_secret');
+        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $dataToReplace = [
             'request' => [
@@ -120,7 +120,7 @@ class BankingAccountTest extends TestCase
 
     public function testFailedBankAccountInfoNotification()
     {
-        $this->ba->privateAuth('rzp_test', 'rbl_secret');
+        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         return $this->startTest();
     }
@@ -148,6 +148,33 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateAccountInfoWebhookInternally()
+    {
+        $this->ba->proxyAuth();
+
+        $this->testCreateBankingAccount();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('created', $bankingAccount->getStatus());
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber()
+                        ]
+                    ]
+                ]
+            ]
+        ];
 
         $this->startTest($dataToReplace);
     }

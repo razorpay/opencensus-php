@@ -79,7 +79,7 @@ class Core extends Base\Core
             $attributes = $processor->processAccountInfoNotification($input);
 
             $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel(
-                                                                $attributes[Entity::BANK_REFERENCE_NUMBER], $channel);
+                                                                $channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
             $this->updateBankingAccount($bankingAccount, $attributes);
 
@@ -180,30 +180,6 @@ class Core extends Base\Core
         return $response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID];
     }
 
-    public function createMerchantSourceAccountForRbl(Entity $bankingAccount, string $ftsFundAccountId)
-    {
-        $rbl = $this->config['rbl'];
-
-        $credentials = [
-            RblFields::USERNAME                  => $rbl[RblFields::USERNAME],
-            RblFields::PASSWORD                  => $rbl[RblFields::PASSWORD],
-            RblFields::CLIENT_ID                 => $rbl[RblFields::CLIENT_ID],
-            RblFields::CLIENT_SECRET             => $rbl[RblFields::CLIENT_SECRET],
-            RblFields::SUBCORP_ID                => $bankingAccount->getUsername(),
-            RblFields::SUBCORP_USER_ID           => $bankingAccount->getPassword(),
-            RblFields::SUBCORP_USER_PASSWORD     => $bankingAccount->getReference1(),
-       ];
-
-       $mozartIdentifier = $rbl[RblFields::MOZART_IDENTIFIER];
-
-       $body = [
-           FTS\Constants::CREDENTIALS       => $credentials,
-           FTS\Constants::MOZART_IDENTIFIER => $mozartIdentifier
-       ];
-
-       $this->makeSourceAccountRequest($bankingAccount->getId(), $ftsFundAccountId, $body);
-    }
-
     public function updateAccountToProcessed(Entity $bankingAccount)
     {
         $channel = $bankingAccount->getChannel();
@@ -214,7 +190,7 @@ class Core extends Base\Core
                 {
                     $attributes = [
                         Entity::STATUS                  => Status::PROCESSED,
-                        Entity::BANK_INTERNAL_STATUS    => RblStatus::CLOSED
+                        Entity::BANK_INTERNAL_STATUS    => Gateway\Rbl\Status::CLOSED
                     ];
 
                     $this->updateRblBankingAccount($bankingAccount, $attributes);
@@ -233,6 +209,25 @@ class Core extends Base\Core
         $bankingAccount->setFtsFundAccountId($ftsFundAccountId);
 
         $this->repo->saveOrFail($bankingAccount);
+    }
+
+    public function getBankingAccountEntity(string $id)
+    {
+        return $this->repo->banking_account->findOrFailPublic($id);
+    }
+
+    public function addServiceablePincodes(array $pincodes, string $channel)
+    {
+        $processor = $this->getProcessor($channel);
+
+        $processor->addServiceablePincodes($pincodes);
+    }
+
+    public function deleteServiceablePincodes(array $pincodes, string $channel)
+    {
+        $processor = $this->getProcessor($channel);
+
+        $processor->deleteServiceablePincodes($pincodes);
     }
 
     public function storeCredentials(Entity $bankingAccount, array $input)
@@ -269,7 +264,7 @@ class Core extends Base\Core
         try
         {
             $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
-sd($fundAccountId);
+
             $channel = $bankingAccount->getChannel();
 
             $processor = $this->getProcessor($channel);
@@ -279,7 +274,7 @@ sd($fundAccountId);
             $this->makeSourceAccountRequest($bankingAccount->getId(), $fundAccountId, $content);
         }
         catch (\Throwable $e)
-        {sd($e->getMessage());
+        {
             $this->trace->info(
                 TraceCode::FTS_FAILURE_EXCEPTION,
                 [
@@ -349,20 +344,6 @@ sd($fundAccountId);
         }
     }
 
-    public function addServiceablePincodes(array $pincodes, string $channel)
-    {
-        $processor = $this->getProcessor($channel);
-
-        $processor->addServiceablePincodes($pincodes);
-    }
-
-    public function deleteServiceablePincodes(array $pincodes, string $channel)
-    {
-        $processor = $this->getProcessor($channel);
-
-        $processor->deleteServiceablePincodes($pincodes);
-    }
-
     protected function checkSourceAccountResponseForError(array $response)
     {
         if (((isset($response[FTS\Constants::MESSAGE]) === true) and
@@ -389,11 +370,15 @@ sd($fundAccountId);
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount)
+    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
     {
         $merchant = $bankingAccount->merchant;
 
-        $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
+        if ((isset($input[Entity::STATUS]) === true) and
+            ($input[Entity::STATUS] === Status::ACTIVATED))
+        {
+
+            $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
 
             if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
             {
@@ -405,6 +390,7 @@ sd($fundAccountId);
                         'banking_account'            => $bankingAccount->getId(),
                     ]);
             }
+        }
     }
 
     protected function getProcessor(string $channel): Gateway\Processor
@@ -429,10 +415,5 @@ sd($fundAccountId);
                 'Merchant credentials could not be stored, Please try again!'
             );
         }
-    }
-
-    public function getBankingAccountEntity(string $id)
-    {
-        return $this->repo->banking_account->findOrFailPublic($id);
     }
 }

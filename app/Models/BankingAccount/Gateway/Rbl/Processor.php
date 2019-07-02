@@ -10,16 +10,21 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
+use RZP\Exception\LogicException;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
-    const DATE_FORMAT = 'Y-m-d';
+    const DATE_FORMAT                   = 'Y-m-d';
 
-    const PINCODES_REDIS_KEY = 'rbl_pincode_set';
+    const PINCODES_REDIS_KEY            = 'rbl_pincode_set';
 
-    const CREDENTIALS_VAULT_NAMESPACE = 'banking_account_creds';
+    const CREDENTIALS_VAULT_NAMESPACE   = 'banking_account_creds';
 
-    const MAX_RETRY_COUNT = 1;
+    const MAX_RETRY_COUNT               = 1;
+
+    const MAX_BANK_REFERENCE_NUMBER     = 100000;
+
+    const START_BANK_REFERENCE_NUMBER   = 10000;
 
     public function preProcessAccountInfoNotification(array $input)
     {
@@ -56,6 +61,12 @@ class Processor extends BankingAccount\Gateway\Processor
 
         if (empty($tranId) === true)
         {
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID,
+                [
+                    'channel' => BankingAccount\Channel::RBL,
+                    'input'   => $input,
+                ]);
+
             $bankStatus = Status::FAILURE;
         }
 
@@ -265,7 +276,39 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function preProcessInputForAccountCreation(array $input)
     {
-        return $this->isPincodeRblServiceable($input[BankingAccount\Entity::PINCODE]);
+        $availability =  $this->isPincodeRblServiceable($input[BankingAccount\Entity::PINCODE]);
+
+        $bankReferenceNumber = $this->generateBankReferenceNumber();
+
+        return [
+            BankingAccount\Entity::STATUS                   => BankingAccount\Status::CREATED,
+            BankingAccount\Entity::BANK_REFERENCE_NUMBER    => $bankReferenceNumber
+        ];
+    }
+
+    protected function generateBankReferenceNumber()
+    {
+        $bankingAccount = $this->repo->banking_account->getLatestInsertedBankingAccountEntity(
+                                                                            BankingAccount\Channel::RBL);
+        if ($bankingAccount !== null)
+        {
+            $referenceNumber = (int) $bankingAccount->getBankReferenceNumber() + 1;
+
+            if ($referenceNumber >= self::MAX_BANK_REFERENCE_NUMBER)
+            {
+                throw new LogicException('Rbl maximum account number limit reached',
+                    ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_NUMBER_LIMIT_REACHED,
+                    [
+                        BankingAccount\Entity::CHANNEL => BankingAccount\Channel::RBL
+                    ]);
+            }
+        }
+        else
+        {
+            $referenceNumber = self::START_BANK_REFERENCE_NUMBER;
+        }
+
+        return $referenceNumber;
     }
 
     /**
@@ -279,11 +322,7 @@ class Processor extends BankingAccount\Gateway\Processor
      */
     protected function isPincodeRblServiceable(string $pincode)
     {
-        $availability = parent::isPincodeServiceable($pincode);
-
-        return [
-            BankingAccount\Entity::STATUS => BankingAccount\Status::CREATED
-        ];
+        parent::isPincodeServiceable($pincode);
     }
 
     protected function getMappedAttributes($map, array $input)

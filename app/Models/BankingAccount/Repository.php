@@ -9,7 +9,7 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account';
 
-    public function findByBankReferenceAndChannel(string $bankReference = null, string $channel)
+    public function findByBankReferenceAndChannel(string $channel, string $bankReference = null)
     {
         return $this->newQuery()
                     ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
@@ -22,6 +22,14 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->where(Entity::CHANNEL, '=', $channel)
+                    ->first();
+    }
+
+    public function getLatestInsertedBankingAccountEntity(string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->latest(Entity::BANK_REFERENCE_NUMBER)
                     ->first();
     }
 }
