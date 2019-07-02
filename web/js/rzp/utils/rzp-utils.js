@@ -911,3 +911,44 @@ export function setNativeValue(element, value) {
     valueSetter.call(element, value);
   }
 }
+
+/**
+ *
+ *
+ * @export
+ * @param {*} daysList Array of days
+ * @returns  String
+ */
+export function getDaysText(daysList) {
+  const daysMap = {
+    1: '1st',
+    2: '2nd',
+    3: '3rd',
+  };
+
+  let days = '';
+
+  daysList.forEach((day, idx) => {
+    let type = ' & ';
+
+    if (idx === daysList.length - 1) {
+      type = ' and ';
+    }
+
+    if (daysMap[day]) {
+      if (idx === 0) {
+        return (days += daysMap[day]);
+      }
+
+      return (days += type + daysMap[day]);
+    }
+
+    if (idx === 0) {
+      return (days += `${day}th`);
+    }
+
+    return (days += type + `${day}th`);
+  });
+
+  return days;
+}

@@ -136,13 +136,22 @@ function WizardFields(field) {
 }
 
 @withRouter
-@connect(state => state.session, {
-  updatePLInReduxList,
-  showNotification,
-  openModal,
-  closeModal,
-  luminateRow,
-})
+@connect(
+  state => ({
+    ...state.session,
+    paymentLinksRemindersSettings: {
+      isEnabled: true,
+      remindersDaysList: [2, 3, 7],
+    },
+  }),
+  {
+    updatePLInReduxList,
+    showNotification,
+    openModal,
+    closeModal,
+    luminateRow,
+  }
+)
 export default class CreateNewContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,

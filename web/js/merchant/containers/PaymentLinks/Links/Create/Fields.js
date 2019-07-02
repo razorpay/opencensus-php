@@ -1,14 +1,23 @@
+import { Link } from 'react-router-dom';
+
 import Input from 'component/Input';
-import { trackHelpClick } from '../ga';
+
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+
 import { AmountTooltip } from 'rzp/ui/Amount';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+
+import { getDaysText } from 'rzp/utils/rzp-utils';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+
+import { trackHelpClick } from '../ga';
+
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
   validateMinAmount,
 } from '../../Edit/EditMinimumAmount';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 const CustomInput = props => {
   return (
@@ -251,9 +260,77 @@ export default [
     ],
   },
   {
+    className: 'InputGroup--vTop',
+    name: 'reminders',
+    fieldLabel: 'Send auto reminders',
+    description: ({ props, state }) => {
+      return getRemindersOptionDescription(
+        props.paymentLinksRemindersSettings.remindersDaysList,
+        Number(state._name.hasNoExpiry)
+      );
+    },
+    _cmp: Input.Check,
+    label: 'Reminders',
+    _when: function(form) {
+      return (
+        form.props.user.isRemindersEnabled &&
+        form.props.paymentLinksRemindersSettings.isEnabled
+      );
+    },
+    _autoRenderImpure: true,
+  },
+  {
+    label: 'Reminders',
+    _cmp: () => <ReminderNotEnabled />,
+    _when: function(form) {
+      return (
+        form.props.user.isRemindersEnabled &&
+        !form.props.paymentLinksRemindersSettings.isEnabled &&
+        form.state._name.hasNoExpiry === '0'
+      );
+    },
+  },
+  {
+    label: 'Reminders',
+    _cmp: () => {
+      return <ReminderNotEnabled type="no" />;
+    },
+    _when: function(form) {
+      return (
+        form.props.user.isRemindersEnabled &&
+        !form.props.paymentLinksRemindersSettings.isEnabled &&
+        form.state._name.hasNoExpiry === '1'
+      );
+    },
+  },
+  {
     name: 'notes',
     label: 'Internal Notes',
     className: 'Input--vTop',
     _cmp: Input.PairList,
   },
 ];
+
+const ReminderNotEnabled = ({ type = '' }) => (
+  <div class="Input">
+    <div class="Input-label">Reminders</div>
+    <div class="Input-content">
+      Reminders is not set to payment links with {type} expiry date.
+      <br />
+      Set it up{' '}
+      <Link target="_blank" to="/reminders">
+        here
+      </Link>
+    </div>
+  </div>
+);
+
+const getRemindersOptionDescription = (list, hasNoExpiry) => {
+  const days = getDaysText(list);
+
+  if (hasNoExpiry) {
+    return `Reminders will be sent on expiry day and on ${days} day before expiry date.`;
+  }
+
+  return `Reminders will be sent on ${days} day after issue date.`;
+};
