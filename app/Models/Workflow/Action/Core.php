@@ -65,7 +65,7 @@ class Core extends Base\Core
         // App level checks are in place. But this is sort of progressive
         // code where a single permission might have multiple workflows
         // in future.
-        $workflows = $this->getWorkflowsForPermission($permissionId, $orgId, $merchantId);
+        $workflows = $this->getWorkflowsForPermission($routePermission, $orgId, $merchantId);
 
         // More than one workflow could be found.
         $workflow = $workflows->first();
@@ -265,20 +265,31 @@ class Core extends Base\Core
     /**
      * Fetch workflows mapped to the permissions for this organisation.
      * This checks for if the permission is present for the organisation
-     * and if a workflow is mapped gainst the permission.
+     * and if a workflow is mapped against the permission.
      *
-     * @param string      $permissionId
+     * @param string      $permission
      * @param string      $orgId
      * @param string|null $merchantId
      *
      * @return array
      */
-    public function getWorkflowsForPermission(string $permissionId, string $orgId, string $merchantId = null)
+    public function getWorkflowsForPermission(string $permission, string $orgId, string $merchantId = null)
     {
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg($permission, $orgId)
+                             ->first();
+
+        $permissionId = $permissionId ?: '';
+
         // Implicit check for workflow in the organisation against permission ids.
         $workflows = $this->repo
                           ->workflow
-                          ->fetchWorkflowsByPermissionsOrgAndMerchant($permissionId, $orgId, $merchantId);
+                          ->fetchWorkflowsByPermissionsOrgAndMerchant(
+                              $permissionId,
+                              $orgId,
+                              $merchantId,
+                              [Workflow\Entity::PAYOUT_AMOUNT_RULE]);
 
         return $workflows;
     }
