@@ -126,7 +126,57 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'entity'        => 'banking_account',
+                'channel'       => 'rbl',
+                'status'        => 'activated',
+                'username'      => 'MERCHANT_1234',
+                'reference1'    => 'MERCHANT_SUB_CORP'
+            ]
+        ],
+    ],
+
+    'testStoreMerchantCredentialsFailedDueToVaultFailure' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
+    'testStoreMerchantCredentialsFailedDueToFTSFailure' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'banking_account',
+                'channel'       => 'rbl',
+                'status'        => 'activated',
+                'username'      => 'MERCHANT_1234',
+                'reference1'    => 'MERCHANT_SUB_CORP'
             ]
         ],
     ],
@@ -254,5 +304,36 @@ return [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
             ],
         ],
+    ],
+
+
+    'accountBalanceSuccess' => [
+        'data' => [
+            'getAccountBalanceRes' => [
+                'Body' => [
+                    'BalAmt' => [
+                        'amountValue'  => '35211.26',
+                        'currencyCode' => '{}'
+                    ]
+                ],
+                'Header' => [
+                    'Approver_ID' => '',
+                    'Corp_ID'     => '',
+                    'Error_Cde'   => '',
+                    'Error_Desc'  => '',
+                    'Status'      => 'SUCCESS',
+                    'TranID'      => '1234'
+                ],
+                'Signature' => [
+                    'Signature' => 'Signature'
+                ],
+            ],
+
+            'error'             => null,
+            'external_trace_id' => '',
+            'mozart_id'         => 'bk5pjbrc1osidogfb7jg',
+            'next'              => '{}',
+            'success'           => true
+        ]
     ],
 ];

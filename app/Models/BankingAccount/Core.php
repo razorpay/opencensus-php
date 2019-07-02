@@ -5,17 +5,23 @@ namespace RZP\Models\BankingAccount;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Services\FTS;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Services\CardVault;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\BankingAccount\Gateway;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\RecordAlreadyExists;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
+    const FTS_MAX_RETRY = 1;
+
     protected $processor;
 
     public function __construct()
@@ -87,7 +93,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function  updateBankingAccount(Entity $bankingAccount, array $input)
+    public function updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
 
@@ -95,26 +101,17 @@ class Core extends Base\Core
 
         $processor->validateAccountBeforeUpdating($input);
 
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+        if ((isset($input[Entity::STATUS]) === true) and
+            ($input[Entity::STATUS] === Status::ACTIVATED))
+        {
+            $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
+        }
 
         $bankingAccount = $bankingAccount->edit($input);
 
         $this->repo->saveOrFail($bankingAccount);
 
         return $bankingAccount;
-    }
-
-    public function createMerchantTokenForRbl(Entity $bankingAccount, array $input)
-    {
-        (new Validator)->validateInput('rbl_create_merchant_token', $input);
-
-        $attributesToSave = RblFields::getRblAttributesToSave($input);
-
-        $bankingAccount->edit($attributesToSave);
-
-        $this->repo->saveOrFail($bankingAccount);
-
-        return null;
     }
 
     public function createOrFetchFtsFundAccountForMerchant(Entity $bankingAccount)
@@ -126,9 +123,47 @@ class Core extends Base\Core
             return $fundAccountId;
         }
 
-        $response = $this->app['fts_create_account']->createFundAccount($bankingAccount->getId(),
-                                                                        Constants\Entity::BANKING_ACCOUNT,
-                                                                        'payout');
+        $retryCount = 0;
+
+        while (true)
+        {
+            try
+            {
+                $response = $this->app['fts_create_account']->createFundAccount($bankingAccount->getId(),
+                                                                                Constants\Entity::BANKING_ACCOUNT,
+                                                                                'payout');
+                break;
+
+            }
+            catch(\Throwable $e)
+            {
+                $errorCode = $e->getCode();
+
+                if ($errorCode === ErrorCode::SERVER_ERROR_FTS_SERVICE_TIMEOUT)
+                {
+                    if ($retryCount < self::FTS_MAX_RETRY)
+                    {
+                        $this->trace-info(
+                            TraceCode::FTS_SERVICE_RETRY,
+                            [
+                                'message' => $e->getMessage(),
+                                'data'    => $e->getData(),
+                            ]
+                        );
+
+                        $retryCount++;
+                    }
+                    else
+                    {
+                        throw $e;
+                    }
+                }
+                else
+                {
+                    throw $e;
+                }
+            }
+        }
 
         if (isset($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === false)
         {
@@ -169,20 +204,6 @@ class Core extends Base\Core
        $this->makeSourceAccountRequest($bankingAccount->getId(), $ftsFundAccountId, $body);
     }
 
-    public function tokenizeBankingAccountCredentials(string $element)
-    {
-        $request = [
-            'namespace' => self::VAULT_NAMESPACE,
-            'secret'    => $element
-        ];
-
-        $response = $this->app['card.cardVault']->createVaultToken($request);
-
-        $this->checkForVaultResponseErrors($response);
-
-        return $response[CardVault::TOKEN];
-    }
-
     public function updateAccountToProcessed(Entity $bankingAccount)
     {
         $channel = $bankingAccount->getChannel();
@@ -214,32 +235,118 @@ class Core extends Base\Core
         $this->repo->saveOrFail($bankingAccount);
     }
 
-    protected function makeSourceAccountRequest(string $id, string $ftsAccountId, array $content,
-                                                string $product = 'PAYOUT', string $channel = 'ICICI')
+    public function storeCredentials(Entity $bankingAccount, array $input)
     {
-        $response = $this->app['fts_create_account']->createSourceAccount($id, $ftsAccountId, $content,
-                                                                          $product, $channel);
+        $channel = $bankingAccount->getChannel();
 
-       $this->checkSourceAccountResponseForError($response);
+        $processor = $this->getProcessor($channel);
+
+        $attributes = $processor->storeCredentials($bankingAccount, $input);
+
+        return $attributes;
     }
 
-    protected function checkSourceAccountResponseForError(array $response)
+    public function activateAccount(Entity $bankingAccount, array $input)
     {
-        if (((isset($response[FTS\Constants::MESSAGE]) === true) and
-            ($response[FTS\Constants::MESSAGE] === 'source account registered')) or
-            (isset($response[FTS\Constants::INTERNAL_ERROR][FTS\Constants::CODE]) === true) and
-            ($response[FTS\Constants::INTERNAL_ERROR][FTS\Constants::CODE] === 'RECORD_ALREADY_EXIST'))
+        $merchant = $bankingAccount->merchant;
+
+        $mode = $this->app['rzp.mode'];
+
+        // Create Banking Balance.
+        $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, Product::BANKING,
+                                                                      $input, $mode);
+
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
+
+        $bankingAccount->setStatus(Status::ACTIVATED);
+
+        $bankingAccount->balance()->associate($balance);
+
+        $this->repo->saveOrFail($bankingAccount);
+
+        // we do not want the merchant to get affected by failures in FTS service so handling
+        // the same in try catch block
+        try
         {
-            return null;
+            $fundAccountId = $this->createOrFetchFtsFundAccountForMerchant($bankingAccount);
+sd($fundAccountId);
+            $channel = $bankingAccount->getChannel();
+
+            $processor = $this->getProcessor($channel);
+
+            $content = $processor->generateRequestForSourceAccount($bankingAccount);
+
+            $this->makeSourceAccountRequest($bankingAccount->getId(), $fundAccountId, $content);
+        }
+        catch (\Throwable $e)
+        {sd($e->getMessage());
+            $this->trace->info(
+                TraceCode::FTS_FAILURE_EXCEPTION,
+                [
+                    'code'          => $e->getCode(),
+                    'message'       => $e->getMessage(),
+                    'type'          => optional($e->getType()),
+                    'data'          => optional($e->getData()),
+                ]);
         }
 
-        // in any other case source account creation failed. So we throw an exception here.
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED,
-            null,
-            null,
-            'Source account creation failed, Try again'
-        );
+        return $bankingAccount;
+    }
+
+    public function makeSourceAccountRequest(string $id, string $ftsAccountId, array $content,
+                                                string $product = 'PAYOUT', string $channel = 'ICICI')
+    {
+        $retryCount = 0;
+
+        while (true)
+        {
+            try
+            {
+                $response = $this->app['fts_create_account']->createSourceAccount($id, $ftsAccountId, $content,
+                    $product, $channel);
+
+                return $this->checkSourceAccountResponseForError($response);
+
+            }
+            catch (RecordAlreadyExists $e)
+            {
+                $this->trace->info(TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT,
+                    [
+                        'content' => $content,
+                        'channel' => $channel,
+                    ]);
+
+                return null;
+            }
+            catch (\Throwable $e)
+            {
+                $errorCode = $e->getCode();
+
+                if ($errorCode === ErrorCode::SERVER_ERROR_FTS_SERVICE_TIMEOUT)
+                {
+                    if ($retryCount < self::FTS_MAX_RETRY)
+                    {
+                        $this->trace->info(
+                            TraceCode::FTS_SERVICE_RETRY,
+                            [
+                                'message' => $e->getMessage(),
+                                'data'    => $e->getData(),
+                            ]
+                        );
+
+                        $retryCount++;
+                    }
+                    else
+                    {
+                        throw $e;
+                    }
+                }
+                else
+                {
+                    throw $e;
+                }
+            }
+        }
     }
 
     public function addServiceablePincodes(array $pincodes, string $channel)
@@ -256,25 +363,37 @@ class Core extends Base\Core
         $processor->deleteServiceablePincodes($pincodes);
     }
 
+    protected function checkSourceAccountResponseForError(array $response)
+    {
+        if (((isset($response[FTS\Constants::MESSAGE]) === true) and
+            ($response[FTS\Constants::MESSAGE] === 'source account registered')))
+        {
+            return null;
+        }
+
+        // in any other case source account creation failed. So we throw an exception here.
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED,
+            null,
+            null,
+            'Source account creation failed, Try again'
+        );
+    }
+
     /**
      * This method is responsible for checking that unless the merchant is L2 activated, no one can update
-     * the status of current account to processed. This to avoid cases of manual error by Bizops.
+     * the status of current account to activated. This to avoid cases of manual error by Bizops.
      *
      * @param Entity $bankingAccount
      * @param array $input
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
+    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount)
     {
-        $status = $input[Entity::STATUS];
+        $merchant = $bankingAccount->merchant;
 
-        if ((isset($input[Entity::STATUS]) === true) and
-            ($status === Status::PROCESSED))
-        {
-            $merchant = $bankingAccount->merchant;
-
-            $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
+        $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
 
             if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
             {
@@ -286,7 +405,6 @@ class Core extends Base\Core
                         'banking_account'            => $bankingAccount->getId(),
                     ]);
             }
-        }
     }
 
     protected function getProcessor(string $channel): Gateway\Processor

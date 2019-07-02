@@ -12,6 +12,7 @@ class Status
     const PROCESSED         = 'processed';
     const CANCELLED         = 'cancelled';
     const UNSERVICEABLE     = 'unserviceable';
+    const ACTIVATED         = 'activated';
 
     public static function isValidStatus(string $status = null)
     {

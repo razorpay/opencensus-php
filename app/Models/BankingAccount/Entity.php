@@ -181,6 +181,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $fundAccountId);
     }
 
+    public function setPassword(string $password)
+    {
+        $this->setAttribute([self::PASSWORD], $password);
+    }
+
     // -------------------------- Getters ------------------------------------ //
 
     public function getChannel()
@@ -271,17 +276,6 @@ class Entity extends Base\PublicEntity
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
-    }
-
-    // --------------------------- Mutators ----------------------------------- //
-
-    public function setPasswordAttribute(string $password)
-    {
-        $bankingAccountCore = new Core();
-
-        $token = $bankingAccountCore->tokenizeBankingAccountCredentials($password);
-
-        $this->attributes[self::PASSWORD] = $token;
     }
 
     // --------------------------- Relations ---------------------------------- //

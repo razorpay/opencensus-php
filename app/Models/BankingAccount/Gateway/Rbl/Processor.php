@@ -4,13 +4,22 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use Carbon\Carbon;
 
+use RZP\Constants;
+use RZP\Services\FTS;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\Balance;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
     const DATE_FORMAT = 'Y-m-d';
 
     const PINCODES_REDIS_KEY = 'rbl_pincode_set';
+
+    const CREDENTIALS_VAULT_NAMESPACE = 'banking_account_creds';
+
+    const MAX_RETRY_COUNT = 1;
 
     public function preProcessAccountInfoNotification(array $input)
     {
@@ -25,7 +34,7 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
-        $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
+        $attributes = $this->getMappedAttributes(Fields::$FieldsToEntityMap, $input);
 
         $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
                                                         $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
@@ -81,6 +90,173 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $this->checkRblToInternalStatusMapping($attributes);
     }
+
+    /**
+     * @param BankingAccount\Entity $bankingAccount
+     * @param array $input
+     * @return array
+     */
+    public function storeCredentials(BankingAccount\Entity $bankingAccount, array $input)
+    {
+        (new Validator)->validateInput(Validator::ADD_CREDENTIALS, $input);
+
+        $input[Fields::SUBCORP_USER_PASSWORD] = $this->tokenizeCredentials($input[Fields::SUBCORP_USER_PASSWORD]);
+
+        $balance = $this->fetchBalanceAndVerifyCredentials($bankingAccount, $input);
+
+        // we will save credentials only once the mozart call is successful and we are able to receive
+        // balance for the account.
+        $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
+
+        $bankingAccount->fill($attributes);
+
+        $bankingAccount->saveOrFail($input);
+
+        $balanceDetails = [
+            Constants\Entity::BALANCE           => $balance,
+            Balance\Entity::ACCOUNT_TYPE        => 'Direct',
+            Balance\Entity::ACCOUNT_PROVIDER    => BankingAccount\Channel::RBL,
+            Balance\Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
+        ];
+
+        return $balanceDetails;
+    }
+    
+    public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
+    {
+        $rbl = $this->config['gateway']['razorpayx']['ca']['rbl'];
+
+        $credentials = [
+            Fields::USERNAME                  => $rbl[Fields::AUTH_USERNAME],
+            Fields::PASSWORD                  => $rbl[Fields::AUTH_PASSWORD],
+            Fields::CLIENT_ID                 => $rbl[Fields::CLIENT_ID],
+            Fields::CLIENT_SECRET             => $rbl[Fields::CLIENT_SECRET],
+            Fields::SUBCORP_ID                => $bankingAccount->getUsername(),
+            Fields::SUBCORP_USER_ID           => $bankingAccount->getPassword(),
+            Fields::SUBCORP_USER_PASSWORD     => $bankingAccount->getReference1(),
+        ];
+
+        $mozartIdentifier = $rbl[Fields::MOZART_IDENTIFIER];
+
+        $body = [
+            FTS\Constants::CREDENTIALS       => $credentials,
+            FTS\Constants::MOZART_IDENTIFIER => $mozartIdentifier
+        ];
+
+        return $body;
+    }
+
+    protected function fetchBalanceAndVerifyCredentials(BankingAccount\Entity $bankingAccount, array $input)
+    {
+        $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount, $input);
+
+        $retryCount = 0;
+
+        while (true)
+        {
+            try
+            {
+                $response = $this->app->mozart->sendMozartRequest('razorpayx', BankingAccount\Channel::RBL,
+                                                                   Action::ACCOUNT_BALANCE, $request);
+
+                break;
+            }
+            catch (\Throwable $exception)
+            {
+                $errorCode = $exception->getCode();
+
+                if ($errorCode === ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT)
+                {
+                    if ($retryCount < self::MAX_RETRY_COUNT)
+                    {
+                        $this->trace-info(
+                            TraceCode::MOZART_SERVICE_RETRY,
+                            [
+                                'message' => $exception->getMessage(),
+                                'data'    => $exception->getData(),
+                            ]
+                        );
+
+                        $retryCount++;
+                    }
+                    else
+                    {
+                        throw $exception;
+                    }
+                }
+                else
+                {
+                    throw $exception;
+                }
+            }
+        }
+
+        // ToDo add a validator for response format from mozart
+        $balance = $response[Fields::DATA][Fields::GET_ACCOUNT_BALANCE][Fields::BODY]
+                        [Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
+
+        return $this->getFormattedAmount($balance);
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount * 100, 2, '.', '');
+    }
+
+    protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount, array $input)
+    {
+        $credentials = $this->getAccountCredentials();
+        
+        $merchantCredentials = [
+            Fields::SUBCORP_ID                => $bankingAccount->getUsername(),
+            Fields::SUBCORP_USER_NAME         => $bankingAccount->getPassword(),
+            Fields::SUBCORP_USER_PASSWORD     => $bankingAccount->getReference1()
+        ];
+
+        $credentials = array_merge($credentials, $merchantCredentials);
+
+        $data = [
+            Fields::SOURCE_ACCOUNT => [
+                Fields::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
+                Fields::ID             => $bankingAccount->getBankReferenceNumber(),
+                Fields::CREDENTIALS    => $credentials
+            ],
+        ];
+
+        return $data;
+    }
+
+     protected function validateResponse(array $response, array $request)
+     {
+         if ($response[Fields::GET_ACCOUNT_BALANCE][Fields::HEADER][Fields::SUBCORP_ID] !==
+             ($request[Fields::CREDENTIALS][Fields::SUBCORP_ID]))
+         {
+             throw new BadRequestException(
+                 ErrorCode::BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH,
+                 null,
+                 [
+                     'response' => $response,
+                     'request'  => $request
+                 ],
+                 'Account details mismatch. Please try again'
+
+             );
+         }
+     }
+
+     protected function getAccountCredentials()
+     {
+         $config = $this->config['gateway']['razorpayx']['ca']['rbl'];
+
+         $credentials = [
+             Fields::USERNAME      => $config[Fields::AUTH_USERNAME],
+             Fields::PASSWORD      => $config[Fields::AUTH_PASSWORD],
+             Fields::CLIENT_ID     => $config[Fields::CLIENT_ID],
+             Fields::CLIENT_SECRET => $config[Fields::CLIENT_SECRET],
+         ];
+
+         return $credentials;
+     }
 
     protected function validateInputForAccountCreation(array $input)
     {

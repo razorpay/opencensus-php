@@ -6,6 +6,7 @@ use RZP\Models\BankingAccount\Entity;
 
 class Fields
 {
+    // webhook fields
     const FORACID                           = 'FORACID';
     const ACCT_NAME                         = 'ACCT_NAME';
     const CIF_ID                            = 'CIF_ID';
@@ -28,6 +29,29 @@ class Fields
     const RZP_ALERT_NOTIFICATION_REQUEST    = 'RZPAlertNotiReq';
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
 
+    //credentials fields
+    const SUBCORP_ID                        = 'subcorp_id';
+    const SUBCORP_USER_ID                   = 'subcorp_user_id';
+    const SUBCORP_USER_NAME                 = 'subcorp_user_name';
+    const SUBCORP_USER_PASSWORD             = 'subcorp_user_password';
+    const CLIENT_ID                         = 'client_id';
+    const CLIENT_SECRET                     = 'client_secret';
+    const USERNAME                          = 'username';
+    const PASSWORD                          = 'password';
+    const MOZART_IDENTIFIER                 = 'mozart_identifier';
+
+    // fields for fetch balance api
+    const SOURCE_ACCOUNT                    = 'source_account';
+    const ACCOUNT_NUMBER                    = 'account_number';
+    const ID                                = 'id';
+    const CREDENTIALS                       = 'credentials';
+    const DATA                              = 'data';
+    const GET_ACCOUNT_BALANCE               = 'getAccountBalanceRes';
+    const AMOUNT_VALUE                      = 'amountValue';
+    const BAL_AMOUNT                        = 'BalAmt';
+    const AUTH_USERNAME                     = 'auth_username';
+    const AUTH_PASSWORD                     = 'auth_password';
+
     public static $rblFieldsToEntityMap = [
       self::FORACID                 => Entity::ACCOUNT_NUMBER,
       self::IFSC                    => Entity::ACCOUNT_IFSC,
@@ -44,5 +68,8 @@ class Fields
       self::REF_NUM_1               => Entity::BANK_REFERENCE_NUMBER,
       self::EMAIL_ID                => Entity::BENEFICIARY_EMAIL,
       self::PHONE_NUM               => Entity::BENEFICIARY_MOBILE,
+      self::SUBCORP_ID              => Entity::REFERENCE1,
+      self::SUBCORP_USER_ID         => Entity::USERNAME,
+      self::SUBCORP_USER_PASSWORD   => Entity::PASSWORD
     ];
 }

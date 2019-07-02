@@ -40,6 +40,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::CURRENCY,
+        self::BALANCE,
+        self::ACCOUNT_PROVIDER,
+        self::ACCOUNT_TYPE,
+        self::ACCOUNT_NUMBER,
     ];
 
     protected $defaults = [
@@ -269,6 +273,16 @@ class Entity extends Base\PublicEntity
     public function setAccountNumber(string $accountNumber)
     {
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    public function setAccountType(string $type)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $type);
+    }
+
+    public function setAccountProvider(string $provider)
+    {
+        $this->setAttribute(self::ACCOUNT_PROVIDER, $provider);
     }
 
     public function save(array $options = array())

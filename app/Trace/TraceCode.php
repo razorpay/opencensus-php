@@ -1045,6 +1045,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_REQUEST                                    = 'CARD_VAULT_REQUEST';
     const CARD_VAULT_RESPONSE                                   = 'CARD_VAULT_RESPONSE';
     const CARD_VAULT_RETRY                                      = 'CARD_VAULT_RETRY';
+    const CARD_VAULT_REQUEST_TIMEOUT                            = 'CARD_VAULT_REQUEST_TIMEOUT';
     const CORE_PAYMENT_SERVICE_REQUEST                          = 'CORE_PAYMENT_SERVICE_REQUEST';
     const CORE_PAYMENT_SERVICE_RESPONSE                         = 'CORE_PAYMENT_SERVICE_RESPONSE';
     const CORE_PAYMENT_SERVICE_RETRY                            = 'CORE_PAYMENT_SERVICE_RETRY';
@@ -1748,6 +1749,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_REQUEST                                           = 'FTS_REQUEST';
     const FTS_RESPONSE                                          = 'FTS_RESPONSE';
     const FTS_INVALID_CHANNEL                                   = 'FTS_INVALID_CHANNEL';
+    const FTS_SERVICE_RETRY                                     = 'FTS_SERVICE_RETRY';
+    const FTS_REQUEST_TIMEOUT_EXCEPTION                         = 'FTS_REQUEST_TIMEOUT_EXCEPTION';
     const FTS_FAILURE_EXCEPTION                                 = 'FTS_FAILURE_EXCEPTION';
     const FTS_FUND_TRANSFER_INIT                                = 'FTS_FUND_TRANSFER_INIT';
     const FTS_CREATE_ACCOUNT_INIT                               = 'FTS_CREATE_ACCOUNT_INIT';
@@ -1848,6 +1851,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_CREATE                                = 'BANKING_ACCOUNT_CREATE';
     const BANK_ACCOUNT_INFO_WEBHOOK_REQUEST                     = 'BANK_ACCOUNT_INFO_WEBHOOK_REQUEST';
     const BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST     = 'BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST';
+    const BANKING_ACCOUNT_BALANCE_CREATION                      = 'BANKING_ACCOUNT_BALANCE_CREATION';
 
     const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
     const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
@@ -1861,6 +1865,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
     const MOZART_SERVICE_RESPONSE                               = 'MOZART_SERVICE_RESPONSE';
     const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
+    const MOZART_SERVICE_RETRY                                  = 'MOZART_SERVICE_RETRY';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

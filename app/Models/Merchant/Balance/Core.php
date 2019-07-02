@@ -63,6 +63,22 @@ class Core extends Base\Core
         return $balance;
     }
 
+    public function createBalanceForCurrentAccount(Merchant\Entity $merchant, string $balanceType,
+                                                   array $input, string $mode)
+    {
+
+        $content = [
+            Entity::TYPE     => $balanceType,
+            Entity::CURRENCY => Currency::INR,
+        ];
+
+        $input = array_merge($input, $content);
+
+        $balance = $this->create($merchant, $input, $mode);
+
+        return $balance;
+    }
+
     /**
      * Check that a merchant's balance is greater than amount argument passed
      *

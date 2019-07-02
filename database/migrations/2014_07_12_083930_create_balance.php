@@ -73,7 +73,6 @@ class CreateBalance extends Migration
             $table->index(Balance::ACCOUNT_NUMBER);
             $table->index([Balance::MERCHANT_ID, Balance::TYPE, Balance::UPDATED_AT]);
 
-            $table->unique([Balance::MERCHANT_ID, Balance::TYPE]);
         });
     }
 

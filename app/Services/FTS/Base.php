@@ -6,6 +6,7 @@ use Requests;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Base
@@ -102,7 +103,7 @@ class Base
         {
             throw new Exception\RecordAlreadyExists(
                 'record already exists',
-                TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
+                ErrorCode::BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
                 'response' => $response->body,
             ]);
         }
@@ -182,6 +183,22 @@ class Base
 
         catch(\Throwable $e)
         {
+            if (checkRequestTimeout($e) === true)
+            {
+                $errorCode = ErrorCode::SERVER_ERROR_FTS_SERVICE_TIMEOUT;
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::FTS_REQUEST_TIMEOUT_EXCEPTION,
+                    [
+                        'message'      => $e->getMessage(),
+                        'request_body' => $request['content'],
+                    ]);
+
+                throw new \Requests_Exception($e->getMessage(), $errorCode);
+            }
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,

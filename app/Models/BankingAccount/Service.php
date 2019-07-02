@@ -60,54 +60,21 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
   
-    public function storeCredentials(string $id, array $input)
+    public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
-        $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
+        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $channel = $bankingAccount->getChannel();
-
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
             [
-                'id'        => $id,
-                'channel'   => $channel
+                'id'            => $id,
+                'channel'       => $bankingAccount->getChannel(),
             ]);
 
-        switch ($channel)
-        {
-            case Channel::RBL:
-                // Here 3 API calls are being made, if any of the call fails or for some reason we are
-                // not able to persist the response, we will ask the merchant to enter his credentials
-                // again and make the 3 calls. Later we can separate these calls and have some retry logic
-                // at our end.
+        $content = $this->core->storeCredentials($bankingAccount, $input);
 
-                try
-                {
-                    $this->core->createMerchantTokenForRbl($bankingAccount, $input);
+        $bankingAccount = $this->core->activateAccount($bankingAccount, $content);
 
-                    $fundAccountId = $this->core->createOrFetchFtsFundAccountForMerchant($bankingAccount);
-
-                    $this->core->createMerchantSourceAccountForRbl($bankingAccount, $fundAccountId);
-
-                    $this->core->updateAccountToProcessed($bankingAccount);
-
-                    $success = true;
-                }
-                catch (\Throwable $ex)
-                {
-                    $success = false;
-
-                    $this->trace->traceException($ex, Trace::CRITICAL);
-                }
-
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-        }
-
-        return ['success' => $success];
+        return $bankingAccount->toArrayPublic();
     }
 
     public function addOrRemoveServiceablePincodes(array $input, $channel)
@@ -140,22 +107,5 @@ class Service extends Base\Service
         $response = $this->core->processAccountInfoWebhook($channel, $input);
 
         return $response;
-    }
-
-    /**
-     * @param string $channel
-     * @param array  $input
-     *
-     * @throws LogicException
-     */
-    protected function throwUnhandledChannelException(string $channel, array $input)
-    {
-        throw new LogicException(
-            'Banking Account logic undefined for channel: ' . $channel,
-            null,
-            [
-                'input'     => $input,
-                'channel'   => $channel
-            ]);
     }
 }
