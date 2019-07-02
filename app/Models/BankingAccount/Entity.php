@@ -164,20 +164,6 @@ class Entity extends Base\PublicEntity
         self::BANK_REFERENCE_NUMBER,
     ];
 
-    protected static $generators = [
-        self::BANK_REFERENCE_NUMBER,
-    ];
-
-    // -------------------------- Generators --------------------------------- //
-
-    public function generateBankReferenceNumber()
-    {
-        // TODO: fix.
-        $id = substr(time(), 0, 5);
-
-        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $id);
-    }
-
     // ---------------------------- Setters ----------------------------------- //
 
     public function setStatus(string $status)
@@ -193,6 +179,11 @@ class Entity extends Base\PublicEntity
     public function setFtsFundAccountId(string $fundAccountId)
     {
         $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $fundAccountId);
+    }
+
+    public function setBankReferenceNumber(string $bankReferenceNumber)
+    {
+        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $bankReferenceNumber);
     }
 
     // -------------------------- Getters ------------------------------------ //

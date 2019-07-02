@@ -24,4 +24,12 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->first();
     }
+
+    public function getLatestInsertedBankingAccountEntity(string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->latest(Entity::BANK_REFERENCE_NUMBER)
+                    ->first();
+    }
 }

@@ -4969,8 +4969,8 @@ ALTER TABLE banking_accounts
     ADD COLUMN bank_internal_status VARCHAR(255) DEFAULT NULL AFTER status,
     ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status),
     ADD COLUMN bank_internal_reference_number VARCHAR(255) DEFAULT NULL AFTER balance_id,
-    ADD COLUMN account_name VARCHAR(255) DEFAULT NULL AFTER bank_internal_reference_number,
-    ADD COLUMN account_currency CHAR(3) DEFAULT INR AFTER account_name,
+    ADD COLUMN beneficiary_name VARCHAR(255) DEFAULT NULL AFTER bank_internal_reference_number,
+    ADD COLUMN account_currency CHAR(3) DEFAULT INR AFTER beneficiary_name,
     ADD COLUMN beneficiary_email VARCHAR(255) DEFAULT NULL AFTER account_currency,
     ADD COLUMN beneficiary_mobile VARCHAR(255) DEFAULT NULL AFTER beneficiary_email,
     ADD COLUMN beneficiary_city VARCHAR(255) DEFAULT NULL AFTER beneficiary_mobile,
@@ -4982,6 +4982,7 @@ ALTER TABLE banking_accounts
     ADD COLUMN beneficiary_address1 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address3,
     ADD COLUMN account_activation_date DATE DEFAULT NULL AFTER bank_reference_number,
     ADD INDEX bank_reference_number_index (bank_reference_number),
+    ADD INDEX account_number_index (account_number),
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
     ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
