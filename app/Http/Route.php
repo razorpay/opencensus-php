@@ -1128,7 +1128,7 @@ final class Route
         'excel_store_create_page'                 => ['post',     'excel-store/pages',                                         'ExcelStoreController@dummy'                                  ],
         'excel_store_update_page'                 => ['put',      'excel-store/pages/{id}',                                    'ExcelStoreController@dummy'                                  ],
         'excel_store_get_records'                 => ['get',      'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
-        'excel_store_update_records'              => ['put',      'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
+        'excel_store_update_records'              => ['post',     'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
         'excel_store_delete_records'              => ['delete',   'excel-store/pages/{id}/records',                            'ExcelStoreController@dummy'                                  ],
         'excel_store_page_by_url'                 => ['get',      'excel-store/pages/{url}',                                   'ExcelStoreController@dummy'                                  ],
     ];

@@ -2,10 +2,10 @@
 
 namespace RZP\Http\Middleware;
 
+use Request;
 use Closure;
 use ApiResponse;
-use Requests_Session;
-use Illuminate\Http\Request;
+use GuzzleHttp\Client as Guzzle;
 use Illuminate\Foundation\Application;
 
 use RZP\Exception;
@@ -14,6 +14,10 @@ use RZP\Error\ErrorCode;
 
 class ExcelStoreProxy
 {
+    const CONTENT_TYPE_MULTIPART = 'multipart/form-data';
+    const CONTENT_TYPE_JSON      = 'application/json';
+    const CONTENT_TYPE_EXCEL     = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
     public function __construct(Application $app)
     {
 
@@ -23,24 +27,40 @@ class ExcelStoreProxy
 
       $this->route = $this->app['api.route'];
 
+      $this->config = config('services.excel_store');
+
       $this->request = $this->initRequest();
+
+      $this->options = [
+        'headers' => $this->getDefaultHeaders($this->config)
+      ];
+
+      $this->trace->info(TraceCode::EXCEL_STORE_REQUEST, [ 'message' => "reached proxy constructor" ]);
 
     }
 
-    protected function initRequest(): Requests_Session
+    protected function getDefaultHeaders(): array
     {
-      $config = config('services.excel_store');
+      $excelStoreAuthToken = $this->config['secret'];
 
-      $excelStoreUrl = $config['base_url'];
-
-      $excelStoreAuthToken = $config['secret'];
-
-      $headers = [
-        'Content-Type'      => 'application/json',
+      return [
+        'Accept'            => 'application/json',
         'Authorization'     => 'Bearer ' . $excelStoreAuthToken,
       ];
+    }
 
-      $request = new Requests_Session($excelStoreUrl, $headers);
+    protected function initRequest(): Guzzle
+    {
+
+      $excelStoreUrl = $this->config['base_url'];
+
+      $request = new Guzzle();
+
+      // $request = new Guzzle([
+      //   'base_url' => $excelStoreUrl
+      // ]);
+
+      $this->trace->info(TraceCode::EXCEL_STORE_REQUEST, [ 'message' => "reached proxy initRequest" ]);
 
       return $request;
 
@@ -62,41 +82,88 @@ class ExcelStoreProxy
           'query_string'  => $request->getQUeryString(),
         ]);
 
-        $res = $this->forwardExcelStoreRequest($request);
+        $response = $this->forwardExcelStoreRequest($request);
 
-        return $res;
+        return $response;
     }
 
     protected function  forwardExcelStoreRequest($request)
     {
-      $url = str_replace('v1/excel-store/', '', $request->path());
+        // removing /v1/excel-store/ from path
+        $path = str_replace('v1/excel-store/', '', $request->path());
 
-      if($request->post() !== null)
-      {
-        $body = $request->post();
-      }
+        $this->options['headers']['Content-Type'] = $this->getContentType($request);
 
-      $method = $request->method();
+        $this->processInput($request);
 
-      $response = $this->sendRequestAndParseResponse($url, $method, $body);
+        $method = $request->method();
 
-      return $response;
+        $response = $this->sendRequestAndParseResponse($path, $method);
+
+        $this->trace->info(TraceCode::EXCEL_STORE_REQUEST, [ 'message' => "completed sending request procedure" ]);
+
+        return $response;
+
+    }
+
+    protected function getContentType($request)
+    {
+        $requestContentType = $request->header('Content-Type');
+
+        if(strpos($requestContentType, self::CONTENT_TYPE_MULTIPART) !== false)
+        {
+            return self::CONTENT_TYPE_EXCEL;
+        }
+
+        return self::CONTENT_TYPE_JSON;
+    }
+
+    protected function processInput($request)
+    {
+        $contentTypeToBeForwarded = $this->options['headers']['Content-Type'];
+
+        $input = $request->all();
+
+        switch($contentTypeToBeForwarded)
+        {
+            case self::CONTENT_TYPE_JSON:
+                $this->options['json'] = $input;
+
+                break;
+
+            case self::CONTENT_TYPE_EXCEL:
+                $file = $input['file'];
+
+                if(!($file instanceof \SplFileInfo))
+                {
+                    // need to raise an exception
+                }
+
+                $filePath = $file->getRealPath();
+
+                $this->options['body'] = fopen($filePath, 'r');
+
+                break;
+        }
 
     }
 
     protected function sendRequestAndParseResponse(
-      $url,
-      $method,
-      $body = [],
-      $headers = [])
+      $path,
+      $method)
     {
+        $excelStoreUrl = $this->config['base_url'];
+
+        $requestUrl = $excelStoreUrl . $path;
+
         try
         {
-          $response = $this->request->request(
-            $url,
-            $headers,
-            $body,
-            $method);
+            $response = $this->request
+                             ->request($method, $requestUrl, $this->options);
+
+            $this->trace->info(TraceCode::EXCEL_STORE_RESPONSE, (array)$response);
+
+            return $this->parseResponse($response);
         }
         catch(\Request_Exception $e)
         {
@@ -105,25 +172,25 @@ class ExcelStoreProxy
             ErrorCode::SERVER_ERROR_EXCEL_STORE_FAILURE);
         }
 
-        return $this->parseResponse($response);
     }
 
     protected function parseResponse($response)
     {
-      $code = $response->status_code;
-      $body = json_decode($response->body, true);
+        $code = $response->getStatusCode();
 
-      $this->trace->info(
-        TraceCode::EXCEL_STORE_RESPONSE,
-        [ 'code' => $code, 'body' => $body ]);
+        $body = json_decode(((string) $response->getBody()), true);
+
+        $this->trace->info(
+            TraceCode::EXCEL_STORE_RESPONSE,
+            [ 'code' => $code, 'body' => $body ]);
 
         $data = $body;
 
-      if(is_associative_array($body) === false)
-      {
-        $data = ['items' => $body];
-      }
+        if(is_associative_array($body) === false)
+        {
+            $data = ['items' => $body];
+        }
 
-      return ApiResponse::json($data, $code);
+        return ApiResponse::json($data, $code);
     }
 }
