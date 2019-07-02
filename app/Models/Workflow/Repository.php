@@ -22,14 +22,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchWorkflowsByPermissionsAndOrgId(string $permissionId, string $orgId, array $relations = [])
+    public function fetchWorkflowsByPermissionsOrgAndMerchant(
+        string $permissionId,
+        string $orgId,
+        string $merchantId = null,
+        array $relations = [])
     {
-        return $this->newQuery()
-                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
-                    ->with($relations)
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where('workflow_permissions.permission_id', $permissionId)
-                    ->get();
+        /** @var BuilderEx $query */
+        $query = $this->newQuery()
+                      ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
+                      ->with($relations)
+                      ->where(Entity::ORG_ID, '=', $orgId)
+                      ->where('workflow_permissions.permission_id', $permissionId);
+
+        if ($merchantId !== null)
+        {
+            $query->merchantId($merchantId);
+        }
+
+        return $query->get();
     }
 
     public function fetchWorkflow(Step\Entity $step)
@@ -59,7 +70,7 @@ class Repository extends Base\Repository
                     ->pluck(Entity::ID);
     }
 
-    public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId)
+    public function fetchBankingWorkflowSummaryForPermissionId(string $permissionId, string $merchantId)
     {
         $permissionTable               = $this->repo->permission->getTableName();
         $workflowStepTable             = $this->repo->workflow_step->getTableName();
@@ -75,9 +86,10 @@ class Repository extends Base\Repository
 
         /** @var BuilderEx $query */
         $query = $this->newQuery()
-                      ->with('steps', 'steps.role', 'payoutAmountRules')
+                      ->with('steps', 'steps.role', 'payoutAmountRule')
                       ->join(Table::WORKFLOW_PERMISSION, $workflowId, '=', $workflowPermissionsWorkflowId)
                       ->where($orgId, Admin\Org\Entity::RAZORPAY_ORG_ID)
+                      ->merchantId($merchantId)
                       ->whereNull(Entity::DELETED_AT)
                       ->where($workflowPermissionsPermissionId, $permissionId);
 

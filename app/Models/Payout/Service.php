@@ -303,8 +303,9 @@ class Service extends Base\Service
                              ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
                              ->first();
 
-
-        $workflows = $this->repo->workflow->fetchBankingWorkflowSummaryForPermissionId($permissionId);
+        $workflows = $this->repo
+                          ->workflow
+                          ->fetchBankingWorkflowSummaryForPermissionId($permissionId, $this->merchant->getId());
 
         return $workflows->toArray();
     }

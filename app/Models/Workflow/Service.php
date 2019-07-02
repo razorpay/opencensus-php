@@ -82,7 +82,7 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
-    public function permissionHasWorkflow(string $routePermission, string $orgId)
+    public function permissionHasWorkflow(string $routePermission, string $orgId, string $merchantId = null)
     {
         $permissionIds = $this->repo
                              ->permission
@@ -96,7 +96,7 @@ class Service extends Base\Service
 
         $permissionId = $permissionIds[0];
 
-        $workflows = (new Action\Core)->getWorkflowsForPermission($permissionId, $orgId);
+        $workflows = (new Action\Core)->getWorkflowsForPermission($permissionId, $orgId, $merchantId);
 
         return ($workflows->isEmpty() === false);
     }

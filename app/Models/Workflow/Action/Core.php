@@ -29,6 +29,8 @@ class Core extends Base\Core
 
         $orgId = $maker->getOrgId();
 
+        $merchantId = null;
+
         $params = [
             Entity::ORG_ID      => $orgId
         ];
@@ -41,6 +43,15 @@ class Core extends Base\Core
                              ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
                              ->toArray()[0];
 
+        //
+        // For merchant app permissions, maker=merchant, we send the merchant ID for fetching
+        // only workflows defined for the merchant
+        //
+        if (Permission\Name::isMerchantPermission($routePermission) === true)
+        {
+            $merchantId = $maker->getId();
+        }
+
         // We don't need to check the following 2 things:
         //
         // - Whether a workflow exists against the routePermission
@@ -48,13 +59,13 @@ class Core extends Base\Core
         //
         // - Whether the maker has access to this permission because
         // that is also done in the middleware or should be done
-        // from whereever this code is called/triggered.
+        // from wherever this code is called/triggered.
 
         // Currently single permission can have only 1 workflow
         // App level checks are in place. But this is sort of progressive
         // code where a single permission might have multiple workflows
         // in future.
-        $workflows = $this->getWorkflowsForPermission($permissionId, $orgId);
+        $workflows = $this->getWorkflowsForPermission($permissionId, $orgId, $merchantId);
 
         // More than one workflow could be found.
         $workflow = $workflows->first();
@@ -256,17 +267,18 @@ class Core extends Base\Core
      * This checks for if the permission is present for the organisation
      * and if a workflow is mapped gainst the permission.
      *
-     * @param string $permissionId
-     * @param string $orgId
+     * @param string      $permissionId
+     * @param string      $orgId
+     * @param string|null $merchantId
      *
      * @return array
      */
-    public function getWorkflowsForPermission(string $permissionId, string $orgId)
+    public function getWorkflowsForPermission(string $permissionId, string $orgId, string $merchantId = null)
     {
         // Implicit check for workflow in the organisation against permission ids.
         $workflows = $this->repo
                           ->workflow
-                          ->fetchWorkflowsByPermissionsAndOrgId($permissionId, $orgId);
+                          ->fetchWorkflowsByPermissionsOrgAndMerchant($permissionId, $orgId, $merchantId);
 
         return $workflows;
     }
