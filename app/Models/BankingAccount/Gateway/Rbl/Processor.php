@@ -122,7 +122,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
             if ($referenceNumber >= self::MAX_BANK_REFERENCE_NUMBER)
             {
-                throw new LogicException('Rbl maximum account limit reached',
+                throw new LogicException('Rbl maximum account number limit reached',
                     ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_NUMBER_LIMIT_REACHED,
                     [
                         BankingAccount\Entity::CHANNEL => BankingAccount\Channel::RBL

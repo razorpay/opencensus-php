@@ -68,9 +68,9 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_NAME                  = 'beneficiary_name';
 
 
-    const PINCODE_LENGTH                    = '6';
-    const ACCOUNT_NUMBER_LENGTH             = '40';
-    const ACCOUNT_IFSC_LENGTH               = '11';
+    const PINCODE_LENGTH                    = 6;
+    const ACCOUNT_NUMBER_LENGTH             = 40;
+    const ACCOUNT_IFSC_LENGTH               = 11;
 
     const USERNAME                          = 'username';
     const PASSWORD                          = 'password';
