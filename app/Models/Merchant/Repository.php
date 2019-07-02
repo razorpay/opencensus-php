@@ -99,8 +99,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ACTIVATED, '=', 1)
                     ->where(Entity::ACTIVATED_AT, '<=', $end)
                     ->take($limit)
-                    ->skip($skip)
-                    ->with('merchantDetail');
+                    ->skip($skip);
 
         if (empty($merchantIds) === false)
         {

@@ -22,7 +22,7 @@ class Core extends Base\Core
      * Disabled for Airtel Payments Bank currently.
      */
     const INVOICE_EXCLUDED_MERCHANTS = [
-        "AqUQQH9neAMkUG"
+        'AqUQQH9neAMkUG'
     ];
 
     public function create(array $input, Merchant\Entity $merchant): Entity
@@ -151,11 +151,22 @@ class Core extends Base\Core
         }
 
         //
-        // merchant_ids_excluded is an array of merchant ids coming from input, for which invoice shouldn't be generated.
+        // merchant_ids_excluded is an array of merchant ids coming from input,
+        // for which invoice shouldn't be generated.
         //
         $merchantIdsExcluded = (isset($input['merchant_ids_excluded']) === true) ?
                                (array_merge($input['merchant_ids_excluded'], self::INVOICE_EXCLUDED_MERCHANTS)) :
                                self::INVOICE_EXCLUDED_MERCHANTS;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_CREATE_REQUEST,
+            [
+                'month'                 => $invoiceDate->month,
+                'yeat'                  => $invoiceDate->year,
+                'is_correction'         => $isCorrection,
+                'merchant_ids'          => $merchantIds,
+                'merchant_ids_excluded' => $merchantIdsExcluded,
+            ]);
 
         $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
 
@@ -170,7 +181,12 @@ class Core extends Base\Core
         {
             $merchants = $this->repo
                               ->merchant
-                              ->fetchActivatedMerchantsBeforeTimestamp($batch, $skip, $endTimestamp, $merchantIds, $merchantIdsExcluded);
+                              ->fetchActivatedMerchantsBeforeTimestamp(
+                                  $batch,
+                                  $skip,
+                                  $endTimestamp,
+                                  $merchantIds,
+                                  $merchantIdsExcluded);
 
             $count = $merchants->count();
 
@@ -188,6 +204,13 @@ class Core extends Base\Core
                                   ->delay($i++ % 901);
             }
         }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_DISPATCH_COUNT,
+            [
+                'count' => $skip,
+            ]);
+
     }
 
     public function createMulitpleInvoiceEntities(array $input)
