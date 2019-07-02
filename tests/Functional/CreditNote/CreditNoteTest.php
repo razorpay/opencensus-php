@@ -1,0 +1,105 @@
+<?php
+
+namespace RZP\Tests\Functional\CreditNote;
+
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class CreditNoteTest extends TestCase
+{
+    use PaymentTrait;
+
+    use InvoiceTestTrait;
+
+    use DbEntityFetchTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/Helpers/CreditNoteTestData.php';
+
+        parent::setUp();
+
+        $this->ba->proxyAuth();
+    }
+
+    public function testCreateCreditNote()
+    {
+        $this->startTest();
+    }
+
+    public function testApplyCreditNoteWithSingleInvoice()
+    {
+        $this->testCreateCreditNote();
+
+        $creditNote = $this->getLastEntity('creditnote', true);
+
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/creditnote/'.$creditNote['id'].'/apply';
+
+        $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
+
+        $this->startTest();
+    }
+
+    public function testApplyCreditNoteWithSingleInvoiceAndFullAmount()
+    {
+        $testDataCreate = &$this->testData['testCreateCreditNote'];
+
+        $testDataCreate['request']['content']['amount'] = 1000;
+
+        $testDataCreate['response']['content']['amount'] = '1000';
+
+        $testDataCreate['response']['content']['amount_available'] = '1000';
+
+        $this->testCreateCreditNote();
+
+        $creditNote = $this->getLastEntity('creditnote', true);
+
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/creditnote/'.$creditNote['id'].'/apply';
+
+        $testData['request']['content']['invoices'][] = ['invoice_id' => $invoice->getPublicId(), 'amount' => 1000];
+
+        $this->startTest();
+    }
+
+    protected function createOrder(array $overrideWith = [])
+    {
+        $order = $this->fixtures
+            ->create(
+                'order',
+                array_merge(
+                    [
+                        'id'              => '100000000order',
+                        'amount'          => 100000,
+                        'payment_capture' => true,
+                    ],
+                    $overrideWith
+                )
+            );
+
+        return $order;
+    }
+
+}

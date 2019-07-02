@@ -4217,4 +4217,11 @@ class MerchantTest extends TestCase
 
         Mail::assertNotQueued(BeneficiaryFileMail::class);
     }
+
+    public function testGetOrgDetails()
+    {
+        $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
 }

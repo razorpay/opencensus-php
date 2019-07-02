@@ -214,6 +214,11 @@ class Table
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_CONCERN           = 'p2p_concerns';
 
+
+    const CREDITNOTE           = 'creditnote';
+
+    const CREDITNOTE_INVOICE   = 'creditnote_invoices';
+
     const WORKFLOW_PAYOUT_AMOUNT_RULES = 'workflow_payout_amount_rules';
 
     protected static $entityToTableMap = [

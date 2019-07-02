@@ -5035,3 +5035,7 @@ ALTER TABLE virtual_accounts
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE transactions
+    CHANGE reference5 balance_updated TINYINT(4),
+    ALGORITHM=INPLACE, LOCK=NONE;
