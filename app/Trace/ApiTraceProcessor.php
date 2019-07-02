@@ -29,6 +29,8 @@ class ApiTraceProcessor
 
         $this->addDashboardHeaders($record);
 
+        $this->addRouteNameForExceptions($record);
+
         return $record;
     }
 
@@ -64,12 +66,12 @@ class ApiTraceProcessor
         }
     }
 
-    protected function updateClientIp(&$record)
+    protected function updateClientIp(& $record)
     {
         $record['request']['client_ip'] = $this->app['request']->ip();
     }
 
-    protected function addMerchantId(&$record)
+    protected function addMerchantId(& $record)
     {
         $record['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
     }
@@ -80,5 +82,28 @@ class ApiTraceProcessor
         {
             $record['request'] += $this->app['basicauth']->getDashboardHeaders();
         }
+    }
+
+    protected function addRouteNameForExceptions(& $record)
+    {
+        if ($this->isExceptionRecord($record) === true)
+        {
+            $record['request']['route_name'] = $this->app['router']->currentRouteName();
+        }
+    }
+
+    protected function isExceptionRecord(array $record): bool
+    {
+        if (isset($record['context']['class']))
+        {
+            $pos = strpos($record['context']['class'], 'RZP\Exception');
+
+            if ($pos === 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
