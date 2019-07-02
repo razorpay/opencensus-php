@@ -2,11 +2,13 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                                = 'id';

@@ -4,7 +4,7 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use RZP\Base;
 use RZP\Models\Pincode;
-use RZP\Models\BankingAccount\Entity;
+use RZP\Models\BankingAccount;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -15,8 +15,8 @@ class Validator extends Base\Validator
     const ACCOUNT_AVAILABILITY        = 'availability';
 
     protected static $availabilityRules = [
-        Entity::CHANNEL => 'required|string|in:rbl',
-        Entity::PINCODE => 'required|custom',
+        BankingAccount\Entity::CHANNEL => 'required|string|in:rbl',
+        BankingAccount\Entity::PINCODE => 'required|custom',
     ];
 
     protected static $preAccountInfoWebhookRules = [
@@ -44,15 +44,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $accountUpdateRules = [
-        Entity::STATUS                          => 'filled|string|custom',
-        Entity::BANK_INTERNAL_STATUS            => 'required_if:status,processing,processed,cancelled|string|custom',
-        Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
-        Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
+        BankingAccount\Entity::STATUS                          => 'filled|string|custom',
+        BankingAccount\Entity::BANK_INTERNAL_STATUS            => 'required_if:status,processing,processed,cancelled|string|custom',
+        BankingAccount\Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
+        BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
     ];
 
     protected function validateStatus(string $attribute, string $status = null)
     {
-        \RZP\Models\BankingAccount\Status::isValidStatus($status);
+        BankingAccount\Status::isValidStatus($status);
     }
 
     protected function validateBankInternalStatus(string $attribute, string $bankInternalStatus = null)
@@ -68,9 +68,9 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Pincode is not valid',
-                Entity::PINCODE,
+                BankingAccount\Entity::PINCODE,
                 [
-                    Entity::PINCODE => $pincode,
+                    BankingAccount\Entity::PINCODE => $pincode,
                 ]
             );
         }

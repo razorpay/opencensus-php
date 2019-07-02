@@ -27,7 +27,7 @@ class Core extends Base\Core
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
     {
-        (new Validator)->setStrictFalse()->validateInput('pre_process', $input);
+        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS, $input);
 
         $channel = $input[Entity::CHANNEL];
 
@@ -72,8 +72,10 @@ class Core extends Base\Core
 
             $attributes = $processor->processAccountInfoNotification($input);
 
-            $bankingAccount = $this->repo->banking_account->findByBankReferenceAndChannel(
-                                                                $channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
+            $bankingAccount = $this->repo
+                                   ->banking_account
+                                   ->findByBankReferenceAndChannel($channel,
+                                                                   $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
             $this->updateBankingAccount($bankingAccount, $attributes);
 

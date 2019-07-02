@@ -114,15 +114,18 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function generateBankReferenceNumber()
     {
-        $bankingAccount = $this->repo->banking_account->getLatestInsertedBankingAccountEntity(
-                                                                            BankingAccount\Channel::RBL);
+        $bankingAccount = $this->repo
+                               ->banking_account
+                               ->getLatestInsertedBankingAccountEntity(BankingAccount\Channel::RBL);
+
         if ($bankingAccount !== null)
         {
             $referenceNumber = (int) $bankingAccount->getBankReferenceNumber() + 1;
 
             if ($referenceNumber >= self::MAX_BANK_REFERENCE_NUMBER)
             {
-                throw new LogicException('Rbl maximum account number limit reached',
+                throw new LogicException(
+                    'Rbl maximum account number limit reached',
                     ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_NUMBER_LIMIT_REACHED,
                     [
                         BankingAccount\Entity::CHANNEL => BankingAccount\Channel::RBL
