@@ -17,6 +17,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
     const MAX_BANK_REFERENCE_NUMBER = 100000;
 
+    // RBL expects the reference number to be 5 digit number, we are not sure
+    // if RBL will take 000001 as a valid reference number. To avoid such confusions
+    // we are starting the reference number from 10000
     const START_BANK_REFERENCE_NUMBER = 10000;
 
     public function preProcessAccountInfoNotification(array $input)
