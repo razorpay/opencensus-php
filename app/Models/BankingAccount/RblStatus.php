@@ -58,4 +58,17 @@ class RblStatus
               ]);
         }
     }
+
+    public static function getAll(): array
+    {
+        return [
+            self::OPEN,
+            self::DRAFT,
+            self::REWORK,
+            self::VERIFIED,
+            self::DISCREPANCY,
+            self::CLOSED,
+            self::CANCELLED,
+        ];
+    }
 }

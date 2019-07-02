@@ -434,6 +434,23 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => BankingAccount\Channel::getAll(),
                 ],
+                'bank_internal_status' => [
+                    Fetch::LABEL  => 'Bank Internal Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => BankingAccount\RblStatus::getAll(),
+                ],
+                'balance_id'  => [
+                    Fetch::LABEL  => 'Balance Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'bank_reference_number'  => [
+                    Fetch::LABEL  => 'Bank Reference Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'fts_fund_account_id'  => [
+                    Fetch::LABEL  => 'FTS Fund Account Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::BANK_TRANSFER => [
