@@ -39,7 +39,7 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
-        $attributes = $this->getMappedAttributes(Fields::$FieldsToEntityMap, $input);
+        $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
 
         $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
                                                         $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);

@@ -101,11 +101,7 @@ class Core extends Base\Core
 
         $processor->validateAccountBeforeUpdating($input);
 
-        if ((isset($input[Entity::STATUS]) === true) and
-            ($input[Entity::STATUS] === Status::ACTIVATED))
-        {
-            $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
-        }
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
         $bankingAccount = $bankingAccount->edit($input);
 
@@ -248,8 +244,10 @@ class Core extends Base\Core
         $mode = $this->app['rzp.mode'];
 
         // Create Banking Balance.
-        $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, Product::BANKING,
-                                                                      $input, $mode);
+        $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant,
+                                                                     Product::BANKING,
+                                                                      $input,
+                                                                      $mode);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
 
