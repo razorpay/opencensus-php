@@ -3,6 +3,7 @@
 namespace RZP\Http;
 
 use RZP\Models\User\Role;
+use RZP\Models\User\BankingRole;
 
 class UserRolesScope
 {
@@ -71,7 +72,7 @@ class UserRolesScope
                 Role::LINKED_ACCOUNT_OWNER,
                 Role::LINKED_ACCOUNT_ADMIN,
                 Role::SUPPORT,
-            ],
+            ] + BankingRole::getAllRoles(),
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
             'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN, Role::SELLERAPP],
