@@ -173,6 +173,7 @@ final class Route
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
+        'merchant_get_org_details'                 => ['get',      'merchants/{id}/org',                             'MerchantController@getOrg'                                         ],
         'merchant_set_banks'                       => ['post',     'merchants/{id}/banks',                           'MerchantController@setBanks'                                       ],
         'merchant_daily_report'                    => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
         'merchant_create'                          => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
@@ -1535,6 +1536,7 @@ final class Route
         'batch_send_mail',
         'fund_account_validate_retry_all',
         'gateway_downtime_detection_purge_keys',
+        'merchant_get_org_details',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2891,6 +2893,7 @@ final class Route
             'oauth_merchant_notify',
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
+            'merchant_get_org_details',
         ],
 
         'reporting' => [

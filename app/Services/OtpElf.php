@@ -14,6 +14,12 @@ class OtpElf
     const ERROR_TYPE_NOT_RECOGNIZED = 'TYPE_NOT_RECOGNIZED';
     const ERROR_INVALID_OTP         = 'INVALID_OTP';
     const ERROR_TIMEOUT             = 'PAYMENT_TIMEOUT';
+    const CARD_BLOCKED              = 'CARD_BLOCKED';
+    const NETWORK_ERROR             = 'NETWORK_ERROR';
+    const BANK_ERROR                = 'BANK_ERROR';
+    const PAYMENT_TIMEOUT           = 'PAYMENT_TIMEOUT';
+    const BANK_SERVICE_DOWN         = 'BANK_SERVICE_DOWN';
+
 
     public static $otpElfErrors = [
         self::ERROR_PAGE_UNKNOWN,
