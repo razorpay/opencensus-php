@@ -63,6 +63,6 @@ return [
 
     'excel_store' => [
         'base_url'              => env('EXCEL_STORE_BASE_URL'),
-        'secret'    => env('EXCEL_STORE_SECRET'),
+        'secret'                => env('EXCEL_STORE_SECRET'),
     ],
 ];
