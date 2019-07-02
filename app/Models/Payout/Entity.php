@@ -115,17 +115,21 @@ class Entity extends Base\PublicEntity
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
     const PAYOUT_IDS           = 'payout_ids';
 
+    // Output keys
+    const WORKFLOW_HISTORY = 'workflow_history';
+
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
 
     const PAYOUT_MODE     = 'payout_mode';
 
     // Relations
-    const USER          = 'user';
-    const CUSTOMER      = 'customer';
-    const FUND_ACCOUNT  = 'fund_account';
-    const TRANSACTION   = 'transaction';
-    const REVERSAL      = 'reversal';
+    const USER            = 'user';
+    const CUSTOMER        = 'customer';
+    const FUND_ACCOUNT    = 'fund_account';
+    const TRANSACTION     = 'transaction';
+    const REVERSAL        = 'reversal';
+    const WORKFLOW_ACTION = 'workflow_action';
 
     protected $queueFlag = false;
 
@@ -197,6 +201,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::WORKFLOW_HISTORY,
         self::REFERENCE_ID,
         self::NARRATION,
         self::BATCH_ID,
@@ -217,6 +222,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::TRANSACTION,
         self::PENDING_ON_USER,
+        self::WORKFLOW_HISTORY,
         self::NOTES,
         self::FEES,
         self::TAX,
@@ -257,6 +263,7 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNT_ID,
         self::FUND_ACCOUNT,
         self::PENDING_ON_USER,
+        self::WORKFLOW_HISTORY,
         self::REVERSAL,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
@@ -366,7 +373,7 @@ class Entity extends Base\PublicEntity
 
     public function workflowActions()
     {
-        return $this->hasMany(Workflow\Action\Entity::class);
+        return $this->morphMany(Workflow\Action\Entity::class, 'entity', 'entity_name');
     }
 
     /**
@@ -865,9 +872,6 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        /** @var RepositoryManager $repo */
-        $repo = app('repo');
-
         if ($basicAuth->isStrictPrivateAuth() === true)
         {
             unset($attributes[self::PENDING_ON_USER]);
@@ -882,6 +886,9 @@ class Entity extends Base\PublicEntity
             return;
         }
 
+        /** @var RepositoryManager $repo */
+        $repo = app('repo');
+
         $userRoleIds = $basicAuth->getUser()->roles()->allRelatedIds()->toArray();
 
         $permissionId = $repo->permission
@@ -892,6 +899,21 @@ class Entity extends Base\PublicEntity
                                ->getPendingActionsOnRoleIds($this, $permissionId, $userRoleIds);
 
         $attributes[self::PENDING_ON_USER] = ($pendingActions->count() > 0);
+    }
+
+    public function setPublicWorkflowHistoryAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::WORKFLOW_HISTORY]);
+
+            return;
+        }
+
+        $attributes[self::WORKFLOW_HISTORY] = $this->getWorkflowHistoryData();
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
@@ -1284,5 +1306,102 @@ class Entity extends Base\PublicEntity
             $relations = array_except($txn->getRelations(), Transaction\Entity::SOURCE);
             $txn->setRelations($relations);
         }
+    }
+
+    // Workflow history helper functions
+
+    protected function getWorkflowHistoryData(): array
+    {
+        /** @var RepositoryManager $repo */
+        $repo = app('repo');
+
+        // TODO: Only get actions for the create_payout permission
+        $workflowActions = $this->workflowActions()
+                                ->with(['workflow', 'workflow.steps', 'workflow.steps.role'])
+                                ->get();
+
+        if ($workflowActions->count() > 1)
+        {
+            // Should not exist for the create_payout permission.
+            // Trace for debug and fail
+        }
+
+        $workflowAction = $workflowActions->first();
+
+        if ($workflowAction === null)
+        {
+            return [];
+        }
+
+        $workflowAction = $repo->workflow_action->getActionDetailsPublic($workflowAction->getId(), Org\Entity::RAZORPAY_ORG_ID);
+
+        $workflowAction = $workflowAction->first()->toArray();
+
+        $steps = $workflowAction['workflow']['steps'] ?? [];
+
+        $data = [
+            'current_level' => $workflowAction['current_level'],
+            'steps'         => $this->serializeWorkflowSteps($steps),
+        ];
+
+        return $data;
+    }
+
+    protected function serializeWorkflowSteps(array $steps): array
+    {
+        $data = [];
+
+        foreach ($steps as $step)
+        {
+            $level = $step['level'];
+
+            $roleData = $this->serializeWorkflowStepRoles($step);
+
+            $step = array_only($step, ['id', 'level', 'op_type']);
+
+            if (empty($data[$level - 1]) === true)
+            {
+                $data[$level - 1] = $step;
+            }
+
+            $totalReviewersForStep = $data[$level - 1]['total_reviewer_count'] ?? 0;
+
+            $data[$level - 1]['total_reviewer_count'] = $totalReviewersForStep + $roleData['reviewer_count'];
+            $data[$level - 1]['roles'][] = $roleData;
+        }
+
+        return $data;
+    }
+
+    protected function serializeWorkflowStepRoles(array $step): array
+    {
+        $stepRole = $step['role'];
+
+        $role = [
+            'id'             => $stepRole['id'],
+            'name'           => $stepRole['name'],
+            'reviewer_count' => $step['reviewer_count'],
+        ];
+
+        $checkersData = [];
+
+        $checkers = $step['checkers'];
+
+        foreach ($checkers as $checker)
+        {
+            $userData = $checker['checker'];
+
+            $checkersData[] = [
+                'id'       => $checker['id'],
+                'user_id'  => $userData['id'],
+                'name'     => $userData['name'] ?? '',
+                'email'    => $userData['email'] ?? '',
+                'approved' => $checker['approved'],
+            ];
+        }
+
+        $role['checkers'] = $checkersData;
+
+        return $role;
     }
 }

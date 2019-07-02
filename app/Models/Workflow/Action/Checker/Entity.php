@@ -24,6 +24,7 @@ class Entity extends Base\Entity
 
     // Relations
     const ADMIN = 'admin';
+    const CHECKER = 'checker';
 
     protected static $sign = 'a_checker';
 
@@ -41,6 +42,7 @@ class Entity extends Base\Entity
         self::CHECKER_TYPE,
         self::CHECKER_ID,
         self::ADMIN,
+        self::CHECKER,
         self::ACTION_ID,
         self::STEP_ID,
         self::APPROVED,
@@ -51,6 +53,7 @@ class Entity extends Base\Entity
     protected $public = [
         self::ADMIN_ID,
         self::ADMIN,
+        self::CHECKER,
         self::ACTION_ID,
         self::STEP_ID,
         self::APPROVED,

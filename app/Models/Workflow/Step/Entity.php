@@ -43,6 +43,7 @@ class Entity extends Base\Entity
         self::OP_TYPE,
         self::REVIEWER_COUNT,
         'role',
+        'checkers',
     ];
 
     protected $public = [
@@ -53,6 +54,7 @@ class Entity extends Base\Entity
         self::OP_TYPE,
         self::REVIEWER_COUNT,
         'role',
+        'checkers',
     ];
 
     protected $publicSetters = [

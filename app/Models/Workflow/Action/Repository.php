@@ -271,15 +271,61 @@ class Repository extends Base\Repository
                     $query->withTrashed();
                 }
             },
-            'stateChanger' => function ($query)
+            'stateChanger' => function ($query) use ($actionEntity)
             {
-                $query->withTrashed();
+                // Since only Admin uses soft deletes
+                if ($actionEntity->getMakerType() === MakerType::ADMIN)
+                {
+                    $query->withTrashed();
+                }
             },
             'stateChangerRole' => function ($query)
             {
                 $query->withTrashed();
             },
             'permission'
+        ];
+
+        return $action->with($relations)
+                      ->get();
+    }
+
+    public function getActionDetailsPublic(string $id, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $action = $this->newQuery()
+                       ->orgId($orgId)
+                       ->where(Entity::ID, '=', $id);
+
+        $actionEntity = $action->first();
+
+        // If no entity is returned then return
+        // the query builder object which will be handled
+        // aptly in the service
+        if (empty($actionEntity) === true)
+        {
+            return $action;
+        }
+
+        $relations = [
+            'workflow',
+            'workflow.steps' => function ($query) use ($actionEntity)
+            {
+                $query->withTrashed()
+                      //->where(Entity::CREATED_AT, '<=', $actionEntity->getCreatedAt())
+                      ->where(function ($query) use ($actionEntity)
+                      {
+                          //$query->where(Entity::DELETED_AT, '>=', $actionEntity->getCreatedAt())
+                          //      ->orWhereNull(Entity::DELETED_AT);
+                      });
+            },
+            'workflow.steps.role',
+            'workflow.steps.checkers' => function ($query) use ($actionEntity)
+            {
+                $query->where(Entity::ACTION_ID, $actionEntity->getId());
+            },
+            'workflow.steps.checkers.checker',
         ];
 
         return $action->with($relations)
