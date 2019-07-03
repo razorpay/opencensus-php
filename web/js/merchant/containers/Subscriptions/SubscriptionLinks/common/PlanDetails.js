@@ -140,11 +140,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           validator={this.validateTotalCount}
           description="No. of billing cycles to be charged"
           max={planPeriodToMaxCycleMap[(selectedPlan || {}).period]}
-          name={
-            props.isEdit && !isAuthenticatedSubscription
-              ? 'remaining_count'
-              : 'total_count'
-          }
+          name={props.isEdit ? 'remaining_count' : 'total_count'}
           label={
             props.isEdit && !isAuthenticatedSubscription
               ? totalCountLabel

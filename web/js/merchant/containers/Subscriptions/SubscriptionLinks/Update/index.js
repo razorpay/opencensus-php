@@ -269,6 +269,7 @@ export default class UpdateSubscription extends React.Component {
 
     const data = {
       id: prevSubscription.id,
+      remaining_count: fields.remaining_count,
     };
 
     if (prevSubscription.plan_id !== fields.plan_id) {
@@ -277,10 +278,6 @@ export default class UpdateSubscription extends React.Component {
 
     if (prevSubscription.quantity !== fields.quantity) {
       data.quantity = fields.quantity;
-    }
-
-    if (prevSubscription.total_count != fields.total_count) {
-      data.remaining_count = fields.total_count;
     }
 
     if (prevSubscription.remaining_count !== fields.remaining_count) {
