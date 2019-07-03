@@ -287,7 +287,7 @@ export default class UpdateSubscription extends React.Component {
     }
 
     if (prevSubscription.total_count != fields.total_count) {
-      data.total_count = fields.total_count;
+      data.remaining_count = fields.total_count;
     }
 
     return data;
