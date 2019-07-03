@@ -2,7 +2,7 @@ import Setting from './Setting';
 
 export default class PaymentLinksSettings extends React.Component {
   state = {
-    totalUnpaidLinks: 12,
+    totalUnpaidLinks: 12, // TODO: Update when API is ready according API response.
   };
 
   saveSettings = () => {};
@@ -25,6 +25,7 @@ export default class PaymentLinksSettings extends React.Component {
 }
 
 const emailDetails = {
+  // TODO: Update content
   subject: '"We’ve not received your payment"',
   contentList: [
     'We have not received your payment. It will expire on 21st of April.',

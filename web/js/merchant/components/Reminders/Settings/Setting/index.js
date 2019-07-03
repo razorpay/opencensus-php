@@ -34,6 +34,7 @@ export default class ReminderSetting extends React.Component {
     this.typeInLowerCase = String(props.type).toLowerCase();
 
     this.state = {
+      // TODO: Update when API is ready according API response.
       checked: true,
       __stashed_settings__: {
         ...initState,
@@ -238,6 +239,7 @@ export default class ReminderSetting extends React.Component {
 }
 
 const REMINDERS_LIST_WITHOUT_EXPIRY = [
+  // TODO: Remove when API is ready
   { value: '1', label: 'Remind 1 day after issue date', disabled: false },
   { value: '2', label: 'Remind 2 day after issue date', disabled: false },
   { value: '3', label: 'Remind 3 day after issue date', disabled: false },
@@ -247,6 +249,7 @@ const REMINDERS_LIST_WITHOUT_EXPIRY = [
 ];
 
 const initState = {
+  // TODO: Remove when API is ready
   maxNoReminders: 5,
   withExpiry: [],
   withOutExpiry: [
