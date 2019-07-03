@@ -155,15 +155,23 @@ export default class UpdateSubscription extends React.Component {
       internals: { _startsImmediately },
     } = this.state;
 
+    let count =
+      fields.remaining_count &&
+      prevSubscription.remaining_count !== fields.remaining_count;
+
+    if (prevSubscription.status === 'authenticated') {
+      count =
+        prevSubscription.total_count &&
+        prevSubscription.total_count !== fields.total_count;
+    }
+
     return (
       (fields.plan_id && prevSubscription.plan_id !== fields.plan_id) ||
       (fields.quantity && prevSubscription.quantity !== fields.quantity) ||
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
-      (fields.remaining_count &&
-        prevSubscription.remaining_count !== fields.remaining_count) ||
-      prevSubscription.customer_notify !== fields.customer_notify ||
-      prevSubscription.total_count !== fields.total_count
+      count ||
+      prevSubscription.customer_notify !== fields.customer_notify
     );
   }
 
