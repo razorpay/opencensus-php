@@ -22,6 +22,8 @@ class Processor extends BankingAccount\Gateway\Processor
     // we are starting the reference number from 10000
     const START_BANK_REFERENCE_NUMBER = 10000;
 
+    protected $mutex;
+
     public function preProcessAccountInfoNotification(array $input)
     {
         (new Validator)->validateInput(Validator::PRE_ACCOUNT_INFO_WEBHOOK, $input);
@@ -107,7 +109,14 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $availability =  $this->isPincodeRblServiceable($input[BankingAccount\Entity::PINCODE]);
 
-        $bankReferenceNumber = $this->generateBankReferenceNumber();
+        $mutex = $this->app['api.mutex'];
+
+        $bankReferenceNumber = $mutex->acquireAndRelease(
+                                    BankingAccount\Channel::RBL,
+                                    function()
+                                    {
+                                        return $this->generateBankReferenceNumber();
+                                    });
 
         return [
             BankingAccount\Entity::STATUS                   => BankingAccount\Status::CREATED,
