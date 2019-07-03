@@ -141,7 +141,7 @@ class Constants
                     'type'  => 'button',
                     'label' => 'Give Feedback',
                     'url'   => 'https://razorpay.typeform.com/to/JKyCd0',
-                    'url_query_params' => ['mid', 'business_name', 'email']
+                    'url_query_params' => ['mid', 'business_name']
                 ],
             ],
             'start_ts'    => 1561981341,
