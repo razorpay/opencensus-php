@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         RequestFields::AUTH_ID                  => 'required_if:transaction_type,RU|numeric',
         RequestFields::MCC                      => 'required_if:transaction_type,RU|numeric',
         RequestFields::MC_PROTOCOL_VERSION      => 'sometimes|numeric|in:1,2',
-        RequestFields::MC_DS_TRANSACTION_ID     => 'required_if:pMCProtocolVersion,2|string|max:36\',
+        RequestFields::MC_DS_TRANSACTION_ID     => 'required_if:pMCProtocolVersion,2|string|max:36',
     ];
 
     protected static $verifyRules = [
