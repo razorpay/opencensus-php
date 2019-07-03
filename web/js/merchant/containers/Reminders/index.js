@@ -17,7 +17,7 @@ export default function Reminders() {
         </div>
       </HeaderAction>
 
-      <div class="reminders-settings">
+      <div class="Reminders-settings">
         <PaymentLinksSettings />
       </div>
     </div>

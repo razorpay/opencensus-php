@@ -183,7 +183,7 @@ export default class ReminderSetting extends React.Component {
       { type } = this.props;
 
     return (
-      <div class={`reminders-setting ${checked ? 'enabled' : 'disabled'}`}>
+      <div class={`setting-item ${checked ? 'enabled' : 'disabled'}`}>
         <div class="panel panel-default">
           <div class="panel-section--theme">
             <div class="panel-heading">
@@ -201,24 +201,22 @@ export default class ReminderSetting extends React.Component {
                   message={this.handleRouteChange}
                 />
 
-                <div class="reminder-setting__reminder-options-settings">
-                  <ReminderOptionSetting
-                    isExpiry
-                    name="with_expiry"
-                    remindersList={remindersList}
-                    onChange={this.onChange('withExpiry')}
-                    maxSelections={settings.maxNoReminders}
-                    selectedReminders={settings.withExpiry}
-                  />
+                <ReminderOptionSetting
+                  isExpiry
+                  name="with_expiry"
+                  remindersList={remindersList}
+                  onChange={this.onChange('withExpiry')}
+                  maxSelections={settings.maxNoReminders}
+                  selectedReminders={settings.withExpiry}
+                />
 
-                  <ReminderOptionSetting
-                    name="with_out_expiry"
-                    maxSelections={settings.maxNoReminders}
-                    onChange={this.onChange('withOutExpiry')}
-                    selectedReminders={settings.withOutExpiry}
-                    remindersList={withoutExprityRemindersList}
-                  />
-                </div>
+                <ReminderOptionSetting
+                  name="with_out_expiry"
+                  maxSelections={settings.maxNoReminders}
+                  onChange={this.onChange('withOutExpiry')}
+                  selectedReminders={settings.withOutExpiry}
+                  remindersList={withoutExprityRemindersList}
+                />
 
                 <AdvancedSettings
                   {...settings.advancedSettings}
