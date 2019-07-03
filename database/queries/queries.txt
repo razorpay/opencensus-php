@@ -5035,9 +5035,6 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
-ALTER TABLE `payouts`
-    MODIFY COLUMN `channel` VARCHAR(255) DEFAULT NULL;
-
 ALTER TABLE `action_checker`
 	ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
 	ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
@@ -5050,9 +5047,11 @@ ALTER TABLE action_state
 
 ALTER TABLE `workflow_payout_amount_rules`
     CHANGE COLUMN x_amount min_amount BIGINT UNSIGNED DEFAULT NULL,
-    CHANGE COLUMN y_amount max_amount BIGINT UNSIGNED DEFAULT NULL;
+    CHANGE COLUMN y_amount max_amount BIGINT UNSIGNED DEFAULT NULL,
+    MODIFY COLUMN workflow_id CHAR(14) DEFAULT NULL;
 
 ALTER TABLE payouts
+    MODIFY COLUMN `channel` VARCHAR(255) DEFAULT NULL,
     ADD COLUMN rejected_at INT(11) DEFAULT NULL AFTER `reversed_at`,
     ADD INDEX payouts_rejected_at_index (rejected_at);
 
