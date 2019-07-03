@@ -194,16 +194,34 @@ class Core extends Base\Core
 
                 $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
 
-                $bankingAccounts = $this->repo->merchant->findOrFail($merchant['id'])->bankingAccounts;
-
                 return $merchant +
                     [
                         Merchant\Entity::BANKING_BALANCE => $balance->only([Merchant\Balance\Entity::BALANCE, Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT => $bankAccount->toArrayHosted(),
-                        Merchant\Entity::ACCOUNTS => $bankingAccounts->callOnEveryItem('toArrayPublic'),
+                        Merchant\Entity::ACCOUNTS => $this->fetchBankingAccountWithBalance($merchant['id']),
                     ];
             },
             $merchants);
+    }
+
+    protected function fetchBankingAccountWithBalance($merchantId)
+    {
+        $bankingAccounts = $this->repo->banking_account->getBankingAccountsWithBalance($merchantId);
+
+        $result = [];
+
+        foreach ($bankingAccounts as $bankingAccount)
+        {
+            $bankingAccountArray = $bankingAccount->toArrayPublic();
+
+            $bankingAccountArray['banking_balance'] = $bankingAccount->balance
+                                                                     ->only([Merchant\Balance\Entity::BALANCE,
+                                                                            Merchant\Balance\Entity::CURRENCY]);
+
+            $result[] = $bankingAccountArray;
+        }
+
+        return $result;
     }
 
     /**
@@ -522,7 +540,7 @@ class Core extends Base\Core
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
         $receiver = $user->getContactMobile();
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
-        $source   = "api";
+        $source   = 'api';
 
         return compact(
             'token',
