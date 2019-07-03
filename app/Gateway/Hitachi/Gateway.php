@@ -115,6 +115,17 @@ class Gateway extends Base\Gateway
         return $authResponse;
     }
 
+    protected function isFirstRecurringMcPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['payment']['recurring_type'] === 'initial') and
+            ($input['card']['network_code']  === Card\Network::MC))
+        {
+            return true;
+        }
+        return false;
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -1041,6 +1052,13 @@ class Gateway extends Base\Gateway
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
         {
             $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
+        }
+
+        if ($this->isFirstRecurringMcPaymentRequest($input) === true)
+        {
+            //ToDo:Fix this after 3DS 2 is live.
+            $content[RequestFields::MC_PROTOCOL_VERSION] = 1;
+            // $content[RequestFields::MC_DS_TRANSACTION_ID] = $mcProtocolVersion;
         }
 
         return $content;
