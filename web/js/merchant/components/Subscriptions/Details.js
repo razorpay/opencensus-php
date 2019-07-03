@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
+import { Link, NavLink } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
@@ -18,6 +19,7 @@ import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/Update/Review';
+import Tooltip from 'rzp/ui/Tooltip';
 
 export default props => {
   const {
@@ -98,6 +100,15 @@ export default props => {
                 </NavLink>
               </div>
             )}
+            <div className="btn-toolbar pull-right">
+              <NavLink
+                class="btn Button--primary--invert"
+                to={`/subscriptions/new?duplicate_id=${subscription.id}`}
+              >
+                <i className="i i-copy" />
+                <Tooltip theme="dark">Duplicate Subscription</Tooltip>
+              </NavLink>
+            </div>
           </div>
 
           <div class="SliderPanel__Body">
