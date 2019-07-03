@@ -88,16 +88,8 @@ export default props => {
     classNames.push('clickable');
   }
 
-  let isChargedInvoice = false;
-  (item.notes || []).forEach(note => {
-    if (
-      isChargedInvoice === false &&
-      note.type &&
-      note.type.includes('upgrade')
-    ) {
-      isChargedInvoice = true;
-    }
-  });
+  let isChargedInvoice =
+    item.notes && item.notes.type && item.notes.type == 'upgrade';
 
   return (
     <div
