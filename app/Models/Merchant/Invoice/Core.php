@@ -61,7 +61,7 @@ class Core extends Base\Core
             $merchantIds = $input['merchant_ids'];
         }
 
-        $batch  = 100;
+        $batch  = 10000;
 
         $offset = 0;
 
@@ -69,7 +69,7 @@ class Core extends Base\Core
 
         do
         {
-            $merchants = $this->repo
+            $merchantIds = $this->repo
                               ->merchant
                               ->fetchActivatedMerchantsBeforeTimestamp(
                                   $batch,
@@ -77,15 +77,15 @@ class Core extends Base\Core
                                   $invoiceDate->endOfMonth()->timestamp,
                                   $merchantIds);
 
-            $count = $merchants->count();
+            $count = count($merchantIds);
 
             $offset += $count;
 
-            foreach ($merchants as $merchant)
+            foreach ($merchantIds as $merchantId)
             {
 
                 MerchantInvoiceCorrectionJob::dispatch(
-                                                $merchant->getId(),
+                                                $merchantId,
                                                 $invoiceDate->month,
                                                 $invoiceDate->year,
                                                 $this->mode)
@@ -170,16 +170,15 @@ class Core extends Base\Core
 
         $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
 
-        $batch = 100;
+        $batch = 10000;
 
         $skip = 0;
 
-        $count = 100;
-
         $i = 0;
-        while ($batch === $count)
+
+        do
         {
-            $merchants = $this->repo
+            $merchantIds = $this->repo
                               ->merchant
                               ->fetchActivatedMerchantsBeforeTimestamp(
                                   $batch,
@@ -188,14 +187,14 @@ class Core extends Base\Core
                                   $merchantIds,
                                   $merchantIdsExcluded);
 
-            $count = $merchants->count();
+            $count = count($merchantIds);
 
             $skip += $count;
 
-            foreach ($merchants as $merchant)
+            foreach ($merchantIds as $merchantId)
             {
                 MerchantInvoiceJob::dispatch(
-                                        $merchant->getId(),
+                                        $merchantId,
                                         $invoiceDate->month,
                                         $invoiceDate->year,
                                         $this->mode,
@@ -203,7 +202,8 @@ class Core extends Base\Core
                                   // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
                                   ->delay($i++ % 901);
             }
-        }
+
+        } while($batch === $count);
 
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_DISPATCH_COUNT,
