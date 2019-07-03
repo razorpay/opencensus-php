@@ -792,6 +792,7 @@ final class Route
         'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                      ],
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
         'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
+        'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
@@ -1693,6 +1694,7 @@ final class Route
         'merchant_get_tags',
         'merchant_edit_email_la',
         'account_fetch',
+        'la_fetch',
         'merchant_add_bank_account',
         'merchant_bank_account_create',
         'merchant_requests_create',
@@ -3003,6 +3005,7 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
+        'la_fetch'                             => [Feature::MARKETPLACE],
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
