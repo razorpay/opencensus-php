@@ -102,6 +102,8 @@ class Role
 
     public static function allExceptPaymentLinkRoles()
     {
-        return array_diff(self::ALL_ROLES, self::PL_ROLES);
+        $allRoles = array_merge(self::ALL_ROLES, BankingRole::getAllRoles());
+
+        return array_diff($allRoles, self::PL_ROLES);
     }
 }
