@@ -35,8 +35,6 @@ class ExcelStoreProxy
         'headers' => $this->getDefaultHeaders($this->config)
       ];
 
-      $this->trace->info(TraceCode::EXCEL_STORE_REQUEST, [ 'message' => "reached proxy constructor" ]);
-
     }
 
     protected function getDefaultHeaders(): array
@@ -55,12 +53,6 @@ class ExcelStoreProxy
       $excelStoreUrl = $this->config['base_url'];
 
       $request = new Guzzle();
-
-      // $request = new Guzzle([
-      //   'base_url' => $excelStoreUrl
-      // ]);
-
-      $this->trace->info(TraceCode::EXCEL_STORE_REQUEST, [ 'message' => "reached proxy initRequest" ]);
 
       return $request;
 
@@ -99,8 +91,6 @@ class ExcelStoreProxy
         $method = $request->method();
 
         $response = $this->sendRequestAndParseResponse($path, $method);
-
-        $this->trace->info(TraceCode::EXCEL_STORE_REQUEST, [ 'message' => "completed sending request procedure" ]);
 
         return $response;
 
@@ -160,8 +150,6 @@ class ExcelStoreProxy
         {
             $response = $this->request
                              ->request($method, $requestUrl, $this->options);
-
-            $this->trace->info(TraceCode::EXCEL_STORE_RESPONSE, (array)$response);
 
             return $this->parseResponse($response);
         }
