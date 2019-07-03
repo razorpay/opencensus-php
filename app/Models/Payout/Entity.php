@@ -1385,11 +1385,16 @@ class Entity extends Base\PublicEntity
 
         $checkersData = [];
 
-        $checkers = $step['checkers'];
+        $checkers = $step['checkers'] ?? [];
 
         foreach ($checkers as $checker)
         {
-            $userData = $checker['checker'];
+            $userData = $checker['checker'] ?? [];
+
+            if (empty($userData) === true)
+            {
+                continue;
+            }
 
             $checkersData[] = [
                 'id'       => $checker['id'],
