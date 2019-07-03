@@ -162,7 +162,8 @@ export default class UpdateSubscription extends React.Component {
       prevSubscription.start_at !== fields.start_at ||
       (fields.remaining_count &&
         prevSubscription.remaining_count !== fields.remaining_count) ||
-      prevSubscription.customer_notify !== fields.customer_notify
+      prevSubscription.customer_notify !== fields.customer_notify ||
+      prevSubscription.total_count !== fields.total_count
     );
   }
 
