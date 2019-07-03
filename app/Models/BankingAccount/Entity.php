@@ -225,7 +225,6 @@ class Entity extends Base\PublicEntity
         $token = $bankingAccountCore->tokenizeBankingAccountCredentials($password);
 
         $this->attributes[self::PASSWORD] = $token;
->>>>>>> 7909f175d5453358c856364d47b3a3fe1aebccf2
     }
 
     // --------------------------- Relations ---------------------------------- //
