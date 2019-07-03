@@ -1868,6 +1868,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
     const MOZART_SERVICE_RESPONSE                               = 'MOZART_SERVICE_RESPONSE';
     const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
+    const CAPTURE_VERIFY_FAILED_PAYMENT                         = 'CAPTURE_VERIFY_FAILED_PAYMENT';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
