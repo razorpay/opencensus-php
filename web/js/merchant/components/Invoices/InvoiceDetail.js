@@ -1,16 +1,22 @@
+import { Link } from 'react-router-dom';
+
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
 import Spinner from 'rzp/ui/Spinner';
 import Banner from 'rzp/ui/Banner';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
-import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { Link } from 'react-router-dom';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+
 import Button, { AsyncBtn } from 'component/Button';
+import Input from 'component/Input';
+import Stepper from 'component/Stepper';
+
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 import {
   EditExpiry,
@@ -24,83 +30,6 @@ import {
   trackTogglePartialPayment,
 } from 'merchant/containers/PaymentLinks/Links/ga';
 
-const notificationClassMap = {
-  sent: 'text-success',
-  pending: 'text-warning',
-};
-
-const getCustomerDetail = invoice => (
-  <Definition placeholder="--">
-    {invoice.customer_details.customer_name}
-    {invoice.customer_details.customer_email && (
-      <span>
-        {invoice.customer_details.customer_email}
-        {invoice.email_status ? (
-          <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.email_status]}`}
-          >
-            ({invoice.email_status} mail)
-          </span>
-        ) : null}
-      </span>
-    )}
-    {invoice.customer_details.customer_contact && (
-      <span>
-        {invoice.customer_details.customer_contact}
-        {invoice.sms_status ? (
-          <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.sms_status]}`}
-          >
-            ({invoice.sms_status} sms)
-          </span>
-        ) : null}
-      </span>
-    )}
-    {invoice.customer_id && <code>{invoice.customer_id}</code>}
-  </Definition>
-);
-
-const getPaymentDetail = invoice => (
-  <Definition placeholder="--">
-    <Amount value={invoice.amount_paid} currency={invoice.currency} />
-    {invoice.partial_payment &&
-    invoice.payments &&
-    invoice.payments.items.length ? (
-      <ContentToggler>
-        <span>View Payment Details</span>
-        <div
-          className="full-width-item sub-entity-list"
-          style={{ fontSize: 14 }}
-        >
-          <DataTable
-            title="Payments"
-            progressLoader={true}
-            columns={[paymentId, paidOn, amount]}
-            items={invoice.payments.items}
-            noStripe={true}
-          />
-        </div>
-      </ContentToggler>
-    ) : (
-      <React.Fragment>
-        {invoice.payment_id && (
-          <Link to={`/payments/${invoice.payment_id}`}>
-            <code>{invoice.payment_id}</code>
-          </Link>
-        )}
-        {invoice.paid_at && (
-          <div>
-            Paid on{' '}
-            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
-          </div>
-        )}
-      </React.Fragment>
-    )}
-  </Definition>
-);
-
 export default props => {
   let {
     user,
@@ -109,6 +38,8 @@ export default props => {
     statusMsg,
     editPaymentLink,
     isRoleAllowedEdit,
+    isAutoRemindersUpdating,
+    onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
   } = props;
 
@@ -269,6 +200,23 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
+                <EntityDetailRow label="Reminders">
+                  <Input.Check
+                    name="auto_reminders"
+                    fieldLabel="Send auto reminders"
+                    disabled={isAutoRemindersUpdating}
+                    onChange={onChangeSendAutoReminder}
+                    autoRender
+                  />
+
+                  <Stepper
+                    list={getRemindersStepperData(
+                      invoice.reminders,
+                      isAutoRemindersUpdating
+                    )}
+                  />
+                </EntityDetailRow>
+
                 <EntityDetailRow
                   label="Receipt No."
                   value={
@@ -347,4 +295,105 @@ export default props => {
       )}
     </div>
   );
+};
+
+const notificationClassMap = {
+  sent: 'text-success',
+  pending: 'text-warning',
+};
+
+const getCustomerDetail = invoice => (
+  <Definition placeholder="--">
+    {invoice.customer_details.customer_name}
+    {invoice.customer_details.customer_email && (
+      <span>
+        {invoice.customer_details.customer_email}
+        {invoice.email_status ? (
+          <span
+            style={{ marginLeft: '10px' }}
+            class={`${notificationClassMap[invoice.email_status]}`}
+          >
+            ({invoice.email_status} mail)
+          </span>
+        ) : null}
+      </span>
+    )}
+    {invoice.customer_details.customer_contact && (
+      <span>
+        {invoice.customer_details.customer_contact}
+        {invoice.sms_status ? (
+          <span
+            style={{ marginLeft: '10px' }}
+            class={`${notificationClassMap[invoice.sms_status]}`}
+          >
+            ({invoice.sms_status} sms)
+          </span>
+        ) : null}
+      </span>
+    )}
+    {invoice.customer_id && <code>{invoice.customer_id}</code>}
+  </Definition>
+);
+
+const getPaymentDetail = invoice => (
+  <Definition placeholder="--">
+    <Amount value={invoice.amount_paid} currency={invoice.currency} />
+    {invoice.partial_payment &&
+    invoice.payments &&
+    invoice.payments.items.length ? (
+      <ContentToggler>
+        <span>View Payment Details</span>
+        <div
+          className="full-width-item sub-entity-list"
+          style={{ fontSize: 14 }}
+        >
+          <DataTable
+            title="Payments"
+            progressLoader={true}
+            columns={[paymentId, paidOn, amount]}
+            items={invoice.payments.items}
+            noStripe={true}
+          />
+        </div>
+      </ContentToggler>
+    ) : (
+      <React.Fragment>
+        {invoice.payment_id && (
+          <Link to={`/payments/${invoice.payment_id}`}>
+            <code>{invoice.payment_id}</code>
+          </Link>
+        )}
+        {invoice.paid_at && (
+          <div>
+            Paid on{' '}
+            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
+          </div>
+        )}
+      </React.Fragment>
+    )}
+  </Definition>
+);
+
+const getRemindersStepperData = (reminders, isAutoRemindersUpdating) => {
+  return reminders.list
+    .filter(reminder => {
+      if (reminders.isEnabled) return true;
+
+      return reminder.status === 'completed';
+    })
+    .map(reminder => ({
+      status: reminder.status,
+      type: (
+        <i
+          class={`i i-${
+            reminder.status === 'completed' ? 'check-circle' : 'bullet'
+          }`}
+        />
+      ),
+      label: isAutoRemindersUpdating ? (
+        <PlaceholderLoader />
+      ) : (
+        moment(reminder.time_to_sent * 1000).format('DD MMM YYYY')
+      ),
+    }));
 };

@@ -12,12 +12,46 @@ import { keysToSentence } from 'common/util';
 
 import { MIN_AMOUNT_TEXT } from '../Edit/EditMinimumAmount';
 
-@connect(state => ({ ...state.invoice, ...state.session }), {
-  ...InvoiceActions,
-  ...ModalActions,
-  ...NotificationsActions,
-  updatePLInReduxList,
-})
+@connect(
+  state => ({
+    ...state.invoice,
+    invoice: {
+      ...state.invoice.invoice,
+      reminders: {
+        isEnabled: 1,
+        list: [
+          {
+            status: 'completed',
+            time_to_sent: 1562147611,
+          },
+          {
+            status: 'pending',
+            time_to_sent: 1561147111,
+          },
+          {
+            status: 'pending',
+            time_to_sent: 1561142111,
+          },
+          {
+            status: 'pending',
+            time_to_sent: 1562143111,
+          },
+          {
+            status: 'pending',
+            time_to_sent: 1561141111,
+          },
+        ],
+      },
+    },
+    ...state.session,
+  }),
+  {
+    ...InvoiceActions,
+    ...ModalActions,
+    ...NotificationsActions,
+    updatePLInReduxList,
+  }
+)
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -27,6 +61,7 @@ export default class InvoiceDetailContainer extends Component {
     super(...arguments);
     this.state = {
       statusMsg: {},
+      isAutoRemindersUpdating: false,
     };
 
     // recording new payments links creation UI form in hotjar
@@ -45,6 +80,18 @@ export default class InvoiceDetailContainer extends Component {
       this.props.fetchInvoice(nextProps.id);
     }
   }
+
+  onChangeSendAutoReminder = () => {
+    this.setState({
+      isAutoRemindersUpdating: true,
+    });
+
+    setTimeout(() => {
+      this.setState({
+        isAutoRemindersUpdating: false,
+      });
+    }, 1000);
+  };
 
   issueInvoice = (props, notifyProps) => {
     let promises = [];
@@ -252,6 +299,8 @@ export default class InvoiceDetailContainer extends Component {
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
         isRoleAllowedEdit={user.isAllowedEdit('payment_links')}
+        onChangeSendAutoReminder={this.onChangeSendAutoReminder}
+        isAutoRemindersUpdating={this.state.isAutoRemindersUpdating}
         isMinimumFirstPaymentEnabled={user.isMinimumFirstPaymentEnabled}
       />
     );

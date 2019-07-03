@@ -1,0 +1,38 @@
+$base = #538FF0;
+$completed = #B9B9B9;
+
+.Stepper
+  .Stepper__item
+    display: flex
+    align-items: center
+
+    .item-step
+      color: $base
+      margin-right: 8px
+      width: 14px
+      text-align: center
+      line-height: 1
+      i
+        font-size: 9px
+    
+    &:not(:last-child) .item-step:after
+      content: ''
+      border: 0.25px solid
+      height: 1px
+      width: 13px
+      position: absolute
+      transform: rotate(90deg) translate(20px, 10.5px)
+      z-index: 1
+    
+    .item-label
+      font-size: 12px
+      min-width: 90px
+      
+    &.completed
+      *
+        color: $completed        
+      i
+        font-size: 14px
+      .item-step:after
+        width: 14px
+        transform: rotate(90deg) translate(20px, 14px)
