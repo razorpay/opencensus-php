@@ -90,9 +90,9 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
     ];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::DATE
-    );
+    ];
 
     protected $dates = [
         self::DATE,

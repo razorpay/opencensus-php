@@ -107,7 +107,7 @@ trait PaymentHitachiTrait
             {
                 if ($action === 'callback')
                 {
-                    $content = '{"pRespCode":"30","pRespDesc":"Format Error"}';
+                    $content = '{"pRespCode":"30","pRespDesc":"Format Error"}{"pRespCode":"30","pRespDesc":"Format Error"}';
                 }
             }
         );

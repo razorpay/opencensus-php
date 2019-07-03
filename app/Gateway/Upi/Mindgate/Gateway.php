@@ -47,6 +47,7 @@ class Gateway extends Base\Gateway
     const PAY = 'PAY';
 
     const FIELD_LENGTH = [
+        Action::AUTHENTICATE  => 17,
         Action::AUTHORIZE     => 17,
         Action::VALIDATE_VPA  => 14,
         Action::REFUND        => 20,
@@ -85,13 +86,13 @@ class Gateway extends Base\Gateway
      */
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Action::AUTHENTICATE);
 
         if ($this->isBharatQrPayment() === true)
         {
             $attributes = $this->getBharatqrGatewayAttributes($input);
 
-            $this->createGatewayPaymentEntity($attributes);
+            $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
             return null;
         }
@@ -109,9 +110,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
-
-        parent::action($input, Action::AUTHORIZE);
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request =  $this->getAuthorizeRequestArray($input);
 
@@ -209,10 +208,17 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
-            throw new Exception\GatewayErrorException(
+            $ex = new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+
+            if ($this->action === Action::AUTHENTICATE)
+            {
+                $ex->markSafeRetryTrue();
+            }
+
+            throw $ex;
         }
     }
 
@@ -306,6 +312,11 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    public function postProcessServerCallback($input): array
+    {
+        return ['success' => true];
     }
 
     public function getTerminalDetailsFromCallbackIfApplicable($input)
@@ -1008,7 +1019,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        $errorCode = UpiErrorCodes::getApiErrorCode($content[ResponseFields::RESPCODE]);
+        $errorCode = ErrorCodes\ErrorCodes::getInternalErrorCode($content[ResponseFields::RESPCODE]);
 
         $scroogeResponse->setStatusCode($errorCode)
                         ->setGatewayVerifyResponse($content)
@@ -1286,10 +1297,14 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
-            throw new Exception\GatewayErrorException(
+            $ex = new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+
+            $ex->markSafeRetryTrue();
+
+            throw $ex;
         }
     }
 }

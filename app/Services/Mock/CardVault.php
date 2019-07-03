@@ -33,6 +33,17 @@ class CardVault extends BaseCardVault
         return [];
     }
 
+    public function createVaultToken(array $input): array
+    {
+        return [
+            'success'       => true,
+            'error'         => '',
+            'token'         => base64_encode($input['secret']),
+            'fingerprint'   => base64_encode($input['secret']),
+            'version'       => 'v1',
+        ];
+    }
+
     public function getVaultTokenFromTempToken($token)
     {
         $response['token'] = strrev($token);

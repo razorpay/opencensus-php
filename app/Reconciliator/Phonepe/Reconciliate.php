@@ -11,9 +11,9 @@ class Reconciliate extends Base\Reconciliate
     protected $columnHeaders = [
         ReconFields::PAYMENT_TYPE,
         ReconFields::RZP_ID,
+        ReconFields::ORDER_ID,
         ReconFields::PHONEPE_ID,
         ReconFields::FROM,
-        ReconFields::INSTRUMENT,
         ReconFields::CREATION_DATE,
         ReconFields::TRANSACTION_DATE,
         ReconFields::SETTLEMENT_DATE,

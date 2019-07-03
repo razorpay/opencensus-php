@@ -1282,7 +1282,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $card    = $this->getDbLastEntity('card');
 
-        $this->assertEquals('100000001lcard', $card->getId());
+        $this->assertEquals('10000000rucard', $card->getId());
     }
 
     protected function mockSession($appToken = 'capp_1000000custapp')

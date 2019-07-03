@@ -24,6 +24,14 @@ trait HeadlessOtp
         ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE => IIN\Flow::IVR,
     ];
 
+    public static $elfErrorCodeMapping = [
+        OtpElf::CARD_BLOCKED      => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
+        OtpElf::NETWORK_ERROR     => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        OtpElf::BANK_ERROR        => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        OtpElf::PAYMENT_TIMEOUT   => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
+        OtpElf::BANK_SERVICE_DOWN => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+    ];
+
     protected function getNextOtpAction(array $actions)
     {
         $map = [
@@ -251,8 +259,12 @@ trait HeadlessOtp
 
         $this->handleFailedResponse($response, $payment, $traceInput);
 
+        $reason = $response['error']['reason'] ?? '';
+
+        $errorCode = self::$elfErrorCodeMapping[$reason] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            $errorCode
         );
     }
 

@@ -344,10 +344,10 @@ class Core extends Base\Core
      *     - action - E.g. create_payout, verify_contact
      *     - medium - sms|email, when empty does both sms & email
      *
-     * @param  array           $input
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Entity          $user
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param Entity          $user
+     *
      * @return array
      */
     public function sendOtp(array $input, Merchant\Entity $merchant, Entity $user): array
@@ -553,7 +553,9 @@ class Core extends Base\Core
 
         // Note: Existence of various key in $input is(and must be) ensured at validation layer.
 
-        if ($input[Entity::ACTION] === 'create_payout')
+        $action = $input[Entity::ACTION];
+
+        if ($action === 'create_payout')
         {
             $payload += [
                 'amount'         => amount_format_IN($input['amount']),
@@ -569,10 +571,26 @@ class Core extends Base\Core
                 'account_type'        => $fa->getAccountTypeAsText(),
             ];
         }
-        else if ($input[Entity::ACTION] === 'create_payout_batch')
+        else if ($action === 'create_payout_batch')
         {
             $payload += [
                 'account_number' => mask_except_last4($input['account_number']),
+            ];
+        }
+        else if ($action === 'approve_payout')
+        {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['account_number']),
+                'payout_id'      => $input['payout_id'],
+            ];
+        }
+        else if ($action === 'approve_payout_bulk')
+        {
+            $payload += [
+                'payout_total_amount' => amount_format_IN($input['payout_total_amount']),
+                'payout_count'        => $input['payout_count'],
+                'account_number'      => mask_except_last4($input['account_number']),
             ];
         }
 

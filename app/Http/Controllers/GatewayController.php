@@ -191,7 +191,6 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             // Standard Cases
-            case Gateway::UPI_MINDGATE:
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
@@ -211,8 +210,7 @@ class GatewayController extends Controller
 
             //Special case because gateway is upi_mindgate
             case 'upi_hdfc':
-                $data = $this->processServerCallback($input, Payment\Gateway::UPI_MINDGATE);
-
+                $data = $this->processServerCallbackWithGatewayResponse($input, Payment\Gateway::UPI_MINDGATE);
                 break;
 
             // Special case because we need the raw request body
@@ -236,6 +234,7 @@ class GatewayController extends Controller
 
                 break;
 
+            case Gateway::UPI_MINDGATE:
             case Gateway::UPI_SBI:
             case Gateway::UPI_AXIS:
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
@@ -961,5 +960,14 @@ class GatewayController extends Controller
 
         // Route class check on empty string
         return '';
+    }
+
+    protected function purgeGatewayDowntimeDetectionKeys(Downtime\Service $service)
+    {
+        $service->purgeKeys();
+
+        return ApiResponse::json([
+            'success' => true
+        ]);
     }
 }
