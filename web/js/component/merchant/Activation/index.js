@@ -615,7 +615,7 @@ export default class ActivationWizard extends React.Component {
             type: false,
           });
       } else {
-        let data = new BingDataObj('kycform', 'complete', 'all', 1);
+        let compAllData = new BingDataObj('kycform', 'complete', 'all', 1);
 
         /**
          * Fire fb, bing, linkedin & twitter events
@@ -623,7 +623,7 @@ export default class ActivationWizard extends React.Component {
         fireAnalyticsEvents(
           {
             fbData: 'kyc_complete_all',
-            bingData: data,
+            bingData: compAllData,
             liData: 987452, //conversionId
             twiData: 'o1ua7',
           } //twitter
