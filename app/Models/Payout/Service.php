@@ -303,11 +303,25 @@ class Service extends Base\Service
                              ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
                              ->first();
 
-        $workflows = $this->repo
-                          ->workflow
-                          ->fetchBankingWorkflowSummaryForPermissionId($permissionId, $this->merchant->getId());
+        $workflowRules = $this->repo
+                              ->workflow_payout_amount_rules
+                              ->fetchBankingWorkflowSummaryForPermissionId($permissionId, $this->merchant->getId());
 
-        return $workflows->toArray();
+        $data = [];
+
+        foreach ($workflowRules as $wfRule)
+        {
+            $wfRuleData = $wfRule->toArray();
+
+            $hasWorkflow = (empty($wfRuleData['workflow_id']) === false);
+
+            $data[] = array_only($wfRuleData, ['min_amount', 'max_amount', 'workflow_id']) + [
+                    'has_workflow' => $hasWorkflow,
+                    'steps'        => Entity::serializeWorkflowSteps($wfRuleData['workflow']['steps'] ?? []),
+                ];
+        }
+
+        return $data;
     }
 
     public function getDashboardSummary(): array

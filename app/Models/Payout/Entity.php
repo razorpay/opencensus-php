@@ -1341,13 +1341,13 @@ class Entity extends Base\PublicEntity
 
         $data = [
             'current_level' => $workflowAction['current_level'],
-            'steps'         => $this->serializeWorkflowSteps($steps),
+            'steps'         => self::serializeWorkflowSteps($steps),
         ];
 
         return $data;
     }
 
-    protected function serializeWorkflowSteps(array $steps): array
+    public static function serializeWorkflowSteps(array $steps): array
     {
         $data = [];
 
@@ -1355,7 +1355,7 @@ class Entity extends Base\PublicEntity
         {
             $level = $step['level'];
 
-            $roleData = $this->serializeWorkflowStepRoles($step);
+            $roleData = self::serializeWorkflowStepRoles($step);
 
             $step = array_only($step, ['id', 'level', 'op_type']);
 
@@ -1373,7 +1373,7 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    protected function serializeWorkflowStepRoles(array $step): array
+    protected static function serializeWorkflowStepRoles(array $step): array
     {
         $stepRole = $step['role'];
 

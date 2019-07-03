@@ -26,6 +26,9 @@ class Entity extends Base\Entity
     const MAX_AMOUNT  = 'max_amount';
     const WORKFLOW_ID = 'workflow_id';
 
+    // Relations
+    const WORKFLOW = 'workflow';
+
     protected $generateIdOnCreate = false;
 
     protected $entity = 'workflow_payout_amount_rules';
@@ -44,14 +47,13 @@ class Entity extends Base\Entity
         self::MIN_AMOUNT,
         self::MAX_AMOUNT,
         self::WORKFLOW_ID,
+        self::WORKFLOW,
     ];
 
     protected $public = [
-        self::WORKFLOW_ID,
-        self::MERCHANT_ID,
-        self::CONDITION,
         self::MIN_AMOUNT,
         self::MAX_AMOUNT,
+        self::WORKFLOW_ID,
     ];
 
     protected $dates = [

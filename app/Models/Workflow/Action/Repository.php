@@ -313,11 +313,11 @@ class Repository extends Base\Repository
             'workflow.steps' => function ($query) use ($actionEntity)
             {
                 $query->withTrashed()
-                      //->where(Entity::CREATED_AT, '<=', $actionEntity->getCreatedAt())
+                      ->where(Entity::CREATED_AT, '<=', $actionEntity->getCreatedAt())
                       ->where(function ($query) use ($actionEntity)
                       {
-                          //$query->where(Entity::DELETED_AT, '>=', $actionEntity->getCreatedAt())
-                          //      ->orWhereNull(Entity::DELETED_AT);
+                          $query->where(Entity::DELETED_AT, '>=', $actionEntity->getCreatedAt())
+                                ->orWhereNull(Entity::DELETED_AT);
                       });
             },
             'workflow.steps.role',
