@@ -11,6 +11,7 @@ use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
 use RZP\Models\Workflow\Step;
@@ -310,8 +311,11 @@ class Repository extends Base\Repository
         $wfActionPermissionIdColumn = $this->repo->workflow_action->dbColumn(Action\Entity::PERMISSION_ID);
         $wfStepRoleIdColumn         = $this->repo->workflow_step->dbColumn(Step\Entity::ROLE_ID);
 
+        $workflowMerchantIdColumn = $this->repo->workflow->dbColumn(Workflow\Entity::MERCHANT_ID);
+
         $query->where($statusColumn, Status::PENDING)
               ->where($wfActionStateColumn, State\Name::OPEN)
+              ->where($workflowMerchantIdColumn, $this->merchant->getId())
             //->where($wfActionPermissionIdColumn, $permissionId)
               ->whereIn($wfStepRoleIdColumn, $roleIds);
     }
@@ -364,6 +368,7 @@ class Repository extends Base\Repository
     protected function joinQueryWorkflowAction(BuilderEx $query)
     {
         $wfActionTable = $this->repo->workflow_action->getTableName();
+        $workflowTable = $this->repo->workflow->getTableName();
 
         if ($query->hasJoin($wfActionTable) === true)
         {
@@ -381,6 +386,16 @@ class Repository extends Base\Repository
 
                 $join->on($idColumn, $entityIdColumn)
                      ->where($entityNameColumn, E::PAYOUT);
+            });
+
+        $query->join(
+            $workflowTable,
+            function(JoinClause $join)
+            {
+                $workflowIdColumn   = $this->repo->workflow->dbColumn(Workflow\Entity::ID);
+                $workflowActionWorkflowIdColumn = $this->repo->workflow_action->dbColumn(Action\Entity::WORKFLOW_ID);
+
+                $join->on($workflowIdColumn, $workflowActionWorkflowIdColumn);
             });
 
         $this->repo->workflow_action->joinQueryWorkflowStep($query);
