@@ -271,6 +271,10 @@ export default class UpdateSubscription extends React.Component {
       data.quantity = fields.quantity;
     }
 
+    if (prevSubscription.total_count != fields.total_count) {
+      data.remaining_count = fields.total_count;
+    }
+
     if (prevSubscription.remaining_count !== fields.remaining_count) {
       data.remaining_count = fields.remaining_count;
     }
@@ -285,10 +289,6 @@ export default class UpdateSubscription extends React.Component {
 
     if (prevSubscription.customer_notify != fields.customer_notify) {
       data.customer_notify = fields.customer_notify ? '1' : '0';
-    }
-
-    if (prevSubscription.total_count != fields.total_count) {
-      data.remaining_count = fields.total_count;
     }
 
     return data;
