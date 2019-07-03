@@ -251,6 +251,13 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateDowntimePayLater()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testGatewayInvalidTo()
     {
         $this->fillDefaultsForTests(__FUNCTION__);

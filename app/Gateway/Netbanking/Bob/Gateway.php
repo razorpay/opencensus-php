@@ -73,7 +73,9 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallback($input, $gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     protected function verifyCallback(array $input, $gatewayPayment)
@@ -297,7 +299,7 @@ class Gateway extends Base\Gateway
             foreach ($pairs as $value)
             {
                 $pair = explode(Constants::VERIFY_KEY_VALUE_SEPARATOR, $value, 2);
-                
+
                 $content[$pair[0]] = $pair[1];
             }
         }

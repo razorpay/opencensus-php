@@ -1829,6 +1829,19 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
     }
 
+    public function testGetCheckoutPreferencesForPayLater()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_epaylater_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['paylater']));
+
+        $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
+    }
+
     public function testGetCheckoutPreferencesWithInactiveEmiSubventionOffer()
     {
         $this->fixtures->merchant->enableEmi();
@@ -4209,5 +4222,34 @@ class MerchantTest extends TestCase
 
         $this->assertNull($testKeyValue);
         $this->assertNotNull($liveKeyValue);
+    }
+
+    public function testBeneficiaryRegisterApiYesbankWithMailNotQueued()
+    {
+        Mail::fake();
+
+        $this->ba->cronAuth();
+
+        $this->fixtures->create('bank_account');
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   =>  [
+                'duration'   => 1200,
+                'send_email' => false,
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        Mail::assertNotQueued(BeneficiaryFileMail::class);
+    }
+
+    public function testGetOrgDetails()
+    {
+        $this->ba->authServiceAuth();
+
+        $this->startTest();
     }
 }

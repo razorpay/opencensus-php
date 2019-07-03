@@ -15,6 +15,7 @@ use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 
@@ -93,6 +94,7 @@ class Gateway
     const WALLET_PHONEPE     = 'wallet_phonepe';
 
     const CARDLESS_EMI       = 'cardless_emi';
+    const PAYLATER           = 'paylater';
 
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
@@ -153,6 +155,7 @@ class Gateway
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
+        self::PAYLATER     => [PayLater::EPAYLATER],
     ];
 
     const POWER_WALLETS = [
@@ -193,6 +196,8 @@ class Gateway
         self::NETBANKING_AXIS   => self::AXIS,
         self::PAYTM             => self::PAYTM,
         self::AMEX              => self::AMEX,
+        self::UPI_MINDGATE      => self::HDFC,
+        self::ISG               => self::HDFC,
     ];
 
     /**
@@ -294,6 +299,9 @@ class Gateway
         IFSC::ICIC,
         IFSC::USFB,
         IFSC::IBKL,
+        IFSC::HDFC,
+        IFSC::TMBL,
+        IFSC::IOBA,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
@@ -542,7 +550,6 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
-        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -693,7 +700,11 @@ class Gateway
 
         Method::CARDLESS_EMI => [
             self::CARDLESS_EMI,
-        ]
+        ],
+
+        Method::PAYLATER => [
+            self::PAYLATER,
+        ],
     ];
 
     const CARD_GATEWAYS_LIVE = [
@@ -736,6 +747,18 @@ class Gateway
         ],
         self::WALLET_OPENWALLET     => [],
         self::HITACHI               => [],
+    ];
+
+    /**
+     * Card gateways which support purchase mechanism for at
+     * least one card network.
+     *
+     * @var array
+     */
+    public static $gatewayNetworkPurchaseSupport = [
+        self::HITACHI               => [
+            self::NOT_SUPPORTED     => [Network::RUPAY]
+        ],
     ];
 
     public static $bankTransferProviderGateway = [
@@ -974,6 +997,7 @@ class Gateway
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::CARDLESS_EMI,
+        self::PAYLATER,
     ];
 
     public static $verifyDisabled = [
@@ -1005,6 +1029,12 @@ class Gateway
         self::BAJAJ,
         self::AMEX,
         self::ISG,
+    ];
+
+    // We do not report capture verify for some gateway even if they fail, as there are integration issues currently
+    public static $captureVerifyReportDisabledGateways = [
+        self::UPI_AXIS,
+        self::UPI_ICICI,
     ];
 
     public static $captureVerifyQREnabledGateways = [
@@ -1694,6 +1724,29 @@ class Gateway
         }
     }
 
+    /**
+     * If network code is null, the function returns back whether the
+     * given gateway has support for Purchase or not.
+     * If network code is not null, the functions returns back whether
+     * the given gateway has support for Purchase for the given
+     * network.
+     *
+     * @param string $gateway
+     * @param string $networkCode
+     * @return bool
+     */
+    public static function supportsPurchase($gateway, $networkCode = null): bool
+    {
+        $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
+
+        if ($supportsPurchase === true)
+        {
+            return self::isNetworkSupportedForPurchase($gateway, $networkCode);
+        }
+
+        return true;
+    }
+
     public static function supportsReverse($gateway)
     {
         return in_array($gateway, self::$reverse, true);
@@ -1739,6 +1792,23 @@ class Gateway
         }
 
         return true;
+    }
+
+    public static function isNetworkSupportedForPurchase($gateway, $networkCode)
+    {
+        // This means that all the networks are supported by the gateway for Purchase.
+        if ((isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false) or
+            ($networkCode === null))
+        {
+            return true;
+        }
+
+        // Get all the networks which are NOT supported by the gateway for Purchase.
+        $notSupportedNetworks = self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED];
+
+        // If a given network is in the list of notSupportedNetworks, it means that the network
+        // is not supported by the gateway for Purchase.
+        return (in_array($networkCode, $notSupportedNetworks, true) === false);
     }
 
     public static function isPowerWallet($wallet)
@@ -1907,4 +1977,21 @@ class Gateway
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }
+
+    public static function isCaptureVerifyEnabledGateway($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true);
+    }
+
+    public static function isCaptureVerifyQREnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === true);
+    }
+
+    public static function isCaptureVerifyReportEnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
+    }
+
+
 }

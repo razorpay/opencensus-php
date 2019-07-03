@@ -6,6 +6,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Order;
+use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
@@ -25,9 +26,12 @@ use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
+use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 /**
@@ -51,6 +55,12 @@ trait Refund
      */
     public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
+        if ($this->isInvalidInstantRefundsRequest($payment, $input) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED);
+        }
+
         if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
         {
             throw new Exception\BadRequestException(
@@ -77,6 +87,15 @@ trait Refund
         $this->pushMetrics();
 
         return $refund;
+    }
+
+    protected function isInvalidInstantRefundsRequest(Payment\Entity $payment, array $input)
+    {
+        return ((isset($input[RefundEntity::SPEED]) === true) and
+                (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
+                (($payment->getMethod() !== Payment\Method::CARD) or
+                 ($this->payment->isCaptured() === false) or
+                 ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false)));
     }
 
     protected function pushMetrics()
@@ -194,6 +213,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
+        $input[RefundConstants::IS_FTA] = (isset($input[RefundConstants::IS_FTA]) === true) ?
+            (bool) $input[RefundConstants::IS_FTA] : null;
+
         $refundValidator = $refund->getValidator();
 
         $refundValidator->validateInput('scrooge_gateway_refund', $input);
@@ -292,6 +314,8 @@ trait Refund
 
         $data['refund']['attempts'] = $input['attempts'];
 
+        $data[RefundConstants::IS_FTA] = $input[RefundConstants::IS_FTA] ?? null;
+
         if (isset($input['fta_data']) === true)
         {
             $data = array_merge($data, $input['fta_data']);
@@ -320,6 +344,9 @@ trait Refund
                 true);
         }
 
+        $input[RefundConstants::IS_FTA] = (isset($input[RefundConstants::IS_FTA]) === true) ?
+            (bool) $input[RefundConstants::IS_FTA] : null;
+
         $refundValidator = $refund->getValidator();
 
         //
@@ -332,6 +359,8 @@ trait Refund
         {
             $refundValidator->validateScroogeGatewayRefund($payment);
 
+            $refundValidator->validateInput('scrooge_gateway_refund', $input);
+
             //
             // Doing +1 here, because at gateway side, we decrement attempts with -1,
             // doing this to keep backward compatibility of older refunds as well as scrooge refunds.
@@ -340,9 +369,11 @@ trait Refund
             //
             $refund->setAttempts(($input['attempts'] ?? -1) + 1) ;
 
-            $ftaInput = $input['fta_data'] ?? [];
+            $data = $input['fta_data'] ?? [];
 
-            $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $ftaInput);
+            $data[RefundConstants::IS_FTA] = $input[RefundConstants::IS_FTA] ?? null;
+
+            $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $data);
         }
         catch (\Exception $ex)
         {
@@ -560,7 +591,7 @@ trait Refund
         if ($this->isFundTransferAttemptRefund($refund, $payment, $ftaInput) === true)
         {
             $verifyRefundResult = $this->prepareScroogeRefundResponse([],
-                                                      false,
+                                                                      false,
                                                                       null,
                                                                       Payment\Action::VERIFY,
                                                                       ErrorCode::REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED);
@@ -568,6 +599,22 @@ trait Refund
         }
         else
         {
+            if ((isset($ftaInput[RefundConstants::IS_FTA]) === true) and ($ftaInput[RefundConstants::IS_FTA] === true))
+            {
+                $verifyRefundResult = $this->prepareScroogeRefundResponse(
+                    [
+                        Payment\Gateway::GATEWAY_VERIFY_RESPONSE =>
+                        'Instant refund request failed because of insufficient data'
+                    ],
+                    false,
+                    null,
+                    Payment\Action::VERIFY,
+                    ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA
+                );
+
+                return $verifyRefundResult;
+            }
+
             $this->setPaymentAndRefundInfo($refund, $payment);
 
             $gateway = $payment->getGateway();
@@ -771,9 +818,13 @@ trait Refund
             return null;
         }
 
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);
+        $txnCore = new Transaction\Core;
+
+        list($txn, $feesSplit) = $txnCore->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
+
+        $txnCore->saveFeeDetails($txn, $feesSplit);
 
         $this->trace->info(
             TraceCode::REFUND_TRANSACTION_CREATED,
@@ -786,7 +837,7 @@ trait Refund
         return $txn;
     }
 
-    public function reverseRefund(Payment\Refund\Entity $refund)
+    public function reverseRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal = false)
     {
         $this->trace->info(
             TraceCode::REFUND_REVERSAL_INITIATED,
@@ -796,51 +847,85 @@ trait Refund
                 'gateway'    => $refund->getGateway()
             ]);
 
-        if ($refund->getTransactionId() === null)
+        //
+        // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
+        // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this,
+        // Todo: the third case is Refund Credits - which needs to be handled soon
+        //
+        if (($refund->payment->hasBeenCaptured() === false) or
+            (($refund->transaction->getDebit() === 0) and
+             ($refund->transaction->getCreditType() === Transaction\CreditType::DEFAULT)))
         {
             return null;
         }
 
-        if ($refund->isStatusReversed() === true)
+        if (($refund->isStatusReversed() === true) or
+            (($feeOnlyReversal === true) and ($refund->getFee() === 0)))
         {
             throw new Exception\LogicException(
-                'Attempted to reverse an already reversed refund',
+                'Attempted to reverse an already reversed refund amount/fee',
                 null,
                 [
                     'refund_id'  => $refund->getId(),
                     'status'     => $refund->getStatus(),
                     'payment_id' => $refund->getPaymentId(),
-                    'gateway'    => $refund->getGateway()
+                    'gateway'    => $refund->getGateway(),
+                    'fee'        => $refund->getFee(),
                 ]);
         }
 
         try
         {
             $reversal = $this->repo->transaction(
-                function () use ($refund) {
-                    $reversal = (new Reversal\Core)->reverseForRefund($refund);
+                function () use ($refund, $feeOnlyReversal) {
+                    $reversal = (new Reversal\Core)->reverseForRefund($refund, $feeOnlyReversal);
 
-                    $refund->setStatus(Payment\Refund\Status::REVERSED);
+                    $fee = $refund->getFees();
+
+                    $tax = $refund->getTax();
+
+                    $refund->setFee(0);
+
+                    $refund->setTax(0);
+
+                    //
+                    // [Instant Refunds] - optimum flow
+                    // In case of direct settlement refunds we are creating a reversal transaction -
+                    // to reverse the fees and amount, since gateway will settle the amount directly
+                    //
+                    if (($feeOnlyReversal === false) and
+                        ($refund->isDirectSettlementRefund() === false))
+                    {
+                        $refund->setStatus(Payment\Refund\Status::REVERSED);
+                    }
 
                     $this->repo->saveOrFail($refund);
+
+                    $this->trace->info(
+                        TraceCode::REFUND_FEE_AND_TAX_RESET_TO_ZERO,
+                        [
+                            'refund_id'    => $refund->getId(),
+                            'previous_fee' => $fee,
+                            'previous_tax' => $tax,
+                        ]);
 
                     return $reversal;
                 });
         }
         catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex,
-                    Trace::CRITICAL,
-                    TraceCode::REFUND_REVERSAL_FAILED,
-                    [
-                        'refund_id'  => $refund->getId(),
-                        'status'     => $refund->getStatus(),
-                        'payment_id' => $refund->getPaymentId(),
-                        'gateway'    => $refund->getGateway()
-                    ]);
+        {
+            $this->trace->traceException($ex,
+                Trace::CRITICAL,
+                TraceCode::REFUND_REVERSAL_FAILED,
+                [
+                    'refund_id'  => $refund->getId(),
+                    'status'     => $refund->getStatus(),
+                    'payment_id' => $refund->getPaymentId(),
+                    'gateway'    => $refund->getGateway()
+                ]);
 
-                return null;
-            }
+            return null;
+        }
 
         return $reversal;
     }
@@ -1230,9 +1315,34 @@ trait Refund
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
+        if (($payment->getMethod() === Payment\Method::CARD) and
+            ($this->payment->isCaptured() === true) and
+            ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true))
+        {
+            $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
+
+            if (empty($input['speed']) === false)
+            {
+                $refund->setSpeedRequested($input['speed']);
+            }
+        }
+        else
+        {
+            $refund->setSpeedRequested(RefundSpeed::NORMAL);
+        }
+
         $refund->merchant()->associate($this->merchant);
 
         $refund->setBaseAmount();
+
+        if ($refund->isRefundSpeedInstant() === true)
+        {
+            list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);
+
+            $refund->setFee($fee);
+
+            $refund->setTax($tax);
+        }
 
         $refund->balance()->associate($refund->merchant->primaryBalance);
 
@@ -1360,6 +1470,14 @@ trait Refund
         }
         else
         {
+            if ((isset($data[RefundConstants::IS_FTA]) === true) and ($data[RefundConstants::IS_FTA] === true))
+            {
+                return (new ScroogeResponse())->setSuccess(false)
+                                              ->setStatusCode(ErrorCode::BAD_REQUEST_INSUFFICIENT_DATA_FOR_FTA)
+                                              ->setGatewayResponse('Instant refund request failed because of insufficient data')
+                                              ->toArray();
+            }
+
             return $this->callGatewayRefundFunction($payment, $data, $retry);
         }
     }
@@ -1615,7 +1733,7 @@ trait Refund
         ];
 
         if (($merchant->getRefundSource() === RefundSource::CREDITS) and
-            ($balance->getRefundCredits() < $refund->getBaseAmount()))
+            ($balance->getRefundCredits() < $refund->getNetAmount()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
@@ -1624,7 +1742,7 @@ trait Refund
         }
 
         if (($merchant->getRefundSource() === RefundSource::BALANCE) and
-            ($balance->getBalance() < $refund->getBaseAmount()))
+            ($balance->getBalance() < $refund->getNetAmount()))
         {
             if ($type === 'refund')
             {
@@ -1713,7 +1831,8 @@ trait Refund
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
         }
-        else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true)
+        else if (($refund->isRefundSpeedInstant() === true) and
+                 ($this->isPaymentCardAndCardTransferRefund($refund, $payment, true) === true))
         {
             $cardInput = $this->getCardIdInput($payment, $input);
 
@@ -1949,6 +2068,9 @@ trait Refund
 
         $refunded = false;
 
+        // Initializing for non scrooge refunds
+        $data[RefundConstants::IS_FTA] = $data[RefundConstants::IS_FTA] ?? false;
+
         try
         {
             $fundTransferAttemptInput = $this->getFundTransferAttemptInput($payment);
@@ -1957,7 +2079,7 @@ trait Refund
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
-            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment))
+            else if ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]))
             {
                 $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
             }
@@ -2065,6 +2187,17 @@ trait Refund
 
     protected function isFundTransferAttemptRefund(RefundEntity $refund, Payment\Entity $payment, array $data = []): bool
     {
+        if (isset($data[RefundConstants::IS_FTA]) === true)
+        {
+            if ($data[RefundConstants::IS_FTA] === false) {
+                return false;
+            }
+        }
+        else
+        {
+            $data[RefundConstants::IS_FTA] = false;
+        }
+
         //
         // Refund is explicitly being attempted towards a new bank account or vpa
         // Bank account or vpa input can come from dashboard also, but card_transfer will not come from dashboard.
@@ -2080,7 +2213,7 @@ trait Refund
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true))
+            ($this->isPaymentCardAndCardTransferRefund($refund, $payment, $data[RefundConstants::IS_FTA]) === true))
         {
             return true;
         }
@@ -2122,10 +2255,14 @@ trait Refund
      *
      * @param RefundEntity $refund
      * @param Payment\Entity $payment
+     * @param bool $ignoreFeatureFlag
      * @return bool
      * @throws \Exception
      */
-    protected function isPaymentCardAndCardTransferRefund(RefundEntity $refund, Payment\Entity $payment): bool
+    protected function isPaymentCardAndCardTransferRefund(
+        RefundEntity $refund,
+        Payment\Entity $payment,
+        bool $ignoreFeatureFlag = false): bool
     {
         //
         // Check if any card FTA already exists, not allowing card fta if any previous card fta exists
@@ -2139,7 +2276,6 @@ trait Refund
         }
 
         if (($payment->hasCard() === true) and
-            ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
             ($payment->card->getCardVaultToken() !== null) and ($payment->isGatewayCaptured() === true))
         {
             $iin = $payment->card->iinRelation;
@@ -2154,6 +2290,12 @@ trait Refund
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true) and
                     (IIN::isIinPrepaid($iin->getIin()) === false))
                 {
+                    if (($ignoreFeatureFlag === false) and
+                        ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false))
+                    {
+                        return false;
+                    }
+
                     return true;
                 }
             }

@@ -1458,7 +1458,7 @@ class RefundTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
 
-        $response = $this->refundPayment($payment['id']);
+        $response = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
         $refund  = $this->getLastEntity('refund', true);
 
@@ -1468,7 +1468,7 @@ class RefundTest extends TestCase
 
         // Atom has been on boarded to Scrooge,
         // Changing this since in scrooge flow it will remain in created until cron picks up FTA for processing
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('initiated', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -1941,7 +1941,7 @@ class RefundTest extends TestCase
 
         $this->assertNotNull($refund['balance_id']);
 
-        $this->scroogeUpdateRefundStatus($refund, 'failed');
+        $this->scroogeUpdateRefundStatus($refund, 'failed_event');
 
         $refund = $this->getLastEntity('refund', true);
 
@@ -1953,5 +1953,175 @@ class RefundTest extends TestCase
         $this->assertEquals($reversal['entity_type'], 'refund');
         $this->assertEquals('rfnd_'.$reversal['entity_id'], $refund['id']);
         $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
+    }
+
+    public function testInstantRefundFailureCapturedPaymentReversal()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->gateway = 'hdfc';
+
+        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        $refund = $this->refundPayment($payment['id'], 3459, ['speed' => 'normal', 'is_fta' => true]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals('normal', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
+
+        $this->assertEquals(3459, $transaction['amount']);
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+        $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+//        $this->assertEquals('refund', $feesBreakup[0]['name']);
+//        $this->assertEquals('tax', $feesBreakup[1]['name']);
+//        $this->assertEquals(100, $feesBreakup[0]['amount']);
+//        $this->assertEquals(18, $feesBreakup[1]['amount']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals('refund', $reversal['entity_type']);
+        $this->assertEquals($refund['id'], 'rfnd_' . $reversal['entity_id']);
+        $this->assertNotNull($reversal['balance_id']);
+        $this->assertEquals(3459, $reversal['amount']);
+        $this->assertEquals(0, $reversal['fee']);
+        $this->assertEquals(0, $reversal['tax']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($reversal['id'], 6)])->last();
+
+        $this->assertEquals(3459, $transaction['amount']);
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals($transaction['amount'] - ($transaction['fee']), $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+//        $this->assertEquals('refund', $feesBreakup[0]['name']);
+//        $this->assertEquals('tax', $feesBreakup[1]['name']);
+//        $this->assertEquals(0, $feesBreakup[0]['amount']);
+//        $this->assertEquals(0, $feesBreakup[1]['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(null, $payment['refund_status']);
+        $this->assertEquals(0, $payment['amount_refunded']);
+    }
+
+    public function testOptimumRefundFeeReversal()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        $refund = $this->refundPayment($payment['id'], 3470, ['speed' => 'optimum', 'is_fta' => true]);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::CREATED, $refund['status']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
+
+        $this->assertEquals(3470, $transaction['amount']);
+        $this->assertEquals(118, $transaction['fee']);
+        $this->assertEquals(18, $transaction['tax']);
+        $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(100, $feesBreakup[0]['amount']);
+        $this->assertEquals(18, $feesBreakup[1]['amount']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals('refund', $reversal['entity_type']);
+        $this->assertEquals($refund['id'], 'rfnd_' . $reversal['entity_id']);
+        $this->assertNotNull($reversal['balance_id']);
+        $this->assertEquals(0, $reversal['amount']);
+        $this->assertEquals(118, $reversal['fee']);
+        $this->assertEquals(18, $reversal['tax']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($reversal['id'], 6)])->last();
+
+        $this->assertEquals(0, $transaction['amount']);
+        $this->assertEquals(-118, $transaction['fee']);
+        $this->assertEquals(-18, $transaction['tax']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals($transaction['amount'] - ($transaction['fee']), $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(-100, $feesBreakup[0]['amount']);
+        $this->assertEquals(-18, $feesBreakup[1]['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('partial', $payment['refund_status']);
+        $this->assertEquals(3470, $payment['amount_refunded']);
     }
 }

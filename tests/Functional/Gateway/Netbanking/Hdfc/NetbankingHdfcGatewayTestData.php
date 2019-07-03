@@ -38,7 +38,7 @@ return [
         'client_code' => 'abcom',
         'merchant_code' => 'RAZORPAY',
 //        'bank_payment_id' => null,
-        'error_message' => '',
+        'error_message' => null,
         'entity' => 'netbanking',
     ],
 

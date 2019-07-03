@@ -26,7 +26,7 @@ class SlackNotification extends Base\Core
         'setl_reconciliation'     => 'Settlements reconciled. ',
         'reconcile_file'          => 'Reconciliation file processed.',
         'setl_return'             => 'Settlements returns occurred. ',
-        'fta_recon_report'        => 'Settlement Potential Failures',
+        'fta_recon_report'        => 'Fund Transfer Potential Failures',
         'bene_reg_status'         => 'Beneficiaries Registration status',
         'critical_failure'        => 'Critical failure summary',
         'setl_verify'             => 'Settlement verification complete',
@@ -82,6 +82,10 @@ class SlackNotification extends Base\Core
             {
                 $channel = Config::get('slack.channels.' . $slackChannel);
             }
+
+            $data += [
+                'mode' => $this->mode,
+            ];
 
             // Send Slack Notification only for Live mode in Production
             if ($this->mode === Mode::LIVE)

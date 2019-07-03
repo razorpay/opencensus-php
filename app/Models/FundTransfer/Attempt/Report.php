@@ -286,7 +286,7 @@ class Report extends Base\Core
 
     public static function sendEmail(Report $progressReport, Report $failureReport)
     {
-        $info = 'Settlement Potential Failures';
+        $info = 'Fund Transfer Potential Failures';
 
         $data = [
             'header'  => $info,

@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Crypt;
+
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Method;
@@ -516,7 +518,7 @@ class Terminal extends Base
                 Type::RECURRING_NON_3DS => '1',
             ],
             'shared'                    => 1,
-            'gateway_merchant_id'       => 'random',
+            'gateway_merchant_id'       => 'shared_utility_code',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -524,6 +526,17 @@ class Terminal extends Base
         //$this->create($attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDirectEnachNpciNetbankingTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                        => 'EnachNbNpciTnl',
+            'merchant_id'               => '10000000000000',
+            'gateway_merchant_id'       => 'direct_utility_code',
+        ];
+
+        return $this->createSharedEnachNpciNetbankingTerminal($attributes);
     }
 
     public function createDirectEnachRblTerminal(array $attributes = [])
@@ -638,6 +651,27 @@ class Terminal extends Base
             'gateway_merchant_id2' => 'cardless_emi_merchant2',
             'gateway_acquirer'     => 'flexmoney',
             'mode'                 => 1,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createPaylaterEpaylaterTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::PAYLATER_EPAYLATER_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paylater',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'paylater'                  => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_merchant_id2'      => 'ABCD',
+            'gateway_acquirer'          => 'epaylater',
+            'mode'                      => 1,
+            'gateway_terminal_password' => Crypt::encrypt('random_secret'),
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
@@ -2534,6 +2568,16 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
+    public function createSharedUpiICICITpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_ICICI_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiIciciTerminal($attributes);
     }
 
     public function createSharedUpiMindgateIntentTpvTerminal(array $attributes = [])

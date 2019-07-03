@@ -55,7 +55,7 @@ class CreatePaysecureTable extends Migration
             $table->string(Paysecure::FLOW, 10)
                   ->nullable();
 
-            $table->string(Paysecure::HKEY)
+            $table->text(Paysecure::HKEY)
                   ->nullable();
 
             $table->string(Paysecure::AUTH_NOT_REQUIRED, 5)
@@ -77,6 +77,8 @@ class CreatePaysecureTable extends Migration
             $table->index(Paysecure::CREATED_AT);
 
             $table->index(Paysecure::REFUND_ID);
+
+            $table->index(Paysecure::RRN);
 
             $table->index(Paysecure::GATEWAY_TRANSACTION_ID);
 

@@ -158,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::CARDLESS_EMI,
+        self::PAYLATER,
     ];
 
     protected $public = [
@@ -202,6 +203,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::IFSC_CODE,
         self::CARDLESS_EMI,
+        self::PAYLATER,
     ];
 
     protected $hidden = [
@@ -258,6 +260,7 @@ class Entity extends Base\PublicEntity
         self::USED                       => false,
         self::EMI_SUBVENTION             => null,
         self::CARDLESS_EMI               => 0,
+        self::PAYLATER                   => 0,
     ];
 
     protected $casts = [
@@ -279,6 +282,7 @@ class Entity extends Base\PublicEntity
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
         self::CARDLESS_EMI              => 'boolean',
+        self::PAYLATER                  => 'boolean',
         self::DIRECT                    => 'boolean',
     ];
 
@@ -466,6 +470,11 @@ class Entity extends Base\PublicEntity
     public function isCardlessEmiEnabled()
     {
         return $this->getAttribute(self::CARDLESS_EMI);
+    }
+
+    public function isPayLaterEnabled()
+    {
+        return $this->getAttribute(self::PAYLATER);
     }
 
     public function isShared(): bool

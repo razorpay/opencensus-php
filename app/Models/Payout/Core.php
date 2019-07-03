@@ -404,6 +404,26 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
+    public function approvePayout(Entity $payout): Entity
+    {
+        //
+        // TODO: mark the workflow as approved
+        // get workflow action id and send payload as approved is true
+        //
+
+        return $payout;
+    }
+
+    public function rejectPayout(Entity $payout): Entity
+    {
+        //
+        // TODO: mark the workflow as rejected
+        // get workflow action id and send payload as approved is false
+        //
+
+        return $payout;
+    }
+
     protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
     {
         $dispatchedCount = 0;
@@ -531,6 +551,16 @@ class Core extends Base\Core
 
     protected function handleFtaProcessed(Entity $payout)
     {
+        if ($payout->isStatusReversed() === true)
+        {
+            throw new Exception\LogicException(
+                'Attempted to process a reversed payout',
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+        }
+
         $payout->setStatus(Status::PROCESSED);
 
         $this->repo->saveOrFail($payout);

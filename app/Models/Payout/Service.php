@@ -11,6 +11,9 @@ use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -34,6 +37,114 @@ class Service extends Base\Service
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
 
         return $payout->toArrayPublic();
+    }
+
+    public function approveFundAccountPayout(string $id, array $input): array
+    {
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
+
+        (new Core)->approvePayout($payout);
+
+        return $payout->toArrayPublic();
+    }
+
+    public function bulkApproveFundAccountPayouts(array $input)
+    {
+        (new Validator)->validateInput('bulk_approve', $input);
+
+        $this->user->validateInput('verify_otp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
+
+        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+
+        foreach ($payouts as $payout)
+        {
+            $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+        }
+
+        $failedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                (new Core)->approvePayout($payout);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
+                    ['payout_id' => $payout->getId()]);
+
+                $failedIds[] = $payout->getId();
+            }
+        }
+
+        return [
+            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'failed_ids'  => $failedIds,
+        ];
+    }
+
+    public function rejectFundAccountPayout(string $id): array
+    {
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        (new Core)->rejectPayout($payout);
+
+        return $payout->toArrayPublic();
+    }
+
+    public function bulkRejectFundAccountPayout(array $input)
+    {
+        (new Validator)->validateInput('bulk_reject', $input);
+
+        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+
+        foreach ($payouts as $payout)
+        {
+            $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+        }
+
+        $failedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                (new Core)->rejectPayout($payout);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
+                    [
+                        'payout_id' => $payout->getId(),
+                    ]);
+
+                $failedIds[] = $payout->getId();
+            }
+        }
+
+        return [
+            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'failed_ids'  => $failedIds,
+        ];
     }
 
     /**

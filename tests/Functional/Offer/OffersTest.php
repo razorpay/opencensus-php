@@ -65,6 +65,18 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testOfferCreateBulk()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $offers = $this->getEntities('offer', [], true);
+
+        $this->assertEquals('100000Razorpay', $offers['items'][0]['merchant_id']);
+        $this->assertEquals('10000000000000', $offers['items'][1]['merchant_id']);
+    }
+
     public function testCreateCardOfferWithLinkedOfferIds()
     {
         $offer = $this->fixtures->create('offer:card');

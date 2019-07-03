@@ -82,6 +82,7 @@ return [
         'p2p_upi_sharp',
         'p2p_upi_axis',
         'paysecure',
+        'paylater',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -147,6 +148,7 @@ return [
     'mock_isg'                    => env('ISG_MOCK'),
     'mock_paysecure'              => env('PAYSECURE_MOCK'),
     'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
+    'mock_paylater'               => env('PAYLATER_MOCK'),
     'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
     'mock_p2p_upi_axis'           => env('P2P_UPI_AXIS_MOCK'),
@@ -271,6 +273,11 @@ return [
             'live_mastercard_acq_bin'           => env('BLADE_LIVE_FIRSTDATA_MASTERCARD_ACQ_BIN'),
             'live_visa_acq_bin'                 => env('BLADE_LIVE_FIRSTDATA_VISA_ACQ_BIN'),
             'live_merchant_id'                  => env('BLADE_LIVE_FIRSTDATA_MERCHANT_ID'),
+        ],
+
+        'hdfc'  => [
+            'live_mastercard_acq_bin'           => env('BLADE_LIVE_HDFC_MASTERCARD_ACQ_BIN'),
+            'live_visa_acq_bin'                 => env('BLADE_LIVE_HDFC_VISA_ACQ_BIN'),
         ],
 
         'live_mastercard_merchant_id'           => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID'),
@@ -639,8 +646,10 @@ return [
         'test_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_CORP'),
         'test_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_CORP'),
 
-        'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
-        'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
+        'live_hash_secret_corp'        => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
+        'live_merchant_id2_corp'       => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
+
+        'live_merchant_id2_corp_karvy' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP_KARVY'),
 
         // Aditiya birla direct settlement TID
         'live_merchant_id2_aditiya_birla_direct' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_AB_DIRECT'),

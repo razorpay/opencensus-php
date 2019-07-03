@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -303,6 +304,30 @@ class Core extends Base\Core
         }
 
         $virtualAccount->setStatus($status);
+
+        $this->repo->saveOrFail($virtualAccount);
+
+        return $virtualAccount;
+    }
+
+    public function close(Entity $virtualAccount)
+    {
+        $virtualAccount->getValidator()->validateOfPrimaryBalance();
+
+        $bankAccount = $virtualAccount->bankAccount;
+
+        if ($bankAccount !== null)
+        {
+            $this->repo->deleteOrFail($bankAccount);
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
+        }
+
+        $virtualAccount->setStatus(Status::CLOSED);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $virtualAccount->setClosedAt($currentTime);
 
         $this->repo->saveOrFail($virtualAccount);
 

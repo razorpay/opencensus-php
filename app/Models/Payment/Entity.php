@@ -573,6 +573,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return null;
         }
 
+        // Do not modify contact in case of bank transfer and bharat qr
+        // because in these cases contact is not passed in payment request
+        // input but rather it is set internally from customer table.
+        //
+        // If Receiver is present it either bank transfer or bharat qr payment.
+        if (empty($input['receiver']) === false)
+        {
+            return $input['contact'];
+        }
+
         $contact = str_replace(' ', '', $contact);
         $contact = str_replace('-', '', $contact);
         $contact = str_replace('(', '', $contact);
@@ -815,7 +825,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected function generateWallet($input)
     {
-        if ($input[Entity::METHOD] === Method::CARDLESS_EMI)
+        if (($input[Entity::METHOD] === Method::CARDLESS_EMI) or
+            ($input[Entity::METHOD] === Method::PAYLATER))
         {
             $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
         }
@@ -1610,6 +1621,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::CARDLESS_EMI);
     }
 
+    public function isPayLater()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::PAYLATER);
+    }
+
     public function isPinAuth()
     {
         return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
@@ -1805,6 +1821,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getAmountUntransferred()
     {
         return $this->getAmount() - $this->getAmountTransferred();
+    }
+
+    public function getAmountAuthorized()
+    {
+        $this->getAttribute(self::AMOUNT_AUTHORIZED);
     }
 
     /**
@@ -2140,6 +2161,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, $this->getBankName()];
             case Method::CARDLESS_EMI:
                 return [$method, Processor\CardlessEmi::getName($this->getWallet())];
+            case Method::PAYLATER:
+                return [$method, Processor\PayLater::getName($this->getWallet())];
         }
     }
 
@@ -2163,6 +2186,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         else if ($this->isUpi() === true)
         {
             $issuer = $this->getPspFromVpa();
+        }
+        else if ($this->isPayLater() === true)
+        {
+            $issuer = $this->getWallet();
         }
 
         return $issuer;
@@ -3163,6 +3190,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if (($this->hasTerminal() === true) and
             ($this->terminal->isDirectSettlement() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isReconciled()
+    {
+        if (($this->hasTransaction() === true) and
+            ($this->transaction->isReconciled() === true))
         {
             return true;
         }

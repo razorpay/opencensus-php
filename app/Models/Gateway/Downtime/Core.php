@@ -40,10 +40,12 @@ class Core extends Base\Core
      *
      * @param array $input
      *
+     * @param array $uniqueRecordIdentifiers
+     * @param bool $allowUpdateOfExistingDowntime
      * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function create(array $input, array $uniqueRecordIdentifiers = [])
+    public function create(array $input, array $uniqueRecordIdentifiers = [], $allowUpdateOfExistingDowntime = true)
     {
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CREATE, $input);
 
@@ -51,7 +53,8 @@ class Core extends Base\Core
 
         if ($downtime !== null)
         {
-            if ($this->allowUpdateOfExistingDowntimes() === false)
+            if (($allowUpdateOfExistingDowntime === false) or
+                ($this->allowUpdateOfExistingDowntimes() === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT,
@@ -120,7 +123,7 @@ class Core extends Base\Core
     {
         $this->repo->gateway_downtime->deleteOrFail($downtime);
 
-        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DELETED, $downtime->toArrayPublic());
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DELETED, $downtime->toArray());
 
         return $downtime;
     }
@@ -248,6 +251,64 @@ class Core extends Base\Core
         ]);
 
         $this->mutex->release($resource);
+    }
+
+    /**
+     * @param string $gateway
+     * @param array $gatewayData
+     * @param int $duration
+     * @throws Exception\BadRequestException
+     */
+    protected function attemptDowntimeCreation(string $gateway, array $gatewayData, int $duration)
+    {
+        $resource = self::GATEWAY_EXCEPTION_DOWNTIME . $gateway . $duration;
+
+        //
+        // It's possible that multiple failures at the same time will get past
+        // the uniqueness check in create (since we do the DB query before the
+        // creation). For this reason, we're adding a mutex lock around creation.
+        // If aquisition fails, that's fine, we don't need to retry since the
+        // parallel process will end up creating the same gateway downtime anyway.
+        //
+        if ($this->mutex->acquire($resource) === false)
+        {
+            $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_ALREADY_CREATING_DOWNTIME, [
+                'resource'                         => $resource,
+                'gateway'                          => $gateway,
+                'duration'                         => $duration,
+            ]);
+
+            return;
+        }
+
+        $now = Carbon::now()->getTimestamp();
+
+        try
+        {
+            $this->create([
+                Entity::GATEWAY     => $gateway,
+                Entity::REASON_CODE => ReasonCode::HIGHER_ERRORS,
+                Entity::BEGIN       => $now,
+                Entity::END         => $now + $duration,
+                Entity::METHOD      => $gatewayData['payment']['method'],
+                Entity::SOURCE      => Source::INTERNAL,
+                Entity::COMMENT     => 'Downtime created by internal gateway response analysis for sliding window: ' . $duration . ' seconds',
+                Entity::SCHEDULED   => false,
+            ],
+                [
+                    Entity::GATEWAY,
+                    Entity::ISSUER,
+                    Entity::METHOD,
+                    Entity::SOURCE,
+                    Entity::NETWORK,
+                    Entity::COMMENT,
+                ],
+                false);
+        }
+        finally
+        {
+            $this->mutex->release($resource);
+        }
     }
 
     protected function getDuration(): int
@@ -406,5 +467,32 @@ class Core extends Base\Core
         }
 
         return $mode;
+    }
+
+    /**
+     * This function creates the downtime and
+     * update the required metric for downtime detection,
+     * if $gatewayDowntimeError is present. Otherwise
+     * it just update the required metric for downtime detection.
+     * @param string $gateway
+     * @param array $gatewayData
+     * @param bool $gatewayDowntimeError
+     * @throws Exception\BadRequestException
+     */
+    public function createDowntimeIfApplicable(string $gateway, array $gatewayData, bool $gatewayDowntimeError)
+    {
+        if ($gatewayDowntimeError == true)
+        {
+            $durations = (new GatewayDowntimeDetection($gateway))->gatewayDowntimeDurations();
+
+            foreach ($durations as $duration)
+            {
+                $this->attemptDowntimeCreation($gateway, $gatewayData, $duration);
+            }
+        }
+        else
+        {
+            (new GatewayDowntimeDetection($gateway))->incrementTotalAttempts();
+        }
     }
 }

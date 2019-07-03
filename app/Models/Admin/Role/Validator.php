@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Role;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Base;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Permission;
 
 class Validator extends Base\Validator
@@ -13,12 +14,14 @@ class Validator extends Base\Validator
         Entity::NAME            => 'required|string|max:255',
         Entity::DESCRIPTION     => 'required|string|max:255',
         Entity::PERMISSIONS     => 'sometimes|array|custom',
+        Entity::PRODUCT         => 'sometimes|string|custom',
     ];
 
     protected static $editRules = [
         Entity::NAME            => 'sometimes|string|max:255',
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
         Entity::PERMISSIONS     => 'sometimes|array|custom',
+        Entity::PRODUCT         => 'sometimes|string|custom',
     ];
 
     public $isOrgSpecificValidationSupported = false;
@@ -39,6 +42,11 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE);
         }
+    }
+
+    public function validateProduct(string $attribute, string $product)
+    {
+        Product::validate($product);
     }
 
     public function validatePermissions(string $attr, array $permissions)

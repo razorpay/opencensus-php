@@ -376,6 +376,14 @@ return [
         ],
     ],
 
+    E::FUND_ACCOUNT_VALIDATION => [
+        Type::ADMIN_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
     E::WORKFLOW => [
         Type::ADMIN_AUTH => [
             [
@@ -445,4 +453,6 @@ return [
     E::P2P_CONCERN => [],
 
     E::CUSTOMER => [],
+
+    E::CREDITNOTE => [],
 ];

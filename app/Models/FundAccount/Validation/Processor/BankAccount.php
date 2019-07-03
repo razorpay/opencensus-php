@@ -3,6 +3,7 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use Monolog\Logger;
@@ -46,7 +47,7 @@ class BankAccount extends Base
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
         }
 
         $notFailedFTAs = $this->repo->fund_transfer_attempt->getAttemptBySourceIdAndNotFailed($this->validation->getId(), Table::FUND_ACCOUNT_VALIDATION);
@@ -59,7 +60,7 @@ class BankAccount extends Base
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
         }
     }
 
@@ -279,7 +280,7 @@ class BankAccount extends Base
         // Calculate Retry At value
         $nextAttempt = $this->validation->getAttempts() + 1;
 
-        $retryAfter = self::$attemptToRetryAfterSecondsMap[$nextAttempt];
+        $retryAfter = Arr::get(self::$attemptToRetryAfterSecondsMap, $nextAttempt);
 
         if ($retryAfter == null)
         {

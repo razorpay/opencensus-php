@@ -84,6 +84,14 @@ class CreateVirtualAccountsTable extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(VirtualAccount::CLOSE_BY)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(VirtualAccount::CLOSED_AT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->foreign(VirtualAccount::CUSTOMER_ID)
                   ->references('id')
                   ->on(Table::CUSTOMER)
@@ -106,6 +114,7 @@ class CreateVirtualAccountsTable extends Migration
             $table->index(VirtualAccount::CREATED_AT);
             $table->index(VirtualAccount::UPDATED_AT);
             $table->index(VirtualAccount::DELETED_AT);
+            $table->index(VirtualAccount::CLOSE_BY);
             $table->index([VirtualAccount::ENTITY_ID, VirtualAccount::ENTITY_TYPE]);
             $table->index([VirtualAccount::MERCHANT_ID, VirtualAccount::CREATED_AT]);
             $table->index(VirtualAccount::BALANCE_ID, VirtualAccount::MERCHANT_ID);

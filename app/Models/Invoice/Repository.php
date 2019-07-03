@@ -379,6 +379,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findIssuedByBatchIdWithLimit(string $batchId, int $limit = 1000): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->where(Entity::STATUS, Status::ISSUED)
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function findByBatchIdAndReceipts(
         string $batchId,
         array $receipts = []): Base\PublicCollection

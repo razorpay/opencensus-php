@@ -39,7 +39,7 @@ abstract class Base extends Processor\Base
         {
             $fileData = $this->formatDataForFile($data);
 
-            $fileName = $this->getFileToWriteNameWithoutExt();
+            $fileName = $this->getFileToWriteNameWithoutExt([]);
 
             $creator = new FileStore\Creator;
 
@@ -98,7 +98,7 @@ abstract class Base extends Processor\Base
         }
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(array $data)
     {
         $time = Carbon::now(Timezone::IST)->format('dmYHis');
 

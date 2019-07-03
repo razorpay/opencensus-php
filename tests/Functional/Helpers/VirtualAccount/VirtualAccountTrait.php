@@ -296,6 +296,20 @@ trait VirtualAccountTrait
         return $response;
     }
 
+    private function closeVirtualAccountsByCloseBy()
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/close',
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function getDefaultBankTransferArray()
     {
         return [

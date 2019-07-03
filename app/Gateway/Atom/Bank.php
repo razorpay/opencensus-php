@@ -15,7 +15,7 @@ class Bank
         IFSC::ABNA         => 1050,     // Royal Bank Of Scotland
         IFSC::ALLA         => 1056,     // Allahabad Bank
         IFSC::ANDB         => 1058,     // Andhra bank
-        IFSC::BKID         => 1046,     // Bank of India Retail
+        IFSC::BKID         => 1012,     // Bank of India Retail
         IFSC::CBIN         => 1028,     // Central Bank of India
         IFSC::CIUB         => 1020,     // City Union Bank
         IFSC::CNRB         => 1030,     // Canara Bank
@@ -56,7 +56,7 @@ class Bank
         IFSC::UTIB         => 1003,     // Axis Bank
         IFSC::VIJB         => 1039,     // Vijaya Bank
         IFSC::YESB         => 1005,
-        Netbanking::BKID_C => 1045,     // Bank of India Corporate
+        Netbanking::BKID_C => 1012,     // Bank of India Corporate
         Netbanking::LAVB_R => 1009,     // Lakshmi Vilas Bank
         Netbanking::PUNB_R => 1049,     // Punjab National Bank[Retail]
     ];
