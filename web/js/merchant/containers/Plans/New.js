@@ -13,10 +13,12 @@ import { savePlan } from 'merchant/modules/plans';
 import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
+import { fetchPlan } from 'merchant/modules/plans';
 
 import {
   getKeysSeparatedByPipe,
   getEventCategoryFromPath,
+  getURLQueryParams,
 } from 'rzp/utils/rzp-utils';
 
 const selector = formValueSelector('newPlan');
@@ -41,6 +43,7 @@ let Label = ({ text, htmlFor, required }) => {
     };
   },
   {
+    fetchPlan,
     savePlan,
     showNotification,
   }
@@ -67,6 +70,34 @@ export default class AddPlan extends Component {
   componentWillMount() {
     if (this.props.plan) {
       this.props.initialize(this.props.plan);
+    }
+
+    this.fetchIfIntentDuplicate();
+  }
+
+  fetchIfIntentDuplicate() {
+    const searchQuery = getURLQueryParams(this.props.location.search);
+    if (searchQuery.duplicate_id) {
+      this.props.fetchPlan(searchQuery.duplicate_id).then(data => {
+        const newPlan = {};
+
+        newPlan.item = {
+          amount: (data.item.amount /= 100),
+          currency: data.item.currency,
+          description: data.item.description,
+          name: data.item.name,
+        };
+
+        newPlan.interval = data.interval;
+        newPlan.period = data.period;
+
+        newPlan.notes = Object.keys(data.notes).map(key => ({
+          key,
+          value: data.notes[key],
+        }));
+
+        this.props.initialize(newPlan);
+      });
     }
   }
 

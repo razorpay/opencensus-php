@@ -142,7 +142,7 @@ export default props => {
                 to={`/paymentlinks/new?duplicate_id=${invoice.id}`}
               >
                 <i class="i i-copy" />
-                <Tooltip theme="dark">Copy Payment Link</Tooltip>
+                <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
               </NavLink>
               {(isRoleAllowedEdit || user.role === 'rbl_agent') &&
                 invoice.customer_id &&
