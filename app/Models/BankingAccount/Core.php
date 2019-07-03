@@ -77,7 +77,12 @@ class Core extends Base\Core
                                    ->findByBankReferenceAndChannel($channel,
                                                                    $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
-            $this->updateBankingAccount($bankingAccount, $attributes);
+            $alreadyProcessed = $this->checkIfAccountOpeningWebhookAlreadyProcessed($bankingAccount);
+
+            if ($alreadyProcessed === false)
+            {
+                $this->updateBankingAccount($bankingAccount, $attributes);
+            }
 
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::PROCESSED);
         }
@@ -96,6 +101,8 @@ class Core extends Base\Core
         $processor = $this->getProcessor($channel);
 
         $processor->validateAccountBeforeUpdating($input);
+
+        $input = $processor->formatInputParametersIfRequired($input);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
@@ -261,6 +268,15 @@ class Core extends Base\Core
             null,
             'Source account creation failed, Try again'
         );
+    }
+
+    protected function checkIfAccountOpeningWebhookAlreadyProcessed(Entity $bankingAccount)
+    {
+        $accountProcessedAt = $bankingAccount->getAccountActivationDate();
+
+        $processed = ($accountProcessedAt === null) ? false : true;
+
+        return $processed;
     }
 
     /**

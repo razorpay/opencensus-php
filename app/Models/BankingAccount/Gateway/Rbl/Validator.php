@@ -44,8 +44,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $accountUpdateRules = [
-        BankingAccount\Entity::STATUS                          => 'filled|string|custom',
-        BankingAccount\Entity::BANK_INTERNAL_STATUS            => 'required_if:status,processing,processed,cancelled|string|custom',
+        BankingAccount\Entity::BANK_INTERNAL_STATUS            => 'filled|string|custom',
         BankingAccount\Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
     ];

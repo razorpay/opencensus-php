@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
         Entity::BENEFICIARY_STATE               => 'filled|string',
-        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|string|date',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|integer',
         Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS3            => 'filled|string',

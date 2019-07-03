@@ -210,6 +210,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_IFSC);
     }
 
+    public function getAccountActivationDate()
+    {
+        return $this->getAttribute(self::ACCOUNT_ACTIVATION_DATE);
+    }
+
     public function getAccountNumber()
     {
         return $this->getAttribute(self::ACCOUNT_NUMBER);

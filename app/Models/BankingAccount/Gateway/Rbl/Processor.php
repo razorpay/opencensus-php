@@ -3,9 +3,9 @@
 namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use Carbon\Carbon;
-
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Exception\LogicException;
 
@@ -86,18 +86,21 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function validateAccountBeforeUpdating(array $input)
     {
-        $keys = [
-            BankingAccount\Entity::BANK_INTERNAL_STATUS,
-            BankingAccount\Entity::STATUS,
-            BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER,
-            BankingAccount\Entity::BANK_REFERENCE_NUMBER,
-        ];
+        (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_UPDATE, $input);
 
-        $attributes = array_only($input, $keys);
+        $this->checkRblToInternalStatusMapping($input);
+    }
 
-        (new Validator)->validateInput(Validator::ACCOUNT_UPDATE, $attributes);
+    public function formatInputParametersIfRequired(array $input)
+    {
+        if (isset($input[Fields::ACTIVATION_DATE]) === true)
+        {
+            $timestamp = $this->parseAndFormatRblDate($input[Fields::ACTIVATION_DATE]);
 
-        $this->checkRblToInternalStatusMapping($attributes);
+            $input[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $timestamp;
+        }
+
+        return $input;
     }
 
     protected function validateInputForAccountCreation(array $input)
@@ -107,7 +110,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function preProcessInputForAccountCreation(array $input)
     {
-        $availability =  $this->isPincodeRblServiceable($input[BankingAccount\Entity::PINCODE]);
+        $availability =  $this->isPincodeServiceable($input[BankingAccount\Entity::PINCODE]);
 
         $mutex = $this->app['api.mutex'];
 
@@ -161,9 +164,9 @@ class Processor extends BankingAccount\Gateway\Processor
      *
      * @return array
      */
-    protected function isPincodeRblServiceable(string $pincode)
+    protected function isPincodeServiceable(string $pincode): bool
     {
-        parent::isPincodeServiceable($pincode);
+        return parent::isPincodeServiceable($pincode);
     }
 
     protected function getMappedAttributes($map, array $input)
@@ -184,7 +187,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function parseAndFormatRblDate(string $date)
     {
-        $date = Carbon::parse($date)->format(self::DATE_FORMAT);
+        $date = Carbon::parse($date, Timezone::IST)->getTimestamp();
 
         return $date;
     }

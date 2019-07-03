@@ -4980,7 +4980,7 @@ ALTER TABLE banking_accounts
     ADD COLUMN beneficiary_address2 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address1,
     ADD COLUMN beneficiary_address3 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address2,
     ADD COLUMN beneficiary_address1 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address3,
-    ADD COLUMN account_activation_date DATE DEFAULT NULL AFTER bank_reference_number,
+    ADD COLUMN account_activation_date INT(11) DEFAULT NULL AFTER bank_reference_number,
     ADD INDEX banking_account_bank_reference_number_index (bank_reference_number),
     ADD INDEX banking_account_account_number_index (account_number),
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
