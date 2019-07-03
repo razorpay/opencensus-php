@@ -106,14 +106,14 @@ class Core extends Base\Core
     public function createBankingBalance(
         Merchant\Entity $merchant,
         string $accType,
-        string $accProvider = null,
+        string $channel = null,
         string $mode = null)
     {
         $input = [
             Entity::TYPE             => Type::BANKING,
             Entity::CURRENCY         => Currency::INR,
             Entity::ACCOUNT_TYPE     => $accType,
-            Entity::ACCOUNT_PROVIDER => $accProvider,
+            Entity::CHANNEL          => $channel,
         ];
 
         $balance = $this->create($merchant, $input, $mode);

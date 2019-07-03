@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
     // These attributes are populated for all non-primary balance accounts
     //
     const ACCOUNT_TYPE     = 'account_type';
-    const ACCOUNT_PROVIDER = 'account_provider';
+    const CHANNEL          = 'channel';
 
     // Additional input keys
     const BALANCE_ID     = 'balance_id';
@@ -41,7 +41,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CURRENCY,
         self::ACCOUNT_TYPE,
-        self::ACCOUNT_PROVIDER,
+        self::CHANNEL,
     ];
 
     protected $defaults = [
@@ -62,7 +62,7 @@ class Entity extends Base\PublicEntity
         self::REFUND_CREDITS,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
-        self::ACCOUNT_PROVIDER,
+        self::CHANNEL,
     ];
 
     protected $entity = 'balance';

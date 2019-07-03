@@ -3970,7 +3970,7 @@ class MerchantTest extends TestCase
         $expectedBankingAccount = [
             'channel'     => 'yesbank',
             'merchant_id' => '10000000000000',
-            'status'      => 'processed',
+            'status'      => 'activated',
             'pincode'     => null
         ];
 
@@ -3985,7 +3985,7 @@ class MerchantTest extends TestCase
         $expectedBalance = [
             'type'             => 'banking',
             'account_type'     => 'shared',
-            'account_provider' => null,
+            'channel'          =>  null,
             'merchant_id'      => '10000000000000',
         ];
 

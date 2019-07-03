@@ -40,7 +40,6 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::PINCODE,
         self::FTS_FUND_ACCOUNT_ID,
-        self::BALANCE_ID,
         self::BANK_REFERENCE_NUMBER,
         self::BANK_INTERNAL_STATUS,
     ];

@@ -56,11 +56,11 @@ class Core extends Base\Core
         $bankingAccountInput = [
             Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
             Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
-            Entity::BALANCE_ID          => $balanceId,
             Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
         ];
 
-        return $this->createYesbankBankingAccount($bankingAccountInput, $virtualAccount->merchant);
+        return $this->createYesbankBankingAccount($bankingAccountInput, $virtualAccount->merchant,
+                                                  $virtualAccount->balance);
     }
 
     public function createRblBankingAccount(array $input, Merchant\Entity $merchant): Entity
@@ -102,7 +102,8 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    protected function createYesbankBankingAccount(array $input, Merchant\Entity $merchant): Entity
+    protected function createYesbankBankingAccount(array $input, Merchant\Entity $merchant,
+                                                   Merchant\Balance\Entity $balance): Entity
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
@@ -121,8 +122,10 @@ class Core extends Base\Core
 
         $bankingAccount->merchant()->associate($merchant);
 
+        $bankingAccount->balance()->associate($balance);
+
         // Yesbank accounts are always created in the processed state
-        $bankingAccount->setStatus(Status::PROCESSED);
+        $bankingAccount->setStatus(Status::ACTIVATED);
 
         $this->repo->saveOrFail($bankingAccount);
 

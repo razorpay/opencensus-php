@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY         => 'required|string|in:INR',
         Entity::TYPE             => 'required|string|custom',
         Entity::ACCOUNT_TYPE     => 'filled|string|custom',
-        Entity::ACCOUNT_PROVIDER => 'sometimes|string|nullable|custom',
+        Entity::CHANNEL          => 'sometimes|string|nullable|custom',
     ];
 
     protected function validateType($attribute, $type)
@@ -32,12 +32,12 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAccountProvider($attribute, $accProvider)
+    protected function validateChannel($attribute, $channel)
     {
-        if (AccountProvider::exists($accProvider) === false)
+        if (Channel::exists($channel) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid account provider:' . $accProvider);
+                'Invalid account provider:' . $channel);
         }
     }
 }

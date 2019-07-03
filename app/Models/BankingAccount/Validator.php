@@ -19,7 +19,6 @@ class Validator extends Base\Validator
     protected static $yesbankCreateRules = [
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
         Entity::ACCOUNT_IFSC        => 'required|string|size:11',
-        Entity::BALANCE_ID          => 'required|string|size:14',
         Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
     ];
 
