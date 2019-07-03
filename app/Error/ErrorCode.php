@@ -992,7 +992,6 @@ class ErrorCode
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
-    const SERVER_ERROR_USER_LOGIN_FAILURE                                           = 'SERVER_ERROR_USER_LOGIN_FAILURE';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
