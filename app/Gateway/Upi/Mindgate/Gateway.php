@@ -443,6 +443,7 @@ class Gateway extends Base\Gateway
             'acquirer' => [
                 Payment\Entity::VPA => $gatewayPayment->getVpa(),
                 Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+                Payment\Entity::REFERENCE1  => $gatewayPayment->getGatewayPaymentId(),
             ]
         ];
     }
