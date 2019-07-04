@@ -453,4 +453,6 @@ return [
     E::P2P_CONCERN => [],
 
     E::CUSTOMER => [],
+
+    E::CREDITNOTE => [],
 ];

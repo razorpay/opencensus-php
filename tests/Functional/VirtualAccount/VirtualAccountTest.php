@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Mockery;
 use Closure;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\BankTransfer;
@@ -104,6 +105,125 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountWithCloseBy()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+
+        $this->testData[__FUNCTION__]['close_by'] = $closeTimeStamp;
+
+        $input = ['close_by' => $closeTimeStamp];
+
+        $response = $this->createVirtualAccount($input);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountWithInvalidCloseBy()
+    {
+        $this->startTest();
+    }
+
+    public function testPayVirtualAccountWithPastCloseBy()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 1000;
+
+        $this->testData[__FUNCTION__]['close_by'] = $closeTimeStamp;
+
+        $input = ['close_by' => $closeTimeStamp];
+
+        $virtualAccount = $this->createVirtualAccount($input);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(5000, $virtualAccount['amount_paid']);
+
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount['id'],
+            ['close_by' => $closeTimeStamp - 2000]
+        );
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(5000, $virtualAccount['amount_paid']);
+
+        $this->assertEquals('va_ShrdVirtualAcc', $virtualAccount['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testVirtualAccountClosedAt()
+    {
+        $virtualAccount = $this->createVirtualAccount();
+
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $this->assertNotNull($virtualAccount->getClosedAt());
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
+    }
+
+    public function testVirtualAccountCloseByCron()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp - 1000;
+
+        $virtualAccount1 = $this->createVirtualAccount();
+
+        $virtualAccount2 = $this->createVirtualAccount();
+
+        $virtualAccount3 = $this->createVirtualAccount();
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount2['id'],
+            ['close_by' => $closeTimeStamp, 'status' => 'paid']
+        );
+
+        $this->fixtures->edit(
+            "virtual_account",
+            $virtualAccount3['id'],
+            ['close_by' => $closeTimeStamp]
+        );
+
+        $response = $this->closeVirtualAccountsByCloseBy();
+
+        $this->assertEquals($response['success'] , 1);
+
+        $this->assertEquals($response['failure'] , 0);
+
+        $virtualAccount1 = $this->getDbEntityById('virtual_account', $virtualAccount1['id']);
+
+        $this->assertEquals($virtualAccount1->getStatus(), 'active');
+
+        $virtualAccount2 = $this->getDbEntityById('virtual_account' , $virtualAccount2['id']);
+
+        $this->assertEquals($virtualAccount2->getStatus(), 'paid');
+
+        $virtualAccount3 = $this->getDbEntityById('virtual_account' , $virtualAccount3['id']);
+
+        $this->assertEquals($virtualAccount3->getStatus(), 'closed');
     }
 
     private function verifyEntityOrigin($entityId, $originType, $originId)

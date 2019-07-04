@@ -46,12 +46,12 @@ return [
             GeoLocation::EUREKA => [
                 'url'  => 'http://api.eurekapi.com/iplocation/v1.8/locateip',
                 'keys' => [
-                    env('GEOLOCATION_EUREKA_KEY_0', 'SAK2YE37KH4JT7AZ345Z'),
-                    env('GEOLOCATION_EUKEKA_KEY_1', 'SAKU22KQ93GX2M89VSMZ'),
-                    env('GEOLOCATION_EUKEKA_KEY_2', 'SAKC39222CXM3D43472Z'),
-                    env('GEOLOCATION_EUKEKA_KEY_3', 'SAKB868673766J745Q8Z'),
-                    env('GEOLOCATION_EUKEKA_KEY_4', 'SAK39637TMH8PY64M46Z'),
-                    env('GEOLOCATION_EUKEKA_KEY_5', 'SAK2MT34DD6WXDV3DP4Z'),
+                    env('GEOLOCATION_EUREKA_KEY_0', 'SAK9BD4R8U3DD6VK97CZ'),
+                    env('GEOLOCATION_EUKEKA_KEY_1', 'SAK2PW593FSH7785LWLZ'),
+                    env('GEOLOCATION_EUKEKA_KEY_2', 'SAKCJ832KVHFUWT77CTZ'),
+                    env('GEOLOCATION_EUKEKA_KEY_3', 'SAK9R4UG463D972CX3QZ'),
+                    env('GEOLOCATION_EUKEKA_KEY_4', 'SAK6SFZCQPX97465546Z'),
+                    env('GEOLOCATION_EUKEKA_KEY_5', 'SAKRZU8Y4QLP5M27TQ4Z'),
                 ],
             ],
         ],

@@ -94,8 +94,6 @@ class Beneficiary extends ApiProcessor
                 $this->updateBeneficiaryStatus($bankAccount, Status::FAILED);
             }
         }
-
-        $this->notify();
     }
 
     /**

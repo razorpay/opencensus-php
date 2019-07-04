@@ -66,7 +66,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED               = 'The payout amount provided is greater than the payment amount captured';
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                = 'The payout amount provided is greater than the payout amount pending for the payment';
     const BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT               = 'Payouts of method fund_transfer cannot be created on Credit Card payments';
-    const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                               = 'Given mode cannot be used for the payout amount specified';
+    const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                               = 'Given method / mode cannot be used for the payout amount specified';
+    const BAD_REQUEST_FTA_AMOUNT_MODE_MISMATCH                                  = 'Given mode cannot be used for the amount given';
     const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT                                  = 'Payout retry is not allowed only for payment payouts';
     const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                              = 'Payout retry is allowed only for reversed payouts';
     const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                     = 'The payment has been fully paidout already';
@@ -763,7 +764,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'Credit request is timed out';
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
-    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Validation error';
+    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Payment failed due to validation failure at bank or wallet gateway';
     const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
     const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';

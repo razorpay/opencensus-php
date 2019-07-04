@@ -250,6 +250,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
+    const FTA_MODE_SET                                          = 'FTA_MODE_SET';
+    const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
 
     const GATEWAY_INTERNAL_FORMATTED_RESPONSE                   = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
 
@@ -859,6 +861,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_CREATED                               = 'VIRTUAL_ACCOUNT_CREATED';
     const VIRTUAL_ACCOUNT_NUMBER_GENERATED                      = 'VIRTUAL_ACCOUNT_NUMBER_GENERATED';
     const VIRTUAL_ACCOUNT_EXCESS_REFUND                         = 'VIRTUAL_ACCOUNT_EXCESS_REFUND';
+    const VIRTUAL_ACCOUNT_CLOSED_ACCOUNTS                       = 'VIRTUAL_ACCOUNT_CLOSED_ACCOUNTS';
     const VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT                    = 'VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT';
     const VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL                    = 'VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL';
     const VIRTUAL_ACCOUNT_FAILED_FOR_ORDER                      = 'VIRTUAL_ACCOUNT_FAILED_FOR_ORDER';
@@ -866,6 +869,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_PAYMENT_REROUTED_TO_SHARED            = 'VIRTUAL_ACCOUNT_PAYMENT_REROUTED_TO_SHARED';
     const VIRTUAL_ACCOUNT_UNAVAILABLE                           = 'VIRTUAL_ACCOUNT_UNAVAILABLE';
     const VIRTUAL_ACCOUNT_SHARED_ACCOUNT_CREATED                = 'VIRTUAL_ACCOUNT_SHARED_ACCOUNT_CREATED';
+    const VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED               = 'VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED';
 
     const BANK_TRANSFER_PROCESS_REQUEST                         = 'BANK_TRANSFER_PROCESS_REQUEST';
     const BANK_TRANSFER_PROCESSING                              = 'BANK_TRANSFER_PROCESSING';
@@ -907,6 +911,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE                    = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_PARTNER_STATUS_RESPONSE                      = 'MERCHANT_PARTNER_STATUS_RESPONSE';
+
+    const MERCHANT_INVOICE_CREATE_REQUEST                       = 'MERCHANT_INVOICE_CREATE_REQUEST';
+    const MERCHANT_INVOICE_DISPATCH_COUNT                       = 'MERCHANT_INVOICE_DISPATCH_COUNT';
+    const MERCHANT_INVOICE_CREATE                               = 'MERCHANT_INVOICE_CREATE';
 
     const BENEFICIARY_REGISTRATION_FAILED                       = 'BENEFICIARY_REGISTRATION_FAILED';
     const BENEFICIARY_REGISTRATION_SUMMARY                      = 'BENEFICIARY_REGISTRATION_SUMMARY';
@@ -1126,6 +1134,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_END_FILE_PARSING                                = 'RECON_END_FILE_PARSING';
     const RECON_BATCH_CREATION_FAILED                           = 'RECON_BATCH_CREATION_FAILED';
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
+    const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -1814,9 +1823,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_GATEWAY_REQUEST                                   = 'P2P_GATEWAY_REQUEST';
     const P2P_GATEWAY_RESPONSE                                  = 'P2P_GATEWAY_RESPONSE';
 
-    const SUBSCRIPTION_PAYMENT_NOTIFY                           = "SUBSCRIPTION_PAYMENT_NOTIFY";
+    const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
-    const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+    const SELECTED_TERMINAL_IDS                                 = 'SELECTED_TERMINAL_IDS';
 
     // Core Payment Service tracecodes
     const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
@@ -1841,6 +1850,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';
     const PAYMENT_ON_HOLD_TOGGLE_FAILED                         = 'PAYMENT_ON_HOLD_TOGGLE_FAILED';
 
+
+    const CREDITNOTE_CREATE_REQUEST                                 = 'CREDITNOTE_CREATE_REQUEST';
+    const CREDITNOTE_APPLY_REQUEST                                  = 'CREDITNOTE_APPLY_REQUEST';
+    const CREDITNOTE_APPLIED                                        = 'CREDITNOTE_APPLIED';
+    const CREDITNOTE_INVOICE_CREATE_REQUEST                         = 'CREDITNOTE_INVOICE_CREATE_REQUEST';
     // Banking account
     const BANKING_ACCOUNT_EDIT                                  = 'BANKING_ACCOUNT_EDIT';
     const BANKING_ACCOUNT_CREATE                                = 'BANKING_ACCOUNT_CREATE';
@@ -1857,6 +1871,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXCEL_STORE_REQUEST                                   = 'EXCEL_STORE_REQUEST';
     const EXCEL_STORE_RESPONSE                                  = 'EXCEL_STORE_RESPONSE';
 
+    // Mozart Service
+    const MOZART_SERVICE_UNEXPECTED_RESPONSE                    = 'MOZART_SERVICE_UNEXPECTED_RESPONSE';
+    const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
+    const MOZART_SERVICE_RESPONSE                               = 'MOZART_SERVICE_RESPONSE';
+    const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
+    const CAPTURE_VERIFY_FAILED_PAYMENT                         = 'CAPTURE_VERIFY_FAILED_PAYMENT';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

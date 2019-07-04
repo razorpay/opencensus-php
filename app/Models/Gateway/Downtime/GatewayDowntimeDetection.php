@@ -111,9 +111,11 @@ class GatewayDowntimeDetection
             'windows'   => $this->getAllWindows(),
         ]);
 
+        $allWindows = $this->getAllWindows();
+
         $results = $this->redis->eval(
             ...$args,
-            ...$this->getAllWindows()
+            ...$allWindows
         );
 
         $durations = [];
@@ -122,6 +124,7 @@ class GatewayDowntimeDetection
             $this->updateDurationIfDowntimeDetected(
                 $results[$i][0], // All Attempts in given time window.
                 $results[$i][1], // Failure Attempts in given time window.
+                $allWindows[$i],
                 // Threshold Failure Percentage in window i from settings configuration.
                 $this->settings[($i)][1],
                 // Threshold Attempts in window i from settings configuration.
@@ -224,6 +227,7 @@ class GatewayDowntimeDetection
      *
      * @param int $allAttempts All Attempts in given time window.
      * @param int $totalFailure Failure Attempts in given time window.
+     * @param int $window
      * @param int $thresholdFailurePercentage Threshold Failure Percentage
      * in window i from settings configuration.
      * @param int $thresholdAllAttempts Threshold Attempts in window i
@@ -233,6 +237,7 @@ class GatewayDowntimeDetection
      */
     protected function updateDurationIfDowntimeDetected(int $allAttempts,
                                                         int $totalFailure,
+                                                        int $window,
                                                         int $thresholdFailurePercentage,
                                                         int $thresholdAllAttempts,
                                                         int $downtimeDuration,
@@ -241,12 +246,14 @@ class GatewayDowntimeDetection
         if ($allAttempts < $thresholdAllAttempts)
         {
             $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_DISALLOWED, [
-                'all_failure'                       => $allAttempts,
+                'all_attempts'                      => $allAttempts,
                 'total_failure'                     => $totalFailure,
+                'window'                            => $window,
                 'threshold_failure_percentage'      => $thresholdFailurePercentage,
                 'threshold_all_attempts'            => $thresholdAllAttempts,
                 'downtime_duration'                 => $downtimeDuration,
                 'durations'                         => $durations,
+                'gateway'                           => $this->gateway,
             ]);
 
             return;
@@ -257,24 +264,28 @@ class GatewayDowntimeDetection
         if ($failurePercentage < $thresholdFailurePercentage)
         {
             $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_DISALLOWED, [
-                'all_failure'                       => $allAttempts,
+                'all_attempts'                      => $allAttempts,
                 'total_failure'                     => $totalFailure,
+                'window'                            => $window,
                 'threshold_failure_percentage'      => $thresholdFailurePercentage,
                 'threshold_all_attempts'            => $thresholdAllAttempts,
                 'downtime_duration'                 => $downtimeDuration,
                 'durations'                         => $durations,
+                'gateway'                           => $this->gateway,
             ]);
 
             return;
         }
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_ALLOWED, [
-            'all_failure'                       => $allAttempts,
+            'all_attempts'                       => $allAttempts,
             'total_failure'                     => $totalFailure,
+            'window'                            => $window,
             'threshold_failure_percentage'      => $thresholdFailurePercentage,
             'threshold_all_attempts'            => $thresholdAllAttempts,
             'downtime_duration'                 => $downtimeDuration,
             'durations'                         => $durations,
+            'gateway'                           => $this->gateway,
         ]);
 
         $durations[] = $downtimeDuration;

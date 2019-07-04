@@ -21,6 +21,49 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountWithCloseBy' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'description'     => 'VA for tests',
+        'receivers'  => [
+            [
+                'entity' => 'bank_account',
+                'ifsc'   => 'RAZR0000001',
+                'name'   => 'Test virtual account'
+            ],
+        ],
+    ],
+
+    'testCreateVirtualAccountWithInvalidCloseBy' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for tests',
+                'close_by'     => 1560584249,
+                'receivers'   => [
+                    'types' => [
+                        'bank_account',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'close_by should be at least 15 minutes after current time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateVirtualAccountPartnerAuth' => [
         'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',

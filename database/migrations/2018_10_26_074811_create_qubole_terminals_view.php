@@ -33,6 +33,7 @@ class CreateQuboleTerminalsView extends Migration
             Terminal::RECURRING,
             Terminal::CAPABILITY,
             Terminal::INTERNATIONAL,
+            Terminal::TPV,
             Terminal::TYPE,
             Terminal::CREATED_AT,
             Terminal::UPDATED_AT,
