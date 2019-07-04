@@ -754,9 +754,12 @@ class Service extends Base\Service
 
         if (empty($user) === false)
         {
-            if ($user->id !== $token->getClaim('user_id'))
+            $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+            if (($user->id !== $token->getClaim(self::USER_ID)) or
+                ($currentMerchantId !== $token->getClaim(self::MERCHANT_ID)))
             {
-                throw new AuthorizationException('Different user is loggedin to the dashboard');
+                throw new AuthorizationException('Different user/merchant is loggedin to the dashboard');
             }
         }
     }
