@@ -4983,11 +4983,8 @@ ALTER TABLE balance
     ADD INDEX balance_account_provider_index (account_provider),
     DROP INDEX balance_account_provider_index,
     RENAME COLUMN account_provider to channel,
-    ADD INDEX balance_account_channel_index (channel),;
-
-ALTER TABLE balance
+    ADD INDEX balance_account_channel_index (channel),
     DROP INDEX balance_merchant_id_type_unique;
-    ADD INDEX balance_account_provider_index (account_provider);
 
 ALTER TABLE paysecure
     MODIFY COLUMN hkey TEXT DEFAULT NULL;
