@@ -115,6 +115,8 @@ export default props => {
                   </span>
                 )}
               </span>
+            ) : isChargedInvoice ? (
+              'Updated Invoice'
             ) : (
               'Upcoming Invoice'
             )}
