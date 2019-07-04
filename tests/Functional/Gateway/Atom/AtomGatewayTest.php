@@ -363,7 +363,7 @@ class AtomGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals(RZP\Models\Payment\Refund\Status::FAILED, $refund['status']);
+        $this->assertEquals(RZP\Models\Payment\Refund\Status::CREATED, $refund['status']);
 
         $this->assertEquals(false, $gatwayRefund['success']);
 
@@ -424,7 +424,7 @@ class AtomGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -496,7 +496,7 @@ class AtomGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -518,7 +518,7 @@ class AtomGatewayTest extends TestCase
 
         $this->assertEquals($refund['id'], $response['refund_id']);
         $this->assertEquals('processed', $refund['status']);
-        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals(1, $refund['attempts']);
     }
 
     public function testRefundDateTimeIssueAfterMidNight()
