@@ -75,6 +75,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED                                     = 'GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED';
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED';
+    const GATEWAY_ERROR_INVALID_STATUS_DESCRIPTION                                  = 'GATEWAY_ERROR_INVALID_STATUS_DESCRIPTION';
     const GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED                         = 'GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED';
     const GATEWAY_ERROR_TIMED_OUT                                                   = 'GATEWAY_ERROR_TIMED_OUT';
     const GATEWAY_ERROR_INVALID_DATE_FORMAT                                         = 'GATEWAY_ERROR_INVALID_DATE_FORMAT';
