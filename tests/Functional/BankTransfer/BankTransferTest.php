@@ -441,7 +441,7 @@ class BankTransferTest extends TestCase
 
         // Adding this since post reconciliation, we update the status at scrooge side,
         // post which scrooge sends an update status request to API
-        $this->scroogeUpdateRefundStatus($refund, Refund\Status::PROCESSED);
+        $this->scroogeUpdateRefundStatus($refund, 'processed_event');
 
         $refund = $this->getLastEntity('refund', true);
 
