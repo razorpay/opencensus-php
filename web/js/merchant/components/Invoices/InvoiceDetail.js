@@ -200,22 +200,24 @@ export default props => {
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Reminders">
-                  <Input.Check
-                    name="auto_reminders"
-                    fieldLabel="Send auto reminders"
-                    disabled={isAutoRemindersUpdating}
-                    onChange={onChangeSendAutoReminder}
-                    autoRender
-                  />
+                {user.isRemindersEnabled && (
+                  <EntityDetailRow label="Reminders">
+                    <Input.Check
+                      name="auto_reminders"
+                      fieldLabel="Send auto reminders"
+                      disabled={isAutoRemindersUpdating}
+                      onChange={onChangeSendAutoReminder}
+                      autoRender
+                    />
 
-                  <Stepper
-                    list={getRemindersStepperData(
-                      invoice.reminders,
-                      isAutoRemindersUpdating
-                    )}
-                  />
-                </EntityDetailRow>
+                    <Stepper
+                      list={getRemindersStepperData(
+                        invoice.reminders,
+                        isAutoRemindersUpdating
+                      )}
+                    />
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow
                   label="Receipt No."
