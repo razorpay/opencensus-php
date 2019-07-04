@@ -147,9 +147,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
               : 'Total Count'
           }
           defaultValue={
-            props.isEdit && !isAuthenticatedSubscription
-              ? fields.remaining_count
-              : fields.total_count
+            props.isEdit ? fields.remaining_count : fields.total_count
           }
         />
       </>

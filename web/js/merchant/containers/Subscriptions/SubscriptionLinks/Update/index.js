@@ -29,7 +29,13 @@ import PlanDetails from './PlanDetails';
   state => ({
     plans: state.plans,
     items: state.items,
-    subscription: state.subscription,
+    subscription: {
+      ...state.subscription,
+      entity: {
+        ...state.subscription.entity,
+        status: 'authenticated',
+      },
+    },
   }),
   {
     fetchPlans,
@@ -87,7 +93,8 @@ export default class UpdateSubscription extends React.Component {
     }
 
     if (['authenticated'].includes(subscription.status)) {
-      fields.total_count = subscription.total_count;
+      fields.remaining_count = subscription.total_count;
+      subscription.remaining_count = subscription.total_count;
     } else {
       fields.remaining_count = subscription.remaining_count;
     }
@@ -155,22 +162,13 @@ export default class UpdateSubscription extends React.Component {
       internals: { _startsImmediately },
     } = this.state;
 
-    let count =
-      fields.remaining_count &&
-      prevSubscription.remaining_count !== fields.remaining_count;
-
-    if (prevSubscription.status === 'authenticated') {
-      count =
-        prevSubscription.total_count &&
-        prevSubscription.total_count !== fields.total_count;
-    }
-
     return (
       (fields.plan_id && prevSubscription.plan_id !== fields.plan_id) ||
       (fields.quantity && prevSubscription.quantity !== fields.quantity) ||
       (prevSubscription.start_at && _startsImmediately) ||
       prevSubscription.start_at !== fields.start_at ||
-      count ||
+      (fields.remaining_count &&
+        prevSubscription.remaining_count !== fields.remaining_count) ||
       prevSubscription.customer_notify !== fields.customer_notify
     );
   }
