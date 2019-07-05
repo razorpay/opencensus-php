@@ -5,6 +5,7 @@ namespace RZP\Gateway\Paysecure;
 use View;
 use Cache;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
@@ -166,6 +167,10 @@ class Gateway extends Base\Gateway
             );
         }
 
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
+            $input);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
@@ -175,6 +180,10 @@ class Gateway extends Base\Gateway
             // Validates the request by checking hash
             $this->validateRequestId($gatewayPayment);
         }
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHORIZATION_INITIATED,
+            $input);
 
         $response = $this->authorizeTransaction($gatewayPayment);
 

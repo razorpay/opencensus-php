@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Hitachi;
 
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Gateway\Mpi;
 use RZP\Models\Admin;
@@ -493,6 +494,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_MOTO_AUTH_RESPONSE);
@@ -512,7 +515,6 @@ class Gateway extends Base\Gateway
         parent::advice($input);
 
         $request = $this->getAdviceRequestArrayForPaysecure($input);
-
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::CAPTURE);
 
@@ -535,6 +537,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
@@ -554,6 +558,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
@@ -572,6 +578,8 @@ class Gateway extends Base\Gateway
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
         $gatewayEntity = $this->createGatewayPaymentEntity($input,[],Base\Action::AUTHORIZE);
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $response = $this->sendGatewayRequest($request);
 
