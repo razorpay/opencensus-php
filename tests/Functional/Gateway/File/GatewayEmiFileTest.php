@@ -14,12 +14,14 @@ use RZP\Services\Beam;
 use RZP\Models\Payment;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Emi as EmiMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class GatewayEmiFileTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -333,7 +335,9 @@ class GatewayEmiFileTest extends TestCase
 
     protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [])
     {
-        $file = $this->getLastEntity('file_store', true);
+        $files = $this->getDbEntities('file_store')->toArray();
+
+        $file = $files[0];
 
         $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
 
