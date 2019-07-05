@@ -154,6 +154,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const DEFAULT_CURRENCY      = 'INR';
 
     const ACQUIRER_DATA         = 'acquirer_data';
+    const RRN                   = 'rrn';
+    const UPI_TRANSACTION_ID    = 'upi_transaction_id';
 
     // Query params
     const TRANSFERRED           = 'transferred';
@@ -1357,8 +1359,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::UPI:
 
                 $acquirerData = [
-                    'rrn' => $this->getReference16()
+                    SELF::RRN => $this->getReference16()
                 ];
+
+                $upiTransactionId = $this->getReference1();
+
+                if (isset($upiTransactionId)) {
+
+                    $upiTransactionIdArray = [
+                        SELF::UPI_TRANSACTION_ID => $upiTransactionId
+                    ];
+
+                    $acquirerData = array_merge($acquirerData, $upiTransactionIdArray);
+                }
                 break;
         }
 
