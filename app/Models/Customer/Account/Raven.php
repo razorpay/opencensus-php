@@ -5,6 +5,7 @@ namespace RZP\Models\Customer;
 use App;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
 
 class Raven extends Base\Core
 {
@@ -90,6 +91,13 @@ class Raven extends Base\Core
         if (empty($input['template']) === false)
         {
             $request['template'] = $input['template'];
+        }
+
+        if ((isset($input['method'])) and ($input['method'] === Method::CARDLESS_EMI))
+        {
+            $request['template'] = 'sms.otp_cardless';
+
+            $request['params']['provider'] = $input['provider'];
         }
 
         return $request;
