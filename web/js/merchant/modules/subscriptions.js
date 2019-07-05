@@ -12,10 +12,17 @@ import { CUSTOMER_FETCH } from 'merchant/modules/customers';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';
+const SUBSCRIPTION_UPDATE = 'SUBSCRIPTION_UPDATE';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
 const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
+
+export const fetchSubscriptionCreditNotes = id => {
+  return merchantFetch(
+    `creditnote?subscription_id=${id}&status[]=processed&status[]=partially_processed`
+  );
+};
 
 export const fetchSubscriptions = params =>
   fetchAll(params, Subscription, 'SUBSCRIPTIONS');
@@ -38,12 +45,32 @@ export const fetchInvoices = subs_id => {
   };
 };
 
+export const fetchScheduledChanges = id => {
+  let subscription = new Subscription({ id });
+
+  return subscription.fetchScheduledChanges();
+};
+
 export const saveSubscription = params => {
   const subscription = new Subscription();
   return {
     type: SUBSCRIPTION_CREATE,
     payload: subscription.save(params),
   };
+};
+
+export const updateSubscription = params => {
+  const subscription = new Subscription(params);
+  return {
+    type: SUBSCRIPTION_UPDATE,
+    payload: subscription.save(params),
+  };
+};
+
+export const cancelUpdateSubscription = id => {
+  const subscription = new Subscription({ id });
+
+  return subscription.cancelUpdate();
 };
 
 export const deleteSubscription = params => {

@@ -88,6 +88,9 @@ export default props => {
     classNames.push('clickable');
   }
 
+  let isChargedInvoice =
+    item.notes && item.notes.type && item.notes.type == 'upgrade';
+
   return (
     <div
       class={classNames.join(' ')}
@@ -112,6 +115,8 @@ export default props => {
                   </span>
                 )}
               </span>
+            ) : isChargedInvoice ? (
+              'Updated Invoice'
             ) : (
               'Upcoming Invoice'
             )}
@@ -131,7 +136,11 @@ export default props => {
               <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
             ) : (
               <span class="label--secondary">
-                {index ? `Recurring payment # ${index}` : ''}
+                {index
+                  ? isChargedInvoice
+                    ? 'Charged due to subscription update'
+                    : `Recurring payment # ${index}`
+                  : ''}
                 {index && isUpfront ? ', ' : ''}
                 {isUpfront ? 'Upfront Amount' : ''}
               </span>

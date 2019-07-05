@@ -1,30 +1,41 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+
+import AddOnCreation from 'merchant/containers/AddOns/New';
+
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
-import {
-  fetchSubscription as fetchItem,
-  fetchInvoices,
-  paymentManualAttempt,
-} from 'merchant/modules/subscriptions';
+import CreditNoteDetails from 'merchant/components/Invoices/CreditNoteDetails';
+
+import Plan from 'merchant/models/Plan';
+
 import { fetchPlan } from 'merchant/modules/plans';
-import { fetchCustomer } from 'merchant/modules/customers';
-import { fetchInvoice } from 'merchant/modules/invoices/details';
-import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
 import { deleteAddOn } from 'merchant/modules/addons';
+import { fetchCustomer } from 'merchant/modules/customers';
+import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
-import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
+import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
+import {
+  fetchInvoice,
+  fetchCreditNote,
+} from 'merchant/modules/invoices/details';
+import {
+  fetchInvoices,
+  paymentManualAttempt,
+  fetchScheduledChanges,
+  cancelUpdateSubscription,
+  fetchSubscriptionCreditNotes,
+  fetchSubscription as fetchItem,
+} from 'merchant/modules/subscriptions';
 
-import { openModal, closeModal } from 'rzp/modules/modals';
-import CancellationModal from './CancellationModal';
-import TestPaymentModal from './TestPaymentModal';
-import AddOnCreation from 'merchant/containers/AddOns/New';
+import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
 
+import CancellationModal from './CancellationModal';
+import TestPaymentModal from './TestPaymentModal';
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
  * --------------------------------------------------------------------
@@ -35,34 +46,50 @@ import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
  * --------------------------------------------------------------------
  * */
 
+const scheduledChangesInitValue = {
+  data: null,
+  plan: null,
+  isLoading: false,
+};
+
 @withRouter
 @connect(
-  state => {
-    return {
-      ...state.session,
-      ...state.subscription,
-      ...state.app,
-    };
-  },
+  state => ({
+    ...state.session,
+    ...state.subscription,
+    ...state.app,
+  }),
   {
-    expandSlider,
-    compactSlider,
-    fetchInvoice,
-    fetchItem,
-    fetchInvoices,
     fetchPlan,
-    fetchCustomer,
-    showNotification,
+    fetchItem,
     openModal,
     closeModal,
+    fetchInvoice,
+    expandSlider,
+    compactSlider,
+    fetchInvoices,
+    fetchCustomer,
+    showNotification,
   }
 )
-export default class SubscriptionDetailsContainer extends Component {
+export default class SubscriptionDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
-  state = {};
+  constructor(props) {
+    super();
+
+    this.state = {
+      creditNotes: [],
+      creditNote: {
+        data: {},
+        isLoading: false,
+        statusMsg: {},
+      },
+      scheduledChanges: scheduledChangesInitValue,
+    };
+  }
 
   componentDidMount() {
     const { closeUrl, id } = this.props,
@@ -118,14 +145,36 @@ export default class SubscriptionDetailsContainer extends Component {
       this.fetchInvoice(nextProps.invoice_id);
     }
 
-    this.checkSecView(nextProps.invoice_id);
+    if (
+      nextProps.credit_note_id &&
+      nextProps.credit_note_id !== this.props.credit_note_id
+    ) {
+      this.fetchCreditNote(nextProps.credit_note_id);
+    }
+
+    this.checkSecView(nextProps.invoice_id, nextProps.credit_note_id);
   }
 
-  checkSecView(invoiceId) {
-    if (!invoiceId) {
-      // this.setState({secView: false});
-      this.props.compactSlider();
+  checkSecView(invoiceId, creditNoteId) {
+    if (!creditNoteId) {
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.creditNoteView && findDOMNode(this.creditNoteView)) {
+        findDOMNode(this.creditNoteView).classList.add('toggle-slider');
+      }
 
+      this.setState({
+        creditNote: {
+          data: {},
+          isLoading: false,
+          statusMsg: {},
+        },
+      });
+    } else if (this.creditNoteView && findDOMNode(this.creditNoteView)) {
+      // If already opened then close it
+      findDOMNode(this.creditNoteView).classList.remove('toggle-slider');
+    }
+
+    if (!invoiceId) {
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.invoiceView && findDOMNode(this.invoiceView)) {
         findDOMNode(this.invoiceView).classList.add('toggle-slider');
@@ -139,13 +188,52 @@ export default class SubscriptionDetailsContainer extends Component {
       // If already opened then close it
       findDOMNode(this.invoiceView).classList.remove('toggle-slider');
     }
+
+    if (!invoiceId && !creditNoteId) {
+      this.props.compactSlider();
+    }
   }
+
+  fetchCreditNote = id => {
+    this.props.expandSlider();
+
+    this.setState({
+      secView: 'credit_note',
+      creditNote: {
+        data: {},
+        statusMsg: {},
+        isLoading: true,
+      },
+    });
+
+    fetchCreditNote(id)
+      .then(resp => {
+        this.setState({
+          creditNote: {
+            statusMsg: {},
+            data: resp.data,
+            isLoading: false,
+          },
+        });
+      })
+      .catch(({ errors }) => {
+        this.setState({
+          creditNote: {
+            ...this.state.creditNote,
+            statusMsg: {
+              type: 'error',
+              message: errors,
+            },
+            isLoading: false,
+          },
+        });
+      });
+  };
 
   // Fetch invoice details
   fetchInvoice(id) {
-    let { invoice } = this.props;
-
     this.props.expandSlider();
+
     this.setState({
       secView: 'invoice',
       invoiceErrors: null,
@@ -171,8 +259,14 @@ export default class SubscriptionDetailsContainer extends Component {
   }
 
   // Fetch list of invoices for subscriptions id
-  fetchInvoicesList(subscriptionId) {
-    return this.props.fetchInvoices(subscriptionId).then(data => {
+  fetchInvoicesList(subscriptionId, isCreditNoteAvl = false) {
+    const promise = [this.props.fetchInvoices(subscriptionId)];
+
+    if (isCreditNoteAvl) {
+      promise.push(fetchSubscriptionCreditNotes(subscriptionId));
+    }
+
+    return Promise.all(promise).then(([data, creditNotes]) => {
       if (data.data && !this.state.curInvoiceIndex) {
         const invoicesItems = data.data.items;
 
@@ -192,6 +286,12 @@ export default class SubscriptionDetailsContainer extends Component {
           });
         }
       }
+
+      if (creditNotes && creditNotes.data.items) {
+        this.setState({
+          creditNotes: creditNotes.data.items,
+        });
+      }
     });
   }
 
@@ -205,10 +305,36 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   }
 
+  fetchScheduledChanges = id => {
+    return fetchScheduledChanges(id)
+      .then(res => {
+        this.setState({
+          scheduledChanges: {
+            ...this.state.scheduledChanges,
+            data: res,
+          },
+        });
+
+        const plan = new Plan();
+        return plan.fetch(res.plan_id);
+      })
+      .then(resp => {
+        this.setState({
+          scheduledChanges: {
+            ...this.state.scheduledChanges,
+            plan: resp,
+            isLoading: false,
+          },
+        });
+      });
+  };
+
   fetchSubscriptionDetails(id) {
     let { entity, fetchItem, fetchPlan, fetchCustomer } = this.props;
 
-    this.setState({ isLoading: true });
+    this.setState({
+      isLoading: true,
+    });
 
     fetchItem(id)
       .then(subscription => {
@@ -217,8 +343,23 @@ export default class SubscriptionDetailsContainer extends Component {
           subscription.customer_id && fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
         ]).then(response => {
-          this.setState({ isLoading: false });
-          this.fetchInvoicesList(id);
+          this.setState(
+            {
+              isLoading: false,
+              scheduledChanges: {
+                data: null,
+                plan: null,
+                isLoading: subscription.has_scheduled_changes,
+              },
+            },
+            () => {
+              if (subscription.has_scheduled_changes) {
+                this.fetchScheduledChanges(id);
+              }
+            }
+          );
+
+          this.fetchInvoicesList(id, true);
         });
       })
       .catch(({ errors }) => {
@@ -226,13 +367,28 @@ export default class SubscriptionDetailsContainer extends Component {
       });
   }
 
-  goToLink = (itemId, index) => {
-    this.setState({ curInvoiceIndex: index });
+  goToLink = type => (itemId, index) => {
+    if (type === 'invoice') {
+      this.setState({ curInvoiceIndex: index });
+
+      this.props.history.push(
+        `/subscriptions/${this.props.entity.id}/${itemId}`
+      );
+
+      if (this.invoiceView && findDOMNode(this.invoiceView)) {
+        findDOMNode(this.invoiceView).classList.add('toggle-slider');
+      }
+
+      return;
+    }
+
     this.props.history.push(`/subscriptions/${this.props.entity.id}/${itemId}`);
 
-    if (this.invoiceView && findDOMNode(this.invoiceView)) {
-      findDOMNode(this.invoiceView).classList.add('toggle-slider');
+    if (this.creditNoteView && findDOMNode(this.creditNoteView)) {
+      findDOMNode(this.creditNoteView).classList.add('toggle-slider');
     }
+
+    return;
   };
 
   onCancellationModalMount = id => {
@@ -280,6 +436,10 @@ export default class SubscriptionDetailsContainer extends Component {
 
     if (this.invoiceView) {
       findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+    }
+
+    if (this.creditNoteView) {
+      findDOMNode(this.creditNoteView).classList.toggle('toggle-slider');
     }
 
     compactSlider();
@@ -459,6 +619,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
   handleOnCreateAddOn = () => {
     this.props.closeModal();
+
     this.fetchAddOns(this.props.entity.id);
   };
 
@@ -477,40 +638,93 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
+  handleCancelUpdateSubscription = id => () => {
+    return this.context.confirm({
+      header: 'Cancel Update',
+      message: 'Are you sure you want to cancel the update?',
+      affirmativeLabel: 'Yes, cancel',
+      affirmativePendingLabel: 'Canceling...',
+      abortLabel: "No, don't!",
+      action: () => {
+        return cancelUpdateSubscription(id)
+          .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Updated subscription is canceled successfully',
+            });
+
+            this.resetScheduledChanges();
+          })
+          .catch(err => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          });
+      },
+    });
+  };
+
+  resetScheduledChanges = () =>
+    this.setState({ scheduledChanges: scheduledChangesInitValue });
+
   render() {
-    let { entity, plan, customer, invoices, activeSecEntityId } = this.props;
     let {
-      isLoading,
+      plan,
+      entity,
+      customer,
+      invoices,
+      closeUrl,
+      invoice_id,
+      credit_note_id,
+      activeSecEntityId,
+    } = this.props;
+
+    let {
+      errors,
       invoice,
       secView,
-      errors,
+      isLoading,
+      creditNote,
+      creditNotes,
       invoiceErrors,
       invoiceLoading,
+      scheduledChanges,
     } = this.state;
 
     let invoicesList = invoices;
-    let invoiceSecView;
+    let invoiceSecView, creditNoteSecView;
 
     // Add 'next_due' invoice in the Invoices list
-    if (!invoices.loading && !invoices.error) {
-      if (this.checkNextDueInvoiceValidity(entity.status, entity.type)) {
+    if (!invoices.loading && !invoices.error && !scheduledChanges.loading) {
+      const subscriptionData = scheduledChanges.data
+          ? scheduledChanges.data
+          : entity,
+        planData = scheduledChanges.plan ? scheduledChanges.plan : plan;
+
+      if (
+        this.checkNextDueInvoiceValidity(
+          subscriptionData.status,
+          subscriptionData.type
+        )
+      ) {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
         let chargeAt;
         chargeAt =
-          entity.status === 'created' &&
-          (entity.type === 0 || entity.type === 2)
-            ? entity.charge_at
+          subscriptionData.status === 'created' &&
+          (subscriptionData.type === 0 || subscriptionData.type === 2)
+            ? subscriptionData.charge_at
             : null;
 
-        if (entity.status === 'pending') {
+        if (subscriptionData.status === 'pending') {
           chargeAt = null;
         }
 
         let nextDueInvoice = this.getUpcomingInvoiceDetails(
           chargeAt,
-          plan.item ? plan.item.amount * entity.quantity : 0,
+          planData.item ? planData.item.amount * subscriptionData.quantity : 0,
           this.state.addons
         );
 
@@ -525,24 +739,34 @@ export default class SubscriptionDetailsContainer extends Component {
       if (
         this.props.invoice_id === 'inv_upcoming' &&
         Object.keys(entity).length && // Helps to simulate the loader for 'inv_upcoming' invoice
-        !invoices.loading // To display upcoming invioce rightly
+        !invoices.loading // To display upcoming invoice rightly
       ) {
+        const subscriptionData = scheduledChanges.data
+            ? scheduledChanges.data
+            : entity,
+          planData = scheduledChanges.plan ? scheduledChanges.plan : plan;
+
         // inv_upcoming exists only for these subscriptions status only
-        if (this.checkNextDueInvoiceValidity(entity.status, entity.type)) {
+        if (
+          this.checkNextDueInvoiceValidity(
+            subscriptionData.status,
+            subscriptionData.type
+          )
+        ) {
           // Charge at is not available in such type of subscriptions
           let chargeAt =
-            entity.status === 'created' &&
-            (entity.type === 0 || entity.type === 2)
-              ? entity.charge_at
+            subscriptionData.status === 'created' &&
+            (subscriptionData.type === 0 || subscriptionData.type === 2)
+              ? subscriptionData.charge_at
               : null;
 
-          if (entity.status === 'pending') {
+          if (subscriptionData.status === 'pending') {
             chargeAt = null;
           }
 
           invoiceData = this.getUpcomingInvoiceDetails(
             chargeAt,
-            plan.item.amount * entity.quantity,
+            planData.item.amount * subscriptionData.quantity,
             this.state.addons
           );
         } else {
@@ -570,30 +794,55 @@ export default class SubscriptionDetailsContainer extends Component {
         }
       }
 
+      let planDetails = plan,
+        subscriptionDetails = entity,
+        isInvoiceLoading = invoiceLoading;
+
+      if (this.props.invoice_id === 'inv_upcoming' && invoiceData) {
+        isInvoiceLoading = false;
+      }
+
+      if (this.props.invoice_id === 'inv_upcoming' && scheduledChanges.data) {
+        subscriptionDetails = scheduledChanges.data;
+        planDetails = scheduledChanges.plan;
+      }
+
       // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
       // And in this case InvoiceDetails won't show loader but error message
       invoiceSecView = (
         <InvoiceDetail
-          mode={this.props.mode}
-          curInvoiceIndex={this.state.curInvoiceIndex}
-          nextChargeAt={entity.charge_at}
-          invoice={invoiceData}
-          subscription={entity}
-          plan={plan}
+          plan={planDetails}
           addons={addonsList}
+          invoice={invoiceData}
+          mode={this.props.mode}
           onClose={this.secClose}
-          statusMsg={makeErrorStatus(invoiceErrors)}
-          onManualAttempt={this.onManualAttempt}
-          onAddOnDelete={this.deleteAddOn}
-          showAddOnModal={this.showAddOnModal}
-          isValidInvoice={isValidInvoice}
-          isLoading={
-            this.props.invoice_id === 'inv_upcoming' && invoiceData
-              ? false
-              : invoiceLoading
-          }
-          ref={comp => (this.invoiceView = comp)}
+          isLoading={isInvoiceLoading}
+          nextChargeAt={entity.charge_at}
           subscriptionId={this.props.id}
+          isValidInvoice={isValidInvoice}
+          onAddOnDelete={this.deleteAddOn}
+          subscription={subscriptionDetails}
+          showAddOnModal={this.showAddOnModal}
+          onManualAttempt={this.onManualAttempt}
+          ref={comp => {
+            this.invoiceView = comp;
+          }}
+          statusMsg={makeErrorStatus(invoiceErrors)}
+          curInvoiceIndex={this.state.curInvoiceIndex}
+        />
+      );
+    }
+
+    if (secView === 'credit_note') {
+      creditNoteSecView = (
+        <CreditNoteDetails
+          onClose={this.secClose}
+          creditNote={creditNote.data}
+          statusMsg={creditNote.statusMsg}
+          isLoading={creditNote.isLoading}
+          ref={comp => {
+            this.creditNoteView = comp;
+          }}
         />
       );
     }
@@ -601,14 +850,16 @@ export default class SubscriptionDetailsContainer extends Component {
     return (
       <div class="multi-content">
         <SubscriptionDetails
-          mode={this.props.mode}
-          subscription={entity}
           plan={plan}
-          customer={entity && entity.customer_id ? customer : {}}
-          invoices={invoicesList}
+          subscription={entity}
+          isSideView={closeUrl}
           isLoading={isLoading}
-          statusMsg={makeErrorStatus(errors)}
+          mode={this.props.mode}
+          invoices={invoicesList}
           goToLink={this.goToLink}
+          creditNotes={creditNotes}
+          statusMsg={makeErrorStatus(errors)}
+          scheduledChanges={scheduledChanges}
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
           onManualAttempt={this.onManualAttempt}
@@ -618,9 +869,13 @@ export default class SubscriptionDetailsContainer extends Component {
               ? this.onTestChargeAttemptWhileCreate
               : this.onTestChargeAttempt)
           }
+          customer={entity && entity.customer_id ? customer : {}}
+          cancelUpdateSubscription={this.handleCancelUpdateSubscription}
         />
 
-        {invoiceSecView}
+        {invoice_id && invoiceSecView}
+
+        {credit_note_id && creditNoteSecView}
       </div>
     );
   }
@@ -632,7 +887,7 @@ function makeErrorStatus(message) {
       type: 'error',
       message: message,
     };
-  } else {
-    return {};
   }
+
+  return {};
 }

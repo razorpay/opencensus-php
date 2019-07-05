@@ -1,3 +1,4 @@
+import { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
 import Invoice from 'merchant/models/Invoice';
 import { INVOICE_CREATE, INVOICE_EDIT } from './list';
@@ -9,6 +10,10 @@ const INVOICE_ISSUE = 'INVOICE_ISSUE';
 const INVOICE_INIT = 'INVOICE_INIT';
 const INVOICE_CANCEL = 'INVOICE_CANCEL';
 const INVOICE_PAYMENTS_FETCH = 'INVOICE_PAYMENTS_FETCH';
+
+export const fetchCreditNote = id => {
+  return merchantFetch(`creditnote/${id}`);
+};
 
 export const fetchInvoice = id => {
   let invoice = new Invoice();
