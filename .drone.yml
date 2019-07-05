@@ -214,157 +214,158 @@ pipeline:
     when:
       environment: prod
       event: deployment
-  deploy-beta:
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_stage
-      - server_cert_stage
-      - client_cert_stage
-      - client_key_stage
-    user: drone
-    cluster: stage
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: beta
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: beta
-      event: deployment
-  deploy-delta:
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_stage
-      - server_cert_stage
-      - client_cert_stage
-      - client_key_stage
-    user: drone
-    cluster: stage
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: delta
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: delta
-      event: deployment
-  deploy-charlie:
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_stage
-      - server_cert_stage
-      - client_cert_stage
-      - client_key_stage
-    user: drone
-    cluster: stage
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: charlie
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: charlie
-      event: deployment
-  deploy-echo:
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_stage
-      - server_cert_stage
-      - client_cert_stage
-      - client_key_stage
-    user: drone
-    cluster: stage
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: echo
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: echo
-      event: deployment
-  deploy-zeta:
-    image: razorpay/drone-kubernetes
-    pull: true
-    environment:
-      - CDN_DASHBOARD_URL=https://cdn.razorpay.com/dashboard
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_stage
-      - server_cert_stage
-      - client_cert_stage
-      - client_key_stage
-    user: drone
-    cluster: stage
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: zeta
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: zeta
-      event: deployment
-  deploy-prod-blue:
-    group: PROD_DEPLOY
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_prodblue
-      - server_cert_prodblue
-      - client_cert_prodblue
-      - client_key_prodblue
-    user: drone
-    cluster: prod-blue
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: dashboard
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: prod
-      event: deployment
-  deploy-prod-green:
-    group: PROD_DEPLOY
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_prodgreen
-      - server_cert_prodgreen
-      - client_cert_prodgreen
-      - client_key_prodgreen
-    user: drone
-    cluster: prod-green
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: dashboard
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: prod
-      event: deployment
+#      commenting out deploy steps as deployment is done via spinnaker
+#  deploy-beta:
+#    image: razorpay/drone-kubernetes
+#    pull: true
+#    secrets:
+#      - docker_username
+#      - docker_password
+#      - server_url_stage
+#      - server_cert_stage
+#      - client_cert_stage
+#      - client_key_stage
+#    user: drone
+#    cluster: stage
+#    auth_mode: client-cert
+#    deployment: dashboard
+#    repo: razorpay/dashboard
+#    namespace: beta
+#    tag:
+#      - ${DRONE_COMMIT_SHA}
+#    when:
+#      environment: beta
+#      event: deployment
+#  deploy-delta:
+#    image: razorpay/drone-kubernetes
+#    pull: true
+#    secrets:
+#      - docker_username
+#      - docker_password
+#      - server_url_stage
+#      - server_cert_stage
+#      - client_cert_stage
+#      - client_key_stage
+#    user: drone
+#    cluster: stage
+#    auth_mode: client-cert
+#    deployment: dashboard
+#    repo: razorpay/dashboard
+#    namespace: delta
+#    tag:
+#      - ${DRONE_COMMIT_SHA}
+#    when:
+#      environment: delta
+#      event: deployment
+#  deploy-charlie:
+#    image: razorpay/drone-kubernetes
+#    pull: true
+#    secrets:
+#      - docker_username
+#      - docker_password
+#      - server_url_stage
+#      - server_cert_stage
+#      - client_cert_stage
+#      - client_key_stage
+#    user: drone
+#    cluster: stage
+#    auth_mode: client-cert
+#    deployment: dashboard
+#    repo: razorpay/dashboard
+#    namespace: charlie
+#    tag:
+#      - ${DRONE_COMMIT_SHA}
+#    when:
+#      environment: charlie
+#      event: deployment
+#  deploy-echo:
+#    image: razorpay/drone-kubernetes
+#    pull: true
+#    secrets:
+#      - docker_username
+#      - docker_password
+#      - server_url_stage
+#      - server_cert_stage
+#      - client_cert_stage
+#      - client_key_stage
+#    user: drone
+#    cluster: stage
+#    auth_mode: client-cert
+#    deployment: dashboard
+#    repo: razorpay/dashboard
+#    namespace: echo
+#    tag:
+#      - ${DRONE_COMMIT_SHA}
+#    when:
+#      environment: echo
+#      event: deployment
+#  deploy-zeta:
+#    image: razorpay/drone-kubernetes
+#    pull: true
+#    environment:
+#      - CDN_DASHBOARD_URL=https://cdn.razorpay.com/dashboard
+#    secrets:
+#      - docker_username
+#      - docker_password
+#      - server_url_stage
+#      - server_cert_stage
+#      - client_cert_stage
+#      - client_key_stage
+#    user: drone
+#    cluster: stage
+#    auth_mode: client-cert
+#    deployment: dashboard
+#    repo: razorpay/dashboard
+#    namespace: zeta
+#    tag:
+#      - ${DRONE_COMMIT_SHA}
+#    when:
+#      environment: zeta
+#      event: deployment
+#  deploy-prod-blue:
+#    group: PROD_DEPLOY
+#    image: razorpay/drone-kubernetes
+#    pull: true
+#    secrets:
+#      - docker_username
+#      - docker_password
+#      - server_url_prodblue
+#      - server_cert_prodblue
+#      - client_cert_prodblue
+#      - client_key_prodblue
+#    user: drone
+#    cluster: prod-blue
+#    auth_mode: client-cert
+#    deployment: dashboard
+#    repo: razorpay/dashboard
+#    namespace: dashboard
+#    tag:
+#      - ${DRONE_COMMIT_SHA}
+#    when:
+#      environment: prod
+#      event: deployment
+#  deploy-prod-green:
+#    group: PROD_DEPLOY
+#    image: razorpay/drone-kubernetes
+#    pull: true
+#    secrets:
+#      - docker_username
+#      - docker_password
+#      - server_url_prodgreen
+#      - server_cert_prodgreen
+#      - client_cert_prodgreen
+#      - client_key_prodgreen
+#    user: drone
+#    cluster: prod-green
+#    auth_mode: client-cert
+#    deployment: dashboard
+#    repo: razorpay/dashboard
+#    namespace: dashboard
+#    tag:
+#      - ${DRONE_COMMIT_SHA}
+#    when:
+#      environment: prod
+#      event: deployment
 #for deploy-qa-func image is being set manually
   build-notify:
     image: plugins/slack
