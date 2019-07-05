@@ -599,6 +599,8 @@ trait Capture
 
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
+            $this->updateAnalyticsIfApplicable($payment);
+
             $this->createPartnerCommission($payment);
 
             if ($payment->isLateBalanceUpdate() === true)
@@ -971,6 +973,60 @@ trait Capture
 
     }
 
+    /*
+     * For some of our older plugins (like Prestashop), the only indicator that
+     * the payment was made via the plugin is in the user agent of the capture
+     * request. To store this in the analytics table, we do a regex search on
+     * the user-agent looking for plugin names and a semantic version number.
+     *
+     * Eg. User-Agent: Razorpay/v1 PHPSDK/2.0.2 PHP/7.0.33 Prestashop/2.0.0
+     */
+    protected function updateAnalyticsIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->analytics === null)
+        {
+            return;
+        }
+
+        // For newer plugins, the information sent in the payment request
+        // (and set during time of authorization) takes precedence.
+        if ($payment->analytics->getIntegration() !== null)
+        {
+            return;
+        }
+
+        $userAgent = $this->app['request']->header('User-Agent');
+
+        foreach (Payment\Analytics\Metadata::INTEGRATION_VALUES as $integration => $_code)
+        {
+            $matches = null;
+
+            $integrationSemVerRegexParts = [
+                '/',                        // Regex delimiter
+                '(' . $integration . ')',   // Group 1: Integration name
+                '\/',                       // Forward slash dividing name from version
+                '(\d+\.\d+\.\d+)',          // Group 2: Semantic Version
+                '/'                         // Regex delimiter
+            ];
+
+            $integrationSemVerRegex = implode('', $integrationSemVerRegexParts);
+
+            if (preg_match($integrationSemVerRegex, strtolower($userAgent), $matches) > 0)
+            {
+                $integration = $matches[1];
+
+                $payment->analytics->setIntegration($integration);
+
+                $integrationVersion = $matches[2];
+
+                $payment->analytics->setIntegrationVersion($integrationVersion);
+
+                $this->repo->saveOrFail($payment->analytics);
+
+                break;
+            }
+        }
+    }
 
     protected function updateOrderStatusPaidIfApplicable(Order\Entity $order, Payment\Entity $payment)
     {

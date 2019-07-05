@@ -462,10 +462,31 @@ class Processor
             return;
         }
 
-        $merchant = $payment->merchant;
-
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
+        $merchant = $payment->merchant;
+
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'cardless_emi',
+                'version' => '1',
+                'provider' => $input['provider'],
+            ];
+
+            $coproto['missing'][] = 'contact';
+
+            unset($coproto['request']['content']['contact']);
+
+            return $coproto;
+        }
 
         $terminal = $this->repo
                          ->terminal
@@ -1657,6 +1678,8 @@ class Processor
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
+            $gatewayDowntimeError = false;
+
             return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
         }
         catch (Exception\GatewayErrorException $ex)
@@ -1674,24 +1697,66 @@ class Processor
             }
 
             /*
-             * If error indicates gateway downtime, act on it and
-             * check if a downtime entity needs to be created
+             * Because error indicates gateway downtime, we might act on it later
+             * so set $gatewayDowntimeError = true
              */
-            if ($error->isGatewayDowntimeError() === true)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::INFO,
-                    TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
-                    [
-                        'payment_id' => $this->payment->getId()
-                    ]);
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => $gateway,
+                    'action'     => $action,
+                    'method'     => $gatewayData['payment']['method'],
+                ]);
 
-                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
-            }
+            $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
+
+            $gatewayDowntimeError = true;
+
 
             throw $ex;
         }
+        finally
+        {
+            $variant  = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                'gateway_downtime_detection',
+                $this->mode
+            );
+
+            // Gateway Downtime Detection only works on few actions.
+            // Right now failure percentage is not considered on each
+            // action individually, which we might do at later point of time.
+            // For Example: Action AUTH and CALLBACK both need to succeed
+            // for the payment to be successful. If one is working fine, then
+            // Downtime configuration might now work properly.
+            if ((strtolower($variant) === 'on') and
+                ($this->isGatewayDowntimeAction($action) == true))
+            {
+                try
+                {
+                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gateway, $gatewayData, $gatewayDowntimeError);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+            }
+        }
+    }
+
+    public function isGatewayDowntimeAction(string $action)
+    {
+        $gatewayDowntimeActions = [
+            Action::AUTHENTICATE,
+            Action::AUTHORIZE,
+            Action::CALLBACK
+        ];
+
+
+        return in_array($action, $gatewayDowntimeActions, true);
     }
 
     public function isRoutedThroughCps($action, $input): bool

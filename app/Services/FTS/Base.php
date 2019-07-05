@@ -37,6 +37,9 @@ class Base
     // Transfer related URIs
     const FUND_TRANSFER_CREATE_URI = '/transfer';
 
+    // Source Account related URIs
+    const SOURCE_ACCOUNT_CREATE_URI = '/source_account';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
@@ -82,7 +85,7 @@ class Base
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    protected function createAndSendRequest(
+    public function createAndSendRequest(
         string $endpoint,
         string $method,
         array $data = []): array

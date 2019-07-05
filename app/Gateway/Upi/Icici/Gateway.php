@@ -14,6 +14,7 @@ use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -81,11 +82,11 @@ class Gateway extends Base\Gateway
      */
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Action::AUTHENTICATE);
 
         if ($this->isBharatQrPayment() === true)
         {
-            $this->createGatewayPaymentEntity($input);
+            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
 
             return null;
         }
@@ -100,7 +101,7 @@ class Gateway extends Base\Gateway
 
         $attributes[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request =  $this->getAuthorizeRequestArray($input);
 
@@ -142,10 +143,14 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
-            throw new Exception\GatewayErrorException(
+            $ex = new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+
+            $ex->markSafeRetryTrue();
+
+            throw $ex;
         }
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
@@ -163,7 +168,7 @@ class Gateway extends Base\Gateway
             Entity::TYPE => Base\Type::PAY,
         ];
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request =  $this->getPayAuthorizeRequestArray($input);
 
@@ -181,10 +186,14 @@ class Gateway extends Base\Gateway
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
-            throw new Exception\GatewayErrorException(
+            $ex = new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
+
+            $ex->markSafeRetryTrue();
+
+            throw $ex;
         }
 
         return $this->getIntentRequest($input, $response);
@@ -423,6 +432,13 @@ class Gateway extends Base\Gateway
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $data[Fields::VALIDATE_PAYER_ACCOUNT] = 'Y';
+            $data[Fields::PAYER_ACCOUNT] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER];
+            $data[Fields::PAYER_IFSC] = $input['order']['bank_account'][BankAccount\Entity::IFSC];
+        }
 
         $content = $this->transformRequestArrayToContent($data);
 

@@ -20,7 +20,7 @@ class Validator extends Base\Validator
     /**
      * 1lac in paise
      */
-    const MAX_VPA_AMOUNT = 10000000;
+    const MAX_UPI_AMOUNT = 10000000;
 
     protected static $createRules = [
         Entity::CUSTOMER_ID                         => 'sometimes|public_id',

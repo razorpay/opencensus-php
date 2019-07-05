@@ -97,7 +97,6 @@ class Status extends BaseStatus
         ],
         self::ON_HOLD             => self::WAIT_FOR_ONE_DAY,
         self::FAILED              => [
-            'ns:E500'    => self::INTERNAL_SERVER_ERROR,
             'ns:E402'    => self::INSUFFICIENT_FUND,
             'ns:E405'    => self::INVALID_TRANSFER_TYPE,
             'ns:E429'    => self::REQUEST_LIMIT_REACHED,
@@ -147,6 +146,7 @@ class Status extends BaseStatus
             'flex:E307'  => self::TECHNICAL_ERROR,
             'flex:E8036' => self::INVALID_REQUEST,
             'atom:E307'  => self::TECHNICAL_ERROR,
+            'ns:E500'    => self::TECHNICAL_ERROR,
         ],
     ];
 

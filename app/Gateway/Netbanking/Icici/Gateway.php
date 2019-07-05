@@ -533,6 +533,11 @@ class Gateway extends Base\Gateway
             RequestFields::SPID             => $this->getSpid(),
         ];
 
+        if ($this->isCorporateBanking() === true)
+        {
+            unset($requestData[RequestFields::SPID]);
+        }
+
         return array_merge($baseRequestData, $requestData);
     }
 
@@ -801,8 +806,7 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        if ((isset($attributes[ResponseFields::STATUS_LC]) === false) or
-            ($attributes[ResponseFields::STATUS_LC] !== Confirmation::YES))
+        if (isset($attributes[ResponseFields::STATUS_LC]) === false)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -812,6 +816,26 @@ class Gateway extends Base\Gateway
                     'content' => $content,
                     'gateway' => $this->gateway,
                 ]);
+        }
+        else
+        {
+            if ($attributes[ResponseFields::STATUS_LC] === Confirmation::PENDING)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
+            }
+
+            if ($attributes[ResponseFields::STATUS_LC] !== Confirmation::YES)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    null,
+                    null,
+                    [
+                        'content' => $content,
+                        'gateway' => $this->gateway,
+                    ]);
+            }
         }
     }
 
@@ -1024,6 +1048,7 @@ class Gateway extends Base\Gateway
                 return $this->config['live_hash_secret_tpv'];
 
             case $this->config['live_merchant_id2_corp']:
+            case $this->config['live_merchant_id2_corp_karvy']:
                 return $this->config['live_hash_secret_corp'];
 
             case $this->config['live_merchant_id2']:

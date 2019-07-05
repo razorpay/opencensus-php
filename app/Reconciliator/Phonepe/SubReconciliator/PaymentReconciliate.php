@@ -18,7 +18,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[ReconFields::BANK_REFERENCE_NO] ?? null;
+        return $row[ReconFields::PHONEPE_ID] ?? null;
     }
 
     protected function getGatewayPayment($paymentId)
@@ -135,5 +135,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $raw = json_encode($data);
 
         $gatewayPayment->setRaw($raw);
+    }
+
+    protected function getArn($row)
+    {
+        return $row[ReconFields::BANK_REFERENCE_NO] ?? null;
     }
 }

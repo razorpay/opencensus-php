@@ -56,6 +56,39 @@ class UpiIciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal', ['tpv' => 3]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['bank'] = $order['bank'];
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100UPIICTpvTml', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('collect', $gatewayEntity['type']);
+        $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
+    }
+
     public function testIntentDisabledPayment()
     {
         $this->fixtures->merchant->addFeatures(['disable_upi_intent']);

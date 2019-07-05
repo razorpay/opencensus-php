@@ -143,7 +143,7 @@ abstract class Processor extends Base\Core
             {
                 $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
             }
-            else
+            else if ($entity->payment->hasBeenCaptured() === false)
             {
                 $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
             }
@@ -280,6 +280,15 @@ abstract class Processor extends Base\Core
             ($this->isLiveMode() === true))
         {
            return true;
+        }
+
+        if ($this->virtualAccount->isDueToBeClosed() === true)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED,
+                $entity->toArray());
+
+            return true;
         }
 
         $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();

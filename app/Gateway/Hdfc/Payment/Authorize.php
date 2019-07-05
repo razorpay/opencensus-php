@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Hdfc\Payment;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
@@ -35,18 +36,29 @@ trait Authorize
 
             case Payment\Result::NOT_ENROLLED:
                 $this->validateMerchantInternationalEnabled();
+
                 return $this->postAuthNotEnrolledRequestToBank();
 
             case Payment\Result::INITIALIZED:
                 return $this->getFieldsForFormSubmitForRupay();
 
             default:
-                throw new Exception\LogicException(
-                    'Should not have reached here',
-                    null,
+                $this->trace->warning(
+                    TraceCode::GATEWAY_ERROR_ISSUER_AUTHENTICATION_NOT_AVAILABLE,
                     [
                         'enroll_status' => $enrollStatus,
                     ]);
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                    'enrollment_status:' . $enrollStatus,
+                    'Unexpected response',
+                    [
+                        'enroll_status' => $enrollStatus,
+                    ],
+                    null,
+                    Base\Action::AUTHENTICATE,
+                    true);
         }
     }
 
@@ -106,6 +118,10 @@ trait Authorize
             Trace::DEBUG,
             TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST,
             $this->authEnrolledRequest);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHORIZATION_INITIATED,
+            $input);
 
         $this->runRequestResponseFlow(
             $this->authEnrolledRequest,
@@ -204,6 +220,10 @@ trait Authorize
         }
 
         $this->createAuthNotEnrolledRequestFields();
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHORIZATION_INITIATED,
+            $this->input);
 
         $this->runRequestResponseFlow(
             $this->authNotEnrolledRequest,
@@ -613,6 +633,10 @@ trait Authorize
            Trace::DEBUG,
            TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
            $this->authSecondRecurringRequest);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHORIZATION_INITIATED,
+            $input);
 
         $this->runRequestResponseFlow(
             $this->authSecondRecurringRequest,

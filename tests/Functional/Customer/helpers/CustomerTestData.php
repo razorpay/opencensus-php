@@ -471,6 +471,14 @@ return [
                         ]
                     ],
                     [
+                        'token'         => '10002cardtoken',
+                        'method'        => 'card',
+                        'card'          => [
+                            'last4'         => '1111',
+                            'network'       => 'RuPay',
+                        ]
+                    ],
+                    [
                         'token'         => '10000cardtoken',
                         'method'        => 'card',
                         'card'          => [

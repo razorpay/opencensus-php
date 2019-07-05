@@ -573,6 +573,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return null;
         }
 
+        // Do not modify contact in case of bank transfer and bharat qr
+        // because in these cases contact is not passed in payment request
+        // input but rather it is set internally from customer table.
+        //
+        // If Receiver is present it either bank transfer or bharat qr payment.
+        if (empty($input['receiver']) === false)
+        {
+            return $input['contact'];
+        }
+
         $contact = str_replace(' ', '', $contact);
         $contact = str_replace('-', '', $contact);
         $contact = str_replace('(', '', $contact);

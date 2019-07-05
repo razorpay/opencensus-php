@@ -18,7 +18,7 @@ class ReconFields
 
     const AMOUNT                = 'amount';
 
-    const INSTRUMENT            = 'instrument';
+    const ORDER_ID              = 'MerchantOrderId';
 
     const PHONEPE_ID            = 'phonepereferenceid';
 
