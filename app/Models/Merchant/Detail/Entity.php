@@ -570,7 +570,7 @@ class Entity extends Base\PublicEntity
 
         return substr($gstin, 0, 2);
     }
-
+    
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
