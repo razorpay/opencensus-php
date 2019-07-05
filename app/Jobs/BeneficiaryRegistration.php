@@ -19,7 +19,7 @@ class BeneficiaryRegistration extends Job
     /**
      * @var string
      */
-    protected $queueConfigKey = 'settlement_transactions';
+    protected $queueConfigKey = 'beneficiary_registrations';
 
     /**
      * @var array
@@ -65,21 +65,6 @@ class BeneficiaryRegistration extends Job
             if (empty($bankAccount) === true)
             {
                 $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG);
-
-                return;
-            }
-
-            // Check to avoid unnecessary tries.
-            // As the `registerBeneficiaryThroughApi` checks for the type
-            // and returns false for the bank account which are not `merchant` or `contact`
-            if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
-            {
-                return;
-            }
-
-            if ($bankAccount === null)
-            {
-                $this->traceData(TraceCode::INVALID_BENEFICIARY_BANK_ACCOUNT_ID);
 
                 return;
             }

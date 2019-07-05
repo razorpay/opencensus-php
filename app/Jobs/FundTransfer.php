@@ -4,8 +4,6 @@ namespace RZP\Jobs;
 
 use App;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use Razorpay\Trace\Logger as Trace;
@@ -13,6 +11,7 @@ use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt\Initiator;
+use RZP\Models\NodalBeneficiary\Status as BeneficiaryStatus;
 
 class FundTransfer extends Job
 {
@@ -20,7 +19,7 @@ class FundTransfer extends Job
 
     const MAX_ALLOWED_ATTEMPTS  = 10;
 
-    const RELEASE_WAIT_SECS     = 60;
+    const RELEASE_WAIT_SECS     = 30;
 
     /**
      * @var string
@@ -81,33 +80,7 @@ class FundTransfer extends Job
                 return;
             }
 
-            // Checks if registration is required based on product and account type
-            $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
-
-            if ($isBeneRegistrationRequired === true)
-            {
-                $beneficiaryRegistered = (new Beneficiary)->registerBeneficiaryOnChannelAndGetStatus(
-                                                                $channel,
-                                                                $bankAccount);
-
-                if ($beneficiaryRegistered === false)
-                {
-                    $this->checkRetryOrDelete($data);
-
-                    return;
-                }
-
-                $beneficiaryVerified = (new Beneficiary)->verifyBeneficiaryOnChannelAndGetStatus($channel, $bankAccount);
-
-                if ($beneficiaryVerified === false)
-                {
-                    (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel, $this->ftaId);
-
-                    $this->logAndDelete($data);
-
-                    return;
-                }
-            }
+            $this->checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, $data);
 
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
         }
@@ -137,7 +110,7 @@ class FundTransfer extends Job
 
         if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
         {
-            $this->logAndDelete($data, $traceCode, true);
+            $this->logAndDelete($data, $traceCode, true, );
 
             return;
         }
@@ -163,6 +136,39 @@ class FundTransfer extends Job
         else
         {
             $this->delete();
+        }
+    }
+
+    /**
+     * Checks if Beneficiary Registration or Verification is required
+     * then dispatch it for the same and wait for the RELEASE_WAIT_SECS.
+     *
+     * @param $fta
+     * @param $bankAccount
+     * @param $channel
+     * @param array $data
+     */
+    public function checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, array $data)
+    {
+        // Checks if registration is required based on product and account type
+        $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
+
+        if ($isBeneRegistrationRequired === true) {
+            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($bankAccount,
+                $channel);
+
+            if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED and
+                $beneficiaryStatus !== BeneficiaryStatus::REGISTERED) {
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
+
+                $this->checkRetryOrDelete($data);
+            }
+
+            if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED) {
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
+
+                $this->checkRetryOrDelete($data);
+            }
         }
     }
 }

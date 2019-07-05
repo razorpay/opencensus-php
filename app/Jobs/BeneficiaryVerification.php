@@ -12,12 +12,14 @@ use RZP\Models\BankAccount\Beneficiary;
 
 class BeneficiaryVerification extends Job
 {
+    const MAX_ALLOWED_ATTEMPTS = 45;
+
     const RETRY_INTERVAL       = 4;
 
     /**
      * @var string
      */
-    protected $queueConfigKey = 'settlement_transactions';
+    protected $queueConfigKey = 'beneficiary_verifications';
 
     /**
      * @var array
@@ -29,16 +31,9 @@ class BeneficiaryVerification extends Job
      */
     protected $bankAccountId;
 
-    /*
-     * @var string
-     */
-    protected $ftaId;
-
-    public function __construct(string $mode, string $channel, string $bankAccountId, string $ftaId = null)
+    public function __construct(string $mode, string $channel, string $bankAccountId)
     {
         parent::__construct($mode);
-
-        $this->ftaId          = $ftaId;
 
         $this->channel        = $channel;
 
@@ -54,7 +49,7 @@ class BeneficiaryVerification extends Job
         {
             parent::handle();
 
-            if (in_array($this->channel, Channel::getChannelsWithOnlineBeneficiaryRegistration(), true) === false)
+            if (in_array($this->channel, Channel::getChannelsWithOnlineBeneficiaryVerification(), true) === false)
             {
                 return;
             }
@@ -76,7 +71,7 @@ class BeneficiaryVerification extends Job
 
             // Check to avoid unnecessary tries.
             // checks for the type and returns false for the bank account which are not `merchant` or `contact`
-            if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
+            if (in_array($bankAccount->getType(), Type::getBeneficiaryVerificationTypes(), true) === false)
             {
                 return;
             }
@@ -101,10 +96,12 @@ class BeneficiaryVerification extends Job
                     'bank_account_id' => $this->bankAccountId,
                 ]);
 
-            $this->traceData(TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY);
+            if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
+            {
+                $this->traceData(TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY);
 
-            $this->release(self::RETRY_INTERVAL);
-
+                $this->release(self::RETRY_INTERVAL);
+            }
         }
         catch (\Throwable $e)
         {
@@ -120,11 +117,6 @@ class BeneficiaryVerification extends Job
         }
         finally
         {
-            if (empty($this->ftaId) === false)
-            {
-                FundTransfer::dispatch($this->mode, $this->ftaId);
-            }
-
             $this->delete();
         }
     }

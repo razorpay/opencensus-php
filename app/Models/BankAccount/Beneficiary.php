@@ -4,6 +4,7 @@ namespace RZP\Models\BankAccount;
 
 use App;
 use Mail;
+use Cache;
 use Config;
 use Carbon\Carbon;
 
@@ -62,7 +63,7 @@ class Beneficiary extends Base\Core
 
         foreach ($channels as $channel)
         {
-            $this->dispatchBankAccount($bankAccount, $channel);
+            $this->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
         }
     }
 
@@ -72,11 +73,21 @@ class Beneficiary extends Base\Core
      *
      * @param Entity $bankAccount
      * @param string $channel
+     * @return bool
      */
-    protected function dispatchBankAccount(Entity $bankAccount, string $channel)
+    public function dispatchBankAccountForBeneficiaryRegistration(Entity $bankAccount, string $channel)
     {
+        $cacheKey = 'beneficiary_registration:'.$bankAccount->getId();
+
         try
         {
+            if (Cache::has($cacheKey) === true)
+            {
+                return ;
+            }
+
+            Cache::put($cacheKey, 'in_progress');
+
             BeneficiaryRegistration::dispatch($this->mode, $channel, $bankAccount->getId());
 
             $this->trace->info(
@@ -89,6 +100,15 @@ class Beneficiary extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $cacheValue = Cache::pull($cacheKey);
+
+            $this->trace->info(
+                TraceCode::BENEFICIARY_REGISTRATION_REDIS_KEY_REMOVED,
+                [
+                    'key'           => $cacheKey,
+                    'value'         => $cacheValue,
+                ]);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -101,11 +121,20 @@ class Beneficiary extends Base\Core
         }
     }
 
-    public function dispatchBankAccountForBeneficiaryVerification(Entity $bankAccount, string $channel, string $ftaId = null)
+    public function dispatchBankAccountForBeneficiaryVerification(Entity $bankAccount, string $channel)
     {
+        $cacheKey = 'beneficiary_verification:'.$bankAccount->getId();
+
         try
         {
-            BeneficiaryVerification::dispatch($this->mode, $channel, $bankAccount->getId(), $ftaId);
+            if (Cache::has($cacheKey) === true)
+            {
+                return;
+            }
+
+            Cache::put($cacheKey, 'in_progress');
+
+            BeneficiaryVerification::dispatch($this->mode, $channel, $bankAccount->getId());
 
             $this->trace->info(
                 TraceCode::BANK_ACCOUNT_ENQUEUED_FOR_VERIFY,
@@ -117,6 +146,15 @@ class Beneficiary extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $cacheValue = Cache::pull($cacheKey);
+
+            $this->trace->info(
+                TraceCode::BENEFICIARY_VERIFICATION_REDIS_KEY_REMOVED,
+                [
+                    'key'           => $cacheKey,
+                    'value'         => $cacheValue,
+                ]);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -372,85 +410,11 @@ class Beneficiary extends Base\Core
     }
 
     /**
-     * @param string $channel
-     * @param Entity $bankAccount
-     * @return bool
-     */
-    public function registerBeneficiaryOnChannelAndGetStatus(string $channel, Entity $bankAccount): bool
-    {
-        // If Beneficiary is already registered then return status true.
-        $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
-
-        if ($status === true)
-        {
-            return $status;
-        }
-
-        // If Beneficiary is already verified then return status true.
-        $status = $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
-
-        if ($status === true)
-        {
-            return $status;
-        }
-
-        $data = [
-            'bank_account_id'  => $bankAccount->getId(),
-            'channel'          => $channel,
-        ];
-
-        $beneClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\Beneficiary';
-
-        $this->trace->info(TraceCode::FTA_MERCHANT_BENE_REG_INIT, $data);
-
-        $bankAccounts = (new PublicCollection)->push($bankAccount);
-
-        $beneResponse = (new $beneClass)->registerBeneficiary($bankAccounts);
-
-        $this->trace->info(TraceCode::FTA_MERCHANT_BENE_REG_COMPLETE, $data + $beneResponse);
-
-        return $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
-    }
-
-    /**
-     * @param string $channel
-     * @param Entity $bankAccount
-     * @return bool
-     */
-    public function verifyBeneficiaryOnChannelAndGetStatus(string $channel, Entity $bankAccount): bool
-    {
-        // If beneficiary is already verified then return status true.
-        $status = $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
-
-        if ($status === true)
-        {
-            return $status;
-        }
-
-        $data = [
-            'bank_account_id'  => $bankAccount->getId(),
-            'channel'          => $channel,
-        ];
-
-        $beneClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\Beneficiary';
-
-        $this->trace->info(TraceCode::FTA_MERCHANT_BENE_VERIFY_INIT, $data);
-
-        $bankAccounts = (new PublicCollection)->push($bankAccount);
-
-        $beneResponse = (new $beneClass)->verifyBeneficiary($bankAccounts);
-
-        $this->trace->info(TraceCode::FTA_MERCHANT_BENE_VERIFY_COMPLETE, $data + $beneResponse);
-
-        return $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
-    }
-
-    /**
      * @param $bankAccount
      * @param $channel
      * @return bool
      */
-    protected function checkBeneficiaryRegistrationStatus($bankAccount, $channel): bool
+    public function checkBeneficiaryRegistrationStatus($bankAccount, $channel): bool
     {
         $nodalBeneficiary = $this->repo
                                  ->nodal_beneficiary
@@ -479,7 +443,7 @@ class Beneficiary extends Base\Core
      * @param $channel
      * @return bool
      */
-    protected function checkBeneficiaryVerificationStatus($bankAccount, $channel): bool
+    public function checkBeneficiaryVerificationStatus($bankAccount, $channel): bool
     {
         $nodalBeneficiary = $this->repo
                                  ->nodal_beneficiary
@@ -501,6 +465,22 @@ class Beneficiary extends Base\Core
         }
 
         return false;
+    }
+
+    public function getBeneficiaryStatus($bankAccount, $channel)
+    {
+        $nodalBeneficiary = $this->repo
+                                 ->nodal_beneficiary
+                                 ->fetchActivatedBeneficiaryDetailsForChannel(
+                                     $bankAccount->getId(),
+                                     $channel
+                            );
+        if (empty($nodalBeneficiary) === true)
+        {
+            return null;
+        }
+
+        return $nodalBeneficiary->getRegistrationStatus();
     }
 
     /**
