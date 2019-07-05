@@ -441,7 +441,6 @@ class Service extends Base\Service
                     $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
 
                     $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
-                    $data['experiments']['update_subscription'] = $merchantService->getTreatment('update_subscription');
 
                     $data['current'] = $currentMerchantId;
 

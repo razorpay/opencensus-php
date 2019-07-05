@@ -851,7 +851,6 @@ export default class SubscriptionDetailsContainer extends React.Component {
     return (
       <div class="multi-content">
         <SubscriptionDetails
-          user={user}
           plan={plan}
           subscription={entity}
           isSideView={closeUrl}
