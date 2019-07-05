@@ -29,13 +29,7 @@ import PlanDetails from './PlanDetails';
   state => ({
     plans: state.plans,
     items: state.items,
-    subscription: {
-      ...state.subscription,
-      entity: {
-        ...state.subscription.entity,
-        status: 'authenticated',
-      },
-    },
+    subscription: state.subscription,
   }),
   {
     fetchPlans,
