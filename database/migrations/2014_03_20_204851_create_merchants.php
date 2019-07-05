@@ -51,8 +51,14 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::LIVE)
                   ->default(0);
 
+            $table->string(Merchant::LIVE_DISABLE_REASON)
+                  ->nullable();
+
             $table->tinyInteger(Merchant::HOLD_FUNDS)
                   ->default(0);
+
+            $table->string(Merchant::HOLD_FUNDS_REASON)
+                  ->nullable();
 
             $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
                   ->nullable();
@@ -112,6 +118,9 @@ class CreateMerchants extends Migration
                   ->default(0);
 
             $table->text(Merchant::LOGO_URL)
+                  ->nullable();
+
+            $table->text(Merchant::ICON_URL)
                   ->nullable();
 
             $table->string(Merchant::INVOICE_LABEL_FIELD, 50)

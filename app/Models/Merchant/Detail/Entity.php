@@ -24,16 +24,21 @@ class Entity extends Base\PublicEntity
     const CONTACT_LANDLINE                   = 'contact_landline';
     const BUSINESS_TYPE                      = 'business_type';
     const BUSINESS_NAME                      = 'business_name';
+    const BUSINESS_DESCRIPTION               = 'business_description';
     const BUSINESS_DBA                       = 'business_dba';
     const BUSINESS_WEBSITE                   = 'business_website';
     const BUSINESS_INTERNATIONAL             = 'business_international';
     const BUSINESS_PAYMENTDETAILS            = 'business_paymentdetails';
     const BUSINESS_MODEL                     = 'business_model';
     const BUSINESS_REGISTERED_ADDRESS        = 'business_registered_address';
+    const BUSINESS_REGISTERED_ADDRESS_L2     = 'business_registered_address_l2';
+    const BUSINESS_REGISTERED_COUNTRY        = 'business_registered_country';
     const BUSINESS_REGISTERED_STATE          = 'business_registered_state';
     const BUSINESS_REGISTERED_CITY           = 'business_registered_city';
     const BUSINESS_REGISTERED_PIN            = 'business_registered_pin';
     const BUSINESS_OPERATION_ADDRESS         = 'business_operation_address';
+    const BUSINESS_OPERATION_ADDRESS_L2      = 'business_operation_address_l2';
+    const BUSINESS_OPERATION_COUNTRY         = 'business_operation_country';
     const BUSINESS_OPERATION_STATE           = 'business_operation_state';
     const BUSINESS_OPERATION_CITY            = 'business_operation_city';
     const BUSINESS_OPERATION_PIN             = 'business_operation_pin';
@@ -91,6 +96,7 @@ class Entity extends Base\PublicEntity
     const ISSUE_FIELDS                       = 'issue_fields';
     const ISSUE_FIELDS_REASON                = 'issue_fields_reason';
     const INTERNAL_NOTES                     = 'internal_notes';
+    const CUSTOM_FIELDS                      = 'custom_fields';
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
@@ -140,16 +146,21 @@ class Entity extends Base\PublicEntity
         self::CONTACT_LANDLINE,
         self::BUSINESS_TYPE,
         self::BUSINESS_NAME,
+        self::BUSINESS_DESCRIPTION,
         self::BUSINESS_DBA,
         self::BUSINESS_WEBSITE,
         self::BUSINESS_INTERNATIONAL,
         self::BUSINESS_PAYMENTDETAILS,
         self::BUSINESS_MODEL,
         self::BUSINESS_REGISTERED_ADDRESS,
+        self::BUSINESS_REGISTERED_ADDRESS_L2,
+        self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
+        self::BUSINESS_OPERATION_ADDRESS_L2,
+        self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
         self::BUSINESS_OPERATION_PIN,
@@ -220,15 +231,20 @@ class Entity extends Base\PublicEntity
         self::CONTACT_LANDLINE,
         self::BUSINESS_TYPE,
         self::BUSINESS_NAME,
+        self::BUSINESS_DESCRIPTION,
         self::BUSINESS_DBA,
         self::BUSINESS_WEBSITE,
         self::BUSINESS_INTERNATIONAL,
         self::BUSINESS_PAYMENTDETAILS,
         self::BUSINESS_REGISTERED_ADDRESS,
+        self::BUSINESS_REGISTERED_ADDRESS_L2,
+        self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
+        self::BUSINESS_OPERATION_ADDRESS_L2,
+        self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
         self::BUSINESS_OPERATION_PIN,
