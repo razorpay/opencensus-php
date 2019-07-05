@@ -333,6 +333,7 @@ class GatewayEmiFileTest extends TestCase
         $this->assertSbiEmiFileData($content, 1);
     }
 
+    // One file would be encrypted and the other not encrypted
     protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [])
     {
         $files = $this->getDbEntities('file_store')->toArray();
@@ -351,6 +352,17 @@ class GatewayEmiFileTest extends TestCase
 
         $fileContent = $encryptor->decrypt($fileContent);
 
+        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames);
+
+        $outputFile = $files[1];
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $outputFile['location']);
+
+        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, true);
+    }
+
+    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $outputFile = false)
+    {
         $fileRows = explode("\r\n", $fileContent);
 
         $this->assertEquals($rowCount, count($fileRows));
@@ -390,7 +402,7 @@ class GatewayEmiFileTest extends TestCase
         }
 
         $expectedFileContent = [
-            'type'        => 'sbi_emi_file',
+            'type'        => (($outputFile === true) ? 'sbi_emi_output_file' : 'sbi_emi_file'),
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'txt',
