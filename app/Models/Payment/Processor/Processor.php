@@ -1676,26 +1676,24 @@ class Processor
             }
 
             /*
-             * If error indicates gateway downtime, we might act on it later
+             * Because error indicates gateway downtime, we might act on it later
              * so set $gatewayDowntimeError = true
              */
-            if ($error->isGatewayDowntimeError() === true)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::INFO,
-                    TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
-                    [
-                        'payment_id' => $this->payment->getId(),
-                        'gateway'    => $gateway,
-                        'action'     => $action,
-                        'method'     => $gatewayData['payment']['method'],
-                    ]);
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => $gateway,
+                    'action'     => $action,
+                    'method'     => $gatewayData['payment']['method'],
+                ]);
 
-                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
+            $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
 
-                $gatewayDowntimeError = true;
-            }
+            $gatewayDowntimeError = true;
+
 
             throw $ex;
         }

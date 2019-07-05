@@ -544,7 +544,6 @@ class Gateway extends Base\Gateway
                     'card_no',
                     'card_exp_date',
                     'cvd2',
-                    'retrieval_ref_number',
                 ];
 
                 foreach ($toRemove as $field)
