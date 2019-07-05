@@ -218,9 +218,7 @@ class Core extends Base\Core
         {
             $bankingAccountArray = $bankingAccount->toArrayPublic();
 
-            $bankingAccountArray['banking_balance'] = $bankingAccount->balance
-                                                                     ->only([Merchant\Balance\Entity::BALANCE,
-                                                                            Merchant\Balance\Entity::CURRENCY]);
+            $bankingAccountArray['banking_balance'] = $bankingAccount->balance;
 
             $result[] = $bankingAccountArray;
         }

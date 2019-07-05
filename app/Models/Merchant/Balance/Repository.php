@@ -236,6 +236,19 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function getMerchantBalanceByTypeAndAccountType(
+        string $merchantId,
+        string $balanceType,
+        string $accType,
+        string $connection = null)
+    {
+        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->merchantIdAndType($merchantId, $balanceType)
+                     ->where(Entity::ACCOUNT_TYPE, $accType)
+                     ->first();
+    }
+
     public function getBalanceIdByAccountNumberOrFail(string $accountNumber): string
     {
         return $this->getBalanceByAccountNumberOrFail($accountNumber)->getId();
