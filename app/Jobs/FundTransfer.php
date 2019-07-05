@@ -136,7 +136,7 @@ class FundTransfer extends Job
 
         if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
         {
-            $this->logAndDelete($data, $traceCode, true, );
+            $this->logAndDelete($data, $traceCode, true);
 
             return;
         }
