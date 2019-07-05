@@ -21,6 +21,7 @@ import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/
 
 export default props => {
   const {
+    user,
     mode,
     plan,
     customer,
@@ -49,9 +50,9 @@ export default props => {
 
   const testModeMsg = getTestModeMessage(subscription.status) || {};
 
-  const allowUpdateSubscription = ['authenticated', 'active'].includes(
-    subscription.status
-  );
+  const allowUpdateSubscription =
+    ['authenticated', 'active'].includes(subscription.status) &&
+    user.isUpdateSubscriptionEnabled;
 
   const hideCancelUpdate = ['cancelled', 'completed', 'expired'].includes(
     subscription.status

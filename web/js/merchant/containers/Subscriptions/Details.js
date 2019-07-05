@@ -670,6 +670,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
   render() {
     let {
+      user,
       plan,
       entity,
       customer,
@@ -850,6 +851,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     return (
       <div class="multi-content">
         <SubscriptionDetails
+          user={user}
           plan={plan}
           subscription={entity}
           isSideView={closeUrl}
