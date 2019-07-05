@@ -615,7 +615,7 @@ export default class ActivationWizard extends React.Component {
             type: false,
           });
       } else {
-        let data = new BingDataObj('kycform', 'complete', 'all', 1);
+        let compAllData = new BingDataObj('kycform', 'complete', 'all', 1);
 
         /**
          * Fire fb, bing, linkedin & twitter events
@@ -623,33 +623,44 @@ export default class ActivationWizard extends React.Component {
         fireAnalyticsEvents(
           {
             fbData: 'kyc_complete_all',
-            bingData: data,
+            bingData: compAllData,
             liData: 987452, //conversionId
             twiData: 'o1ua7',
           } //twitter
         );
 
-        let dataActivation = new BingDataObj(
-          'kycform',
-          'complete',
-          data.data.activation_flow,
-          1
-        );
-
-        let conversionId = this.props.user.instantActivation.isGraylistFlow
-          ? 987428
-          : this.props.user.instantActivation.isWhitelistFlow && 987436;
-
-        let txnId = this.props.user.instantActivation.isGraylistFlow
-          ? 'o1ua4'
-          : this.props.user.instantActivation.isWhitelistFlow && 'o1ua5';
-
-        fireAnalyticsEvents({
-          fbData: `KYC_complete_${data.data.activation_flow}`,
-          bingData: dataActivation,
-          liData: conversionId,
-          twiData: txnId,
-        });
+        let conversionId, txnId;
+        if ('greylist' === data.data.activation_flow) {
+          conversionId = 987428;
+          txnId = 'o1ua4';
+          let greylistData = new BingDataObj(
+            'kycform',
+            'complete',
+            'greylist',
+            1
+          );
+          fireAnalyticsEvents({
+            fbData: `KYC_complete_greylist`,
+            bingData: greylistData,
+            liData: conversionId,
+            twiData: txnId,
+          });
+        } else if ('whitelist' === data.data.activation_flow) {
+          conversionId = 987436;
+          txnId = 'o1ua5';
+          let whitelistData = new BingDataObj(
+            'kycform',
+            'complete',
+            'whitelist',
+            1
+          );
+          fireAnalyticsEvents({
+            fbData: `KYC_complete_whitelist`,
+            bingData: whitelistData,
+            liData: conversionId,
+            twiData: txnId,
+          });
+        }
 
         updateHubSpotContactsProperties(
           {

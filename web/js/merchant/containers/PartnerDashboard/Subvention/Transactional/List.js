@@ -6,7 +6,7 @@ import { fetchSubventions as fetchAll } from 'merchant/modules/collection';
 import DataTable from 'rzp/ui/Table/DataTable';
 import Amount from 'rzp/ui/Amount';
 
-import { commissionId, createdAtShort } from 'rzp/ui/item/pair';
+import { subventionId, createdAtShort } from 'rzp/ui/item/pair';
 
 import ListFilter from '../../Commissions/Transactional/ListFilter';
 
@@ -34,7 +34,7 @@ export default class SubventionList extends ListContainer {
 
         <DataTable
           title="Subventions"
-          columns={[commissionId, subventionFee, merchantName, createdAtShort]}
+          columns={[subventionId, subventionFee, merchantName, createdAtShort]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

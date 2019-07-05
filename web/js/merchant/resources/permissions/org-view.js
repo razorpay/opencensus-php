@@ -24,14 +24,26 @@ const HDFC_restrictedFeatures = [
   'external_links',
 ];
 
+const Bajaj_restrictedModules = [
+  'marketplace', //internal name for route feature
+  'accounts',
+  'virtual_accounts',
+  'payment_pages',
+  'invoices',
+];
+
+const Bajaj_restrictedFeatures = ['monthlyInvoice', 'external_links'];
+
 /*
 * Map of orgs having restrictions on corresponding modules/features
 * */
 
 export const antiOrgsModules = {
   hdfc: HDFC_restrictedModules,
+  bajaj: Bajaj_restrictedModules,
 };
 
 export const antiOrgsFeatures = {
   hdfc: HDFC_restrictedFeatures,
+  bajaj: Bajaj_restrictedFeatures,
 };

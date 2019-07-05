@@ -11,7 +11,7 @@ const ACCOUNT_REFUNDS_ACCESS = 'ACCOUNT_REFUNDS_ACCESS';
 export const fetchAccountsApi = (data, params) => {
   return ajax(
     {
-      url: '/accounts',
+      url: '/linked_accounts',
       data,
       params,
     },

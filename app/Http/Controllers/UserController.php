@@ -275,7 +275,7 @@ class UserController extends Controller
     {
         $user = Auth::guard('user');
 
-        if (empty($user) === false)
+        if (empty($user->user()) === false)
         {
             $userDetails = $user->user();
 
@@ -290,5 +290,10 @@ class UserController extends Controller
         }
 
         return AppResponse::jsonResponse([]);
+    }
+
+    public function validateJWT()
+    {
+        return ['success' => true];
     }
 }

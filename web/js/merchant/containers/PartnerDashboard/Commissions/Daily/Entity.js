@@ -10,22 +10,30 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { isPresent } from 'rzp/utils/rzp-utils';
 import { fetchSingleDayAggregate } from 'merchant/modules/commission';
 
-import VerticalBreakup from './VerticalBreakup';
-
 @connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {
   componentWillMount() {
-    this.props.fetchSingleDayAggregate(Number(this.props.timestamp));
+    this.fetchData(Number(this.props.timestamp));
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.timestamp !== nextProps.timestamp) {
-      this.props.fetchSingleDayAggregate(Number(nextProps.timestamp));
+      this.fetchData(Number(nextProps.timestamp));
     }
   }
 
+  fetchData(timestamp) {
+    this.props.fetchSingleDayAggregate(timestamp, this.props.queryType);
+  }
+
   render() {
-    const { loading: isLoading, entity, error } = this.props;
+    const {
+      loading: isLoading,
+      entity,
+      error,
+      renderBreakups,
+      ...props
+    } = this.props;
     const data = entity.data;
     return (
       <div class="content-wrapper content-sm txn-details Commission--Detail">
@@ -36,8 +44,7 @@ export default class CommissionsDailyEntity extends Component {
         ) : (
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              Date{' '}
-              <strong>{moment(this.props.timestamp, 'X').format('ll')}</strong>
+              Date <strong>{moment(props.timestamp, 'X').format('ll')}</strong>
             </div>
             <Alert type="error" message={error} />
             {isPresent(entity) && (
@@ -45,31 +52,11 @@ export default class CommissionsDailyEntity extends Component {
                 <div class="panel-body">
                   <div class="list-group details-row-container">
                     <div class="sub-heading">
-                      <strong>Earnings</strong>
+                      <strong>{props.subHeading} </strong>
                     </div>
-                    <VerticalBreakup>
-                      <div class="pair-group-item vertical">
-                        <div class="pair-label">Total Earnings</div>
-                        <div class="pair-value font-lg">
-                          <strong>
-                            <Amount
-                              value={getTotalEarnings(data)}
-                              currency={'INR'}
-                            />
-                          </strong>
-                        </div>
-                      </div>
 
-                      <BaseEarningsBreakup
-                        earnings={data.baseEarnings}
-                        tax={data.baseTax}
-                      />
-
-                      <AddOnEarningsBreakup
-                        addOnEarnings={data.addonEarnings}
-                        tax={data.addonTax}
-                      />
-                    </VerticalBreakup>
+                    {/* provide all props to renderBreakup */}
+                    {renderBreakups(this.props)}
 
                     <div class="sub-heading">
                       <strong>Transactions</strong>
@@ -99,29 +86,7 @@ export default class CommissionsDailyEntity extends Component {
   }
 }
 
-function BaseEarningsBreakup(props) {
-  return (
-    <EarningsBreakup
-      label="Base Earnings"
-      value={props.earnings}
-      tax={props.tax}
-      feeBreakupType="primary"
-    />
-  );
-}
-
-function AddOnEarningsBreakup(props) {
-  return (
-    <EarningsBreakup
-      label="Add-on Earnings"
-      value={props.addOnEarnings}
-      tax={props.tax}
-      feeBreakupType="warning"
-    />
-  );
-}
-
-function EarningsBreakup(props) {
+export function EarningsBreakup(props) {
   return (
     <div class="pair-group-item vertical">
       <div class="pair-label">{props.label}</div>
@@ -149,8 +114,4 @@ function EarningsBreakup(props) {
       </div>
     </div>
   );
-}
-
-function getTotalEarnings(data) {
-  return data.addonEarnings + data.baseEarnings;
 }

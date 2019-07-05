@@ -20,8 +20,10 @@ import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
-import TransactionalEarningDetails from 'merchant/containers/PartnerDashboard/Commissions/Transactional/Entity';
-import DailyEarningDetails from 'merchant/containers/PartnerDashboard/Commissions/Daily/Entity';
+import EarningTransactionalDetails from 'merchant/containers/PartnerDashboard/Earnings/Transactional/Entity';
+import EarningDailyDetails from 'merchant/containers/PartnerDashboard/Earnings/Daily/Entity';
+import SubventionTransactionalDetails from 'merchant/containers/PartnerDashboard/Subvention/Transactional/Entity';
+import SubventionDailyDetails from 'merchant/containers/PartnerDashboard/Subvention/Daily/Entity';
 import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
 import AccountDetailsNew from 'merchant/containers/Marketplace/Accounts/DetailsNew';
 
@@ -119,10 +121,24 @@ const entityDetailsMap = {
   },
   '/partners/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
   '/partners/earnings/transactional/:id(comm_.+)': {
-    component: TransactionalEarningDetails,
+    component: EarningTransactionalDetails,
+    additionalCondition: user =>
+      user.isAllowedView('earnings') && user.isHavingPartnerConfigs,
+  },
+  '/partners/subventions/transactional/:id(comm_.+)': {
+    component: SubventionTransactionalDetails,
+    additionalCondition: user =>
+      user.isAllowedView('earnings') && user.isHavingSubventionConfigs,
   },
   '/partners/earnings/daily/:timestamp': {
-    component: DailyEarningDetails,
+    component: EarningDailyDetails,
+    additionalCondition: user =>
+      user.isAllowedView('earnings') && user.isHavingPartnerConfigs,
+  },
+  '/partners/subventions/daily/:timestamp': {
+    component: SubventionDailyDetails,
+    additionalCondition: user =>
+      user.isAllowedView('earnings') && user.isHavingSubventionConfigs,
   },
   '/disputes/:id(disp_.+)': {
     component: DisputeDetails,

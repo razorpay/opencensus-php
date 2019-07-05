@@ -1,5 +1,4 @@
 import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Spinner from 'rzp/ui/Spinner';
@@ -11,9 +10,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { fetchCommission } from 'merchant/modules/commission';
-import { isPresent, capitalize } from 'rzp/utils/rzp-utils';
+import { isPresent } from 'rzp/utils/rzp-utils';
 
-@withRouter
 @connect(
   state => ({
     ...state.commission,
@@ -32,7 +30,7 @@ export default class CommissionEntityContainer extends Component {
   }
 
   render() {
-    const { loading: isLoading, entity, error } = this.props;
+    const { loading: isLoading, entity, error, renderDetails } = this.props;
     const source = entity.source || {};
     return (
       <div class="content-wrapper content-sm txn-details Commission--Detail">
@@ -49,12 +47,8 @@ export default class CommissionEntityContainer extends Component {
                 <div class="panel-body">
                   <div class="list-group details-row-container">
                     {/* earnings breakup */}
-                    <CommissionEarningBreakUp
-                      currency={entity.currency}
-                      total={entity.credit}
-                      gst={entity.tax}
-                      base={entity.credit - entity.tax}
-                    />
+                    {renderDetails(entity)}
+
                     {entity.source_type === 'payment' && (
                       <>
                         <div className="sub-heading">
@@ -93,7 +87,7 @@ export default class CommissionEntityContainer extends Component {
   }
 }
 
-function CommissionEarningBreakUp(props) {
+export function CommissionEarningBreakUp(props) {
   return (
     <>
       <div class="sub-heading">

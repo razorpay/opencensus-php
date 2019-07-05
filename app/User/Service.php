@@ -298,6 +298,7 @@ class Service extends Base\Service
             'token'         => $token,
             'email'         => $user->email,
             'name'          => $user->name,
+            'merchant_id'   => $currentMerchant->id,
             'role'          => $currentMerchant->role,
             'merchant_name' => $currentMerchant->name,
             'logo'          => $currentMerchant->logo_url
@@ -439,6 +440,8 @@ class Service extends Base\Service
                     $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
                     $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
 
+                    $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
+
                     $data['current'] = $currentMerchantId;
 
                     $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
@@ -571,6 +574,14 @@ class Service extends Base\Service
         {
             $genericUser = (new Helper)->createdGenericUser($data);
         }
+        else
+        {
+            $email = $input['email'] ?? '';
+            $this->trace->info(
+                TraceCode::USER_LOGIN_FAILURE,
+                ['error' => $error, 'email' => $email]);
+        }
+
 
         return [$error, $genericUser];
     }

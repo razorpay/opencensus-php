@@ -143,7 +143,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
   showCreateVAModal = () => {
     this.props.openModal({
-      size: 'small',
+      size: 'medium',
+      className: 'create-virtual-account',
       component: (
         <CreateVirtualAccount
           showCreateVAModal={this.showCreateVAModal}
