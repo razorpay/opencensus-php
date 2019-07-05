@@ -36,41 +36,32 @@ return [
         ],
         'response' => [
             'content' => [
-                "config:downtime:detection:configuration" =>
-                    [
-                        [
-                            "key" => "upi_mindgate",
-                            "value" => [
-                                [
-                                    "30",
-                                    "93",
-                                    "500",
-                                    "120",
-                                ],
-                                [
-                                    "80",
-                                    "96",
-                                    "500",
-                                    "320",
-                                ],
-                                [
-                                    "160",
-                                    "98",
-                                    "500",
-                                    "600",
-                                ],
-                            ],
-                        ],
-                        [
-                            "key" => "sharp",
-                            "value" =>  [
-                                ['300', '50' , '2', '600'],
-                                ['3000', '60' , '2', '6000']
-                            ],
-                        ],
-                    ]
             ]
         ]
+    ],
+
+    'upiMindGateDowntimeResponse' => [
+        "key" => "upi_mindgate",
+        "value" => [
+            [
+                "30",
+                "93",
+                "500",
+                "120",
+            ],
+            [
+                "80",
+                "96",
+                "500",
+                "320",
+            ],
+            [
+                "160",
+                "98",
+                "500",
+                "600",
+            ],
+        ],
     ],
 
     'testGetGatewayDowntimeRedisConf' => [

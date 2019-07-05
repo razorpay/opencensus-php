@@ -7,6 +7,7 @@ use Requests_Hooks;
 use SimpleXMLElement;
 use RZP\Constants\Timezone;
 
+use RZP\Diag\EventCode;
 use RZP\Error;
 use RZP\Constants;
 use RZP\Exception;
@@ -128,6 +129,7 @@ class Gateway extends Base\Gateway
                     return $this->authorizeNotEnrolled($input, $authorizeRequest);
 
                 default:
+
                     $response = $this->enroll($input);
 
                     return $this->decideStepAfterEnroll($response, $input);
@@ -188,6 +190,8 @@ class Gateway extends Base\Gateway
         $gatewayEntity = $this->createGatewayPaymentEntity($gatewayPayment, $input);
 
         $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $traceContent);
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $response = $this->getSoapResponse($requestContent);
 
@@ -2242,6 +2246,8 @@ class Gateway extends Base\Gateway
     {
         $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
 
         $responseArray = $this->parseOrderResponse($response);
@@ -2254,6 +2260,8 @@ class Gateway extends Base\Gateway
     protected function authorizeEnrolled(array $input, $gatewayPayment, $authorizeRequest)
     {
         $this->traceGatewayPaymentRequest($authorizeRequest, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $response = $this->postSoapRequest($authorizeRequest, ApiRequestFields::ORDER_REQUEST);
 
@@ -2460,6 +2468,10 @@ class Gateway extends Base\Gateway
 
     protected function enroll($input)
     {
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $input);
+
         $request = $this->getEnrollRequest($input);
 
         $this->traceGatewayEnrollRequest($request, $input);
@@ -2467,6 +2479,16 @@ class Gateway extends Base\Gateway
         $this->getCardCacheKey($input);
 
         $response = $this->postSoapRequest($request, ApiRequestFields::ORDER_REQUEST);
+
+        $enrolled = isset($response[ApiResponseFields::SOAP_ENV_BODY][ApiResponseFields::IPGAPI_ORDER_RESPONSE]) ? 'Y' : 'N';
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $input,
+            null,
+            [
+                'enrolled' => $enrolled
+            ]);
 
         return $response;
     }

@@ -298,7 +298,7 @@ trait Authorize
                     $payment,
                     null,
                     [
-                        'url' => $response['url'] ?? ''
+                        'url' => $request['url'] ?? ''
                     ]);
 
                 $retry = false;

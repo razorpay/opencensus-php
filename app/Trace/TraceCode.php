@@ -250,6 +250,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
+    const FTA_MODE_SET                                          = 'FTA_MODE_SET';
+    const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';
 
     const GATEWAY_INTERNAL_FORMATTED_RESPONSE                   = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
 
@@ -911,6 +913,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE                    = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_PARTNER_STATUS_RESPONSE                      = 'MERCHANT_PARTNER_STATUS_RESPONSE';
+
+    const MERCHANT_INVOICE_CREATE_REQUEST                       = 'MERCHANT_INVOICE_CREATE_REQUEST';
+    const MERCHANT_INVOICE_DISPATCH_COUNT                       = 'MERCHANT_INVOICE_DISPATCH_COUNT';
+    const MERCHANT_INVOICE_CREATE                               = 'MERCHANT_INVOICE_CREATE';
 
     const BENEFICIARY_REGISTRATION_FAILED                       = 'BENEFICIARY_REGISTRATION_FAILED';
     const BENEFICIARY_REGISTRATION_SUMMARY                      = 'BENEFICIARY_REGISTRATION_SUMMARY';
@@ -1884,6 +1890,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
     const MOZART_SERVICE_RESPONSE                               = 'MOZART_SERVICE_RESPONSE';
     const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
+    const CAPTURE_VERIFY_FAILED_PAYMENT                         = 'CAPTURE_VERIFY_FAILED_PAYMENT';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

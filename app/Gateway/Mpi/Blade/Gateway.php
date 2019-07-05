@@ -6,6 +6,7 @@ use Cache;
 use Carbon\Carbon;
 use GuzzleHttp;
 use DOMDocument;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use Requests_Hooks;
 use RZP\Models\Card;
@@ -83,10 +84,22 @@ class Gateway extends Base\Gateway
             return null;
         }
 
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $input);
+
         // Send card enrollment verification request
         $response = $this->sendEnrollmentRequest($input);
 
         $attributes = $this->getVeresAttributesToSave($response, $input);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $input,
+            null,
+            [
+                'enrolled' => $attributes[Base\Entity::ENROLLED]
+            ]);
 
         $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
@@ -194,6 +207,10 @@ class Gateway extends Base\Gateway
         $isInternational = $input['card']['international'];
 
         $this->validateAuthResponse($eci, $networkCode, $isInternational);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
+            $input);
 
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity

@@ -59,7 +59,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATED                = 'activated';
     const ACTIVATED_AT             = 'activated_at';
     const LIVE                     = 'live';
+    const LIVE_DISABLE_REASON      = 'live_disable_reason';
     const HOLD_FUNDS               = 'hold_funds';
+    const HOLD_FUNDS_REASON        = 'hold_funds_reason';
     const PRICING_PLAN_ID          = 'pricing_plan_id';
     const INTERNATIONAL            = 'international';
     const BILLING_LABEL            = 'billing_label';
@@ -84,6 +86,7 @@ class Entity extends Base\PublicEntity
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
     const RISK_THRESHOLD           = 'risk_threshold';
+    const ICON_URL                 = 'icon_url';
     const LOGO_URL                 = 'logo_url';
     const INVOICE_LABEL_FIELD      = 'invoice_label_field';
     const AWS_LOGO_URL             = 'aws_logo_url';
@@ -306,6 +309,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::SUSPENDED_AT,
         self::ARCHIVED_AT,
+        self::ICON_URL,
         self::LOGO_URL,
         self::ORG_ID,
         self::GROUPS,
