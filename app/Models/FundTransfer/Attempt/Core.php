@@ -204,8 +204,9 @@ class Core extends Base\Core
      * @param CardEntity|null   $card
      * @return array
      *
-     * TODO: refactor this section so that we dont have to use `shouldUseGateway` and `getChannelForTransfer`
+     * TODO: refactor this section so that we don't have to use `shouldUseGateway` and `getChannelForTransfer`
      * for different reasons. A single method should give us which path should be chosen
+     * use RazorX here for easy config
      */
     protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, CardEntity $card = null): array
     {
@@ -213,12 +214,18 @@ class Core extends Base\Core
         {
             $srcMerchantId = $source->getMerchantId();
 
-            $merchantId = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
+            $merchantList = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
 
-            if ((empty($merchantId) === false) and
-                ($srcMerchantId !== $merchantId))
+            $merchantIds = (empty($merchantId) === false) ? explode(',', $merchantList) : [];
+
+            if (in_array($srcMerchantId, $merchantIds, true) === false)
             {
                 return [false, Settlement\Channel::YESBANK];
+            }
+
+            if ($sourceType === EntityConstant::FUND_ACCOUNT_VALIDATION)
+            {
+                return [true, Settlement\Channel::ICICI];
             }
 
             $amount = $source->getAmount();
@@ -306,11 +313,23 @@ class Core extends Base\Core
     {
         $fundTransferAttempt = new Entity;
 
+        $mode = null;
+
         $fundTransferAttempt->merchant()->associate($source->merchant);
 
         $fundTransferAttempt->source()->associate($source);
 
         list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $card);
+
+        //
+        // Always create Penny testing entry with mode as IMPS (default)
+        // this is for ease of execution
+        // this will remove other unnecessary complexities and conditions
+        //
+        if ($fundTransferAttempt->getSourceType() === EntityConstant::FUND_ACCOUNT_VALIDATION)
+        {
+            $mode = Mode::IMPS;
+        }
 
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
@@ -319,6 +338,7 @@ class Core extends Base\Core
             Entity::STATUS      => Status::CREATED,
             Entity::PURPOSE     => Purpose::REFUND,
             Entity::IS_FTS      => $isFTS,
+            Entity::MODE        => $mode,
         ];
 
         $values = array_merge($defaultValues, $values);
@@ -400,7 +420,6 @@ class Core extends Base\Core
 
     /**
      * @param Entity $fta
-     * @param string $accountType
      * @param bool   $isRegistered
      */
     public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false)
@@ -510,7 +529,7 @@ class Core extends Base\Core
             $this->updateMerchantEntity($fta);
 
             return [
-              'message' => 'FTA and source updated succesfully',
+                'message' => 'FTA and source updated successfully',
             ];
         }
         catch (\Throwable $e)
@@ -718,21 +737,22 @@ class Core extends Base\Core
 
     /**
      * @param array $input
-     * @param Entity $fta
      * @return array
      */
     public function getDataToUpdateFromInput(array $input)
     {
         $beneficiaryName = null;
 
-        if (empty($input[BankAccountEntity::BENEFICIARY_NAME]) === false)
+        $extraInfo = $input['extra_info'] ?? [];
+
+        if (empty($extraInfo[BankAccountEntity::BENEFICIARY_NAME]) === false)
         {
             $beneficiaryName = $input[BankAccountEntity::BENEFICIARY_NAME];
         }
 
         $internalError = false;
 
-        if (empty($input[AttemptConstants::INTERNAL_ERROR]) === false)
+        if (empty($extraInfo[AttemptConstants::INTERNAL_ERROR]) === false)
         {
             $internalError = $input[AttemptConstants::INTERNAL_ERROR];
         }
