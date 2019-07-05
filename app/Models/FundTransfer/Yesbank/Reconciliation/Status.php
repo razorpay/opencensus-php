@@ -280,7 +280,6 @@ class Status extends BaseStatus
     {
         return [
             self::NA                            => [],
-            self::AD                            => [],
             self::FAILED                        => [],
             self::RETURNED_FROM_BENEFICIARY     => [],
             self::INVALID_BENEFICIARY_DETAILS   => [],
