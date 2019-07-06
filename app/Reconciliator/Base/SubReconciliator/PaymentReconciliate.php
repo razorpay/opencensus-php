@@ -672,6 +672,12 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->setPaymentAndTransaction($row, $paymentId);
 
+        //If payment is not found, dont throw. mark it as Unprocessed. returning null will do that.
+        if ($this->payment === null)
+        {
+            return null;
+        }
+
         //
         // Have to set allowForceAuthorization AFTER setting payment instance because this
         // attribute can be dependent on payment instance's attributes. For eg. payment's created_at
@@ -752,6 +758,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         try
         {
+            $this->payment = null; //For every row $this->payment should be initialized to null.
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
 
@@ -782,10 +789,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
-
-            throw $ex;
-
-            //return null;
         }
     }
 

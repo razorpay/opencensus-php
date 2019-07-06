@@ -34,11 +34,14 @@ class NetbankingCanaraCombinedFileTest extends TestCase
     {
         Mail::fake();
 
+        $payment  = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $payment1 = $this->doAuthAndCapturePayment($payment);
+
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $payment2 = $this->doAuthAndCapturePayment($payment);
 
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($payment['id']);
+        $refundFull    = $this->refundPayment($payment1['id']);
+        $refundPartial = $this->refundPayment($payment2['id'], 500);
 
         $this->ba->adminAuth();
 
@@ -51,51 +54,120 @@ class NetbankingCanaraCombinedFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getLastEntity('file_store', true);
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
 
         $date = Carbon::now(Timezone::IST)->format('d_m_Y');
 
         $expectedFilesContent = [
-                                'type'      => 'canara_netbanking_refund',
-                                'location'  => 'Canara_Netbanking_Refunds_' . $date . '.txt',
-                                'extension' => 'txt'
-                                ];
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'canara_netbanking_claims',
+                ],
+                [
+                    'type'      => 'canara_netbanking_refund',
+                ],
+            ],
+        ];
 
-        $this->assertArraySelectiveEquals($expectedFilesContent, $file);
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
-        Mail::assertSent(DailyFileMail::class, function ($mail)
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($payment1, $refundFull, $refundPartial)
         {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
             $testData = [
                 'subject' => 'Canara Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => '500.00',
-                    'refunds' => '500.00',
-                    'total'   => '0.00'
+                    'claims'  => '1000.00',
+                    'refunds' => '505.00',
+                    'total'   => '495.00',
                 ],
                 'count' => [
-                    'claims'  => 1,
-                    'refunds' => 1,
-                    'total'   => 2
+                    'claims'  => 2,
+                    'refunds' => 2,
+                    'total'   => 4
                 ],
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            $this->checkRefundsFile($mail->viewData['refundsFile']);
+            $this->checkRefundsFile($mail->viewData['refundsFile'], $payment1, $refundFull, $refundPartial);
 
-            $this->assertCount(1, $mail->attachments);
+            $this->checkClaimsFile($mail->viewData['claimsFile'], $payment1);
+
+            $this->assertCount(2, $mail->attachments);
 
             return true;
         });
     }
 
-
-    protected function checkRefundsFile(array $refundFileData)
+    protected function checkRefundsFile(array $refundFileData, $payment, $refundfull, $refundPartial)
     {
         $refundsFileContents = file($refundFileData['url']);
 
-        $this->assertCount(2, $refundsFileContents);
+        $this->assertCount(3, $refundsFileContents);
+
+        $rowFullRefund    = explode('|', $refundsFileContents[1]);
+        $rowPartialRefund = explode('|', $refundsFileContents[2]);
+
+        $this->assertCount(7, $rowFullRefund);
+
+        $this->fixtures->stripSign($payment['id']);
+        $this->fixtures->stripSign($refundfull['id']);
+
+        $this->assertEquals($payment['id'], $rowFullRefund[3]);
+
+        $this->assertEquals($refundfull['id'], $rowFullRefund[4]);
+
+        $this->assertEquals(
+                 number_format(
+                     $payment['amount'] / 100,
+                     2,
+                     '.',
+                     ''
+                 ),
+                 $rowFullRefund[5]
+               );
+
+        $this->assertEquals(
+                 number_format(
+                     $refundfull['amount'] / 100,
+                     2,
+                     '.',
+                     ''
+                 ),
+                 trim($rowFullRefund[6])
+               );
+
+        $this->assertEquals(
+            number_format(
+                $refundPartial['amount'] / 100,
+                2,
+                '.',
+                ''
+            ),
+            trim($rowPartialRefund[6])
+        );
+    }
+
+    protected function checkClaimsFile(array $claimsFileData, $payment)
+    {
+        $claimsFileContents = file($claimsFileData['url']);
+
+        $this->assertCount(3, $claimsFileContents);
+
+        $row = explode('|', $claimsFileContents[1]);
+
+        $this->assertCount(5, $row);
+
+        $this->fixtures->stripSign($payment['id']);
+
+        $this->assertEquals($payment['id'], $row[0]);
+
+        $this->assertEquals(number_format($payment['amount'] / 100, 2, '.', ''), $row[3]);
     }
 }

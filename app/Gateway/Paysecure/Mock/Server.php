@@ -39,7 +39,11 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($data, 'initiate2');
 
+        $this->content($data[Paysecure\Fields::TRANSACTION_TYPE_INDICATOR], 'validate_message_type');
+
         $this->content($data[Paysecure\Fields::TERMINAL_OWNER_NAME], 'validate_terminal_owner_name');
+
+        $this->content($data[Paysecure\Fields::STAN], 'validate_stan');
 
         $redirectUrl = $this->route->getUrlWithPublicAuth('mock_paysecure_payment');
 

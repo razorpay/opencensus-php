@@ -28,6 +28,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
@@ -58,7 +59,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATED                = 'activated';
     const ACTIVATED_AT             = 'activated_at';
     const LIVE                     = 'live';
+    const LIVE_DISABLE_REASON      = 'live_disable_reason';
     const HOLD_FUNDS               = 'hold_funds';
+    const HOLD_FUNDS_REASON        = 'hold_funds_reason';
     const PRICING_PLAN_ID          = 'pricing_plan_id';
     const INTERNATIONAL            = 'international';
     const BILLING_LABEL            = 'billing_label';
@@ -83,6 +86,7 @@ class Entity extends Base\PublicEntity
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
     const RISK_THRESHOLD           = 'risk_threshold';
+    const ICON_URL                 = 'icon_url';
     const LOGO_URL                 = 'logo_url';
     const INVOICE_LABEL_FIELD      = 'invoice_label_field';
     const AWS_LOGO_URL             = 'aws_logo_url';
@@ -305,6 +309,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::SUSPENDED_AT,
         self::ARCHIVED_AT,
+        self::ICON_URL,
         self::LOGO_URL,
         self::ORG_ID,
         self::GROUPS,
@@ -983,6 +988,11 @@ class Entity extends Base\PublicEntity
     public function offers()
     {
         return $this->hasMany('RZP\Models\Offer\Entity');
+    }
+
+    public function bankingAccounts()
+    {
+        return $this->hasMany(BankingAccount\Entity::class);
     }
 
     protected function getMaxPaymentAmountAttribute()

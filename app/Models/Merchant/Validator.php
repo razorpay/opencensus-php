@@ -288,11 +288,7 @@ class Validator extends Base\Validator
 
     protected function validateChannel($attribute, $channel)
     {
-        if (Settlement\Channel::exists($channel) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid channel name: ' . $channel);
-        }
+        Settlement\Channel::validate($channel);
     }
 
     public function validateKeyAccess(array $input)
@@ -1111,6 +1107,8 @@ class Validator extends Base\Validator
      * service layer repository's fetch etc only understands BALANCE_ID.
      *
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateAndTranslateAccountNumberForBanking(array & $input)
     {

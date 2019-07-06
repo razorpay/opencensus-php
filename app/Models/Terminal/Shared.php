@@ -50,8 +50,10 @@ class Shared
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
     const NETBANKING_SIB_TERMINAL            = '1000NbSibTrmnl';
+    const NETBANKING_SIB_TPV_TERMINAL        = '1000NbSibTpvTl';
     const NETBANKING_SBI_TERMINAL            = '100NbSbinTrmnl';
     const NETBANKING_YESB_TERMINAL           = '100NbYesbTrmnl';
+    const NETBANKING_YESB_TPV_TERMINAL       = '100NbYesbTpvTl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
@@ -73,6 +75,7 @@ class Shared
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_ICICI_TPV_TERMINAL             = '100UPIICTpvTml';
     const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';
     const UPI_RBL_RAZORPAY_TERMINAL          = '100UPIRBLTrmnl';
     const UPI_AXIS_TPV_RAZORPAY_TERMINAL     = '100UPIAXISTpvl';

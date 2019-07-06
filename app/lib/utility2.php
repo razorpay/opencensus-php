@@ -1,20 +1,5 @@
 <?php
 
-use RZP\Exception;
-
-if (! function_exists('validate_keys'))
-{
-    function validate_keys($data, $rules)
-    {
-        $invalid_keys = array_diff_keys($data, $rules);
-
-        if (count($invalid_keys) > 0)
-        {
-            throw new \RZP\Exception\ExtraFieldsException($invalid_keys);
-        }
-    }
-}
-
 if (! function_exists('getTextBetweenStrings'))
 {
     function getTextBetweenStrings($string, $start, $end)

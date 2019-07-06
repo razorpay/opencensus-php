@@ -93,14 +93,14 @@ class Repository extends Base\Repository
       int $skip,
       int $end,
       array $merchantIds = [],
-      array $merchantIdsExcluded = []): Base\PublicCollection
+      array $merchantIdsExcluded = []): array
     {
         $query = $this->newQuery()
+                    ->select(Entity::ID)
                     ->where(Entity::ACTIVATED, '=', 1)
                     ->where(Entity::ACTIVATED_AT, '<=', $end)
                     ->take($limit)
-                    ->skip($skip)
-                    ->with('merchantDetail');
+                    ->skip($skip);
 
         if (empty($merchantIds) === false)
         {
@@ -112,7 +112,9 @@ class Repository extends Base\Repository
             $query = $query->whereNotIn(Entity::ID, $merchantIdsExcluded);
         }
 
-        return $query->get();
+        return $query->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
     }
 
     public function getSharedAccount()

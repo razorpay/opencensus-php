@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Hdfc\Payment;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Base;
@@ -61,6 +62,10 @@ trait Enroll
         {
             $this->enrollRequest['options']['proxy'] = $this->proxy;
         }
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $input);
 
         //
         // Send enroll request and receive response.
@@ -312,6 +317,14 @@ trait Enroll
                     $this->enrollRequest['data'],
                     $this->enrollResponse['data']);
         }
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $this->input,
+            null,
+            [
+                'enrolled' => $this->model->enroll_result
+            ]);
     }
 
     /**

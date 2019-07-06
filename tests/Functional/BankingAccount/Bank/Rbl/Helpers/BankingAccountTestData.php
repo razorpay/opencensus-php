@@ -62,7 +62,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected channel is invalid.',
+                    'description' => 'Not a valid channel: TEST',
                 ],
             ],
             'status_code' => 400,
@@ -73,13 +73,47 @@ return [
         ],
     ],
 
+    'testStoreMerchantCredentials' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testStoreMerchantCredentialsFailed' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'            => 'MERCHANT_SUB_CORP',
+                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => false,
+            ],
+        ],
+    ],
+
     'testNotificationOnBankingAccountProcessedFromProcessing' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CLOSED
+                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CLOSED,
             ],
         ],
         'response' => [
@@ -90,14 +124,13 @@ return [
             ],
         ],
     ],
-
     'testNotificationOnBankingAccountCancelledFromProcessing' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CANCELLED
+                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CANCELLED,
             ],
         ],
         'response' => [
@@ -108,14 +141,13 @@ return [
             ],
         ],
     ],
-
     'testNotificationOnBankingAccountCancelledFromInitiated' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CANCELLED
+                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CANCELLED,
             ],
         ],
         'response' => [
@@ -126,14 +158,13 @@ return [
             ],
         ],
     ],
-
     'testNotificationOnBankingAccountProcessingFromInitiated' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSING,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::OPEN
+                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::OPEN,
             ],
         ],
         'response' => [
@@ -144,14 +175,12 @@ return [
             ],
         ],
     ],
-
     'testNotificationOnBankingAccountCreatedFromCreated' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
-//                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CLOSED
             ],
         ],
         'response' => [

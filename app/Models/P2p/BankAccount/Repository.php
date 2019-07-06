@@ -15,4 +15,13 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK_ID, $bank)
                     ->get();
     }
+
+    public function findByAccountDetails(string $accountNumber, string $ifsc)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::IFSC, $ifsc)
+                    ->latest()
+                    ->first();
+    }
 }

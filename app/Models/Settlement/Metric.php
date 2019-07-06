@@ -43,6 +43,7 @@ final class Metric
     // ------------------------- Dimensions -------------------------
 
     const CHANNEL           = 'channel';
+    const MODE              = 'mode';
 
     // ------ Dimension values for failures ------
 
@@ -59,4 +60,6 @@ final class Metric
     const BLOCK_OUTSIDE_ES_WINDOW               = 'block_outside_es_window';
     const BLOCK_OUTSIDE_ES_THREE_PM_WINDOW      = 'block_outside_es_three_pm_window';
     const BLOCK_KARVY_OUTSIDE_TIME_PERIOD       = 'block_karvy_outside_time_period';
+    const BENEFICIARY_REGISTRATION_STATUS       = 'bene_reg_status';
+    const RECORD_EXIST_PENDING_APPROVAL         = 'record_exist_pending_approval';
 }

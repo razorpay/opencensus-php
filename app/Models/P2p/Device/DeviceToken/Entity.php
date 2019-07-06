@@ -137,6 +137,15 @@ class Entity extends Base\Entity
         return ($this->getGatewayData()[self::EXPIRE_AT] ?? $defaultExpireAt);
     }
 
+    public function shouldRefresh()
+    {
+        $expireAt = $this->getExpireAt();
+        $currentTime = $this->freshTimestamp();
+
+        // We are giving one minute window
+        return (($expireAt - $currentTime) < 60);
+    }
+
     /***************** SCOPES *****************/
 
     public function scopeVerified(BuilderEx $query)

@@ -56,11 +56,12 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT_ID       = 'settlement_id';
     const RECONCILED_TYPE     = 'reconciled_type';
     const BALANCE_ID          = 'balance_id';
+    const BALANCE_UPDATED     = 'balance_updated';
 
     // dummy columns usable later
     const REFERENCE3          = 'reference3';
     const REFERENCE4          = 'reference4';
-    const REFERENCE5          = 'reference5';
+
     const REFERENCE6          = 'reference6';
     const REFERENCE7          = 'reference7';
     const REFERENCE8          = 'reference8';
@@ -157,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL             => Merchant\FeeModel::NA,
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
+        self::BALANCE_UPDATED       => null,
     ];
 
     protected $amounts = [
@@ -179,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD             => 'bool',
         self::SETTLED_AT          => 'int',
         self::GATEWAY_SETTLED_AT  => 'int',
+        self::BALANCE_UPDATED     => 'bool',
     ];
 
     protected $ignoredRelations = [
@@ -502,6 +505,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED, $settled);
     }
 
+    public function setBalanceUpdated(bool $balanceUpdated)
+    {
+        $this->setAttribute(self::BALANCE_UPDATED, $balanceUpdated);
+    }
+
     public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);
@@ -530,8 +538,6 @@ class Entity extends Base\PublicEntity
 
     public function setFee($fee)
     {
-        assertTrue ($fee >= 0);
-
         $this->setAttribute(self::FEE, $fee);
     }
 
@@ -602,8 +608,6 @@ class Entity extends Base\PublicEntity
 
     public function setTax($tax)
     {
-        assertTrue($tax >= 0);
-
         $this->setAttribute(self::TAX, $tax);
     }
 
@@ -690,6 +694,11 @@ class Entity extends Base\PublicEntity
     public function isSettled()
     {
         return $this->getAttribute(self::SETTLED);
+    }
+
+    public function isBalanceUpdated(): bool
+    {
+        return $this->getAttribute(self::BALANCE_UPDATED);
     }
 
     public function isFeeBearerCustomer()

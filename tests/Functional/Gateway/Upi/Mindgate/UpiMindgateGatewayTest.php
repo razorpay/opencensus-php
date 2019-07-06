@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
@@ -552,16 +553,15 @@ class UpiMindgateGatewayTest extends TestCase
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
-        $data = $this->testData[__FUNCTION__];
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
-        $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            $this->makeS2SCallbackAndGetContent($content);
-        });
+        $this->assertArraySelectiveEquals(['success' => true], $response);
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED, $payment['internal_error_code']);
 
         $upiEntity = $this->getDbLastEntity('upi');
 
@@ -586,16 +586,14 @@ class UpiMindgateGatewayTest extends TestCase
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
-        $data = $this->testData[__FUNCTION__];
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
-        $this->runRequestResponseFlow($data, function() use ($content)
-        {
-            $this->makeS2SCallbackAndGetContent($content);
-        });
+        $this->assertArraySelectiveEquals(['success' => true], $response);
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $payment['internal_error_code']);
     }
 
     public function testPaymentWithExpiryPrivateAuth()
@@ -935,8 +933,6 @@ class UpiMindgateGatewayTest extends TestCase
 
         $response = $this->createUnexpectedPayment($data);
 
-        $this->assertFalse($response['success']);
-
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertNull($paymentEntity);
@@ -955,8 +951,6 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertTrue($response['success']);
 
         $response = $this->createUnexpectedPayment($data);
-
-        $this->assertFalse($response['success']);
 
         $paymentEntities = $this->getEntities('payment', array(), true);
 
@@ -1279,5 +1273,49 @@ class UpiMindgateGatewayTest extends TestCase
             "Payment processing failed due to error at bank or wallet gateway\n" .
             "Gateway Error Code: \n" .
             "Gateway Error Desc: hex2bin(): Input string must be hexadecimal string");
+    }
+
+    public function testUpiQrPaymentProcessWithTerminalSecret()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $x = $this->fixtures->terminal->edit($this->bharatQrTerminal['id'],['gateway_secure_secret' => '93158d5892188161a259db660ddb1d0a']);
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQrWithTerminalSecret($qrCodeId);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
     }
 }

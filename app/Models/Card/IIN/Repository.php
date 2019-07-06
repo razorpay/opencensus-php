@@ -4,10 +4,12 @@ namespace RZP\Models\Card\IIN;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
+    use CacheQueries;
 
     protected $entity = 'iin';
 

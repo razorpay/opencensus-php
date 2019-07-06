@@ -4,6 +4,7 @@ namespace RZP\Services\FTS;
 
 use RZP\Models\Vpa;
 use RZP\Models\BankAccount;
+use RZP\Models\BankingAccount;
 use RZP\Exception\LogicException;
 
 class CreateAccount extends Base
@@ -14,6 +15,8 @@ class CreateAccount extends Base
 
     protected $bankAccountCore;
 
+    protected $bankingAccountCore;
+
     protected $product;
 
     public function __construct($app)
@@ -23,6 +26,8 @@ class CreateAccount extends Base
         $this->vpaCore = new Vpa\Core;
 
         $this->bankAccountCore = new BankAccount\Core;
+
+        $this->bankingAccountCore = new BankingAccount\Core;
     }
 
     /**
@@ -41,17 +46,27 @@ class CreateAccount extends Base
     {
         $this->product = $product;
 
-        $input = $this->makeRequestUsingType($id, $type);
+        $input = $this->makeRequestUsingType($id, $type, $product);
 
         $response = $this->createAndSendRequest(parent::FUND_ACCOUNT_CREATE_URI, 'POST', $input);
 
         $ftsFundAccountId = array_key_exists(Constants::FUND_ACCOUNT_ID, $response['body']) ?
             $response['body'][Constants::FUND_ACCOUNT_ID] : null;
 
-        if(empty(trim($ftsFundAccountId)) === false)
+        if (empty(trim($ftsFundAccountId)) === false)
         {
             $this->saveFtsAccountId($ftsFundAccountId, $type);
         }
+
+        return $response;
+    }
+
+    public function createSourceAccount(string $id, string $ftsAccountId, array $content,
+                                        string $product, string $channel = 'ICICI')
+    {
+        $input = $this->getSourceAccountRequestBody($product, $ftsAccountId, $channel, $content);
+
+        $response = $this->createAndSendRequest(parent::SOURCE_ACCOUNT_CREATE_URI, 'POST', $input);
 
         return $response;
     }
@@ -65,9 +80,12 @@ class CreateAccount extends Base
      * @return mixed
      * @throws LogicException
      */
-    public function makeRequestUsingType(string $id, string $type)
+    public function makeRequestUsingType(string $id, string $type, string $product)
     {
-        $request[Constants::DEFAULT_CHANNEL] = '';
+        // ToDo need to confirm this before merging
+        $request[Constants::DEFAULT_CHANNEL] = 'ICICI';
+
+        $request[Constants::PRODUCT] = $product;
 
         switch ($type)
         {
@@ -85,9 +103,18 @@ class CreateAccount extends Base
 
                 break;
 
+            case Constants::BANKING_ACCOUNT:
+                $this->account = $this->bankingAccountCore->getBankingAccountEntity($id);
+
+                $request[Constants::BANK_ACCOUNT] = $this->getBankingAccountDetails($this->account);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $type);
         }
+
+        $request[Constants::MERCHANT_ID] = $this->account->merchant->getId();
 
         return $request;
     }
@@ -102,9 +129,7 @@ class CreateAccount extends Base
     public function getAccountDetails(BankAccount\Entity $ba):array
     {
         return [
-            Constants::PRODUCT                    => $this->product,
             Constants::IFSC_CODE                  => $ba->getIfscCode(),
-            Constants::MERCHANT_ID                => $ba->merchant->getId(),
             Constants::ACCOUNT_TYPE               => $ba->getAccountType(),
             Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
@@ -119,6 +144,24 @@ class CreateAccount extends Base
         ];
     }
 
+    public function getBankingAccountDetails(BankingAccount\Entity $ba): array
+    {
+        return [
+            Constants::IFSC_CODE                  => $ba->getAccountIfsc(),
+            Constants::ACCOUNT_TYPE               => $ba->getAccountType(),
+            Constants::ACCOUNT_TYPE               => $ba->getAccountType(),
+            Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
+            Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
+            Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),
+            Constants::BENEFICIARY_EMAIL          => $ba->getBeneficiaryEMail(),
+            Constants::BENEFICIARY_STATE          => $ba->getBeneficiaryState(),
+            Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
+            Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
+            Constants::BENEFICIARY_COUNTRY        => $ba->getBeneficiaryCountry(),
+            Constants::BENEFICIARY_BANK_NAME      => $ba->getChannel(),
+        ];
+    }
+
     /**
      * Method to Populate vpa details
      * in an array using entity
@@ -130,9 +173,7 @@ class CreateAccount extends Base
     {
         return [
             Constants::HANDLE       => $vpa->getHandle(),
-            Constants::PRODUCT      => $this->product,
             Constants::USERNAME     => $vpa->getUsername(),
-            Constants::MERCHANT_ID  => $vpa->merchant->getId(),
         ];
     }
 
@@ -158,9 +199,26 @@ class CreateAccount extends Base
 
                 break;
 
+            case Constants::BANKING_ACCOUNT:
+                $this->bankingAccountCore->updateBankingAccountWithFtsId($this->account, $ftsAccountId);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $type);
         }
     }
 
+    protected function getSourceAccountRequestBody(string $product, string $fundAccountId, string $channel, array $content)
+    {
+        $request = [
+            Constants::PRODUCT              => $product,
+            Constants::CREDENTIALS          => $content[Constants::CREDENTIALS],
+            Constants::MOZART_IDENTIFIER    => $content[Constants::MOZART_IDENTIFIER],
+            Constants::FUND_ACCOUNT_ID      => $fundAccountId,
+            Constants::PREFERRED_CHANNEL    => $channel
+        ];
+
+        return $request;
+    }
 }

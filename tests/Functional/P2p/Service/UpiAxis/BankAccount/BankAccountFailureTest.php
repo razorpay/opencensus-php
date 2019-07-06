@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis\BankAccount;
 
+use Carbon\Carbon;
 use RZP\Tests\P2p\Service\Base;
 use RZP\Models\P2p\BankAccount\Entity;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
@@ -138,5 +139,45 @@ class BankAccountFailureTest extends TestCase
         }, 502);
 
         $helper->retrieve($request['callback'], $content);
+    }
+
+    public function testSetUpiPinTokenExpiryFailure()
+    {
+        $this->setDeviceTokenExpiryValidation(true);
+
+        $this->fixtures->deviceToken(self::DEVICE_1)->generateRefreshedAt()->saveOrFail();
+
+        $this->now((clone $this->testCurrentTime)->addMinutes(9));
+
+        $helper = $this->getBankAccountHelper();
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'BAD_REQUEST_ERROR',
+                'description'   => 'Token is invalid or expired',
+                'action'        => 'initiateGetToken',
+            ], $error);
+        }, 400);
+
+        $helper->initiateSetUpiPin($this->fixtures->bank_account->getPublicId());
+    }
+
+    public function testFetchBalanceTokenExpiryFailure()
+    {
+        $this->setDeviceTokenExpiryValidation(true);
+
+        $helper = $this->getBankAccountHelper();
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'BAD_REQUEST_ERROR',
+                'description'   => 'Token is invalid or expired',
+                'action'        => 'initiateGetToken',
+            ], $error);
+        }, 400);
+
+        $helper->initiateFetchBalance($this->fixtures->bank_account->getPublicId());
     }
 }

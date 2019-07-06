@@ -319,6 +319,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOrg(string $id)
+    {
+        $data = $this->service()->getOrgDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function setBanks($id)
     {
         $input = Request::all();

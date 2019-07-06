@@ -5,6 +5,7 @@ namespace RZP\Models\VirtualAccount;
 use App;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
 use Razorpay\Trace\Logger as Trace;
@@ -12,12 +13,21 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
 {
+    /**
+     * @var Entity
+     */
     protected $virtualAccount;
 
+    /**
+     * @var Validator
+     */
     protected $validator;
 
     protected $receiver;
 
+    /**
+     * @var PaymentProcessor
+     */
     protected $paymentProcessor;
 
     public function __construct()
@@ -27,7 +37,7 @@ abstract class Processor extends Base\Core
         $this->validator = new Validator;
     }
 
-    protected function getPaymentProcessor()
+    protected function getPaymentProcessor(): PaymentProcessor
     {
         if (isset($this->paymentProcessor) === false)
         {
@@ -133,7 +143,7 @@ abstract class Processor extends Base\Core
             {
                 $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
             }
-            else
+            else if ($entity->payment->hasBeenCaptured() === false)
             {
                 $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
             }
@@ -263,6 +273,7 @@ abstract class Processor extends Base\Core
 
     protected function useSharedVirtualAccount(Base\PublicEntity $entity): bool
     {
+        /** @var Merchant\Entity $merchant */
         $merchant = $this->virtualAccount->merchant;
 
         if (($merchant->isLive() === false) and
@@ -271,11 +282,24 @@ abstract class Processor extends Base\Core
            return true;
         }
 
+        if ($this->virtualAccount->isDueToBeClosed() === true)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_CLOSED_PAYMENT_REROUTED,
+                $entity->toArray());
+
+            return true;
+        }
+
+        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
+
         $merchantMethods = $merchant->getMethods();
 
         $method = $entity->getMethod();
 
-        if ($merchantMethods->isMethodEnabled($method) === false)
+        // Check for method being enabled for non-banking balance type VAs
+        if (($isBusinessBankingVa === false) and
+            ($merchantMethods->isMethodEnabled($method) === false))
         {
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_METHOD_DISABLED_PAYMENT_REROUTED,

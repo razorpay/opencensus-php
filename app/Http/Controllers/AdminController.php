@@ -302,4 +302,20 @@ class AdminController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function setGatewayDowntimeConf()
+    {
+        $input  = Request::all();
+
+        $data = $this->service()->setGatewayDowntimeConf($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getGatewayDowntimeConf()
+    {
+        $data = $this->service()->getGatewayDowntimeConf();
+
+        return ApiResponse::json($data);
+    }
 }

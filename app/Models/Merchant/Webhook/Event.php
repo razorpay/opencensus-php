@@ -33,6 +33,7 @@ class Event
     const SUBSCRIPTION_HALTED               = 'subscription.halted';
     const SUBSCRIPTION_CANCELLED            = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED            = 'subscription.completed';
+    const SUBSCRIPTION_UPDATED              = 'subscription.updated';
     const TOKEN_CONFIRMED                   = 'token.confirmed';
     const TOKEN_REJECTED                    = 'token.rejected';
     const SETTLEMENT_PROCESSED              = 'settlement.processed';
@@ -70,6 +71,7 @@ class Event
         self::SUBSCRIPTION_HALTED,
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
+        self::SUBSCRIPTION_UPDATED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
@@ -113,6 +115,7 @@ class Event
         self::SUBSCRIPTION_CHARGED,
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
+        self::SUBSCRIPTION_UPDATED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
@@ -169,6 +172,7 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED         => 34,
         self::PAYOUT_QUEUED                     => 35,
         self::PAYOUT_INITIATED                  => 36,
+        self::SUBSCRIPTION_UPDATED              => 37
     ];
 
     /**
@@ -191,6 +195,7 @@ class Event
         self::SUBSCRIPTION_CHARGED              => [Product::PRIMARY],
         self::SUBSCRIPTION_CANCELLED            => [Product::PRIMARY],
         self::SUBSCRIPTION_COMPLETED            => [Product::PRIMARY],
+        self::SUBSCRIPTION_UPDATED              => [Product::PRIMARY],
         self::TOKEN_CONFIRMED                   => [Product::PRIMARY],
         self::TOKEN_REJECTED                    => [Product::PRIMARY],
         self::SETTLEMENT_PROCESSED              => [Product::PRIMARY],
@@ -233,6 +238,7 @@ class Event
         self::SUBSCRIPTION_CHARGED              => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_CANCELLED            => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_COMPLETED            => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_UPDATED              => Entity::SUBSCRIPTION,
         self::TOKEN_CONFIRMED                   => Entity::TOKEN,
         self::TOKEN_REJECTED                    => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED              => Entity::SETTLEMENT,
@@ -257,6 +263,7 @@ class Event
         self::SUBSCRIPTION_CHARGED              => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_CANCELLED            => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_COMPLETED            => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_UPDATED              => Feature\Constants::SUBSCRIPTIONS,
         self::TOKEN_CONFIRMED                   => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED          => Feature\Constants::VIRTUAL_ACCOUNTS,
@@ -268,6 +275,8 @@ class Event
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
         self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
+        self::PAYMENT_DOWNTIME_STARTED          => Feature\Constants::EXPOSE_DOWNTIMES,
+        self::PAYMENT_DOWNTIME_RESOLVED         => Feature\Constants::EXPOSE_DOWNTIMES,
     ];
 
     /**

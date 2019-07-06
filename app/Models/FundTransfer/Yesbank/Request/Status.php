@@ -141,6 +141,14 @@ class Status extends Base
 
         $beneName = $response[Constants::BENEFICIARY_NAME] ?? null;
 
+        // capture failed response codes
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            ValidStatus::getFailureStatus(),
+            ValidStatus::getSuccessfulStatus(),
+            ValidStatus::FAILED,
+            $bankSubStatus);
+
         return [
             ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
             ReconConstants::UTR                  => $this->getNullOnEmpty($utr),
@@ -163,6 +171,13 @@ class Status extends Base
         $remark = $response[Constants::REASON][Constants::TEXT] ?? null;
 
         $subCode = $response[Constants::CODE][Constants::SUB_CODE][Constants::VALUE] ?? null;
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            ValidStatus::getFailureStatus(),
+            ValidStatus::getSuccessfulStatus(),
+            ValidStatus::FAILED,
+            $subCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
@@ -261,8 +276,8 @@ class Status extends Base
         return json_encode([
             $this->responseIdentifier => [
                 Constants::VERSION                => "2.0",
-                Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
-                Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
+                Constants::TRANSFER_TYPE          => $this->entity->getMode(),
+                Constants::REQ_TRANSFER_TYPE      => $this->entity->getMode(),
                 Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
                 Constants::TRANSFER_AMOUNT        => $amount,
                 Constants::TRANSFER_CURRENCY_CODE => Constants::DEFAULT_CURRENCY,
