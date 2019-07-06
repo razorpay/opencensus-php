@@ -391,55 +391,6 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function processPendingPayout(Entity $payout): Entity
-    {
-        $payoutId = $payout->getId();
-
-        return $this->mutex->acquireAndRelease(
-            $payoutId,
-            function() use ($payoutId)
-            {
-                /** @var Entity $payout */
-                $payout = $this->repo->payout->findOrFail($payoutId);
-
-                /** @var Validator $payoutValidator */
-                $payoutValidator = $payout->getValidator();
-
-                $payoutValidator->validateProcessingPendingPayout();
-
-                $payout = $this->getProcessor('fund_account_payout')
-                               ->setMerchant($payout->merchant)
-                               ->processPendingPayout($payout);
-
-                $this->dispatchFtaInitiate($payout);
-
-                return $payout;
-            },
-            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
-    }
-
-    protected function processRejectPayout(Entity $payout): Entity
-    {
-        $payoutId = $payout->getId();
-
-        return $this->mutex->acquireAndRelease(
-            $payoutId,
-            function() use ($payoutId)
-            {
-                /** @var Entity $payout */
-                $payout = $this->repo->payout->findOrFail($payoutId);
-
-                $payout->setStatus(Status::REJECTED);
-
-                $this->repo->saveOrFail($payout);
-
-                return $payout;
-            },
-            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
-    }
-
     public function cancelPayout(Entity $payout): Entity
     {
         return $this->mutex->acquireAndRelease(
@@ -873,5 +824,60 @@ class Core extends Base\Core
         $entity->setFTSTransferId($ftsTransferId);
 
         $this->repo->saveOrFail($entity);
+    }
+
+
+    protected function processPendingPayout(Entity $payout): Entity
+    {
+        $payoutId = $payout->getId();
+
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                /** @var Validator $payoutValidator */
+                $payoutValidator = $payout->getValidator();
+
+                $payoutValidator->validateProcessingPendingPayout();
+
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processPendingPayout($payout);
+
+                $this->dispatchFtaInitiate($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function processRejectPayout(Entity $payout): Entity
+    {
+        $payoutId = $payout->getId();
+
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                /** @var Validator $payoutValidator */
+                $payoutValidator = $payout->getValidator();
+
+                $payoutValidator->validateRejectPayout();
+
+                $payout->setStatus(Status::REJECTED);
+
+                $this->repo->saveOrFail($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 }

@@ -259,6 +259,11 @@ class Name
         Merchant\Action::FORCE_ACTIVATE         => self::EDIT_MERCHANT_FORCE_ACTIVATION,
     ];
 
+    /**
+     * Permissions that are exposed on the merchant side.
+     *
+     * @var array
+     */
     public static $merchantPermissions = [
         self::CREATE_PAYOUT,
     ];

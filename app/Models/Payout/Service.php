@@ -44,6 +44,8 @@ class Service extends Base\Service
 
     public function approveFundAccountPayout(string $id, array $input): array
     {
+        $this->trace->info(TraceCode::PAYOUT_APPROVE_REQUEST, ['id' => $id, 'input' => $input]);
+
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -60,6 +62,8 @@ class Service extends Base\Service
 
     public function bulkApproveFundAccountPayouts(array $input)
     {
+        $this->trace->info(TraceCode::PAYOUT_BULK_APPROVE_REQUEST, ['input' => $input]);
+
         (new Validator)->validateInput('bulk_approve', $input);
 
         $this->user->validateInput('verify_otp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
@@ -101,6 +105,8 @@ class Service extends Base\Service
 
     public function rejectFundAccountPayout(string $id): array
     {
+        $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
+
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -113,6 +119,8 @@ class Service extends Base\Service
 
     public function bulkRejectFundAccountPayout(array $input)
     {
+        $this->trace->info(TraceCode::PAYOUT_BULK_REJECT_REQUEST, ['input' => $input]);
+
         (new Validator)->validateInput('bulk_reject', $input);
 
         $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);

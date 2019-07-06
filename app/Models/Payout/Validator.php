@@ -358,6 +358,25 @@ class Validator extends Base\Validator
         $this->validateIsFundAccountPayout($payout);
     }
 
+    public function validateRejectPayout()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusPending() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+
+        $this->validateIsFundAccountPayout($payout);
+    }
+
     public function validateIsFundAccountPayout(Entity $payout)
     {
         if (($payout->hasFundAccount() === false) or

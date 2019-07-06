@@ -80,6 +80,7 @@ class Base extends BaseCore
 
         $this->setPayoutBalance($input);
 
+        /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(function () use ($input)
         {
             $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
@@ -93,11 +94,6 @@ class Base extends BaseCore
             }
 
             $payoutType = $this->getPayoutType();
-
-            // Create a payout entity
-            //$payout = $this->createPayoutEntity($input);
-            //
-            //$payoutType = $this->getPayoutType();
 
             $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                            $payout,
@@ -122,6 +118,10 @@ class Base extends BaseCore
         if ($payout->isStatusQueued() === true)
         {
             $this->app->events->fire('api.payout.queued', [$payout]);
+        }
+        else if ($payout->isStatusPending() === true)
+        {
+            // TODO:: Add pending webhook trigger here
         }
         else
         {
@@ -221,7 +221,7 @@ class Base extends BaseCore
                 return $payout;
             });
 
-        //$this->app->events->fire('api.payout.initiated', [$payout]);
+        $this->app->events->fire('api.payout.initiated', [$payout]);
 
         (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
 
@@ -249,13 +249,23 @@ class Base extends BaseCore
         return $this;
     }
 
+    /**
+     * @param callable $createPayoutCallback The callable is expected to create and return a payout entity.
+     *
+     * @return Payout\Entity|null
+     * @throws Exception\BadRequestException
+     */
     protected function handleWorkflowsIfApplicable(callable $createPayoutCallback)
     {
         $areWorkflowsEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
 
-        // Lol, haha
         if ($areWorkflowsEnabled === false)
         {
+            //
+            // Workflows feature was not enabled.
+            // The callback will create a payout entity, which we return back from here,
+            // which will progressed on to DownstreamProcessor
+            //
             return $createPayoutCallback();
         }
 
@@ -288,12 +298,16 @@ class Base extends BaseCore
         }
         catch (Exception\EarlyWorkflowResponse $ex)
         {
+            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_TRIGGERED, ['payout' => $payout->toArray()]);
+
             if ($payout === null)
             {
-                //
-                // Throw a BadRequestException maybe -- something bad happened, payout was deinetely supposed
-                // to be created at this point. Needs debugging.
-                //
+                $this->trace->critical(TraceCode::PAYOUT_WORKFLOW_ACTION_EXCEPTION);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                    null,
+                    ['payout_id' => $payout->getId()]);
             }
 
             // Set payout to pending and move on
@@ -302,6 +316,13 @@ class Base extends BaseCore
             $this->repo->saveOrFail($payout);
 
             $this->workflowActivated = true;
+        }
+        catch (\Throwable $t)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                null,
+                ['payout_id' => $payout->getId()]);
         }
 
         return $payout;
