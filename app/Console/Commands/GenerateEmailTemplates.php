@@ -39,6 +39,10 @@ class GenerateEmailTemplates extends Command
         // This is a map of templates and the rendered file names
         // Keep this list sorted
         $templates = [
+            'emails/banking_account/notify_status_cancelled',
+            'emails/banking_account/notify_status_created',
+            'emails/banking_account/notify_status_processed',
+            'emails/banking_account/notify_status_processing',
             'emails/merchant/activation_heimdall',
             'emails/merchant/authorized_reminder',
             'emails/merchant/bankaccount_change',
@@ -86,10 +90,6 @@ class GenerateEmailTemplates extends Command
             'emails/merchant/add_sub_merchant_mail_partner',
             'emails/merchant/add_sub_merchant_affiliate',
             'emails/user/mapped_to_account',
-            'emails/banking_account/notify_status_processing',
-            'emails/banking_account/notify_status_processed',
-            'emails/banking_account/notify_status_created',
-            'emails/banking_account/notify_status_cancelled',
         ];
 
         $view_directory = app_path().'/../resources/views/';
