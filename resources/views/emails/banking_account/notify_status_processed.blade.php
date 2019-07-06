@@ -3,40 +3,40 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
-<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="line-height: 1.5;width: 100% !important;margin: 0;padding: 0; font-size: 15px;">
-<center>
-    <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="max-width: 600px">
+<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="min-width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; text-align: left; line-height: 1.5; width: 100% !important; margin: 0; padding: 0; font-size: 15px;">
+<center style="width: 100%; min-width: 580px;">
+    <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; max-width: 600px;">
         <tbody>
-        <tr>
-            <td colspan="3">
-                <h2>Dear {{$contact_name}},</h2>
+        <tr style="padding: 0; vertical-align: top; text-align: left;">
+            <td colspan="3" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
+                <h2 style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 36px;">Dear {{$contact_name}},</h2>
             </td>
         </tr>
-        <tr>
-            <td colspan="3">
-                <p>Hurray! Your RazorpayX Current Account has been processed.</p>
+        <tr style="padding: 0; vertical-align: top; text-align: left;">
+            <td colspan="3" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
+                <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; margin-bottom: 10px;">Hurray! Your RazorpayX Current Account has been processed.</p>
             </td>
         </tr>
-        <tr>
-            <td colspan="3">
-                <p>You are just one step away from activating your current account on RazorpayX.</p>
+        <tr style="padding: 0; vertical-align: top; text-align: left;">
+            <td colspan="3" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
+                <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; margin-bottom: 10px;">You are just one step away from activating your current account on RazorpayX.</p>
             </td>
         </tr>
-        <tr>
-            <td colspan="3">
-                <p><b>Important:</b> To activate the current account on RazorpayX, please submit account credentials on RazorpayX dashboard. Refer the steps in the attached document to obtain account credentials from the bank.</p>
+        <tr style="padding: 0; vertical-align: top; text-align: left;">
+            <td colspan="3" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
+                <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; margin-bottom: 10px;"><b>Important:</b> To activate the current account on RazorpayX, please submit account credentials on RazorpayX dashboard. Refer the steps in the attached document to obtain account credentials from the bank.</p>
             </td>
         </tr>
-        <tr>
-            <td colspan="3">
-                <p>For any assistance, contact RazorpayX support by replying back to this email and our Onboarding Hero will be happy to help you.</p>
+        <tr style="padding: 0; vertical-align: top; text-align: left;">
+            <td colspan="3" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
+                <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; margin-bottom: 10px;">For any assistance, contact RazorpayX support by replying back to this email and our Onboarding Hero will be happy to help you.</p>
             </td>
         </tr>
-        <tr>
-            <td colspan="3">
-                <p>
+        <tr style="padding: 0; vertical-align: top; text-align: left;">
+            <td colspan="3" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
+                <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; margin-bottom: 10px;">
                     Team RazorpayX
-                    <br/>
+                    <br>
                     Xperience the future of banking
                 </p>
             </td>
