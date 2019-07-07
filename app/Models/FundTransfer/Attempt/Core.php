@@ -216,7 +216,7 @@ class Core extends Base\Core
 
             $merchantList = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
 
-            $merchantIds = (empty($merchantId) === false) ? explode(',', $merchantList) : [];
+            $merchantIds = (empty($merchantList) === false) ? explode(',', $merchantList) : [];
 
             if (in_array($srcMerchantId, $merchantIds, true) === false)
             {
@@ -313,23 +313,11 @@ class Core extends Base\Core
     {
         $fundTransferAttempt = new Entity;
 
-        $mode = null;
-
         $fundTransferAttempt->merchant()->associate($source->merchant);
 
         $fundTransferAttempt->source()->associate($source);
 
         list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $card);
-
-        //
-        // Always create Penny testing entry with mode as IMPS (default)
-        // this is for ease of execution
-        // this will remove other unnecessary complexities and conditions
-        //
-        if ($fundTransferAttempt->getSourceType() === EntityConstant::FUND_ACCOUNT_VALIDATION)
-        {
-            $mode = Mode::IMPS;
-        }
 
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
@@ -338,7 +326,6 @@ class Core extends Base\Core
             Entity::STATUS      => Status::CREATED,
             Entity::PURPOSE     => Purpose::REFUND,
             Entity::IS_FTS      => $isFTS,
-            Entity::MODE        => $mode,
         ];
 
         $values = array_merge($defaultValues, $values);
