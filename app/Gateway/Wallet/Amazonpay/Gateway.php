@@ -18,6 +18,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use RZP\Gateway\Wallet\Amazonpay\Sdk\PWAINBackendSDK;
+
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
