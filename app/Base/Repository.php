@@ -549,15 +549,15 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Finds many entities for indexing.
      *
-     * @param int      $skip
-     * @param int      $take
-     * @param int|null $createdAtStart
-     * @param int|null $createdAtEnd
+     * @param string|null $afterId
+     * @param int         $take
+     * @param int|null    $createdAtStart
+     * @param int|null    $createdAtEnd
      *
      * @return array
      */
     public function findManyForIndexing(
-        int $skip = 0,
+        string $afterId = null,
         int $take = 100,
         int $createdAtStart = null,
         int $createdAtEnd = null): array
@@ -566,6 +566,11 @@ class Repository extends \Razorpay\Spine\Repository
 
         $idCol        = $this->dbColumn(Common::ID);
         $createdAtCol = $this->dbColumn(Common::CREATED_AT);
+
+        if ($afterId !== null)
+        {
+            $query->where($idCol, '>', $afterId);
+        }
 
         if ($createdAtStart !== null)
         {
@@ -579,10 +584,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->modifyQueryForIndexing($query);
 
-        $collection = $query->skip($skip)
-                            ->take($take)
-                            ->orderBy($idCol, 'desc')
-                            ->get();
+        $collection = $query->take($take)->orderBy($idCol, 'asc')->get();
 
         return array_map(
             function ($v)
