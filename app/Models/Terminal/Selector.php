@@ -450,8 +450,10 @@ class Selector extends Base\Core
 
         $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, $alertArray);
 
+        $message = "Netbanking payment failed with no terminal found";
+
         $this->app['slack']->queue(
-            TraceCode::NETBANKING_TERMINAL_NOT_FOUND,
+            $message,
             $alertArray,
             [
                 'channel'               => Config::get('slack.channels.pgob_alerts'),
