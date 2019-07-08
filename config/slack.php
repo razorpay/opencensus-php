@@ -169,6 +169,8 @@ return array(
         'fts_alerts'           => 'CGJA83JUW',
         // tech_alerts channel
         'tech_alerts'          => 'C5FD7THSP',
+        // pgob_alerts channel
+        'pgob_alerts'          => 'CL985FWUX',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,
