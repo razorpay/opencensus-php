@@ -130,6 +130,13 @@ class Selector extends Base\Core
             return $this->getTerminals();
         });
 
+        $this->processHitachiOnboarding($allTerminals);
+
+        $allTerminals = array_filter($allTerminals, function ($terminal)
+        {
+            return $terminal->isEnabled() === true;
+        });
+
         $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
@@ -138,8 +145,6 @@ class Selector extends Base\Core
         {
             return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
         });
-
-        $this->processHitachiOnboarding($allTerminals);
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
@@ -243,7 +248,7 @@ class Selector extends Base\Core
 
     protected function getTerminals()
     {
-        // Fetch terminals for both the current merchant and the shared Merchant
+        // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
@@ -430,11 +435,7 @@ class Selector extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_TERMINAL_CREATION_ERROR,
-                [
-                    'message'    => $e->getMessage(),
-                ]);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
         }
 
     }
