@@ -4,7 +4,6 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use Carbon\Carbon;
 
-use RZP\Constants;
 use RZP\Services\FTS;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -12,6 +11,9 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayErrorException;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
@@ -21,7 +23,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     const CREDENTIALS_VAULT_NAMESPACE   = 'banking_account_creds';
 
-    const MAX_RETRY_COUNT               = 1;
+    const MAX_MOZART_RETRIES            = 1;
 
     const MAX_BANK_REFERENCE_NUMBER     = 100000;
 
@@ -31,6 +33,12 @@ class Processor extends BankingAccount\Gateway\Processor
     const START_BANK_REFERENCE_NUMBER = 10000;
 
     protected $mutex;
+
+    protected $mozartRetryCode = [
+        ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT,
+        ErrorCode::SERVER_ERROR_MOZART_SERVICE_ERROR,
+        ErrorCode::SERVER_ERROR_MOZART_SERVICE_FAILURE,
+    ];
 
     public function preProcessAccountInfoNotification(array $input)
     {
@@ -122,24 +130,16 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $input[Fields::SUBCORP_USER_PASSWORD] = $this->tokenizeCredentials($input[Fields::SUBCORP_USER_PASSWORD]);
 
-        $balance = $this->fetchBalanceAndVerifyCredentials($bankingAccount, $input);
+        $balance = $this->verifyCredentialsAndFetchBalance($bankingAccount, $input);
 
-        // we will save credentials only once the mozart call is successful and we are able to receive
-        // balance for the account.
+        $this->checkBalanceForActivation($balance);
+
+        // we will save credentials only once the fetch balance call is successful
         $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
 
         $bankingAccount->fill($attributes);
 
-        $bankingAccount->saveOrFail($input);
-
-        $balanceDetails = [
-            Constants\Entity::BALANCE           => $balance,
-            Balance\Entity::ACCOUNT_TYPE        => 'Direct',
-            Balance\Entity::ACCOUNT_PROVIDER    => BankingAccount\Channel::RBL,
-            Balance\Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
-        ];
-
-        return $balanceDetails;
+        $this->repo->banking_account->saveOrFail($bankingAccount);
     }
     
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
@@ -151,9 +151,9 @@ class Processor extends BankingAccount\Gateway\Processor
             Fields::PASSWORD                  => $rbl[Fields::AUTH_PASSWORD],
             Fields::CLIENT_ID                 => $rbl[Fields::CLIENT_ID],
             Fields::CLIENT_SECRET             => $rbl[Fields::CLIENT_SECRET],
-            Fields::SUBCORP_ID                => $bankingAccount->getUsername(),
-            Fields::SUBCORP_USER_ID           => $bankingAccount->getPassword(),
-            Fields::SUBCORP_USER_PASSWORD     => $bankingAccount->getReference1(),
+            Fields::SUBCORP_ID                => $bankingAccount->getReference1(),
+            Fields::SUBCORP_USER_NAME         => $bankingAccount->getUsername(),
+            Fields::SUBCORP_USER_PASSWORD     => $bankingAccount->getPassword(),
         ];
 
         $mozartIdentifier = $rbl[Fields::MOZART_IDENTIFIER];
@@ -166,7 +166,32 @@ class Processor extends BankingAccount\Gateway\Processor
         return $body;
     }
 
-    protected function fetchBalanceAndVerifyCredentials(BankingAccount\Entity $bankingAccount, array $input)
+    public function getBalanceAttributesToSave()
+    {
+        $attributes = [
+            Balance\Entity::ACCOUNT_TYPE        => 'direct',
+            Balance\Entity::ACCOUNT_PROVIDER    => Channel::RBL
+        ];
+
+        return $attributes;
+    }
+
+    // Currently we will be activating accounts for which there is no previous balance
+    // Slack thread - https://razorpay.slack.com/archives/CE4DMABE3/p1562231335372700
+    protected function checkBalanceForActivation($balance)
+    {
+        if ($balance !== 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_ACTIVATION_AMOUNT_NON_ZERO,
+                [
+                    'balance' => $balance,
+                    'channel' => Channel::RBL
+                ]);
+        }
+    }
+
+    protected function verifyCredentialsAndFetchBalance(BankingAccount\Entity $bankingAccount, array $input)
     {
         $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount, $input);
 
@@ -176,8 +201,10 @@ class Processor extends BankingAccount\Gateway\Processor
         {
             try
             {
-                $response = $this->app->mozart->sendMozartRequest('razorpayx', BankingAccount\Channel::RBL,
-                                                                   Action::ACCOUNT_BALANCE, $request);
+                $response = $this->app->mozart->sendMozartRequest('razorpayx',
+                                                                   BankingAccount\Channel::RBL,
+                                                                   Action::ACCOUNT_BALANCE,
+                                                                   $request);
 
                 break;
             }
@@ -185,24 +212,17 @@ class Processor extends BankingAccount\Gateway\Processor
             {
                 $errorCode = $exception->getCode();
 
-                if ($errorCode === ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT)
+                if (($this->shouldRetryMozartRequest($errorCode) === true) and
+                    ($retryCount < self::MAX_MOZART_RETRIES))
                 {
-                    if ($retryCount < self::MAX_RETRY_COUNT)
-                    {
-                        $this->trace-info(
-                            TraceCode::MOZART_SERVICE_RETRY,
-                            [
-                                'message' => $exception->getMessage(),
-                                'data'    => $exception->getData(),
-                            ]
-                        );
+                    $this->trace-info(
+                        TraceCode::MOZART_SERVICE_RETRY,
+                        [
+                            'message' => $exception->getMessage(),
+                            'data'    => $exception->getData(),
+                        ]);
 
-                        $retryCount++;
-                    }
-                    else
-                    {
-                        throw $exception;
-                    }
+                    $retryCount++;
                 }
                 else
                 {
@@ -211,16 +231,38 @@ class Processor extends BankingAccount\Gateway\Processor
             }
         }
 
-        // ToDo add a validator for response format from mozart
-        $balance = $response[Fields::DATA][Fields::GET_ACCOUNT_BALANCE][Fields::BODY]
-                        [Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
+        $this->checkMozartResponseForErrors($response);
+
+        $balance = $response[Fields::DATA][Fields::GET_ACCOUNT_BALANCE]
+                            [Fields::BODY][Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
 
         return $this->getFormattedAmount($balance);
     }
 
+    protected function checkMozartResponseForErrors(array $response)
+    {
+        if ($response['data']['success'] !== true)
+        {
+            $this->trace->info(
+                TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+                [
+                    'response'       => $response,
+                    'channel'        => BankingAccount\Channel::RBL,
+                ]);
+
+            throw new GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_ERROR',
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [],
+                null,
+                null);
+        }
+    }
+
     protected function getFormattedAmount($amount)
     {
-        return number_format($amount * 100, 2, '.', '');
+        return intval(number_format($amount * 100, 0, '.', ''));
     }
 
     protected function formatDataForMozartFetchBalanceApi(BankingAccount\Entity $bankingAccount, array $input)
@@ -228,18 +270,18 @@ class Processor extends BankingAccount\Gateway\Processor
         $credentials = $this->getAccountCredentials();
         
         $merchantCredentials = [
-            Fields::SUBCORP_ID                => $bankingAccount->getUsername(),
-            Fields::SUBCORP_USER_NAME         => $bankingAccount->getPassword(),
-            Fields::SUBCORP_USER_PASSWORD     => $bankingAccount->getReference1()
+            Fields::SUBCORP_ID                => $input[Fields::SUBCORP_ID],
+            Fields::SUBCORP_USER_NAME         => $input[Fields::SUBCORP_USER_NAME],
+            Fields::SUBCORP_USER_PASSWORD     => $input[Fields::SUBCORP_USER_PASSWORD]
         ];
 
         $credentials = array_merge($credentials, $merchantCredentials);
 
         $data = [
             Fields::SOURCE_ACCOUNT => [
-                Fields::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
-                Fields::ID             => $bankingAccount->getBankReferenceNumber(),
-                Fields::CREDENTIALS    => $credentials
+                Fields::SOURCE_ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
+                Fields::ID                      => $bankingAccount->getBankReferenceNumber(),
+                Fields::CREDENTIALS             => $credentials,
             ],
         ];
 
@@ -379,5 +421,13 @@ class Processor extends BankingAccount\Gateway\Processor
         $status = $input[BankingAccount\Entity::STATUS];
 
         Status::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
+    }
+
+    protected function shouldRetryMozartRequest(string $errorCode): bool
+    {
+        if (in_array($errorCode, $this->mozartRetryCode, true) === true)
+        {
+            return true;
+        }
     }
 }

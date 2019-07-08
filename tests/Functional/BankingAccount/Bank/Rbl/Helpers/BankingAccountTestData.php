@@ -222,9 +222,9 @@ return [
             'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',
             'content' => [
-                'subcorp_id'            => 'MERCHANT_SUB_CORP',
-                'subcorp_user_id'       => 'MERCHANT_1234',
-                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+                'subcorp_id'              => 'MERCHANT_SUB_CORP',
+                'subcorp_user_name'       => 'MERCHANT_1234',
+                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
             ],
         ],
         'response' => [
@@ -243,9 +243,9 @@ return [
             'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',
             'content' => [
-                'subcorp_id'            => 'MERCHANT_SUB_CORP',
-                'subcorp_user_id'       => 'MERCHANT_1234',
-                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+                'subcorp_id'              => 'MERCHANT_SUB_CORP',
+                'subcorp_user_name'       => 'MERCHANT_1234',
+                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
             ],
         ],
         'response'  => [
@@ -268,9 +268,9 @@ return [
             'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',
             'content' => [
-                'subcorp_id'            => 'MERCHANT_SUB_CORP',
-                'subcorp_user_id'       => 'MERCHANT_1234',
-                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+                'subcorp_id'              => 'MERCHANT_SUB_CORP',
+                'subcorp_user_name'       => 'MERCHANT_1234',
+                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
             ],
         ],
         'response' => [
@@ -379,7 +379,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'subcorp_id'            => 'MERCHANT_SUB_CORP',
-                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_name'     => 'MERCHANT_1234',
                 'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
             ],
         ],
@@ -414,7 +414,7 @@ return [
             'getAccountBalanceRes' => [
                 'Body' => [
                     'BalAmt' => [
-                        'amountValue'  => '35211.26',
+                        'amountValue'  => '0',
                         'currencyCode' => '{}'
                     ]
                 ],

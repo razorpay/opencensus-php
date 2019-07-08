@@ -20,9 +20,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
-    const FTS_MAX_RETRY = 1;
-
-    protected $processor;
+    const FTS_MAX_RETRIES = 1;
 
     public function __construct()
     {
@@ -142,26 +140,17 @@ class Core extends Base\Core
             }
             catch(\Throwable $e)
             {
-                $errorCode = $e->getCode();
-
-                if ($errorCode === ErrorCode::SERVER_ERROR_FTS_SERVICE_TIMEOUT)
+                if ((checkRequestTimeout($e) === true) and
+                    ($retryCount < self::FTS_MAX_RETRIES))
                 {
-                    if ($retryCount < self::FTS_MAX_RETRY)
-                    {
-                        $this->trace-info(
-                            TraceCode::FTS_SERVICE_RETRY,
-                            [
-                                'message' => $e->getMessage(),
-                                'data'    => $e->getData(),
-                            ]
-                        );
+                    $this->trace->info(
+                        TraceCode::FTS_SERVICE_RETRY,
+                        [
+                            'message' => $e->getMessage(),
+                            'data'    => $e->getData(),
+                        ]);
 
-                        $retryCount++;
-                    }
-                    else
-                    {
-                        throw $e;
-                    }
+                    $retryCount++;
                 }
                 else
                 {
@@ -235,37 +224,40 @@ class Core extends Base\Core
         $processor->deleteServiceablePincodes($pincodes);
     }
 
-    public function storeCredentials(Entity $bankingAccount, array $input)
+    public function storeCredentialsAndActivateAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
 
         $processor = $this->getProcessor($channel);
 
-        $attributes = $processor->storeCredentials($bankingAccount, $input);
+        $processor->storeCredentials($bankingAccount, $input);
 
-        return $attributes;
-    }
+        // merchant credentials are verified and saved. Now storing balance for the account and
+        // activating the account.
 
-    public function activateAccount(Entity $bankingAccount, array $input)
-    {
         $merchant = $bankingAccount->merchant;
 
         $mode = $this->app['rzp.mode'];
 
-        // Create Banking Balance.
+        $balanceInfo = $processor->getBalanceAttributesToSave();
+
         $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant,
                                                                      Product::BANKING,
-                                                                      $input,
+                                                                      $balanceInfo,
                                                                       $mode);
+        $content[Entity::STATUS] = Status::ACTIVATED;
 
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $content);
 
-        $bankingAccount->setStatus(Status::ACTIVATED);
+        $bankingAccount->fill($input);
 
         $bankingAccount->balance()->associate($balance);
 
         $this->repo->saveOrFail($bankingAccount);
+    }
 
+    public function createAccountMappingForFts(Entity $bankingAccount)
+    {
         // we do not want the merchant to get affected by failures in FTS service so handling
         // the same in try catch block
         try
@@ -287,8 +279,6 @@ class Core extends Base\Core
                 [
                     'code'          => $e->getCode(),
                     'message'       => $e->getMessage(),
-                    'type'          => optional($e->getType()),
-                    'data'          => optional($e->getData()),
                 ]);
         }
 
@@ -322,26 +312,17 @@ class Core extends Base\Core
             }
             catch (\Throwable $e)
             {
-                $errorCode = $e->getCode();
-
-                if ($errorCode === ErrorCode::SERVER_ERROR_FTS_SERVICE_TIMEOUT)
+                if ((checkRequestTimeout($e) === true) and
+                    ($retryCount < self::FTS_MAX_RETRIES))
                 {
-                    if ($retryCount < self::FTS_MAX_RETRY)
-                    {
-                        $this->trace->info(
-                            TraceCode::FTS_SERVICE_RETRY,
-                            [
-                                'message' => $e->getMessage(),
-                                'data'    => $e->getData(),
-                            ]
-                        );
+                    $this->trace->info(
+                        TraceCode::FTS_SERVICE_RETRY,
+                        [
+                            'message' => $e->getMessage(),
+                            'data'    => $e->getData(),
+                        ]);
 
                         $retryCount++;
-                    }
-                    else
-                    {
-                        throw $e;
-                    }
                 }
                 else
                 {

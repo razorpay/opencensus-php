@@ -44,17 +44,16 @@ class Validator extends Base\Validator
         Entity::REFERENCE1                      => 'filled|string',
     ];
 
+    // add webhookRules --> add processed check
+
+
+    // add bizops
+
+
     protected static $serviceablePincodeRules = [
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
         Entity::PINCODES        => 'required|array|filled',
-    ];
-
-    // ToDo Need to make the rules stricter
-    protected static $rblCreateMerchantTokenRules = [
-        RblFields::SUBCORP_ID               => 'required|string',
-        RblFields::SUBCORP_USER_ID          => 'required|string',
-        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 
     protected static $serviceablePincodeValidators = [

@@ -164,6 +164,8 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
+        self::USERNAME,
+        self::REFERENCE1,
     ];
 
     // ---------------------------- Setters ----------------------------------- //

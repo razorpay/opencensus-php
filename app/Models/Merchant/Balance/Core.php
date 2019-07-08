@@ -63,7 +63,8 @@ class Core extends Base\Core
         return $balance;
     }
 
-    public function createBalanceForCurrentAccount(Merchant\Entity $merchant, string $balanceType,
+    public function createBalanceForCurrentAccount(Merchant\Entity $merchant,
+                                                   string $balanceType,
                                                    array $input, string $mode)
     {
 

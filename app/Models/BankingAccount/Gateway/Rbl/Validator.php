@@ -53,7 +53,7 @@ class Validator extends Base\Validator
     // ToDO add proper validations here after confirming with RBL
     protected static $addCredentialsRules = [
         Fields::SUBCORP_ID               => 'required|string',
-        Fields::SUBCORP_USER_ID          => 'required|string',
+        Fields::SUBCORP_USER_NAME        => 'required|string',
         Fields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 

@@ -3,14 +3,13 @@
 namespace RZP\Models\BankingAccount\Gateway;
 
 use Redis;
-use GuzzleHttp\Exception\RequestException;
 
 use Razorpay\Trace;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\CardVault;
-use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 use RZP\Models\BankingAccount\Channel;
 
 class Processor extends Base\Core
@@ -40,7 +39,7 @@ class Processor extends Base\Core
         $redis->srem(static::PINCODES_REDIS_KEY, $pincodes);
     }
 
-    protected function tokenizeCredentials(string $element)
+    protected function tokenizeCredentials(string $element): string
     {
         $request = [
             'namespace' => self::CREDENTIALS_VAULT_NAMESPACE,
@@ -57,7 +56,7 @@ class Processor extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace\Logger::CRITICAL,
-                TraceCode::CARD_VAULT_REQUEST_TIMEOUT,
+                TraceCode::CARD_VAULT_REQUEST_FAILED,
                 [
                     'request' => $request,
                     'channel' => Channel::RBL
@@ -75,14 +74,12 @@ class Processor extends Base\Core
     {
         if ($response[CardVault::SUCCESS] === false)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_VAULT_TOKENIZE_FAILED,
-                null,
+            throw new LogicException(
+                'Merchant credentials could not be saved in vault',
+                ErrorCode::SERVER_ERROR_VAULT_TOKENIZE_FAILED,
                 [
                     'response' => $response
-                ],
-                'Merchant credentials could not be stored due to failure in Vault Service, Please try again!'
-            );
+                ]);
         }
     }
 

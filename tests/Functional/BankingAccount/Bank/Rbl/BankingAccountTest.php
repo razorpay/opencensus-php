@@ -229,10 +229,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('rbl', $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_PROVIDER]);
 
-        $this->assertEquals('Direct', $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_TYPE]);
-
-        $this->assertEquals($bankingAccount[RZP\Models\BankingAccount\Entity::ACCOUNT_NUMBER],
-                            $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_NUMBER]);
+        $this->assertEquals('direct', $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_TYPE]);
 
         $this->assertEquals($balance[RZP\Models\Merchant\Balance\Entity::ID],
                             $bankingAccount[RZP\Models\BankingAccount\Entity::BALANCE_ID]);

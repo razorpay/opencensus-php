@@ -1045,7 +1045,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_REQUEST                                    = 'CARD_VAULT_REQUEST';
     const CARD_VAULT_RESPONSE                                   = 'CARD_VAULT_RESPONSE';
     const CARD_VAULT_RETRY                                      = 'CARD_VAULT_RETRY';
-    const CARD_VAULT_REQUEST_TIMEOUT                            = 'CARD_VAULT_REQUEST_TIMEOUT';
+    const CARD_VAULT_REQUEST_FAILED                             = 'CARD_VAULT_REQUEST_FAILED';
     const CORE_PAYMENT_SERVICE_REQUEST                          = 'CORE_PAYMENT_SERVICE_REQUEST';
     const CORE_PAYMENT_SERVICE_RESPONSE                         = 'CORE_PAYMENT_SERVICE_RESPONSE';
     const CORE_PAYMENT_SERVICE_RETRY                            = 'CORE_PAYMENT_SERVICE_RETRY';
@@ -1853,6 +1853,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST     = 'BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST';
     const BANKING_ACCOUNT_BALANCE_CREATION                      = 'BANKING_ACCOUNT_BALANCE_CREATION';
     const BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID        = 'BANKING_ACCOUNT_WEBHOOK_MISSING_TRANSACTION_ID';
+    const BANKING_ACCOUNT_NON_ZERO_ACTIVATION_AMOUNT            = 'BANKING_ACCOUNT_NON_ZERO_ACTIVATION_AMOUNT';
 
     const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
     const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';

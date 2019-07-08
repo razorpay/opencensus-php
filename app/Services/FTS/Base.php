@@ -183,22 +183,6 @@ class Base
 
         catch(\Throwable $e)
         {
-            if (checkRequestTimeout($e) === true)
-            {
-                $errorCode = ErrorCode::SERVER_ERROR_FTS_SERVICE_TIMEOUT;
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::FTS_REQUEST_TIMEOUT_EXCEPTION,
-                    [
-                        'message'      => $e->getMessage(),
-                        'request_body' => $request['content'],
-                    ]);
-
-                throw new \Requests_Exception($e->getMessage(), $errorCode);
-            }
-
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,

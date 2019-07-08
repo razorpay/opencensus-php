@@ -68,9 +68,9 @@ class Service extends Base\Service
                 'channel' => $bankingAccount->getChannel(),
             ]);
 
-        $content = $this->core->storeCredentials($bankingAccount, $input);
+        $this->core->storeCredentialsAndActivateAccount($bankingAccount, $input);
 
-        $bankingAccount = $this->core->activateAccount($bankingAccount, $content);
+        $this->core->createAccountMappingForFts($bankingAccount);
 
         return $bankingAccount->toArrayPublic();
     }

@@ -11,10 +11,9 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::CURRENCY            => 'required|string|in:INR',
         Entity::TYPE                => 'required|string|custom',
-        Entity::BALANCE             => 'filled',
-        Entity::ACCOUNT_NUMBER      => 'filled',
-        Entity::ACCOUNT_PROVIDER    => 'filled|custom',
-        Entity::ACCOUNT_TYPE        => 'filled|string|in:Direct,Shared'
+        Entity::ACCOUNT_NUMBER      => 'string|nullable',
+        Entity::ACCOUNT_PROVIDER    => 'sometimes|string|nullable',
+        Entity::ACCOUNT_TYPE        => 'string|nullable'
     ];
 
     protected function validateType($attribute, $type)

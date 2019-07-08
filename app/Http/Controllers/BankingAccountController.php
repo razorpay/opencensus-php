@@ -13,7 +13,7 @@ class BankingAccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->storeCredentials($id, $input);
+        $response = $this->service()->storeCredentialsAndActivateAccount($id, $input);
 
         return ApiResponse::json($response);
     }

@@ -280,7 +280,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACCOUNT_TYPE, $type);
     }
 
-    public function setAccountProvider(string $provider)
+    public function setAccountProvider(string $provider = null)
     {
         $this->setAttribute(self::ACCOUNT_PROVIDER, $provider);
     }
