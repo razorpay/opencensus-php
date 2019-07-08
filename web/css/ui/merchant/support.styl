@@ -1,7 +1,7 @@
 $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
 
 
-.support 
+.support
   position: absolute
   z-index: 9999 // smooch hit area has 9998
   .notify-icon
@@ -81,7 +81,7 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
       display: none
   .support-feedback
     overflow: hidden
-    button 
+    button
       display: inline-block
       width: 50%
       padding: 12px
@@ -110,6 +110,8 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
         cursor: auto
       &:not(:last-child)
         border-bottom: 1px solid rgba(158, 157, 157, 0.4)
+      &.dashboard_guide
+        background-image: url(assets/support_widget/bulb.svg)
       &.ticket
         background-image: url($ticketSystemCdn/icon-paper.png)
       &.chat:not(.disabled)
@@ -119,7 +121,7 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
       &.chat.disabled
         background-image: url(assets/support_widget/chat_disabled.svg)
       &.call.disabled
-        background-image: url(assets/support_widget/call_disabled.svg)          
+        background-image: url(assets/support_widget/call_disabled.svg)
   .notify-icon
     position: relative;
     right: 0;
