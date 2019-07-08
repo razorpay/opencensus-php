@@ -330,10 +330,6 @@ export default class User {
     return this.isFeatureEnabled('invoice_expire_by_reqd');
   }
 
-  get isUpdateSubscriptionEnabled() {
-    return this.isFeatureEnabled('update_subscription');
-  }
-
   get isInttCurrenciesEnabled() {
     return (
       !!this.international && this.getExpStatus('international_currencies')
