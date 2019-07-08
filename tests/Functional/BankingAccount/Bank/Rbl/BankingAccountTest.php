@@ -92,7 +92,7 @@ class BankingAccountTest extends TestCase
                 'content' => [
                     'RZPAlertNotiReq' => [
                         'Body' => [
-                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber()
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber()
                         ]
                     ]
                 ]
@@ -141,7 +141,7 @@ class BankingAccountTest extends TestCase
                 'content' => [
                     'RZPAlertNotiReq' => [
                         'Body' => [
-                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber()
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber()
                         ]
                     ]
                 ]
@@ -164,8 +164,8 @@ class BankingAccountTest extends TestCase
                 'content' => [
                     'RZPAlertNotiReq' => [
                         'Body' => [
-                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber(),
-                            'FORACID'   => '31900299180853'
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
                         ]
                     ]
                 ]

@@ -26,21 +26,21 @@ class Validator extends Base\Validator
     ];
 
     protected static $accountInfoWebhookRules = [
-        Fields::ACCT_NAME       => 'required|string',
-        Fields::FORACID         => 'required|string|max:40',
-        Fields::IFSC            => 'required|alpha_num|size:11',
-        Fields::PINCODE         => 'required|integer|digits:6',
-        Fields::ADDR_1          => 'required|string',
-        Fields::ADDR_2          => 'required|string',
-        Fields::ADDR_3          => 'required|string',
-        Fields::CIF_ID          => 'required|string',
-        Fields::CITY            => 'required|string',
-        Fields::STATE           => 'required|string',
-        Fields::COUNTRY         => 'required|string',
-        Fields::REF_NUM_1       => 'required|string|size:5',
-        Fields::ACTIVATION_DATE => 'required|string',
-        Fields::PHONE_NUM       => 'required|string',
-        Fields::EMAIL_ID        => 'required|email',
+        Fields::CUSTOMER_NAME          => 'required|string',
+        Fields::ACCOUNT_NUMBER         => 'required|string|max:40',
+        Fields::IFSC                   => 'required|alpha_num|size:11',
+        Fields::PINCODE                => 'required|integer|digits:6',
+        Fields::ADDR_1                 => 'required|string',
+        Fields::ADDR_2                 => 'required|string',
+        Fields::ADDR_3                 => 'required|string',
+        Fields::CUSTOMER_ID            => 'required|string',
+        Fields::CITY                   => 'required|string',
+        Fields::STATE                  => 'required|string',
+        Fields::COUNTRY                => 'required|string',
+        Fields::RZP_REFERENCE_NUMBER   => 'required|string|size:5',
+        Fields::ACTIVATION_DATE        => 'required|string',
+        Fields::PHONE_NUM              => 'required|string',
+        Fields::EMAIL_ID               => 'required|email',
     ];
 
     protected static $accountUpdateRules = [

@@ -46,7 +46,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $attributes[BankingAccount\Entity::BANK_INTERNAL_STATUS] = Status::CLOSED;
 
-        $attributes[BankingAccount\Entity::BANK_REFERENCE_NUMBER] = $input[Fields::REF_NUM_1];
+        $attributes[BankingAccount\Entity::BANK_REFERENCE_NUMBER] = $input[Fields::RZP_REFERENCE_NUMBER];
 
         return $attributes;
     }
