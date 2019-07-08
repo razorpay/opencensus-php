@@ -18,7 +18,6 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use RZP\Gateway\Wallet\Amazonpay\Sdk\PWAINBackendSDK;
-
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
@@ -85,7 +84,11 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->assertPaymentId($content[ResponseFields::SELLER_ORDER_ID], $input['payment']['id']);
+        //Amazon is sending payment id as "sellerOrderId": "A3MJ8VJGR6SLBL_CjYROn3od7rp7Q  in callback for some
+        //random cases.This will help us to fetch the payment id from the sellerOrderId.
+        $paymentId = substr($content[ResponseFields::SELLER_ORDER_ID],-14);
+
+        $this->assertPaymentId($paymentId, $input['payment']['id']);
 
         // Amazon may return amount as 100 or 100.00
         // Formatting payment amount to number
