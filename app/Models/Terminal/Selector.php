@@ -226,18 +226,12 @@ class Selector extends Base\Core
             {
                 $merchant = $this->input[Constants::MERCHANT];
 
-                $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+                $bank = $payment[Entity::BANK];
 
-                $inputBanks = array($payment[Entity::BANK]);
+                $amount =  $payment[Entity::AMOUNT];
 
-                $disabledBanks = array_merge($methods->getDisabledBanks(),$inputBanks);
-
-                $merchant->methods->setDisabledBanks($disabledBanks);
-
-                $this->repo->saveOrFail($merchant->methods);
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
+                // raising an alert on slack for no terminal found
+                $this->netBankingTerminalNotFound($merchant, $bank, $amount);
             }
             else
             {
@@ -447,4 +441,27 @@ class Selector extends Base\Core
         }
 
     }
+
+    private function netBankingTerminalNotFound($merchant, $bank, $amount)
+    {
+
+        s($merchant->getName(),$bank,$amount);
+
+        $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, ['merchant' => $merchant->getName()]);
+
+        $this->app['slack']->queue(
+            TraceCode::NETBANKING_TERMINAL_NOT_FOUND,
+            [
+                'merchant_id'           => $merchant->getId(),
+                'merchant_name'         => $merchant->getName(),
+                'bank'                  => $bank,
+                'amount'                => $amount,
+                'channel'               => Config::get('slack.channels.pgob_alerts'),
+                'username'              => 'alerts',
+                'icon'                  => ':x:'
+            ]
+        );
+
+    }
+
 }
