@@ -40,7 +40,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::CURRENCY,
-        self::BALANCE,
         self::ACCOUNT_PROVIDER,
         self::ACCOUNT_TYPE,
         self::ACCOUNT_NUMBER,

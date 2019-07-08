@@ -288,37 +288,19 @@ class Processor extends BankingAccount\Gateway\Processor
         return $data;
     }
 
-     protected function validateResponse(array $response, array $request)
-     {
-         if ($response[Fields::GET_ACCOUNT_BALANCE][Fields::HEADER][Fields::SUBCORP_ID] !==
-             ($request[Fields::CREDENTIALS][Fields::SUBCORP_ID]))
-         {
-             throw new BadRequestException(
-                 ErrorCode::BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH,
-                 null,
-                 [
-                     'response' => $response,
-                     'request'  => $request
-                 ],
-                 'Account details mismatch. Please try again'
+    protected function getAccountCredentials()
+    {
+        $config = $this->config['gateway']['razorpayx']['ca']['rbl'];
 
-             );
-         }
-     }
+        $credentials = [
+            Fields::USERNAME      => $config[Fields::AUTH_USERNAME],
+            Fields::PASSWORD      => $config[Fields::AUTH_PASSWORD],
+            Fields::CLIENT_ID     => $config[Fields::CLIENT_ID],
+            Fields::CLIENT_SECRET => $config[Fields::CLIENT_SECRET],
+        ];
 
-     protected function getAccountCredentials()
-     {
-         $config = $this->config['gateway']['razorpayx']['ca']['rbl'];
-
-         $credentials = [
-             Fields::USERNAME      => $config[Fields::AUTH_USERNAME],
-             Fields::PASSWORD      => $config[Fields::AUTH_PASSWORD],
-             Fields::CLIENT_ID     => $config[Fields::CLIENT_ID],
-             Fields::CLIENT_SECRET => $config[Fields::CLIENT_SECRET],
-         ];
-
-         return $credentials;
-     }
+        return $credentials;
+    }
 
     protected function validateInputForAccountCreation(array $input)
     {

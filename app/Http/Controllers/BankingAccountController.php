@@ -9,7 +9,7 @@ class BankingAccountController extends Controller
 {
     use Traits\HasCrudMethods;
 
-    public function storeCredentials(string $id)
+    public function storeCredentialsAndActivateAccount(string $id)
     {
         $input = Request::all();
 

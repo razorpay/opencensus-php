@@ -44,12 +44,6 @@ class Validator extends Base\Validator
         Entity::REFERENCE1                      => 'filled|string',
     ];
 
-    // add webhookRules --> add processed check
-
-
-    // add bizops
-
-
     protected static $serviceablePincodeRules = [
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',

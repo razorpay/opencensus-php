@@ -242,7 +242,7 @@ class Core extends Base\Core
         $balanceInfo = $processor->getBalanceAttributesToSave();
 
         $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant,
-                                                                     Product::BANKING,
+                                                                      Product::BANKING,
                                                                       $balanceInfo,
                                                                       $mode);
         $content[Entity::STATUS] = Status::ACTIVATED;
