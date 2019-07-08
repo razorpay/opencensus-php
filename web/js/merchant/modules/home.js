@@ -71,6 +71,12 @@ const getTransactionAmountData = (data, mode) => {
   return createLineData(data, 'amount', 'Transaction Volume');
 };
 
+export const closeOnboardingStep = _ => {
+  return {
+    type: 'CLOSE_ONBOARDING_STEP',
+  };
+};
+
 export const fetchAnalytics = params => {
   return {
     type: ANALYTICS_FETCH,
@@ -290,6 +296,9 @@ export default function(state = initialState, action) {
       return set(state, 'instantActivations', {
         showProductsModal: false,
       });
+
+    case 'CLOSE_ONBOARDING_STEP':
+      return set(state, 'closeOnboardingStep', true);
 
     default:
       return state;
