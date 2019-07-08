@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Method;
@@ -226,12 +227,8 @@ class Selector extends Base\Core
             {
                 $merchant = $this->input[Constants::MERCHANT];
 
-                $bank = $payment[Entity::BANK];
-
-                $amount =  $payment[Entity::AMOUNT];
-
                 // raising an alert on slack for no terminal found
-                $this->netBankingTerminalNotFound($merchant, $bank, $amount);
+                $this->alertNetbankingTerminalNotFound($merchant, $payment);
             }
             else
             {
@@ -442,18 +439,21 @@ class Selector extends Base\Core
 
     }
 
-    private function netBankingTerminalNotFound($merchant, $bank, $amount)
+    protected function alertNetbankingTerminalNotFound(Merchant\Entity $merchant, $payment)
     {
+        $alertArray = [
+            'merchant_id'           => $merchant->getId(),
+            'merchant_name'         => $merchant->getName(),
+            'bank'                  => $payment[Entity::BANK],
+            'amount'                => $payment[Entity::AMOUNT],
+        ];
 
-        $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, ['merchant' => $merchant->getName()]);
+        $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, $alertArray);
 
         $this->app['slack']->queue(
             TraceCode::NETBANKING_TERMINAL_NOT_FOUND,
+            $alertArray,
             [
-                'merchant_id'           => $merchant->getId(),
-                'merchant_name'         => $merchant->getName(),
-                'bank'                  => $bank,
-                'amount'                => $amount,
                 'channel'               => Config::get('slack.channels.pgob_alerts'),
                 'username'              => 'alerts',
                 'icon'                  => ':x:'
