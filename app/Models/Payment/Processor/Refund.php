@@ -1319,7 +1319,7 @@ trait Refund
             ($this->payment->isCaptured() === true) and
             ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true))
         {
-            $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
+            $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
 
             if (empty($input['speed']) === false)
             {

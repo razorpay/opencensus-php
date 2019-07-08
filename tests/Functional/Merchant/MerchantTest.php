@@ -674,6 +674,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantDefaultRefundSpeed()
+    {
+        $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testAddCategory2()
     {
         $this->createMerchant();

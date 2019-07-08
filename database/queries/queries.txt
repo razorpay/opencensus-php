@@ -5056,3 +5056,6 @@ ALTER TABLE `merchant_emails`
     ADD COLUMN `phone` varchar(255) default null after `email`,
     ADD COLUMN `policy` varchar(255) default null after `phone`,
     ADD COLUMN `url` varchar(255) default null after `policy`;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `default_refund_speed` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `auto_refund_delay`;
