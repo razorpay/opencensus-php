@@ -134,7 +134,7 @@ class Core extends Base\Core
     {
         $response = $user->toArrayPublic();
 
-        $merchantEntities = $user->merchants->where(Merchant\Entity::SUSPENDED_AT, null);
+        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
 
         $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 

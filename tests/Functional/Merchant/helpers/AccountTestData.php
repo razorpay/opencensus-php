@@ -37,7 +37,7 @@ return [
 
     'testRetrieveLinkedAccounts' => [
         'request'  => [
-            'url'    => '/accounts',
+            'url'    => '/linked_accounts',
             'method' => 'get',
             'content'   => [
                 'skip'  => 0,

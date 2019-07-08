@@ -128,7 +128,15 @@ class GatewayDowntimeDetectionTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $upiMindgateExpected = $this->testData['upiMindGateDowntimeResponse'];
+
+        $upiMindgateActual = array_filter($response['config:downtime:detection:configuration'], function($arr) {
+                                return $arr['key'] === 'upi_mindgate';
+                            });
+
+        $this->assertEquals(current($upiMindgateActual), $upiMindgateExpected);
     }
 
     public function testGetGatewayDowntimeRedisConf()

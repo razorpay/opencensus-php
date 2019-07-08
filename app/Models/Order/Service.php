@@ -25,7 +25,11 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $input);
+        $properties = $input;
+
+        $properties['user_agent'] = $this->app['request']->header('User-Agent');
+
+        $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_INITIATED, null, null, $properties);
 
         try
         {

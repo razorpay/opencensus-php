@@ -644,6 +644,16 @@ class Core extends Base\Core
 
     protected function handleFtaProcessed(Entity $payout)
     {
+        if ($payout->isStatusReversed() === true)
+        {
+            throw new Exception\LogicException(
+                'Attempted to process a reversed payout',
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+        }
+
         $payout->setStatus(Status::PROCESSED);
 
         $this->repo->saveOrFail($payout);
