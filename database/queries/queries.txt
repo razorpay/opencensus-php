@@ -5059,3 +5059,6 @@ ALTER TABLE `merchant_emails`
 
 ALTER TABLE `merchants`
     ADD COLUMN `default_refund_speed` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `auto_refund_delay`;
+
+ALTER TABLE `refunds`
+    ADD COLUMN `speed_decisioned` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `speed_requested`;
