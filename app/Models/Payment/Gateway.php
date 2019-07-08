@@ -550,6 +550,7 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -1029,6 +1030,12 @@ class Gateway
         self::BAJAJ,
         self::AMEX,
         self::ISG,
+    ];
+
+    // We do not report capture verify for some gateway even if they fail, as there are integration issues currently
+    public static $captureVerifyReportDisabledGateways = [
+        self::UPI_AXIS,
+        self::UPI_ICICI,
     ];
 
     public static $captureVerifyQREnabledGateways = [
@@ -1980,7 +1987,11 @@ class Gateway
     public static function isCaptureVerifyQREnabledGateways($gateway)
     {
         return (in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === true);
+    }
 
+    public static function isCaptureVerifyReportEnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
     }
 
 

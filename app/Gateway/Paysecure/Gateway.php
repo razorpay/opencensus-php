@@ -5,6 +5,7 @@ namespace RZP\Gateway\Paysecure;
 use View;
 use Cache;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
@@ -27,6 +28,8 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'paysecure_%s_card_details';
     const CARD_CACHE_TTL = 14400;
+
+    const GATEWAY_PAYSECURE_STAN = 'gateway_paysecure_stan';
 
     protected $gatewayPayment = null;
 
@@ -164,6 +167,10 @@ class Gateway extends Base\Gateway
             );
         }
 
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
+            $input);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
@@ -173,6 +180,10 @@ class Gateway extends Base\Gateway
             // Validates the request by checking hash
             $this->validateRequestId($gatewayPayment);
         }
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHORIZATION_INITIATED,
+            $input);
 
         $response = $this->authorizeTransaction($gatewayPayment);
 
@@ -542,7 +553,6 @@ class Gateway extends Base\Gateway
                     'card_no',
                     'card_exp_date',
                     'cvd2',
-                    'retrieval_ref_number',
                 ];
 
                 foreach ($toRemove as $field)

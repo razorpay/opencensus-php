@@ -764,7 +764,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'Credit request is timed out';
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
-    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Validation error';
+    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Payment failed due to validation failure at bank or wallet gateway';
     const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
     const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';

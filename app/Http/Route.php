@@ -173,6 +173,7 @@ final class Route
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
+        'merchant_get_org_details'                 => ['get',      'merchants/{id}/org',                             'MerchantController@getOrg'                                         ],
         'merchant_set_banks'                       => ['post',     'merchants/{id}/banks',                           'MerchantController@setBanks'                                       ],
         'merchant_daily_report'                    => ['post',     'merchants/report',                               'MerchantController@sendDailyReport'                                ],
         'merchant_create'                          => ['post',     'merchants',                                      'MerchantController@postCreateMerchant'                             ],
@@ -278,7 +279,6 @@ final class Route
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
-        'bank_transfer_payment_terminal_backfill'  => ['post',     'payment/bank_transfer_terminal_backfill',        'PaymentController@updateBankTransferTerminal'                      ],
         'payment_card_vault_migrate'               => ['post',     'payments/cards',                                 'PaymentController@paymentCardVaultMigrate'                         ],
         'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
         'refund_reference1_backfill'               => ['post',     'refunds/reference1_backfill',                    'RefundController@backfillUpiMindgateReference1'                    ],
@@ -467,6 +467,8 @@ final class Route
         'set_redis_keys'                           => ['put',      'redis/keys',                                     'AdminController@setRedisKeys'                                      ],
         'get_redis_key'                            => ['get',      'redis/key',                                      'AdminController@getRedisKey'                                       ],
         'update_redis_keys'                        => ['patch',    'redis/keys',                                     'AdminController@updateRedisKeys'                                   ],
+        'set_gateway_downtime_conf'                => ['put',      'gateway/downtime/conf',                          'AdminController@setGatewayDowntimeConf'                            ],
+        'get_gateway_downtime_conf'                => ['get',      'gateway/downtime/conf',                          'AdminController@getGatewayDowntimeConf'                            ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
@@ -789,6 +791,7 @@ final class Route
         'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                      ],
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
         'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
+        'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
@@ -1091,6 +1094,10 @@ final class Route
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
+        'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
+        'credit_note_list'                         => ['get',      'creditnote',                                     'CreditNoteController@list'                                         ],
+        'credit_note_get'                          => ['get',      'creditnote/{id}',                                'CreditNoteController@get'                                          ],
+        'credit_note_apply'                        => ['post',     'creditnote/{id}/apply',                          'CreditNoteController@apply'                                        ],
 
         // Governor Proxy APIs - Namespace
         'governor_create_namespace'               => ['post',     '{source}/rule_engine/namespace',                            'GovernorController@createNamespace'                        ],
@@ -1394,6 +1401,10 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'create_credit_note',
+        'credit_note_list',
+        'credit_note_get',
+        'credit_note_apply',
     ];
 
     // Only routes defined in internalApps go here
@@ -1500,7 +1511,6 @@ final class Route
         'lambda_post_h2h',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
-        'bank_transfer_payment_terminal_backfill',
         'refund_processed_at_backfill',
         'refund_reference1_backfill',
         'refund_reference1_bulk_update',
@@ -1529,6 +1539,7 @@ final class Route
         'fund_account_validate_retry_all',
         'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
+        'merchant_get_org_details',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1685,6 +1696,7 @@ final class Route
         'merchant_get_tags',
         'merchant_edit_email_la',
         'account_fetch',
+        'la_fetch',
         'merchant_add_bank_account',
         'merchant_bank_account_create',
         'merchant_requests_create',
@@ -2103,6 +2115,8 @@ final class Route
         'set_redis_keys',
         'get_redis_key',
         'update_redis_keys',
+        'set_gateway_downtime_conf',
+        'get_gateway_downtime_conf',
 
         'partner_config_create',
         'partner_config_fetch',
@@ -2526,6 +2540,8 @@ final class Route
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
         'set_redis_keys'                           => '*',
+        'set_gateway_downtime_conf'                => '*',
+        'get_gateway_downtime_conf'                => '*',
         'get_redis_key'                            => '*',
         'update_redis_keys'                        => '*',
         // TODO fix the permissions later after discussing
@@ -2779,7 +2795,6 @@ final class Route
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
             'bank_transfer_payment_receiver_backfill',
-            'bank_transfer_payment_terminal_backfill',
             'refund_processed_at_backfill',
             'refund_reference1_backfill',
             'refund_reference1_bulk_update',
@@ -2819,6 +2834,10 @@ final class Route
             'entity_origin_create',
             'currency_fetch_all_proxy',
             'invoice_update_billing_period',
+            'create_credit_note',
+            'credit_note_list',
+            'credit_note_get',
+            'credit_note_apply',
         ],
 
         'kotak' => [
@@ -2884,6 +2903,7 @@ final class Route
             'oauth_merchant_notify',
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
+            'merchant_get_org_details',
         ],
 
         'reporting' => [
@@ -2993,6 +3013,7 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
+        'la_fetch'                             => [Feature::MARKETPLACE],
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],

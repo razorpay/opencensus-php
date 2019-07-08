@@ -252,17 +252,6 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
-            $this->app['diag']->trackPaymentEvent(
-                EventCode::PAYMENT_AUTHENTICATION_INITIATED,
-                $payment,
-                null,
-                [
-                    'attempt'     => $retryAttempts,
-                    'terminal_id' => $payment->getTerminalId(),
-                    'gateway'     => $payment->getGateway(),
-                    'shared'      => $currentTerminal->isShared()
-                ]);
-
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
@@ -282,6 +271,17 @@ trait Authorize
                 'start'         => microtime(true),
             ];
 
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_INITIATED,
+                $payment,
+                null,
+                [
+                    'attempt'     => $retryAttempts,
+                    'terminal_id' => $payment->getTerminalId(),
+                    'gateway'     => $payment->getGateway(),
+                    'shared'      => $currentTerminal->isShared()
+                ] + ($gatewayInput['authenticate'] ?? []));
+
             try
             {
                 if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
@@ -292,6 +292,14 @@ trait Authorize
                 {
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
+
+                $this->app['diag']->trackPaymentEvent(
+                    EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
+                    $payment,
+                    null,
+                    [
+                        'url' => $request['url'] ?? ''
+                    ]);
 
                 $retry = false;
 
@@ -346,27 +354,9 @@ trait Authorize
 
     protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
     {
-        try
-        {
-            $this->app['diag']->trackPaymentEvent(
-                EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED,
-                $payment,
-                null,
-                $gatewayInput['authenticate'] ?? []
-            );
+        $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
 
-            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
-
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED, $payment);
-
-            return $request;
-        }
-        catch (\Throwable $ex)
-        {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED, $payment, $ex);
-
-            throw $ex;
-        }
+        return $request;
     }
 
     protected function preProcessAuthBeforeRetry($payment)
@@ -4489,17 +4479,7 @@ trait Authorize
 
     protected function callGatewayAuthorize(Payment\Entity $payment, array $data)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $payment);
-
         $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
-
-        $this->app['diag']->trackPaymentEvent(
-            EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
-            $payment,
-            null,
-            [
-                'url' => $response['url'] ?? ''
-            ]);
 
         return $response;
     }

@@ -12,13 +12,13 @@ use RZP\Models\Base\PublicCollection;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'amount'                => 'sometimes|integer|min:100',
+        'amount'                => 'sometimes|integer',
         'notes'                 => 'sometimes|notes',
         'receipt'               => 'sometimes|string|max:40',
         'reverse_all'           => 'sometimes|boolean',
         'reversals'             => 'sometimes|array',
         'reversals.*.transfer'  => 'required',
-        'reversals.*.amount'    => 'required|integer|min:100',
+        'reversals.*.amount'    => 'required|integer',
         'reversals.*.notes'     => 'sometimes|notes',
         'speed'                 => 'sometimes|filled|in:optimum,normal',
     ];
@@ -34,9 +34,15 @@ class Validator extends Base\Validator
 
     protected static $directRules = [
         'payment_id'    => 'required',
-        'amount'        => 'sometimes|integer|min:100',
         'notes'         => 'sometimes|notes',
+        'amount'        => 'sometimes|integer',
         'receipt'       => 'sometimes|string|max:40',
+    ];
+
+    protected static $minAmountCheckRules = [
+        'currency'              => 'required|string|size:3',
+        'amount'                => 'sometimes|integer|min_amount',
+        'reversals.*.amount'    => 'required|integer|min_amount',
     ];
 
     protected static $retryRules = [
@@ -54,7 +60,8 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',
-        'refundAmount'
+        'refundAmount',
+        'minRefundAmount'
     ];
 
     protected static $retryBulkRules = [
@@ -245,6 +252,39 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED);
         }
+    }
+
+    protected function validateMinRefundAmount($input)
+    {
+        if (isset($input['amount']) === false)
+        {
+            return;
+        }
+
+        $amountCheckInput = [];
+
+        if (empty($input['amount']) === false) {
+            $amountCheckInput['amount'] = $input['amount'];
+        }
+
+        if (empty($input['reversals']) === false) {
+            $amountCheckInput['reversals'] = [
+                'amount' => $input['reversals']['amount'],
+            ];
+        }
+
+        $payment = $this->payment;
+
+        // currency will not be available here. But we need to validate amount based
+        // on the existing currency.
+        $currency = $payment->getCurrency();
+
+        if (empty($currency) === false)
+        {
+            $amountCheckInput['currency'] = $currency;
+        }
+
+        $this->validateInputValues('min_amount_check', $amountCheckInput);
     }
 
     public static function validateVerifyInternalRefundAllowed(string $gateway)

@@ -18,6 +18,40 @@ class PaymentEvent extends Event
         return $properties;
     }
 
+    public function parseGatewayProperties(array $input)
+    {
+        $properties = [
+            'payment' => [
+                'id'            => 'pay_' . $input['payment']['id'],
+                'amount'        => $input['payment']['amount'],
+                'currency'      => $input['payment']['currency'],
+                'method'        => $input['payment']['method'],
+                'gateway'       => $input['payment']['gateway'],
+                'international' => $input['payment']['international'],
+            ],
+            'merchant'  => [
+                'id'        => $input['merchant']['id'],
+                'name'      => $input['merchant']['billing_label'],
+                'mcc'       => $input['merchant']['category'],
+                'category'  => $input['merchant']['category2'],
+            ]
+        ];
+
+        if (isset($input['card']) === true)
+        {
+            $properties['payment'] += [
+                'card_iin'      => $input['card']['iin'],
+                'card_network'  => $input['card']['network'],
+                'card_type'     => $input['card']['type'],
+                'card_country'  => $input['card']['country'],
+            ];
+        }
+
+        $properties['properties'] = $this->customProperties;
+
+        return $properties;
+    }
+
     protected function removeSenstiveFields()
     {
         // currently just doing based on the input keys, can add strict validations like luhn check etc
@@ -50,6 +84,7 @@ class PaymentEvent extends Event
                 'method'       => $payment->getMethod(),
                 'issuer'       => $payment->getIssuer(),
                 'type'         => $payment->getTransactionType(),
+                'gateway'      => $payment->getGateway()
         ];
 
         // upi properties

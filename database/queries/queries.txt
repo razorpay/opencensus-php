@@ -5049,3 +5049,25 @@ ALTER TABLE virtual_accounts
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE transactions
+    CHANGE reference5 balance_updated TINYINT(4),
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `business_registered_address_l2` VARCHAR(255) DEFAULT NULL after `business_registered_address`,
+    ADD COLUMN `business_registered_country` VARCHAR(255) DEFAULT NULL after `business_registered_pin`,
+    ADD COLUMN `business_operation_address_l2` VARCHAR(255) DEFAULT NULL after `business_operation_address`,
+    ADD COLUMN `business_operation_country` VARCHAR(255) DEFAULT NULL after `business_operation_pin`,
+    ADD COLUMN `business_description` VARCHAR(255) DEFAULT NULL after `business_name`,
+    ADD COLUMN `custom_fields` TEXT DEFAULT NULL after `internal_notes`;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `icon_url` text default null after `logo_url`,
+    ADD COLUMN `live_disable_reason` varchar(255) default null after `live`,
+    ADD COLUMN `hold_funds_reason` varchar(255) default null after `hold_funds`;
+
+ALTER TABLE `merchant_emails`
+    ADD COLUMN `phone` varchar(255) default null after `email`,
+    ADD COLUMN `policy` varchar(255) default null after `phone`,
+    ADD COLUMN `url` varchar(255) default null after `policy`;
