@@ -1,29 +1,33 @@
 import { Component } from 'react';
-import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { connect } from 'react-redux';
 
-import LocalStorageService from 'rzp/utils/localStorage';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { classList } from 'common/util';
 
+@connect(state => {
+  return {
+    closeOnboardingStep: state.home.closeOnboardingStep,
+  };
+})
 export default class SupportHeader extends Component {
-  constructor(props) {
-    super(props);
-
-    const hasInteractedBefore = LocalStorageService.getItem(
-      'show-support-helper'
-    );
-    this.state = {
-      showHelpTooltip: !hasInteractedBefore,
-    };
-  }
+  state = {};
 
   componentDidUpdate(prevProps) {
+    // After onboarding is complete, always show this tooltip
+    if (
+      prevProps.closeOnboardingStep !== this.props.closeOnboardingStep &&
+      this.props.closeOnboardingStep
+    ) {
+      this.setState({
+        showHelpTooltip: true,
+      });
+    }
+
     if (
       this.state.showHelpTooltip &&
       prevProps.isOpened !== this.props.isOpened &&
       this.props.isOpened
     ) {
-      LocalStorageService.setItem('show-support-helper', 'true');
-
       this.setState({
         showHelpTooltip: false,
       });

@@ -498,6 +498,10 @@ export default class HomeContainer extends Component {
     window.addEventListener('resize', this.onResize);
   }
 
+  closeOnboardingStep() {
+    this.props.closeOnboardingStep();
+  }
+
   onFirstStepClose() {
     this.setState(
       {
@@ -743,6 +747,7 @@ export default class HomeContainer extends Component {
                 className="welcome-modal"
                 onClose={() => {
                   trackIAClose();
+                  this.closeOnboardingStep();
                   onFirstStepClose();
                 }}
               >
@@ -750,6 +755,7 @@ export default class HomeContainer extends Component {
                   <WelcomeModal
                     onClose={() => {
                       trackTryDashboard();
+                      this.closeOnboardingStep();
                       onFirstStepClose();
                     }}
                     onActivate={() => {
@@ -765,10 +771,12 @@ export default class HomeContainer extends Component {
           <InstantActivationSuccess
             onClose={() => {
               iaActivations.trackClose(activation_flow);
+              this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
             onGoToDashboard={() => {
               iaActivations.trackGoToDashboard();
+              this.closeOnboardingStep();
               this.onInstantActivationSuccess();
             }}
             user={user}
