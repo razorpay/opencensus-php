@@ -1320,7 +1320,7 @@ trait Refund
 
         if ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true)
         {
-            $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
+            $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
 
             if (empty($input[RefundEntity::SPEED]) === false)
             {
