@@ -385,6 +385,8 @@ class Service extends Base\Service
      * In RX, we always mandate account number.
      *
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
      */
     protected function processAccountNumber(array & $input)
     {

@@ -826,7 +826,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($entity);
     }
 
-
     protected function processPendingPayout(Entity $payout): Entity
     {
         $payoutId = $payout->getId();

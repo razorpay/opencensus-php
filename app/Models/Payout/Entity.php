@@ -805,7 +805,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REVERSED_AT, $date);
     }
 
-    public function setRejectedAt($date)
+    public function setRejectedAt(int $date = null)
     {
         $this->setAttribute(self::REJECTED_AT, $date);
     }

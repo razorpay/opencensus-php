@@ -5,14 +5,12 @@ namespace RZP\Models\User;
 use App;
 use Hash;
 
-use Razorpay\Trace\Facades\Trace;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Trace\TraceCode;
 
 /**
  * Class Validator
