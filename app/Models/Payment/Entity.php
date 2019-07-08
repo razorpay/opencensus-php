@@ -1359,7 +1359,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $acquirerData = [
                     'rrn' => $this->getReference16()
                 ];
-
                 break;
         }
 

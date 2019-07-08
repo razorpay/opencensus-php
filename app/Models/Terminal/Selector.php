@@ -445,8 +445,6 @@ class Selector extends Base\Core
     private function netBankingTerminalNotFound($merchant, $bank, $amount)
     {
 
-        s($merchant->getName(),$bank,$amount);
-
         $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, ['merchant' => $merchant->getName()]);
 
         $this->app['slack']->queue(
