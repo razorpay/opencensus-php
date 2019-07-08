@@ -37,32 +37,41 @@ export default class SupportHeader extends Component {
   render() {
     const { notifyCount = 0, isOpened, onToggle } = this.props;
 
+    const content = (
+      <>
+        {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
+        <div class="open-icon">
+          <i class="i i-headset" />
+        </div>
+        <div class="close-icon">
+          <i class="i i-close " />
+        </div>
+      </>
+    );
+
     return (
       <div
         class={classList('support-launcher', isOpened && 'active')}
         onClick={onToggle}
       >
-        <span className="help-content">
-          {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
-          <div class="open-icon">
-            <i class="i i-headset" />
-          </div>
-          <div class="close-icon">
-            <i class="i i-close " />
-          </div>
-
-          <Popover
-            align="left"
-            theme="dark"
-            persistent={this.state.showHelpTooltip}
-          >
-            <PopoverBody>
-              <div>
-                To know how to use the Dashboard, read the Dashboard Guide
-              </div>
-            </PopoverBody>
-          </Popover>
-        </span>
+        {!this.state.showHelpTooltip ? (
+          content
+        ) : (
+          <span className="help-content">
+            {content}
+            <Popover
+              align="left"
+              theme="dark"
+              persistent={this.state.showHelpTooltip}
+            >
+              <PopoverBody>
+                <div>
+                  To know how to use the Dashboard, read the Dashboard Guide
+                </div>
+              </PopoverBody>
+            </Popover>
+          </span>
+        )}
       </div>
     );
   }
