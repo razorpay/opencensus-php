@@ -23,7 +23,6 @@ export default class extends React.Component {
         : undefined,
       theme: settings && settings.theme === 'dark' ? '0' : '1',
       slug: paymentPageEntity.slug || '',
-      slug: paymentPageEntity.slug || '',
       payment_success_message: settings ? settings.payment_success_message : '',
       payment_success_redirect_url: settings
         ? settings.payment_success_redirect_url

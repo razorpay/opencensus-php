@@ -327,6 +327,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       support_email,
       support_contact,
       settings,
+      expire_by,
     } = paymentPageEntity;
 
     // Remove Email and Phone in all cases before sending to API.
@@ -342,6 +343,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const reqPayload = {
       currency,
       amount: amount || null,
+      expire_by: expire_by || null,
       title,
       description: description || null,
       times_payable: quantity || null,
