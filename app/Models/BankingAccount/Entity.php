@@ -2,11 +2,13 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                                = 'id';
@@ -211,6 +213,11 @@ class Entity extends Base\PublicEntity
     public function getAccountIfsc()
     {
         return $this->getAttribute(self::ACCOUNT_IFSC);
+    }
+
+    public function getAccountActivationDate()
+    {
+        return $this->getAttribute(self::ACCOUNT_ACTIVATION_DATE);
     }
 
     public function getAccountNumber()

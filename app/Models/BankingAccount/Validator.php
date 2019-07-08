@@ -8,6 +8,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const PRE_PROCESS = 'pre_process';
+
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
@@ -30,7 +32,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
         Entity::BENEFICIARY_STATE               => 'filled|string',
-        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|string|date',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|integer',
         Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
         Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
@@ -46,6 +48,13 @@ class Validator extends Base\Validator
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
         Entity::PINCODES        => 'required|array|filled',
+    ];
+
+    // ToDo Need to make the rules stricter
+    protected static $rblCreateMerchantTokenRules = [
+        RblFields::SUBCORP_ID               => 'required|string',
+        RblFields::SUBCORP_USER_ID          => 'required|string',
+        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 
     protected static $serviceablePincodeValidators = [

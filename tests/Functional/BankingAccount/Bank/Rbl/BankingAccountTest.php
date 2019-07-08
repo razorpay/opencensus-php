@@ -93,7 +93,7 @@ class BankingAccountTest extends TestCase
                 'content' => [
                     'RZPAlertNotiReq' => [
                         'Body' => [
-                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber()
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber()
                         ]
                     ]
                 ]
@@ -125,33 +125,6 @@ class BankingAccountTest extends TestCase
         return $this->startTest();
     }
 
-    public function testUpdateAccountOpeningInfoWebhookDetailsForMissedWebhook()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->createBankingAccount();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $dataToReplace = [
-            'request'  => [
-                'url'     => '/banking_account/' . $bankingAccount->getPublicId(),
-                'content' => [
-                    'bank_reference_number' => $bankingAccount->getBankReferenceNumber(),
-                ],
-                'method'  => 'PATCH',
-            ],
-        ];
-
-        $this->ba->adminAuth();
-
-        $this->startTest($dataToReplace);
-    }
-
     public function testUpdateAccountInfoWebhookInternally()
     {
         $this->ba->proxyAuth();
@@ -169,7 +142,7 @@ class BankingAccountTest extends TestCase
                 'content' => [
                     'RZPAlertNotiReq' => [
                         'Body' => [
-                            'REF_NUM_1' => $bankingAccount->getBankReferenceNumber()
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber()
                         ]
                     ]
                 ]
@@ -177,6 +150,36 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
+    }
+
+    public function testDoubleAccountOpeningWebhooks()
+    {
+        $this->testSuccessBankAccountInfoNotification();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
+        // we are asserting that the values passed in second webhook will not be updated
+        // as the first webhook is processed.
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNotEquals($bankingAccount['account_number'], 31900299180853);
     }
 
     public function testStoreMerchantCredentials()

@@ -78,11 +78,11 @@ return [
             'content' => [
                 'RZPAlertNotiReq' => [
                     'Body' => [
-                        'FORACID'           => '309002180853',
-                        'ACCT_NAME'         => 'INTERNET BANKING CA',
-                        'CIF_ID'            => 'CIF_ID',
-                        'ACTIVATION_DATE'   => '22-MAY-2019',
-                        'REF_NUM_1'         => '15597',
+                        'Account No'        => '309002180853',
+                        'Customer Name'     => 'INTERNET BANKING CA',
+                        'Customer ID'       => 'Customer ID',
+                        'Account Open Date' => '22-MAY-2019',
+                        'RZP_Ref No'        => '15597',
                         'IFSC'              => 'HDFC0000090',
                         'ADDR_1'            => 'RAM NAGAR',
                         'ADDR_2'            => 'ADARSHA LANE',
@@ -91,8 +91,8 @@ return [
                         'STATE'             => 'MAHARASH',
                         'COUNTRY'           => 'INDIA',
                         'PINCODE'           => '123456',
-                        'PHONE_NUM'         => '9899807189',
-                        'EMAIL_ID'          => 'test@gmail.com'
+                        'Phone no'          => '9899807189',
+                        'Email Id'          => 'test@gmail.com'
                     ],
                     'Header' => [
                         'TranID' => '12345'
@@ -138,11 +138,54 @@ return [
             'content' => [
                 'RZPAlertNotiReq' => [
                     'Body' => [
-                        'FORACID'           => '309002180853',
-                        'ACCT_NAME'         => 'INTERNET BANKING CA',
-                        'CIF_ID'            => 'CIF_ID',
-                        'ACTIVATION_DATE'   => '22-MAY-2019',
-                        'REF_NUM_1'         => '15597',
+                        'Account No'         => '309002180853',
+                        'Customer Name'      => 'INTERNET BANKING CA',
+                        'Customer ID'        => 'Customer ID',
+                        'Account Open Date'  => '22-MAY-2019',
+                        'RZP_Ref No'         => '15597',
+                        'IFSC'               => 'HDFC0000090',
+                        'ADDR_1'             => 'RAM NAGAR',
+                        'ADDR_2'             => 'ADARSHA LANE',
+                        'ADDR_3'             => '.',
+                        'CITY'               => 'MUMBAI',
+                        'STATE'              => 'MAHARASH',
+                        'COUNTRY'            => 'INDIA',
+                        'PINCODE'            => '123456',
+                        'Phone no'           => '9899807189',
+                        'Email Id'           => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '12345'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testDoubleAccountOpeningWebhooks' => [
+        'request'  => [
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No'        => '319002180853',
+                        'Customer Name'     => 'INTERNET BANKING CA',
+                        'Customer ID'       => 'Customer ID',
+                        'Account Open Date' => '22-MAY-2019',
+                        'RZP_Ref No'        => '15597',
                         'IFSC'              => 'HDFC0000090',
                         'ADDR_1'            => 'RAM NAGAR',
                         'ADDR_2'            => 'ADARSHA LANE',
@@ -151,8 +194,8 @@ return [
                         'STATE'             => 'MAHARASH',
                         'COUNTRY'           => 'INDIA',
                         'PINCODE'           => '123456',
-                        'PHONE_NUM'         => '9899807189',
-                        'EMAIL_ID'          => 'test@gmail.com'
+                        'Phone no'          => '9899807189',
+                        'Email Id'          => 'test@gmail.com'
                     ],
                     'Header' => [
                         'TranID' => '12345'
@@ -248,21 +291,21 @@ return [
             'content' => [
                 'RZPAlertNotiReq' => [
                     'Body' => [
-                        'FORACID'           => '309002180853',
-                        'ACCT_NAME'         => 'INTERNET BANKING CA',
-                        'CIF_ID'            => 'CIF_ID',
-                        'ACTIVATION_DATE'   => '22-MAY-2019',
-                        'REF_NUM_1'         => '15597',
-                        'IFSC'              => 'HDFC0000090',
-                        'ADDR_1'            => 'RAM NAGAR',
-                        'ADDR_2'            => 'ADARSHA LANE',
-                        'ADDR_3'            => '.',
-                        'CITY'              => 'MUMBAI',
-                        'STATE'             => 'MAHARASH',
-                        'COUNTRY'           => 'INDIA',
-                        'PINCODE'           => '123456',
-                        'PHONE_NUM'         => '9899807189',
-                        'EMAIL_ID'          => 'test@gmail.com'
+                        'Account No'            => '309002180853',
+                        'Customer Name'         => 'INTERNET BANKING CA',
+                        'Customer ID'           => 'Customer ID',
+                        'Account Open Date'     => '22-MAY-2019',
+                        'RZP_Ref No'            => '15597',
+                        'IFSC'                  => 'HDFC0000090',
+                        'ADDR_1'                => 'RAM NAGAR',
+                        'ADDR_2'                => 'ADARSHA LANE',
+                        'ADDR_3'                => '.',
+                        'CITY'                  => 'MUMBAI',
+                        'STATE'                 => 'MAHARASH',
+                        'COUNTRY'               => 'INDIA',
+                        'PINCODE'               => '123456',
+                        'Phone no'              => '9899807189',
+                        'Email Id'              => 'test@gmail.com'
                     ],
                 ],
             ],
