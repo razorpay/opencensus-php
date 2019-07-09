@@ -267,6 +267,28 @@ class CardlessEmiGatewayTest extends TestCase
        // $this->assertEquals('rfnd_' . $gatewayRefund['refund_id'], $refund['id']);
     }
 
+    public function testReversePayment()
+    {
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->doAuthPayment($payment);
+
+        $this->fixtures->merchant->addFeatures('void_refunds','10000000000000');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $gatewayRefund = $this->getLastEntity('cardless_emi', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($payment['id'], 'pay_' . $gatewayRefund['payment_id']);
+
+        $this->assertEquals('rfnd_' . $gatewayRefund['refund_id'], $refund['id']);
+    }
+
     public function testRefundFailed()
     {
         $data = $this->testData[__FUNCTION__];

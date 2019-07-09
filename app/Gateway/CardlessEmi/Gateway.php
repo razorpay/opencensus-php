@@ -367,11 +367,6 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::REVERSE);
 
-        if ($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER] !== CardlessEmi::FLEXMONEY)
-        {
-            return;
-        }
-
         return $this->refund($input);
     }
 
