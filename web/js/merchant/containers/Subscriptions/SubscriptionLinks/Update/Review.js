@@ -3,17 +3,17 @@ import Amount from 'rzp/ui/Amount';
 export default function UpdateSubscriptionLinkReview(props) {
   const changes = changeData(props);
 
-  let changesEffect = null;
+  let updateSubsStatusDesc = null;
 
   if (props.fields.schedule_change_at) {
     if (props.fields.schedule_change_at === 'now') {
-      changesEffect = (
+      updateSubsStatusDesc = (
         <div>
           The changes will take into effect <b>immediately.</b>
         </div>
       );
     } else {
-      changesEffect = (
+      updateSubsStatusDesc = (
         <div>
           The changes will be applied from the next billing cycle on
           {moment.unix(props.prevSubscription.charge_at).format('DD MMM, YYYY')}
@@ -25,7 +25,7 @@ export default function UpdateSubscriptionLinkReview(props) {
   return (
     <div class="SubscriptionLinks--Update-review">
       {changes.map(e => <ChangeValue {...e} />)}
-      {changesEffect}
+      {updateSubsStatusDesc}
     </div>
   );
 }

@@ -383,7 +383,7 @@ export default class UpdateSubscription extends React.Component {
           <Review
             fields={{
               ...fields,
-              total_count: Math.abs(totalCount),
+              total_count: totalCount,
             }}
             internals={internals}
             plans={this.props.plans.items}
