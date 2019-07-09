@@ -933,7 +933,10 @@ class Core extends Base\Core
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
     {
-        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Product::BANKING);
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+            $merchant->getId(),
+            Product::BANKING,
+            Merchant\Balance\AccountType::SHARED);
 
         if (empty($balance) === false)
         {
