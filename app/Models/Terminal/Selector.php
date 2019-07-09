@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Cache;
+use Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -234,6 +235,9 @@ class Selector extends Base\Core
 
                 // raising an alert on slack for no terminal found
                 $this->alertNetbankingTerminalNotFound($merchant, $payment);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT);
             }
             else
             {
@@ -451,7 +455,7 @@ class Selector extends Base\Core
 
         $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, $alertArray);
 
-        $message = "Netbanking payment failed with no terminal found";
+        $message = 'Netbanking payment failed with no terminal found';
 
         $this->app['slack']->queue(
             $message,
