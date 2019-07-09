@@ -332,7 +332,26 @@
   }, {
     "name": "Yerevan"
   }],
-  "Australia": [],
+  "Australia": [
+    {
+      "name": "New South Wales"
+    },
+    {
+      "name": "Queensland"
+    },
+    {
+      "name": "South Australia"
+    },
+    {
+      "name": "Tasmania"
+    },
+    {
+      "name": "Victoria"
+    },
+    {
+      "name": "Western Australia"
+    }
+  ],
   "Austria": [{
     "name": "Burgenland"
   }, {
