@@ -115,20 +115,7 @@ class Base extends BaseCore
             return $payout;
         });
 
-        if ($payout->isStatusQueued() === true)
-        {
-            $this->app->events->fire('api.payout.queued', [$payout]);
-        }
-        else if ($payout->isStatusPending() === true)
-        {
-            // TODO:: Add pending webhook trigger here
-        }
-        else
-        {
-            // api.payout.created to be removed after merchants have migrated.
-            $this->app->events->fire('api.payout.created', [$payout]);
-            $this->app->events->fire('api.payout.initiated', [$payout]);
-        }
+        $this->fireEventForPayoutStatus($payout);
 
         return $payout;
     }
@@ -200,13 +187,28 @@ class Base extends BaseCore
 
                 $payoutType = $this->getPayoutType();
 
+                //
+                // We're setting the queued flag to true since Queued Payouts is always enabled
+                // alongside Payout Workflows. Hence, we want to enabled the queued payout logic in
+                // DownstreamProcessor
+                //
+                $payout->setQueueFlag(true);
+
                 $downstreamProcessor = new DownstreamProcessor($payoutType,
                                                                $payout,
                                                                $this->fundTransferDestination);
 
                 $downstreamProcessor->process();
 
-                $payout->setStatus(Payout\Status::CREATED);
+                //
+                // Downstream processor can set the status to queued in some cases (low balance)
+                // If set, we want the payout to remain in queued so it can be processed separately.
+                // Hence, payout status is set to created only if it's not already queued.
+                //
+                if ($payout->isStatusQueued() === false)
+                {
+                    $payout->setStatus(Payout\Status::CREATED);
+                }
 
                 $this->repo->saveOrFail($payout);
 
@@ -221,7 +223,7 @@ class Base extends BaseCore
                 return $payout;
             });
 
-        $this->app->events->fire('api.payout.initiated', [$payout]);
+        $this->fireEventForPayoutStatus($payout);
 
         (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
 
@@ -468,6 +470,24 @@ class Base extends BaseCore
         else
         {
             $this->balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
+        }
+    }
+
+    protected function fireEventForPayoutStatus(Payout\Entity $payout)
+    {
+        if ($payout->isStatusQueued() === true)
+        {
+            $this->app->events->fire('api.payout.queued', [$payout]);
+        }
+        else if ($payout->isStatusPending() === true)
+        {
+            // TODO:: Add pending webhook trigger here
+        }
+        else
+        {
+            // api.payout.created to be removed after merchants have migrated.
+            $this->app->events->fire('api.payout.created', [$payout]);
+            $this->app->events->fire('api.payout.initiated', [$payout]);
         }
     }
 
