@@ -102,12 +102,7 @@ class UpiMindgateGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertNotNull($upiEntity['npci_reference_id']);
         $this->assertNotNull($payment['acquirer_data']['rrn']);
-
-        // checking upi_transaction_id coming for mindgate gateway
-        if ($payment['gateway'] === "upi_mindgate")
-        {
-            $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
-        }
+        $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
 
         $this->assertEquals($payment['reference16'], $upiEntity['npci_reference_id']);
         $this->assertNotNull($upiEntity['gateway_payment_id']);
