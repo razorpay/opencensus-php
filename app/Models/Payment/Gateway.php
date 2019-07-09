@@ -118,6 +118,8 @@ class Gateway
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
+    const GOOGLE_PAY         = 'google_pay';
+
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
