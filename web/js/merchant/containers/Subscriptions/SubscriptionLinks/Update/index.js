@@ -367,13 +367,15 @@ export default class UpdateSubscription extends React.Component {
           prevSubscription.status !== 'authenticated'
         ) {
           if (prevSubscription.remaining_count < fields.remaining_count) {
-            totalCount +=
-              fields.remaining_count - prevSubscription.remaining_count;
+            totalCount =
+              totalCount +
+              (fields.remaining_count - prevSubscription.remaining_count);
           } else if (
             prevSubscription.remaining_count > fields.remaining_count
           ) {
-            totalCount -=
-              prevSubscription.remaining_count - fields.remaining_count;
+            totalCount =
+              totalCount -
+              (prevSubscription.remaining_count - fields.remaining_count);
           }
         }
 
@@ -381,7 +383,7 @@ export default class UpdateSubscription extends React.Component {
           <Review
             fields={{
               ...fields,
-              total_count: totalCount,
+              total_count: Math.abs(totalCount),
             }}
             internals={internals}
             plans={this.props.plans.items}
@@ -446,7 +448,7 @@ export default class UpdateSubscription extends React.Component {
               type="submit"
               onClick={this.handleCreate}
             >
-              Update Subscription Link
+              Update Subscription
             </AsyncBtn.Primary>
           )}
         </footer>

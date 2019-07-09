@@ -26,7 +26,13 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
   }
 
   validateTotalCount = val => {
-    if (!val) return 'Total Count is mandatory';
+    if (!val) {
+      if (this.props.isEdit) {
+        return 'No of remaining cycles';
+      }
+
+      return 'Total Count is mandatory';
+    }
 
     if (val > planPeriodToMaxCycleMap[(this.selectedPlan || {}).period]) {
       return 'Billing cycles cannot exceed the period of 10 years';
@@ -43,7 +49,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
       : undefined;
 
     let showStartDate = !props.isEdit,
-      totalCountLabel = 'No of cycles to be updated';
+      totalCountLabel = 'No of remaining cycles';
 
     const isAuthenticatedSubscription =
       props.isEdit && props.status === 'authenticated';
@@ -58,7 +64,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
 
     return (
       <>
-        <div class="Input Input--required">
+        <div class={`Input ${!props.isEdit && 'Input--required'}`}>
           <Label text="Select Plan" />
           <div className="Input-content">
             <div className="Input-elWrapper">
@@ -88,7 +94,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
         {showStartDate && (
           <React.Fragment>
             <Input.Check
-              required
+              required={!props.isEdit}
               label="Start Date"
               class="Input--vTop"
               data-name="_startsImmediately"
@@ -132,7 +138,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
         )}
 
         <Input
-          required
+          required={!props.isEdit}
           min={1}
           size="half"
           type="number"
