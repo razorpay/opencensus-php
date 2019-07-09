@@ -81,6 +81,10 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
 
+        $this->assertNotNull($upi['npci_txn_id']);
+
+        $this->assertEquals($payment['reference1'], $upi['npci_txn_id']);
+
         $this->assertNotNull($payment['acquirer_data']['rrn']);
 
         // Add a capture as well, just for completeness sake
