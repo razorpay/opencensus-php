@@ -871,6 +871,12 @@ class PaymentCreateTest extends TestCase
         $content = $response['content'];
         $content['contact'] = '+919999999998';
         $content['email'] = 'test@razorpay.com';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
     }
 
     public function testPreferredRecurringPaymentRecurringInvalidMethod()
