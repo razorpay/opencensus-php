@@ -146,11 +146,11 @@ class Initiator extends Base\Core
 
             $data[$channel] = 0;
 
-            if (($channel === Channel::YESBANK) and ($purpose === Purpose::SETTLEMENT))
+            if ($channel === Channel::YESBANK)
             {
                 $attemptIds = $attempts->pluck(Entity::ID);
 
-                return $this->dispatchTransfersForSettlement($channel, $attemptIds, $data);
+                return $this->dispatchTransfers($channel, $attemptIds, $data);
             }
             else
             {
@@ -470,7 +470,7 @@ class Initiator extends Base\Core
         return [true, null];
     }
 
-    protected function dispatchTransfersForSettlement(string $channel, $attemptIds, array $data)
+    protected function dispatchTransfers(string $channel, $attemptIds, array $data)
     {
         foreach ($attemptIds as $id)
         {

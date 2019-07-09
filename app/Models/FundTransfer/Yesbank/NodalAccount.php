@@ -68,6 +68,19 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
+            $attempt->reload();
+
+            if ($attempt->getStatus() !== Attempt\Status::CREATED)
+            {
+                $this->trace->info(TraceCode::FTA_IN_PROGRESS,
+                    [
+                        'channel'       => $this->channel,
+                        'attempt_id'    => $attempt->getId(),
+                    ]);
+
+                continue;
+            }
+
             $gateway = $attempt->shouldUseGateway();
 
             $this->doRequiredChecks($gateway);
