@@ -176,6 +176,7 @@ class Base extends BaseCore
 
     public function processPendingPayout(Payout\Entity $payout): Payout\Entity
     {
+        /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(
             function () use ($payout)
             {
@@ -225,7 +226,10 @@ class Base extends BaseCore
 
         $this->fireEventForPayoutStatus($payout);
 
-        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        if ($payout->isStatusCreated() === true)
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
 
         return $payout;
     }
