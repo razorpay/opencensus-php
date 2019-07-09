@@ -1,13 +1,31 @@
 import Amount from 'rzp/ui/Amount';
 
 export default function UpdateSubscriptionLinkReview(props) {
-  const changes = changeData(props),
-    summary = changeSummary(props);
+  const changes = changeData(props);
+
+  let updateSubsStatusDesc = null;
+
+  if (props.fields.schedule_change_at) {
+    if (props.fields.schedule_change_at === 'now') {
+      updateSubsStatusDesc = (
+        <div>
+          The changes will take into effect <b>immediately.</b>
+        </div>
+      );
+    } else {
+      updateSubsStatusDesc = (
+        <div>
+          The changes will be applied from the next billing cycle on
+          {moment.unix(props.prevSubscription.charge_at).format('DD MMM, YYYY')}
+        </div>
+      );
+    }
+  }
 
   return (
     <div class="SubscriptionLinks--Update-review">
       {changes.map(e => <ChangeValue {...e} />)}
-      {!!summary.length && <Summary data={summary} />}
+      {updateSubsStatusDesc}
     </div>
   );
 }
@@ -70,7 +88,7 @@ export function changeData({
   }
 
   if (
-    prevSubscription.start_at !== fields.start_at ||
+    (fields.start_at && prevSubscription.start_at !== fields.start_at) ||
     (prevSubscription.start_at && internals._startsImmediately)
   ) {
     changes.push({
@@ -101,72 +119,6 @@ export function changeData({
   return changes;
 }
 
-export function changeSummary({
-  plans,
-  fields,
-  prevPlan,
-  updatedPlan,
-  prevSubscription,
-}) {
-  const currSelectedPlan = updatedPlan
-      ? updatedPlan
-      : plans.find(({ id }) => id === fields.plan_id),
-    prevSelectedPlan = prevPlan
-      ? prevPlan
-      : plans.find(({ id }) => id === prevSubscription.plan_id);
-
-  const review = [];
-
-  if (
-    currSelectedPlan.item.amount !== prevSelectedPlan.item.amount ||
-    currSelectedPlan.item.currency !== prevSelectedPlan.item.currency ||
-    prevSubscription.quantity !== fields.quantity
-  ) {
-    review.push(
-      <li>
-        <Amount
-          value={prevSelectedPlan.item.amount}
-          currency={prevSelectedPlan.item.currency}
-        />
-        {prevSubscription.quantity > 1
-          ? ` charged every ${prevSubscription.quantity} monthly`
-          : ' changed for month'}
-        <b>
-          <i class="i i-arrow-forward" />
-          <Amount
-            value={currSelectedPlan.item.amount}
-            currency={currSelectedPlan.item.currency}
-          />{' '}
-          {fields.quantity > 1 ? (
-            <>charged every {fields.quantity} monthly</>
-          ) : (
-            <>changed for month </>
-          )}
-        </b>
-      </li>
-    );
-  }
-
-  if (fields.schedule_change_at) {
-    if (fields.schedule_change_at === 'now') {
-      review.push(
-        <li>
-          The changes will take into effect <b>immediately.</b>
-        </li>
-      );
-    } else {
-      review.push(
-        <li>
-          The changes will be applied from the next billing cycle i.e{' '}
-          {moment.unix(prevSubscription.charge_at).format('DD MMM, YYYY')}
-        </li>
-      );
-    }
-  }
-
-  return review;
-}
-
 const ChangeValue = ({ heading, changes }) => (
   <div class="changed-values">
     <span class="big-dot-separator" />
@@ -182,13 +134,6 @@ const ChangeValue = ({ heading, changes }) => (
         </div>
       ))}
     </div>
-  </div>
-);
-
-const Summary = ({ data }) => (
-  <div class="summary">
-    <strong>Summary</strong>
-    <ul>{data}</ul>
   </div>
 );
 

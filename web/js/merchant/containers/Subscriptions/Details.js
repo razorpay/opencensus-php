@@ -456,7 +456,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       0
     );
 
-    //TODO: Add addons list as well depending upon type in line_items (Will help in updating invoices list)
+    // TODO: Add addons list as well depending upon type in line_items (Will help in updating invoices list)
     return {
       id: 'inv_upcoming',
       status: 'next_due',

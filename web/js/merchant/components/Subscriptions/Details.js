@@ -227,7 +227,7 @@ export default props => {
                       )}
                     </div>
                     <ContentToggler>
-                      <span>View Less</span>
+                      <span>View Details</span>
                       <div className="full-width-item">
                         <strong>Update Summary</strong>
                         <UpdatedSubscriptionPreview
