@@ -111,6 +111,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertEquals($payment['reference16'], $upiEntity['npci_reference_id']);
         $this->assertNotNull($upiEntity['gateway_payment_id']);
+        $this->assertEquals($payment['reference1'],$upiEntity['gateway_payment_id']);
         $this->assertSame('00', $upiEntity['status_code']);
 
         // Here we are asserting for all both records i.e. authorize and callback
