@@ -499,6 +499,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
     }
 
+    public function isGooglePayOmnichannelEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_OMNICHANNEL);
+    }
+
     public function canHoldPayment(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::PAYMENT_ONHOLD);
