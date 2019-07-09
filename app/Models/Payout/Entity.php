@@ -1089,6 +1089,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function getSourceFtsFundAccountId()
+    {
+        return $this->balance->bankingAccount->getFtsFundAccountId();
+    }
+
     protected function modifyMode(& $input)
     {
         $fundAccount = $this->fundAccount;
