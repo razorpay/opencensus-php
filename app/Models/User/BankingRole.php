@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 /**
  * Class BankingRole
@@ -44,20 +45,36 @@ class BankingRole
         self::FINANCE_L3 => 'Finance L3',
     ];
 
+    public static function isWorkflowRole(string $role): bool
+    {
+        return (in_array($role, self::$workflowRoles, true) === true);
+    }
+
+    public static function getNameForWorkflowRole(string $roleId): string
+    {
+        return self::$workflowRoleToNameMap[$roleId];
+    }
+
+    public static function getNamesForWorkflowRoles(array $roleIdentifiers): array
+    {
+        $names = [];
+
+        foreach ($roleIdentifiers as $roleId)
+        {
+            $names[] = self::getNameForWorkflowRole($roleId);
+        }
+
+        return $names;
+    }
+
     public static function exists(string $action): bool
     {
         return defined(get_class() . '::' . strtoupper($action));
     }
 
-    public static function getAllRolesForMerchant(Merchant\Entity $merchant = null): array
+    public static function getAllRoles(): array
     {
-        $bankingRoles = self::$defaultRoles;
-
-        if (($merchant !== null) and
-            ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT_WORKFLOWS)))
-        {
-            $bankingRoles = array_merge($bankingRoles, self::$workflowRoles);
-        }
+        $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles);
 
         return $bankingRoles;
     }

@@ -34,9 +34,9 @@ class Core extends Base\Core
     /**
      * @param Action       $action
      * @param string       $state
-     * @param Admin\Entity $admin
+     * @param PublicEntity $admin
      */
-    public function changeActionState(Action $action, string $state, Admin\Entity $admin)
+    public function changeActionState(Action $action, string $state, PublicEntity $admin)
     {
         $input = [
             Entity::NAME       => $state,
