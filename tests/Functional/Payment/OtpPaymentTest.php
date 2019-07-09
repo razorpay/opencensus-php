@@ -2822,8 +2822,8 @@ class OtpPaymentTest extends TestCase
         self::assertTrue($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertEquals('headless_otp', $payment['auth_type']);
-        self::assertEquals('hdfc', $payment['gateway']);
-        self::assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
     public function testHeadlessOtpTimeoutException()
@@ -3066,8 +3066,8 @@ class OtpPaymentTest extends TestCase
         self::assertTrue($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertEquals('headless_otp', $payment['auth_type']);
-        self::assertEquals('hdfc', $payment['gateway']);
-        self::assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
     public function testHeadlessOtpAuthenticationPaymentFailedDisableIinPreferredAuth()
