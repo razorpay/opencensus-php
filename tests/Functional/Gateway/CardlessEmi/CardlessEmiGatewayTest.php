@@ -275,7 +275,7 @@ class CardlessEmiGatewayTest extends TestCase
         {
             if ($action === 'refund')
             {
-                $content['status']     = 'failed';
+                $content['status'] = 'failed';
                 $content['error_code'] = 'REFUND_FAILED';
                 $content['error_description'] = 'Refund failed';
             }
@@ -292,7 +292,7 @@ class CardlessEmiGatewayTest extends TestCase
 
         $this->refundPayment($capturedPayment['id']);
 
-        $gatewayRefund = $this->getLastEntity('cardless_emi',true);
+        $gatewayRefund = $this->getLastEntity('cardless_emi', true);
 
         $refund = $this->getLastEntity('refund', true);
 

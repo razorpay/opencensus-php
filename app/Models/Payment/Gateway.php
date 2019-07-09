@@ -283,6 +283,7 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::CARDLESS_EMI,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
