@@ -1359,6 +1359,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $acquirerData = [
                     'rrn' => $this->getReference16()
                 ];
+
+                $upiTransactionId = $this->getReference1();
+
+                if (isset($upiTransactionId)) {
+
+                    $upiTransactionArray = [
+                        'upi_transaction_id' => $upiTransactionId
+                    ];
+
+                    $acquirerData = array_merge($acquirerData,$upiTransactionArray );
+                }
                 break;
         }
 
