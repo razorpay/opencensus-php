@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
 
 class Entity extends Base\PublicEntity
@@ -158,9 +159,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
+    public function getAccountProvider()
+    {
+        return $this->getAttribute(self::ACCOUNT_PROVIDER);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function bankingAccount()
+    {
+        return $this->hasOne(BankingAccount\Entity::class);
     }
 
     public static function buildFromMerchant($merchant)

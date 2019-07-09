@@ -14,6 +14,8 @@ class DownstreamProcessor
 
     protected $ftaAccount;
 
+    protected $balance;
+
     public function __construct(string $type, Entity $payout, PublicEntity $ftaAccount)
     {
         $this->type = $type;
@@ -21,6 +23,8 @@ class DownstreamProcessor
         $this->payout = $payout;
 
         $this->ftaAccount = $ftaAccount;
+
+        $this->balance = $payout->balance;
     }
 
     public function process()
@@ -48,13 +52,11 @@ class DownstreamProcessor
 
     protected function getAccountTypeForFundTransfer()
     {
-        // TODO: Use constants and add logic once balance and account related changes are done for RBL.
-        return 'shared';
+        return $this->balance->getAccountType();
     }
 
     protected function getChannelForFundTransfer()
     {
-        // TODO: Add logic once balance and account related changes are done for RBL.
-        return Channel::YESBANK;
+        return $this->balance->getAccountProvider();
     }
 }
