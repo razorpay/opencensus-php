@@ -493,6 +493,20 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
+
+            [
+                'id'             => '1PLatPricingR1',
+                'plan_id'        => '10ZeroPricingP',
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'paylater',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
         ];
     }
 

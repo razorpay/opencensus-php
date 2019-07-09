@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Method;
@@ -129,6 +130,13 @@ class Selector extends Base\Core
             return $this->getTerminals();
         });
 
+        $this->processHitachiOnboarding($allTerminals);
+
+        $allTerminals = array_filter($allTerminals, function ($terminal)
+        {
+            return $terminal->isEnabled() === true;
+        });
+
         $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
@@ -137,8 +145,6 @@ class Selector extends Base\Core
         {
             return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
         });
-
-        $this->processHitachiOnboarding($allTerminals);
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
@@ -226,18 +232,8 @@ class Selector extends Base\Core
             {
                 $merchant = $this->input[Constants::MERCHANT];
 
-                $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-
-                $inputBanks = array($payment[Entity::BANK]);
-
-                $disabledBanks = array_merge($methods->getDisabledBanks(),$inputBanks);
-
-                $merchant->methods->setDisabledBanks($disabledBanks);
-
-                $this->repo->saveOrFail($merchant->methods);
-
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
+                // raising an alert on slack for no terminal found
+                $this->alertNetbankingTerminalNotFound($merchant, $payment);
             }
             else
             {
@@ -252,7 +248,7 @@ class Selector extends Base\Core
 
     protected function getTerminals()
     {
-        // Fetch terminals for both the current merchant and the shared Merchant
+        // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
@@ -439,12 +435,34 @@ class Selector extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_TERMINAL_CREATION_ERROR,
-                [
-                    'message'    => $e->getMessage(),
-                ]);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
         }
 
     }
+
+    protected function alertNetbankingTerminalNotFound(Merchant\Entity $merchant, $payment)
+    {
+        $alertArray = [
+            'merchant_id'           => $merchant->getId(),
+            'merchant_name'         => $merchant->getName(),
+            'bank'                  => $payment[Entity::BANK],
+            'amount'                => $payment[Entity::AMOUNT],
+        ];
+
+        $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, $alertArray);
+
+        $message = "Netbanking payment failed with no terminal found";
+
+        $this->app['slack']->queue(
+            $message,
+            $alertArray,
+            [
+                'channel'               => Config::get('slack.channels.pgob_alerts'),
+                'username'              => 'alerts',
+                'icon'                  => ':x:'
+            ]
+        );
+
+    }
+
 }
