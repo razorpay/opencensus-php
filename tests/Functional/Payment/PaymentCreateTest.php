@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
-use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
