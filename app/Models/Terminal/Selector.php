@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Cache;
+use Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
