@@ -1,7 +1,8 @@
 import { TypeAhead } from 'react-power-select';
 
-import Amount from 'rzp/ui/Amount';
+import { classList } from 'common/util';
 
+import Amount from 'rzp/ui/Amount';
 import Input, { Label, Description } from 'component/Input';
 
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
@@ -64,7 +65,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
 
     return (
       <>
-        <div class={`Input ${!props.isEdit && 'Input--required'}`}>
+        <div class={classList('Input', !props.isEdit && 'Input--required')}>
           <Label text="Select Plan" />
           <div className="Input-content">
             <div className="Input-elWrapper">
