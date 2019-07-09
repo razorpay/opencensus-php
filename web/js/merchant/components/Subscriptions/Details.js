@@ -230,7 +230,7 @@ export default class Details extends React.Component {
                         )}
                       </div>
                       <ContentToggler>
-                        <span>Details</span>
+                        <span>View Details</span>
                         <div className="full-width-item">
                           <strong>Update Summary</strong>
                           <UpdatedSubscriptionPreview
