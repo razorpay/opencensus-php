@@ -470,7 +470,7 @@ class Initiator extends Base\Core
         return [true, null];
     }
 
-    protected function dispatchTransfersForSettlement(string $channel, array $attemptIds, array $data)
+    protected function dispatchTransfersForSettlement(string $channel, $attemptIds, array $data)
     {
         foreach ($attemptIds as $id)
         {
