@@ -90,6 +90,7 @@ class Entity extends Base\PublicEntity
     // Table Attributes created for Instant refunds
     const SPEED_REQUESTED        = 'speed_requested';
     const SPEED_PROCESSED        = 'speed_processed';
+    const SPEED_DECISIONED       = 'speed_decisioned';
     const FEE                    = 'fee';
     const TAX                    = 'tax';
 
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::SPEED_REQUESTED,
+        self::SPEED_DECISIONED,
         self::SPEED_PROCESSED,
         self::FEE,
         self::TAX,
@@ -184,6 +186,7 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::STATUS            => Status::CREATED,
         self::SPEED_REQUESTED   => Speed::NORMAL,
+        self::SPEED_DECISIONED  => Speed::NORMAL,
         self::SPEED_PROCESSED   => null,
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
@@ -428,6 +431,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SPEED_REQUESTED);
     }
 
+    public function getSpeedDecisioned()
+    {
+        return $this->getAttribute(self::SPEED_DECISIONED);
+    }
+
     public function getSpeedProcessed()
     {
         return $this->getAttribute(self::SPEED_PROCESSED);
@@ -573,6 +581,11 @@ class Entity extends Base\PublicEntity
     public function setSpeedRequested(string $speedRequested)
     {
         $this->setAttribute(self::SPEED_REQUESTED, $speedRequested);
+    }
+
+    public function setSpeedDecisioned(string $speedDecisioned)
+    {
+        $this->setAttribute(self::SPEED_DECISIONED, $speedDecisioned);
     }
 
     public function setSpeedProcessed(string $speedProcessed)
@@ -784,13 +797,23 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * This is required for checking if a refund's requested speed is an instant (that is charged) speed
+     *
+     * @return bool
+     */
+    public function isRefundRequestedSpeedInstant(): bool
+    {
+        return (in_array($this->getSpeedRequested(), Speed::REFUND_INSTANT_SPEEDS, true) === true);
+    }
+
+    /**
      * This is required for checking if a refund is being processed with instant (that is charged) speed
      *
      * @return bool
      */
     public function isRefundSpeedInstant(): bool
     {
-        return (in_array($this->getSpeedRequested(), Speed::REFUND_INSTANT_SPEEDS) === true);
+        return (in_array($this->getSpeedDecisioned(), Speed::REFUND_INSTANT_SPEEDS, true) === true);
     }
 
     public function getGateway()
@@ -919,7 +942,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false)
+    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false, $cardTransferFeatureEnabled = false)
     {
         $refundStatus = $this->getStatus();
 
@@ -930,29 +953,64 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
+        $callScroogeForSpeed = true;
+
+        if ($cardTransferFeatureEnabled === true)
+        {
+            if (empty($this->getSpeedProcessed()) === false)
+            {
+                $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
+                $callScroogeForSpeed = false;
+            }
+            else  if ($this->isRefundSpeedInstant() === true)
+            {
+                $response[self::SPEED_PROCESSED] = Speed::INSTANT;
+            }
+            else
+            {
+                $response[self::SPEED_PROCESSED] = Speed::NORMAL;
+            }
+
+            $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
+        }
+
         $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
-        if (($response[self::STATUS] === Status::PENDING) and
-            ($isScrooge === true) and
-            ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
-             ($publicStatusFeatureEnabled === true)))
+        $eligbleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
+
+        $callScroogeForStatus = ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
+                                 ($publicStatusFeatureEnabled === true));
+
+        if (($eligbleForScroogeCall === true) and
+            (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
 
+            $queryParams = [
+                self::SPEED  => (int) $callScroogeForSpeed,
+                self::STATUS => (int) $callScroogeForStatus,
+            ];
+
             try
             {
-                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID]);
+                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID], $queryParams);
 
                 $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
                     $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
+                    $scroogeSpeed = $scroogeResponse[self::RESPONSE_BODY]->speed;
 
                     if (empty($scroogeStatus) === false)
                     {
                         $response[self::STATUS] = $scroogeStatus;
+                    }
+
+                    if (empty($scroogeSpeed) === false)
+                    {
+                        $response[self::SPEED_PROCESSED] = $scroogeSpeed;
                     }
                 }
             }
@@ -966,6 +1024,12 @@ class Entity extends Base\PublicEntity
                         'refund_id' => $response[self::ID],
                     ]);
             }
+        }
+
+        if ((empty($response[self::SPEED_PROCESSED]) === false) and
+            ($response[self::SPEED_PROCESSED] === Speed::NORMAL))
+        {
+            $response[self::STATUS] = Status::PROCESSED;
         }
 
         return $response;
@@ -983,13 +1047,13 @@ class Entity extends Base\PublicEntity
         $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
         $publicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
-        $cardTransferRefundFeatureEnabled = $this->isRefundSpeedInstant();
+        $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
 
         if (($displayRefundPublicStatus === true) or
             ($publicStatusFeatureEnabled === true) or
             ($cardTransferRefundFeatureEnabled === true))
         {
-            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled);
+            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled, $cardTransferRefundFeatureEnabled);
 
             return $scroogeResponse;
         }

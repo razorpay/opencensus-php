@@ -118,6 +118,8 @@ class Gateway
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
+    const GOOGLE_PAY         = 'google_pay';
+
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -281,6 +283,7 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::CARDLESS_EMI,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -550,6 +553,7 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -1029,6 +1033,12 @@ class Gateway
         self::BAJAJ,
         self::AMEX,
         self::ISG,
+    ];
+
+    // We do not report capture verify for some gateway even if they fail, as there are integration issues currently
+    public static $captureVerifyReportDisabledGateways = [
+        self::UPI_AXIS,
+        self::UPI_ICICI,
     ];
 
     public static $captureVerifyQREnabledGateways = [
@@ -1980,7 +1990,11 @@ class Gateway
     public static function isCaptureVerifyQREnabledGateways($gateway)
     {
         return (in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === true);
+    }
 
+    public static function isCaptureVerifyReportEnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
     }
 
 

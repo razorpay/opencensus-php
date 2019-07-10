@@ -225,6 +225,7 @@ class Entity
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
     const UPI_AIRTEL             = 'upi_airtel';
+    const GOOGLE_PAY             = 'google_pay';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -476,6 +477,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,

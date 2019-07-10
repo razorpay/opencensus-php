@@ -28,6 +28,15 @@ class CreateMerchantEmailsTable extends Migration
 
             $table->string(Entity::EMAIL, 255);
 
+            $table->string(Entity::PHONE)
+                  ->nullable();
+
+            $table->string(Entity::POLICY)
+                  ->nullable();
+
+            $table->string(Entity::URL)
+                  ->nullable();
+
             $table->char(Entity::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->tinyInteger(Entity::VERIFIED)

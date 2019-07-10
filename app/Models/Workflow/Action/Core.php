@@ -21,7 +21,6 @@ use RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Entity as E;
 
-
 class Core extends Base\Core
 {
     private function buildParams(array $input) : array
@@ -29,6 +28,8 @@ class Core extends Base\Core
         $maker = $this->app['workflow']->getWorkflowMaker();
 
         $orgId = $maker->getOrgId();
+
+        $merchantId = null;
 
         $params = [
             Entity::ORG_ID      => $orgId
@@ -42,6 +43,15 @@ class Core extends Base\Core
                              ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
                              ->toArray()[0];
 
+        //
+        // For merchant app permissions, maker=merchant, we send the merchant ID for fetching
+        // only workflows defined for the merchant
+        //
+        if (Permission\Name::isMerchantPermission($routePermission) === true)
+        {
+            $merchantId = $maker->getId();
+        }
+
         // We don't need to check the following 2 things:
         //
         // - Whether a workflow exists against the routePermission
@@ -49,18 +59,16 @@ class Core extends Base\Core
         //
         // - Whether the maker has access to this permission because
         // that is also done in the middleware or should be done
-        // from whereever this code is called/triggered.
+        // from wherever this code is called/triggered.
 
         // Currently single permission can have only 1 workflow
         // App level checks are in place. But this is sort of progressive
         // code where a single permission might have multiple workflows
         // in future.
-        $workflows = $this->getWorkflowsForPermission($permissionId, $orgId);
+        $workflows = $this->getWorkflowsForPermission($routePermission, $orgId, $merchantId);
 
         // More than one workflow could be found.
         $workflow = $workflows->first();
-
-        $params[Entity::WORKFLOW_ID] = $workflow->getId();
 
         $params[Entity::PERMISSION_ID] = $permissionId;
 
@@ -81,12 +89,48 @@ class Core extends Base\Core
 
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
+        // Evaluate for workflow rules
+        $evaluatedWorkflow = $this->evaluateWorkflowRulesIfDefined($input);
+
+        //
+        // Override $workflow with $evaluatedWorkflow if it's non-null
+        // This means that a rule evaluation resulted in another workflow being
+        // picked up.
+        //
+        $workflow = $evaluatedWorkflow ?: $workflow;
+
+        $params[Entity::WORKFLOW_ID] = $workflow->getId();
+
         // TODO:: add code for actual verification of maker_type here
         $params[Entity::MAKER_TYPE] = $input[Entity::MAKER_TYPE] ?: null;
 
         $params[Entity::MAKER_ID] = $input[Entity::MAKER_ID] ?: null;
 
         return $params;
+    }
+
+    private function evaluateWorkflowRulesIfDefined(array $input)
+    {
+        $permission = $input[Differ\Entity::PERMISSION];
+
+        //
+        // Workflow rules only apply to the create_payout permission for now
+        // Very custom, non-generic and ugly logic follows
+        //
+        if ($permission !== Permission\Name::CREATE_PAYOUT)
+        {
+            return null;
+        }
+
+        $merchant = app('basicauth')->getMerchant();
+
+        //
+        // The amount attribute will definitely exist in the request payload at this point
+        // If it doesn't, Payout validators will fail before the code reaches the workflow layer
+        //
+        $amount = $input[Differ\Entity::PAYLOAD]['amount'];
+
+        return (new Workflow\PayoutAmountRules\Core)->fetchWorkflowForMerchantIfDefined($amount, $merchant);
     }
 
     /*
@@ -221,18 +265,31 @@ class Core extends Base\Core
     /**
      * Fetch workflows mapped to the permissions for this organisation.
      * This checks for if the permission is present for the organisation
-     * and if a workflow is mapped gainst the permission.
+     * and if a workflow is mapped against the permission.
      *
-     * @param array $permissions
-     * @param string $orgId
+     * @param string      $permission
+     * @param string      $orgId
+     * @param string|null $merchantId
+     *
      * @return array
-     **/
-    public function getWorkflowsForPermission(string $permissionId, string $orgId)
+     */
+    public function getWorkflowsForPermission(string $permission, string $orgId, string $merchantId = null)
     {
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg($permission, $orgId)
+                             ->first();
+
+        $permissionId = $permissionId ?: '';
+
         // Implicit check for workflow in the organisation against permission ids.
         $workflows = $this->repo
                           ->workflow
-                          ->fetchWorkflowsByPermissionsAndOrgId($permissionId, $orgId);
+                          ->fetchWorkflowsByPermissionsOrgAndMerchant(
+                              $permissionId,
+                              $orgId,
+                              $merchantId,
+                              [Workflow\Entity::PAYOUT_AMOUNT_RULE]);
 
         return $workflows;
     }
@@ -240,12 +297,12 @@ class Core extends Base\Core
     /**
      * This function has to run in a transaction
      *
-     * @param  Entity       $action
-     * @param  Admin\Entity $admin
+     * @param Entity       $action
+     * @param PublicEntity $checkerEntity
      *
      * @return boolean
      */
-    public function checkAndMarkActionApproved(Entity $action, Admin\Entity $admin)
+    public function checkAndMarkActionApproved(Entity $action, PublicEntity $checkerEntity)
     {
         // 1. If action is already approved then return
 
@@ -270,29 +327,31 @@ class Core extends Base\Core
 
         if ($this->isCurrentLevelApproved($action) === true)
         {
-            $this->approveAction($action, $admin);
+            $this->approveAction($action, $checkerEntity);
         }
 
         return true;
     }
 
-    public function approveActionForcefully(Entity $action, Admin\Entity $admin)
+    public function approveActionForcefully(Entity $action, Admin\Entity $checkerEntity)
     {
         if ($action->getApproved() === true)
         {
             return true;
         }
 
-        $this->approveAction($action, $admin);
+        $this->approveAction($action, $checkerEntity);
 
         return true;
     }
 
-    protected function approveAction(Entity $action, Admin\Entity $admin)
+    protected function approveAction(Entity $action, PublicEntity $checkerEntity)
     {
+        //
         // Set the action as approved and create a state change that it has
         // been moved to approved.
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $admin)
+        //
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $checkerEntity)
         {
             $data = [
                 Entity::APPROVED => true,
@@ -307,7 +366,7 @@ class Core extends Base\Core
                 State\Entity::NAME      => State\Name::APPROVED,
             ];
 
-            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $checkerEntity, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -401,7 +460,9 @@ class Core extends Base\Core
     }
 
     /**
-     * This function has to run in a transaction
+     * This function has to be run in a transaction
+     *
+     * @param Entity $action
      */
     public function updateCurrentLevelIfNeeded(Entity $action)
     {
@@ -466,7 +527,10 @@ class Core extends Base\Core
 
         if (isset($input[Entity::STATE_CHANGER_ID]) === true)
         {
-            $stateChanger = $this->repo->admin->findOrFailPublic($input[Entity::STATE_CHANGER_ID]);
+            // Type can be user or admin
+            $stateChangerType = $input[Entity::STATE_CHANGER_TYPE];
+
+            $stateChanger = $this->repo->$stateChangerType->findOrFailPublic($input[Entity::STATE_CHANGER_ID]);
 
             $action->stateChanger()->associate($stateChanger);
         }
@@ -511,18 +575,24 @@ class Core extends Base\Core
         });
     }
 
-    /*
-        State changes on rejection
-    */
-    public function applyActionRejectionStateChanges($action, Admin\Entity $admin, Role\Entity $role)
+    /**
+     * Handles state changes on rejection
+     *
+     * @param Entity       $action
+     * @param PublicEntity $checkerEntity
+     * @param Role\Entity  $role
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function applyActionRejectionStateChanges(Entity $action, PublicEntity $checkerEntity, Role\Entity $role)
     {
         $state = State\Name::REJECTED;
 
         $actionId = $action->getId();
 
-        (new State\Core)->changeActionState($action, $state, $admin);
+        (new State\Core)->changeActionState($action, $state, $checkerEntity);
 
-        $this->updateStateAndStateChanger($action, $state, $admin, $role);
+        $this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
 
         (new Differ\Core)->updateStateInEs($actionId, $state);
     }
@@ -538,22 +608,30 @@ class Core extends Base\Core
 
     /**
      * This function will now be used instead of updateState so as to
-     * store the information about the person(admin_id, and role_id) who
+     * store the information about the person(admin_id/user_id, and role_id) who
      * was responsible of actually executing the workflow. In case it is a
      * superadmin, then we allow to skip any steps and execute the workflow
      * forcefully. Hence the information about StateChanger. StateChanger
      * information will also be stored in case the workflow was closed or rejected.
+     *
+     * @param Entity           $action
+     * @param string           $state
+     * @param PublicEntity     $checkerEntity
+     * @param Role\Entity|null $role
+     *
+     * @return Entity
      */
     public function updateStateAndStateChanger(
         Entity $action,
         string $state,
-        Admin\Entity $admin,
+        PublicEntity $checkerEntity,
         Role\Entity $role = null
     )
     {
         $input = [
             Entity::STATE                 => $state,
-            Entity::STATE_CHANGER_ID      => $admin->getId(),
+            Entity::STATE_CHANGER_ID      => $checkerEntity->getId(),
+            Entity::STATE_CHANGER_TYPE    => $checkerEntity->getEntity(),
             Entity::STATE_CHANGER_ROLE_ID => $role ? $role->getId() : null
         ];
 
@@ -575,10 +653,10 @@ class Core extends Base\Core
     public function fetchOpenActionOnEntityOperation(
         string $entityId,
         string $entityName,
-        string $permissionName)
+        string $permissionName,
+        string $orgId = null)
     {
-
-        $orgId = $this->app['basicauth']->getOrgId();
+        $orgId = $orgId ?: $this->app['basicauth']->getOrgId();
 
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
@@ -588,14 +666,13 @@ class Core extends Base\Core
                              ->toArray()[0];
 
         $actions = $this->repo
-                               ->workflow_action
-                               ->getOpenActionOnEntityOperation(
-                                   $entityId, $entityName, $permissionId);
+                        ->workflow_action
+                        ->getOpenActionOnEntityOperation($entityId, $entityName, $permissionId);
 
         return $actions;
     }
 
-    public function executeAction($action, Admin\Entity $admin, Role\Entity $role = null)
+    public function executeAction($action, PublicEntity $checkerEntity, Role\Entity $role = null)
     {
         list($stateCore, $differCore) = [
             new State\Core,
@@ -625,13 +702,33 @@ class Core extends Base\Core
         // the actual code (Controller@action) runs.
         $this->initAuthDetails($authDetails);
 
-        $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
-
         $state = State\Name::EXECUTED;
 
-        if ($internalResponse->getStatusCode() !== 200)
+        $permissionName = $action->permission->getName();
+
+        //
+        // Should the original request be replayed?
+        // If yes, the original payload is passed to the controller action
+        //
+        $replayOriginalRequest = true;
+
+        //
+        // In some circumstances (like create_payout), we have custom logic on how to process
+        // workflow action execution, instead of simply replaying the original request.
+        //
+        if ($permissionName === Permission\Name::CREATE_PAYOUT)
         {
-            $state = State\Name::FAILED;
+            $replayOriginalRequest = false;
+        }
+
+        if ($replayOriginalRequest === true)
+        {
+            $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
+
+            if ($internalResponse->getStatusCode() !== 200)
+            {
+                $state = State\Name::FAILED;
+            }
         }
 
         // The connection is being reset in here because after executing the App::call
@@ -643,9 +740,9 @@ class Core extends Base\Core
 
         // Update states
 
-        $this->updateStateAndStateChanger($action, $state, $admin, $role);
+        $this->updateStateAndStateChanger($action, $state, $checkerEntity, $role);
 
-        $stateCore->changeActionState($action, $state, $admin);
+        $stateCore->changeActionState($action, $state, $checkerEntity);
 
         $differCore->updateStateInEs($action->getId(), $state);
 

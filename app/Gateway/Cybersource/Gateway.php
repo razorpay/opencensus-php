@@ -9,6 +9,7 @@ use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Mpi;
@@ -141,6 +142,8 @@ class Gateway extends Base\Gateway
         {
             parent::action($input, 'pay_init');
 
+            $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
             return $this->sendMozartRequest($input);
         }
 
@@ -175,9 +178,21 @@ class Gateway extends Base\Gateway
                     'callbackUrl' => $input['callbackUrl'],
                 ];
 
+                $this->app['diag']->trackGatewayPaymentEvent(
+                    EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+                    $input);
+
                 $request = $this->sendMozartRequest($input);
 
                 $authenticateInit = $this->gatewayPayment;
+
+                $this->app['diag']->trackGatewayPaymentEvent(
+                    EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+                    $input,
+                    null,
+                    [
+                        'enrolled' => $authenticateInit['veresEnrolled']
+                    ]);
 
                 // some unexpected enrollment status. not taking the call to go ahead with pay_init
                 if (in_array($authenticateInit['veresEnrolled'], ['Y', 'N'], true) === false)
@@ -324,6 +339,8 @@ class Gateway extends Base\Gateway
                 $this->validateXid($authenticateInit, $authenticateVerify);
 
                 $input['gateway']['authenticate_verify'] = $this->mapInReverseWay($authenticateVerify);
+
+                $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_PROCESSED, $input);
                 break;
         }
 
@@ -332,6 +349,8 @@ class Gateway extends Base\Gateway
 
         // callback data verified. now send actual authorize request
         parent::action($input, 'pay_init');
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $this->sendMozartRequest($input);
 
@@ -422,6 +441,8 @@ class Gateway extends Base\Gateway
         {
             $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->gatewayPayment);
         }
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $this->sendMozartRequest($input);
     }

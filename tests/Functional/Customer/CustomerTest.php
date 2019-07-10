@@ -360,6 +360,25 @@ class CustomerTest extends TestCase
         });
     }
 
+    public function testOtpFlowForCardlessEmiProviders()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockSNS();
+
+        $response = $this->sendOtpForCardlessEmiProviders('9988776655', 'cardless_emi', 'zestmoney');
+
+        $status_code = $response->getStatusCode();
+
+        $this->assertEquals(200, $status_code);
+
+        $content = $response->getContent();
+
+        $content = json_decode($content, true);
+
+        $this->assertEquals(true, $content['success']);
+    }
+
     protected function sendOtp($contact)
     {
         $request = array(
@@ -367,6 +386,23 @@ class CustomerTest extends TestCase
             'method' => 'post',
             'content' => [
                 'contact' => $contact
+            ],
+        );
+
+        $response = $this->sendRequest($request);
+
+        return $response;
+    }
+
+    protected function sendOtpForCardlessEmiProviders($contact, $method, $provider)
+    {
+        $request = array(
+            'url' => '/otp/create',
+            'method' => 'post',
+            'content' => [
+                'contact'  => $contact,
+                'method'   => $method,
+                'provider' => $provider
             ],
         );
 
@@ -533,6 +569,28 @@ class CustomerTest extends TestCase
                     });
 
         $this->app->instance('raven', $raven);
+    }
+
+    public function mockSns()
+    {
+        $sns = Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->with(Mockery::type('string'))
+            ->andReturnUsing(function ($input)
+            {
+                $json_decoded_input = json_decode($input, true);
+
+                $this->assertEquals('sms.otp_cardless', $json_decoded_input['template']);
+
+                $this->assertEquals('zestmoney', $json_decoded_input['params']['provider']);
+
+                return $input;
+            });
+
+        $this->app->instance('sns', $sns);
     }
 
     public function testCustomerWalletPayoutReversal()

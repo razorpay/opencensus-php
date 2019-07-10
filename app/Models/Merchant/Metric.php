@@ -28,4 +28,15 @@ final class Metric
 
     const INTERNATIONAL_ACTIVATION  = 'international_activation';
 
+
+    const MERCHANT_ACTIVATION_STATE_TRANSITION = 'merchant_activation_state_transition';
+    const MERCHANT_ACTIVATION                  = 'merchant_activation';
+    const INTERNATIONAL_MERCHANT_ACTIVATION    = 'international_merchant_activation';
+
+    //activation_flow_metrics constants
+    const ACTIVATION_FLOW = 'activation_flow';
+    const PREVIOUS_ACTIVATION_STATUS = 'previous_activation_status';
+    const UPDATED_ACTIVATION_STATUS = 'updated_activation_status';
+
+
 }

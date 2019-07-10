@@ -1589,11 +1589,6 @@ class Service extends Base\Service
         return $this->core->updateReceiverData();
     }
 
-    public function updateBankTransferTerminal($input)
-    {
-        return $this->core->updateBankTransferTerminal($input);
-    }
-
     public function validateVpa($input)
     {
         $data = $this->getNewProcessor()->validateVpa($input);
