@@ -872,6 +872,28 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
     ];
 
+    protected static $worldlineTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:worldline',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string',
+        Entity::MC_MPAN                    => 'required|string|max:255',
+        Entity::VISA_MPAN                  => 'required|string',
+        Entity::RUPAY_MPAN                 => 'required|string',
+        Entity::VPA                        => 'required|string',
+        Entity::EXPECTED                   => 'sometimes|boolean',
+        Entity::TYPE                       => 'required|array',
+        Entity::TYPE . '.bharat_qr'        => 'required|in:1',
+        Entity::TYPE . '.non_recurring'    => 'required|in:1',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+    ];
+
+    protected static $worldlineEditTerminalRules = [
+        Entity::MC_MPAN                    => 'sometimes|string',
+        Entity::VISA_MPAN                  => 'sometimes|string',
+        Entity::RUPAY_MPAN                 => 'sometimes|string',
+        Entity::VPA                        => 'sometimes|string',
+    ];
+
     public function validateType()
     {
         $type = $this->entity->getType();

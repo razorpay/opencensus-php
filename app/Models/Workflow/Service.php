@@ -82,22 +82,9 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
-    public function permissionHasWorkflow(string $routePermission, string $orgId)
+    public function permissionHasWorkflow(string $routePermission, string $orgId, string $merchantId = null)
     {
-        $permissionIds = $this->repo
-                             ->permission
-                             ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
-                             ->toArray();
-
-        if (empty($permissionIds) === true)
-        {
-            return false;
-        }
-
-        $permissionId = $permissionIds[0];
-
-        $workflows = (new Action\Core)->getWorkflowsForPermission(
-            $permissionId, $orgId);
+        $workflows = (new Action\Core)->getWorkflowsForPermission($routePermission, $orgId, $merchantId);
 
         return ($workflows->isEmpty() === false);
     }

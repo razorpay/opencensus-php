@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
+use RZP\Gateway\Base\Mock\GatewayTrait;
 
 class Shared
 {
@@ -104,6 +105,7 @@ class Shared
     const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
     const UPI_AIRTEL_RAZORPAY_TERMINAL       = '100UPIArtlTmnl';
+    const WORLDLINE_TERMINAL                 = '1000WldlineTml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -162,6 +164,7 @@ class Shared
         self::ENSTAGE_TERMINAL,
         self::CARDLESS_EMI_RAZORPAY_TERMINAL,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL,
+        self::WORLDLINE_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -223,6 +226,7 @@ class Shared
         self::CARDLESS_EMI_RAZORPAY_TERMINAL     => Gateway::CARDLESS_EMI,
         self::CARDLESS_EMI_FLEXMONEY_TERMINAL    => Gateway::CARDLESS_EMI,
         self::PAYLATER_EPAYLATER_TERMINAL        => Gateway::PAYLATER,
+        self::WORLDLINE_TERMINAL                 => Gateway::WORLDLINE,
     ];
 
     public static function getSharedTerminalMapping()

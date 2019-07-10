@@ -42,7 +42,7 @@ class BankTransfer extends Base
     /**
      * {@inheritDoc}
      */
-    protected function setMerchantBalanceLockForUpdate()
+    public function setMerchantBalanceLockForUpdate()
     {
         $this->merchantBalance = $this->source->balance;
 

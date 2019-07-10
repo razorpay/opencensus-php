@@ -725,6 +725,9 @@ class PublicErrorDescription
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
+    const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
 
     // Scrooge
     const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';

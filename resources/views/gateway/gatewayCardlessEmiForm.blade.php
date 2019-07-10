@@ -51,6 +51,10 @@
             font-family: inherit;
             color: #111;
         }
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed !important;
+        }
         button:not(#cancel-btn) {
             display: block;
             margin: 20px auto 0;
@@ -136,7 +140,7 @@
             placeholder='Enter Phone Number'
             value={{ $data['request']['content']['contact'] ?? "" }}>
         @endif
-        <button>Submit</button>
+        <button id="submit-btn">Submit</button>
     </main>
 </form>
 @if (isset($data['request']['content']['callback_url']))
@@ -157,6 +161,9 @@
             this.contact.removeAttribute('name');
             hiddenContact.name = 'contact';
         }
+        var submitBtn = document.getElementById('submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Loading...';
         this.submit();
     }
 </script>

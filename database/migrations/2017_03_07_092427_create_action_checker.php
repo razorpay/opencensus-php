@@ -25,7 +25,14 @@ class CreateActionChecker extends Migration
             $table->char(Checker::ID, Checker::ID_LENGTH)
                   ->primary();
 
-            $table->char(Checker::ADMIN_ID, Checker::ID_LENGTH);
+            $table->char(Checker::ADMIN_ID, Checker::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Checker::CHECKER_ID, Checker::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Checker::CHECKER_TYPE, 255)
+                  ->nullable();
 
             $table->char(Checker::ACTION_ID, Checker::ID_LENGTH);
 
