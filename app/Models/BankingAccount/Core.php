@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Constants;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Services\FTS;
 use RZP\Models\Merchant;
@@ -13,6 +14,7 @@ use RZP\Models\BankingAccount\Gateway;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -55,6 +57,12 @@ class Core extends Base\Core
 
         $bankingAccount->merchant()->associate($merchant);
 
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_ENTITY_CREATED,
+            [
+                $bankingAccount->toArray(),
+            ]);
+
         $this->repo->saveOrFail($bankingAccount);
 
         return $bankingAccount;
@@ -62,6 +70,13 @@ class Core extends Base\Core
 
     public function processAccountInfoWebhook(string $channel, array $input)
     {
+        $this->trace->info(
+            TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_REQUEST,
+            [
+                'input'         => $input,
+                'gateway'       => $channel,
+            ]);
+
         Channel::validate($channel);
 
         $processor = $this->getProcessor($channel);
@@ -77,10 +92,15 @@ class Core extends Base\Core
                                    ->findByBankReferenceAndChannel($channel,
                                                                    $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
-            $alreadyProcessed = $this->checkIfAccountOpeningWebhookAlreadyProcessed($bankingAccount);
-
-            if ($alreadyProcessed === false)
+            if ($bankingAccount->isAlreadyActivated() === false)
             {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_ACCOUNT_INFO_WEBHOOK,
+                    [
+                        'input'     => $input,
+                        'channel'   => $channel,
+                    ]);
+
                 $this->updateBankingAccount($bankingAccount, $attributes);
             }
 
@@ -88,8 +108,17 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e);
+
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::CANCELLED);
         }
+
+        $this->trace->info(
+            TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_RESPONSE,
+            [
+                'response'  => $response,
+                'gateway'   => $channel,
+            ]);
 
         return $response;
     }
@@ -97,6 +126,14 @@ class Core extends Base\Core
     public function updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
+            ]);
 
         $processor = $this->getProcessor($channel);
 
@@ -205,14 +242,20 @@ class Core extends Base\Core
                         Entity::BANK_INTERNAL_STATUS    => Gateway\Rbl\Status::CLOSED
                     ];
 
+                    // TODO: Fix this undefined function!
                     $this->updateRblBankingAccount($bankingAccount, $attributes);
 
                     break;
                 }
 
             default:
-                // not throwing any exception here, since this statement will be executed for valid channels only
-                return;
+                throw new LogicException(
+                    'Attempt to update account to processed for an Invalid channel',
+                    null,
+                    [
+                        'channel'               => $channel,
+                        'banking_account_id'    => $bankingAccount->getId(),
+                    ]);
         }
     }
 
@@ -230,6 +273,13 @@ class Core extends Base\Core
 
     public function addServiceablePincodes(array $pincodes, string $channel)
     {
+        $this->trace->info(
+            TraceCode::ADD_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
+
         $processor = $this->getProcessor($channel);
 
         $processor->addServiceablePincodes($pincodes);
@@ -237,6 +287,13 @@ class Core extends Base\Core
 
     public function deleteServiceablePincodes(array $pincodes, string $channel)
     {
+        $this->trace->info(
+            TraceCode::REMOVE_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
+
         $processor = $this->getProcessor($channel);
 
         $processor->deleteServiceablePincodes($pincodes);
@@ -268,15 +325,6 @@ class Core extends Base\Core
             null,
             'Source account creation failed, Try again'
         );
-    }
-
-    protected function checkIfAccountOpeningWebhookAlreadyProcessed(Entity $bankingAccount)
-    {
-        $accountProcessedAt = $bankingAccount->getAccountActivationDate();
-
-        $processed = ($accountProcessedAt === null) ? false : true;
-
-        return $processed;
     }
 
     /**

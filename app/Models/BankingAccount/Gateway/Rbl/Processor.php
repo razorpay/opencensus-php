@@ -22,8 +22,6 @@ class Processor extends BankingAccount\Gateway\Processor
     // we are starting the reference number from 10000
     const START_BANK_REFERENCE_NUMBER = 10000;
 
-    protected $mutex;
-
     public function preProcessAccountInfoNotification(array $input)
     {
         (new Validator)->validateInput(Validator::PRE_ACCOUNT_INFO_WEBHOOK, $input);
@@ -39,8 +37,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
 
-        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
-                                                        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
+        $activationDate = $this->parseAndFormatRblDate($attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
+
+        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $activationDate;
 
         $attributes[BankingAccount\Entity::STATUS] = BankingAccount\Status::PROCESSED;
 
@@ -153,20 +152,6 @@ class Processor extends BankingAccount\Gateway\Processor
         }
 
         return $referenceNumber;
-    }
-
-    /**
-     * We are not rejecting requests based on the pincode availability for now.
-     * This is being done to store all the leads we get for account creation.
-     * Later we can choose to reject requests directly from here.
-     *
-     * @param string $pincode
-     *
-     * @return array
-     */
-    protected function isPincodeServiceable(string $pincode): bool
-    {
-        return parent::isPincodeServiceable($pincode);
     }
 
     protected function getMappedAttributes($map, array $input)

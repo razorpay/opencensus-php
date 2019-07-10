@@ -45,21 +45,11 @@ class Service extends Base\Service
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
-        $channel = $bankingAccount->getChannel();
-
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_EDIT,
-            [
-                'id'      => $bankingAccount->getId(),
-                'channel' => $channel,
-                'input'   => $input,
-            ]);
-
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         return $account->toArrayPublic();
     }
-  
+
     public function storeCredentials(string $id, array $input)
     {
         $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
@@ -130,13 +120,6 @@ class Service extends Base\Service
 
     public function processAccountInfoWebhook(string $channel, array $input)
     {
-        $this->trace->info(
-            TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_REQUEST,
-            [
-                'input'         => $input,
-                'gateway'       => $channel,
-            ]);
-
         $response = $this->core->processAccountInfoWebhook($channel, $input);
 
         return $response;

@@ -9,7 +9,13 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account';
 
-    public function findByBankReferenceAndChannel(string $channel, string $bankReference = null)
+    /**
+     * @param string      $channel
+     * @param string|null $bankReference
+     *
+     * @return Entity
+     */
+    public function findByBankReferenceAndChannel(string $channel, string $bankReference = null): Entity
     {
         return $this->newQuery()
                     ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
