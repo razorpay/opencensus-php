@@ -697,7 +697,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     let invoiceSecView, creditNoteSecView;
 
     // Add 'next_due' invoice in the Invoices list
-    if (!invoices.loading && !invoices.error && !scheduledChanges.loading) {
+    if (!invoices.loading && !invoices.error && !scheduledChanges.isLoading) {
       const subscriptionData = scheduledChanges.data
           ? scheduledChanges.data
           : entity,
@@ -817,8 +817,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
           invoice={invoiceData}
           mode={this.props.mode}
           onClose={this.secClose}
-          isLoading={isInvoiceLoading}
-          nextChargeAt={entity.charge_at}
+          isLoading={
+            isLoading || scheduledChanges.isLoading || isInvoiceLoading
+          }
+          nextChargeAt={subscriptionDetails.charge_at}
           subscriptionId={this.props.id}
           isValidInvoice={isValidInvoice}
           onAddOnDelete={this.deleteAddOn}
