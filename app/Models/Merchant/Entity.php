@@ -36,6 +36,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 
 /**
  * @property Org\Entity         $org
@@ -99,6 +100,7 @@ class Entity extends Base\PublicEntity
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
     const PRODUCT                  = 'product';
+    const DEFAULT_REFUND_SPEED     = 'default_refund_speed';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -245,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::DEFAULT_REFUND_SPEED,
     ];
 
     const CONFIG_LIST = [
@@ -322,6 +325,7 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_NAME,
         self::ACTIVATION_SOURCE,
         self::BUSINESS_BANKING,
+        self::DEFAULT_REFUND_SPEED,
      ];
 
     protected $defaults = [
@@ -358,6 +362,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY               => 0,
         self::WEBSITE                => null,
         self::INTERNATIONAL          => 0,
+        self::DEFAULT_REFUND_SPEED   => RefundSpeed::NORMAL,
     ];
 
     protected $publicSetters = [
@@ -492,6 +497,11 @@ class Entity extends Base\PublicEntity
     public function isAxisExpressPayEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
+    }
+
+    public function isGooglePayOmnichannelEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_OMNICHANNEL);
     }
 
     public function canHoldPayment(): bool
@@ -1105,6 +1115,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $autoRefundDelay;
+    }
+
+    public function getDefaultRefundSpeed()
+    {
+        return $this->getAttribute(self::DEFAULT_REFUND_SPEED);
     }
 
     /**

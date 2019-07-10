@@ -125,6 +125,9 @@ class Netbanking
         IFSC::CSBK,
         IFSC::ALLA,
         IFSC::IDFB,
+        IFSC::SIBL,
+        IFSC::YESB,
+        IFSC::CIUB,
     ];
 
     protected static $gatewaySupportedBanks = [

@@ -1949,4 +1949,33 @@ return [
             ]
         ]
     ],
+
+    'testCreateWorldlineTerminal'  => [
+        'request' => [
+            'content' => [
+                'merchant_id'               => '10000000000000',
+                'gateway'                   => 'worldline',
+                'gateway_merchant_id'       => '037122003842039',
+                'gateway_terminal_id'       => '70374018',
+                'gateway_acquirer'          => 'axis',
+                'card'                      => 1,
+                'gateway_terminal_password' => '9900991100',
+                'mc_mpan'                   => '5122600004774122',
+                'visa_mpan'                 => '4604901004774122',
+                'rupay_mpan'                => '6100020004774141',
+                'vpa'                       => 'MAB.037122003842039@AXISBANK',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '037122003842039',
+                'enabled'              => true,
+            ]
+        ]
+    ],
 ];

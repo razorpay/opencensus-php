@@ -119,10 +119,12 @@ class Constants
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
+    const GOOGLE_PAY_OMNICHANNEL          = 'google_pay_omnichannel';
     const VIJAYA_MERCHANT                 = 'vijaya_merchant';
     const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
-    
-    /**
+    const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
+
+  /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
      */
@@ -221,6 +223,7 @@ class Constants
         self::GOOGLE_PAY,
         self::CUSTOMER_ADDRESS,
         self::IRCTC_METHODS,
+        self::GOOGLE_PAY_OMNICHANNEL,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -364,9 +367,11 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
         self::PAYOUT_WORKFLOWS                => true,
+        self::ASYNC_BALANCE_UPDATE            => true,
     ];
 
     // Entity type constants

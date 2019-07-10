@@ -97,11 +97,15 @@ class GatewayProcessor extends BaseGatewayProcessor
         {
             $this->trace->critical(TraceCode::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD, ['gateway' => Constants::HITACHI]);
 
+            $data = [
+                'index'                 => $index,
+                'merchant_id'           => $merchant->getId(),
+                'merchant_name'         => $merchant->getName(),
+            ];
+
             $this->app['slack']->queue(
-                TraceCode::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD,
+                TraceCode::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD, $data,
                 [
-                    'merchant_id'           => $merchant->getId(),
-                    'merchant_name'         => $merchant->getName(),
                     'channel'               => Config::get('slack.channels.tech_alerts'),
                     'username'              => 'alerts',
                     'icon'                  => ':x:'

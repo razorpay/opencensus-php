@@ -78,7 +78,7 @@ class Validator extends Base\Validator
         }
         else if ($product === Product::BANKING)
         {
-            $dashboardRoles = User\BankingRole::getAllRolesForMerchant($merchant);
+            $dashboardRoles = User\BankingRole::getAllRoles();
         }
         else
         {

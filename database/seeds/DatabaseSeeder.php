@@ -558,6 +558,7 @@ class DatabaseSeeder extends Seeder
                     'upi'           => '1',
                     'bank_transfer' => '1',
                     'cardless_emi'  => '1',
+                    'paylater'      => '1',
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime
                 )
@@ -2428,7 +2429,7 @@ class DatabaseSeeder extends Seeder
             'gateway'                   => 'paylater',
             'card'                      => 0,
             'netbanking'                => 0,
-            'cardless_emi'              => 1,
+            'paylater'                  => 1,
             'gateway_merchant_id'       => 'abcd',
             'gateway_merchant_id2'      => 'ABCD',
             'gateway_acquirer'          => 'epaylater',

@@ -8,7 +8,25 @@ final class Metric
 
     const NODAL_FAILURE_STATUS_CODE  = 'nodal_failure_status_code';
 
-    const NODAL_SUCCESS_COUNT        = 'nodal_success_count';
+    const NODAL_RESPONSE_COUNT        = 'nodal_response_count';
 
-    const NODAL_FAILURE_COUNT        = 'nodal_failure_count';
+    // Dimensions
+    const MODE              = 'mode';
+
+    const STATUS            = 'status';
+
+    const CHANNEL           = 'channel';
+
+    const PRODUCT           = 'product';
+
+    const STATUS_CODE       = 'status_code';
+
+    const BANK_FAILURE_CODE = 'bank_failure_code';
+
+    // Values
+    const CATEGORY_PENDING = 'pending';
+
+    const CATEGORY_SUCCESS = 'success';
+
+    const CATEGORY_FAILED  = 'failed';
 }
