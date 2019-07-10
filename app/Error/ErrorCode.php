@@ -1244,6 +1244,8 @@ class ErrorCode
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
     const SERVER_ERROR_MOZART_SERVICE_FAILURE                                       = 'SERVER_ERROR_MOZART_SERVICE_FAILURE';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
+  
+    const ASYN_MERCHANT_BALANCE_UPDATE_IN_PROGRESS                                  = 'ASYN_MERCHANT_BALANCE_UPDATE_IN_PROGRESS';
 
     // OmniPay Error Codes
     const BAD_REQUEST_INVALID_UPI_PROVIDER                                          = 'BAD_REQUEST_INVALID_UPI_PROVIDER';

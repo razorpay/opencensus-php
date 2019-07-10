@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Diag\EventCode;
@@ -587,8 +588,10 @@ trait Capture
             // Currently, since we are doing this only for Dream11, we are not handling credits.
             // Also, need to handle credits in `setFeeDefaults` in Transaction\Processor\Base
             //
-            if (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
-                ($payment->getMerchantId() === Preferences::MID_DREAM11))
+
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) and
+                (($payment->getMerchantId() === 'CCIJ8fB9RncDsV') or
+                ($payment->getMerchantId() === Preferences::MID_DREAM11)))
             {
                 $payment->setLateBalanceUpdate();
             }
@@ -609,7 +612,55 @@ trait Capture
             }
         });
 
+        $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+    }
+
+    protected function handleAsyncUpdateBalanceIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        try
+        {
+            if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === false) or
+                ($txn->isBalanceUpdated() === true))
+            {
+                return;
+            }
+
+            $input = [
+                'payment_id'  => $payment->getId(),
+                'mode'        => $this->mode,
+            ];
+
+            $this->trace->info(
+                TraceCode::MERCHANT_BALANCE_UPDATE_INIT,
+                [
+                    'input' => $input,
+                ]);
+
+            Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode);
+        }
+         catch (\Throwable $e)
+        {
+            $this->trace->critical(
+                TraceCode::MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED,
+                [
+                    'payment_id' => $payment->getId(),
+                    'message'    => $e->getMessage(),
+                ]);
+
+            $this->updateMerchantBalance($payment, $transaction);
+        }
+    }
+
+    public function updateMerchantBalance(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        $this->payment = $payment;
+
+        $this->repo->transaction(function() use ($payment, $txn)
+        {
+            (new Transaction\Core)->asyncUpdateMerchantBalance($payment, $txn);
+        });
     }
 
     protected function handleLateBalanceUpdate(Transaction\Entity $txn, $merchantBalance)
