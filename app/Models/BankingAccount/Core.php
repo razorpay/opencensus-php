@@ -71,7 +71,7 @@ class Core extends Base\Core
     public function processAccountInfoWebhook(string $channel, array $input)
     {
         $this->trace->info(
-            TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_REQUEST,
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST,
             [
                 'input'         => $input,
                 'gateway'       => $channel,
