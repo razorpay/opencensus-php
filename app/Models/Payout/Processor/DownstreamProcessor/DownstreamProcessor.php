@@ -52,11 +52,11 @@ class DownstreamProcessor
 
     protected function getAccountTypeForFundTransfer()
     {
-        return $this->balance->getAccountType();
+        return $this->balance->getAccountType() ?? 'shared';
     }
 
     protected function getChannelForFundTransfer()
     {
-        return $this->balance->getAccountProvider();
+        return $this->balance->getAccountProvider() ?? Channel::YESBANK;
     }
 }
