@@ -1011,6 +1011,7 @@ final class Route
 
         //Recon summary
         'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
+        'hourly_reconciliation_summary_fetch'      => ['get',      'hourly_recon_summary',                           'AdminController@getHourlyReconciliationStatusSummary'              ],
 
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
@@ -1507,6 +1508,7 @@ final class Route
         'virtual_account_close_cron',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
+        'hourly_reconciliation_summary_fetch',
         'lambda_post_h2h',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
@@ -2791,6 +2793,7 @@ final class Route
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
+            'hourly_reconciliation_summary_fetch',
             'bank_transfer_payment_receiver_backfill',
             'refund_processed_at_backfill',
             'refund_reference1_backfill',

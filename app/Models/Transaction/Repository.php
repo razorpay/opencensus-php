@@ -844,6 +844,126 @@ class Repository extends Base\Repository
         return $reconciledPaymentsSummary;
     }
 
+    protected function getQueryClausesForUnreconSummaryByGateway($query, array $dates,  string $entityName, string $gateway)
+    {
+        $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $transactionReconciledAtColumn = $this->dbColumn(Entity::RECONCILED_AT);
+
+        if ($entityName === ConstantEntity::PAYMENT)
+        {
+            $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+        }
+        else
+        {
+            $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+        }
+
+        // To exclude e-mandate transactions and non-active gateways, we put 'where' clause here
+        $query->where($transactionAmountColumn, '>', 0)
+              ->where($paymentGatewayColumn, '=', $gateway);
+
+        $query->where(function($query) use($dates, $timestampColumn)
+        {
+            foreach ($dates as $index => $date)
+            {
+                $from = $date;
+
+                $to = Carbon::createFromTimestamp($date)->addDays(1)->getTimestamp();
+
+                if ($index === 0)
+                {
+                    $query->whereBetween($timestampColumn, [$from, $to]);
+                }
+                else
+                {
+                    $query->orWhereBetween($timestampColumn, [$from, $to]);
+                }
+            }
+        });
+
+        $query->whereNull($transactionReconciledAtColumn);
+
+        $query->groupBy('date', 'gateway', $paymentMethodColumn)
+              ->orderBy('date', 'desc');
+
+        return $query;
+    }
+
+    /**
+     * Raw SQL Query
+     *
+     *    (select
+     *    FROM_UNIXTIME(transactions.created_at + 19800,\"%D %M, %Y\") AS date,
+     *    COUNT(transactions.id) count,
+     *    (Case WHEN payments.method in ("card","emi")
+     *    THEN terminals.gateway_acquirer
+     *    ELSE terminals.gateway
+     *    END) gateway,
+     *    payments.method from `transactions`
+     *    inner join `payments` on `entity_id` = `payments`.`id`
+     *    inner join `terminals` on `terminal_id` = `terminals`.`id`
+     *    where `transactions`.`amount` > ?
+     *    and `payments`.`gateway` = ?
+     *    and (`transactions`.`created_at` between ? and ?)
+     *    and `transactions`.`reconciled_at` is null
+     *    group by `date`, `gateway`, `payments`.`method`
+     *    order by `date` desc)
+     *    union all
+     *    (select FROM_UNIXTIME(transactions.created_at + 19800,\"%D %M, %Y\") AS date,
+     *    COUNT(transactions.id) count,
+     *    (Case WHEN payments.method in ("card","emi")
+     *    THEN terminals.gateway_acquirer
+     *    ELSE terminals.gateway
+     *    END) gateway,
+     *    payments.method from `transactions`
+     *    inner join `payments` on `entity_id` = `payments`.`id`
+     *    inner join `terminals` on `terminal_id` = `terminals`.`id`
+     *    where `transactions`.`amount` > ?
+     *    and `payments`.`gateway` = ?
+     *    and (`transactions`.`created_at` between ? and ?)
+     *    and `transactions`.`reconciled_at` is null
+     *    group by `date`, `gateway`, `payments`.`method`
+     *    order by `date` desc)
+    ...
+     */
+    public function fetchPaymentUnreconStatusSummary(array $gatewaysWithDate): array
+    {
+        $unionQueries= [];
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        foreach ($gatewaysWithDate as $gateway => $dates)
+        {
+            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::PAYMENT);
+
+            $query->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdColumn)
+                  ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+
+            $query = $this->getQueryClausesForUnreconSummaryByGateway($query, $dates, ConstantEntity::PAYMENT, $gateway);
+
+            $unionQueries[] = $query;
+        }
+
+        $unionQuery = null;
+
+        foreach ($unionQueries as $unionQueryElement)
+        {
+            $unionQuery = $unionQuery ? $unionQuery->unionAll($unionQueryElement) : $unionQueryElement;
+        }
+
+        $reconciledPaymentsSummary = $unionQuery->get()
+                                                ->toArray();
+
+        return $reconciledPaymentsSummary;
+    }
+
     /**
      * Raw sql query :
      *
@@ -912,6 +1032,41 @@ class Repository extends Base\Repository
         return $reconciledRefundsSummary;
     }
 
+    public function fetchRefundUnreconStatusSummary(array $gatewaysWithDate): array
+    {
+        $unionQueries = [];
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        foreach ($gatewaysWithDate as $gateway => $dates)
+        {
+            $query = $this->getMinimumSelectParamsQueryForUnreconSummary(ConstantEntity::REFUND);
+
+            $this->addRefundJoinForReconSummary($query);
+
+            $query->join(Table::PAYMENT, $paymentIdColumn, '=', Refund\Entity::PAYMENT_ID)
+                  ->join(Table::TERMINAL, Payment\Entity::TERMINAL_ID, '=', $terminalIdColumn);
+
+            $query = $this->getQueryClausesForUnreconSummaryByGateway($query, $dates, ConstantEntity::REFUND, $gateway);
+
+            $unionQueries[] = $query;
+        }
+
+        $unionQuery = null;
+
+        foreach ($unionQueries as $unionQueryElement)
+        {
+            $unionQuery = $unionQuery ? $unionQuery->unionAll($unionQueryElement) : $unionQueryElement;
+        }
+
+        $reconciledPaymentsSummary = $unionQuery->get()
+                                                ->toArray();
+
+        return $reconciledPaymentsSummary;
+    }
+
     protected function getSelectParamsQueryForReconSummary(string $entityName)
     {
         $transactionPaymentIdColumn = $this->dbColumn(Entity::ENTITY_ID);
@@ -972,6 +1127,43 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->selectRaw($dateCol . ',' . $params);
+
+        return $query;
+    }
+
+    protected function getMinimumSelectParamsQueryForUnreconSummary(string $entityName)
+    {
+        $transactionIdColumn = $this->dbColumn(Entity::ID);
+
+        $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $terminalGatewayAcquirerColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
+        $terminalGatewayColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
+
+        //
+        // For refunds : use 'processedAt' instead of txn createdAt
+        // Bcoz some refunds got success recently which were created
+        // 1-2 months ago and thus we do not get these in recon summary
+        // report if we use txn createdAt.
+        //
+        if ($entityName === ConstantEntity::REFUND)
+        {
+                $timestampColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);
+        }
+
+        $params = 'COUNT('.$transactionIdColumn.') count,'.
+            '(Case WHEN '. $paymentMethodColumn .' in ( "'. Payment\Method::CARD . '","'. Payment\Method::EMI .'")'.'
+                THEN '. $terminalGatewayAcquirerColumn . '
+            ELSE '. $terminalGatewayColumn . '
+            END) gateway, '. $paymentMethodColumn;
+
+        $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
+
+        $query = $this->newQuery()
+                ->selectRaw($dateCol . ',' . $params);
 
         return $query;
     }
