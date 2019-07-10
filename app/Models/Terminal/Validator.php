@@ -1180,14 +1180,14 @@ class Validator extends Base\Validator
         $newMatch = array_only($new->toArray(), self::$matchAttributes);
         $existingMatch = array_only($existing->toArray(), self::$matchAttributes);
 
+        // Need to sort the keys to ensure we can use strict check in the below condition.
         ksort($newMatch);
         ksort($existingMatch);
 
         $newId = $new->getId();
         $existingId = $existing->getId();
 
-        // Not using strict check since that would check for order as well and that might not match.
-        if (($newMatch == $existingMatch) and
+        if (($newMatch === $existingMatch) and
             ($newId !== $existingId))
         {
             throw new Exception\BadRequestException(
