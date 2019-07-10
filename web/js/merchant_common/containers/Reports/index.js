@@ -83,6 +83,14 @@ export default function Reports(store, opts) {
         date: selector(state, 'date'),
         invoiceDate: selector(state, 'invoiceDate'),
         reportType: selector(state, 'reportType'),
+        dateRangeData: selector(
+          state,
+          'withTime',
+          'startAt',
+          'endAt',
+          'startAtTime',
+          'endAtTime'
+        ),
         config: state.config,
       };
     },
@@ -334,7 +342,7 @@ export default function Reports(store, opts) {
     generateReport() {
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
-        { date, type, invoiceDate, reportType } = this.props,
+        { date, type, invoiceDate, reportType, dateRangeData } = this.props,
         day = date.date(),
         month = date.month() + 1, // Jan is 0 in moment library
         year = date.year(),
@@ -375,15 +383,35 @@ export default function Reports(store, opts) {
         );
 
         if (selectedConfig.type !== 'custom') {
-          const timeFactor = type === 'daily' ? 'day' : 'month',
-            startTime = date
-              .clone()
-              .startOf(timeFactor)
-              .unix(),
-            endTime = date
-              .clone()
-              .endOf(timeFactor)
-              .unix();
+          var startTime, endTime;
+          switch (type) {
+            case 'daily':
+            case 'monthly': {
+              const timeFactor = type === 'daily' ? 'day' : 'month',
+                startTime = date
+                  .clone()
+                  .startOf(timeFactor)
+                  .unix(),
+                endTime = date
+                  .clone()
+                  .endOf(timeFactor)
+                  .unix();
+              break;
+            }
+
+            case 'dateRange': {
+              startTime = getFullUnixTimeStamp(
+                dateRangeData.startAt,
+                dateRangeData.startAtTime
+              );
+
+              endTime = getFullUnixTimeStamp(
+                dateRangeData.endAt,
+                dateRangeData.endAtTime
+              );
+              break;
+            }
+          }
 
           const { user } = this.props,
             selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
@@ -623,7 +651,7 @@ export default function Reports(store, opts) {
         currentReportList,
       } = this.state;
 
-      const { type, date, invoiceDate, reportType } = this.props;
+      const { type, dateRangeData } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
@@ -723,14 +751,32 @@ export default function Reports(store, opts) {
                             isPartnerReport &&
                             selectedConfig.referred_accounts === 'all'
                           ) ? (
-                            <Field
-                              name="type"
-                              class="fix-select"
-                              component="select"
-                            >
-                              <option value="daily">Daily</option>
-                              <option value="monthly">Monthly</option>
-                            </Field>
+                            <>
+                              <Field
+                                name="type"
+                                class="fix-select"
+                                component="select"
+                              >
+                                <option value="daily">Daily</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="dateRange">Custom</option>
+                              </Field>
+                              {type === 'dateRange' && (
+                                <div class="form-group">
+                                  <div className="rzpCheckbox">
+                                    <Field
+                                      name="withTime"
+                                      id="with-time"
+                                      component="input"
+                                      type="checkbox"
+                                    />
+                                    <label for="with-time" class="icon i-check">
+                                      Specify time
+                                    </label>
+                                  </div>
+                                </div>
+                              )}
+                            </>
                           ) : (
                             'Daily'
                           )}
@@ -778,6 +824,60 @@ export default function Reports(store, opts) {
                           </div>
                         </div>
                       )}
+
+                    {type === 'dateRange' && (
+                      <>
+                        <div className="col-sm-4 col-xs-12">
+                          <div className="form-group">
+                            <Field
+                              name="startAt"
+                              dateFormat="DD MMM, YYYY"
+                              placeholder="Starts at"
+                              component={ReduxDatetime}
+                              timeFormat={false}
+                              closeOnSelect
+                            />
+                            {dateRangeData.withTime && (
+                              <Field
+                                name="startAtTime"
+                                placeholder="Select Time"
+                                component={ReduxDatetime}
+                                closeOnSelect
+                                dateFormat={false}
+                                class="m-t"
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div
+                          className="col-sm-4 col-xs-12"
+                          style={{ marginRight: '0' }}
+                        >
+                          <div className="form-group">
+                            <Field
+                              name="endAt"
+                              dateFormat="DD MMM, YYYY"
+                              placeholder="Ends At"
+                              component={ReduxDatetime}
+                              timeFormat={false}
+                              isValidDate={isDateRangeEndAtValid(
+                                dateRangeData.startAt
+                              )}
+                              closeOnSelect
+                            />
+                            {dateRangeData.withTime && (
+                              <Field
+                                name="endAtTime"
+                                component={ReduxDatetime}
+                                closeOnSelect
+                                dateFormat={false}
+                                class="m-t"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* File type for Reports */}
@@ -854,4 +954,27 @@ export default function Reports(store, opts) {
   }
 
   return ReportsContainer;
+}
+
+function isDateRangeEndAtValid(startAt) {
+  return current => {
+    if (!startAt) return true;
+    const difference = current.diff(startAt, 'days');
+    return difference >= 0 && difference < 7;
+  };
+}
+
+function getFullUnixTimeStamp(dateMoment, timeMoment) {
+  return (
+    dateMoment
+      .clone()
+      .startOf('day')
+      .unix() + getSeconds(timeMoment)
+  );
+}
+
+function getSeconds(timeMoment) {
+  return !!timeMoment
+    ? timeMoment.diff(timeMoment.clone().startOf('day'), 'seconds')
+    : 0;
 }
