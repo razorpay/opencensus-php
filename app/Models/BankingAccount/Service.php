@@ -86,7 +86,7 @@ class Service extends Base\Service
 
         return $account->toArrayPublic();
     }
-  
+
     public function storeCredentials(string $id, array $input)
     {
         $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
@@ -184,8 +184,7 @@ class Service extends Base\Service
 
     protected function notifyUpdate(string $previousStatus, array $input, Entity $bankingAccount)
     {
-        if (($this->isStatusChanged($previousStatus, $input[Entity::STATUS]) === true) and
-            ($this->notifyStatusChange($previousStatus, $input[Entity::STATUS])) === true)
+        if ($this->isStatusChanged($previousStatus, $input[Entity::STATUS]) === true)
         {
             $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant);
 
