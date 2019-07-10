@@ -596,6 +596,9 @@ class BatchMicroService
         {
             case self::BATCH_SERVICE:
                 $fetchResult = $this->getBatchesFromBatchService($id);
+
+                $this->prepareBatchItemResponse($fetchResult);
+
                 break;
 
             case self::FILE_STORE:

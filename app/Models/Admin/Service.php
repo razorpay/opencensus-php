@@ -496,6 +496,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fetchHourlyReconciliationSummary(array $input)
+    {
+        $data = (new DailyReconStatusSummary)->generateReconSummaryByGateway($input);
+
+        return $data;
+    }
+
     public function createBatch(array $input)
     {
         $batchCore = new Batch\Core;
@@ -687,5 +694,46 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::REDIS_KEY_UPDATE, $data);
 
         return $data;
+    }
+
+    public function setGatewayDowntimeConf(array $input): array
+    {
+        (new Validator)->validateInput('set_gateway_downtime_redis_keys', $input);
+
+        $redis = $this->app['redis']->connection();
+
+        foreach ($input[ConfigKey::DOWNTIME_DETECTION_CONFIGURATION] as $value)
+        {
+            $values[$value['key']] = json_encode($value['value']);
+        }
+
+        $values = array_change_key_case($values, CASE_LOWER);
+
+        $this->setRedisKey($redis, ConfigKey::DOWNTIME_DETECTION_CONFIGURATION, $values);
+
+        // Now get configuration for all the gateways and return
+        return $this->getGatewayDowntimeConf();
+    }
+
+    public function getGatewayDowntimeConf(): array
+    {
+        $redis = $this->app['redis']->connection();
+
+        $result = [];
+
+        $conf = $redis->HGETALL(ConfigKey::DOWNTIME_DETECTION_CONFIGURATION);
+
+        foreach ($conf as $key => $value)
+        {
+            $result[] =
+                [
+                    'key'   => $key,
+                    'value' => json_decode($value),
+                ];
+        }
+
+        return [
+            ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => $result,
+        ];
     }
 }

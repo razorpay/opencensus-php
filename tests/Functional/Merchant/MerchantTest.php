@@ -674,6 +674,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantDefaultRefundSpeed()
+    {
+        $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testAddCategory2()
     {
         $this->createMerchant();
@@ -2347,9 +2356,13 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['google_pay']);
 
+        $this->fixtures->merchant->addFeatures(['google_pay_omnichannel']);
+
         $response = $this->startTest();
 
         $this->assertNotNull($response['features']['google_pay']);
+
+        $this->assertNotNull($response['features']['google_pay_omnichannel']);
     }
 
     public function testPutPaytmMethod()
@@ -4216,5 +4229,12 @@ class MerchantTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         Mail::assertNotQueued(BeneficiaryFileMail::class);
+    }
+
+    public function testGetOrgDetails()
+    {
+        $this->ba->authServiceAuth();
+
+        $this->startTest();
     }
 }

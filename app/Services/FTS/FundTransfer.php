@@ -159,7 +159,7 @@ class FundTransfer extends Base
         }
 
         $request[Constants::TRANSFER] = [
-            Constants::MODE              => $mode,
+            Constants::PREFERRED_MODE    => $mode,
             Constants::AMOUNT            => $this->source->getAmount(),
             Constants::NARRATION         => $this->fta->getNarration(),
             Constants::SOURCE_ID         => $this->fta->getSourceId(),

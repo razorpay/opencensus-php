@@ -21,6 +21,8 @@ class GatewayDowntimeDetectionTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeDetectionTestData.php';
+
         parent::setUp();
 
         $this->redis = Redis::connection()->client();
@@ -120,5 +122,27 @@ class GatewayDowntimeDetectionTest extends TestCase
         ];
 
         $response = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testPutGatewayDowntimeRedisConf()
+    {
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $upiMindgateExpected = $this->testData['upiMindGateDowntimeResponse'];
+
+        $upiMindgateActual = array_filter($response['config:downtime:detection:configuration'], function($arr) {
+                                return $arr['key'] === 'upi_mindgate';
+                            });
+
+        $this->assertEquals(current($upiMindgateActual), $upiMindgateExpected);
+    }
+
+    public function testGetGatewayDowntimeRedisConf()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 }

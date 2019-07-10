@@ -75,6 +75,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED                                     = 'GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED';
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED';
+    const GATEWAY_ERROR_INVALID_STATUS_DESCRIPTION                                  = 'GATEWAY_ERROR_INVALID_STATUS_DESCRIPTION';
     const GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED                         = 'GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED';
     const GATEWAY_ERROR_TIMED_OUT                                                   = 'GATEWAY_ERROR_TIMED_OUT';
     const GATEWAY_ERROR_INVALID_DATE_FORMAT                                         = 'GATEWAY_ERROR_INVALID_DATE_FORMAT';
@@ -343,7 +344,10 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED                          = 'BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED';
     const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                                  = 'BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                      = 'BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS';
+    const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                     = 'BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS';
     const BAD_REQUEST_PAYOUT_INVALID_STATE                                          = 'BAD_REQUEST_PAYOUT_INVALID_STATE';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                                 = 'BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                       = 'BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
@@ -1240,4 +1244,8 @@ class ErrorCode
     const SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY                              = 'SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY';
     const SERVER_ERROR_MOZART_SERVICE_FAILURE                                       = 'SERVER_ERROR_MOZART_SERVICE_FAILURE';
     const SERVER_ERROR_MOZART_SERVICE_TIMEOUT                                       = 'SERVER_ERROR_MOZART_SERVICE_TIMEOUT';
+
+    // OmniPay Error Codes
+    const BAD_REQUEST_INVALID_UPI_PROVIDER                                          = 'BAD_REQUEST_INVALID_UPI_PROVIDER';
+    const GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT                                         = 'GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT';
 }

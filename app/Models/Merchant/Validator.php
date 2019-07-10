@@ -60,6 +60,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
+        Entity::DEFAULT_REFUND_SPEED        => 'sometimes|filled|string|in:normal,optimum',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
         Entity::CONVERT_CURRENCY            => 'sometimes|nullable|boolean',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',

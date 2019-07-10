@@ -72,6 +72,7 @@ class Entity
     const SETTLEMENT                = 'settlement';
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
+    const CREDITNOTE                = 'creditnote';
     const PAYMENT_LINK              = 'payment_link';
     const GATEWAY_RULE              = 'gateway_rule';
     const GATEWAY_FILE              = 'gateway_file';
@@ -104,6 +105,7 @@ class Entity
     const CUSTOMER_BALANCE          = 'customer_balance';
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
     const MERCHANT_INVOICE          = 'merchant_invoice';
+    const CREDITNOTE_INVOICE        = 'creditnote_invoice';
     const NODAL_BENEFICIARY         = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS         = 'payment_analytics';
     const SETTLEMENT_DETAILS        = 'settlement_details';
@@ -223,6 +225,7 @@ class Entity
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
     const UPI_AIRTEL             = 'upi_airtel';
+    const GOOGLE_PAY             = 'google_pay';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -399,6 +402,8 @@ class Entity
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
+        self::CREDITNOTE                => \RZP\Models\CreditNote::class,
+        self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -472,6 +477,7 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,

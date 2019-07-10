@@ -6,7 +6,9 @@ use SoapVar;
 use SoapFault;
 use SoapHeader;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -18,15 +20,26 @@ use Razorpay\Trace\Logger as Trace;
 
 trait RequestHandlerTrait
 {
-
     //-------------- Check BIN2 request ------------------------------------
     protected function checkBin2()
     {
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED,
+            $this->input);
+
         $requestArray = $this->getCheckBin2RequestArray();
 
         $command = Command::CHECKBIN2;
 
         $response = $this->sendRequest($command, $requestArray);
+
+        $this->app['diag']->trackGatewayPaymentEvent(
+            EventCode::PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED,
+            $this->input,
+            null,
+            [
+                'enrolled' => $response[Fields::STATUS] ?? ''
+            ]);
 
         return $response;
     }
@@ -121,8 +134,7 @@ trait RequestHandlerTrait
 
         $date = $paymentDate->format('md');
 
-        // Random 6 digit number
-        $systemTraceAuditNumber = sprintf('%06d', mt_rand(1, 999999));
+        $systemTraceAuditNumber = $this->generateStan();
 
         // In UAT they want us to pass 6012
         $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
@@ -487,4 +499,35 @@ trait RequestHandlerTrait
         return $xmlResponseArray;
     }
     //---------------- Soap Request related functions end --------------------
+
+    // Used to generate the system trace audit number
+    // This needs to be a unique value for all the transactions happening in an hour.
+    // We use the redis INCR function which acts as a counter and set it's expiry to the next day
+    //
+    // Assumptions:
+    // 1. No two redis pipelines would be initiated at the exact same moment
+    // 2. There would not be more than 999999 PaySecure payments happening within a day
+    protected function generateStan()
+    {
+        $timestampToExpire = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
+        $redis = Redis::connection()->client();
+
+        list($currentValue, $ttl) = $redis->pipeline(
+            function ($pipe)
+            {
+                $pipe->incr(self::GATEWAY_PAYSECURE_STAN);
+                $pipe->ttl(self::GATEWAY_PAYSECURE_STAN);
+            });
+
+        // If within a day, the counter crosses the 999999 limit, this falls back to start from 0
+        $currentValue = $currentValue % 1000000;
+
+        if ($ttl === -1)
+        {
+            $redis->expireat(self::GATEWAY_PAYSECURE_STAN, $timestampToExpire);
+        }
+
+        return sprintf('%06d', $currentValue);
+    }
 }
