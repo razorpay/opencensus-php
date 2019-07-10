@@ -263,10 +263,12 @@ class Core extends Base\Core
 
     /**
      * This function is used to patch merchant details fields
+     *
      * @param Entity $merchantDetails
-     * @param array $input
+     * @param array  $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
     {
@@ -274,7 +276,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'patchMerchantDetails');
 
-       $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchantDetails->merchant);
+        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchantDetails->merchant);
 
         $this->repo->saveOrFail($merchantDetails);
 
