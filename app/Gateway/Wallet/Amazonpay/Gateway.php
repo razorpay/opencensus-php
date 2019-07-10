@@ -18,6 +18,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use RZP\Gateway\Wallet\Amazonpay\Sdk\PWAINBackendSDK;
+use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
 class Gateway extends Base\Gateway
 {
@@ -87,7 +88,7 @@ class Gateway extends Base\Gateway
 
         //Amazon is sending payment id as "sellerOrderId": "A3MJ8VJGR6SLBL_CjYROn3od7rp7Q  in callback for some
         //random cases.This will help us to fetch the payment id from the sellerOrderId.
-        $paymentId = substr($content[ResponseFields::SELLER_ORDER_ID],-14);
+        $paymentId = $this->getPaymentIdFromServerCallback($content);
 
         $this->assertPaymentId($paymentId, $input['payment']['id']);
 
@@ -837,6 +838,23 @@ class Gateway extends Base\Gateway
     private function formatAmount($amount): string
     {
         return number_format(floatval($amount / 100), 2, '.', '');
+    }
+
+    public function getPaymentIdFromServerCallback($input)
+    {
+        if (isset($input[ResponseFields::SELLER_ORDER_ID]) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
+                null,
+                null,
+                ['input' => $input]);
+        }
+
+        $sellerOrderId = substr($input[ResponseFields::SELLER_ORDER_ID],-14);
+
+
+        return $sellerOrderId;
     }
 
     private function parseRefundDetails($input)
