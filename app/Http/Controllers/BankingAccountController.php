@@ -35,4 +35,13 @@ class BankingAccountController extends Controller
 
         return $response;
     }
+
+    public function updateInternally(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateInternally($id, $input);
+
+        return $response;
+    }
 }

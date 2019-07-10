@@ -83,6 +83,12 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
+        $this->fixtures->edit('banking_account',
+            $bankingAccount->getId(),
+            [
+                'status' => 'initiated',
+            ]);
+
         $this->assertEquals('created', $bankingAccount->getStatus());
 
         $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
@@ -132,7 +138,11 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->assertEquals('created', $bankingAccount->getStatus());
+        $this->fixtures->edit('banking_account',
+            $bankingAccount->getId(),
+            [
+                'status' => 'initiated',
+            ]);
 
         $this->ba->adminAuth();
 
@@ -222,7 +232,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_account/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts/' . $bankingAccount['id'] . '/internal',
                 'method'  => 'PATCH',
             ],
             'response' => [
@@ -237,13 +247,103 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testUpdateBankingAccountToUnserviceable()
+    public function testUpdateBankingAccountStatusAsProcessed()
     {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
         $bankingAccount = $this->createBankingAccount();
 
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_account/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts/' . $bankingAccount['id'] . '/internal',
+                'method'  => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => $merchantDetail->merchant['id'],
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'],
+            [
+                'status' => 'initiated',
+            ]);
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateBankingAccountStatusAsProcessedFailed()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'] . '/internal',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'],
+            [
+                'status' => 'initiated',
+            ]);
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateBankingAccountIncorrectCurrentToPreviousStatus()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'] . '/internal',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateBankingAccountToUnserviceable()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'],
+            [
+                'status' => 'processing',
+            ]);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'] . '/internal',
                 'method'  => 'PATCH',
             ],
         ];
@@ -263,7 +363,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_account/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts/' . $bankingAccount['id'] . '/internal',
                 'method'  => 'PATCH',
             ],
         ];

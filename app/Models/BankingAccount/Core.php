@@ -94,6 +94,17 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function updateBankingAccountInternally(Entity $bankingAccount, array $input)
+    {
+        (new Validator)->setStrictFalse()->validateInput('internal_edit', $input);
+
+        $this->validateAllowedStatusesForUpdate($input);
+
+        $bankingAccount = $this->updateBankingAccount($bankingAccount, $input);
+
+        return $bankingAccount;
+    }
+
     public function updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
@@ -104,11 +115,30 @@ class Core extends Base\Core
 
         $input = $processor->formatInputParametersIfRequired($input);
 
+        // if the input has status field present, we need to check whether the status
+        // can be updated to this new status
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            $this->validateCurrentToPreviousStatusMapping($input[Entity::STATUS], $bankingAccount->getStatus());
+        }
+
+        // if the input has status as processed, we need to validate input parameters
+        // by different rules.
+        if ($this->isStatusProcessed($input) === true)
+        {
+            (new Validator)->setStrictFalse()->validateInput('processed_status', $input);
+
+            $bankingAccount->fill($input);
+        }
+        else
+        {
+            $bankingAccount = $bankingAccount->edit($input);
+        }
+
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
-        $bankingAccount = $bankingAccount->edit($input);
-
         $this->repo->saveOrFail($bankingAccount);
+
 
         return $bankingAccount;
     }
@@ -332,5 +362,29 @@ class Core extends Base\Core
                 'Merchant credentials could not be stored, Please try again!'
             );
         }
+    }
+
+    protected function validateAllowedStatusesForUpdate(array $input)
+    {
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            Status::validateInternallyAllowed($input[Entity::STATUS]);
+        }
+    }
+
+    protected function validateCurrentToPreviousStatusMapping(string $currentStatus, string $previousStatus)
+    {
+        Status::validateCurrentToPreviousMapping($currentStatus, $previousStatus);
+    }
+
+    protected function isStatusProcessed($input)
+    {
+        if ((isset($input[Entity::STATUS]) === true) and
+            ($input[Entity::STATUS] === Status::PROCESSED))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

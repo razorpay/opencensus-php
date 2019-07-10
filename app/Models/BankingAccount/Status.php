@@ -14,6 +14,30 @@ class Status
     const ACTIVATED         = 'activated';
     const UNSERVICEABLE     = 'unserviceable';
 
+    /**
+     * @var array
+     * This contains a status map that keeps mapping of a status
+     * to previous possible statuses. This is to ensure the status
+     * change on Banking Account Entity happens in an order.
+     */
+    protected static $currentToPreviousStatusMap = [
+        self::CREATED           => [],
+        self::INITIATED         => [self::CREATED],
+        self::PROCESSING        => [self::INITIATED],
+        self::PROCESSED         => [self::INITIATED, self::PROCESSING],
+        self::ACTIVATED         => [self::PROCESSED],
+        self::UNSERVICEABLE     => [self::CREATED, self::INITIATED, self::PROCESSING],
+        self::CANCELLED         => [self::CREATED, self::INITIATED, self::PROCESSING]
+    ];
+
+    protected static $internallyAllowedStatus = [
+        self::INITIATED,
+        self::PROCESSING,
+        self::PROCESSED,
+        self::CANCELLED,
+        self::UNSERVICEABLE,
+    ];
+
     public static function isValidStatus(string $status = null)
     {
         $key = __CLASS__ . '::' . strtoupper($status);
@@ -30,6 +54,34 @@ class Status
                 Entity::STATUS,
                 [
                     Entity::STATUS => $status
+                ]);
+        }
+    }
+
+    public static function validateInternallyAllowed(string $status)
+    {
+        if (in_array($status, self::$internallyAllowedStatus, true) !== true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Status change not permitted',
+                Entity::STATUS,
+                [
+                    Entity::STATUS => $status
+                ]);
+        }
+    }
+
+    public static function validateCurrentToPreviousMapping(string $currentStatus, string $previousStatus)
+    {
+        $previousStatuses = self::$currentToPreviousStatusMap[$currentStatus];
+
+        if (in_array($previousStatus, $previousStatuses, true) !== true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Status change not permitted',
+                Entity::STATUS,
+                [
+                    Entity::STATUS => $currentStatus
                 ]);
         }
     }

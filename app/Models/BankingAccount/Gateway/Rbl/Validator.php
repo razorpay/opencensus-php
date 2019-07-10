@@ -49,11 +49,6 @@ class Validator extends Base\Validator
         BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
     ];
 
-    protected function validateStatus(string $attribute, string $status = null)
-    {
-        BankingAccount\Status::isValidStatus($status);
-    }
-
     protected function validateBankInternalStatus(string $attribute, string $bankInternalStatus = null)
     {
         Status::validate($bankInternalStatus);

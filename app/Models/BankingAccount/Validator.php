@@ -44,6 +44,40 @@ class Validator extends Base\Validator
         Entity::REFERENCE1                      => 'filled|string',
     ];
 
+    protected static $internalEditRules = [
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
+        Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
+        Entity::STATUS                          => 'filled|string|custom',
+        Entity::BENEFICIARY_PIN                 => 'filled|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'filled|string',
+        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
+        Entity::BENEFICIARY_STATE               => 'filled|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|integer',
+        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
+        Entity::BENEFICIARY_MOBILE              => 'filled|string',
+        Entity::BENEFICIARY_EMAIL               => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|string',
+    ];
+
+    protected static $processedStatusRules = [
+        Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|max:40',
+        Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
+        Entity::STATUS                          => 'required|string|custom',
+        Entity::BENEFICIARY_PIN                 => 'required|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'required|string',
+        Entity::BENEFICIARY_COUNTRY             => 'required|string',
+        Entity::BENEFICIARY_STATE               => 'required|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'required|integer',
+        Entity::BENEFICIARY_ADDRESS1            => 'required|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'required|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'required|string',
+        Entity::BENEFICIARY_MOBILE              => 'required|string',
+        Entity::BENEFICIARY_EMAIL               => 'required|string',
+        Entity::BENEFICIARY_NAME                => 'required|string',
+    ];
+
     protected static $serviceablePincodeRules = [
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
@@ -93,12 +127,6 @@ class Validator extends Base\Validator
      */
     protected function validateStatus(string $attribute, string $status = null)
     {
-        if (Status::validate($status) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Banking account status is invalid',
-                Entity::STATUS,
-                [Entity::STATUS => $status]);
-        }
+        Status::validate($status);
     }
 }

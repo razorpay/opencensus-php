@@ -88,13 +88,14 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_UPDATE, $input);
 
-        $this->checkRblToInternalStatusMapping($input);
+        Status::checkRblToInternalStatusMapping($input);
     }
 
     public function formatInputParametersIfRequired(array $input)
     {
         if (isset($input[Fields::ACTIVATION_DATE]) === true)
         {
+
             $timestamp = $this->parseAndFormatRblDate($input[Fields::ACTIVATION_DATE]);
 
             $input[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $timestamp;
@@ -190,19 +191,5 @@ class Processor extends BankingAccount\Gateway\Processor
         $date = Carbon::parse($date, Timezone::IST)->getTimestamp();
 
         return $date;
-    }
-
-    protected function checkRblToInternalStatusMapping(array $input)
-    {
-        if (isset($input[BankingAccount\Entity::BANK_INTERNAL_STATUS]) === false)
-        {
-            return;
-        }
-
-        $bankInternalStatus = $input[BankingAccount\Entity::BANK_INTERNAL_STATUS];
-
-        $status = $input[BankingAccount\Entity::STATUS];
-
-        Status::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
     }
 }

@@ -92,4 +92,17 @@ class Status
 
         return self::$internalToBankStatusForWebhookMap[$status];
     }
+
+    public static function checkRblToInternalStatusMapping(array $input)
+    {
+        if ((isset($input[BankingAccount\Entity::BANK_INTERNAL_STATUS]) === true) and
+            (isset($input[BankingAccount\Entity::STATUS]) === true))
+        {
+            $bankInternalStatus = $input[BankingAccount\Entity::BANK_INTERNAL_STATUS];
+
+            $status = $input[BankingAccount\Entity::STATUS];
+
+            self::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
+        }
+    }
 }
