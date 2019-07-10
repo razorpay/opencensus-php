@@ -26,8 +26,9 @@ class Cors
         $originHost = parse_url($originDomain, PHP_URL_HOST);
 
         $crossOriginDomains = [
-            'auth'    => parse_url(config('oauth.auth_service_url'), PHP_URL_HOST),
-            'banking' => parse_url(config('app.banking_service_url'), PHP_URL_HOST),
+            'auth'       => parse_url(config('oauth.auth_service_url'), PHP_URL_HOST),
+            'banking'    => parse_url(config('app.banking_service_url'), PHP_URL_HOST),
+            'auth_green' => parse_url(config('oauth.auth_service_url_green'), PHP_URL_HOST),
         ];
 
         $crossOriginPolicy = false;
