@@ -232,7 +232,7 @@ class Selector extends Base\Core
                 $this->alertNetbankingTerminalNotFound($merchant, $payment);
 
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT);
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
             }
             else
             {
