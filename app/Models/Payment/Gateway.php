@@ -78,6 +78,7 @@ class Gateway
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
+    const WORLDLINE              = 'worldline';
 
     const CARD_FSS               = 'card_fss';
 
@@ -923,6 +924,11 @@ class Gateway
             Network::MC,
             Network::RUPAY,
         ],
+        self::WORLDLINE => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+        ],
     ];
 
     public static $cardNetworkRecurringMap = [
@@ -1091,6 +1097,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_MINDGATE,
         self::ISG,
+        self::WORLDLINE,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
