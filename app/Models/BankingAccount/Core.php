@@ -98,7 +98,7 @@ class Core extends Base\Core
     {
         (new Validator)->setStrictFalse()->validateInput('internal_edit', $input);
 
-        $this->validateAllowedStatusesForUpdate($input);
+        $this->validateIsStatusAllowedForUpdate($input);
 
         $bankingAccount = $this->updateBankingAccount($bankingAccount, $input);
 
@@ -138,7 +138,6 @@ class Core extends Base\Core
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
         $this->repo->saveOrFail($bankingAccount);
-
 
         return $bankingAccount;
     }
@@ -364,11 +363,11 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateAllowedStatusesForUpdate(array $input)
+    protected function validateIsStatusAllowedForUpdate(array $input)
     {
         if (isset($input[Entity::STATUS]) === true)
         {
-            Status::validateInternallyAllowed($input[Entity::STATUS]);
+            Status::validateAllowedStatus($input[Entity::STATUS]);
         }
     }
 

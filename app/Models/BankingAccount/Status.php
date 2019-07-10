@@ -58,7 +58,7 @@ class Status
         }
     }
 
-    public static function validateInternallyAllowed(string $status)
+    public static function validateAllowedStatus(string $status)
     {
         if (in_array($status, self::$internallyAllowedStatus, true) !== true)
         {
