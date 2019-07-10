@@ -56,7 +56,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'upi',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -81,7 +81,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'upi',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -120,7 +120,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -146,7 +146,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -172,7 +172,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -212,7 +212,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'card',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -238,7 +238,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'card',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -322,7 +322,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'wallet',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
