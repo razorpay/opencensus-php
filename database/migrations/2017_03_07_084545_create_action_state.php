@@ -4,8 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\User\Entity as User;
 use RZP\Models\State\Entity as State;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
 
@@ -37,6 +38,9 @@ class CreateActionState extends Migration
             $table->char(State::MERCHANT_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
+            $table->char(State::USER_ID, User::ID_LENGTH)
+                  ->nullable();
+
             $table->char(State::NAME, 255);
 
             $table->integer(State::CREATED_AT);
@@ -59,6 +63,7 @@ class CreateActionState extends Migration
                   ->on_delete('restrict');
 
             $table->index(State::ENTITY_TYPE);
+            $table->index(State::USER_ID);
             $table->index(State::CREATED_AT);
             $table->index([State::ENTITY_ID, State::ENTITY_TYPE]);
         });

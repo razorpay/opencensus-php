@@ -5044,3 +5044,56 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_fts_fund_account_id_index (fts_fund_account_id),
     ADD INDEX banking_accounts_balance_id_index (balance_id),
     ADD INDEX banking_accounts_bank_reference_number_index (bank_reference_number);
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `business_registered_address_l2` VARCHAR(255) DEFAULT NULL after `business_registered_address`,
+    ADD COLUMN `business_registered_country` VARCHAR(255) DEFAULT NULL after `business_registered_pin`,
+    ADD COLUMN `business_operation_address_l2` VARCHAR(255) DEFAULT NULL after `business_operation_address`,
+    ADD COLUMN `business_operation_country` VARCHAR(255) DEFAULT NULL after `business_operation_pin`,
+    ADD COLUMN `business_description` VARCHAR(255) DEFAULT NULL after `business_name`,
+    ADD COLUMN `custom_fields` TEXT DEFAULT NULL after `internal_notes`;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `icon_url` text default null after `logo_url`,
+    ADD COLUMN `live_disable_reason` varchar(255) default null after `live`,
+    ADD COLUMN `hold_funds_reason` varchar(255) default null after `hold_funds`;
+
+ALTER TABLE `merchant_emails`
+    ADD COLUMN `phone` varchar(255) default null after `email`,
+    ADD COLUMN `policy` varchar(255) default null after `phone`,
+    ADD COLUMN `url` varchar(255) default null after `policy`;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `default_refund_speed` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `auto_refund_delay`;
+
+ALTER TABLE `refunds`
+    ADD COLUMN `speed_decisioned` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `speed_requested`;
+
+ALTER TABLE `action_checker`
+	ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
+	ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
+	MODIFY COLUMN admin_id CHAR(14) DEFAULT NULL,
+	ADD INDEX action_checker_checker_id_index (checker_id);
+
+ALTER TABLE action_state
+	ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+	ADD INDEX action_state_user_id_index (user_id);
+
+ALTER TABLE `workflow_payout_amount_rules`
+    CHANGE COLUMN x_amount min_amount BIGINT UNSIGNED DEFAULT NULL,
+    CHANGE COLUMN y_amount max_amount BIGINT UNSIGNED DEFAULT NULL,
+    MODIFY COLUMN workflow_id CHAR(14) DEFAULT NULL;
+
+ALTER TABLE payouts
+    MODIFY COLUMN `channel` VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN rejected_at INT(11) DEFAULT NULL AFTER `reversed_at`,
+    ADD INDEX payouts_rejected_at_index (rejected_at);
+
+ALTER TABLE `workflow_actions`
+    ADD COLUMN `state_changer_type` VARCHAR(255) DEFAULT NULL AFTER state_changer_id,
+	MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
+    DROP FOREIGN KEY workflow_actions_state_changer_id_foreign;
+
+ALTER TABLE workflows
+	ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
+	ADD INDEX workflows_merchant_id_index (merchant_id);

@@ -78,6 +78,8 @@ class CreatePaysecureTable extends Migration
 
             $table->index(Paysecure::REFUND_ID);
 
+            $table->index(Paysecure::RRN);
+
             $table->index(Paysecure::GATEWAY_TRANSACTION_ID);
 
             $table->index(Paysecure::ACTION);

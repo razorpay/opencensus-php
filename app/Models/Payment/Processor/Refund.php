@@ -26,6 +26,7 @@ use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
+use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -1314,20 +1315,22 @@ trait Refund
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
-        if (($payment->getMethod() === Payment\Method::CARD) and
-            ($this->payment->isCaptured() === true) and
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true))
-        {
-            $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
+        $refund->setSpeedRequested(RefundSpeed::NORMAL);
+        $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-            if (empty($input['speed']) === false)
-            {
-                $refund->setSpeedRequested($input['speed']);
-            }
-        }
-        else
+        if ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true)
         {
-            $refund->setSpeedRequested(RefundSpeed::NORMAL);
+            $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
+
+            if (empty($input[RefundEntity::SPEED]) === false)
+            {
+                $refund->setSpeedRequested($input[RefundEntity::SPEED]);
+            }
+
+            if ($this->isInstantRefundsSupportedRefund($payment, $refund) === true)
+            {
+                $refund->setSpeedDecisioned($refund->getSpeedRequested());
+            }
         }
 
         $refund->merchant()->associate($this->merchant);
@@ -1819,6 +1822,13 @@ trait Refund
             'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
         ];
 
+        $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
+
+        //
+        // Speed decisioned is being sent as speed_requested - no need to be sent again
+        //
+        unset($refundData[RefundEntity::SPEED_DECISIONED]);
+
         $scroogeData = array_merge($refundData, $extraData);
 
         if ($payment->isNetbanking() === true)
@@ -2242,6 +2252,20 @@ trait Refund
         }
 
         return false;
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param RefundEntity $refund
+     * @return bool
+     * @throws \Exception
+     */
+    protected function isInstantRefundsSupportedRefund(Payment\Entity $payment, RefundEntity $refund): bool
+    {
+        return (($refund->isRefundRequestedSpeedInstant() === true) and
+                ($payment->getMethod() === Payment\Method::CARD) and
+                ($payment->hasBeenCaptured() === true) and
+                ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true));
     }
 
     /**

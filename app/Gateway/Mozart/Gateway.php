@@ -133,6 +133,12 @@ class Gateway extends Base\Gateway
         return $this->getResponseData($input, $response);
     }
 
+    public function omniPay(array $input)
+    {
+        parent::omniPay($input);
+
+        $this->authorize($input);
+    }
     public function immediateVerifyApplicable($gatewayName)
     {
         $immediateVerificationGateways = [
@@ -353,14 +359,17 @@ class Gateway extends Base\Gateway
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
         }
 
-        $prevStepName = $this->getPreviousStepName($input['payment']['gateway']);
+        $gateway = $this->getGateway($input);
 
-        $prevStepDB = $this->getPreviousStepForDB($input['payment']['gateway']);
+        $prevStepName = $this->getPreviousStepName($gateway);
+
+        $prevStepDB = $this->getPreviousStepForDB($gateway);
 
         if ($prevStepName != null)
         {
             $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
         }
+
         $content['entities'] = $input;
 
         $this->checkTpvAndModifyOrder($content, $input);
@@ -368,6 +377,13 @@ class Gateway extends Base\Gateway
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
         $url =  $baseUrl . 'payments/' . $input['payment']['gateway'] . '/v1/' . $this->action;
+
+        $isGooglePay = $this->isGooglePayGateway($input);
+
+        if ($isGooglePay === true)
+        {
+            $url =  $baseUrl . 'payments/' . $input['gateway'] . '/v1/' . $this->action;
+        }
 
         $authentication = [
             'api',
@@ -427,6 +443,9 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => Action::PAY_VERIFY,
             ],
+            Payment\Gateway::GOOGLE_PAY => [
+                Action::PAY_INIT => null,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -475,6 +494,10 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
+            ],
+
+            Payment\Gateway::GOOGLE_PAY => [
+                Action::PAY_INIT => null,
             ],
         ];
 
@@ -736,7 +759,7 @@ class Gateway extends Base\Gateway
 
     protected function checkTpvAndModifyOrder(& $content, $input)
     {
-        if ($this->action === Action::PAY_INIT)
+        if ($this->action === Action::PAY_INIT and $this->getGateway($input) !== Payment\Gateway::GOOGLE_PAY)
         {
             $isTpvEnabled = $input['merchant']->isTPVRequired();
 
@@ -766,5 +789,25 @@ class Gateway extends Base\Gateway
         ];
 
         return in_array($gateway, $fileBasedGateways, true);
+    }
+
+    protected function getGateway($input)
+    {
+        if ((isset($input['gateway']) === true) and ($input['gateway'] === Payment\Gateway::GOOGLE_PAY))
+        {
+            return $input['gateway'];
+        }
+
+        return $input['payment']['gateway'];
+    }
+
+    protected function isGooglePayGateway($input)
+    {
+        if ($this->getGateway($input) === Payment\Gateway::GOOGLE_PAY)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

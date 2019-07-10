@@ -15,6 +15,7 @@ class Messenger
 
     const ALERT = 'alert';
     const INFO  = 'info';
+    const WARN  = 'warn';
 
     public function __construct()
     {
@@ -56,6 +57,12 @@ class Messenger
     {
         $this->notifySlack($data, self::INFO);
         $this->traceReconInfo($data);
+    }
+
+    public function raiseReconWarn($data)
+    {
+        $this->notifySlack($data, self::WARN);
+        $this->traceReconAlert($data);
     }
 
     protected function traceReconAlert($data)
@@ -104,6 +111,13 @@ class Messenger
 
         $headline = $this->getSlackHeadline($level);
 
+        if (isset($data['headLine']) === true)
+        {
+            $headline = $data['headLine'];
+
+            unset($data['headLine']);
+        }
+
         $this->app['slack']->queue($headline, $data, $settings);
     }
 
@@ -131,6 +145,8 @@ class Messenger
                 return 'danger';
             case self::INFO:
                 return 'good';
+            case self::WARN:
+                return 'danger';
 
             default:
                 return 'danger';
@@ -151,6 +167,8 @@ class Messenger
                 return 'Reconciliation alert';
             case self::INFO:
                 return 'Reconciliation info';
+            case self::WARN:
+                return 'Reconciliation alert';
 
             default:
                 return 'Reconciliation alert';
@@ -171,6 +189,8 @@ class Messenger
                 return 'slack.channels.reconciliation2';
             case self::INFO:
                 return 'slack.channels.reconciliation_info';
+            case self::WARN:
+                return 'slack.channels.recon_alerts';
 
             default:
                 return 'slack.channels.reconciliation2';

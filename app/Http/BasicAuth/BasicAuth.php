@@ -1930,6 +1930,13 @@ class BasicAuth
         $this->orgId = $orgId;
     }
 
+    public function setOrgDetails(Org\Entity $org)
+    {
+        $this->setOrgId($org->getPublicId());
+
+        $this->setOrgType($org->getType());
+    }
+
     /**
      * Setting and validating crossOrgId.
      *

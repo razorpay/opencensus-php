@@ -77,7 +77,7 @@ class Server extends Base\Mock\Server
 
         $entities = $input['entities'];
 
-        $gateway = $entities['payment']['gateway'];
+        $gateway = $this->getGateway($entities);
 
         $response = $actionClass->$gateway($entities);
 
@@ -213,8 +213,28 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    public function google_pay($input)
+    {
+        $response = [
+            'code'      => 0,
+            'errorCode' => 000,
+            'messageText' => 'success',
+            'rrn' => '987654321',
+        ];
+    }
+
     protected function getUpiAirtelSecret()
     {
         return $this->app['config']->get('gateway.mozart.upi_airtel.test_hash_secret');
+    }
+
+    protected function getGateway($entities)
+    {
+        if ((isset($entities['gateway']) === true) and ($entities['gateway'] === 'google_pay'))
+        {
+            return $entities['gateway'];
+        }
+
+        return $entities['payment']['gateway'];
     }
 }

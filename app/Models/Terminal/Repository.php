@@ -153,8 +153,7 @@ class Repository extends Base\Repository
 
         $cacheTag = Entity::getCacheTag($merchant->getId());
 
-        $query = $this->newQuery()
-                      ->enabled();
+        $query = $this->newQuery();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 

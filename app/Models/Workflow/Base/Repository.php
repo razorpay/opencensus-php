@@ -3,9 +3,17 @@
 namespace RZP\Models\Workflow\Base;
 
 use RZP\Models\Admin\Org;
+use RZP\Base\RepositoryManager;
 use RZP\Models\Workflow\Action;
 use RZP\Base\Repository as BaseRepository;
 
+/**
+ * Class Repository
+ *
+ * @package RZP\Models\Workflow\Base
+ *
+ * @property RepositoryManager $repo
+ */
 class Repository extends BaseRepository
 {
     const ORG_ID = 'org_id';
