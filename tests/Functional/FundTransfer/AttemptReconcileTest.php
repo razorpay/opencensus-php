@@ -571,7 +571,9 @@ class AttemptReconcileTest extends TestCase
         {
             $status = $attempt['bank_status_code'];
 
-            if (in_array($status, $statusClass::getSuccessfulStatus(), true) === true)
+            $isSuccess = $statusClass::inStatus($statusClass::getSuccessfulStatus(), $status, $attempt['bank_response_code']);
+
+            if ($isSuccess === true)
             {
                 $success++;
             }

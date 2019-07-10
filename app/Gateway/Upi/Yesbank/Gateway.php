@@ -119,7 +119,11 @@ class Gateway extends Mindgate\Gateway
                         'input'         => $input,
                     ]);
 
-                return $this->generateResponseForRazorpayFailure($gatewayEntity, 'RZP_DUPLICATE_PAYOUT', $input);
+                return $this->generateResponseForRazorpayFailure(
+                    $gatewayEntity,
+                    'RZP_DUPLICATE_PAYOUT',
+                    $input,
+                    Status::PENDING);
             }
 
             $attributes = $this->getGatewayEntityAttributes($input);

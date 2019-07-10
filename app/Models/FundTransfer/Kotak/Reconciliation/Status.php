@@ -11,13 +11,15 @@ class Status extends BaseStatus
 
     public static function getSuccessfulStatus(): array
     {
-        return [];
+        return [
+            self::PROCESSED => [],
+        ];
     }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::CANCELLED
+            self::CANCELLED => [],
         ];
     }
 
