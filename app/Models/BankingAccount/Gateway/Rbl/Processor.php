@@ -11,7 +11,7 @@ use RZP\Exception\LogicException;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
-    const DATE_FORMAT = 'Y-m-d';
+    const DATE_FORMAT = 'd-M-Y';
 
     const PINCODES_REDIS_KEY = 'rbl_pincode_set';
 
@@ -172,9 +172,10 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function parseAndFormatRblDate(string $date)
     {
-        $date = Carbon::parse($date, Timezone::IST)->getTimestamp();
+        $epochDate = Carbon::createFromFormat(self::DATE_FORMAT, $date, Timezone::IST)
+                            ->getTimestamp();
 
-        return $date;
+        return $epochDate;
     }
 
     protected function checkRblToInternalStatusMapping(array $input)

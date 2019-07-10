@@ -3,18 +3,18 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Constants;
-use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Services\FTS;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Services\CardVault;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\BankingAccount\Gateway;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -114,7 +114,7 @@ class Core extends Base\Core
         }
 
         $this->trace->info(
-            TraceCode::BANK_ACCOUNT_INFO_WEBHOOK_RESPONSE,
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE,
             [
                 'response'  => $response,
                 'gateway'   => $channel,
