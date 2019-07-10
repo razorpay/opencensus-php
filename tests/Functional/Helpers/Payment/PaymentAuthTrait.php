@@ -98,6 +98,7 @@ trait PaymentAuthTrait
                 $data['postdate'] = '1130';
                 $data['avr'] = 'N';
                 $data['authRespCode'] = '00';
+                $data['AccuResponseCode'] = 'ACCU000';
 
                 return [
                     'success' => true,
