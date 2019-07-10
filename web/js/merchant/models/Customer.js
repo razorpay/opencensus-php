@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { isBlank, getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 export default class Customer extends GenericEntity {
@@ -26,6 +26,18 @@ export default class Customer extends GenericEntity {
   // This will be replaced with the ES autocomplete api
   fetchForAutocomplete(data = {}) {
     return ajax('/customers/autocomplete', { data }).then(response => {
+      response.data.items = response.data.items.map(item =>
+        new Customer(item).deserialize()
+      );
+      return response;
+    });
+  }
+
+  search(data) {
+    return merchantFetch({
+      url: 'customers',
+      data,
+    }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Customer(item).deserialize()
       );

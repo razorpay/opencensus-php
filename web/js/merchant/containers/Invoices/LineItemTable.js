@@ -38,7 +38,7 @@ export default class InvoiceLineItemTable extends Component {
     let {
       fields,
       gstSlabs,
-      items,
+      selectedItems,
       disabled,
       invoice,
       invoiceTotal,
@@ -68,7 +68,7 @@ export default class InvoiceLineItemTable extends Component {
                         index={idx}
                         disabled={disabled}
                         fieldName={fieldName}
-                        items={items}
+                        selectedItems={selectedItems}
                         gstSlabs={gstSlabs}
                         onRemove={this.onRemove}
                         applyTaxes={applyTaxes}
