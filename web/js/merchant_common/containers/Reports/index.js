@@ -737,21 +737,31 @@ export default function Reports(store, opts) {
                   )}
 
                   <div class="form-element">
-                    <div class="title">PERIOD</div>
-                    {entity === 'monthlyInvoice' || (
-                      <div class="col-sm-3 col-xs-12">
-                        <div
-                          class="form-group form-control"
-                          disabled={
-                            isPartnerReport &&
-                            selectedConfig.referred_accounts === 'all'
-                          }
-                        >
-                          {!(
-                            isPartnerReport &&
-                            selectedConfig.referred_accounts === 'all'
-                          ) ? (
-                            <>
+                    <div>
+                      <div className="col-sm-3">
+                        <div class="title">PERIOD</div>
+                      </div>
+                      <div class="col-sm-4 ">
+                        <div className="title">Start At</div>
+                      </div>
+                      <div className="col-sm-4">
+                        <div className="title">End At</div>
+                      </div>
+                    </div>
+                    <div>
+                      {entity === 'monthlyInvoice' || (
+                        <div class="col-sm-3 col-xs-12">
+                          <div
+                            class="form-group form-control"
+                            disabled={
+                              isPartnerReport &&
+                              selectedConfig.referred_accounts === 'all'
+                            }
+                          >
+                            {!(
+                              isPartnerReport &&
+                              selectedConfig.referred_accounts === 'all'
+                            ) ? (
                               <Field
                                 name="type"
                                 class="fix-select"
@@ -761,123 +771,123 @@ export default function Reports(store, opts) {
                                 <option value="monthly">Monthly</option>
                                 <option value="dateRange">Custom</option>
                               </Field>
-                              {type === 'dateRange' && (
-                                <div class="form-group">
-                                  <div className="rzpCheckbox">
-                                    <Field
-                                      name="withTime"
-                                      id="with-time"
-                                      component="input"
-                                      type="checkbox"
-                                    />
-                                    <label for="with-time" class="icon i-check">
-                                      Specify time
-                                    </label>
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            'Daily'
+                            ) : (
+                              'Daily'
+                            )}
+                          </div>
+                          {type === 'dateRange' && (
+                            <div class="form-group">
+                              <div className="rzpCheckbox">
+                                <Field
+                                  name="withTime"
+                                  id="with-time"
+                                  component="input"
+                                  type="checkbox"
+                                />
+                                <label for="with-time" class="icon i-check">
+                                  Specify time
+                                </label>
+                              </div>
+                            </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {(type === 'monthly' || entity === 'monthlyInvoice') && (
-                      <div class="col-sm-4 col-xs-12">
-                        <div class="form-group">
-                          <Field
-                            name={
-                              entity === 'monthlyInvoice'
-                                ? 'invoiceDate'
-                                : 'date'
-                            }
-                            component={ReduxDatetime}
-                            dateFormat="MMM, YYYY"
-                            closeOnSelect={true}
-                            isValidDate={
-                              entity === 'monthlyInvoice'
-                                ? this.validateInvoiceMonthYear
-                                : validYear
-                            }
-                            placeholder="Select Year-Month"
-                            timeFormat={false}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {type === 'daily' &&
-                      entity !== 'monthlyInvoice' && (
+                      {(type === 'monthly' || entity === 'monthlyInvoice') && (
                         <div class="col-sm-4 col-xs-12">
                           <div class="form-group">
                             <Field
-                              name="date"
-                              dateFormat="DD MMM, YYYY"
-                              closeOnSelect={true}
+                              name={
+                                entity === 'monthlyInvoice'
+                                  ? 'invoiceDate'
+                                  : 'date'
+                              }
                               component={ReduxDatetime}
-                              placeholder="Select Date-Month-Year"
-                              isValidDate={validYear}
+                              dateFormat="MMM, YYYY"
+                              closeOnSelect={true}
+                              isValidDate={
+                                entity === 'monthlyInvoice'
+                                  ? this.validateInvoiceMonthYear
+                                  : validYear
+                              }
+                              placeholder="Select Year-Month"
                               timeFormat={false}
                             />
                           </div>
                         </div>
                       )}
 
-                    {type === 'dateRange' && (
-                      <>
-                        <div className="col-sm-4 col-xs-12">
-                          <div className="form-group">
-                            <Field
-                              name="startAt"
-                              dateFormat="DD MMM, YYYY"
-                              placeholder="Starts at"
-                              component={ReduxDatetime}
-                              timeFormat={false}
-                              closeOnSelect
-                            />
-                            {dateRangeData.withTime && (
+                      {type === 'daily' &&
+                        entity !== 'monthlyInvoice' && (
+                          <div class="col-sm-4 col-xs-12">
+                            <div class="form-group">
                               <Field
-                                name="startAtTime"
-                                placeholder="Select Time"
+                                name="date"
+                                dateFormat="DD MMM, YYYY"
+                                closeOnSelect={true}
                                 component={ReduxDatetime}
-                                closeOnSelect
-                                dateFormat={false}
-                                class="m-t"
+                                placeholder="Select Date-Month-Year"
+                                isValidDate={validYear}
+                                timeFormat={false}
                               />
-                            )}
+                            </div>
                           </div>
-                        </div>
-                        <div
-                          className="col-sm-4 col-xs-12"
-                          style={{ marginRight: '0' }}
-                        >
-                          <div className="form-group">
-                            <Field
-                              name="endAt"
-                              dateFormat="DD MMM, YYYY"
-                              placeholder="Ends At"
-                              component={ReduxDatetime}
-                              timeFormat={false}
-                              isValidDate={isDateRangeEndAtValid(
-                                dateRangeData.startAt
+                        )}
+
+                      {type === 'dateRange' && (
+                        <>
+                          <div className="col-sm-4 col-xs-12">
+                            <div className="form-group">
+                              <Field
+                                name="startAt"
+                                dateFormat="DD MMM, YYYY"
+                                placeholder="Starts at"
+                                component={ReduxDatetime}
+                                timeFormat={false}
+                                closeOnSelect
+                              />
+                              {dateRangeData.withTime && (
+                                <Field
+                                  name="startAtTime"
+                                  placeholder="Select Time"
+                                  component={ReduxDatetime}
+                                  closeOnSelect
+                                  dateFormat={false}
+                                  class="m-t"
+                                />
                               )}
-                              closeOnSelect
-                            />
-                            {dateRangeData.withTime && (
-                              <Field
-                                name="endAtTime"
-                                component={ReduxDatetime}
-                                closeOnSelect
-                                dateFormat={false}
-                                class="m-t"
-                              />
-                            )}
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )}
+                          <div
+                            className="col-sm-4 col-xs-12"
+                            style={{ marginRight: '0' }}
+                          >
+                            <div className="form-group">
+                              <Field
+                                name="endAt"
+                                dateFormat="DD MMM, YYYY"
+                                placeholder="Ends At"
+                                component={ReduxDatetime}
+                                timeFormat={false}
+                                isValidDate={isDateRangeEndAtValid(
+                                  dateRangeData.startAt
+                                )}
+                                closeOnSelect
+                              />
+                              {dateRangeData.withTime && (
+                                <Field
+                                  name="endAtTime"
+                                  component={ReduxDatetime}
+                                  closeOnSelect
+                                  dateFormat={false}
+                                  class="m-t"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* File type for Reports */}
