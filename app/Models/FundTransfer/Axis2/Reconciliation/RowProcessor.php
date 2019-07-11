@@ -61,7 +61,7 @@ class RowProcessor extends BaseRowProcessor
         $failureStatus = Status::getFailureStatus();
 
         if (($currentBankStatusCode === Status::SUCCESS) and
-            (in_array($newBankStatusCode, $failureStatus, true) === true))
+            (Status::inStatus($failureStatus, $newBankStatusCode) === true))
         {
             $this->reconEntity->setStatus(AttemptStatus::INITIATED);
         }
