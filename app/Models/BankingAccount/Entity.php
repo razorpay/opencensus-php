@@ -31,10 +31,9 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_CITY                      = 'beneficiary_city';
     const BENEFICIARY_STATE                     = 'beneficiary_state';
     const BENEFICIARY_COUNTRY                   = 'beneficiary_country';
+    const ACCOUNT_TYPE                          = 'account_type';
 
     const PINCODE_LENGTH    = '6';
-
-    const ACCOUNT_TYPE      = 'CURRENT';
 
     const VAULT_NAMESPACE = 'banking_accounts_creds';
 
@@ -74,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_NAME,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $visible = [
@@ -88,7 +88,8 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_STATUS,
         self::USERNAME,
         self::PASSWORD,
-        self::REFERENCE1
+        self::REFERENCE1,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $public = [
@@ -103,7 +104,8 @@ class Entity extends Base\PublicEntity
         self::BANK_INTERNAL_STATUS,
         self::USERNAME,
         self::PASSWORD,
-        self::REFERENCE1
+        self::REFERENCE1,
+        self::ACCOUNT_TYPE,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -113,6 +115,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setAccountType(string $accountType)
+    {
+        AccountType::isAccountTypeValid($accountType);
+
+        $this->setAttribute(self::ACCOUNT_TYPE, $accountType);
+    }
 
     public function setBankReferenceNumber(string $number)
     {
@@ -198,7 +206,7 @@ class Entity extends Base\PublicEntity
 
     public function getAccountType()
     {
-        return self::ACCOUNT_TYPE;
+        return $this->getAttribute(self::ACCOUNT_TYPE);
     }
 
     public function getUsername()

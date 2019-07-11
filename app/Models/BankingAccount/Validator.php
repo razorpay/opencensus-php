@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
         Entity::ACCOUNT_IFSC        => 'required|string|size:11',
         Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE        => 'required|string|in:virtual',
     ];
 
     protected static $createRules = [
@@ -29,6 +30,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER      => 'sometimes|nullable|string|max:40',
         Entity::ACCOUNT_IFSC        => 'sometimes|nullable|string|size:11',
         Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE        => 'required|string|custom',
     ];
 
     protected static $serviceablePincodeRules = [
@@ -103,6 +105,19 @@ class Validator extends Base\Validator
                 'Banking account status is invalid',
                 Entity::STATUS,
                 [Entity::STATUS => $status]);
+        }
+    }
+
+    protected function validateAccountType(string $attribute, string $accountType)
+    {
+        if (AccountType::isAccountTypeValid($accountType) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Banking account type is invalid',
+                Entity::ACCOUNT_TYPE,
+                [
+                    Entity::ACCOUNT_TYPE => $accountType
+                ]);
         }
     }
 }

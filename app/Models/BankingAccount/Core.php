@@ -72,6 +72,7 @@ class Core extends Base\Core
             Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
             Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
             Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
+            Entity::ACCOUNT_TYPE        => AccountType::VIRTUAL,
         ];
 
         return $this->createYesbankBankingAccount($bankingAccountInput, $virtualAccount->merchant,
@@ -86,6 +87,8 @@ class Core extends Base\Core
         $status = $this->getRblAvailabilityStatus($input);
 
         $bankingAccount = new Entity;
+
+        $input[Entity::ACCOUNT_TYPE] = AccountType::CURRENT;
 
         $bankingAccount->build($input);
 

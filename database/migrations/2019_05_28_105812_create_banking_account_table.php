@@ -58,6 +58,8 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::REFERENCE1, 255)
                   ->nullable();
 
+            $table->string(Entity::ACCOUNT_TYPE, 255);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

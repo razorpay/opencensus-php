@@ -4011,6 +4011,10 @@ class MerchantTest extends TestCase
         $this->assertEquals(count($merchants), 2);
 
         $this->assertArrayHasKey('banking', $merchants);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(BankingAccount\AccountType::VIRTUAL, $bankingAccount->getAccountType());
     }
 
     public function testBulkAssignPricing()
