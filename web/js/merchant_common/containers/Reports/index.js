@@ -655,7 +655,7 @@ export default function Reports(store, opts) {
         currentReportList,
       } = this.state;
 
-      const { type, dateRangeData } = this.props;
+      const { type, dateRangeData, user } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
@@ -776,7 +776,9 @@ export default function Reports(store, opts) {
                                 isPartnerReport &&
                                 selectedConfig.referred_accounts === 'all'
                               ) && <option value="monthly">Monthly</option>}
-                              <option value="dateRange">Custom</option>
+                              {user.isReportDateRangeEnabled && (
+                                <option value="dateRange">Custom</option>
+                              )}
                             </Field>
                           </div>
                           {type === 'dateRange' && (
