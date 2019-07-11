@@ -1102,7 +1102,7 @@ return [
     ],
 
     'testMerchantCategory2Filter' => [
-        'pamakyment_options' => [
+        'payment_options' => [
             'method' => Method::CARD,
         ],
         'fixtures' => [
