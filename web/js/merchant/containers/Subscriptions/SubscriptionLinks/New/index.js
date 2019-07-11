@@ -87,12 +87,21 @@ export default class NewSubscriptionLink extends Component {
       });
 
       this.props.fetchSubscription(searchQuery.duplicate_id).then(data => {
+        let expire_by = moment(data.expire_by * 1000);
+
+        if (expire_by.diff(moment()) < 0) {
+          expire_by = '';
+        } else {
+          expire_by = data.expire_by;
+        }
+
         const newSubscription = {
           customer_notify: data.customer_notify,
           plan_id: data.plan_id,
           quantity: data.quantity,
           start_at: null,
           total_count: data.total_count,
+          expire_by,
         };
 
         newSubscription.notes = Object.keys(data.notes).map(key => ({

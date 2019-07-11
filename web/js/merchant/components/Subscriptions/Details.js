@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
-import { Link, NavLink } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
