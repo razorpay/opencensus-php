@@ -37,7 +37,7 @@ abstract class Status
      *
      * @return bool
      */
-    public static function inStatus(array $list, string $statusCode, $responseCode = null): bool
+    public static function inStatus(array $list, $statusCode, $responseCode = null): bool
     {
         if (isset($list[$statusCode]) === true)
         {
