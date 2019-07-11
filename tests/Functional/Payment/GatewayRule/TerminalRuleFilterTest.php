@@ -253,7 +253,7 @@ class TerminalRuleFilterTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
 
-        $this->fixtures->merchant->setCategory('0008');
+        $this->fixtures->merchant->setCategory('1234');
 
         $merchant = Merchant\Entity::find('10000000000000');
 
