@@ -1093,7 +1093,7 @@ return [
                 'type'          => 'filter',
                 'filter_type'   => 'reject',
                 'group'         => 'category_filter',
-                'category'     =>  '0000'
+                'category'     =>  '1234' // assume 1234 is a blacklisted MCC for axis
             ],
         ],
         'expected_terminal_ids' => [
@@ -1102,7 +1102,7 @@ return [
     ],
 
     'testMerchantCategory2Filter' => [
-        'payment_options' => [
+        'pamakyment_options' => [
             'method' => Method::CARD,
         ],
         'fixtures' => [
