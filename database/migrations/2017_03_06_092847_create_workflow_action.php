@@ -54,6 +54,9 @@ class CreateWorkflowAction extends Migration
             $table->char(Action::STATE_CHANGER_ID, Action::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Action::STATE_CHANGER_TYPE, 255)
+                  ->nullable();
+
             $table->char(Action::STATE_CHANGER_ROLE_ID, Action::ID_LENGTH)
                   ->nullable();
 
@@ -73,11 +76,6 @@ class CreateWorkflowAction extends Migration
             $table->foreign(Action::PERMISSION_ID)
                   ->references(Permission::ID)
                   ->on(Table::PERMISSION)
-                  ->on_delete('restrict');
-
-            $table->foreign(Action::STATE_CHANGER_ID)
-                  ->references(Admin::ID)
-                  ->on(Table::ADMIN)
                   ->on_delete('restrict');
 
             $table->foreign(Action::STATE_CHANGER_ROLE_ID)

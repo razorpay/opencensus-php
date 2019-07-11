@@ -18,6 +18,12 @@ class PaymentReconStatusSummary extends DailyReconStatusSummary
 
         return $formattedSummary;
     }
+    public function getUnreconStatusSummaryByGateway(array $gatewayWithDates): array
+    {
+        return $this->repo
+                    ->transaction
+                    ->fetchPaymentUnreconStatusSummary($gatewayWithDates);
+    }
 
     public function getUnreconciledDataFile(int $from, int $to): array
     {

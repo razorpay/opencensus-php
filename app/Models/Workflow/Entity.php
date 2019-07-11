@@ -5,7 +5,9 @@ namespace RZP\Models\Workflow;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\PayoutAmountRules;
 
 class Entity extends Base\Entity
 {
@@ -14,11 +16,13 @@ class Entity extends Base\Entity
     const ID          = 'id';
     const NAME        = 'name';
     const ORG_ID      = 'org_id';
+    const MERCHANT_ID = 'merchant_id';
     const DELETED_AT  = 'deleted_at';
 
-    const PERMISSIONS = 'permissions';
-    const STEPS       = 'steps';
-    const LEVELS      = 'levels';
+    const PERMISSIONS        = 'permissions';
+    const STEPS              = 'steps';
+    const PAYOUT_AMOUNT_RULE = 'payoutAmountRule';
+    const LEVELS             = 'levels';
 
     protected static $sign = 'workflow';
 
@@ -29,6 +33,7 @@ class Entity extends Base\Entity
     protected $embeddedRelations = [
         self::STEPS,
         self::PERMISSIONS,
+        self::PAYOUT_AMOUNT_RULE,
     ];
 
     protected $fillable = [
@@ -40,10 +45,12 @@ class Entity extends Base\Entity
         self::ID,
         self::NAME,
         self::ORG_ID,
+        self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::STEPS,
         self::PERMISSIONS,
+        self::PAYOUT_AMOUNT_RULE,
     ];
 
     protected $public = [
@@ -51,8 +58,10 @@ class Entity extends Base\Entity
         self::NAME,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::MERCHANT_ID,
         self::STEPS,
         self::PERMISSIONS,
+        self::PAYOUT_AMOUNT_RULE,
     ];
 
     protected $publicSetters = [
@@ -70,9 +79,19 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
     public function steps()
     {
         return $this->hasMany('RZP\Models\Workflow\Step\Entity');
+    }
+
+    public function payoutAmountRule()
+    {
+        return $this->hasOne(PayoutAmountRules\Entity::class);
     }
 
     public function permissions()

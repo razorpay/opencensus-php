@@ -168,6 +168,7 @@ class Table
     const PAYSECURE             = 'paysecure';
     const CARDLESS_EMI          = 'cardless_emi';
     const MOZART                = 'mozart';
+    const WORLDLINE             = 'worldline';
 
     // Sessions table
     const SESSION               = 'sessions';

@@ -165,28 +165,37 @@ abstract class ApiProcessor extends NodalAccount
 
     public function captureBankStatusMetric(
         string $channel,
-        array $failureStatus,
-        array $successStatus,
+        string $product,
+        bool $isFailure,
+        bool $isSuccess,
+        $mode,
         $statusCode,
         $bankSubStatus)
     {
-        if (in_array($statusCode, $failureStatus, true) === true)
-        {
-            $this->trace->count(Metric::NODAL_FAILURE_STATUS_CODE, [
-                'channel'            => $channel,
-                'bank_failure_code'  => $bankSubStatus,
-            ]);
+        $status = Metric::CATEGORY_PENDING;
 
-            $this->trace->count(Metric::NODAL_FAILURE_COUNT, [
-                'channel'            => $channel,
-            ]);
-        }
-        else if (in_array($statusCode, $successStatus, true) === true)
+        switch (true)
         {
-            $this->trace->count(Metric::NODAL_SUCCESS_COUNT, [
-                'channel'            => $channel,
-            ]);
+            case $isSuccess === true:
+                $status = Metric::CATEGORY_SUCCESS;
+                break;
+
+            case $isFailure === true:
+                $status = Metric::CATEGORY_FAILED;
+                break;
+
+            default:
+                $status = Metric::CATEGORY_PENDING;
         }
+
+        $this->trace->count(Metric::NODAL_RESPONSE_COUNT, [
+            Metric::MODE               => $mode,
+            Metric::CHANNEL            => $channel,
+            Metric::PRODUCT            => $product,
+            Metric::STATUS_CODE        => $statusCode,
+            Metric::BANK_FAILURE_CODE  => $bankSubStatus,
+            Metric::STATUS             => $status,
+        ]);
     }
 
     /**

@@ -154,7 +154,7 @@ class Transfer extends Base
 
         $remark = $response['Header']['Error_Desc'] ?? null;
 
-        $publicFailureReason = ValidStatus::getPublicFailureReason($bankStatus);
+        $publicFailureReason = ValidStatus::getPublicFailureReason($bankStatus, null);
 
         return [
             self::PAYMENT_REF_NO        => $this->getNullOnEmpty($transactionID),
@@ -178,7 +178,7 @@ class Transfer extends Base
      */
     protected function mockGenerateSuccessResponse(): string
     {
-        $status = ValidStatus::getSuccessfulStatus();
+        $status = array_keys(ValidStatus::getSuccessfulStatus());
 
         return json_encode([
             $this->responseIdentifier => [

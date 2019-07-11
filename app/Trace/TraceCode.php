@@ -970,7 +970,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_QUEUE_SUCCESS                                  = 'PAYOUT_QUEUE_SUCCESS';
     const PAYOUT_NOT_IN_QUEUED_STATUS                           = 'PAYOUT_NOT_IN_QUEUED_STATUS';
     const PAYOUT_DISPATCH_SUMMARY                               = 'PAYOUT_DISPATCH_SUMMARY';
+    const PAYOUT_APPROVE_REQUEST                                = 'PAYOUT_APPROVE_REQUEST';
+    const PAYOUT_BULK_APPROVE_REQUEST                           = 'PAYOUT_BULK_APPROVE_REQUEST';
+    const PAYOUT_REJECT_REQUEST                                 = 'PAYOUT_REJECT_REQUEST';
+    const PAYOUT_BULK_REJECT_REQUEST                            = 'PAYOUT_BULK_REJECT_REQUEST';
     const PAYOUT_APPROVE_REJECT_EXCEPTION                       = 'PAYOUT_APPROVE_REJECT_EXCEPTION';
+    const PAYOUT_WORKFLOW_ACTION_INFO                           = 'PAYOUT_WORKFLOW_ACTION_INFO';
+    const PAYOUT_WORKFLOW_TRIGGERED                             = 'PAYOUT_WORKFLOW_TRIGGERED';
+    const PAYOUT_WORKFLOW_ACTION_EXCEPTION                      = 'PAYOUT_WORKFLOW_ACTION_EXCEPTION';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';
@@ -1684,6 +1691,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_FOR_PAYMENT_CREATE_REQUEST                     = 'PAYOUT_FOR_PAYMENT_CREATE_REQUEST';
     const PAYOUT_CREATED                                        = 'PAYOUT_CREATED';
     const QUEUED_PAYOUT_CREATED                                 = 'QUEUED_PAYOUT_CREATED';
+    const PENDING_PAYOUT_CREATED                                = 'PENDING_PAYOUT_CREATED';
     const PAYOUT_REVERSAL_INITIATED                             = 'PAYOUT_REVERSAL_INITIATED';
     const PAYOUT_REVERSAL_CREATED                               = 'PAYOUT_REVERSAL_CREATED';
 
@@ -1795,6 +1803,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_LOAD_SORTING_BOOSTED_TERMINALS = 'AUTH_LOAD_SORTING_BOOSTED_TERMINALS';
     const AUTH_RULES_SEARCH_CRITERIA          = 'AUTH_RULES_SEARCH_CRITERIA';
     const AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP   = 'AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const NETBANKING_TERMINAL_NOT_FOUND       = 'NETBANKING_TERMINAL_NOT_FOUND';
 
     const ORG_MAILER_BLOCKED                  = 'ORG_MAILER_BLOCKED';
     const NO_MERCHANT_CONTEXT_MAIL            = 'NO_MERCHANT_CONTEXT_MAIL';
@@ -1867,12 +1876,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPTURE_VERIFY_ONHOLD_FINISH_ACTION                   = 'CAPTURE_VERIFY_ONHOLD_FINISH_ACTION';
     const CAPTURE_VERIFY_ONHOLD_ACTION                          = 'CAPTURE_VERIFY_ONHOLD_ACTION';
 
+
     // Mozart Service
     const MOZART_SERVICE_UNEXPECTED_RESPONSE                    = 'MOZART_SERVICE_UNEXPECTED_RESPONSE';
     const MOZART_SERVICE_REQUEST_FAILED                         = 'MOZART_SERVICE_REQUEST_FAILED';
     const MOZART_SERVICE_RESPONSE                               = 'MOZART_SERVICE_RESPONSE';
     const MOZART_SERVICE_REQUEST                                = 'MOZART_SERVICE_REQUEST';
     const CAPTURE_VERIFY_FAILED_PAYMENT                         = 'CAPTURE_VERIFY_FAILED_PAYMENT';
+
+    const MERCHANT_BALANCE_UPDATE_INIT                          = 'MERCHANT_BALANCE_UPDATE_INIT';
+    const MERCHANT_BALANCE_UPDATE_REQUEST                       = 'MERCHANT_BALANCE_UPDATE_REQUEST';
+    const MERCHANT_BALANCE_UPDATE_SUCCESSFULL                   = 'MERCHANT_BALANCE_UPDATE_SUCCESSFULL';
+    const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
+    const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

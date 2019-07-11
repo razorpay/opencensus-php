@@ -120,7 +120,7 @@ class StatusProcessor extends BaseRowProcessor
         if ($this->reconEntityId === null)
         {
             throw new LogicException(
-                "Recon entity id can not be null",
+                'Recon entity id can not be null',
                 ErrorCode::SERVER_ERROR_INVALID_ATTEMPT_ID,
                 [
                     'response' => $response,
@@ -159,7 +159,7 @@ class StatusProcessor extends BaseRowProcessor
     {
         $this->updateUtrOnReconEntity();
 
-        $currentStatus = $this->reconEntity->getBankStatusCode();
+        $currentStatusCode = $this->reconEntity->getBankStatusCode();
 
         $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -173,10 +173,14 @@ class StatusProcessor extends BaseRowProcessor
         if (($this->parsedData[Constants::BANK_RESPONSE_CODE] === self::NOT_FOUND) and
             ($initiatedTimeWithOffset > $currentTimestamp))
         {
-            $this->reconEntity->setBankStatusCode($currentStatus);
+            $this->reconEntity->setBankStatusCode($currentStatusCode);
+        }
+        else
+        {
+            $this->reconEntity->setBankStatusCode($this->parsedData[Constants::BANK_STATUS_CODE]);
         }
 
-        $this->reconEntity->setBankResponseCode($this->parsedData[Constants::STATUS_CODE]);
+        $this->reconEntity->setBankResponseCode($this->parsedData[Constants::BANK_RESPONSE_CODE]);
 
         $this->reconEntity->setDateTime($this->parsedData[Constants::PAYMENT_DATE]);
 
@@ -188,7 +192,7 @@ class StatusProcessor extends BaseRowProcessor
             $this->reconEntity->setMode($this->parsedData[Constants::MODE]);
         }
 
-        if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatus)
+        if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatusCode)
         {
             $this->reconEntity->setStatus(AttemptStatus::INITIATED);
         }

@@ -302,7 +302,7 @@ class MerchantDetailTest extends TestCase
     public function testMerchantDetailsPatch()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
-        $merchant = $merchantDetail->merchant;
+        $merchant       = $merchantDetail->merchant;
 
         // Allow admin to access the merchant
         $admin = $this->ba->getAdmin();
@@ -311,6 +311,11 @@ class MerchantDetailTest extends TestCase
         $this->ba->adminProxyAuth($merchant->getId());
 
         $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
+
     }
 
     /**
@@ -327,6 +332,20 @@ class MerchantDetailTest extends TestCase
      * Asserts the API response when invalid business category - subcategory combination is provided
      */
     public function testMerchantDetailsPatchInvalidBusinessSubcategory()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant = $merchantDetail->merchant;
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function testMerchantDetailsPatchInvalidInternationalActivtionFlow()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant = $merchantDetail->merchant;
