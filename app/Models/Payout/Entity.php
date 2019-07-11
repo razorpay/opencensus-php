@@ -1091,7 +1091,12 @@ class Entity extends Base\PublicEntity
 
     public function getSourceFtsFundAccountId()
     {
-        return $this->balance->bankingAccount->getFtsFundAccountId();
+        $bankingAccount = $this->balance->bankingAccount;
+
+        if ($bankingAccount !== null)
+        {
+            return $bankingAccount->getFtsFundAccountId();
+        }
     }
 
     protected function modifyMode(& $input)
