@@ -109,6 +109,10 @@ export default function Reports(store, opts) {
     initialValues: {
       type: 'daily',
       date: moment(),
+      startAt: moment().subtract('7', 'days'),
+      endAt: moment(),
+      startAtTime: moment().startOf('day'),
+      endAtTime: moment().endOf('day'), // 24 hours
       // Merchant can not download invoice of current month
       invoiceDate: moment()
         .subtract(1, 'months')
@@ -670,11 +674,11 @@ export default function Reports(store, opts) {
 
       if (isLoading) {
         content = (
-          <div className={reportWrapperClasses}>
+          <div class={reportWrapperClasses}>
             {/*Report Type Selection*/}
             <SelectConfig isLoading={true} />
             {/*Report Generate Panel*/}
-            <div className={reportPanelClasses} />
+            <div class={reportPanelClasses} />
           </div>
         );
       } else {
@@ -685,7 +689,7 @@ export default function Reports(store, opts) {
         }
 
         content = (
-          <div className={reportWrapperClasses}>
+          <div class={reportWrapperClasses}>
             {/*Report Type Selection*/}
             <SelectConfig
               configs={configs}
@@ -694,7 +698,7 @@ export default function Reports(store, opts) {
               isMobileDevice={this.isMobileDevice}
             />
             {/*Report Generate Panel*/}
-            <div className={reportPanelClasses}>
+            <div class={reportPanelClasses}>
               {selectedConfig && (
                 <>
                   {!this.isMobileDevice && (
@@ -702,7 +706,7 @@ export default function Reports(store, opts) {
                       {selectedConfig.label}
                       {selectedConfig.description && (
                         <small
-                          className="help-block"
+                          class="help-block"
                           style={{ fontWeight: 'normal' }}
                         >
                           {selectedConfig.description}
@@ -713,8 +717,8 @@ export default function Reports(store, opts) {
 
                   {this.isMarketplaceEnabled &&
                   selectedConfig.type in marketplaceConfigTypes ? (
-                    <div className="form-element">
-                      <div className="title">SELECT ACCOUNT</div>
+                    <div class="form-element">
+                      <div class="title">SELECT ACCOUNT</div>
                       <AccountsList
                         accounts={accounts}
                         selectedAccount={selectedAccount}
@@ -728,8 +732,8 @@ export default function Reports(store, opts) {
                       </small>
                     </div>
                   ) : (
-                    <div className="form-element">
-                      <div className="title">ACCOUNT</div>
+                    <div class="form-element">
+                      <div class="title">ACCOUNT</div>
                       <div class="account">
                         <strong>{this.defaultAccount.name}</strong>
                       </div>
@@ -737,18 +741,22 @@ export default function Reports(store, opts) {
                   )}
 
                   <div class="form-element">
-                    <div>
-                      <div className="col-sm-3">
+                    <div class="clearfix">
+                      <div class="col-sm-3">
                         <div class="title">PERIOD</div>
                       </div>
-                      <div class="col-sm-4 ">
-                        <div className="title">Start At</div>
-                      </div>
-                      <div className="col-sm-4">
-                        <div className="title">End At</div>
-                      </div>
+                      {type === 'dateRange' && (
+                        <>
+                          <div class="col-sm-4 visible-sm visible-lg">
+                            <div className="title">Start At</div>
+                          </div>
+                          <div class="col-sm- visible-lg visible-sm">
+                            <div className="title">End At</div>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div>
+                    <div class="clearfix">
                       {entity === 'monthlyInvoice' || (
                         <div class="col-sm-3 col-xs-12">
                           <div
@@ -777,7 +785,7 @@ export default function Reports(store, opts) {
                           </div>
                           {type === 'dateRange' && (
                             <div class="form-group">
-                              <div className="rzpCheckbox">
+                              <div class="rzpCheckbox">
                                 <Field
                                   name="withTime"
                                   id="with-time"
@@ -836,14 +844,15 @@ export default function Reports(store, opts) {
 
                       {type === 'dateRange' && (
                         <>
-                          <div className="col-sm-4 col-xs-12">
-                            <div className="form-group">
+                          <div class="col-sm-4 col-xs-12">
+                            <div class="form-group">
                               <Field
                                 name="startAt"
                                 dateFormat="DD MMM, YYYY"
                                 placeholder="Starts at"
                                 component={ReduxDatetime}
                                 timeFormat={false}
+                                isValidDate={validYear}
                                 closeOnSelect
                               />
                               {dateRangeData.withTime && (
@@ -859,10 +868,10 @@ export default function Reports(store, opts) {
                             </div>
                           </div>
                           <div
-                            className="col-sm-4 col-xs-12"
+                            class="col-sm-4 col-xs-12"
                             style={{ marginRight: '0' }}
                           >
-                            <div className="form-group">
+                            <div class="form-group">
                               <Field
                                 name="endAt"
                                 dateFormat="DD MMM, YYYY"
@@ -887,6 +896,16 @@ export default function Reports(store, opts) {
                           </div>
                         </>
                       )}
+                    </div>
+                    <div class="clearfix">
+                      <div className="col-sm-6">
+                        {!isDateRangeValid(dateRangeData) && (
+                          <small class="text-danger">
+                            End At date and time cannot be less than start at
+                            date and time
+                          </small>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -969,9 +988,23 @@ export default function Reports(store, opts) {
 function isDateRangeEndAtValid(startAt) {
   return current => {
     if (!startAt) return true;
+    if (!validYear(current)) return false;
     const difference = current.diff(startAt, 'days');
     return difference >= 0 && difference < 7;
   };
+}
+
+function isDateRangeValid(dateRangeData) {
+  const startAtStamp = getFullUnixTimeStamp(
+    dateRangeData.startAt,
+    dateRangeData.startAtTime
+  );
+  const endAtStamp = getFullUnixTimeStamp(
+    dateRangeData.endAt,
+    dateRangeData.endAtTime
+  );
+
+  return endAtStamp > startAtStamp;
 }
 
 function getFullUnixTimeStamp(dateMoment, timeMoment) {
