@@ -766,22 +766,18 @@ export default function Reports(store, opts) {
                               selectedConfig.referred_accounts === 'all'
                             }
                           >
-                            {!(
-                              isPartnerReport &&
-                              selectedConfig.referred_accounts === 'all'
-                            ) ? (
-                              <Field
-                                name="type"
-                                class="fix-select"
-                                component="select"
-                              >
-                                <option value="daily">Daily</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="dateRange">Custom</option>
-                              </Field>
-                            ) : (
-                              'Daily'
-                            )}
+                            <Field
+                              name="type"
+                              class="fix-select"
+                              component="select"
+                            >
+                              <option value="daily">Daily</option>
+                              {!(
+                                isPartnerReport &&
+                                selectedConfig.referred_accounts === 'all'
+                              ) && <option value="monthly">Monthly</option>}
+                              <option value="dateRange">Custom</option>
+                            </Field>
                           </div>
                           {type === 'dateRange' && (
                             <div class="form-group">
