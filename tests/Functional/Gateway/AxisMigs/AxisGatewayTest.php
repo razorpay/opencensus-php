@@ -886,6 +886,7 @@ class AxisGatewayTest extends TestCase
         $this->fixtures->pricing->createInstantRefundsPricingPlan();
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+        $this->fixtures->merchant->editDefaultRefundSpeed('optimum');
 
         $refund = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
@@ -897,10 +898,9 @@ class AxisGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         // Refund will be in created state
-        $this->assertEquals($refund['status'], 'created');
-        $this->assertEquals($refund['speed_requested'], 'optimum');
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
     }
-
 
     public function testPaymentRefundWithCardTransferFailed()
     {

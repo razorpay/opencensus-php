@@ -8,6 +8,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 
 class Validator extends Base\Validator
@@ -167,7 +168,7 @@ class Validator extends Base\Validator
         Entity::ISSUE_FIELDS                    => 'sometimes|string',
         Entity::ISSUE_FIELDS_REASON             => 'sometimes|string',
         Entity::INTERNAL_NOTES                  => 'sometimes|string',
-        Entity::INTERNATIONAL_ACTIVATION_FLOW   => 'sometimes|string',
+        Entity::INTERNATIONAL_ACTIVATION_FLOW   => 'sometimes|custom',
     ];
 
     protected static $preSignupRules = [
@@ -233,13 +234,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $patchMerchantDetailsRules = [
-        Entity::BUSINESS_OPERATION_ADDRESS => 'filled|max:255',
-        Entity::BUSINESS_OPERATION_STATE   => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_CITY    => 'filled|alpha_space|max:255',
-        Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15',
-        Entity::BUSINESS_CATEGORY          => 'sometimes|max:255|custom',
-        Entity::BUSINESS_SUBCATEGORY       => 'sometimes|max:255|custom',
-        Entity::BUSINESS_MODEL             => 'sometimes|max:255',
+        Entity::BUSINESS_OPERATION_ADDRESS    => 'filled|max:255',
+        Entity::BUSINESS_OPERATION_STATE      => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY       => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN        => 'filled|max:15',
+        Entity::BUSINESS_CATEGORY             => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY          => 'sometimes|max:255|custom',
+        Entity::BUSINESS_MODEL                => 'sometimes|max:255',
+        Entity::INTERNATIONAL_ACTIVATION_FLOW => 'filled|custom',
     ];
 
     protected static $bulkAssignReviewerRules = [
@@ -578,6 +580,27 @@ class Validator extends Base\Validator
             $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
 
             $activationFlowImpl->validateFullActivationForm($this->entity);
+        }
+    }
+
+    /**
+     * Validates international activation flow
+     *
+     * @param string $attribute
+     * @param string $internationalActivationFlow
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateInternationalActivationFlow(string $attribute, string $internationalActivationFlow)
+    {
+        if (ActivationFlow::isValid($internationalActivationFlow) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid activation flow: ' . $internationalActivationFlow,
+                Entity::INTERNATIONAL_ACTIVATION_FLOW,
+                [
+                    Entity::INTERNATIONAL_ACTIVATION_FLOW => $internationalActivationFlow
+                ]);
         }
     }
 }

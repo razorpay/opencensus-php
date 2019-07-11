@@ -13,6 +13,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
@@ -240,8 +241,10 @@ class Core extends Base\Core
     {
         $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $role = $input[Entity::ROLE];
+
         $mappingParams = [
-             'role'       => $input[Entity::ROLE],
+             'role'       => $role,
              'product'    => $input[Merchant\Entity::PRODUCT],
              'created_at' => $currentTimestamp,
              'updated_at' => $currentTimestamp
@@ -253,7 +256,7 @@ class Core extends Base\Core
 
         $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
                                                                  $user->getId(),
-                                                                 $input[Entity::ROLE],
+                                                                 $role,
                                                                  $input[Merchant\Entity::PRODUCT]);
 
         if (empty($mapping) === false)
@@ -262,6 +265,19 @@ class Core extends Base\Core
         }
 
         $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
+
+        if (BankingRole::isWorkflowRole($role) === true)
+        {
+            $role = $this->repo->role->findByOrgIdAndName(
+                Org\Entity::RAZORPAY_ORG_ID,
+                BankingRole::getNameForWorkflowRole($role));
+
+            $roleMapParams = [
+                'role_id' => $role->getId()
+            ];
+
+            $this->repo->attach($user, 'roles', $roleMapParams); // check detaching argument
+        }
 
         return $user->toArrayPublic();
     }
@@ -275,9 +291,13 @@ class Core extends Base\Core
      */
     protected function detach(Entity $user, array $input)
     {
-        $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+        $merchantId = $input[Entity::MERCHANT_ID];
 
-        $this->repo->detach($user, Entity::MERCHANTS, $input[Entity::MERCHANT_ID]);
+        $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->repo->detach($user, Entity::MERCHANTS, $merchantId);
+
+        // TODO: detach roles() for RX banking workflows
 
         return $user->toArrayPublic();
     }
@@ -295,8 +315,10 @@ class Core extends Base\Core
     {
         $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $role = $input[Entity::ROLE];
+
         $mappingParams = [
-            'role'       => $input[Entity::ROLE],
+            'role'       => $role,
             'created_at' => $currentTimestamp,
             'updated_at' => $currentTimestamp
         ];
@@ -306,6 +328,19 @@ class Core extends Base\Core
         $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
+
+        if (BankingRole::isWorkflowRole($role) === true)
+        {
+            $role = $this->repo->role->findByOrgIdAndName(
+                Org\Entity::RAZORPAY_ORG_ID,
+                BankingRole::getNameForWorkflowRole($role));
+
+            $roleMapParams = [
+                'role_id' => $role->getId()
+            ];
+
+            $this->repo->sync($user, 'roles', $roleMapParams); // check detaching argument
+        }
 
         return $user->toArrayPublic();
     }

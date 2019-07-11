@@ -766,6 +766,8 @@ final class Route
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'payouts_queued_amount'                    => ['get',      'payouts/queued/amount',                          'PayoutController@getQueuedPayoutsSummary'                          ],
+        'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
+        'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
@@ -1009,6 +1011,7 @@ final class Route
 
         //Recon summary
         'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
+        'hourly_reconciliation_summary_fetch'      => ['get',      'hourly_recon_summary',                           'AdminController@getHourlyReconciliationStatusSummary'              ],
 
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
@@ -1505,6 +1508,7 @@ final class Route
         'virtual_account_close_cron',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
+        'hourly_reconciliation_summary_fetch',
         'lambda_post_h2h',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
@@ -1748,6 +1752,8 @@ final class Route
         'payout_reject_bulk',
         'payout_approve',
         'payout_reject',
+        'payouts_summary',
+        'payouts_workflow_summary',
         'payouts_queued_amount',
         'payment_link_images',
         'commissions_get_multiple',
@@ -2787,6 +2793,7 @@ final class Route
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
+            'hourly_reconciliation_summary_fetch',
             'bank_transfer_payment_receiver_backfill',
             'refund_processed_at_backfill',
             'refund_reference1_backfill',
