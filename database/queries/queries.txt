@@ -5091,3 +5091,7 @@ ALTER TABLE `workflow_actions`
 ALTER TABLE workflows
 	ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
 	ADD INDEX workflows_merchant_id_index (merchant_id);
+
+ALTER TABLE gateway_rules
+    ADD COLUMN category VARCHAR(255) NULL AFTER emi_subvention,
+    ADD INDEX gateway_rules_category_index (category);
