@@ -522,14 +522,17 @@ class GatewayController extends Controller
                 ]);
         }
 
+        $gateway = $this->app['gateway']->gateway(Gateway::WALLET_AMAZONPAY);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
         $this->app['trace']->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'gateway' => Gateway::WALLET_AMAZONPAY,
                 'input'   => $input,
+                'match'   => ($paymentId === $input[AmazonResponse::SELLER_ORDER_ID])
             ]);
-
-        $paymentId = $input[AmazonResponse::SELLER_ORDER_ID];
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
