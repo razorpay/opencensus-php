@@ -83,6 +83,14 @@ export default function Reports(store, opts) {
         date: selector(state, 'date'),
         invoiceDate: selector(state, 'invoiceDate'),
         reportType: selector(state, 'reportType'),
+        dateRangeData: selector(
+          state,
+          'withTime',
+          'startAt',
+          'endAt',
+          'startAtTime',
+          'endAtTime'
+        ),
         config: state.config,
       };
     },
@@ -101,6 +109,10 @@ export default function Reports(store, opts) {
     initialValues: {
       type: 'daily',
       date: moment(),
+      startAt: moment().subtract('1', 'days'),
+      endAt: moment(),
+      startAtTime: moment().startOf('day'),
+      endAtTime: moment(), // 24 hours
       // Merchant can not download invoice of current month
       invoiceDate: moment()
         .subtract(1, 'months')
@@ -334,7 +346,7 @@ export default function Reports(store, opts) {
     generateReport() {
       let selectedConfig = { ...this.state.selectedConfig };
       const { selectedAccount, currentReportList } = this.state,
-        { date, type, invoiceDate, reportType } = this.props,
+        { date, type, invoiceDate, reportType, dateRangeData } = this.props,
         day = date.date(),
         month = date.month() + 1, // Jan is 0 in moment library
         year = date.year(),
@@ -375,15 +387,27 @@ export default function Reports(store, opts) {
         );
 
         if (selectedConfig.type !== 'custom') {
-          const timeFactor = type === 'daily' ? 'day' : 'month',
-            startTime = date
-              .clone()
-              .startOf(timeFactor)
-              .unix(),
-            endTime = date
-              .clone()
-              .endOf(timeFactor)
-              .unix();
+          var startTime, endTime;
+          switch (type) {
+            case 'daily':
+            case 'monthly': {
+              const timeFactor = type === 'daily' ? 'day' : 'month',
+                startTime = date
+                  .clone()
+                  .startOf(timeFactor)
+                  .unix(),
+                endTime = date
+                  .clone()
+                  .endOf(timeFactor)
+                  .unix();
+              break;
+            }
+
+            case 'dateRange': {
+              [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
+              break;
+            }
+          }
 
           const { user } = this.props,
             selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
@@ -491,7 +515,7 @@ export default function Reports(store, opts) {
         transactionReportEmail = this.props.config.transaction_report_email;
       }
 
-      const { user, type, date, ga } = this.props;
+      const { user, type, date, ga, dateRangeData } = this.props;
       const { accounts, selectedAccount, selectedConfig } = this.state;
       const reportId = e.target.dataset.reportid;
 
@@ -519,6 +543,8 @@ export default function Reports(store, opts) {
           <EmailReport
             selectedType={type}
             selectedDate={date}
+            dateRangeData={dateRangeData}
+            getFullUnixTimeStamps={getFullUnixTimeStamps}
             reportId={reportId}
             emailsMap={emailsMap}
             onSend={this.generateReport}
@@ -623,7 +649,7 @@ export default function Reports(store, opts) {
         currentReportList,
       } = this.state;
 
-      const { type, date, invoiceDate, reportType } = this.props;
+      const { type, dateRangeData, user } = this.props;
 
       const entity = selectedConfig && selectedConfig.value;
 
@@ -642,11 +668,11 @@ export default function Reports(store, opts) {
 
       if (isLoading) {
         content = (
-          <div className={reportWrapperClasses}>
+          <div class={reportWrapperClasses}>
             {/*Report Type Selection*/}
             <SelectConfig isLoading={true} />
             {/*Report Generate Panel*/}
-            <div className={reportPanelClasses} />
+            <div class={reportPanelClasses} />
           </div>
         );
       } else {
@@ -657,7 +683,7 @@ export default function Reports(store, opts) {
         }
 
         content = (
-          <div className={reportWrapperClasses}>
+          <div class={reportWrapperClasses}>
             {/*Report Type Selection*/}
             <SelectConfig
               configs={configs}
@@ -666,7 +692,7 @@ export default function Reports(store, opts) {
               isMobileDevice={this.isMobileDevice}
             />
             {/*Report Generate Panel*/}
-            <div className={reportPanelClasses}>
+            <div class={reportPanelClasses}>
               {selectedConfig && (
                 <>
                   {!this.isMobileDevice && (
@@ -674,7 +700,7 @@ export default function Reports(store, opts) {
                       {selectedConfig.label}
                       {selectedConfig.description && (
                         <small
-                          className="help-block"
+                          class="help-block"
                           style={{ fontWeight: 'normal' }}
                         >
                           {selectedConfig.description}
@@ -685,8 +711,8 @@ export default function Reports(store, opts) {
 
                   {this.isMarketplaceEnabled &&
                   selectedConfig.type in marketplaceConfigTypes ? (
-                    <div className="form-element">
-                      <div className="title">SELECT ACCOUNT</div>
+                    <div class="form-element">
+                      <div class="title">SELECT ACCOUNT</div>
                       <AccountsList
                         accounts={accounts}
                         selectedAccount={selectedAccount}
@@ -700,8 +726,8 @@ export default function Reports(store, opts) {
                       </small>
                     </div>
                   ) : (
-                    <div className="form-element">
-                      <div className="title">ACCOUNT</div>
+                    <div class="form-element">
+                      <div class="title">ACCOUNT</div>
                       <div class="account">
                         <strong>{this.defaultAccount.name}</strong>
                       </div>
@@ -709,75 +735,170 @@ export default function Reports(store, opts) {
                   )}
 
                   <div class="form-element">
-                    <div class="title">PERIOD</div>
-                    {entity === 'monthlyInvoice' || (
-                      <div class="col-sm-3 col-xs-12">
-                        <div
-                          class="form-group form-control"
-                          disabled={
-                            isPartnerReport &&
-                            selectedConfig.referred_accounts === 'all'
-                          }
-                        >
-                          {!(
-                            isPartnerReport &&
-                            selectedConfig.referred_accounts === 'all'
-                          ) ? (
+                    <div class="clearfix">
+                      <div class="col-sm-3">
+                        <div class="title">PERIOD</div>
+                      </div>
+                      {type === 'dateRange' && (
+                        <>
+                          <div class="col-sm-4 visible-sm visible-lg">
+                            <div className="title">Start At</div>
+                          </div>
+                          <div class="col-sm- visible-lg visible-sm">
+                            <div className="title">End At</div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div class="clearfix">
+                      {entity === 'monthlyInvoice' || (
+                        <div class="col-sm-3 col-xs-12">
+                          <div
+                            class="form-group form-control"
+                            disabled={
+                              isPartnerReport &&
+                              selectedConfig.referred_accounts === 'all'
+                            }
+                          >
                             <Field
                               name="type"
                               class="fix-select"
                               component="select"
                             >
                               <option value="daily">Daily</option>
-                              <option value="monthly">Monthly</option>
+                              {!(
+                                isPartnerReport &&
+                                selectedConfig.referred_accounts === 'all'
+                              ) && <option value="monthly">Monthly</option>}
+                              {user.isReportDateRangeEnabled && (
+                                <option value="dateRange">Custom</option>
+                              )}
                             </Field>
-                          ) : (
-                            'Daily'
+                          </div>
+                          {type === 'dateRange' && (
+                            <div class="form-group">
+                              <div class="rzpCheckbox">
+                                <Field
+                                  name="withTime"
+                                  id="with-time"
+                                  component="input"
+                                  type="checkbox"
+                                />
+                                <label for="with-time" class="icon i-check">
+                                  Specify time
+                                </label>
+                              </div>
+                            </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {(type === 'monthly' || entity === 'monthlyInvoice') && (
-                      <div class="col-sm-4 col-xs-12">
-                        <div class="form-group">
-                          <Field
-                            name={
-                              entity === 'monthlyInvoice'
-                                ? 'invoiceDate'
-                                : 'date'
-                            }
-                            component={ReduxDatetime}
-                            dateFormat="MMM, YYYY"
-                            closeOnSelect={true}
-                            isValidDate={
-                              entity === 'monthlyInvoice'
-                                ? this.validateInvoiceMonthYear
-                                : validYear
-                            }
-                            placeholder="Select Year-Month"
-                            timeFormat={false}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {type === 'daily' &&
-                      entity !== 'monthlyInvoice' && (
+                      {(type === 'monthly' || entity === 'monthlyInvoice') && (
                         <div class="col-sm-4 col-xs-12">
                           <div class="form-group">
                             <Field
-                              name="date"
-                              dateFormat="DD MMM, YYYY"
-                              closeOnSelect={true}
+                              name={
+                                entity === 'monthlyInvoice'
+                                  ? 'invoiceDate'
+                                  : 'date'
+                              }
                               component={ReduxDatetime}
-                              placeholder="Select Date-Month-Year"
-                              isValidDate={validYear}
+                              dateFormat="MMM, YYYY"
+                              closeOnSelect={true}
+                              isValidDate={
+                                entity === 'monthlyInvoice'
+                                  ? this.validateInvoiceMonthYear
+                                  : validYear
+                              }
+                              placeholder="Select Year-Month"
                               timeFormat={false}
                             />
                           </div>
                         </div>
                       )}
+
+                      {type === 'daily' &&
+                        entity !== 'monthlyInvoice' && (
+                          <div class="col-sm-4 col-xs-12">
+                            <div class="form-group">
+                              <Field
+                                name="date"
+                                dateFormat="DD MMM, YYYY"
+                                closeOnSelect={true}
+                                component={ReduxDatetime}
+                                placeholder="Select Date-Month-Year"
+                                isValidDate={validYear}
+                                timeFormat={false}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                      {type === 'dateRange' && (
+                        <>
+                          <div class="col-sm-4 col-xs-12">
+                            <div class="form-group">
+                              <Field
+                                name="startAt"
+                                dateFormat="DD MMM, YYYY"
+                                placeholder="Starts at"
+                                component={ReduxDatetime}
+                                timeFormat={false}
+                                isValidDate={validYear}
+                                closeOnSelect
+                              />
+                              {dateRangeData.withTime && (
+                                <Field
+                                  name="startAtTime"
+                                  placeholder="Select Time"
+                                  component={ReduxDatetime}
+                                  closeOnSelect
+                                  dateFormat={false}
+                                  class="m-t"
+                                />
+                              )}
+                            </div>
+                          </div>
+                          <div
+                            class="col-sm-4 col-xs-12"
+                            style={{ marginRight: '0' }}
+                          >
+                            <div class="form-group">
+                              <Field
+                                name="endAt"
+                                dateFormat="DD MMM, YYYY"
+                                placeholder="Ends At"
+                                component={ReduxDatetime}
+                                timeFormat={false}
+                                isValidDate={isDateRangeEndAtValid(
+                                  dateRangeData.startAt
+                                )}
+                                closeOnSelect
+                              />
+                              {dateRangeData.withTime && (
+                                <Field
+                                  name="endAtTime"
+                                  component={ReduxDatetime}
+                                  closeOnSelect
+                                  dateFormat={false}
+                                  class="m-t"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div class="clearfix">
+                      <div className="col-sm-6">
+                        {!isDateRangeValid(dateRangeData) && (
+                          <small class="text-danger">
+                            End At date and time cannot be less than start at
+                            date and time
+                          </small>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* File type for Reports */}
@@ -854,4 +975,50 @@ export default function Reports(store, opts) {
   }
 
   return ReportsContainer;
+}
+
+function isDateRangeEndAtValid(startAt) {
+  return current => {
+    if (!startAt) return true;
+    if (!validYear(current)) return false;
+    const difference = current.diff(startAt, 'days');
+    return difference >= 0 && difference < 7;
+  };
+}
+
+function isDateRangeValid(dateRangeData) {
+  const [startAtStamp, endAtStamp] = getFullUnixTimeStamps(dateRangeData);
+  return endAtStamp > startAtStamp;
+}
+
+function getFullUnixTimeStamps(data) {
+  return [
+    getFullStartTimeStamp(data.startAt, data.withTime && data.startAtTime),
+    getFullEndTimeStamp(data.endAt, data.withTime && data.endAtTime),
+  ];
+}
+
+function getFullStartTimeStamp(startAtMoment, startAtTimeMoment) {
+  return (
+    getDateUnix(startAtMoment) +
+    (!!startAtTimeMoment ? getTimeUnix(startAtTimeMoment) : 0)
+  );
+}
+
+function getFullEndTimeStamp(endAtMoment, endAtTimeMoment) {
+  return (
+    getDateUnix(endAtMoment) +
+    (!!endAtTimeMoment ? getTimeUnix(endAtTimeMoment) : 86399)
+  ); // end of day
+}
+
+function getDateUnix(dateMoment) {
+  return dateMoment
+    .clone()
+    .startOf('day')
+    .unix();
+}
+
+function getTimeUnix(timeMoment) {
+  return timeMoment.diff(timeMoment.clone().startOf('day'), 'seconds');
 }
