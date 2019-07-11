@@ -188,6 +188,14 @@ export default class CreateNewContainer extends React.Component {
         // TODO: Update data in state
         console.log('DATA....', data);
 
+        let expire_by = moment(data.expire_by * 1000);
+
+        if (expire_by.diff(moment()) < 0) {
+          expire_by = '';
+        } else {
+          expire_by = data.expire_by;
+        }
+
         this.setState({
           fetchingInvoice: false,
           dirty: {
@@ -199,7 +207,7 @@ export default class CreateNewContainer extends React.Component {
             email_notify: data.email_notify | 0,
             email: data.customer_details.email,
             contact: data.customer_details.contact,
-            expire_by: '',
+            expire_by,
             notes: Object.keys(data.notes).map(key => ({
               key,
               value: data.notes[key],
