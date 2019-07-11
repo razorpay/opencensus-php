@@ -566,6 +566,7 @@ return [
                 'type'                      => [
                     'non_recurring' => '1',
                 ],
+                'international'             => 0,
             ],
             'url' => '/merchants/10000000000000/terminals',
             'method' => 'POST'
