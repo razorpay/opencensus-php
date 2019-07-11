@@ -169,7 +169,16 @@ export default class InvoicesNewContainer extends Component {
       .then(data => {
         console.log('DATA..', data);
 
+        let expire_by = moment(data.expire_by * 1000);
+
+        if (expire_by.diff(moment()) < 0) {
+          expire_by = '';
+        } else {
+          expire_by = data.expire_by;
+        }
+
         // Resetting values to initial state
+        data.expire_by = expire_by;
         data.id = '';
         data.receipt_no = '';
         data.status = 'draft';
