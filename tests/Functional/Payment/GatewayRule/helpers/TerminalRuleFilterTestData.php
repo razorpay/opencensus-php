@@ -1062,6 +1062,44 @@ return [
             '1000HdfcShared',
         ]
     ],
+    'testMerchantCategoryFilter' => [
+        'payment_options' => [
+            'method' => Method::CARD,
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
+                'gateway'     => 'hdfc',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
+                'gateway'     => 'axis_migs',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'        => Method::CARD,
+                'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                'step'          => 'authorization',
+                'gateway'       => 'axis_migs',
+                'type'          => 'filter',
+                'filter_type'   => 'reject',
+                'group'         => 'category_filter',
+                'category'     =>  '0000'
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '1000HdfcShared',
+        ]
+    ],
 
     'testMerchantCategory2Filter' => [
         'payment_options' => [

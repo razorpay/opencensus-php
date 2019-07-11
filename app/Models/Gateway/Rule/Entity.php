@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY         = 'currency';
 
     // Merchant properties
+    const CATEGORY         = 'category';
     const CATEGORY2        = 'category2';
 
     const COMMENTS         = 'comments';
