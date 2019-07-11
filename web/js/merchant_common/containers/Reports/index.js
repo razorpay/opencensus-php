@@ -109,10 +109,10 @@ export default function Reports(store, opts) {
     initialValues: {
       type: 'daily',
       date: moment(),
-      startAt: moment().subtract('7', 'days'),
+      startAt: moment().subtract('1', 'days'),
       endAt: moment(),
       startAtTime: moment().startOf('day'),
-      endAtTime: moment().endOf('day'), // 24 hours
+      endAtTime: moment(), // 24 hours
       // Merchant can not download invoice of current month
       invoiceDate: moment()
         .subtract(1, 'months')
@@ -404,15 +404,7 @@ export default function Reports(store, opts) {
             }
 
             case 'dateRange': {
-              startTime = getFullUnixTimeStamp(
-                dateRangeData.startAt,
-                dateRangeData.startAtTime
-              );
-
-              endTime = getFullUnixTimeStamp(
-                dateRangeData.endAt,
-                dateRangeData.endAtTime
-              );
+              [startTime, endTime] = getFullUnixTimeStamps(dateRangeData);
               break;
             }
           }
@@ -523,7 +515,7 @@ export default function Reports(store, opts) {
         transactionReportEmail = this.props.config.transaction_report_email;
       }
 
-      const { user, type, date, ga } = this.props;
+      const { user, type, date, ga, dateRangeData } = this.props;
       const { accounts, selectedAccount, selectedConfig } = this.state;
       const reportId = e.target.dataset.reportid;
 
@@ -551,6 +543,8 @@ export default function Reports(store, opts) {
           <EmailReport
             selectedType={type}
             selectedDate={date}
+            dateRangeData={dateRangeData}
+            getFullUnixTimeStamps={getFullUnixTimeStamps}
             reportId={reportId}
             emailsMap={emailsMap}
             onSend={this.generateReport}
@@ -993,29 +987,38 @@ function isDateRangeEndAtValid(startAt) {
 }
 
 function isDateRangeValid(dateRangeData) {
-  const startAtStamp = getFullUnixTimeStamp(
-    dateRangeData.startAt,
-    dateRangeData.startAtTime
-  );
-  const endAtStamp = getFullUnixTimeStamp(
-    dateRangeData.endAt,
-    dateRangeData.endAtTime
-  );
-
+  const [startAtStamp, endAtStamp] = getFullUnixTimeStamps(dateRangeData);
   return endAtStamp > startAtStamp;
 }
 
-function getFullUnixTimeStamp(dateMoment, timeMoment) {
+function getFullUnixTimeStamps(data) {
+  return [
+    getFullStartTimeStamp(data.startAt, data.withTime && data.startAtTime),
+    getFullEndTimeStamp(data.endAt, data.withTime && data.endAtTime),
+  ];
+}
+
+function getFullStartTimeStamp(startAtMoment, startAtTimeMoment) {
   return (
-    dateMoment
-      .clone()
-      .startOf('day')
-      .unix() + getSeconds(timeMoment)
+    getDateUnix(startAtMoment) +
+    (!!startAtTimeMoment ? getTimeUnix(startAtTimeMoment) : 0)
   );
 }
 
-function getSeconds(timeMoment) {
-  return !!timeMoment
-    ? timeMoment.diff(timeMoment.clone().startOf('day'), 'seconds')
-    : 0;
+function getFullEndTimeStamp(endAtMoment, endAtTimeMoment) {
+  return (
+    getDateUnix(endAtMoment) +
+    (!!endAtTimeMoment ? getTimeUnix(endAtTimeMoment) : 86399)
+  ); // end of day
+}
+
+function getDateUnix(dateMoment) {
+  return dateMoment
+    .clone()
+    .startOf('day')
+    .unix();
+}
+
+function getTimeUnix(timeMoment) {
+  return timeMoment.diff(timeMoment.clone().startOf('day'), 'seconds');
 }
