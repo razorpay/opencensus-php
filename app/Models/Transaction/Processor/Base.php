@@ -225,7 +225,7 @@ abstract class Base extends BaseCore
         $this->merchantBalance = $this->repo->balance->getMerchantBalance($this->txn->merchant);
     }
 
-    protected function setMerchantBalanceLockForUpdate()
+    public function setMerchantBalanceLockForUpdate()
     {
         $merchantId = $this->txn->getMerchantId();
 
@@ -554,27 +554,17 @@ abstract class Base extends BaseCore
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
     }
 
-    public function updateBalances(bool $updateNodalBalance = true)
+    public function updateBalances()
     {
         $this->txn->accountBalance()->associate($this->merchantBalance);
 
         $this->updateMerchantBalance();
-
-        // if ($updateNodalBalance === true)
-        // {
-        //     $txn = $this->updateNodalBalance($txn);
-        // }
-        // else
-        // {
-        //     $nodalBalance = $this->repo->balance->getNodalBalance($txn->getChannel());
-        //
-        //     $txn->setEscrowBalance($nodalBalance->getBalance());
-        // }
     }
 
     public function updateMerchantBalance()
     {
         $this->merchantBalance->updateBalance($this->txn);
+
         $this->repo->balance->updateBalance($this->merchantBalance);
 
         $this->txn->setBalance($this->merchantBalance->getBalance());

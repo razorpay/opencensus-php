@@ -132,17 +132,19 @@ return [
     ],
 
     'matchAttemptForReconSuccessYesbankVpa' => [
-        'version'           => 'V3',
-        'bank_status_code'  => YesbankGatewayStatus::COMPLETED,
-        'status'            => AttemptStatus::PROCESSED,
-        'failure_reason'    => null,
+        'version'            => 'V3',
+        'bank_status_code'   => YesbankGatewayStatus::STATUS_CODE_SUCCESS,
+        'bank_response_code' => YesbankGatewayStatus::COMPLETED,
+        'status'             => AttemptStatus::PROCESSED,
+        'failure_reason'     => null,
     ],
 
     'matchAttemptForReconFailureYesbankVpa' => [
-        'version'           => 'V3',
-        'bank_status_code'  => 'FAILED',
-        'status'            => AttemptStatus::FAILED,
-        'failure_reason'    => null,
+        'version'            => 'V3',
+        'bank_status_code'   => 'F',
+        'bank_response_code' => 'FAILED',
+        'status'             => AttemptStatus::FAILED,
+        'failure_reason'     => null,
     ],
 
     'matchSummaryForReconFile' => [
