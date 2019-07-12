@@ -2,16 +2,18 @@
 
 namespace RZP\Models\Transaction\Processor;
 
-use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
-use RZP\Models\Currency;
 use RZP\Models\Pricing;
-use RZP\Models\Merchant;
 use RZP\Models\Feature;
-use RZP\Models\Payment as PaymentEntity;
+use RZP\Trace\TraceCode;
+use RZP\Models\Currency;
+use RZP\Models\Merchant;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseCollection;
-use RZP\Models\Schedule\Library as ScheduleLibrary;
+use RZP\Models\Payment as PaymentEntity;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Schedule\Library as ScheduleLibrary;
 
 class Payment extends Base
 {
@@ -23,11 +25,23 @@ class Payment extends Base
                 'payment_id' => $this->source->getId()
             ]);
 
+        $this->checkAndSetTxnReconciliation();
+
         $this->repo->saveOrFail($this->txn);
 
         $settledAt = $this->getSettledAtTimestamp();
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+    }
+
+    private function checkAndSetTxnReconciliation()
+    {
+        if ($this->source->getGateway() === Gateway::WALLET_OPENWALLET)
+        {
+            $this->txn->setReconciledAt(time());
+
+            $this->txn->setReconciledType(ReconciledType::NA);
+        }
     }
 
     public function createTransaction()
