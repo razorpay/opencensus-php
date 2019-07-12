@@ -1081,5 +1081,14 @@ final class FactoryData
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\BankingAccount\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'account_number'    => '409000768239',
+            'channel'           => 'rbl',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
     }
 }
