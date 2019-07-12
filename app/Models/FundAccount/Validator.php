@@ -40,15 +40,6 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID => 'required_without:contact_id|public_id',
     ];
 
-    /**
-     * We allow only card for public fa creation route
-     *
-     * @var array
-     */
-    protected static $publicCreateRules = [
-        Entity::CARD    => 'required|associative_array'
-    ];
-
     protected static $editRules = [
         Entity::ACTIVE => 'filled|boolean',
     ];
@@ -100,6 +91,9 @@ class Validator extends Base\Validator
         // through their frontend itself and the card details don't go through their server.
         // In case of non-public auth, the card details might go through their servers and hence
         // S2S feature needs to be enabled to ensure that the the merchant is PCI-DSS compliant.
+        //
+        // But, of course, it's possible that the merchant takes the card details onto their server
+        // and makes a public auth API call to us from server. Nothing that we can do about it.
         //
         if ((app('basicauth')->isPublicAuth() === false) and
             ($merchant->isFeatureEnabled(Feature\Constants::S2S) === false))

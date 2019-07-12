@@ -78,6 +78,7 @@ class Gateway
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
+    const WORLDLINE              = 'worldline';
 
     const CARD_FSS               = 'card_fss';
 
@@ -828,8 +829,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
-            Network::DICL,
-            Network::RUPAY,
+            Network::DICL
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -920,6 +920,11 @@ class Gateway
             Network::RUPAY,
         ],
         self::ISG => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+        ],
+        self::WORLDLINE => [
             Network::VISA,
             Network::MC,
             Network::RUPAY,
@@ -1092,6 +1097,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_MINDGATE,
         self::ISG,
+        self::WORLDLINE,
     ];
 
     public static $authTypeToEmandateGatewayMap = [

@@ -13,14 +13,14 @@ class Status extends BaseStatus
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::SUCCESS
+            self::SUCCESS => [],
         ];
     }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::REJECTED
+            self::REJECTED => [],
         ];
     }
 

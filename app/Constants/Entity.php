@@ -226,6 +226,7 @@ class Entity
     const BAJAJFINSERV           = 'bajajfinserv';
     const UPI_AIRTEL             = 'upi_airtel';
     const GOOGLE_PAY             = 'google_pay';
+    const WORLDLINE              = 'worldline';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -482,6 +483,7 @@ class Entity
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
+        self::WORLDLINE              => \RZP\Gateway\Worldline::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

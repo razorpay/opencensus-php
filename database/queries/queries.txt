@@ -5039,12 +5039,6 @@ ALTER TABLE transactions
     CHANGE reference5 balance_updated TINYINT(4),
     ALGORITHM=INPLACE, LOCK=NONE;
 
-ALTER TABLE banking_accounts
-    ADD UNIQUE INDEX banking_accounts_account_number_unique (account_number),
-    ADD INDEX banking_accounts_fts_fund_account_id_index (fts_fund_account_id),
-    ADD INDEX banking_accounts_balance_id_index (balance_id),
-    ADD INDEX banking_accounts_bank_reference_number_index (bank_reference_number);
-
 ALTER TABLE `merchant_details`
     ADD COLUMN `business_registered_address_l2` VARCHAR(255) DEFAULT NULL after `business_registered_address`,
     ADD COLUMN `business_registered_country` VARCHAR(255) DEFAULT NULL after `business_registered_pin`,
@@ -5097,3 +5091,24 @@ ALTER TABLE `workflow_actions`
 ALTER TABLE workflows
 	ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
 	ADD INDEX workflows_merchant_id_index (merchant_id);
+
+ALTER TABLE banking_accounts
+       ADD COLUMN bank_internal_reference_number VARCHAR(255) DEFAULT NULL AFTER balance_id,
+       ADD COLUMN beneficiary_name VARCHAR(255) DEFAULT NULL AFTER bank_internal_reference_number,
+       ADD COLUMN account_currency CHAR(3) DEFAULT INR AFTER beneficiary_name,
+       ADD COLUMN beneficiary_email VARCHAR(255) DEFAULT NULL AFTER account_currency,
+       ADD COLUMN beneficiary_mobile VARCHAR(255) DEFAULT NULL AFTER beneficiary_email,
+       ADD COLUMN beneficiary_city VARCHAR(255) DEFAULT NULL AFTER beneficiary_mobile,
+       ADD COLUMN beneficiary_state VARCHAR(255) DEFAULT NULL AFTER beneficiary_city,
+       ADD COLUMN beneficiary_country VARCHAR(255) DEFAULT NULL AFTER beneficiary_state,
+       ADD COLUMN beneficiary_address1 VARCHAR(255) DEFAULT NULL AFTER beneficiary_country,
+       ADD COLUMN beneficiary_address2 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address1,
+       ADD COLUMN beneficiary_address3 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address2,
+       ADD COLUMN beneficiary_address1 VARCHAR(255) DEFAULT NULL AFTER beneficiary_address3,
+       ADD COLUMN account_activation_date INT(11) DEFAULT NULL AFTER bank_reference_number,
+       ADD INDEX banking_account_bank_reference_number_index (bank_reference_number),
+       ADD INDEX banking_account_account_number_index (account_number);
+
+ALTER TABLE banking_accounts
+    ADD INDEX banking_accounts_fts_fund_account_id_index (fts_fund_account_id),
+    ADD INDEX banking_accounts_balance_id_index (balance_id);
