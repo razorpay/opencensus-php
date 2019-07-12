@@ -10,10 +10,10 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::MERCHANT_ID           => 'sometimes|alpha_num',
-            Entity::STATUS                => 'sometimes|string',
+            Entity::STATUS                => 'sometimes|string|custom',
             Entity::ACCOUNT_NUMBER        => 'sometimes|alpha_num|max:40',
-            Entity::CHANNEL               => 'sometimes|string',
-            Entity::BANK_INTERNAL_STATUS  => 'sometimes|string',
+            Entity::CHANNEL               => 'sometimes|string|custom',
+            Entity::BANK_INTERNAL_STATUS  => 'sometimes|string|custom',
             Entity::BALANCE_ID            => 'sometimes|alpha_num',
             Entity::BANK_REFERENCE_NUMBER => 'sometimes|string',
             Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|alpha_num',
@@ -33,4 +33,19 @@ class Fetch extends BaseFetch
             Entity::FTS_FUND_ACCOUNT_ID,
         ],
     ];
+
+    public function validateStatus(string $attribute, string $status)
+    {
+        Status::validate($status);
+    }
+
+    public function validateBankInternalStatus(string $attribute, string $status)
+    {
+        Gateway\Rbl\Status::validate($status);
+    }
+
+    public function validateChannel(string $attribute, string $channel)
+    {
+        Channel::validateChannel($channel);
+    }
 }
