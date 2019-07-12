@@ -482,6 +482,32 @@ class Service extends Base\Service
     }
 
     /**
+     * This function is used for getting needs clarification reasons for fields
+     *
+     * @return array
+     */
+    public function getNeedsClarificationReasons()
+    {
+        $needsClarificationReasonsMap = NeedsClarificationReasons::REASON_MAPPING;
+        $reasonDetails                = NeedsClarificationReasonsList::REASON_DETAILS;
+        $response                     = [];
+
+        foreach ($needsClarificationReasonsMap as $field => $reasons)
+        {
+            $reasonList = [];
+
+            foreach ($reasons as $reason)
+            {
+                $reasonList[$reason] = $reasonDetails[$reason];
+            }
+
+            $response[$field] = [NeedsClarificationReasons::REASONS => $reasonList];
+        }
+
+        return $response;
+    }
+
+    /**
      * returns subcategories meta data as per auth
      * for admin all meta data fields(description, category, category2, activation category) will be returned
      * for other then admin description and category2 will be returned

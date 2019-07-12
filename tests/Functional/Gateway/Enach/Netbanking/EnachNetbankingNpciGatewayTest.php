@@ -651,8 +651,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             if ($action === 'authorize_get_secure_data')
             {
                 $content['Accptd'] = 'false';
-                $content['ReasonCode'] = '1022';
-                $content['ReasonDesc'] = 'Invalid Authentication';
+                $content['ReasonCode'] = 'AP04';
+                $content['ReasonDesc'] = 'Account Inoperative';
                 $content['RejectBy'] = 'Bank';
             }
         });

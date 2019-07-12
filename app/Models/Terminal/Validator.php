@@ -16,7 +16,6 @@ use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Bank;
 
-
 class Validator extends Base\Validator
 {
     protected static $createRules = [
@@ -94,6 +93,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
+        Payment\Gateway::PAYLATER,
     ];
 
     protected static $createValidators = [
@@ -847,12 +847,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
-    protected static $payLaterTerminalRules = [
+    protected static $paylaterTerminalRules = [
         Entity::GATEWAY                     => 'required|in:paylater',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::PAYLATER                    => 'required|boolean|in:1',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+    ];
+
+    protected static $paylaterEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:paylater',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
     ];
 
     protected static $updateTerminalsBankRules = [
@@ -892,6 +900,19 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                  => 'sometimes|string',
         Entity::RUPAY_MPAN                 => 'sometimes|string',
         Entity::VPA                        => 'sometimes|string',
+    ];
+
+    protected static $matchAttributes = [
+        Entity::GATEWAY,
+        Entity::GATEWAY_ACQUIRER,
+        Entity::EMI,
+        Entity::EMI_DURATION,
+        Entity::TYPE,
+        Entity::CURRENCY,
+        Entity::NETWORK_CATEGORY,
+        Entity::CATEGORY,
+        Entity::EMI_SUBVENTION,
+        Entity::INTERNATIONAL,
     ];
 
     public function validateType()
@@ -1184,22 +1205,30 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function matchGatewayForNewTerminal($new, $existing)
+    protected function matchGatewayForNewTerminal(Entity $new, Entity $existing)
     {
-        // If 1 exists, then another should not be added for the same gateway for same emi periods
-        if (($new->getGateway() === $existing->getGateway()) and
-            ($new->getId() !== $existing->getId()) and
-            ($new->getGatewayAcquirer() === $existing->getGatewayAcquirer()) and
-            ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
-            ($new->getEmiDuration() === $existing->getEmiDuration()) and
-            ($new->getType() === $existing->getType()) and
-            ($new->getCurrency() === $existing->getCurrency()) and
-            ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
-            ($new->getCategory() === $existing->getCategory()) and
-            ($new->getEmiSubvention() === $existing->getEmiSubvention()))
+        $newMatch = array_only($new->toArray(), self::$matchAttributes);
+        $existingMatch = array_only($existing->toArray(), self::$matchAttributes);
+
+        // Need to sort the keys to ensure we can use strict check in the below condition.
+        ksort($newMatch);
+        ksort($existingMatch);
+
+        $newId = $new->getId();
+        $existingId = $existing->getId();
+
+        if (($newMatch === $existingMatch) and
+            ($newId !== $existingId))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY);
+                ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY,
+                null,
+                [
+                    'new_id'            => $newId,
+                    'existing_id'       => $existingId,
+                    'new_match'         => $newMatch,
+                    'existing_match'    => $existingMatch,
+                ]);
         }
     }
 
