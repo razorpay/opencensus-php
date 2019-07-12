@@ -42,7 +42,7 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
-    protected function verifySettlementReconFileProcessForIcici()
+    protected function verifySettlementReconFileProcessForIcici($copyFile = false)
     {
         $channel = Channel::ICICI;
 
@@ -51,11 +51,28 @@ class AttemptReconcileTest extends TestCase
 
         $setlFile = $content[$channel]['file']['local_file_path'];
 
+        $duplicateFile = $setlFile;
+
+        if ($copyFile === true)
+        {
+            $pathInfo = pathinfo($setlFile);
+
+            $duplicateFile = $pathInfo['dirname']
+                . DIRECTORY_SEPARATOR
+                . $pathInfo['filename']
+                . 'copy.'
+                . $pathInfo['extension'];
+
+            copy($setlFile, $duplicateFile);
+        }
+
         $fileName = basename($setlFile);
 
         $this->assertStringStartsWith('NRPSS_NRPSSUPLDNEW_', $fileName);
 
-        $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+        $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT, false);
+
+        return $duplicateFile;
     }
 
     protected function verifySettlementReconFileProcessForHdfc()
@@ -82,7 +99,7 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
-    protected function verifySettlementReconFileProcessForAxis2()
+    protected function verifySettlementReconFileProcessForAxis2($copyFile = false)
     {
         $channel = Channel::AXIS2;
 
@@ -91,7 +108,24 @@ class AttemptReconcileTest extends TestCase
 
         $setlFile = $content[$channel]['file']['local_file_path'];
 
+        $duplicateFile = $setlFile;
+
+        if ($copyFile === true)
+        {
+            $pathInfo = pathinfo($setlFile);
+
+            $duplicateFile = $pathInfo['dirname']
+                . DIRECTORY_SEPARATOR
+                . $pathInfo['filename']
+                . 'copy.'
+                . $pathInfo['extension'];
+
+            copy($setlFile, $duplicateFile);
+        }
+
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+
+        return $duplicateFile;
     }
 
     protected function verifySettlementReconProcessForRbl($failureTest = false)
@@ -230,6 +264,50 @@ class AttemptReconcileTest extends TestCase
         $this->reconcileEntitiesForChannel(Channel::ICICI);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
+    public function testSettlementReconcileFlipStatusForIcici()
+    {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlFile = $this->verifySettlementReconFileProcessForIcici(true);
+
+        $this->reconcileEntitiesForChannel(Channel::ICICI);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+
+        $this->assertReconFileProcessFlipStatusForChannel($setlFile, Channel::ICICI, Attempt\Type::SETTLEMENT, true);
+
+        $this->reconcileEntitiesForChannel(Channel::ICICI);
+
+        // Validate settlement attempt entity
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($attempt['status'], Attempt\Status::FAILED);
+    }
+
+    public function testSettlementReconcileFlipStatusForAxis2()
+    {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlFile = $this->verifySettlementReconFileProcessForAxis2(true);
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS2);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+
+        $this->assertReconFileProcessFlipStatusForChannel($setlFile, Channel::AXIS2, Attempt\Type::SETTLEMENT, true);
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS2);
+
+        // Validate settlement attempt entity
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($attempt['status'], Attempt\Status::FAILED);
     }
 
     public function testSettlementReconcileEntitiesSuccessForHdfc()
