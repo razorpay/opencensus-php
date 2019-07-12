@@ -11,6 +11,15 @@ class Status
     const CANCELLED         = 'cancelled';
     const UNSERVICEABLE     = 'unserviceable';
 
+    protected static $statuses = [
+        self::CREATED,
+        self::INITIATED,
+        self::PROCESSING,
+        self::CANCELLED,
+        self::PROCESSED,
+        self::UNSERVICEABLE,
+    ];
+
     public static function isValidStatus(string $status)
     {
         $key = __CLASS__ . '::' . strtoupper($status);
@@ -20,13 +29,6 @@ class Status
 
     public static function getAll(): array
     {
-        return [
-            self::CREATED,
-            self::INITIATED,
-            self::PROCESSING,
-            self::CANCELLED,
-            self::PROCESSED,
-            self::UNSERVICEABLE,
-        ];
+        return self::$statuses;
     }
 }

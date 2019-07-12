@@ -23,6 +23,16 @@ class RblStatus
         Status::CREATED        => [],
     ];
 
+    protected static $rblStatuses = [
+        self::OPEN,
+        self::DRAFT,
+        self::REWORK,
+        self::VERIFIED,
+        self::DISCREPANCY,
+        self::CLOSED,
+        self::CANCELLED,
+    ];
+
     public static function isValid(string $status): bool
     {
         $key = __CLASS__ . '::' . strtoupper($status);
@@ -61,14 +71,6 @@ class RblStatus
 
     public static function getAll(): array
     {
-        return [
-            self::OPEN,
-            self::DRAFT,
-            self::REWORK,
-            self::VERIFIED,
-            self::DISCREPANCY,
-            self::CLOSED,
-            self::CANCELLED,
-        ];
+        return self::$rblStatuses;
     }
 }

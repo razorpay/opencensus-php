@@ -10,6 +10,11 @@ class Channel
     const YESBANK = FTAChannel::YESBANK;
     const RBL     = FTAChannel::RBL;
 
+    protected static $channels = [
+        self::YESBANK,
+        self::RBL,
+    ];
+
     public static function isValid(string $channel): bool
     {
         $key = __CLASS__ . '::' . strtoupper($channel);
@@ -27,9 +32,6 @@ class Channel
 
     public static function getAll(): array
     {
-        return [
-            self::YESBANK,
-            self::RBL,
-        ];
+        return self::$channels;
     }
 }
