@@ -107,7 +107,7 @@ export default function Reports(store, opts) {
   @reduxForm({
     form: 'generateReports',
     initialValues: {
-      type: 'daily',
+      type: 'dateRange',
       date: moment(),
       startAt: moment().subtract('1', 'days'),
       endAt: moment(),
@@ -682,6 +682,8 @@ export default function Reports(store, opts) {
           configReportType = this.getFileFormat(selectedConfig._item);
         }
 
+        const dateRangeError = getDateRangeError(dateRangeData);
+
         content = (
           <div class={reportWrapperClasses}>
             {/*Report Type Selection*/}
@@ -890,13 +892,11 @@ export default function Reports(store, opts) {
                       )}
                     </div>
                     <div class="clearfix">
-                      <div className="col-sm-6">
-                        {!isDateRangeValid(dateRangeData) && (
-                          <small class="text-danger">
-                            End At date and time cannot be less than start at
-                            date and time
-                          </small>
-                        )}
+                      <div className="col-sm-8 col-xs-12">
+                        {type === 'dateRange' &&
+                          dateRangeError && (
+                            <small class="text-danger">{dateRangeError}</small>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -932,6 +932,7 @@ export default function Reports(store, opts) {
                     <button
                       class="btn btn-primary"
                       onClick={this.generateReport}
+                      disabled={type === 'dateRange' && !!dateRangeError}
                     >
                       Download Report
                     </button>
@@ -939,6 +940,7 @@ export default function Reports(store, opts) {
                       <button
                         class="btn btn-default m-l"
                         onClick={this.openEmailReportModal}
+                        disabled={type === 'dateRange' && !!dateRangeError}
                       >
                         Email Report
                       </button>
@@ -986,9 +988,16 @@ function isDateRangeEndAtValid(startAt) {
   };
 }
 
-function isDateRangeValid(dateRangeData) {
-  const [startAtStamp, endAtStamp] = getFullUnixTimeStamps(dateRangeData);
-  return endAtStamp > startAtStamp;
+function getDateRangeError(dateRangeData) {
+  if (dateRangeData.endAt.diff(dateRangeData.startAt, 'days') > 7) {
+    return 'Date range cannot exceed period of 7 days';
+  } else {
+    const [startAtStamp, endAtStamp] = getFullUnixTimeStamps(dateRangeData);
+    if (endAtStamp < startAtStamp) {
+      return "Start at date can't exceed end at date";
+    }
+  }
+  return false;
 }
 
 function getFullUnixTimeStamps(data) {
