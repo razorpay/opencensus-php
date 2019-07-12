@@ -437,7 +437,7 @@ class AdminFetch
                 'bank_internal_status' => [
                     Fetch::LABEL  => 'Bank Internal Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => BankingAccount\RblStatus::getAll(),
+                    Fetch::VALUES => BankingAccount\Gateway\Rbl\Status::getAll(),
                 ],
                 'balance_id'  => [
                     Fetch::LABEL  => 'Balance Id',
