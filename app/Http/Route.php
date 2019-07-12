@@ -1130,6 +1130,9 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
+        'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
+        'banking_account_webhook_account_info'
+         . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1538,6 +1541,7 @@ final class Route
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
+        'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
     ];
@@ -2150,6 +2154,7 @@ final class Route
         'payment_on_hold_bulk_update',
         'banking_serviceable_pincodes',
         'banking_account_update',
+        'banking_account_webhook_account_info_internal',
 
         // throttle settings routes
         'fetch_throttle_settings',
@@ -2581,6 +2586,8 @@ final class Route
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
         'banking_account_update'                   => Permission::BANKING_UPDATE_ACCOUNT,
+        'banking_account_webhook_account'
+         . '_info_internal'                        => Permission::BANKING_UPDATE_ACCOUNT,
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
@@ -2848,6 +2855,10 @@ final class Route
         'yesbank' => [
             'bank_transfer_process',
             'bank_transfer_notify',
+        ],
+
+        'rbl' => [
+            'banking_account_webhook_account_info',
         ],
 
         // BharatQR routes are not authenticated
