@@ -132,3 +132,4 @@ curl -L https://github.com/ApiGen/ApiGen/releases/download/v4.1.0/apigen-4.1.0.p
 ```
 
 The documentation will be generated in the docs directory.
+
