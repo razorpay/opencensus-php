@@ -409,12 +409,12 @@ class Selector extends Base\Core
     protected function processHitachiOnboarding(&$allTerminals)
     {
         /*
-         * Maintain a list of blacklisted MCCs (merchant categories) in the code,
+         * Maintain a list of blacklisted MCCs (merchant categories) in the code(hard coded),
          * and skip Hitachi automatic onboarding for merchants belonging to these categories.
          * Use case is high-risk merchants, who should not be onboarded via Hitachi.
+         *
          */
-        $hitachiNotAllowedMCC = array(); // todo: this should be moved to a central place?
-
+        $hitachiBlacklistedMCC = array('5962', '5966', '5967', '7995', '5912', '5122');
         try
         {
             $payment = $this->input['payment'];
@@ -422,7 +422,7 @@ class Selector extends Base\Core
             $merchant = $this->input['merchant'];
 
             if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
-                and (in_array($merchant->getCategory(), $hitachiNotAllowedMCC) === false))
+                and (in_array($merchant->getCategory(), $hitachiBlacklistedMCC) === false))
             {
                 $payment = $this->input['payment'];
 
