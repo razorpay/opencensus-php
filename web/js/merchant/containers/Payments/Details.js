@@ -231,6 +231,7 @@ export default class PaymentDetailsContainer extends Component {
         <RefundModal
           refunds={refunds}
           isInstantRefund={this.props.isInstantRefund}
+          fetchMerchantBalance={this.props.fetchCurrentBalance}
           payment={payment}
           onRefund={this.onPaymentRefund}
           onMount={this.onRefundModalMount}

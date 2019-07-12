@@ -120,8 +120,9 @@ export default class RefundModal extends Component {
 
   componentDidMount() {
     this.props.onMount && this.props.onMount(this.props.payment);
-    this.props.isInstantRefund &&
-      this.props.isInstantRefund(this.props.payment);
+    this.props.fetchMerchantBalance();
+    // this.props.isInstantRefund &&
+    //   this.props.isInstantRefund(this.props.payment);
   }
 
   componentWillUnmount() {
@@ -239,6 +240,8 @@ export default class RefundModal extends Component {
     const { handleSubmit, payment, transfers, refunds } = this.props;
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
+
+    console.log('Refund Modal: CB', this.props.current_balance);
 
     const nonFraudDisputeCount =
       payment.disputes &&

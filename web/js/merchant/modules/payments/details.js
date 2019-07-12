@@ -1,5 +1,6 @@
 import Payment from 'merchant/models/Payment';
 import { set, merge } from 'rzp/utils/immutable';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const PAYMENT_FETCH = 'PAYMENT_FETCH';
 const PAYMENT_FETCH_CARD_DETAILS = 'PAYMENT_FETCH_CARD_DETAILS';
@@ -11,6 +12,7 @@ const PAYMENT_REFUND = 'PAYMENT_REFUND';
 const PAYMENT_RESET = 'PAYMENT_RESET';
 const PAYMENT_TRANSFER = 'PAYMENT_TRANSFER';
 const PAYMENT_INSTANT_REFUNDS = 'PAYMENT_INSTANT_REFUNDS';
+const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 
 export const fetchItem = id => {
   let payment = new Payment();
@@ -86,6 +88,13 @@ export const isInstantRefund = payment => {
   };
 };
 
+export const fetchCurrentBalance = () => {
+  return {
+    type: CURRENT_BALANCE_FETCH,
+    payload: merchantFetch('balance'),
+  };
+};
+
 let initialState = {
   loading: true,
   payment: {
@@ -101,6 +110,11 @@ let initialState = {
     items: [],
     error: null,
     isInstantRefund: true,
+  },
+  current_balance: {
+    loading: true,
+    data: {},
+    error: null,
   },
   transfers: {
     loading: false,
@@ -244,6 +258,24 @@ export default function(state = initialState, action) {
         loading: false,
         items: [],
         error: action.payload.errors,
+      });
+
+    case `${CURRENT_BALANCE_FETCH}::PENDING`:
+      return set(state, 'current_balance', initialState.current_balance);
+
+    case `${CURRENT_BALANCE_FETCH}::SUCCESS`:
+      return merge(state, {
+        current_balance: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+    case `${CURRENT_BALANCE_FETCH}::ERROR`:
+      return set(state, 'current_balance', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.current_balance.data,
       });
 
     case `${PAYMENT_RESET}`:
