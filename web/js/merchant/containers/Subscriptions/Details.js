@@ -48,7 +48,9 @@ import TestPaymentModal from './TestPaymentModal';
 
 const scheduledChangesInitValue = {
   data: null,
-  plan: null,
+  plan: {
+    item: {},
+  },
   isLoading: false,
 };
 
@@ -347,8 +349,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
             {
               isLoading: false,
               scheduledChanges: {
-                data: null,
-                plan: null,
+                ...scheduledChangesInitValue,
                 isLoading: subscription.has_scheduled_changes,
               },
             },
@@ -697,7 +698,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     let invoiceSecView, creditNoteSecView;
 
     // Add 'next_due' invoice in the Invoices list
-    if (!invoices.loading && !invoices.error && !scheduledChanges.loading) {
+    if (!invoices.loading && !invoices.error) {
       const subscriptionData = scheduledChanges.data
           ? scheduledChanges.data
           : entity,
@@ -818,7 +819,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           mode={this.props.mode}
           onClose={this.secClose}
           isLoading={isInvoiceLoading}
-          nextChargeAt={entity.charge_at}
+          nextChargeAt={subscriptionDetails.charge_at}
           subscriptionId={this.props.id}
           isValidInvoice={isValidInvoice}
           onAddOnDelete={this.deleteAddOn}
