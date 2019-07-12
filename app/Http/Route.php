@@ -322,6 +322,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => ['post',     'merchant/activation/bulk_assign_reviewer',       'MerchantController@bulkAssignReviewer'                             ],
         'merchant_activation_update_website'       => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
+        'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',       'MerchantController@getNeedsClarificationReasons'                  ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
@@ -1646,6 +1647,7 @@ final class Route
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
+        'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
@@ -2277,6 +2279,7 @@ final class Route
         'offer_update'                             => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'                     => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_business_categories'  => '*',
+        'merchant_activation_needs_clarification'  => '*',
         'merchant_fetch'                           => '*',
         'merchant_get_terminals'                   => '*',
         'merchant_activation_details'              => '*',
@@ -3432,31 +3435,31 @@ final class Route
     {
         $this->router
              ->any('{all}',
-                   [
-                       'as' => 'api_catch_all',
-                       'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
-                   ])
-             ->where('all', '.*');
+                  [
+                      'as'   => 'api_catch_all',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
+                  ])
+            ->where('all', '.*');
     }
 
     public function defineRootApiRoute()
     {
         $this->router
-             ->get('/',
-                   [
-                       'as' => 'api_root',
-                       'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
-                   ]);
+            ->get('/',
+                  [
+                      'as'   => 'api_root',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                  ]);
     }
 
     public function defineStatusApiRoute()
     {
         $this->router
             ->get('/v1/healthcheck',
-                [
-                    'as' => 'api_status',
-                    'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
-                ]);
+                  [
+                      'as'   => 'api_status',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
+                  ]);
     }
 
     public function getApiRouteInCategory($category)
