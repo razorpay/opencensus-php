@@ -34,6 +34,23 @@ class Fetch extends BaseFetch
         ],
     ];
 
+    const SIGNED_IDS = [
+        Entity::MERCHANT_ID,
+        Entity::BALANCE_ID,
+        Entity::FTS_FUND_ACCOUNT_ID,
+    ];
+
+    const COMMON_FIELDS = [
+        Entity::MERCHANT_ID,
+        Entity::STATUS,
+        Entity::ACCOUNT_NUMBER,
+        Entity::CHANNEL,
+        Entity::BANK_INTERNAL_STATUS,
+        Entity::BALANCE_ID,
+        Entity::BANK_REFERENCE_NUMBER,
+        Entity::FTS_FUND_ACCOUNT_ID,
+    ];
+
     public function validateStatus(string $attribute, string $status)
     {
         Status::validate($status);
