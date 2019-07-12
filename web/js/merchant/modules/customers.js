@@ -33,12 +33,6 @@ export const fetchCustomer = id => {
   };
 };
 
-export const searchCustomers = data => {
-  let customer = new Customer();
-
-  return customer.search(data);
-};
-
 export const fetchCustomersForAutocomplete = () => {
   let customer = new Customer();
 

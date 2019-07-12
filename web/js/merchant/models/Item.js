@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 export default class Item extends GenericEntity {
@@ -25,15 +25,6 @@ export default class Item extends GenericEntity {
   // This will be replaced with the ES autocomplete api
   fetchForAutocomplete(data = {}) {
     return ajax('/items/autocomplete', { data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Item(item).deserialize()
-      );
-      return response;
-    });
-  }
-
-  search(data) {
-    return merchantFetch({ url: 'items', data }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Item(item).deserialize()
       );

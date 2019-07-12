@@ -8,7 +8,6 @@ import {
 
 const ITEMS_FETCH = 'ITEMS_FETCH';
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH';
-const ITEM_FETCH = 'ITEM_FETCH';
 const ITEM_CREATE = 'ITEM_CREATE';
 const ITEM_EDIT = 'ITEM_EDIT';
 const ITEM_DELETE = 'ITEM_DELETE';
@@ -22,15 +21,6 @@ export const fetchItems = params => {
   };
 };
 
-export const fetchItem = id => {
-  let item = new Item();
-
-  return {
-    type: ITEM_FETCH,
-    payload: item.fetch(id),
-  };
-};
-
 export const fetchItemsForAutocomplete = data => {
   let item = new Item();
 
@@ -38,12 +28,6 @@ export const fetchItemsForAutocomplete = data => {
     type: ITEMS_AUTOCOMPLETE_FETCH,
     payload: item.fetchForAutocomplete(data),
   };
-};
-
-export const searchItems = data => {
-  let item = new Item();
-
-  return item.search(data);
 };
 
 export const saveItem = params => {
