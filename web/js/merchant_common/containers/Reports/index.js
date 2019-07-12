@@ -21,6 +21,7 @@ import SelectConfig from 'merchant_common/components/Reports/SelectConfig';
 import ReportLoader from 'merchant_common/components/Reports/ReportLoader';
 import EmailReportx from 'merchant_common/components/Reports/EmailReport';
 
+// Please refactor everything in this file if you're working in it
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
 };
