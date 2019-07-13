@@ -188,7 +188,10 @@ class Entity extends Base\PublicEntity
         //
         if ($basicAuth->isPublicAuth() === true)
         {
-            $attributes[self::FUND_ACCOUNTS] = $this->fundAccounts()->getResults()->toArrayPublicEmbedded();
+            $attributes[self::FUND_ACCOUNTS] = $this->fundAccounts()
+                                                    ->where(FundAccount\Entity::ACTIVE, 1)
+                                                    ->getResults()
+                                                    ->toArrayPublicEmbedded();
         }
     }
 
