@@ -93,6 +93,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_PHONEPE,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
+        Payment\Gateway::PAYLATER,
     ];
 
     protected static $createValidators = [
@@ -846,12 +847,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
-    protected static $payLaterTerminalRules = [
+    protected static $paylaterTerminalRules = [
         Entity::GATEWAY                     => 'required|in:paylater',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::PAYLATER                    => 'required|boolean|in:1',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+    ];
+
+    protected static $paylaterEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:paylater',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
     ];
 
     protected static $updateTerminalsBankRules = [

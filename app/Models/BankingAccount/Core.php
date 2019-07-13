@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankingAccount;
 
-use Redis;
 use Razorpay\IFSC\Bank;
 
 use RZP\Constants;
@@ -17,13 +16,12 @@ use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
-    const RBL_PINCODES_REDIS_KEY = 'rbl_pincode_set';
-
-    const VAULT_NAMESPACE = 'banking_accounts_creds';
+    protected $processor;
 
     public function __construct()
     {
@@ -80,11 +78,29 @@ class Core extends Base\Core
 
     }
 
-    public function createRblBankingAccount(array $input, Merchant\Entity $merchant): Entity
+    public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
     {
-        // TODO: Validate if account does not already exist for the merchant
+        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS, $input);
 
-        $status = $this->getRblAvailabilityStatus($input);
+        $channel = $input[Entity::CHANNEL];
+
+        // Currently we are just checking if there exists even one account of the merchant for the selected
+        // channel. If we find any such account we will just return the account and wont create a new one.
+        // But later when a merchant will start having more than one current account in the same channel
+        // this logic will have to be handled.
+
+        $bankingAccount = $this->repo->banking_account->getBankingAccountOfMerchant($merchant, $channel);
+
+        if ($bankingAccount !== null)
+        {
+            return $bankingAccount;
+        }
+
+        $processor = $this->getProcessor($channel);
+
+        $bankContent = $processor->validateAndPreProcessInputForAccountCreation($input);
+
+        $input = array_merge($input, $bankContent);
 
         $bankingAccount = new Entity;
 
@@ -94,7 +110,11 @@ class Core extends Base\Core
 
         $bankingAccount->merchant()->associate($merchant);
 
-        $bankingAccount->setStatus($status);
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_ENTITY_CREATED,
+            [
+                $bankingAccount->toArray(),
+            ]);
 
         // TODO: Fix this logic
         $refNumber = substr(time(), 0, 5);
@@ -106,13 +126,80 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    public function updateRblBankingAccount(Entity $bankingAccount, array $input): Entity
+    public function processAccountInfoWebhook(string $channel, array $input)
     {
-        (new Validator)->validateInput('rbl_update', $input);
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST,
+            [
+                'input'         => $input,
+                'gateway'       => $channel,
+            ]);
 
-        $this->checkRblToInternalStatusMapping($input);
+        Channel::validate($channel);
 
-        $this->checkMerchantIsActivated($bankingAccount);
+        $processor = $this->getProcessor($channel);
+
+        try
+        {
+            $processor->preProcessAccountInfoNotification($input);
+
+            $attributes = $processor->processAccountInfoNotification($input);
+
+            $bankingAccount = $this->repo
+                                   ->banking_account
+                                   ->findByBankReferenceAndChannel($channel,
+                                                                   $attributes[Entity::BANK_REFERENCE_NUMBER]);
+
+            if ($bankingAccount->isAlreadyActivated() === false)
+            {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_ACCOUNT_INFO_WEBHOOK,
+                    [
+                        'input'     => $input,
+                        'channel'   => $channel,
+                    ]);
+
+                $this->updateBankingAccount($bankingAccount, $attributes);
+            }
+
+            $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::PROCESSED);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::CANCELLED);
+        }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE,
+            [
+                'response'  => $response,
+                'gateway'   => $channel,
+            ]);
+
+        return $response;
+    }
+
+    public function updateBankingAccount(Entity $bankingAccount, array $input)
+    {
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
+            ]);
+
+        $processor = $this->getProcessor($channel);
+
+        $processor->validateAccountBeforeUpdating($input);
+
+        $input = $processor->formatInputParametersIfRequired($input);
+
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
         $bankingAccount = $bankingAccount->edit($input);
 
@@ -219,7 +306,7 @@ class Core extends Base\Core
     public function tokenizeBankingAccountCredentials(string $element)
     {
         $request = [
-            'namespace' => self::VAULT_NAMESPACE,
+            'namespace' => Entity::VAULT_NAMESPACE,
             'secret'    => $element
         ];
 
@@ -240,17 +327,23 @@ class Core extends Base\Core
                 {
                     $attributes = [
                         Entity::STATUS                  => Status::PROCESSED,
-                        Entity::BANK_INTERNAL_STATUS    => RblStatus::CLOSED
+                        Entity::BANK_INTERNAL_STATUS    => Gateway\Rbl\Status::CLOSED
                     ];
 
+                    // TODO: Fix this undefined function!
                     $this->updateRblBankingAccount($bankingAccount, $attributes);
 
                     break;
                 }
 
             default:
-                // not throwing any exception here, since this statement will be executed for valid channels only
-                return;
+                throw new LogicException(
+                    'Attempt to update account to processed for an Invalid channel',
+                    null,
+                    [
+                        'channel'               => $channel,
+                        'banking_account_id'    => $bankingAccount->getId(),
+                    ]);
         }
     }
 
@@ -261,15 +354,37 @@ class Core extends Base\Core
         $this->repo->saveOrFail($bankingAccount);
     }
 
-    protected function getRblAvailabilityStatus(array $input): string
+    public function getBankingAccountEntity(string $id)
     {
-        (new Validator)->validateInput('rbl_availability', $input);
+        return $this->repo->banking_account->findOrFailPublic($id);
+    }
 
-        $isServiceable = $this->isPincodeRblServiceable($input[Entity::PINCODE]);
+    public function addServiceablePincodes(array $pincodes, string $channel)
+    {
+        $this->trace->info(
+            TraceCode::ADD_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
 
-        $status = ($isServiceable === true) ? Status::CREATED : Status::UNSERVICEABLE;
+        $processor = $this->getProcessor($channel);
 
-        return $status;
+        $processor->addServiceablePincodes($pincodes);
+    }
+
+    public function deleteServiceablePincodes(array $pincodes, string $channel)
+    {
+        $this->trace->info(
+            TraceCode::REMOVE_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
+
+        $processor = $this->getProcessor($channel);
+
+        $processor->deleteServiceablePincodes($pincodes);
     }
 
     protected function makeSourceAccountRequest(string $id, string $ftsAccountId, array $content,
@@ -300,67 +415,44 @@ class Core extends Base\Core
         );
     }
 
-    protected function isPincodeRblServiceable(string $pincode): bool
-    {
-        $redis = Redis::connection();
-
-        $isAvailable = $redis->sismember(self::RBL_PINCODES_REDIS_KEY, $pincode);
-
-        return (bool) $isAvailable;
-    }
-
-    public function addServiceablePincodesForRbl(array $pincodes)
-    {
-        $redis = Redis::connection();
-
-        $redis->sadd(self::RBL_PINCODES_REDIS_KEY, $pincodes);
-    }
-
-    public function deleteServiceablePincodesForRbl(array $pincodes)
-    {
-        $redis = Redis::connection();
-
-        $redis->srem(self::RBL_PINCODES_REDIS_KEY, $pincodes);
-    }
-
-    protected function checkRblToInternalStatusMapping(array $input)
-    {
-        if (isset($input[Entity::BANK_INTERNAL_STATUS]) === false)
-        {
-            return;
-        }
-
-        $bankInternalStatus = $input[Entity::BANK_INTERNAL_STATUS];
-        $status             = $input[Entity::STATUS];
-
-        RblStatus::validate($bankInternalStatus);
-        RblStatus::validateInternalBankStatusToStatus($bankInternalStatus, $status);
-    }
-
     /**
      * This method is responsible for checking that unless the merchant is L2 activated, no one can update
-     * the status of RBL current account to processed. This to avoid cases of manual error by Bizops.
+     * the status of current account to processed. This to avoid cases of manual error by Bizops.
      *
      * @param Entity $bankingAccount
+     * @param array $input
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function checkMerchantIsActivated(Entity $bankingAccount)
+    protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
     {
-        $merchant = $bankingAccount->merchant;
-
-        $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
-
-        if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
+        if ((isset($input[Entity::STATUS]) === true) and
+            ($input[Entity::STATUS] === Status::ACTIVATED))
         {
-            throw new BadRequestValidationFailureException(
-                'Operation not allowed, merchant is not L2 activated',
-                null,
-                [
-                    'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
-                    'banking_account'            => $bankingAccount->getId(),
-                ]);
+            $merchant = $bankingAccount->merchant;
+
+            $merchantActivationStatus = $merchant->merchantDetail->getActivationStatus();
+
+            if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Operation not allowed, merchant is not L2 activated',
+                    null,
+                    [
+                        'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
+                        'banking_account'            => $bankingAccount->getId(),
+                    ]);
+            }
         }
+    }
+
+    protected function getProcessor(string $channel): Gateway\Processor
+    {
+        $processor = __NAMESPACE__ . '\\' . 'Gateway';
+
+        $processor .= '\\' . studly_case($channel) . '\\' . 'Processor';
+
+        return new $processor();
     }
 
     protected function checkForVaultResponseErrors(array $response)
@@ -376,10 +468,5 @@ class Core extends Base\Core
                 'Merchant credentials could not be stored, Please try again!'
             );
         }
-    }
-
-    public function getBankingAccountEntity(string $id)
-    {
-        return $this->repo->banking_account->findOrFailPublic($id);
     }
 }

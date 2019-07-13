@@ -26,4 +26,13 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($result);
     }
+
+    public function processAccountInfoWebhook(string $channel)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processAccountInfoWebhook($channel, $input);
+
+        return $response;
+    }
 }
