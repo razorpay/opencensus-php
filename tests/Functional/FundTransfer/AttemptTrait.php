@@ -21,17 +21,23 @@ trait AttemptTrait
     use PaymentTrait;
     use SettlementTrait;
 
-    protected function initiateTransfer(string $channel, string $purpose, bool $failureTest = false)
+    protected function initiateTransfer(string $channel, string $purpose, bool $failureTest = false, string $sourceType = '')
     {
-        $content['purpose'] = $purpose;
+        $content = [
+            Attempt\Entity::PURPOSE => $purpose,
+            Attempt\Entity::SOURCE_TYPE => $sourceType,
+            'failed_response'       => (int) $failureTest,
+        ];
+
+        if ($sourceType !== '')
+        {
+            $content[Attempt\Entity::SOURCE_TYPE] = $sourceType;
+        }
 
         $request = [
             'url'       => '/fund_transfer_attempts/initiate/'.$channel,
             'method'    => 'POST',
-            'content'   => [
-                Attempt\Entity::PURPOSE => $purpose,
-                'failed_response'       => (int) $failureTest,
-            ],
+            'content'   => $content
         ];
 
         $this->ba->cronAuth();
@@ -363,5 +369,27 @@ trait AttemptTrait
         $this->createRefundFromPayments($payments);
 
         $this->initiateSettlements($channel);
+    }
+
+    protected function updateFta( $ftsId, string $sourceId, string $sourceType)
+    {
+        $content = [
+            Attempt\Entity::STATUS           => Attempt\Status::REVERSED,
+            Attempt\Entity::SOURCE_ID        => $sourceId,
+            Attempt\Entity::SOURCE_TYPE      => $sourceType,
+            Attempt\Entity::FUND_TRANSFER_ID => $ftsId
+        ];
+
+        $request = [
+            'url'       => '/update_fts_fund_transfer',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->ba->ftsAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }
