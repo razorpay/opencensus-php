@@ -13,7 +13,7 @@ class Fetch extends BaseFetch
             Entity::STATUS                => 'sometimes|string|custom',
             Entity::ACCOUNT_NUMBER        => 'sometimes|alpha_num|max:40',
             Entity::CHANNEL               => 'sometimes|string|custom',
-            Entity::BANK_INTERNAL_STATUS  => 'sometimes|string|custom',
+            Entity::BANK_INTERNAL_STATUS  => 'sometimes|string',
             Entity::BALANCE_ID            => 'sometimes|unsigned_id',
             Entity::BANK_REFERENCE_NUMBER => 'sometimes|string',
             Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|unsigned_id',
