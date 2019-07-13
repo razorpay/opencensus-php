@@ -41,8 +41,6 @@ class Entity extends Base\PublicEntity
     const CONTACT       = 'contact';
     const CUSTOMER      = 'customer';
     // Details is basically publicly exposed underlying account
-    // NOTE: When deprecating this, check for the usages of this
-    //       constant everywhere and handle things accordingly!
     const DETAILS       = 'details';
     // Bank Account is basically publicly exposed underlying account
     // when account type is bank account
@@ -324,37 +322,9 @@ class Entity extends Base\PublicEntity
             $accountAttributes = $this->account->toArrayFundAccount();
         }
 
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        if ($basicAuth->isPublicAuth() === true)
-        {
-            if ($accountType === Type::BANK_ACCOUNT)
-            {
-                $maskedAccNum = mask_except_last4($accountAttributes[BankAccount\Entity::ACCOUNT_NUMBER]);
-
-                $accountAttributes[BankAccount\Entity::ACCOUNT_NUMBER] = $maskedAccNum;
-            }
-        }
-
         // For now, don't expose the public id and entity attributes from any of the related entities
         array_forget($accountAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
 
         return $accountAttributes;
-    }
-
-    public function toArrayPublic()
-    {
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        $attributes = parent::toArrayPublic();
-
-        if ($basicAuth->isPublicAuth() === true)
-        {
-            $attributes = array_only($attributes, $this->publicAuth);
-        }
-
-        return $attributes;
     }
 }

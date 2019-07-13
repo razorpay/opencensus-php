@@ -229,19 +229,4 @@ class Entity extends Base\PublicEntity
     // -------------- Accessors --------------
 
     // ------------ End Accessors ------------
-
-    public function toArrayPublic()
-    {
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        $attributes = parent::toArrayPublic();
-
-        if ($basicAuth->isPublicAuth() === true)
-        {
-            $attributes = array_only($attributes, $this->publicAuth);
-        }
-
-        return $attributes;
-    }
 }
