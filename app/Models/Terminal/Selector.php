@@ -19,6 +19,7 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
+use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 
 class Selector extends Base\Core
 {
@@ -414,7 +415,6 @@ class Selector extends Base\Core
          * Use case is high-risk merchants, who should not be onboarded via Hitachi.
          *
          */
-        $hitachiBlacklistedMCC = array('5962', '5966', '5967', '7995', '5912', '5122');
         try
         {
             $payment = $this->input['payment'];
@@ -422,7 +422,7 @@ class Selector extends Base\Core
             $merchant = $this->input['merchant'];
 
             if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
-                and (in_array($merchant->getCategory(), $hitachiBlacklistedMCC) === false))
+                and (in_array($merchant->getCategory(), GatewayProcessor::HITACHI_BLACKLISTED_MCC) === false))
             {
                 $payment = $this->input['payment'];
 

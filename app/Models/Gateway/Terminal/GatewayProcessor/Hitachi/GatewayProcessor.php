@@ -19,6 +19,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     const HITACHI_INDEX_KEY     = 'hitachi_gateway_terminal_creation_index';
     const HITACHI_TERMINAL_TID_PREFIX = '38R';
     const HITACHI_TERMINAL_MID_PREFIX = '38RR000000';
+    const HITACHI_BLACKLISTED_MCC = ['5962', '5966', '5967', '7995', '5912', '5122'];
 
     public function __construct()
     {

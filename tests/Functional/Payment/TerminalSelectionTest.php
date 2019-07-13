@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
+use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -1748,31 +1750,13 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $hitachiBlacklistedMCC = array('5962', '5966', '5967', '7995', '5912', '5122');
-
-        $merchantDetailArray = [
-            'contact_name'                  => 'rzp',
-            'contact_email'                 => 'test@rzp.com',
-            'merchant_id'                   => '10000000000000',
-            'business_operation_address'    => 'Koramangala',
-            'business_operation_state'      => 'KARNATAKA',
-            'business_operation_pin'        =>  560047,
-            'business_dba'                  => 'test',
-            'business_name'                 => 'rzp_test',
-            'business_operation_city'       => 'Bangalore',
-        ];
-
-        $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $cardArray = [
-            'number'        => '4012001036275556',
+            'number'        => CardNumber::VALID_ENROLL_NUMBER,
             'expiry_month'  => '1',
-            'expiry_year'   => '2035',
+            'expiry_year'   => '35',
             'cvv'           => '123',
-            'network'       => 'Visa',
-            'issuer'        => 'HDFC',
             'name'          => 'Test',
-            'international' => false,
         ];
 
         $card = (new Card\Entity)->fill($cardArray);
@@ -1782,7 +1766,7 @@ class TerminalSelectionTest extends TestCase
         $paymentArray['status'] = 'created';
         $paymentArray['method'] = 'card';
 
-        foreach ($hitachiBlacklistedMCC as $category)
+        foreach (GatewayProcessor::HITACHI_BLACKLISTED_MCC as $category)
         {
             $this->fixtures->merchant->setCategory($category);
 
@@ -1797,8 +1781,6 @@ class TerminalSelectionTest extends TestCase
                 'payment' => $payment,
                 'merchant' => $payment->merchant
             ];
-
-            $this->app['rzp.mode'] = Mode::TEST;
 
             $options = new Options;
             $selector = new Selector($input, $options);
