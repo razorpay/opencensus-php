@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * Interface for api to talk to Mozart service
@@ -70,18 +71,20 @@ class Mozart
 
         $request = $this->getRequest($url, $authentication, $input);
 
+        $this->traceMozartServiceRequest($request);
+
         $responseBody = $this->sendRawRequest($request);
 
         $responseArray = $this->jsonToArray($responseBody);
 
-        $this->traceMozartServiceResponse($responseArray ?? $responseBody ?? null, $input);
+        $this->traceMozartServiceResponse($responseArray ?? $responseBody ?? null);
 
         // Un-setting the raw field here, this field is the json encoded response from the gateway
         // since we have already logged the response here, there's no need to application logic
         // to use it
         unset($responseArray['data']['_raw']);
 
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseArray);
+        $this->checkGatewayErrorsAndThrowException($responseArray);
 
         return $responseArray;
     }
@@ -133,27 +136,38 @@ class Mozart
      */
     protected function sendRawRequest(array $request)
     {
-        $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, $request);
-
         try
         {
             $responseBody = $this->sendRequest($request);
 
             return $responseBody;
         }
-        catch (\Throwable $exception)
+        catch (Requests_Exception $e)
         {
-            $this->trace->info(
-                TraceCode::MOZART_SERVICE_REQUEST_FAILED,
-                [
-                    'code'          => $exception->getCode(),
-                    'message'       => $exception->getMessage(),
-                    'type'          => optional($exception->getType()),
-                    'data'          => optional($exception->getData()),
-                    'request'       => $request,
-                ]);
+            $errorCode = TraceCode::MOZART_SERVICE_REQUEST_FAILED;
 
-            throw $exception;
+            if (checkRequestTimeout($e) === true)
+            {
+                $errorCode = TraceCode::MOZART_SERVICE_REQUEST_TIMEOUT;
+            }
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                $errorCode
+            );
+
+            throw $e;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::MOZART_SERVICE_REQUEST_FAILED
+            );
+
+            throw $ex;
         }
     }
 
@@ -172,26 +186,12 @@ class Mozart
 
         $request['options']['connect_timeout'] = $request['options']['connect_timeout'] ?? static::CONNECT_TIMEOUT;
 
-        try
-        {
-            $response = Requests::request(
-                $request['url'],
-                $headers,
-                $request['content'],
-                strtoupper($method),
-                $request['options']);
-        }
-        catch (Requests_Exception $e)
-        {
-            $errorCode = ErrorCode::SERVER_ERROR_MOZART_SERVICE_FAILURE;
-
-            if (checkRequestTimeout($e) === true)
-            {
-                $errorCode = ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT;
-            }
-
-            throw new Exception\IntegrationException($e->getMessage(), $errorCode);
-        }
+        $response = Requests::request(
+            $request['url'],
+            $headers,
+            $request['content'],
+            strtoupper($method),
+            $request['options']);
 
         $this->validateResponse($response);
 
@@ -208,7 +208,8 @@ class Mozart
                 'Response status: '. $statusCode,
                 ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT,
                 [
-                    'body' => $response->body,
+                    'status_code'   => $statusCode,
+                    'body'          => $response->body,
                 ]);
         }
         else if ($statusCode >= 500)
@@ -217,21 +218,18 @@ class Mozart
                 'Response status: '. $statusCode,
                 ErrorCode::SERVER_ERROR_MOZART_SERVICE_ERROR,
                 [
-                    'body' => $response->body,
+                    'status_code'   => $statusCode,
+                    'body'          => $response->body,
                 ]);
         }
-        else if ($statusCode >= 300)
+        else if ($statusCode >= 400)
         {
-            //
-            // Trace non 2XX status codes to figure out what else
-            // needs to be handled here later.
-            //
-
-            $this->trace->error(
-                TraceCode::MOZART_SERVICE_UNEXPECTED_RESPONSE,
+            throw new Exception\IntegrationException(
+                'Response status: '. $statusCode,
+                ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
                 [
-                    'status_code' => $statusCode,
-                    'request'     => $this->getMozartRequestParams(),
+                    'status_code'   => $statusCode,
+                    'body'          => $response->body,
                 ]);
         }
     }
@@ -246,25 +244,36 @@ class Mozart
         ];
     }
 
-    protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)
+    /**
+     * Check for gateway errors
+     *
+     * @param array $response
+     * @throws Exception\GatewayErrorException
+     */
+    protected function checkGatewayErrorsAndThrowException(array $response)
     {
         if ($response['success'] !== true)
         {
-            throw new Exception\IntegrationException(
-                'Request to Mozart Service did not return a successful response',
-                ErrorCode::SERVER_ERROR_MOZART_SERVICE_ERROR,
-                $response);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR,
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                $response['error'],
+                null,
+                $this->getUrl());
         }
     }
 
-    protected function traceMozartServiceResponse($response, $input)
+    protected function traceMozartServiceRequest($request)
     {
-        $this->trace->info(
-            TraceCode::MOZART_SERVICE_RESPONSE,
-            [
-                'request'    => $input,
-                'response'   => $response,
-            ]);
+        unset($request['options']['auth']);
+
+        $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, $request);
+    }
+
+    protected function traceMozartServiceResponse($response)
+    {
+        $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, $response);
     }
 
     protected function jsonToArray($json)
