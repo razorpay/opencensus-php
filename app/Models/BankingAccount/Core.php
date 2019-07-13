@@ -71,6 +71,7 @@ class Core extends Base\Core
             Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
             Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
             Entity::ACCOUNT_TYPE        => AccountType::VIRTUAL,
+            Entity::STATUS              => Status::CREATED,
         ];
 
         return $this->createYesbankBankingAccount($bankingAccountInput, $virtualAccount->merchant,

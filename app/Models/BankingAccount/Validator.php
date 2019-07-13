@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC        => 'required|string|size:11',
         Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
         Entity::ACCOUNT_TYPE        => 'required|string|in:virtual',
+        Entity::STATUS              => 'required|in:created',
     ];
 
     protected static $createRules = [

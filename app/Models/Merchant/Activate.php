@@ -598,6 +598,7 @@ class Activate extends Base\Core
      * @param Entity $merchant
      *
      * @return Entity
+     * @throws Exception\LogicException
      */
     public function activateBusinessBankingIfApplicable(Entity $merchant): Entity
     {
