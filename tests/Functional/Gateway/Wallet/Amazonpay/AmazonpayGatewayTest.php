@@ -16,6 +16,7 @@ use RZP\Gateway\Wallet\Amazonpay\ResponseFields;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
 class AmazonpayGatewayTest extends TestCase
 {
@@ -207,6 +208,25 @@ class AmazonpayGatewayTest extends TestCase
         $payment = $this->getDbLastEntityPublic(ConstantsEntity::PAYMENT);
 
         $this->assertEquals(Payment\Status::CREATED, $payment[Payment\Entity::STATUS]);
+    }
+
+    public function testPaymentCallbackWithPaymentId()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'authorize')
+                {
+                    $content[AmazonResponse::SELLER_ORDER_ID] = 'A3MJ8ZJGR6SLB_' . $content[AmazonResponse::SELLER_ORDER_ID];
+                }
+            });
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityPublic(ConstantsEntity::PAYMENT);
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+        //$this->assertEquals(payment,$payment)
     }
 
     public function testPaymentAmountPrecisionCheck()

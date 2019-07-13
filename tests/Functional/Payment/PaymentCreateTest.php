@@ -1288,6 +1288,6 @@ class PaymentCreateTest extends TestCase
 
         $res = $this->doAuthPayment($payment);
 
-        $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT);
+        $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 }

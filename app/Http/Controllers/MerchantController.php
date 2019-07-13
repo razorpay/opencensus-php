@@ -880,6 +880,18 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * Returns clarification reason against each field
+     *
+     * @return mixed
+     */
+    public function getNeedsClarificationReasons()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getNeedsClarificationReasons();
+
+        return ApiResponse::json($response);
+    }
+
     public function updateKeyAccess(string $id)
     {
         $input = Request::all();
