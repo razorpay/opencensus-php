@@ -389,11 +389,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
     }
 
-    public function setRegisteredBeneficiaryName($name)
-    {
-        $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
-    }
-
     public function setFtsFundAccountId($ftsFundAccountId)
     {
         return $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId);

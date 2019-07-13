@@ -97,6 +97,12 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNTS,
     ];
 
+    protected $publicAuth = [
+        self::ID,
+        self::NAME,
+        self::FUND_ACCOUNTS,
+    ];
+
     /**
      * Mainly used for `expands`
      *
@@ -180,12 +186,10 @@ class Entity extends Base\PublicEntity
         // Currently, we don't want to add `fund_accounts` in default expands. If and when we
         // decide to add in default expands, we can remove the public setter for public auth.
         //
-        if ($basicAuth->isPublicAuth() === false)
+        if ($basicAuth->isPublicAuth() === true)
         {
-            return;
+            $attributes[self::FUND_ACCOUNTS] = $this->fundAccounts()->getResults()->toArrayPublicEmbedded();
         }
-
-        $attributes[self::FUND_ACCOUNTS] = $this->fundAccounts()->getResults()->toArrayPublicEmbedded();
     }
 
     // --------- End Public Setters ----------
@@ -225,4 +229,19 @@ class Entity extends Base\PublicEntity
     // -------------- Accessors --------------
 
     // ------------ End Accessors ------------
+
+    public function toArrayPublic()
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        $attributes = parent::toArrayPublic();
+
+        if ($basicAuth->isPublicAuth() === true)
+        {
+            $attributes = array_only($attributes, $this->publicAuth);
+        }
+
+        return $attributes;
+    }
 }
