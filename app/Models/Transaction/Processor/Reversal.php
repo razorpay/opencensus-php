@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Transaction\Processor;
 
-use RZP\Models\Pricing\Feature;
+use RZP\Exception;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
+use RZP\Models\Pricing\Feature;
 use RZP\Models\Reversal as ReversalModel;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 /**
@@ -22,6 +24,31 @@ use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
  */
 class Reversal extends Base
 {
+    public function createTransaction()
+    {
+        $balance     = $this->source->balance;
+        $accountType = optional($balance->getAccountType());
+        $channel     = optional($balance->getChannel());
+
+        //
+        // For direct(current) accounts, there are some channels for which we don't create txns
+        // when creating reversals, these txns are created while fetching account statement
+        // This is different than usual cases because, since the credit/debit is happening at
+        // the channel bank, and we use that as the source of truth for transactions. Though the reversal
+        // entity may be created when we get the payout status as reversed from FTS. This helps in communicating
+        // the same to the merchant as early as possible
+        //
+        if ($accountType === 'direct')
+        {
+            if (Channel::shouldSkipTransaction($channel) === true)
+            {
+                return null;
+            }
+        }
+
+        parent::createTransaction();
+    }
+
     /**
      * {@inheritdoc}
      *

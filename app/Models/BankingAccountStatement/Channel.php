@@ -9,6 +9,15 @@ class Channel
 {
     const RBL = Settlement\Channel::RBL;
 
+    /**
+     * This array has a list of channels for which transactions
+     * should not be created through reversals
+     * @var array
+     */
+    protected static $skipTxnCreation = [
+        self::RBL,
+    ];
+
     public static function isValid(string $channel): bool
     {
         $key = __CLASS__ . '::' . strtoupper($channel);
@@ -22,5 +31,12 @@ class Channel
         {
             throw new BadRequestValidationFailureException('Not a valid channel: ' . $channel);
         }
+    }
+
+    public static function shouldSkipTransaction(string $channel): bool
+    {
+        self::validate($channel);
+
+        return in_array($channel, self::$skipTxnCreation);
     }
 }
