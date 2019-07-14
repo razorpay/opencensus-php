@@ -199,6 +199,7 @@ class Table
     const SETTING               = 'settings';
 
     // Banking Accounts Tables
+    const EXTERNAL                        = 'external';
     const BANKING_ACCOUNT                 = 'banking_accounts';
     const BANKING_ACCOUNT_STATEMENT       = 'banking_account_statement';
 

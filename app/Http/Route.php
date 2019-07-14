@@ -322,6 +322,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => ['post',     'merchant/activation/bulk_assign_reviewer',       'MerchantController@bulkAssignReviewer'                             ],
         'merchant_activation_update_website'       => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
+        'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',       'MerchantController@getNeedsClarificationReasons'                  ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
@@ -1081,7 +1082,7 @@ final class Route
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
-        'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@createPublic'                                ],
+        'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
 
@@ -1130,6 +1131,11 @@ final class Route
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
         'banking_account_update'                  => ['patch',    'banking_account/{id}',                                      'BankingAccountController@update'                           ],
+        'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
+        'banking_account_webhook_account_info'
+         . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
+
+        'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1538,8 +1544,10 @@ final class Route
         'payment_card_vault_migrate',
         'batch_send_mail',
         'fund_account_validate_retry_all',
+        'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
+        'banking_account_statement_process',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1642,6 +1650,7 @@ final class Route
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
+        'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
@@ -2150,6 +2159,7 @@ final class Route
         'payment_on_hold_bulk_update',
         'banking_serviceable_pincodes',
         'banking_account_update',
+        'banking_account_webhook_account_info_internal',
 
         // throttle settings routes
         'fetch_throttle_settings',
@@ -2272,6 +2282,7 @@ final class Route
         'offer_update'                             => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'                     => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_business_categories'  => '*',
+        'merchant_activation_needs_clarification'  => '*',
         'merchant_fetch'                           => '*',
         'merchant_get_terminals'                   => '*',
         'merchant_activation_details'              => '*',
@@ -2581,6 +2592,8 @@ final class Route
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => '*',
         'banking_account_update'                   => Permission::BANKING_UPDATE_ACCOUNT,
+        'banking_account_webhook_account'
+         . '_info_internal'                        => Permission::BANKING_UPDATE_ACCOUNT,
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
@@ -2848,6 +2861,10 @@ final class Route
         'yesbank' => [
             'bank_transfer_process',
             'bank_transfer_notify',
+        ],
+
+        'rbl' => [
+            'banking_account_webhook_account_info',
         ],
 
         // BharatQR routes are not authenticated
@@ -3421,31 +3438,31 @@ final class Route
     {
         $this->router
              ->any('{all}',
-                   [
-                       'as' => 'api_catch_all',
-                       'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
-                   ])
-             ->where('all', '.*');
+                  [
+                      'as'   => 'api_catch_all',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
+                  ])
+            ->where('all', '.*');
     }
 
     public function defineRootApiRoute()
     {
         $this->router
-             ->get('/',
-                   [
-                       'as' => 'api_root',
-                       'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
-                   ]);
+            ->get('/',
+                  [
+                      'as'   => 'api_root',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                  ]);
     }
 
     public function defineStatusApiRoute()
     {
         $this->router
             ->get('/v1/healthcheck',
-                [
-                    'as' => 'api_status',
-                    'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
-                ]);
+                  [
+                      'as'   => 'api_status',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
+                  ]);
     }
 
     public function getApiRouteInCategory($category)

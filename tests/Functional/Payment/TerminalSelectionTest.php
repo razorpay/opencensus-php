@@ -1683,7 +1683,11 @@ class TerminalSelectionTest extends TestCase
 
         $terminalId = $terminal->getId();
 
-        $this->fixtures->edit('terminal', $terminalId, ['enabled' => 0]);
+        // We are changing to international because all the other eligible
+        // terminals which are created by fixtures have international=true
+        // Since the test is to check for duplicate and international is
+        // one of the parameters that we check against, we are making hitachi terminal as international.
+        $this->fixtures->edit('terminal', $terminalId, ['enabled' => 0, 'international' => 1]);
 
         $this->fixtures->merchant->setCategory('1240');
 
