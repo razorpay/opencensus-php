@@ -5045,7 +5045,7 @@ ALTER TABLE transactions
 ALTER TABLE balance
     DROP INDEX balance_account_provider_index,
     CHANGE COLUMN account_provider channel varchar(255) DEFAULT NULL,
-    ADD INDEX balance_account_channel_index (channel),
+    ADD INDEX balance_channel_index (channel),
     DROP INDEX balance_merchant_id_type_unique;
 
 ALTER TABLE banking_accounts
