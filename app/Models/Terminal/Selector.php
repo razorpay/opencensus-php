@@ -454,7 +454,6 @@ class Selector extends Base\Core
 
     }
 
-<<<<<<< HEAD
     private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals, $filteredTerminals)
     {
         try
@@ -474,6 +473,11 @@ class Selector extends Base\Core
             if ($payment->getEmiPlanId() !== null)
             {
                 $paymentData['emi'] = $payment->emiPlan();
+            }
+
+            if (isset($paymentData['vpa']) === true)
+            {
+                $paymentData['vpa'] = $payment->getPspFromVpa();
             }
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
@@ -534,7 +538,6 @@ class Selector extends Base\Core
 
         return false;
     }
-
 
     protected function getGatewayConfig()
     {
@@ -600,9 +603,8 @@ class Selector extends Base\Core
         $merchantData['sub_merchants_ids']  = $subMerchantIds;
 
         return $merchantData;
-
     }
-=======
+
     protected function alertNetbankingTerminalNotFound(Merchant\Entity $merchant, $payment)
     {
         $alertArray = [
@@ -625,8 +627,5 @@ class Selector extends Base\Core
                 'icon'                  => ':x:'
             ]
         );
-
     }
-
->>>>>>> ce16a5d61d9911a0f2283d5677a2ec19c3f95ca7
 }
