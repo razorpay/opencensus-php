@@ -8,7 +8,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const PRE_PROCESS = 'pre_process';
+    const PRE_PROCESS           = 'pre_process';
+    const INTERNAL_EDIT         = 'internal_edit';
+    const PROCESSED_STATUS      = 'processed_status';
+    const SERVICEABLE_PINCODE   = 'serviceable_pincode';
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
@@ -28,7 +31,7 @@ class Validator extends Base\Validator
         Entity::STATUS                          => 'filled|string|custom',
         Entity::BANK_REFERENCE_NUMBER           => 'filled|string',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
-        Entity::BENEFICIARY_PIN                 => 'filled|integer|digits:6',
+        Entity::BENEFICIARY_PIN                 => 'filled|string',
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
         Entity::BENEFICIARY_STATE               => 'filled|string',
@@ -47,8 +50,9 @@ class Validator extends Base\Validator
     protected static $internalEditRules = [
         Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
-        Entity::STATUS                          => 'filled|string|custom',
-        Entity::BENEFICIARY_PIN                 => 'filled|integer|digits:6',
+        Entity::STATUS                          => 'filled|string|in:initiated,processing,processed,' .
+                                                   'cancelled,unserviceable',
+        Entity::BENEFICIARY_PIN                 => 'filled|string',
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
         Entity::BENEFICIARY_STATE               => 'filled|string',

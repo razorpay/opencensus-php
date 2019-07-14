@@ -74,6 +74,8 @@ class Service extends Base\Service
                 'input'   => $input,
             ]);
 
+        (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
+
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         return $account->toArrayPublic();
@@ -133,7 +135,7 @@ class Service extends Base\Service
     {
         $input[Entity::CHANNEL] = $channel;
 
-        (new Validator)->validateInput('serviceable_pincode', $input);
+        (new Validator)->validateInput(Validator::SERVICEABLE_PINCODE, $input);
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
 

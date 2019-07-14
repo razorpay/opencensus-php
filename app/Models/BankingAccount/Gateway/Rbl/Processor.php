@@ -95,7 +95,6 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         if (isset($input[Fields::ACTIVATION_DATE]) === true)
         {
-
             $timestamp = $this->parseAndFormatRblDate($input[Fields::ACTIVATION_DATE]);
 
             $input[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $timestamp;

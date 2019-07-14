@@ -94,17 +94,6 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function updateBankingAccountInternally(Entity $bankingAccount, array $input)
-    {
-        (new Validator)->setStrictFalse()->validateInput('internal_edit', $input);
-
-        $this->validateIsStatusAllowedForUpdate($input);
-
-        $bankingAccount = $this->updateBankingAccount($bankingAccount, $input);
-
-        return $bankingAccount;
-    }
-
     public function updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
@@ -115,25 +104,9 @@ class Core extends Base\Core
 
         $input = $processor->formatInputParametersIfRequired($input);
 
-        // if the input has status field present, we need to check whether the status
-        // can be updated to this new status
-        if (isset($input[Entity::STATUS]) === true)
-        {
-            $this->validateCurrentToPreviousStatusMapping($input[Entity::STATUS], $bankingAccount->getStatus());
-        }
+        $this->runStatusValidationsForUpdate($bankingAccount, $input);
 
-        // if the input has status as processed, we need to validate input parameters
-        // by different rules.
-        if ($this->isStatusProcessed($input) === true)
-        {
-            (new Validator)->setStrictFalse()->validateInput('processed_status', $input);
-
-            $bankingAccount->fill($input);
-        }
-        else
-        {
-            $bankingAccount = $bankingAccount->edit($input);
-        }
+        $bankingAccount->edit($input);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
@@ -363,14 +336,6 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateIsStatusAllowedForUpdate(array $input)
-    {
-        if (isset($input[Entity::STATUS]) === true)
-        {
-            Status::validateAllowedStatus($input[Entity::STATUS]);
-        }
-    }
-
     protected function validateCurrentToPreviousStatusMapping(string $currentStatus, string $previousStatus)
     {
         Status::validateCurrentToPreviousMapping($currentStatus, $previousStatus);
@@ -379,6 +344,51 @@ class Core extends Base\Core
     protected function isStatusProcessed($input)
     {
         if ((isset($input[Entity::STATUS]) === true) and
+            ($input[Entity::STATUS] === Status::PROCESSED))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function runStatusValidationsForUpdate(Entity $bankingAccount, array $input)
+    {
+        $result = $this->shouldRunStatusValidationsForUpdate($bankingAccount, $input);
+
+        $processedStatus = $this->shouldRunProcessedStatusValidation($input, $result);
+
+        if ($result === true)
+        {
+            $this->validateCurrentToPreviousStatusMapping($input[Entity::STATUS], $bankingAccount->getStatus());
+
+            if ($processedStatus === true)
+            {
+                (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $input);
+            }
+        }
+    }
+
+    protected function shouldRunStatusValidationsForUpdate(Entity $bankingAccount, array $input)
+    {
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            $currentStatus = $bankingAccount->getStatus();
+
+            $nextStatus = $input[Entity::STATUS];
+
+            if ($currentStatus !== $nextStatus)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function shouldRunProcessedStatusValidation(array $input, bool $result)
+    {
+        if (($result === true) and
             ($input[Entity::STATUS] === Status::PROCESSED))
         {
             return true;
