@@ -158,6 +158,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+    public function getAccountProvider()
+    {
+        return $this->getAttribute(self::ACCOUNT_PROVIDER);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

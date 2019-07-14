@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Transaction\Processor;
 
-use RZP\Exception;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Pricing\Feature;
+use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Reversal as ReversalModel;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
@@ -28,7 +29,8 @@ class Reversal extends Base
     {
         $balance     = $this->source->balance;
         $accountType = optional($balance->getAccountType());
-        $channel     = optional($balance->getChannel());
+        $channel     = optional($balance->getAccountProvider());
+        $type        = optional($balance->getType());
 
         //
         // For direct(current) accounts, there are some channels for which we don't create txns
@@ -38,7 +40,7 @@ class Reversal extends Base
         // entity may be created when we get the payout status as reversed from FTS. This helps in communicating
         // the same to the merchant as early as possible
         //
-        if ($accountType === 'direct')
+        if (($type === Type::BANKING) and ($accountType === AccountType::DIRECT))
         {
             if (Channel::shouldSkipTransaction($channel) === true)
             {
@@ -99,8 +101,8 @@ class Reversal extends Base
         $this->credit = $this->source->getAmount() + $this->source->getFee();
 
         // Deducting only refund's debit amount in the forward transaction
-        // case 1 is when we are reversing the refund amount + fees -> in which case we credit only what has been debited
-        // case 2 is when we are reversing only the refund fees -> in which case we credit only the fees that has been debited
+        // case 1: when we are reversing the refund amount + fees -> here we credit only what has been debited
+        // case 2: when we are reversing only the refund fees -> here we credit only the fees that has been debited
         if ($this->source->getEntityType() === 'refund')
         {
             if ($this->source->getAmount() === $this->source->entity->getAmount())

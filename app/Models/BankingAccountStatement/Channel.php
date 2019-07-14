@@ -37,6 +37,6 @@ class Channel
     {
         self::validate($channel);
 
-        return in_array($channel, self::$skipTxnCreation);
+        return in_array($channel, self::$skipTxnCreation, true);
     }
 }
