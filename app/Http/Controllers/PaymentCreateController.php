@@ -442,7 +442,21 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['request']['method'] === 'redirect')
                 {
+                    $merchant = $this->app['basicauth']->getMerchant();
+
+                    $variant  = $this->app->razorx->getTreatment(
+                                    $merchant->getId(),
+                                    'redirect_form',
+                                    'live'
+                                );
+
+                    if (strtolower($variant) === 'on')
+                    {
+                        return $this->redirectToPaymentPostForm($data);
+                    }
+
                     $response = \Redirect::away($data['request']['url']);
+
                     $response->headers->set('X-Razorpay-TaskId', $data['request']['task_id']);
 
                     return $response;
@@ -520,6 +534,14 @@ class PaymentCreateController extends Controller
                 else if (($data['method'] === Payment\Method::CARDLESS_EMI) or
                          ($data['method'] === Payment\Method::PAYLATER))
                 {
+                    if ((isset($data['missing']) === true) and
+                        (in_array('contact' , $data['missing'], true) === true))
+                    {
+                        $data['cdn'] = $this->config->get('url.cdn.production');
+
+                        return View::make('gateway.gatewayCardlessEmiForm')
+                                   ->with('data', $data);
+                    }
                     $templateData = [
                        'data' => $data,
                        'cdn'  => $this->config->get('url.cdn.production')
@@ -611,6 +633,19 @@ class PaymentCreateController extends Controller
                    ->with('data', $postFormData);
     }
 
+    protected function redirectToPaymentPostForm($data)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+        $postFormData = $data;
+        $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
+        $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
+        $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
+
+        return View::make('public.paymentRedirectPostForm')
+                   ->with('data', $postFormData);
+    }
+
     /**
      * This contains the json response and does a call to the parent/checkout
      * window.
@@ -657,6 +692,18 @@ class PaymentCreateController extends Controller
 
     protected function logPaymentRequestEvent(array $input)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $input,
+            'merchant' => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ]
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $properties);
     }
 }

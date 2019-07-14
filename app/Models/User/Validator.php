@@ -97,15 +97,23 @@ class Validator extends Base\Validator
     ];
 
     protected static $createOtpRules = [
-        // When medium is not sent otp is sent to both mediums.
-        Entity::MEDIUM => 'sometimes|filled|in:sms,email',
-        Entity::ACTION => 'required|filled|in:verify_contact,create_payout,create_payout_batch',
+        // When medium is not sent OTP is sent to both mediums.
+        Entity::MEDIUM        => 'sometimes|filled|in:sms,email',
+        Entity::ACTION        => 'required|filled|in:'
+                                 . 'verify_contact,'
+                                 . 'create_payout,'
+                                 . 'create_payout_batch,'
+                                 . 'approve_payout,'
+                                 . 'approve_payout_bulk,',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
-        'amount'          => 'required_if:action,create_payout|integer|min:100',
-        'account_number'  => 'required_if:action,create_payout,create_payout_batch|alpha_num|between:5,22',
-        'fund_account_id' => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'         => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
+        'amount'              => 'required_if:action,create_payout,approve_payout|integer|min:100',
+        'account_number'      => 'required_if:action,create_payout,create_payout_batch,approve_payout,approve_payout_bulk|alpha_num|between:5,22',
+        'fund_account_id'     => 'required_if:action,create_payout|public_id|size:17',
+        'purpose'             => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
+        'payout_id'           => 'required_if:action,approve_payout|public_id|size:19',
+        'payout_total_amount' => 'required_if:action,approve_payout_bulk|integer|min:100',
+        'payout_count'        => 'required_if:action,approve_payout_bulk|integer|min:1',
     ];
 
     protected static $verifyOtpRules = [
@@ -146,14 +154,23 @@ class Validator extends Base\Validator
 
     protected function validateProductRole(array $input)
     {
-        if (empty($input['role']) === false)
+        if (empty($input[Entity::ROLE]) === true)
         {
-            $role = new Role();
+            return;
+        }
 
-            if ($role->validateProductRole($input['role'], $input['product']) === false)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
-            }
+        $role    = $input[Entity::ROLE];
+        $product = $input[Entity::PRODUCT];
+
+        /** @var Merchant\Entity|null $merchant */
+        $merchant = $this->entity->merchant;
+
+        if (Role::validateProductRoleForMerchant($role, $product, $merchant) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+                Entity::ROLE,
+                [Entity::ROLE => $role, Entity::PRODUCT => $product]);
         }
     }
 
@@ -185,9 +202,13 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
-        if (Role::exists($role) === false)
+        if ((Role::exists($role) === false) and
+            (BankingRole::exists($role) === false))
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+                Entity::ROLE,
+                [Entity::ROLE => $role]);
         }
     }
 

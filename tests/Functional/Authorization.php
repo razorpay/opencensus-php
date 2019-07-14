@@ -341,6 +341,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function authServiceAuth($mode = 'test')
+    {
+        $authServiceConfig = \Config::get('applications.auth_service');
+
+        $pwd = $authServiceConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function noAuth()
     {
         $this->directAuth();

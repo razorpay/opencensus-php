@@ -7,6 +7,8 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Permission;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Admin\Role\Entity as Role;
 use RZP\Models\Admin\Admin\Entity as Admin;
@@ -15,74 +17,106 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        // When a checker request is made, we need to first
-        // verify whether the admin user can check the action
-        // as well as whether we need any more approvals
-        // for the action at the current level or not.
-
-        $admin = $this->app['basicauth']->getAdmin();
-
-        // Get checker roles
-        $adminRoleIds = $admin->roles()->allRelatedIds()->toArray();
-
-        // We will need workflow ID and current level
-        // of the action in context. So get the action first and then
-        // fetch the others.
-
+        //
+        // We will need workflow ID and current level of the action in context.
+        // So we get the action first and then fetch the others.
+        //
+        /** @var Action\Entity $action */
         $action = $this->repo->workflow_action->findOrFailPublic(
             $input[Entity::ACTION_ID]);
 
         if ($action->getState() !== State\Name::OPEN)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES);
         }
 
-        // Get the workflow action's current level
+        $permissionName = $action->permission->getName();
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = $this->app['basicauth'];
+
+        //
+        // If the permission being worked on is a merchant side permission (ex: RazorpayX Workflows)
+        // the checkerEntity is the current user, else admin.
+        //
+        if (Permission\Name::isMerchantPermission($permissionName) === true)
+        {
+            $checkerEntity = $basicAuth->getUser();
+            $checkerType   = 'user';
+        }
+        else
+        {
+            $checkerEntity = $basicAuth->getAdmin();
+            $checkerType   = 'admin';
+        }
+
+        if ($checkerEntity === null)
+        {
+            throw new Exception\LogicException('Checker null, unexpected', null, ['input' => $input]);
+        }
+
+        //
+        // When a checker request is made, we need to first
+        // verify whether the admin/user can check the action
+        // as well as whether we need any more approvals
+        // for the action at the current level or not.
+        //
+
+        // Get checker roles
+        $checkerRoleIds = $checkerEntity->roles()->allRelatedIds()->toArray();
+
         $currentLevel = $action->getCurrentLevel();
 
         $workflowId = $action->workflow->getId();
 
-        // A superadmin should be able to execute any open
-        // workflow bypassing all the steps
-        if ($admin->isSuperAdmin() === true)
+        // A superadmin should be able to execute any open workflow bypassing all the steps
+        if (($checkerType === 'admin') and ($checkerEntity->isSuperAdmin() === true))
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($action, $admin, $input)
+            $this->repo->transactionOnLiveAndTest(function() use ($action, $checkerEntity, $input)
             {
                 // State change if checker rejected
                 if ($input[Entity::APPROVED] == 1)
                 {
-                    (new Action\Core)->approveActionForcefully($action, $admin);
+                    (new Action\Core)->approveActionForcefully($action, $checkerEntity);
 
-                    $this->executeAction($action, $admin->getSuperAdminRole());
+                    $this->executeAction($action, $checkerEntity->getSuperAdminRole(), $checkerEntity);
                 }
                 else
                 {
-                    (new Action\Core)->applyActionRejectionStateChanges($action, $admin, $admin->getSuperAdminRole());
+                    (new Action\Core)->applyActionRejectionStateChanges(
+                        $action,
+                        $checkerEntity,
+                        $checkerEntity->getSuperAdminRole());
                 }
             });
 
             return null;
         }
 
+        //
         // Ideally $steps should have only 1 row when searched by
         // level, workflow ID and role IDs. Sure there could be multiple
         // steps in the same level and all the roles may belong to the
-        // current admin in context that will lead to multiple $steps.
-        $steps = $this->repo->workflow_step
-                            ->findByLevelWorkflowIdAndRoleId($currentLevel, $workflowId, $adminRoleIds);
+        // current checker in context that will lead to multiple $steps.
+        //
+        $steps = $this->repo
+                      ->workflow_step
+                      ->findByLevelWorkflowIdAndRoleId($currentLevel, $workflowId, $checkerRoleIds);
 
         $checkNotRequired = false;
 
-        // If the admin checker in context need not perform any check
+        //
+        // If the checker in context need not perform any check
         // because the current steps does not require any check from any
         // of his roles then just set a flag and exit.
+        //
         if ($steps->count() === 0)
         {
             $checkNotRequired = true;
         }
 
-        // There may be multiple steps for the current admin's roles
+        //
+        // There may be multiple steps for the current checker's roles
         // in the current level. We just need to check if any of them
         // requires a check. If yes then we go ahead otherwise
         // fail with an exception.
@@ -103,6 +137,7 @@ class Core extends Base\Core
         // This also means that if the $opType is or then right after R1 check
         // the level would have been updated and the other step would never
         // come into consideration because the same level will never again execute.
+        //
         foreach ($steps as $step)
         {
             // Check if $step requires any check by matching
@@ -135,8 +170,12 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL);
         }
 
-        // ADMIN_ID is the checker's ID (current request's admin)
-        $input[Entity::ADMIN_ID] = $admin->getId();
+        // Legacy, fix
+        if ($checkerType === 'admin')
+        {
+            // ADMIN_ID is the checker's ID (current request's checker)
+            $input[Entity::ADMIN_ID] = $checkerEntity->getId();
+        }
 
         // Set the step for which checker is checking
         $input[Entity::STEP_ID] = $step->getId();
@@ -148,46 +187,56 @@ class Core extends Base\Core
 
         $checker->build($input);
 
-        $checker->admin()->associate($admin);
+        // Legacy, fix
+        if ($checkerType === 'admin')
+        {
+            $checker->admin()->associate($checkerEntity);
+        }
+
+        $checker->checker()->associate($checkerEntity);
 
         $checker->action()->associate($action);
 
         $checker->step()->associate($step);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $admin, $step)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $checkerEntity, $step)
         {
             $this->repo->saveOrFail($checker);
 
             // State change if checker rejected
             if ($checker->isApproved() === false)
             {
-                (new Action\Core)->applyActionRejectionStateChanges($action, $admin, $step->role);
+                (new Action\Core)->applyActionRejectionStateChanges($action, $checkerEntity, $step->role);
             }
             else
             {
+                //
                 // Once all the roles x reviewer_count have approved
                 // an action, we need to update the level so that
                 // we can show the action to next level/step checkers
+                //
                 (new Action\Core)->updateCurrentLevelIfNeeded($action);
 
+                //
                 // If all the checkers have approved then approve
                 // and close the action. This will also update
                 // action_state (state machine).
-                (new Action\Core)->checkAndMarkActionApproved($action, $admin);
+                //
+                (new Action\Core)->checkAndMarkActionApproved($action, $checkerEntity);
             }
         });
 
-        $this->executeAction($action, $step->role);
+        $this->executeAction($action, $step->role, $checkerEntity);
 
         return $checker;
     }
 
-    protected function executeAction(Action\Entity $action, Role $role)
+    protected function executeAction(Action\Entity $action, Role $role, Base\PublicEntity $checkerEntity)
     {
         // Currently we can execute from both route and here, will remove route eventually.
         if ($action->getApproved() === true)
         {
-            (new Action\Service)->executeAction($action->getPublicId(), $role);
+            (new Action\Service)->executeAction($action->getPublicId(), $role, $checkerEntity);
         }
     }
 }

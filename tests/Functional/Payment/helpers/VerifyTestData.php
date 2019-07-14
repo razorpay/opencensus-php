@@ -46,6 +46,26 @@ return [
         ],
     ],
 
+    'testNotVerifiablePaymentForCaptureVerify' => [
+        'request' => [
+            'url'    => '/payments/verify/all',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'not_applicable' => 2,
+                'locked_count'   => 0,
+                'authorized'     => 0,
+                'success'        => 1,
+                'timeout'        => 0,
+                'error'          => 0,
+                'unknown'        => 0
+            ],
+        ],
+    ],
+
     'testIsgBqrVerify' => [
         'request' => [
             'url'    => '/payments/verify/all',

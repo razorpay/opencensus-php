@@ -21,11 +21,16 @@ class NetbankingIssuerMapping
 
     public function addDowntime(string $gateway, string $bank)
     {
-        if ($gateway === Downtime\Entity::ALL)
+        if (($gateway === Downtime\Entity::ALL) and
+            (in_array($bank, [Downtime\Entity::ALL, Downtime\Entity::UNKNOWN])))
+        {
+            $this->addAllGatewayDowntimeForAllBank();
+        }
+        else if ($gateway === Downtime\Entity::ALL)
         {
             $this->addAllGatewayDowntimeForBank($bank);
         }
-        else if ($bank === Downtime\Entity::ALL)
+        else if (in_array($bank, [Downtime\Entity::ALL, Downtime\Entity::UNKNOWN]))
         {
             $this->addAllBankDowntimeForGateway($gateway);
         }
@@ -47,7 +52,14 @@ class NetbankingIssuerMapping
             }
         }
 
-        return $unavailableBanks;
+        if (count($unavailableBanks) === count($this->banks))
+        {
+            return [Downtime\Entity::ALL];
+        }
+        else
+        {
+            return $unavailableBanks;
+        }
     }
 
     public function getGatewaysSupportingBank(string $bank)
@@ -56,6 +68,19 @@ class NetbankingIssuerMapping
     }
 
     // --------------- Helper functions -------------------------------------
+
+    protected function addAllGatewayDowntimeForAllBank()
+    {
+        foreach ($this->banks as $bank => $gateway)
+        {
+            $this->banks[$bank] = [];
+        }
+
+        foreach ($this->gateways as $gateway => $bank)
+        {
+            $this->gateways[$gateway] = [];
+        }
+    }
 
     protected function addAllGatewayDowntimeForBank(string $bank)
     {
@@ -92,6 +117,10 @@ class NetbankingIssuerMapping
         {
             $this->initializeBanksForGateway($gateway);
         }
+
+        $this->banks[Downtime\Entity::ALL] = array_keys($this->gateways);
+
+        $this->gateways[Downtime\Entity::ALL] = array_keys($this->banks);
     }
 
     protected function initializeBanksForGateway(string $gateway)

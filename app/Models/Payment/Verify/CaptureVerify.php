@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Verify;
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use RZP\Models\Card\Network;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -58,11 +59,12 @@ class CaptureVerify extends Verify
 
                 case Action::FINISH:
                     $result = Result::UNKNOWN;
-                    $this->handleFinishAction($payment);
+                    $this->logForVerificationFailedReport($payment);
                     $this->updateVerifyBucket($payment, $filter, self::LAST);
                     break;
 
                 default:
+                    $this->logForVerificationFailedReport($payment);
                     $this->updateVerifyBucket($payment, $filter, self::NEXT);
                     break;
             }
@@ -134,11 +136,6 @@ class CaptureVerify extends Verify
                 (($payment->getVerifyBucket() == 9) and
                  ($result !== Result::SUCCESS)))
             {
-                // Put the settlement on hold if verification has failed
-                // $payment->setOnHold(true);
-
-                // $this->repo->saveOrFail($payment);
-
 
                 // Raise an alert on slack for failed captured payment verification
                 $message = 'Captured payment verification failed';
@@ -166,39 +163,28 @@ class CaptureVerify extends Verify
         return $result;
     }
 
-    protected function handleFinishAction($payment)
+    protected function logForVerificationFailedReport($payment)
     {
-        // Dry run temporary alert on slack for failed captured payment verification
-        $message = 'Dry Run - Captured payment verification failed - payment will go on hold (temporary alert - ignore)';
+        $gateway = $payment->getGateway();
 
-        $this->trace->info(
-            TraceCode::CAPTURE_VERIFY_ONHOLD_FINISH_ACTION,
-            [
-                'payment_id' => $payment->getId(),
-            ]
-        );
-
-        $slackArray = [
-            'payment_id'    => $payment->getId(),
-            'verified_at'   => $payment->getVerifyAt(),
-            'verify_bucket' => $payment->getVerifyBucket(),
-            'gateway'       => $payment->getGateway(),
-            'status'        => $payment->getStatus(),
-        ];
-
-        $this->slack->queue(
-            $message,
-            $slackArray,
-            [
-                'channel' => $this->slackChannel,
-            ]
-        );
-
-        $merchant = $payment->merchant;
-
-        if ($merchant->canHoldPayment() === true)
+        if (Payment\Gateway::isCaptureVerifyReportEnabledGateways($gateway) === true)
         {
-            (new Payment\Core)->updatePaymentOnHold($payment, true);
+            if (($gateway === Payment\Gateway::HITACHI) and ($payment->hasCard() === true)
+                and ($payment->card->getNetwork() === Network::getFullName(Network::RUPAY)))
+            {
+                return;
+            }
+
+            $this->trace->info(
+                TraceCode::CAPTURE_VERIFY_FAILED_PAYMENT,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'verified_at'   => $payment->getVerifyAt(),
+                    'verify_bucket' => $payment->getVerifyBucket(),
+                    'gateway'       => $payment->getGateway(),
+                    'status'        => $payment->getStatus(),
+                ]
+            );
         }
     }
 }

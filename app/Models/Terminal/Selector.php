@@ -4,16 +4,19 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Cache;
+use Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
 use RZP\Services\SmartRouting;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Entity;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Card\NetworkName;
@@ -136,6 +139,13 @@ class Selector extends Base\Core
             return $this->getTerminals();
         });
 
+        $this->processHitachiOnboarding($allTerminals);
+
+        $allTerminals = array_filter($allTerminals, function ($terminal)
+        {
+            return $terminal->isEnabled() === true;
+        });
+
         $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
@@ -144,8 +154,6 @@ class Selector extends Base\Core
         {
             return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
         });
-
-        $this->processHitachiOnboarding($allTerminals);
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
@@ -163,7 +171,6 @@ class Selector extends Base\Core
                 // not contain the sharp terminal and hence, making a call to DB.
                 //
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
-
                 $sortedTerminals = array($terminal);
             }
             else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
@@ -213,11 +220,32 @@ class Selector extends Base\Core
                 }
             }
             else if (($payment->isCard() === true) and
-                     (($payment->card->isDiners() === true) or
-                      ($payment->card->isNetworkUnknown() === true)))
+                     ($payment->card->isNetworkUnknown() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+            else if (($payment->isCard() === true) and
+                     ($payment->card->isDiners() === true))
+            {
+                $merchant = $this->input[Constants::MERCHANT];
+
+                $merchant->methods->setDinersCard(0);
+
+                $this->repo->saveOrFail($merchant->methods);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+            else if ($payment[Entity::METHOD] === Method::NETBANKING)
+            {
+                $merchant = $this->input[Constants::MERCHANT];
+
+                // raising an alert on slack for no terminal found
+                $this->alertNetbankingTerminalNotFound($merchant, $payment);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
             }
             else
             {
@@ -234,7 +262,7 @@ class Selector extends Base\Core
 
     protected function getTerminals()
     {
-        // Fetch terminals for both the current merchant and the shared Merchant
+        // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
@@ -421,15 +449,12 @@ class Selector extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_TERMINAL_CREATION_ERROR,
-                [
-                    'message'    => $e->getMessage(),
-                ]);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
         }
 
     }
 
+<<<<<<< HEAD
     private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals, $filteredTerminals)
     {
         try
@@ -577,4 +602,31 @@ class Selector extends Base\Core
         return $merchantData;
 
     }
+=======
+    protected function alertNetbankingTerminalNotFound(Merchant\Entity $merchant, $payment)
+    {
+        $alertArray = [
+            'merchant_id'           => $merchant->getId(),
+            'merchant_name'         => $merchant->getName(),
+            'bank'                  => $payment[Entity::BANK],
+            'amount'                => $payment[Entity::AMOUNT],
+        ];
+
+        $this->trace->critical(TraceCode::NETBANKING_TERMINAL_NOT_FOUND, $alertArray);
+
+        $message = 'Netbanking payment failed with no terminal found';
+
+        $this->app['slack']->queue(
+            $message,
+            $alertArray,
+            [
+                'channel'               => Config::get('slack.channels.pgob_alerts'),
+                'username'              => 'alerts',
+                'icon'                  => ':x:'
+            ]
+        );
+
+    }
+
+>>>>>>> ce16a5d61d9911a0f2283d5677a2ec19c3f95ca7
 }

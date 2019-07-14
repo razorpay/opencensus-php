@@ -43,14 +43,14 @@ return [
                         Header::EARLYSALARY_GATEWAY_MERCHANT_ID  => '123',
                         Header::EARLYSALARY_GATEWAY_MERCHANT_ID2 => '123',
                         Header::EARLYSALARY_TERMINAL_PASSWORD    => 'password',
-                        Header::EARLYSALARY_CATEGORY             => 'ecommerce'
+                        Header::EARLYSALARY_CATEGORY             => '1234'
                     ],
                     [
                         Header::EARLYSALARY_MERCHANT_ID          => '100000Razorpay',
                         Header::EARLYSALARY_GATEWAY_MERCHANT_ID  => '321',
                         Header::EARLYSALARY_GATEWAY_MERCHANT_ID2 => '321',
                         Header::EARLYSALARY_TERMINAL_PASSWORD    => 'password',
-                        Header::EARLYSALARY_CATEGORY             => 'ecommerce'
+                        Header::EARLYSALARY_CATEGORY             => '1234'
                     ]
                 ],
             ],

@@ -4,10 +4,11 @@ namespace RZP\Models\Admin\Role;
 
 use Config;
 
-use RZP\Constants\Table;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
@@ -33,6 +34,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->orgId($orgId)
+                    ->product(Product::PRIMARY)
                     ->with('permissions')
                     ->get();
     }
@@ -57,6 +59,28 @@ class Repository extends Base\Repository
                     ->where(Entity::ORG_ID, '=', $org->getId())
                     ->where(Entity::NAME, '=', $name)
                     ->firstOrFailPublic();
+    }
+
+    public function findByOrgIdAndName(string $orgId, string $name): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where(Entity::NAME, '=', $name)
+                    ->firstOrFailPublic();
+    }
+
+    /**
+     * @param string $orgId
+     * @param array  $roleNames
+     *
+     * @return mixed
+     */
+    public function fetchIdsByOrgIdNames(string $orgId, array $roleNames)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, $orgId)
+                    ->whereIn(Entity::NAME, $roleNames)
+                    ->get([Entity::ID]);
     }
 
     public function getSuperAdminRoleByOrgId(string $orgId)

@@ -65,6 +65,7 @@ class Base extends Core
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_SIB         = 'NetbankingSib';
     const NETBANKING_YESB        = 'NetbankingYesb';
+    const NETBANKING_CUB         = 'NetbankingCub';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
     const NETBANKING_IDFC        = 'NetbankingIdfc';
@@ -95,6 +96,7 @@ class Base extends Core
     const UPI_AXIS               = 'UpiAxis';
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
+    const PHONEPE                = 'Phonepe';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -119,9 +121,10 @@ class Base extends Core
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_SIB         => ['epayments@sib.co.in'],
         self::NETBANKING_YESB        => [''],
+        self::NETBANKING_CUB         => [''],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_EQUITAS     => [],
-        self::NETBANKING_CANARA      => [],
+        self::NETBANKING_CANARA      => ['canarabank@canarabank.com'],
         self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
@@ -150,6 +153,7 @@ class Base extends Core
         self::UPI_HULK               => [],
         self::AMEX                   => [],
         self::ISG                    => [],
+        self::PHONEPE                => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
 
         // Used when someone from the team needs to send the
@@ -178,6 +182,7 @@ class Base extends Core
         Gateway::NETBANKING_FEDERAL     => self::NETBANKING_FEDERAL,
         Gateway::NETBANKING_SIB         => self::NETBANKING_SIB,
         Gateway::NETBANKING_YESB        => self::NETBANKING_YESB,
+        Gateway::NETBANKING_CUB         => self::NETBANKING_CUB,
         Gateway::NETBANKING_EQUITAS     => self::NETBANKING_EQUITAS,
         Gateway::NETBANKING_BOB         => self::NETBANKING_BOB,
         Gateway::NETBANKING_VIJAYA      => self::NETBANKING_VIJAYA,
@@ -200,7 +205,7 @@ class Base extends Core
         Gateway::UPI_HULK               => self::UPI_HULK,
         Gateway::ISG                    => self::ISG,
         Gateway::EBS                    => self::EBS,
-        Gateway::BT_DASHBOARD           => self::VIRTUAL_ACC_YESBANK,
+        Gateway::BT_YESBANK             => self::VIRTUAL_ACC_YESBANK,
 
         Gateway::AMEX                   => [
             Gateway::ACQUIRER_AMEX   => self::AMEX,
@@ -232,6 +237,7 @@ class Base extends Core
         Gateway::WALLET_OLAMONEY        => self::OLAMONEY,
         Gateway::WALLET_PAYUMONEY       => self::PAYUMONEY,
         Gateway::WALLET_PAYZAPP         => self::PAYZAPP,
+        Gateway::WALLET_PHONEPE         => self::PHONEPE,
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
         ],

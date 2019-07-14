@@ -35,6 +35,28 @@ return [
         'amount'            => 50000,
     ],
 
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'YESB',
+                'account_number' => '0040304030403040',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testTamperedAmount' => [
         'response'  => [
             'content'     => [

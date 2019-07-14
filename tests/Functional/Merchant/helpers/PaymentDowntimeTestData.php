@@ -8,7 +8,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 return [
     'testGetCardDowntimeForRupayGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -29,7 +29,7 @@ return [
 
     'testGetNoCardDowntimeForSingleRupayGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -44,7 +44,7 @@ return [
 
     'testGetUpiDowntimeForAllGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -56,7 +56,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'upi',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -69,7 +69,7 @@ return [
 
     'testGetUpiDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -81,7 +81,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'upi',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -94,7 +94,7 @@ return [
 
     'testGetNoUpiDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -108,7 +108,7 @@ return [
 
     'testGetNetbankingDowntimeForSingleBankBilldeskGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -120,7 +120,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -134,7 +134,7 @@ return [
 
     'createNetbankingAllGatewayDowntime' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -146,7 +146,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -160,7 +160,7 @@ return [
 
     'testGetNetbankingDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -172,7 +172,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'netbanking',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -186,7 +186,7 @@ return [
 
     'testGetNoNetbankingDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -200,7 +200,7 @@ return [
 
     'testGetCardDowntimeForSingleNetworkHdfcGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -212,7 +212,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'card',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -226,7 +226,7 @@ return [
 
     'testGetCardDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -238,7 +238,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'card',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
@@ -252,7 +252,7 @@ return [
 
     'testGetNoCardDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -264,9 +264,53 @@ return [
         ],
     ],
 
+    'testPaymentDowntimeStartedWebhook' => [
+        'entity'   => 'event',
+        'event'    => 'payment.downtime.started',
+        'contains' => [
+            'payment.downtime',
+        ],
+        'payload'  => [
+            'payment.downtime' => [
+                'entity' => [
+                    'entity'     => 'payment.downtime',
+                    'method'     => 'netbanking',
+                    'status'     => 'started',
+                    'scheduled'  => false,
+                    'severity'   => 'medium',
+                    'instrument' => [
+                        'bank' => 'SBIN',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPaymentDowntimeResolvedWebhook' => [
+        'entity'   => 'event',
+        'event'    => 'payment.downtime.resolved',
+        'contains' => [
+            'payment.downtime',
+        ],
+        'payload'  => [
+            'payment.downtime' => [
+                'entity' => [
+                    'entity'     => 'payment.downtime',
+                    'method'     => 'netbanking',
+                    'status'     => 'resolved',
+                    'scheduled'  => false,
+                    'severity'   => 'medium',
+                    'instrument' => [
+                        'bank' => 'SBIN',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetWalletDowntimeForSingleGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -278,7 +322,7 @@ return [
                         'entity'     => 'payment.downtime',
                         'method'     => 'wallet',
                         'end'        => null,
-                        'status'     => 'scheduled',
+                        'status'     => 'started',
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [

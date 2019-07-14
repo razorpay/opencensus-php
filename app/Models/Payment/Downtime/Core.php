@@ -38,7 +38,7 @@ class Core extends Base\Core
 
     public function createFromGatewayDowntimes(array $input = [])
     {
-        $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes();
+        $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes($withoutTerminal = true);
 
         foreach (Payment\Method::getAllPaymentMethods() as $method)
         {

@@ -19,7 +19,7 @@ final class Product
     const PRIMARY = 'primary';
 
     /**
-     * Razorpay X - Business Banking 😎
+     * RazorpayX - Business Banking 😎
      */
     const BANKING = 'banking';
 

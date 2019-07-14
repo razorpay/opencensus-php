@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Upi;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
 
 /**

@@ -72,12 +72,20 @@ class Entity
     const SETTLEMENT                = 'settlement';
     const TRANSACTION               = 'transaction';
     const FEE_BREAKUP               = 'fee_breakup';
+    const CREDITNOTE                = 'creditnote';
     const PAYMENT_LINK              = 'payment_link';
     const GATEWAY_RULE              = 'gateway_rule';
     const GATEWAY_FILE              = 'gateway_file';
     const BANK_ACCOUNT              = 'bank_account';
     const FILE_HANDLER              = 'file_handler';
-    const SUBSCRIPTION              = 'subscription';
+    // Subscription
+    const SUBSCRIPTION                  = 'subscription';
+    const SUBSCRIPTION_TRANSACTION      = 'subscription_transaction';
+    const SUBSCRIPTION_VERSION          = 'subscription_version';
+    const SUBSCRIPTION_CYCLE            = 'subscription_cycle';
+    const SUBSCRIPTION_UPDATE_REQUEST   = 'subscription_update_request';
+
+    const EXTERNAL                  = 'external';
     const ENTITY_OFFER              = 'entity_offer';
     const FUND_ACCOUNT              = 'fund_account';
     const ENTITY_ORIGIN             = 'entity_origin';
@@ -93,11 +101,13 @@ class Entity
     const VIRTUAL_ACCOUNT           = 'virtual_account';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const TERMINAL_ACTION           = 'terminal_action';
+    const BANKING_ACCOUNT           = 'banking_account';
     const PAYMENT_DOWNTIME          = 'payment.downtime';
     const MERCHANT_REQUEST          = 'merchant_request';
     const CUSTOMER_BALANCE          = 'customer_balance';
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
     const MERCHANT_INVOICE          = 'merchant_invoice';
+    const CREDITNOTE_INVOICE        = 'creditnote_invoice';
     const NODAL_BENEFICIARY         = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS         = 'payment_analytics';
     const SETTLEMENT_DETAILS        = 'settlement_details';
@@ -111,7 +121,7 @@ class Entity
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
-    const BANKING_ACCOUNT           = 'banking_account';
+    const BANKING_ACCOUNT_STATEMENT = 'banking_account_statement';
 
     // heimdall
     const ORG                   = 'org';
@@ -127,12 +137,13 @@ class Entity
     //
     // Workflow Entities
     //
-    const WORKFLOW              = 'workflow';
-    const WORKFLOW_STEP         = 'workflow_step';
-    const WORKFLOW_ACTION       = 'workflow_action';
-    const ACTION_CHECKER        = 'action_checker';
-    const ACTION_STATE          = 'action_state';
-    const ACTION_COMMENT        = 'action_comment';
+    const WORKFLOW                      = 'workflow';
+    const WORKFLOW_STEP                 = 'workflow_step';
+    const WORKFLOW_ACTION               = 'workflow_action';
+    const ACTION_CHECKER                = 'action_checker';
+    const ACTION_STATE                  = 'action_state';
+    const ACTION_COMMENT                = 'action_comment';
+    const WORKFLOW_PAYOUT_AMOUNT_RULES  = 'workflow_payout_amount_rules';
 
     // Generic comment and state entities
     const COMMENT               = 'comment';
@@ -216,6 +227,8 @@ class Entity
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
     const UPI_AIRTEL             = 'upi_airtel';
+    const GOOGLE_PAY             = 'google_pay';
+    const WORLDLINE              = 'worldline';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -272,7 +285,7 @@ class Entity
         ],
         self::TERMINAL  => [
             QueryCacheConstants::VERSION => 'v1',
-            QueryCacheConstants::TTL     => 15,
+           QueryCacheConstants::TTL     => 15,
         ],
         self::PRICING  => [
             QueryCacheConstants::VERSION => 'v1',
@@ -285,6 +298,10 @@ class Entity
         self::METHODS  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 15,
+        ],
+        self::IIN  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 60,
         ],
     ];
 
@@ -388,6 +405,8 @@ class Entity
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
         self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
+        self::CREDITNOTE                => \RZP\Models\CreditNote::class,
+        self::CREDITNOTE_INVOICE        => \RZP\Models\CreditNote\Invoice::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,
@@ -461,27 +480,30 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
         self::MOZART                 => \RZP\Gateway\Mozart::class,
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
+        self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
+        self::WORLDLINE              => \RZP\Gateway\Worldline::class,
 
         // heimdall
-        self::ORG                   => \RZP\Models\Admin\Org::class,
-        self::ROLE                  => \RZP\Models\Admin\Role::class,
-        self::ADMIN                 => \RZP\Models\Admin\Admin::class,
-        self::GROUP                 => \RZP\Models\Admin\Group::class,
-        self::ADMIN_LEAD            => \RZP\Models\Admin\AdminLead::class,
-        self::PERMISSION            => \RZP\Models\Admin\Permission::class,
-        self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
-        self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
-        self::ORG_FIELD_MAP         => \RZP\Models\Admin\Org\FieldMap::class,
-        self::WORKFLOW              => \RZP\Models\Workflow::class,
-        self::WORKFLOW_STEP         => \RZP\Models\Workflow\Step::class,
-        self::WORKFLOW_ACTION       => \RZP\Models\Workflow\Action::class,
-        self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
-        self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
-        self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
-        self::STATE_REASON          => \RZP\Models\State\Reason::class,
+        self::ORG                          => \RZP\Models\Admin\Org::class,
+        self::ROLE                         => \RZP\Models\Admin\Role::class,
+        self::ADMIN                        => \RZP\Models\Admin\Admin::class,
+        self::GROUP                        => \RZP\Models\Admin\Group::class,
+        self::ADMIN_LEAD                   => \RZP\Models\Admin\AdminLead::class,
+        self::PERMISSION                   => \RZP\Models\Admin\Permission::class,
+        self::ADMIN_TOKEN                  => \RZP\Models\Admin\Admin\Token::class,
+        self::ORG_HOSTNAME                 => \RZP\Models\Admin\Org\Hostname::class,
+        self::ORG_FIELD_MAP                => \RZP\Models\Admin\Org\FieldMap::class,
+        self::WORKFLOW                     => \RZP\Models\Workflow::class,
+        self::WORKFLOW_STEP                => \RZP\Models\Workflow\Step::class,
+        self::WORKFLOW_ACTION              => \RZP\Models\Workflow\Action::class,
+        self::ACTION_CHECKER               => \RZP\Models\Workflow\Action\Checker::class,
+        self::ACTION_STATE                 => \RZP\Models\Workflow\Action\State::class,
+        self::ACTION_COMMENT               => \RZP\Models\Workflow\Action\Comment::class,
+        self::STATE_REASON                 => \RZP\Models\State\Reason::class,
+        self::WORKFLOW_PAYOUT_AMOUNT_RULES => \RZP\Models\Workflow\PayoutAmountRules::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
@@ -502,6 +524,11 @@ class Entity
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
+
+        self::SUBSCRIPTION_UPDATE_REQUEST => \RZP\Models\Plan\Subscription\UpdateRequest::class,
+        self::SUBSCRIPTION_VERSION        => \RZP\Models\Plan\Subscription\Version::class,
+        self::SUBSCRIPTION_CYCLE          => \RZP\Models\Plan\Subscription\Cycle::class,
+        self::SUBSCRIPTION_TRANSACTION    => \RZP\Models\Plan\Subscription\SubscriptionTransaction::class
     ];
 
     protected static $repository = [

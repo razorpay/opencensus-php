@@ -111,7 +111,7 @@ class Dashboard
             {
                 $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $traceData);
 
-                throw new Exception\IntegrationException('Dashboard returned a non-json response', $traceData);
+                throw new Exception\IntegrationException('Dashboard returned a non-json response', null, $traceData);
             }
 
             if ((isset($content['success']) === false) or
@@ -123,7 +123,7 @@ class Dashboard
 
                 $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $traceData);
 
-                throw new Exception\IntegrationException('Dashboard returned false status in response', $traceData);
+                throw new Exception\IntegrationException('Dashboard returned false status in response', null, $traceData);
             }
         }
 

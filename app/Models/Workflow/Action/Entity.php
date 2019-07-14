@@ -4,10 +4,19 @@ namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\State;
 use RZP\Models\Comment;
+use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Admin\Permission;
 
-
+/**
+ * Class Entity
+ *
+ * @package RZP\Models\Workflow\Action
+ *
+ * @property Permission\Entity $permission
+ * @property Workflow\Entity   $workflow
+ */
 class Entity extends Base\Entity
 {
     const ID                    = 'id';
@@ -18,6 +27,7 @@ class Entity extends Base\Entity
     const WORKFLOW_ID           = 'workflow_id';
     const PERMISSION_ID         = 'permission_id';
     const STATE_CHANGER_ID      = 'state_changer_id';
+    const STATE_CHANGER_TYPE    = 'state_changer_type';
     const STATE_CHANGER_ROLE    = 'state_changer_role';
     const STATE_CHANGER_ROLE_ID = 'state_changer_role_id';
     const MAKER_ID              = 'maker_id';
@@ -53,6 +63,7 @@ class Entity extends Base\Entity
         self::APPROVED,
         self::STATE,
         self::STATE_CHANGER_ID,
+        self::STATE_CHANGER_TYPE,
         self::STATE_CHANGER_ROLE_ID
     ];
 
@@ -79,6 +90,7 @@ class Entity extends Base\Entity
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
         self::STATE_CHANGER_ID,
+        self::STATE_CHANGER_TYPE,
         self::STATE_CHANGER_ROLE,
     ];
 
@@ -114,6 +126,7 @@ class Entity extends Base\Entity
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
         self::STATE_CHANGER_ID,
+        self::STATE_CHANGER_TYPE,
         self::STATE_CHANGER_ROLE,
     ];
 
@@ -155,7 +168,7 @@ class Entity extends Base\Entity
 
     public function stateChanger()
     {
-        return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+        return $this->morphTo();
     }
 
     public function stateChangerRole()
@@ -193,6 +206,13 @@ class Entity extends Base\Entity
         $state = $this->getState();
 
         return ($state === State\Name::EXECUTED);
+    }
+
+    public function isRejected()
+    {
+        $state = $this->getState();
+
+        return ($state === State\Name::REJECTED);
     }
 
     public function getMakerId()

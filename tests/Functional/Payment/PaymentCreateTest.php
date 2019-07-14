@@ -3,10 +3,14 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Models\Bank\IFSC;
+use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
@@ -15,11 +19,13 @@ use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PaymentCreateTest extends TestCase
 {
     use OAuthTrait;
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -1128,5 +1134,160 @@ class PaymentCreateTest extends TestCase
         $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+
+    public function testPaymentByUpiTpvForSpecificBanks()
+    {
+        // mocking the gateway call to check the bank account in input
+        $this->mockGateway();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $order = $this->fixtures->create('order', ['bank' => IFSC::KKBK, 'account_number' => '923729373']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['bank'] = IFSC::KKBK;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+    }
+
+    protected function mockGateway()
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+            Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway,$action,$input,$mode)
+            {
+                $length = strlen($input['order']['account_number']);
+                $this->assertEquals(14, $length);
+            });
+
+        $this->app->instance('gateway', $gateway);
+    }
+    public function testPaymentFailOnDinersAndDisableMerchant()
+    {
+        $this->changeEnvToNonTest();
+
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        // enabling the diners cards
+        $this->fixtures->merchant->enableCardNetworks('10000000000000',['dicl']);
+
+        // disabling the terminal as we want to test for "No terminal found"
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '30569309025904';
+
+        $this->doAuthPayment($payment);
+
+        $entity = $this->getDbLastEntity('methods', 'live');
+
+        // checking whether diners card got disabled or not for the merchant
+        $this->assertEquals(false, $entity->isCardNetworkEnabled('DICL'));
+
+    }
+
+    public function testForRuPayPaymentOnHitachiTerminalModePurchase()
+    {
+        $this->mockCardVault();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'RuPay',
+        ]);
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 2,
+            ]
+        );
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+        $payment['amount'] = 1000000;
+        $content = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $paymentObj = $this->getLastEntity('payment', true);
+        $this->assertNull($paymentObj['gateway_captured'] );
+    }
+
+    public function testForMasterCardPaymentOnHitachiTerminalModePurchase()
+    {
+        $this->mockCardVault();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'card');
+        $this->fixtures->iin->create([
+            'iin' => '555555',
+            'country' => 'IN',
+            'network' => 'MasterCard',
+        ]);
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::HITACHI_TERMINAL,
+            [
+                'mode' => 2,
+            ]
+        );
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+        $payment['amount'] = 1000000;
+        $content = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $paymentObj = $this->getLastEntity('payment', true);
+        $this->assertTrue($paymentObj['gateway_captured'] );
+    }
+
+    public function testPaymentOnNetbankingEbsTerminalModePurchase()
+    {
+        $this->mockCardVault();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal',['mode'=>2]);
+        $this->fixtures->terminal->edit(
+            \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL,
+            [
+                'mode' => 2,
+            ]
+        );
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['amount'] = 1000000;
+        $content = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $paymentObj = $this->getLastEntity('payment', true);
+        $this->assertTrue($paymentObj['gateway_captured'] );
+    }
+
+    public function testPaymentFailOnNetBankingAndDisableMerchant()
+    {
+        $this->changeEnvToNonTest();
+
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        // disabling the terminal as we want to test for "No terminal found"
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
+
+        $res = $this->doAuthPayment($payment);
+
+        $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 }

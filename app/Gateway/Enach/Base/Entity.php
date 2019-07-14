@@ -99,6 +99,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ERROR_CODE);
     }
 
+    public function getErrorMessage()
+    {
+        return $this->getAttribute(self::ERROR_MESSAGE);
+    }
+
     public function setUmrn(string $umrn)
     {
         $this->setAttribute(self::UMRN, $umrn);

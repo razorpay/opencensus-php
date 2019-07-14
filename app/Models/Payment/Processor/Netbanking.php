@@ -125,6 +125,9 @@ class Netbanking
         IFSC::CSBK,
         IFSC::ALLA,
         IFSC::IDFB,
+        IFSC::SIBL,
+        IFSC::YESB,
+        IFSC::CIUB,
     ];
 
     protected static $gatewaySupportedBanks = [
@@ -359,6 +362,9 @@ class Netbanking
         Gateway::NETBANKING_YESB => [
             'retail' => [
                 IFSC::YESB,
+            ],
+            'tpv' => [
+                IFSC::YESB
             ]
         ],
         Gateway::NETBANKING_AXIS => [
@@ -382,6 +388,9 @@ class Netbanking
         ],
         Gateway::NETBANKING_SIB => [
             'retail' => [
+                IFSC::SIBL
+            ],
+            'tpv' => [
                 IFSC::SIBL
             ]
         ],
@@ -429,7 +438,10 @@ class Netbanking
         Gateway::NETBANKING_CUB => [
             'retail' => [
                 IFSC::CIUB,
-            ]
+            ],
+            'tpv' => [
+                IFSC::CIUB
+            ],
         ],
         Gateway::NETBANKING_FEDERAL => [
             'retail' => [

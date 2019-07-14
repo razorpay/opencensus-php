@@ -6,6 +6,8 @@ class Actions
 {
     protected $event;
 
+    protected $shouldUpdate = true;
+
     /**
      * @return mixed
      */
@@ -28,6 +30,24 @@ class Actions
     public function setEvent($event): self
     {
         $this->event = $event;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldUpdate(): bool
+    {
+        return $this->shouldUpdate;
+    }
+
+    /**
+     * @param bool $shouldUpdate
+     */
+    public function setShouldUpdate(bool $shouldUpdate): self
+    {
+        $this->shouldUpdate = $shouldUpdate;
 
         return $this;
     }

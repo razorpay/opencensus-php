@@ -51,6 +51,8 @@ class Validator extends Base\Validator
         Entity::SOURCE_TYPE    => 'required_with:source_id|string',
         Entity::FAILURE_REASON => 'sometimes|string',
         Entity::MODE           => 'sometimes|string',
+        'beneficiary_name'     => 'sometimes|string',
+        'internal_error'       => 'sometimes|boolean',
         'bank_processed_time'  => 'sometimes|string',
         'fund_transfer_id'     => 'required|int',
         'extra_info'           => 'sometimes|string',
@@ -140,14 +142,14 @@ class Validator extends Base\Validator
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
-        $maxUpiAmount = FundAccount\Validator::MAX_VPA_AMOUNT;
+        $maxUpiAmount = FundAccount\Validator::MAX_UPI_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
             (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
             (($mode === Mode::UPI) and ($amount > $maxUpiAmount)))
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+                ErrorCode::BAD_REQUEST_FTA_AMOUNT_MODE_MISMATCH,
                 null,
                 [
                     'amount'            => $amount,

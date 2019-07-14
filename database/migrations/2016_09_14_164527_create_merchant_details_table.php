@@ -41,6 +41,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BUSINESS_NAME)
                   ->nullable();
 
+            $table->string(MerchantDetail::BUSINESS_DESCRIPTION)
+                  ->nullable();
+
             $table->string(MerchantDetail::BUSINESS_DBA)
                   ->nullable();
 
@@ -56,6 +59,12 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BUSINESS_REGISTERED_ADDRESS)
                   ->nullable();
 
+            $table->string(MerchantDetail::BUSINESS_REGISTERED_ADDRESS_L2)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BUSINESS_REGISTERED_COUNTRY)
+                  ->nullable();
+
             $table->string(MerchantDetail::BUSINESS_REGISTERED_STATE)
                   ->nullable();
 
@@ -66,6 +75,12 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->string(MerchantDetail::BUSINESS_OPERATION_ADDRESS)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BUSINESS_OPERATION_ADDRESS_L2)
+                  ->nullable();
+
+            $table->string(MerchantDetail::BUSINESS_OPERATION_COUNTRY)
                   ->nullable();
 
             $table->string(MerchantDetail::BUSINESS_OPERATION_STATE)
@@ -243,6 +258,9 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable();
 
             $table->text(MerchantDetail::INTERNAL_NOTES)
+                  ->nullable();
+
+            $table->text(MerchantDetail::CUSTOM_FIELDS)
                   ->nullable();
 
             $table->string(MerchantDetail::MARKETPLACE_ACTIVATION_STATUS, 30)

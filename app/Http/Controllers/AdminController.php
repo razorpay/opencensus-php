@@ -224,6 +224,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getHourlyReconciliationStatusSummary()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchHourlyReconciliationSummary($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createAdminBatch()
     {
         $input = Request::all();
@@ -301,5 +310,21 @@ class AdminController extends Controller
         $response = $this->app['card.cardVault']->createVaultToken($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function setGatewayDowntimeConf()
+    {
+        $input  = Request::all();
+
+        $data = $this->service()->setGatewayDowntimeConf($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getGatewayDowntimeConf()
+    {
+        $data = $this->service()->getGatewayDowntimeConf();
+
+        return ApiResponse::json($data);
     }
 }

@@ -140,6 +140,8 @@ return array(
         'reconciliation2'      => 'C847BUR61',
         // reconciliation_info
         'reconciliation_info'  => 'CAP0K6S5U',
+        //recon_alerts
+        'recon_alerts'         => 'CGXKVCMAL',
         // transactions_risky
         'risky'                => 'C0RL2C917',
         // settlements
@@ -164,9 +166,13 @@ return array(
         // operations
         'operations'           => 'C0KUX9WSE',
         // Fund Account Validation logs
-        'fav_logs'  =>  'CFQFNH3S7',
+        'fav_logs'             =>  'CFQFNH3S7',
         //FTS logs
-        'fts_alerts' => 'CGJA83JUW',
+        'fts_alerts'           => 'CGJA83JUW',
+        // tech_alerts channel
+        'tech_alerts'          => 'C5FD7THSP',
+        // pgob_alerts channel
+        'pgob_alerts'          => 'CL985FWUX',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

@@ -6,7 +6,6 @@ class Type
 {
     const CREDIT      = 'credit';
     const DEBIT       = 'debit';
-    const RUBAY_DEBIT = 'rupay_debit';
     const UNKNOWN     = 'unknown';
 
     public static function getType($type, $network = null)

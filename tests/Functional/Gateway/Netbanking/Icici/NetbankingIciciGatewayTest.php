@@ -8,15 +8,16 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Icici\ResponseFields;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Terminal\Options;
-use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class NetbankingIciciGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -132,6 +133,47 @@ class NetbankingIciciGatewayTest extends TestCase
         assert($content['payment']['verified'] === 1);
 
         $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 0]);
+    }
+
+    public function testCorporatePendingPayment()
+    {
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
+
+        $server = $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'auth')
+            {
+                $content['PAID'] = 'P';
+                unset($content['BID']);
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            }
+        );
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('created', $payment['status']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION', $payment['internal_error_code']);
+
+        $this->mockCheckerCallbackForPaymentFromBank($server, $payment);
+
+        // Entry refreshed with the actual payment
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function testAmountTampering()
@@ -485,5 +527,19 @@ class NetbankingIciciGatewayTest extends TestCase
                 $content[ResponseFields::AMOUNT] = '300';
             }
         });
+    }
+
+    protected function mockCheckerCallbackForPaymentFromBank($server, $payment)
+    {
+        // Initial pending reponse based entry
+        list($content, $url) = $server->getCheckerCallbackForPaymentFromBank($payment);
+
+        $request = [
+            'content' => $content,
+            'url'     => $url,
+            'method'  => 'post'
+        ];
+
+        $this->sendRequest($request);
     }
 }

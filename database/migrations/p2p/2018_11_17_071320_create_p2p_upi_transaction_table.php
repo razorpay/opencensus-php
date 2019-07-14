@@ -47,6 +47,12 @@ class CreateP2pUpiTransactionTable extends Migration
 
             $table->string(Entity::REF_ID, 50);
 
+            $table->string(Entity::REF_URL, 50)
+                  ->nullable();
+
+            $table->char(Entity::MCC, 4)
+                  ->nullable();
+
             $table->string(Entity::GATEWAY_ERROR_CODE, 255)
                   ->nullable();
 

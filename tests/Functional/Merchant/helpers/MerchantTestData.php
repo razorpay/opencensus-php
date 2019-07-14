@@ -951,6 +951,26 @@ return [
         ]
     ],
 
+    'testEditMerchantDefaultRefundSpeed' => [
+        'request' => [
+            'content' => [
+                'default_refund_speed' => 'optimum',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'default_refund_speed' => 'optimum'
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testStoreImageAndGetLogoUrl' => [
         'request' => [
             'content' => [],
@@ -2709,7 +2729,7 @@ return [
 
     'testGetWalletDowntime' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -4429,4 +4449,17 @@ return [
         ],
     ],
 
+    'testGetOrgDetails' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/org',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'id'                => 'org_100000razorpay',
+                'primary_host_name' => 'dashboard.razorpay.in',
+            ],
+        ],
+    ],
 ];

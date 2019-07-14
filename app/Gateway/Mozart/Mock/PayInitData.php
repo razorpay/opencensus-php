@@ -192,4 +192,17 @@ class PayInitData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function google_pay($entities)
+    {
+        $response = [
+            'data'              => [],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => 'DUMMY_MOZART_ID',
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+        ];
+
+        return $response;
+    }
 }

@@ -146,6 +146,7 @@ class Service extends Base\Service
 
         $total  = 0;
         $failed = 0;
+        $failedIds = [];
         // Iteratively call core's edit method on each row
         foreach ($rows as $row)
         {
@@ -175,10 +176,12 @@ class Service extends Base\Service
                 $this->trace->traceException($e, null, null, $tracePayload);
 
                 ++$failed;
+
+                $failedIds[] = $merchantId;
             }
         }
 
-        return compact('total', 'failed');
+        return compact('total', 'failed', 'failedIds');
     }
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)
@@ -476,6 +479,32 @@ class Service extends Base\Service
         }
 
         return $businessCategories;
+    }
+
+    /**
+     * This function is used for getting needs clarification reasons for fields
+     *
+     * @return array
+     */
+    public function getNeedsClarificationReasons()
+    {
+        $needsClarificationReasonsMap = NeedsClarificationReasons::REASON_MAPPING;
+        $reasonDetails                = NeedsClarificationReasonsList::REASON_DETAILS;
+        $response                     = [];
+
+        foreach ($needsClarificationReasonsMap as $field => $reasons)
+        {
+            $reasonList = [];
+
+            foreach ($reasons as $reason)
+            {
+                $reasonList[$reason] = $reasonDetails[$reason];
+            }
+
+            $response[$field] = [NeedsClarificationReasons::REASONS => $reasonList];
+        }
+
+        return $response;
     }
 
     /**

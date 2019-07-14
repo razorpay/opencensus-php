@@ -56,6 +56,8 @@ class Gateway extends Base\Gateway
         ]
     ];
 
+    protected $nonVerifyRefundProviders = [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY];
+
     public function setGatewayParams($input, $mode, $terminal)
     {
         parent::setGatewayParams($input, $mode, $terminal);
@@ -143,6 +145,12 @@ class Gateway extends Base\Gateway
             $url = $responseArray[ResponseFields::REDIRECT_URL];
 
             $key = sprintf(self::REDIRECT_URL_CACHE_KEY, $cacheKey);
+
+            $brandingCacheKey = sprintf(self::BRANDING_URL_CACHE_KEY, $cacheKey);
+
+            $brandingUrl = $responseArray[ResponseFields::EXTRA];
+
+            $this->createCacheData($brandingCacheKey, $brandingUrl);
         }
         else
         {
@@ -151,9 +159,14 @@ class Gateway extends Base\Gateway
             $key = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
         }
 
-        $this->app['cache']->put($emiPlanKey, $emiPlans, self::CARD_CACHE_TTL);
+        $this->createCacheData($emiPlanKey, $emiPlans);
 
-        $this->app['cache']->put($key, $url, self::CARD_CACHE_TTL);
+        $this->createCacheData($key, $url);
+    }
+
+    protected function createCacheData($key, $value, $ttl = self::CARD_CACHE_TTL)
+    {
+        $this->app['cache']->put($key, $value, $ttl);
     }
 
 
@@ -353,11 +366,6 @@ class Gateway extends Base\Gateway
     public function reverse(array $input)
     {
         parent::action($input, Action::REVERSE);
-
-        if ($input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER] !== CardlessEmi::FLEXMONEY)
-        {
-            return;
-        }
 
         return $this->refund($input);
     }
@@ -953,6 +961,30 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         parent::action($input, Action::VERIFY_REFUND);
+
+        $this->provider = $input[Constants\Entity::TERMINAL][Terminal\Entity::GATEWAY_ACQUIRER];
+
+        if (in_array($this->provider, $this->nonVerifyRefundProviders, true) === true)
+        {
+            $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+            $processedRefunds = $this->getProcessedRefunds();
+
+            if (in_array($input[Constants\Entity::REFUND][Refund\Entity::ID], $processedRefunds, true) === true)
+            {
+                return true;
+            }
+
+            if (in_array($input[Constants\Entity::REFUND][Refund\Entity::ID], $unprocessedRefunds, true) === true)
+            {
+                return false;
+            }
+
+            throw new Exception\LogicException(
+                'verify refund not implemented for provider');
+        }
+
+        $this->provider = strtoupper($this->provider);
 
         $response = $this->sendVerifyRefundRequest($input);
 

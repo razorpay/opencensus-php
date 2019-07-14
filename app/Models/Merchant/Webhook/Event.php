@@ -33,6 +33,7 @@ class Event
     const SUBSCRIPTION_HALTED               = 'subscription.halted';
     const SUBSCRIPTION_CANCELLED            = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED            = 'subscription.completed';
+    const SUBSCRIPTION_UPDATED              = 'subscription.updated';
     const TOKEN_CONFIRMED                   = 'token.confirmed';
     const TOKEN_REJECTED                    = 'token.rejected';
     const SETTLEMENT_PROCESSED              = 'settlement.processed';
@@ -50,6 +51,9 @@ class Event
     const PAYMENT_DOWNTIME_RESOLVED         = 'payment.downtime.resolved';
     const PAYOUT_QUEUED                     = 'payout.queued';
     const PAYOUT_INITIATED                  = 'payout.initiated';
+    const REFUND_SPEED_CHANGED              = 'refund.speed_changed';
+    const REFUND_PROCESSED                  = 'refund.processed';
+    const REFUND_FAILED                     = 'refund.failed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -70,6 +74,7 @@ class Event
         self::SUBSCRIPTION_HALTED,
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
+        self::SUBSCRIPTION_UPDATED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
@@ -87,6 +92,9 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED,
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
+        self::REFUND_SPEED_CHANGED,
+        self::REFUND_PROCESSED,
+        self::REFUND_FAILED,
     ];
 
     /**
@@ -113,6 +121,7 @@ class Event
         self::SUBSCRIPTION_CHARGED,
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
+        self::SUBSCRIPTION_UPDATED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
@@ -130,6 +139,9 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED,
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
+        self::REFUND_SPEED_CHANGED,
+        self::REFUND_PROCESSED,
+        self::REFUND_FAILED,
     ];
 
     protected static $bitPosition = [
@@ -169,6 +181,10 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED         => 34,
         self::PAYOUT_QUEUED                     => 35,
         self::PAYOUT_INITIATED                  => 36,
+        self::SUBSCRIPTION_UPDATED              => 37,
+        self::REFUND_SPEED_CHANGED              => 38,
+        self::REFUND_PROCESSED                  => 39,
+        self::REFUND_FAILED                     => 40,
     ];
 
     /**
@@ -191,6 +207,7 @@ class Event
         self::SUBSCRIPTION_CHARGED              => [Product::PRIMARY],
         self::SUBSCRIPTION_CANCELLED            => [Product::PRIMARY],
         self::SUBSCRIPTION_COMPLETED            => [Product::PRIMARY],
+        self::SUBSCRIPTION_UPDATED              => [Product::PRIMARY],
         self::TOKEN_CONFIRMED                   => [Product::PRIMARY],
         self::TOKEN_REJECTED                    => [Product::PRIMARY],
         self::SETTLEMENT_PROCESSED              => [Product::PRIMARY],
@@ -208,6 +225,9 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED         => [Product::PRIMARY],
         self::PAYOUT_QUEUED                     => [Product::BANKING],
         self::PAYOUT_INITIATED                  => [Product::PRIMARY, Product::BANKING],
+        self::REFUND_SPEED_CHANGED              => [Product::PRIMARY],
+        self::REFUND_PROCESSED                  => [Product::PRIMARY],
+        self::REFUND_FAILED                     => [Product::PRIMARY],
     ];
 
     /**
@@ -233,6 +253,7 @@ class Event
         self::SUBSCRIPTION_CHARGED              => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_CANCELLED            => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_COMPLETED            => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_UPDATED              => Entity::SUBSCRIPTION,
         self::TOKEN_CONFIRMED                   => Entity::TOKEN,
         self::TOKEN_REJECTED                    => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED              => Entity::SETTLEMENT,
@@ -248,6 +269,9 @@ class Event
         self::PAYMENT_DOWNTIME_RESOLVED         => Entity::PAYMENT_DOWNTIME,
         self::PAYOUT_QUEUED                     => Entity::PAYOUT,
         self::PAYOUT_INITIATED                  => Entity::PAYOUT,
+        self::REFUND_SPEED_CHANGED              => Entity::REFUND,
+        self::REFUND_PROCESSED                  => Entity::REFUND,
+        self::REFUND_FAILED                     => Entity::REFUND,
     ];
 
     public static $eventsToFeatureMap = [
@@ -257,6 +281,7 @@ class Event
         self::SUBSCRIPTION_CHARGED              => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_CANCELLED            => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_COMPLETED            => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_UPDATED              => Feature\Constants::SUBSCRIPTIONS,
         self::TOKEN_CONFIRMED                   => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED          => Feature\Constants::VIRTUAL_ACCOUNTS,
@@ -268,6 +293,11 @@ class Event
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
         self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
+        self::PAYMENT_DOWNTIME_STARTED          => Feature\Constants::EXPOSE_DOWNTIMES,
+        self::PAYMENT_DOWNTIME_RESOLVED         => Feature\Constants::EXPOSE_DOWNTIMES,
+        self::REFUND_SPEED_CHANGED              => Feature\Constants::CARD_TRANSFER_REFUND,
+        self::REFUND_PROCESSED                  => Feature\Constants::CARD_TRANSFER_REFUND,
+        self::REFUND_FAILED                     => Feature\Constants::SHOW_REFUND_PUBLIC_STATUS,
     ];
 
     /**

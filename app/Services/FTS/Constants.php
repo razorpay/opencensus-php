@@ -8,6 +8,8 @@ final class Constants
 
     const VPA                           = 'vpa';
 
+    const BANKING_ACCOUNT               = 'banking_account';
+
     const CARD                          = 'card';
 
     const TYPE                          = 'type';
@@ -60,6 +62,8 @@ final class Constants
 
     const ACCOUNT_TYPE                  = 'account_type';
 
+    const PREFERRED_MODE                = 'preferred_mode';
+
     const STATUS_CREATED                = 'created';
 
     const ACCOUNT_NUMBER                = 'account_number';
@@ -97,4 +101,16 @@ final class Constants
     const BENEFICIARY_BANK_NAME         = 'beneficiary_bank_name';
 
     const FUND_ACCOUNT_VALIDATION       = 'fund_account_validation';
+
+    const CREDENTIALS                   = 'credentials';
+
+    const MOZART_IDENTIFIER             = 'mozart_identifier';
+
+    const MESSAGE                       = 'message';
+
+    const BODY                          = 'body';
+
+    const INTERNAL_ERROR                = 'internal_error';
+
+    const CODE                          = 'code';
 }

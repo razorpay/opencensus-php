@@ -573,6 +573,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return null;
         }
 
+        // Do not modify contact in case of bank transfer and bharat qr
+        // because in these cases contact is not passed in payment request
+        // input but rather it is set internally from customer table.
+        //
+        // If Receiver is present it either bank transfer or bharat qr payment.
+        if (empty($input['receiver']) === false)
+        {
+            return $input['contact'];
+        }
+
         $contact = str_replace(' ', '', $contact);
         $contact = str_replace('-', '', $contact);
         $contact = str_replace('(', '', $contact);
@@ -1811,6 +1821,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getAmountUntransferred()
     {
         return $this->getAmount() - $this->getAmountTransferred();
+    }
+
+    public function getAmountAuthorized()
+    {
+        $this->getAttribute(self::AMOUNT_AUTHORIZED);
     }
 
     /**
@@ -3175,6 +3190,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if (($this->hasTerminal() === true) and
             ($this->terminal->isDirectSettlement() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isReconciled()
+    {
+        if (($this->hasTransaction() === true) and
+            ($this->transaction->isReconciled() === true))
         {
             return true;
         }

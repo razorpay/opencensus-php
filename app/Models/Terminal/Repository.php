@@ -153,8 +153,7 @@ class Repository extends Base\Repository
 
         $cacheTag = Entity::getCacheTag($merchant->getId());
 
-        $query = $this->newQuery()
-                      ->enabled();
+        $query = $this->newQuery();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
@@ -433,6 +432,14 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where($method, '=', 1)
                     ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
+                    ->enabled()
+                    ->get();
+    }
+
+    public function findManyEnabledByIds($ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
                     ->enabled()
                     ->get();
     }

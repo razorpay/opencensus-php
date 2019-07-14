@@ -5,14 +5,15 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 
 use RZP\Exception;
-use RZP\Trace\TraceCode;
-use RZP\Constants\Entity as E;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Settlement;
+use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
 use RZP\Models\FundTransfer\Base\Reconciliation\Mock;
-use RZP\Models\Settlement;
 
 class Service extends Base\Service
 {

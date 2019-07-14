@@ -33,6 +33,7 @@ return [
             Permission::CONFIRM_USER => [
                 'assignable'  => true,
             ],
+            Permission::CANCEL_BATCH => 'cancel batch',
         ],
 
         PermissionCategory::RAZORX => [
@@ -139,6 +140,7 @@ return [
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
             Permission::EDIT_IIN_RULE                       => '',
+            Permission::EDIT_IIN_RULE_BULK                  => '',
             Permission::EDIT_ACTIVATE_MERCHANT              => [
                 'assignable' => true,
                 'workflow'   => true
@@ -738,6 +740,14 @@ return [
             Permission::BANKING_UPDATE_ACCOUNT => [
                 'description' => 'Updating banking account details of the merchant',
                 'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::PAYOUTS => [
+            Permission::CREATE_PAYOUT => [
+                'description' => 'Merchant can create a new payout',
+                'assignable'  => false,
+                'workflow'    => true,
             ],
         ],
     ],

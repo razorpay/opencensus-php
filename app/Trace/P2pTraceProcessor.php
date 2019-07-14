@@ -23,7 +23,7 @@ class P2pTraceProcessor
             'request_id'        => $this->getRequestId(),
             'merchant_id'       => $this->getMerchantId(),
             'device_id'         => $this->getDeviceId(),
-            'device_token_id'   => $this->getDeviceTokenId(),
+            'device_contact_no' => $this->getDeviceContactNumber(),
         ];
 
         return $record;
@@ -53,11 +53,11 @@ class P2pTraceProcessor
         }
     }
 
-    public function getDeviceTokenId()
+    public function getDeviceContactNumber()
     {
         if ($this->context->isContextDevice())
         {
-            return $this->context->getDeviceToken()->getId();
+            return $this->context->getDevice()->getContact();
         }
     }
 

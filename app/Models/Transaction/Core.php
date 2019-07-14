@@ -597,7 +597,7 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
@@ -959,6 +959,7 @@ class Core extends Base\Core
         $txn->accountBalance()->associate($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
+
         $this->repo->balance->updateBalance($merchantBalance);
 
         $txn->setBalance($merchantBalance->getBalance());
@@ -1522,5 +1523,26 @@ class Core extends Base\Core
                     'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
         }
+    }
+
+
+    //Async Update Merchant Balance
+    public function asyncUpdateMerchantBalance($payment, $txn)
+    {
+        $processor = $this->getFactory($payment);
+
+        $processor->setTransaction($txn);
+
+        $processor->setMerchantBalanceLockForUpdate();
+
+        $processor->updateCredits();
+
+        $processor->updateBalances();
+
+        $txn->setBalance(null);
+
+        $txn->setBalanceUpdated(true);
+
+        $this->repo->saveOrFail($txn);
     }
 }

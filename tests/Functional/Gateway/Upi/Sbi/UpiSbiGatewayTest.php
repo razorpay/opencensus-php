@@ -381,6 +381,7 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testCbsDownCallback()
     {
+        $this->markTestSkipped();
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
         $paymentId = $response[Constants::PAYMENT_ID];

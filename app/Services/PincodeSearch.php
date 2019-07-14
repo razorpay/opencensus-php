@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Cache;
 use Requests;
 use RZP\Exception;
+use RZP\Models\Pincode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\IndianStates;
@@ -18,11 +19,6 @@ class PincodeSearch
     const ROUTE = '/resource/6176ee09-3d56-4a3b-8115-21841576b2f6';
 
     const LIMIT = 1;
-
-    // @see: https://en.wikipedia.org/wiki/Postal_Index_Number
-    const MAX_PINCODE = 859999;
-
-    const MIN_PINCODE = 110000;
 
     const CACHE_TTL = 86400;
 
@@ -126,6 +122,7 @@ class PincodeSearch
         {
             throw new Exception\IntegrationException(
                 'Third Party Error',
+                null,
                 $response
             );
         }
@@ -141,18 +138,22 @@ class PincodeSearch
 
             throw new Exception\IntegrationException(
                 $errorMessage,
+                null,
                 $response
             );
         }
 
         throw new Exception\IntegrationException(
             'Something Went Wrong',
+            null,
             $response);
     }
 
     public function fetchCityAndStateFromPincode($pincode): array
     {
-        if ($this->validate($pincode) === false)
+        $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
+
+        if ($pincodeValidator->validate($pincode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $pincode . ' is not correct.');
@@ -182,33 +183,14 @@ class PincodeSearch
         $response = $response['records'][0];
 
         $response = [
-            "city"          => $response['districtname'] ?? null,
-            "state"         => $response['circlename'] ?? null,
-            "state_code"    => IndianStates::getStateCode($response['statename']),
+            'city'          => $response['districtname'] ?? null,
+            'state'         => $response['circlename'] ?? null,
+            'state_code'    => IndianStates::getStateCode($response['statename']),
         ];
 
         $this->cache->put($key, $response, static::CACHE_TTL);
 
         return $response;
-    }
-
-    /**
-     * Some basic checks around pincode
-     * @param $pincode Input Pincode
-     * @see https://en.wikipedia.org/wiki/Postal_Index_Number
-     * @return boolean
-     */
-    protected function validate($pincode)
-    {
-        if ((strlen($pincode) !== 6) or
-            (ctype_digit($pincode) === false) or
-            ($pincode > self::MAX_PINCODE) or
-            ($pincode < self::MIN_PINCODE))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     protected function getParams(int $pincode)

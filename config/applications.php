@@ -67,6 +67,7 @@ return [
     ],
 
     'mozart' => [
+        'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
         'password'  => env('MOZART_PASSWORD'),
     ],
@@ -134,6 +135,10 @@ return [
     ],
     VirtualAccount\Provider::YESBANK => [
         'secret'    => env('YESBANK_SECRET'),
+    ],
+
+    'rbl' => [
+        'secret' => env('RBL_SECRET'),
     ],
 
     'bharatqr' => [

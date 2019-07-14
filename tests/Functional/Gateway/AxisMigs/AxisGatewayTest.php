@@ -883,7 +883,12 @@ class AxisGatewayTest extends TestCase
 
         $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+        $this->fixtures->merchant->editDefaultRefundSpeed('optimum');
+
+        $refund = $this->refundPayment($payment['id'], $payment['amount'], ['is_fta' => true]);
 
         // Assert for fta created for given refund
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -893,9 +898,9 @@ class AxisGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         // Refund will be in created state
-        $this->assertEquals($refund['status'], 'created');
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
     }
-
 
     public function testPaymentRefundWithCardTransferFailed()
     {
@@ -906,6 +911,10 @@ class AxisGatewayTest extends TestCase
         $card = $this->getDbLastEntity('card');
 
         $this->fixtures->iin->edit($card['iin'], ['type' => 'debit']);
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $refund = $this->refundPayment($payment['id']);
 

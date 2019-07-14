@@ -972,11 +972,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCancelInvoicesOfBatch(Batch\Entity $batch)
+    public function validateCancelInvoicesOfBatch(array $batch)
     {
-        if ($batch->getStatus() !== Batch\Status::PROCESSED)
+        if (($batch[Batch\Entity::STATUS] !== Batch\Status::PROCESSED) and
+            ($batch[Batch\Entity::STATUS] !== Batch\Status::PARTIALLY_PROCESSED)
+        )
         {
-            throw new BadRequestValidationFailureException('batch should be in processed status to cancel');
+            throw new BadRequestValidationFailureException('batch should be in processed or partially processed status to cancel');
         }
     }
 

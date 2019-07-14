@@ -19,6 +19,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Jobs\Invoice\BatchJob as InvoiceBatchJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
@@ -134,7 +135,24 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $pendingDispatch = InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            $response = 'off';
+
+            if (empty($batchIdOrBatch) === false)
+            {
+                $response = $this->app->razorx->getTreatment(
+                    $merchant->getId(),
+                    Merchant\RazorxTreatment::CHANGE_QUEUE_BATCH_INVOICE,
+                    $this->mode);
+            }
+
+            if ((empty($batchIdOrBatch) === false) and ($response === 'on'))
+            {
+                $pendingDispatch = InvoiceBatchJob::dispatch($this->mode, InvoiceBatchJob::ISSUED, $invoice->getId());
+            }
+            else
+            {
+                $pendingDispatch = InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            }
 
             // Internal flow (e.g. via subscription) requires delay to accommodate for time in wrapping txn commit
             if ($invoice->hasSubscription())
@@ -206,7 +224,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function issue(Entity $invoice, Merchant\Entity $merchant): Entity
+    public function issue(Entity $invoice, Merchant\Entity $merchant, $batchId = null): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_ISSUE_REQUEST,
@@ -225,7 +243,25 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+        $response = 'off';
+
+        if (empty($batchId) === false)
+        {
+            $response = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::CHANGE_QUEUE_BATCH_INVOICE,
+                $this->mode);
+        }
+
+        // route batch jobs to batch invoice queue
+        if ((empty($batchId) === false) and ($response === 'on'))
+        {
+            InvoiceBatchJob::dispatch($this->mode, InvoiceBatchJob::ISSUED, $invoice->getId());
+        }
+        else
+        {
+            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+        }
 
         return $invoice;
     }
@@ -783,11 +819,15 @@ class Core extends Base\Core
      *
      * @param  Batch\Entity $batch
      */
-    public function cancelInvoicesOfBatch(Batch\Entity $batch)
+    public function cancelInvoicesOfBatch(array $batch)
     {
         (new Validator)->validateCancelInvoicesOfBatch($batch);
 
-        InvoiceBatchCancelJob::dispatch($this->mode, $batch->getId());
+        $batchId = $batch[Batch\Entity::ID];
+
+        Batch\Entity::verifyIdAndStripSign($batchId);
+
+        InvoiceBatchCancelJob::dispatch($this->mode, $batchId, $batch[Batch\Entity::SUCCESS_COUNT]);
     }
 
     /**

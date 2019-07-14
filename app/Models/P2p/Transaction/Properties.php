@@ -16,6 +16,11 @@ class Properties
     const DEFAULT_EXPIRE_AT = 1800;
 
     /**
+     * As per NPCI guidelines default description is UPI
+     */
+    const DEFAULT_UPI_DESCRIPTION = 'UPI';
+
+    /**
      * @var string
      */
     protected $action;
@@ -79,7 +84,8 @@ class Properties
                 $this->input->putMany([
                         Entity::TYPE                => Type::PAY,
                         Entity::FLOW                => Flow::DEBIT,
-                        Entity::MODE                => Mode::DEFAULT,
+                        Entity::MODE                => $this->getTransactionMode(),
+                        Entity::DESCRIPTION         => $this->getTransactionDescription(),
                         Entity::STATUS              => Status::CREATED,
                         Entity::INTERNAL_STATUS     => Status::CREATED,
                     ]);
@@ -95,6 +101,7 @@ class Properties
                         Entity::TYPE                => Type::COLLECT,
                         Entity::FLOW                => Flow::CREDIT,
                         Entity::MODE                => Mode::DEFAULT,
+                        Entity::DESCRIPTION         => $this->getTransactionDescription(),
                         Entity::STATUS              => Status::CREATED,
                         Entity::INTERNAL_STATUS     => Status::CREATED,
                         Entity::EXPIRE_AT           => $this->getTransactionExpireAt(),
@@ -111,6 +118,7 @@ class Properties
                     Entity::TYPE                => Type::COLLECT,
                     Entity::FLOW                => Flow::DEBIT,
                     Entity::MODE                => Mode::DEFAULT,
+                    Entity::DESCRIPTION         => $this->getTransactionDescription(),
                     Entity::STATUS              => Status::CREATED,
                     Entity::INTERNAL_STATUS     => Status::CREATED,
                     Entity::EXPIRE_AT           => $this->getTransactionExpireAt(),
@@ -127,6 +135,7 @@ class Properties
                     Entity::TYPE                => Type::PAY,
                     Entity::FLOW                => Flow::CREDIT,
                     Entity::MODE                => Mode::DEFAULT,
+                    Entity::DESCRIPTION         => $this->getTransactionDescription(),
                     Entity::STATUS              => Status::CREATED,
                     Entity::INTERNAL_STATUS     => Status::CREATED,
                 ]);
@@ -147,6 +156,7 @@ class Properties
         $this->input->forget([
             Entity::PAYER,
             Entity::PAYEE,
+            Entity::UPI,
         ]);
     }
 
@@ -239,5 +249,15 @@ class Properties
         }
 
         return $expireAt;
+    }
+
+    protected function getTransactionMode()
+    {
+        return $this->input->get(Entity::MODE, Mode::DEFAULT);
+    }
+
+    protected function getTransactionDescription()
+    {
+        return $this->input->get(Entity::DESCRIPTION, self::DEFAULT_UPI_DESCRIPTION);
     }
 }

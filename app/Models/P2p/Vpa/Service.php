@@ -54,6 +54,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function setDefault(array $input): array
+    {
+        $response = $this->processor->setDefault($input);
+
+        return $response;
+    }
+
     public function checkAvailability(array $input): array
     {
         $response = $this->processor->checkAvailability($input);
