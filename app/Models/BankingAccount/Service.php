@@ -33,6 +33,7 @@ class Service extends Base\Service
 
     public function updateInternally(string $id, array $input): array
     {
+        /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
         $channel = $bankingAccount->getChannel();
@@ -80,7 +81,7 @@ class Service extends Base\Service
 
         return $account->toArrayPublic();
     }
-  
+
     public function storeCredentials(string $id, array $input)
     {
         $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
