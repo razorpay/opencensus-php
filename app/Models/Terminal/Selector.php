@@ -409,12 +409,6 @@ class Selector extends Base\Core
 
     protected function processHitachiOnboarding(&$allTerminals)
     {
-        /*
-         * Maintain a list of blacklisted MCCs (merchant categories) in the code(hard coded),
-         * and skip Hitachi automatic onboarding for merchants belonging to these categories.
-         * Use case is high-risk merchants, who should not be onboarded via Hitachi.
-         *
-         */
         try
         {
             $payment = $this->input['payment'];
