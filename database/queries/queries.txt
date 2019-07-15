@@ -5035,6 +5035,9 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
+ALTER TABLE `banking_account_statement`
+  ADD UNIQUE INDEX `banking_account_statement_bank_transaction_id_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`);
+
 ALTER TABLE transactions
     CHANGE reference5 balance_updated TINYINT(4),
     ALGORITHM=INPLACE, LOCK=NONE;
