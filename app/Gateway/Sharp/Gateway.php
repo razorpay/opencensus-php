@@ -323,9 +323,15 @@ class Gateway extends Base\Gateway
 
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
+            $bankNamePrefix = strtoupper(substr($input['terminal']['gateway_acquirer'], 0, 3));
+            $randomStr = strtoupper(substr(md5(time()), 0, 32));
+
             $acquirer = [
                 Payment\Entity::VPA => $input['payment']['vpa'] ?? $input['gateway']['vpa'],
+                ///REFERENCE16 refers to RRN field
                 Payment\Entity::REFERENCE16 => (string) random_integer(12),
+                ///REFERENCE1 refers to upi_gateway_txn_id
+                Payment\Entity::REFERENCE1 => ($bankNamePrefix . $randomStr),
             ];
         }
 

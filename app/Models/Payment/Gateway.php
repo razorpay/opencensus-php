@@ -78,6 +78,7 @@ class Gateway
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
+    const WORLDLINE              = 'worldline';
 
     const CARD_FSS               = 'card_fss';
 
@@ -118,6 +119,8 @@ class Gateway
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
+    const GOOGLE_PAY         = 'google_pay';
+
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -281,6 +284,7 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::CARDLESS_EMI,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -825,8 +829,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
-            Network::DICL,
-            Network::RUPAY,
+            Network::DICL
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -917,6 +920,11 @@ class Gateway
             Network::RUPAY,
         ],
         self::ISG => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+        ],
+        self::WORLDLINE => [
             Network::VISA,
             Network::MC,
             Network::RUPAY,
@@ -1089,6 +1097,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_MINDGATE,
         self::ISG,
+        self::WORLDLINE,
     ];
 
     public static $authTypeToEmandateGatewayMap = [

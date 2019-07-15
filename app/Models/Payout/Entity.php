@@ -14,15 +14,20 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
+use RZP\Models\Workflow;
+use RZP\Models\Admin\Org;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
+use RZP\Base\RepositoryManager;
+use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Feature\Constants as Features;
 
 /**
  * @property Customer\Entity    $customer
@@ -66,6 +71,7 @@ class Entity extends Base\PublicEntity
     const PENDING_AT             = 'pending_at';
     const PROCESSED_AT           = 'processed_at';
     const REVERSED_AT            = 'reversed_at';
+    const REJECTED_AT            = 'rejected_at';
     const QUEUED_AT              = 'queued_at';
     const CANCELLED_AT           = 'cancelled_at';
     const SETTLED_ON             = 'settled_on';
@@ -100,10 +106,17 @@ class Entity extends Base\PublicEntity
     const CONTACT_EMAIL = 'contact_email';
     const CONTACT_TYPE  = 'contact_type';
 
+    const PENDING_ON_ME    = 'pending_on_me';
+    const PENDING_ON_ROLES = 'pending_on_roles';
+    const PENDING_ON_USER  = 'pending_on_user';
+
     // Input keys
     const ACCOUNT_NUMBER       = 'account_number';
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
     const PAYOUT_IDS           = 'payout_ids';
+
+    // Output keys
+    const WORKFLOW_HISTORY = 'workflow_history';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
@@ -111,11 +124,12 @@ class Entity extends Base\PublicEntity
     const PAYOUT_MODE     = 'payout_mode';
 
     // Relations
-    const USER          = 'user';
-    const CUSTOMER      = 'customer';
-    const FUND_ACCOUNT  = 'fund_account';
-    const TRANSACTION   = 'transaction';
-    const REVERSAL      = 'reversal';
+    const USER            = 'user';
+    const CUSTOMER        = 'customer';
+    const FUND_ACCOUNT    = 'fund_account';
+    const TRANSACTION     = 'transaction';
+    const REVERSAL        = 'reversal';
+    const WORKFLOW_ACTION = 'workflow_action';
 
     protected $queueFlag = false;
 
@@ -142,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::SETTLED_ON,
@@ -180,11 +195,13 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::WORKFLOW_HISTORY,
         self::REFERENCE_ID,
         self::NARRATION,
         self::BATCH_ID,
@@ -204,6 +221,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::TRANSACTION_ID,
         self::TRANSACTION,
+        self::PENDING_ON_USER,
+        self::WORKFLOW_HISTORY,
         self::NOTES,
         self::FEES,
         self::TAX,
@@ -223,6 +242,7 @@ class Entity extends Base\PublicEntity
         self::PENDING_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::FAILURE_REASON,
         self::CREATED_AT,
     ];
@@ -242,6 +262,8 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::FUND_ACCOUNT_ID,
         self::FUND_ACCOUNT,
+        self::PENDING_ON_USER,
+        self::WORKFLOW_HISTORY,
         self::REVERSAL,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
@@ -257,6 +279,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::TRANSACTION,
@@ -298,6 +321,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AT,
         self::PENDING_AT,
         self::REVERSED_AT,
+        self::REJECTED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
         self::INITIATED_AT,
@@ -345,6 +369,11 @@ class Entity extends Base\PublicEntity
     public function reversal()
     {
         return $this->belongsTo(Reversal\Entity::class, self::ID, Reversal\Entity::ENTITY_ID);
+    }
+
+    public function workflowActions()
+    {
+        return $this->morphMany(Workflow\Action\Entity::class, 'entity', 'entity_name');
     }
 
     /**
@@ -527,6 +556,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REVERSED_AT);
     }
 
+    public function getRejectedAt()
+    {
+        return $this->getAttribute(self::REJECTED_AT);
+    }
+
     public function getQueuedAt()
     {
         return $this->getAttribute(self::QUEUED_AT);
@@ -565,6 +599,11 @@ class Entity extends Base\PublicEntity
     public function isStatusCancelled()
     {
         return ($this->getStatus() === Status::CANCELLED);
+    }
+
+    public function isStatusBeforeCreate()
+    {
+        return (in_array($this->getStatus(), Status::$preCreateStatuses, true) === true);
     }
 
     /**
@@ -766,6 +805,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REVERSED_AT, $date);
     }
 
+    public function setRejectedAt(int $date = null)
+    {
+        $this->setAttribute(self::REJECTED_AT, $date);
+    }
+
     public function setQueuedAt($date)
     {
         $this->setAttribute(self::QUEUED_AT, $date);
@@ -821,6 +865,55 @@ class Entity extends Base\PublicEntity
     public function getInternalStatusAttribute()
     {
         return $this->getStatus();
+    }
+
+    public function setPublicPendingOnUserAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::PENDING_ON_USER]);
+
+            return;
+        }
+
+        if (($basicAuth->getUser() === null) or
+            ($this->merchant === null) or
+            ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === false))
+        {
+            return;
+        }
+
+        /** @var RepositoryManager $repo */
+        $repo = app('repo');
+
+        $userRoleIds = $basicAuth->getUser()->roles()->allRelatedIds()->toArray();
+
+        $permissionId = $repo->permission
+                             ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
+                             ->first();
+
+        $pendingActions = $repo->workflow_action
+                               ->getPendingActionsOnRoleIds($this, $permissionId, $userRoleIds);
+
+        $attributes[self::PENDING_ON_USER] = ($pendingActions->count() > 0);
+    }
+
+    public function setPublicWorkflowHistoryAttribute(array & $attributes)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($attributes[self::WORKFLOW_HISTORY]);
+
+            return;
+        }
+
+        $attributes[self::WORKFLOW_HISTORY] = $this->getWorkflowHistoryData();
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
@@ -954,7 +1047,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedIdOrNull($attributes[self::TRANSACTION_ID]);
+        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedIdOrNull($this->getTransactionId());
     }
 
     public function setPublicTransactionAttribute(array & $attributes)
@@ -1076,6 +1169,14 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
             unset($attributes[self::REVERSED_AT]);
+        }
+    }
+
+    public function setPublicRejectedAtAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::REJECTED_AT]);
         }
     }
 
@@ -1215,5 +1316,107 @@ class Entity extends Base\PublicEntity
             $relations = array_except($txn->getRelations(), Transaction\Entity::SOURCE);
             $txn->setRelations($relations);
         }
+    }
+
+    // Workflow history helper functions
+
+    protected function getWorkflowHistoryData(): array
+    {
+        /** @var RepositoryManager $repo */
+        $repo = app('repo');
+
+        // TODO: Only get actions for the create_payout permission
+        $workflowActions = $this->workflowActions()
+                                ->with(['workflow', 'workflow.steps', 'workflow.steps.role'])
+                                ->get();
+
+        if ($workflowActions->count() > 1)
+        {
+            // Should not exist for the create_payout permission.
+            // Trace for debug and fail
+        }
+
+        $workflowAction = $workflowActions->first();
+
+        if ($workflowAction === null)
+        {
+            return [];
+        }
+
+        $workflowAction = $repo->workflow_action->getActionDetailsPublic($workflowAction->getId(), Org\Entity::RAZORPAY_ORG_ID);
+
+        $workflowAction = $workflowAction->first()->toArray();
+
+        $steps = $workflowAction['workflow']['steps'] ?? [];
+
+        $data = [
+            'current_level' => $workflowAction['current_level'],
+            'steps'         => self::serializeWorkflowSteps($steps),
+        ];
+
+        return $data;
+    }
+
+    public static function serializeWorkflowSteps(array $steps): array
+    {
+        $data = [];
+
+        foreach ($steps as $step)
+        {
+            $level = $step['level'];
+
+            $roleData = self::serializeWorkflowStepRoles($step);
+
+            $step = array_only($step, ['id', 'level', 'op_type']);
+
+            if (empty($data[$level - 1]) === true)
+            {
+                $data[$level - 1] = $step;
+            }
+
+            $totalReviewersForStep = $data[$level - 1]['total_reviewer_count'] ?? 0;
+
+            $data[$level - 1]['total_reviewer_count'] = $totalReviewersForStep + $roleData['reviewer_count'];
+            $data[$level - 1]['roles'][] = $roleData;
+        }
+
+        return $data;
+    }
+
+    protected static function serializeWorkflowStepRoles(array $step): array
+    {
+        $stepRole = $step['role'];
+
+        $role = [
+            'id'             => $stepRole['id'],
+            'name'           => $stepRole['name'],
+            'reviewer_count' => $step['reviewer_count'],
+        ];
+
+        $checkersData = [];
+
+        $checkers = $step['checkers'] ?? [];
+
+        foreach ($checkers as $checker)
+        {
+            $userData = $checker['checker'] ?? [];
+
+            if (empty($userData) === true)
+            {
+                continue;
+            }
+
+            $checkersData[] = [
+                'id'       => $checker['id'],
+                'user_id'  => $userData['id'],
+                'name'     => $userData['name'] ?? '',
+                'email'    => $userData['email'] ?? '',
+                'approved' => $checker['approved'],
+            ];
+        }
+
+        $role['checkers'] = $checkersData;
+
+        return $role;
     }
 }

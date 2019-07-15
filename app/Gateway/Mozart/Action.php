@@ -13,4 +13,6 @@ class Action
     const VERIFY_REFUND     = 'verify_refund';
 
     const AUTHORIZE         = 'authorize';
+
+    const OMNI_PAY          = 'omni_pay';
 }

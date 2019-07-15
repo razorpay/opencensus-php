@@ -97,7 +97,7 @@ class Payout extends Base
         // the transaction is saved in the caller
     }
 
-    protected function setMerchantBalanceLockForUpdate()
+    public function setMerchantBalanceLockForUpdate()
     {
         // TODO: Remove the second condition later once we backfill payouts
         // with all existing payouts having primaryBalance filled in.

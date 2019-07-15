@@ -18,11 +18,10 @@ class FundAccountPayout extends Base
         $payout = parent::createPayout($input);
 
         //
-        // In case of queued payouts, we don't create the transaction.
-        // We just mark the payout as queued and move on. This event will
-        // be dispatched later when we are actually processing the queued payout.
+        // In case of payouts with status=(queued, payouts), we don't create the transaction yet.
+        // This event will be dispatched later when we are actually processing the payout.
         //
-        if ($payout->isStatusQueued() === false)
+        if ($payout->isStatusBeforeCreate() === false)
         {
             //
             // Ideally, this should be done as part of downstream processor,

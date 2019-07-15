@@ -3,6 +3,7 @@
 namespace RZP\Models\State;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action;
@@ -12,6 +13,7 @@ use RZP\Models\State\Reason;
 class Entity extends Base\PublicEntity
 {
     const ADMIN_ID             = 'admin_id';
+    const USER_ID              = 'user_id';
     const ACTION_ID            = 'action_id';
     const NAME                 = 'name';
     const ENTITY_TYPE          = 'entity_type';
@@ -32,6 +34,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ADMIN_ID,
         self::MERCHANT_ID,
+        self::USER_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::REJECTION_REASONS,
@@ -44,6 +47,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ADMIN_ID,
         self::MERCHANT_ID,
+        self::USER_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::REJECTION_REASONS,
@@ -66,6 +70,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     public function account()

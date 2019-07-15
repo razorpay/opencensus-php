@@ -83,6 +83,20 @@ return [
         'failure_reason'    => null,
     ],
 
+    'matchAttemptForReconFlipStatusIcici' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'Cancelled',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconFlipStatusAxis2' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'REJECTED',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
     'matchAttemptForReconSuccessHdfc' => [
         'version'           => 'V3',
         'bank_status_code'  => 'E',
@@ -132,17 +146,19 @@ return [
     ],
 
     'matchAttemptForReconSuccessYesbankVpa' => [
-        'version'           => 'V3',
-        'bank_status_code'  => YesbankGatewayStatus::COMPLETED,
-        'status'            => AttemptStatus::PROCESSED,
-        'failure_reason'    => null,
+        'version'            => 'V3',
+        'bank_status_code'   => YesbankGatewayStatus::STATUS_CODE_SUCCESS,
+        'bank_response_code' => YesbankGatewayStatus::COMPLETED,
+        'status'             => AttemptStatus::PROCESSED,
+        'failure_reason'     => null,
     ],
 
     'matchAttemptForReconFailureYesbankVpa' => [
-        'version'           => 'V3',
-        'bank_status_code'  => 'FAILED',
-        'status'            => AttemptStatus::FAILED,
-        'failure_reason'    => null,
+        'version'            => 'V3',
+        'bank_status_code'   => 'F',
+        'bank_response_code' => 'FAILED',
+        'status'             => AttemptStatus::FAILED,
+        'failure_reason'     => null,
     ],
 
     'matchSummaryForReconFile' => [

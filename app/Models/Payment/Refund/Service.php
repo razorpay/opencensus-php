@@ -18,6 +18,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Refund;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -1229,6 +1230,8 @@ class Service extends Base\Service
 
                                 $refund->setGatewayRefunded(true);
 
+                                $this->eventRefundProcessed($refund);
+
                                 break;
 
                             case 'failed_event':
@@ -1251,6 +1254,8 @@ class Service extends Base\Service
                                     $processor->revertPaymentToRefundableState($refund);
                                 }
 
+                                $this->eventRefundFailed($refund);
+
                                 break;
 
                             case 'fee_only_reversal_event':
@@ -1270,6 +1275,9 @@ class Service extends Base\Service
 
                                     $this->getNewProcessor($refund->merchant)->reverseRefund($refund, $feeOnlyReversal);
                                 }
+
+                                $refund->setSpeedProcessed(RefundSpeed::NORMAL);
+                                $this->eventRefundSpeedChanged($refund);
                         }
 
                         $this->repo->saveOrFail($refund);
@@ -1531,6 +1539,33 @@ class Service extends Base\Service
         {
             $refund->setReference1($input[RefundEntity::BANK_REFERENCE_NO]);
         }
+    }
+
+    protected function eventRefundProcessed(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.processed', $eventPayload);
+    }
+
+    protected function eventRefundFailed(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.failed', $eventPayload);
+    }
+
+    protected function eventRefundSpeedChanged(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.speed_changed', $eventPayload);
     }
 
     public function updateProcessedAt(array $input)

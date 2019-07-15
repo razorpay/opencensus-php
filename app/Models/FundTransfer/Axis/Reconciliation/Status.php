@@ -31,22 +31,22 @@ class Status extends BaseStatus
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::SETTLED,
-            self::EXECUTED
+            self::SETTLED  => [],
+            self::EXECUTED => [],
         ];
     }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::REJECTED,
-            self::CANCELLED,
-            self::PNDRETURN,
-            self::RETURNAWAITED,
-            self::RETURNED,
-            self::RETURNMRKDFRBULK,
-            self::RETURNSETTLED,
-            self::CHANNEL_REJECT_AUTH,
+            self::REJECTED             => [],
+            self::CANCELLED            => [],
+            self::PNDRETURN            => [],
+            self::RETURNAWAITED        => [],
+            self::RETURNED             => [],
+            self::RETURNMRKDFRBULK     => [],
+            self::RETURNSETTLED        => [],
+            self::CHANNEL_REJECT_AUTH  => [],
         ];
     }
 

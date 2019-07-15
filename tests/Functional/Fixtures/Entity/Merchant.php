@@ -606,6 +606,11 @@ class Merchant extends Base
         return $this->edit($id, ['auto_refund_delay' => $delay]);
     }
 
+    public function editDefaultRefundSpeed($defaultRefundSpeed, $id = '10000000000000')
+    {
+        return $this->edit($id, ['default_refund_speed' => $defaultRefundSpeed]);
+    }
+
     public function editLateAuthAutoCapture($autoCapture, $id = '10000000000000')
     {
         return $this->edit($id, ['auto_capture_late_auth' => $autoCapture]);
