@@ -83,7 +83,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|max:40',
         Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
         Entity::STATUS                          => 'required|string|custom',
-        Entity::BENEFICIARY_PIN                 => 'required|integer|digits:6',
+        Entity::BENEFICIARY_PIN                 => 'required|string',
         Entity::BENEFICIARY_CITY                => 'required|string',
         Entity::BENEFICIARY_COUNTRY             => 'required|string',
         Entity::BENEFICIARY_STATE               => 'required|string',

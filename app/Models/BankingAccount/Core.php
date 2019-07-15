@@ -486,6 +486,15 @@ class Core extends Base\Core
 
             $newStatus = $bankingAccount->getStatus();
 
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE,
+                [
+                    'id'                => $bankingAccount->getId(),
+                    'input'             => $input,
+                    'current_status'    => $originalStatus,
+                    'new_status'        => $newStatus,
+                ]);
+
             Status::validateCurrentToPreviousMapping($newStatus, $originalStatus);
 
             if ($newStatus === Status::PROCESSED)
