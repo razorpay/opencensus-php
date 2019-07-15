@@ -2,11 +2,12 @@
 
 namespace RZP\Gateway\CardlessEmi;
 
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 
-class ErrorCodes
+trait ErrorCodes
 {
-    public static $errorCodeMap = [
+    public $errorCodeMap = [
         'USER_DNE'                         => ErrorCode::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST,
         'INV_TOKEN'                        => ErrorCode::BAD_REQUEST_CARDLESS_EMI_INVALID_TOKEN,
         'INV_MERCHANT_NAME'                => ErrorCode::BAD_REQUEST_CARDLESS_EMI_INVALID_MERCHANT_NAME,
@@ -28,11 +29,34 @@ class ErrorCodes
         'CREDIT_LMT_EXHAUSTED'             => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED,
     ];
 
-    public static function getInternalErrorCode($errorCode, $defaultErrorCode)
+    public $paylaterErrorCodeMap = [
+        'USER_DNE'                         => ErrorCode::BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST,
+        'INV_TOKEN'                        => ErrorCode::GATEWAY_ERROR_PAYLATER_INVALID_TOKEN,
+        'INV_MERCHANT_NAME'                => ErrorCode::BAD_REQUEST_PAYLATER_INVALID_MERCHANT_NAME,
+        'MIN_AMT_REQ'                      => ErrorCode::BAD_REQUEST_PAYLATER_MINIMUM_AMOUNT_REQUIRED,
+        'MAX_AMT_LMT'                      => ErrorCode::BAD_REQUEST_PAYLATER_MAXIMUM_AMOUNT_LIMIT,
+        'PAYMENT_FAILED_PARTNER'           => ErrorCode::GATEWAY_ERROR_PAYLATER_PAYMENT_FAILED_PARTNER,
+        'PAYMENT_FAILED'                   => ErrorCode::GATEWAY_ERROR_PAYLATER_PAYMENT_FAILED_PARTNER,
+        'CREDIT_LIMIT_EXHAUSTED'           => ErrorCode::BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXHAUSTED,
+        'CUST_CREDIT_LIMIT_NOT_ACTIVATED'  => ErrorCode::BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_ACTIVATED,
+        'CUST_CREDIT_LIMIT_NOT_APPROVED'   => ErrorCode::BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_APPROVED,
+        'CUST_CREDIT_LIMIT_EXPIRED'        => ErrorCode::BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXPIRED,
+        'CREDIT_LMT_EXHAUSTED'             => ErrorCode::BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXHAUSTED,
+    ];
+
+    public function getInternalErrorCode($errorCode, $defaultErrorCode)
     {
-        if (isset(self::$errorCodeMap[$errorCode]) === true)
+        if ($this->gateway === Payment\Gateway::PAYLATER)
         {
-            return self::$errorCodeMap[$errorCode];
+             if (isset($this->paylaterErrorCodeMap[$errorCode]) === true)
+             {
+                 return $this->paylaterErrorCodeMap[$errorCode];
+             }
+        }
+
+        if (isset($this->errorCodeMap[$errorCode]) === true)
+        {
+            return $this->errorCodeMap[$errorCode];
         }
 
         return $defaultErrorCode;
