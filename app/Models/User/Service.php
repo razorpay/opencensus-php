@@ -575,6 +575,7 @@ class Service extends Base\Service
                                                                      $user->getId(),
                                                                      null,
                                                                      $switchProduct);
+
         if (empty($userMapping) === false)
         {
             $currentUserRole = $userMapping->pivot->role;

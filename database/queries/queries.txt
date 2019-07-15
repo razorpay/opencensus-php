@@ -4970,7 +4970,7 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status),
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
-    ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER password;
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
@@ -5115,3 +5115,16 @@ ALTER TABLE banking_accounts
 ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_fts_fund_account_id_index (fts_fund_account_id),
     ADD INDEX banking_accounts_balance_id_index (balance_id);
+
+ALTER TABLE balance
+    DROP INDEX balance_account_provider_index,
+    CHANGE COLUMN account_provider channel varchar(255) DEFAULT NULL,
+    ADD INDEX balance_account_channel_index (channel),
+    DROP INDEX balance_merchant_id_type_unique;
+
+ALTER TABLE banking_accounts
+    MODIFY COLUMN pincode VARCHAR(255) DEFAULT NULL,
+    MODIFY COLUMN bank_reference_number VARCHAR(255) DEFAULT NULL,
+    ADD INDEX banking_accounts_channel_index (channel),
+    ADD INDEX banking_accounts_status_index (status),
+    ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
