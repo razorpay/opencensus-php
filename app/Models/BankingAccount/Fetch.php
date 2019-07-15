@@ -17,7 +17,6 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID            => 'sometimes|unsigned_id',
             Entity::BANK_REFERENCE_NUMBER => 'sometimes|string',
             Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|unsigned_id',
-
         ],
     ];
 
@@ -33,7 +32,6 @@ class Fetch extends BaseFetch
             Entity::FTS_FUND_ACCOUNT_ID,
         ],
     ];
-
 
     const COMMON_FIELDS = [
         Entity::MERCHANT_ID,
