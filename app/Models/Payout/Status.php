@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Models\Settlement\Channel;
+use RZP\Models\Batch\Helpers\Payout;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -54,6 +56,33 @@ class Status
         self::REJECTED,
         self::QUEUED,
         self::CANCELLED,
+    ];
+
+    public static $attemptToPayoutStatusUsingChannels = [
+        Attempt\Status::CREATED => [
+            Channel::YESBANK => Status::CREATED,
+            Channel::RBL     => Status::CREATED,
+            Channel::AXIS2   => Status::CREATED,
+            Channel::ICICI   => Status::CREATED,
+        ],
+        Attempt\Status::INITIATED => [
+            Channel::YESBANK => Status::INITIATED,
+            Channel::RBL     => Status::INITIATED,
+            Channel::AXIS2   => Status::INITIATED,
+            Channel::ICICI   => Status::INITIATED,
+        ],
+        Attempt\Status::FAILED => [
+            Channel::YESBANK => Status::REVERSED,
+            Channel::RBL     => Status::FAILED,
+            Channel::AXIS2   => Status::REVERSED,
+            Channel::ICICI   => Status::REVERSED,
+        ],
+        Attempt\Status::REVERSED => [
+            Channel::YESBANK => Status::REVERSED,
+            Channel::RBL     => Status::REVERSED,
+            Channel::AXIS2   => Status::REVERSED,
+            Channel::ICICI   => Status::REVERSED,
+        ],
     ];
 
     /**

@@ -54,6 +54,7 @@ class Event
     const REFUND_SPEED_CHANGED              = 'refund.speed_changed';
     const REFUND_PROCESSED                  = 'refund.processed';
     const REFUND_FAILED                     = 'refund.failed';
+    const PAYOUT_FAILED                     = 'payout.failed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -95,6 +96,7 @@ class Event
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
+        self::PAYOUT_FAILED
     ];
 
     /**
@@ -142,6 +144,7 @@ class Event
         self::REFUND_SPEED_CHANGED,
         self::REFUND_PROCESSED,
         self::REFUND_FAILED,
+        self::PAYOUT_FAILED
     ];
 
     protected static $bitPosition = [
@@ -185,6 +188,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => 38,
         self::REFUND_PROCESSED                  => 39,
         self::REFUND_FAILED                     => 40,
+        self::PAYOUT_FAILED                     => 41,
     ];
 
     /**
@@ -228,6 +232,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => [Product::PRIMARY],
         self::REFUND_PROCESSED                  => [Product::PRIMARY],
         self::REFUND_FAILED                     => [Product::PRIMARY],
+        self::PAYOUT_FAILED                     => [Product::BANKING],
     ];
 
     /**
@@ -272,6 +277,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => Entity::REFUND,
         self::REFUND_PROCESSED                  => Entity::REFUND,
         self::REFUND_FAILED                     => Entity::REFUND,
+        self::PAYOUT_FAILED                     => Entity::PAYOUT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -298,6 +304,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => Feature\Constants::CARD_TRANSFER_REFUND,
         self::REFUND_PROCESSED                  => Feature\Constants::CARD_TRANSFER_REFUND,
         self::REFUND_FAILED                     => Feature\Constants::SHOW_REFUND_PUBLIC_STATUS,
+        self::PAYOUT_FAILED                     => Feature\Constants::PAYOUT,
     ];
 
     /**

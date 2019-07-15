@@ -265,18 +265,24 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)
     {
-        switch ($ftaData[Attempt\Constants::FTA_STATUS])
+        $status = $this->getDerivedStatus($payout, $ftaData);
+
+        switch ($status)
         {
-            case Attempt\Status::PROCESSED:
+            case Status::PROCESSED:
                 $this->handleFtaProcessed($payout);
                 break;
 
-            case Attempt\Status::FAILED:
+            case Status::FAILED:
                 $this->handleFtaFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
-            case Attempt\Status::CREATED:
-            case Attempt\Status::INITIATED:
+            case Status::REVERSED:
+                $this->handleFTAReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+                break;
+
+            case Status::CREATED:
+            case Status::INITIATED:
                 break;
 
             default:
@@ -663,6 +669,25 @@ class Core extends Base\Core
 
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
     {
+        if ($payout->isStatusReversed() === true)
+        {
+            throw new Exception\LogicException(
+                'Attempted to fail a reversed payout',
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                ]);
+        }
+
+        $payout->setStatus(Status::FAILED);
+
+        $this->repo->saveOrFail($payout);
+
+        $this->app->events->fire('api.payout.failed', [$payout]);
+    }
+
+    protected function handleFTAReversed(Entity $payout, string $ftaFailureReason = null)
+    {
         $this->reversePayout($payout, $ftaFailureReason);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
@@ -888,5 +913,10 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function getDerivedStatus(Entity $payout, string $ftaStatus)
+    {
+        return Status::$attemptToPayoutStatusUsingChannels[$payout->getChannel()][$ftaStatus];
     }
 }
