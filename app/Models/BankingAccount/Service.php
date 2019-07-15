@@ -31,26 +31,6 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
 
-    public function updateInternally(string $id, array $input): array
-    {
-        /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
-
-        $channel = $bankingAccount->getChannel();
-
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_EDIT,
-            [
-                'id'      => $bankingAccount->getId(),
-                'channel' => $channel,
-                'input'   => $input,
-            ]);
-
-        $account = $this->core->updateBankingAccountInternally($bankingAccount, $input);
-
-        return $account->toArrayPublic();
-    }
-
     /**
      * This function to be used only for admin or internal routes since
      * we are not fetching banking_account by merchant_id.

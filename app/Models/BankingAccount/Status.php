@@ -30,14 +30,6 @@ class Status
         self::CANCELLED         => [self::CREATED, self::INITIATED, self::PROCESSING]
     ];
 
-    protected static $internallyAllowedStatus = [
-        self::INITIATED,
-        self::PROCESSING,
-        self::PROCESSED,
-        self::CANCELLED,
-        self::UNSERVICEABLE,
-    ];
-
     public static function isValidStatus(string $status = null)
     {
         $key = __CLASS__ . '::' . strtoupper($status);
@@ -51,19 +43,6 @@ class Status
         {
             throw new BadRequestValidationFailureException(
                 'Not a valid Razorpay Banking status',
-                Entity::STATUS,
-                [
-                    Entity::STATUS => $status
-                ]);
-        }
-    }
-
-    public static function validateAllowedStatus(string $status)
-    {
-        if (in_array($status, self::$internallyAllowedStatus, true) !== true)
-        {
-            throw new BadRequestValidationFailureException(
-                'Status change not permitted',
                 Entity::STATUS,
                 [
                     Entity::STATUS => $status
