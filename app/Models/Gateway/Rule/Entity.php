@@ -203,8 +203,8 @@ class Entity extends Base\PublicEntity
         self::IINS          => 32,
         self::AMOUNT_RANGE  => 64,
         self::CATEGORY      => 128,
-        self::CATEGORY2     => 128,
-        self::MERCHANT_ID   => 256,
+        self::CATEGORY2     => 256,
+        self::MERCHANT_ID   => 512,
     ];
 
     /**
