@@ -421,7 +421,7 @@ class Merchant
 
         // set the fist successful status
         // in case of mock we have to set the only the success response
-        $bankStatusCode = $status::getSuccessfulStatus()[0];
+        $bankStatusCode = array_keys($status::getSuccessfulStatus())[0];
 
         $fta->setUtr($currentTimestamp . random_alphanum_string(6));
 

@@ -791,7 +791,7 @@ class Entity extends Base\PublicEntity
 
     protected function modifyInternational(& $input)
     {
-        if (empty($input[self::INTERNATIONAL]) === true)
+        if (isset($input[self::INTERNATIONAL]) === false)
         {
             $gateway = $input[self::GATEWAY];
 

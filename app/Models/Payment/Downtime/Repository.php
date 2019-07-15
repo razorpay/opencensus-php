@@ -79,7 +79,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function fetchFutureScheduledDowntimesToActivate(int $now)
+    public function fetchFutureScheduledDowntimesToActivate(int $now): PublicCollection
     {
         $query = $this->newQuery()
                       ->where(Entity::BEGIN, '<=', $now)
@@ -94,7 +94,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchPastScheduledDowntimesToResolve(int $now)
+    public function fetchPastScheduledDowntimesToResolve(int $now): PublicCollection
     {
         $query = $this->newQuery()
                       ->where(function ($query) use ($now)

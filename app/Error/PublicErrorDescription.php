@@ -112,6 +112,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                      = 'Account Balance is insufficient';
+    const BAD_REQUEST_INVALID_USER_CREDENTIALS                                  = 'Payment failed due to invalid user credentials';
     const BAD_REQUEST_APP_TOKEN_ABSENT                                          = 'Customer not logged in';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                      = 'Global customer not logged in';
     const BAD_REQUEST_PAYMENT_WALLET_CUSTOMER_TOKEN_NOT_FOUND                   = 'Payment failed';
@@ -390,6 +391,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                        = 'Payment failed because account limit exceeded';
     const BAD_REQUEST_PAYMENT_KYC_PENDING                                       = 'Payment failed because account KYC pending';
 
+    const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                            = 'Amount exceeds E-mandate limit';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
     const BAD_REQUEST_EMANDATE_INVALID_AADHAAR_BANK_ACCOUNT_MAPPING             = 'EMandate registration failed because of invalid aadhaar bank account mapping';
     const BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED                               = 'EMandate aadhaar not mapped';
@@ -725,6 +727,9 @@ class PublicErrorDescription
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
+    const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
 
     // Scrooge
     const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';

@@ -258,4 +258,18 @@ class Name
         Merchant\Action::DISABLE_INTERNATIONAL  => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
         Merchant\Action::FORCE_ACTIVATE         => self::EDIT_MERCHANT_FORCE_ACTIVATION,
     ];
+
+    /**
+     * Permissions that are exposed on the merchant side.
+     *
+     * @var array
+     */
+    public static $merchantPermissions = [
+        self::CREATE_PAYOUT,
+    ];
+
+    public static function isMerchantPermission(string $name): bool
+    {
+        return (in_array($name, self::$merchantPermissions, true) === true);
+    }
 }

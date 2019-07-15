@@ -109,8 +109,19 @@ class Workflow
             // when this is a "real" issue.
             $orgId = $this->ba->getOrgId();
 
+            $merchantId = null;
+
+            //
+            // For merchant app permissions, maker=merchant, we send the merchant ID for fetching
+            // only workflows defined for the merchant
+            //
+            if (Permission::isMerchantPermission($permission) === true)
+            {
+                $merchantId = $maker->getId();
+            }
+
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-                $permission, Org\Entity::verifyIdAndSilentlyStripSign($orgId));
+                $permission, Org\Entity::verifyIdAndSilentlyStripSign($orgId), $merchantId);
 
             // rzp admin -> hdfc bank_account_update
             // rzp P1 no workflow

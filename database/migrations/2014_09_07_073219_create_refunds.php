@@ -80,6 +80,9 @@ class CreateRefunds extends Migration
             $table->string(Refund::SPEED_REQUESTED)
                   ->default(RefundSpeed::NORMAL);
 
+            $table->enum(Refund::SPEED_DECISIONED, [RefundSpeed::NORMAL, RefundSpeed::OPTIMUM, RefundSpeed::INSTANT])
+                  ->default(RefundSpeed::NORMAL);
+
             $table->string(Refund::SPEED_PROCESSED)
                   ->nullable();
 

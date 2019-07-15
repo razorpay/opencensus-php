@@ -110,10 +110,12 @@ class Gateway extends Base\Gateway
 
         if ($recurringData[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::REJECTED)
         {
+            $errorCode = ErrorCodes\NetbankingErrorCodes::getInternalErrorCode($gatewayPayment->getErrorCode());
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED,
-                null,
-                null,
+                $errorCode,
+                $gatewayPayment->getErrorCode(),
+                $gatewayPayment->getErrorMessage(),
                 $recurringData
             );
         }
