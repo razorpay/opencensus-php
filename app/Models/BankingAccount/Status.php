@@ -14,22 +14,6 @@ class Status
     const ACTIVATED         = 'activated';
     const UNSERVICEABLE     = 'unserviceable';
 
-    /**
-     * @var array
-     * This contains a status map that keeps mapping of a status
-     * to previous possible statuses. This is to ensure the status
-     * change on Banking Account Entity happens in an order.
-     */
-    protected static $currentToPreviousStatusMap = [
-        self::CREATED           => [],
-        self::INITIATED         => [self::CREATED],
-        self::PROCESSING        => [self::INITIATED],
-        self::PROCESSED         => [self::INITIATED, self::PROCESSING],
-        self::ACTIVATED         => [self::PROCESSED],
-        self::UNSERVICEABLE     => [self::CREATED, self::INITIATED, self::PROCESSING],
-        self::CANCELLED         => [self::CREATED, self::INITIATED, self::PROCESSING]
-    ];
-
     public static function isValidStatus(string $status = null)
     {
         $key = __CLASS__ . '::' . strtoupper($status);
@@ -64,4 +48,20 @@ class Status
                 ]);
         }
     }
+
+    /**
+     * @var array
+     * This contains a status map that keeps mapping of a status
+     * to previous possible statuses. This is to ensure the status
+     * change on Banking Account Entity happens in an order.
+     */
+    protected static $currentToPreviousStatusMap = [
+        self::CREATED           => [],
+        self::INITIATED         => [self::CREATED],
+        self::PROCESSING        => [self::INITIATED],
+        self::PROCESSED         => [self::INITIATED, self::PROCESSING],
+        self::ACTIVATED         => [self::PROCESSED],
+        self::UNSERVICEABLE     => [self::CREATED, self::INITIATED, self::PROCESSING],
+        self::CANCELLED         => [self::CREATED, self::INITIATED, self::PROCESSING]
+    ];
 }

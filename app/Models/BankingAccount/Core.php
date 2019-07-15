@@ -104,9 +104,9 @@ class Core extends Base\Core
 
         $input = $processor->formatInputParametersIfRequired($input);
 
-        $this->runStatusValidationsForUpdate($bankingAccount, $input);
-
         $bankingAccount->edit($input);
+
+        $this->runStatusValidationsForUpdate($bankingAccount, $input);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
@@ -341,59 +341,22 @@ class Core extends Base\Core
         Status::validateCurrentToPreviousMapping($currentStatus, $previousStatus);
     }
 
-    protected function isStatusProcessed($input)
-    {
-        if ((isset($input[Entity::STATUS]) === true) and
-            ($input[Entity::STATUS] === Status::PROCESSED))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     protected function runStatusValidationsForUpdate(Entity $bankingAccount, array $input)
     {
-        $result = $this->shouldRunStatusValidationsForUpdate($bankingAccount, $input);
-
-        $processedStatus = $this->shouldRunProcessedStatusValidation($input, $result);
-
-        if ($result === true)
+        // we will run status validations only if the status of the account entity has changed
+        // and we will run separate validators for for processed status
+        if ($bankingAccount->isDirty(Entity::STATUS) === true)
         {
-            $this->validateCurrentToPreviousStatusMapping($input[Entity::STATUS], $bankingAccount->getStatus());
+            $originalStatus = $bankingAccount->getOriginal(Entity::STATUS);
 
-            if ($processedStatus === true)
+            $newStatus = $bankingAccount->getStatus();
+
+            $this->validateCurrentToPreviousStatusMapping($newStatus, $originalStatus);
+
+            if ($newStatus === Status::PROCESSED)
             {
                 (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $input);
             }
         }
-    }
-
-    protected function shouldRunStatusValidationsForUpdate(Entity $bankingAccount, array $input)
-    {
-        if (isset($input[Entity::STATUS]) === true)
-        {
-            $currentStatus = $bankingAccount->getStatus();
-
-            $nextStatus = $input[Entity::STATUS];
-
-            if ($currentStatus !== $nextStatus)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function shouldRunProcessedStatusValidation(array $input, bool $result)
-    {
-        if (($result === true) and
-            ($input[Entity::STATUS] === Status::PROCESSED))
-        {
-            return true;
-        }
-
-        return false;
     }
 }

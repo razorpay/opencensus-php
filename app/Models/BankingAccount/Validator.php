@@ -65,6 +65,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME                => 'filled|string',
     ];
 
+    // ToDo handle cases when some fields are already present in the model when the status is processed.
     protected static $processedStatusRules = [
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|max:40',
         Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',

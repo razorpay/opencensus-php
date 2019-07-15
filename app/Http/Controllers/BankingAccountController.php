@@ -35,13 +35,4 @@ class BankingAccountController extends Controller
 
         return $response;
     }
-
-    public function update(string $id)
-    {
-        $input = Request::all();
-
-        $response = $this->service()->update($id, $input);
-
-        return $response;
-    }
 }
