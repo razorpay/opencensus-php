@@ -16,6 +16,31 @@ class Processor extends Base\Core
         return $this->preProcessInputForAccountCreation($input);
     }
 
+    public function preProcessAccountInfoNotification(array $input)
+    {
+        return;
+    }
+
+    public function processAccountInfoNotification(array $input): array
+    {
+        return [];
+    }
+
+    public function postProcessAccountInfoNotificationResponse(array $input, string $status)
+    {
+        return [];
+    }
+
+    public function validateAccountBeforeUpdating(array $input)
+    {
+        return;
+    }
+
+    public function formatInputParametersIfRequired(array $input)
+    {
+        return $input;
+    }
+
     public function addServiceablePincodes(array $pincodes)
     {
         $redis = Redis::connection();
@@ -30,6 +55,15 @@ class Processor extends Base\Core
         $redis->srem(static::PINCODES_REDIS_KEY, $pincodes);
     }
 
+    /**
+     * We are not rejecting requests based on the pincode availability for now.
+     * This is being done to store all the leads we get for account creation.
+     * Later we can choose to reject requests directly from here.
+     *
+     * @param string $pincode
+     *
+     * @return bool
+     */
     protected function isPincodeServiceable(string $pincode): bool
     {
         $redis = Redis::connection();

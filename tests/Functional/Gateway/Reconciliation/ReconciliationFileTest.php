@@ -1372,6 +1372,19 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideHdfcNonInrPayment(array $payment, array $forceOverride = [], $gateway = 'fss')
+    {
+        $facade = $this->testData['facades']['hdfc_non_inr'];
+
+        $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = $payment['payment_id'];
+
+        $facade[HDFCPaymentRecon::COLUMN_AUTH_CODE]  = "'" . random_integer(6);
+
+        $facade[HDFCPaymentRecon::COLUMN_ARN]        = "'" . str_random(24);
+
+        return $facade;
+    }
+
     private function overrideBilldeskRefund(array $refund)
     {
         $facade = $this->testData['facades']['billdesk'];
@@ -1689,6 +1702,43 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($updatedRefund[Refund\Entity::REFERENCE1], $updatedGatewayRefund['arn_no']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testHdfcFssReconNonInrPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment1 = $this->doAuthAndCapturePayment($payment);
+
+        $this->fixtures->edit('payment',
+            $payment1['id'],
+            [
+                'convert_currency' => false,
+            ]);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
+
+        $entries[] = $this->overrideHdfcNonInrPayment($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment1['reference2']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedTransaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus();
     }
 
     /**

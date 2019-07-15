@@ -2,16 +2,21 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Razorpay\IFSC\Bank;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Services\FTS;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Services\CardVault;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\BankingAccount\Gateway;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
@@ -23,6 +28,56 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->config = $this->app['config']->get('banking_account');
+    }
+
+    public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
+    {
+        // Virtual account has to be with receiver_type bank account
+        if ($virtualAccount->hasBankAccount() === false)
+        {
+            throw new LogicException(
+                'Banking accounts can only be create on bank type virtual accounts',
+                null,
+                ['virtual_account_id' => $virtualAccount->getId()]);
+        }
+
+        $bankAccount = $virtualAccount->bankAccount;
+        $bankCode    = $bankAccount->getBankCode();
+
+        // Only Yesbank bank accounts are allowed as shared banking accounts, for now
+        if ($bankCode !== Bank::YESB)
+        {
+            throw new LogicException(
+                'Only YesBank virtual accounts are supported', // for now 🤑
+                null,
+                ['bank_code' => $bankCode]);
+        }
+
+        $balanceId = $virtualAccount->getBalanceId();
+
+        //
+        // If a banking_account already exists for a balance_id, return that instead
+        // of creating a new one.
+        //
+        $existingBankingAcc = $this->repo->banking_account->getFromBalanceId($balanceId);
+
+        if ($existingBankingAcc !== null)
+        {
+            return $existingBankingAcc;
+        }
+
+        $bankingAccountInput = [
+            Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
+            Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
+            Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
+            Entity::ACCOUNT_TYPE        => AccountType::NODAL,
+            Entity::STATUS              => Status::CREATED,
+        ];
+
+        return $this->createYesbankBankingAccount(
+            $bankingAccountInput,
+            $virtualAccount->merchant,
+            $virtualAccount->balance);
     }
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
@@ -51,9 +106,22 @@ class Core extends Base\Core
 
         $bankingAccount = new Entity;
 
+        $input[Entity::ACCOUNT_TYPE] = AccountType::CURRENT;
+
         $bankingAccount->build($input);
 
         $bankingAccount->merchant()->associate($merchant);
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_ENTITY_CREATED,
+            [
+                $bankingAccount->toArray(),
+            ]);
+
+        // TODO: Fix this logic
+        $refNumber = substr(time(), 0, 5);
+
+        $bankingAccount->setBankReferenceNumber($refNumber);
 
         $this->repo->saveOrFail($bankingAccount);
 
@@ -62,6 +130,13 @@ class Core extends Base\Core
 
     public function processAccountInfoWebhook(string $channel, array $input)
     {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST,
+            [
+                'input'         => $input,
+                'gateway'       => $channel,
+            ]);
+
         Channel::validate($channel);
 
         $processor = $this->getProcessor($channel);
@@ -77,10 +152,15 @@ class Core extends Base\Core
                                    ->findByBankReferenceAndChannel($channel,
                                                                    $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
-            $alreadyProcessed = $this->checkIfAccountOpeningWebhookAlreadyProcessed($bankingAccount);
-
-            if ($alreadyProcessed === false)
+            if ($bankingAccount->isAlreadyActivated() === false)
             {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_ACCOUNT_INFO_WEBHOOK,
+                    [
+                        'input'     => $input,
+                        'channel'   => $channel,
+                    ]);
+
                 $this->updateBankingAccount($bankingAccount, $attributes);
             }
 
@@ -88,8 +168,17 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e);
+
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::CANCELLED);
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE,
+            [
+                'response'  => $response,
+                'gateway'   => $channel,
+            ]);
 
         return $response;
     }
@@ -97,6 +186,14 @@ class Core extends Base\Core
     public function updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
+            ]);
 
         $processor = $this->getProcessor($channel);
 
@@ -109,6 +206,38 @@ class Core extends Base\Core
         $this->runStatusValidationsForUpdate($bankingAccount, $input);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
+
+        $this->repo->saveOrFail($bankingAccount);
+
+        return $bankingAccount;
+    }
+
+    protected function createYesbankBankingAccount(
+        array $input,
+        Merchant\Entity $merchant,
+        Merchant\Balance\Entity $balance): Entity
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE,
+            [
+                'channel' => Channel::YESBANK,
+                'input'   => $input,
+            ]);
+
+        (new Validator)->validateInput(Validator::YESBANK_CREATE, $input);
+
+        $input[Entity::CHANNEL] = Channel::YESBANK;
+
+        $bankingAccount = new Entity;
+
+        $bankingAccount->build($input);
+
+        $bankingAccount->merchant()->associate($merchant);
+
+        $bankingAccount->balance()->associate($balance);
+
+        // Yesbank accounts are always created in the processed state
+        $bankingAccount->setStatus(Status::ACTIVATED);
 
         $this->repo->saveOrFail($bankingAccount);
 
@@ -207,14 +336,20 @@ class Core extends Base\Core
                         Entity::BANK_INTERNAL_STATUS    => Gateway\Rbl\Status::CLOSED
                     ];
 
+                    // TODO: Fix this undefined function!
                     $this->updateRblBankingAccount($bankingAccount, $attributes);
 
                     break;
                 }
 
             default:
-                // not throwing any exception here, since this statement will be executed for valid channels only
-                return;
+                throw new LogicException(
+                    'Attempt to update account to processed for an Invalid channel',
+                    null,
+                    [
+                        'channel'               => $channel,
+                        'banking_account_id'    => $bankingAccount->getId(),
+                    ]);
         }
     }
 
@@ -232,6 +367,13 @@ class Core extends Base\Core
 
     public function addServiceablePincodes(array $pincodes, string $channel)
     {
+        $this->trace->info(
+            TraceCode::ADD_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
+
         $processor = $this->getProcessor($channel);
 
         $processor->addServiceablePincodes($pincodes);
@@ -239,6 +381,13 @@ class Core extends Base\Core
 
     public function deleteServiceablePincodes(array $pincodes, string $channel)
     {
+        $this->trace->info(
+            TraceCode::REMOVE_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
+
         $processor = $this->getProcessor($channel);
 
         $processor->deleteServiceablePincodes($pincodes);
@@ -270,15 +419,6 @@ class Core extends Base\Core
             null,
             'Source account creation failed, Try again'
         );
-    }
-
-    protected function checkIfAccountOpeningWebhookAlreadyProcessed(Entity $bankingAccount)
-    {
-        $accountProcessedAt = $bankingAccount->getAccountActivationDate();
-
-        $processed = ($accountProcessedAt === null) ? false : true;
-
-        return $processed;
     }
 
     /**
@@ -336,11 +476,6 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateCurrentToPreviousStatusMapping(string $currentStatus, string $previousStatus)
-    {
-        Status::validateCurrentToPreviousMapping($currentStatus, $previousStatus);
-    }
-
     protected function runStatusValidationsForUpdate(Entity $bankingAccount, array $input)
     {
         // we will run status validations only if the status of the account entity has changed
@@ -351,7 +486,7 @@ class Core extends Base\Core
 
             $newStatus = $bankingAccount->getStatus();
 
-            $this->validateCurrentToPreviousStatusMapping($newStatus, $originalStatus);
+            Status::validateCurrentToPreviousMapping($newStatus, $originalStatus);
 
             if ($newStatus === Status::PROCESSED)
             {

@@ -35,7 +35,7 @@ class Url
     const CAPTURE_FLEXMONEY          = '/payments/capture';
     const VERIFY_FLEXMONEY           = '/payments/verify';
     const REFUND_FLEXMONEY           = '/payments/refund';
-    const VERIFY_REFUND              = '/refunds/verify';
+    const VERIFY_REFUND_FLEXMONEY    = '/refunds/verify';
 
     //ePayLater Urls
 

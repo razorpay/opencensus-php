@@ -11,7 +11,7 @@ use RZP\Exception\LogicException;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
-    const DATE_FORMAT = 'Y-m-d';
+    const DATE_FORMAT = 'd-M-Y';
 
     const PINCODES_REDIS_KEY = 'rbl_pincode_set';
 
@@ -21,8 +21,6 @@ class Processor extends BankingAccount\Gateway\Processor
     // if RBL will take 000001 as a valid reference number. To avoid such confusions
     // we are starting the reference number from 10000
     const START_BANK_REFERENCE_NUMBER = 10000;
-
-    protected $mutex;
 
     public function preProcessAccountInfoNotification(array $input)
     {
@@ -39,8 +37,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
 
-        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
-                                                        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
+        $activationDate = $this->parseAndFormatRblDate($attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
+
+        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $activationDate;
 
         $attributes[BankingAccount\Entity::STATUS] = BankingAccount\Status::PROCESSED;
 
@@ -155,20 +154,6 @@ class Processor extends BankingAccount\Gateway\Processor
         return $referenceNumber;
     }
 
-    /**
-     * We are not rejecting requests based on the pincode availability for now.
-     * This is being done to store all the leads we get for account creation.
-     * Later we can choose to reject requests directly from here.
-     *
-     * @param string $pincode
-     *
-     * @return array
-     */
-    protected function isPincodeServiceable(string $pincode): bool
-    {
-        return parent::isPincodeServiceable($pincode);
-    }
-
     protected function getMappedAttributes($map, array $input)
     {
         $attr = [];
@@ -187,8 +172,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function parseAndFormatRblDate(string $date)
     {
-        $date = Carbon::parse($date, Timezone::IST)->getTimestamp();
+        $epochDate = Carbon::createFromFormat(self::DATE_FORMAT, $date, Timezone::IST)
+                            ->getTimestamp();
 
-        return $date;
+        return $epochDate;
     }
 }

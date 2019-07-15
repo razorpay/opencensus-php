@@ -46,6 +46,16 @@ class Status
         BankingAccount\Status::CANCELLED    => self::FAILURE
     ];
 
+    protected static $statuses = [
+        self::OPEN,
+        self::DRAFT,
+        self::REWORK,
+        self::VERIFIED,
+        self::DISCREPANCY,
+        self::CLOSED,
+        self::CANCELLED,
+    ];
+
     public static function isValid(string $status): bool
     {
         $key = __CLASS__ . '::' . strtoupper($status);
@@ -104,5 +114,10 @@ class Status
 
             self::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
         }
+    }
+
+    public static function getAll(): array
+    {
+        return self::$statuses;
     }
 }

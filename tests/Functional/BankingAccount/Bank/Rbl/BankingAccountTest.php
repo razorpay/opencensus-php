@@ -2,6 +2,7 @@
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Entity;
+use RZP\Models\BankingAccount\AccountType;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -27,6 +28,10 @@ class BankingAccountTest extends TestCase
     public function testCreateBankingAccount()
     {
         $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
     }
 
     public function testCreateBankingAccountTwiceForSameMerchant()

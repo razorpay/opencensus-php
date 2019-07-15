@@ -472,6 +472,30 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('REJECTED', $enach['status']);
     }
 
+    public function testDebitFilePendingResponse()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'PENDING',
+            'error_code' => '98',
+            'error_desc' => 'BANK EXTENDED',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('created', $payment['status']);
+    }
+
     public function testRegisterReconLateAuth()
     {
         // Late Auth will not work as we are doing recon based on NPCI Ref Id. Force Auth will be disabled.
@@ -627,8 +651,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             if ($action === 'authorize_get_secure_data')
             {
                 $content['Accptd'] = 'false';
-                $content['ReasonCode'] = '1022';
-                $content['ReasonDesc'] = 'Invalid Authentication';
+                $content['ReasonCode'] = 'AP04';
+                $content['ReasonDesc'] = 'Account Inoperative';
                 $content['RejectBy'] = 'Bank';
             }
         });

@@ -14,6 +14,15 @@ class Status
     const ACTIVATED         = 'activated';
     const UNSERVICEABLE     = 'unserviceable';
 
+    protected static $statuses = [
+        self::CREATED,
+        self::INITIATED,
+        self::PROCESSING,
+        self::CANCELLED,
+        self::PROCESSED,
+        self::UNSERVICEABLE,
+    ];
+
     public static function isValidStatus(string $status = null)
     {
         $key = __CLASS__ . '::' . strtoupper($status);
@@ -47,6 +56,11 @@ class Status
                     Entity::STATUS => $currentStatus
                 ]);
         }
+    }
+
+    public static function getAll(): array
+    {
+        return self::$statuses;
     }
 
     /**

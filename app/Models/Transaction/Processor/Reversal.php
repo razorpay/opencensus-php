@@ -151,7 +151,7 @@ class Reversal extends Base
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
     }
 
-    protected function setMerchantBalanceLockForUpdate()
+    public function setMerchantBalanceLockForUpdate()
     {
         // TODO: Remove the second condition later once we backfill reversals
         // with all existing reversals having primaryBalance filled in.

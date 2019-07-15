@@ -322,6 +322,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => ['post',     'merchant/activation/bulk_assign_reviewer',       'MerchantController@bulkAssignReviewer'                             ],
         'merchant_activation_update_website'       => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_business_categories'  => ['get',      'merchant/activation/business_categories',        'MerchantController@getBusinessCategories'                          ],
+        'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',       'MerchantController@getNeedsClarificationReasons'                  ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
@@ -766,6 +767,8 @@ final class Route
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
         'payouts_process_queued'                   => ['post',     'payouts/queued/process',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'payouts_queued_amount'                    => ['get',      'payouts/queued/amount',                          'PayoutController@getQueuedPayoutsSummary'                          ],
+        'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
+        'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
         'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
@@ -1009,6 +1012,7 @@ final class Route
 
         //Recon summary
         'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
+        'hourly_reconciliation_summary_fetch'      => ['get',      'hourly_recon_summary',                           'AdminController@getHourlyReconciliationStatusSummary'              ],
 
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
@@ -1061,6 +1065,7 @@ final class Route
 
         // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
+        'contact_get_public'                       => ['get',      'contacts/{x_entity_id}/public',                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
@@ -1078,7 +1083,7 @@ final class Route
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
-        'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@createPublic'                                ],
+        'fund_account_create_public'               => ['post',     'fund_accounts/public',                           'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
 
@@ -1130,6 +1135,8 @@ final class Route
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
+
+        'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -1205,6 +1212,7 @@ final class Route
         'currency_fetch_all',
         'payment_validate_account',
         'fund_account_create_public',
+        'contact_get_public',
     ];
 
     public static $device = [
@@ -1508,6 +1516,7 @@ final class Route
         'virtual_account_close_cron',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
+        'hourly_reconciliation_summary_fetch',
         'lambda_post_h2h',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
@@ -1540,6 +1549,7 @@ final class Route
         'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
+        'banking_account_statement_process',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1642,6 +1652,7 @@ final class Route
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
+        'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
         'bank_transfer_process_test',
         'reports_fetch_multiple',
@@ -1752,6 +1763,8 @@ final class Route
         'payout_reject_bulk',
         'payout_approve',
         'payout_reject',
+        'payouts_summary',
+        'payouts_workflow_summary',
         'payouts_queued_amount',
         'payment_link_images',
         'commissions_get_multiple',
@@ -2271,6 +2284,7 @@ final class Route
         'offer_update'                             => Permission::EDIT_MERCHANT_OFFER,
         'merchant_edit_config'                     => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_activation_business_categories'  => '*',
+        'merchant_activation_needs_clarification'  => '*',
         'merchant_fetch'                           => '*',
         'merchant_get_terminals'                   => '*',
         'merchant_activation_details'              => '*',
@@ -2794,6 +2808,7 @@ final class Route
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
             'daily_reconciliation_summary_fetch',
+            'hourly_reconciliation_summary_fetch',
             'bank_transfer_payment_receiver_backfill',
             'refund_processed_at_backfill',
             'refund_reference1_backfill',
@@ -3425,31 +3440,31 @@ final class Route
     {
         $this->router
              ->any('{all}',
-                   [
-                       'as' => 'api_catch_all',
-                       'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
-                   ])
-             ->where('all', '.*');
+                  [
+                      'as'   => 'api_catch_all',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
+                  ])
+            ->where('all', '.*');
     }
 
     public function defineRootApiRoute()
     {
         $this->router
-             ->get('/',
-                   [
-                       'as' => 'api_root',
-                       'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
-                   ]);
+            ->get('/',
+                  [
+                      'as'   => 'api_root',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                  ]);
     }
 
     public function defineStatusApiRoute()
     {
         $this->router
             ->get('/v1/healthcheck',
-                [
-                    'as' => 'api_status',
-                    'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
-                ]);
+                  [
+                      'as'   => 'api_status',
+                      'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
+                  ]);
     }
 
     public function getApiRouteInCategory($category)

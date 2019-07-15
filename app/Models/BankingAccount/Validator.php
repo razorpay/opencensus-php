@@ -12,16 +12,29 @@ class Validator extends Base\Validator
     const INTERNAL_EDIT         = 'internal_edit';
     const PROCESSED_STATUS      = 'processed_status';
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
+    const YESBANK_CREATE        = 'yesbank_create';
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
 
+    protected static $yesbankCreateRules = [
+        Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
+        Entity::ACCOUNT_IFSC        => 'required|string|size:11',
+        Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE        => 'required|string|in:nodal',
+        Entity::STATUS              => 'required|in:created',
+    ];
+
     protected static $createRules = [
-        Entity::CHANNEL                     => 'required|string|custom',
-        Entity::STATUS                      => 'required|in:created',
-        Entity::BANK_REFERENCE_NUMBER       => 'required_if:channel,rbl',
-        Entity::PINCODE                     => 'required_if:channel,rbl',
+        Entity::CHANNEL               => 'required|string|custom',
+        Entity::STATUS                => 'required|in:created',
+        Entity::BANK_REFERENCE_NUMBER => 'required_if:channel,rbl',
+        Entity::PINCODE               => 'required_if:channel,rbl',
+        Entity::ACCOUNT_IFSC          => 'sometimes|nullable|string|size:11',
+        Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE          => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER        => 'sometimes|nullable|string|max:40',
     ];
 
     protected static $editRules = [
@@ -133,5 +146,16 @@ class Validator extends Base\Validator
     protected function validateStatus(string $attribute, string $status = null)
     {
         Status::validate($status);
+    }
+
+    protected function validateAccountType(string $attribute, string $accountType)
+    {
+        if (AccountType::isValid($accountType) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Banking account type is invalid',
+                Entity::ACCOUNT_TYPE,
+                [Entity::ACCOUNT_TYPE => $accountType]);
+        }
     }
 }

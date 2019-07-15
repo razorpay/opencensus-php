@@ -10,6 +10,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
+use RZP\Http\BasicAuth\BasicAuth;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -264,9 +265,19 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BENEFICIARY_NAME];
     }
 
-    protected function getRegisteredBeneficiaryNameAttribute()
+    protected function getAccountNumberAttribute()
     {
-        return $this->attributes[self::REGISTERED_BENEFICIARY_NAME];
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        $accountNumber = $this->attributes[self::ACCOUNT_NUMBER];
+
+        if ($basicAuth->isPublicAuth() === true)
+        {
+            $accountNumber = mask_except_last4($accountNumber);
+        }
+
+        return $accountNumber;
     }
 
     public function settlements()
@@ -389,11 +400,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
     }
 
-    public function setRegisteredBeneficiaryName($name)
-    {
-        $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
-    }
-
     public function setFtsFundAccountId($ftsFundAccountId)
     {
         return $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId);
@@ -505,6 +511,7 @@ class Entity extends Base\PublicEntity
     public function getRedactedAccountNumber()
     {
         $ac = $this->getAccountNumber();
+
         //
         // How many times should we repeat the redacted portion
         // This does not give a precise result,
@@ -519,6 +526,27 @@ class Entity extends Base\PublicEntity
         // repeat this section $repeat times
         // and then just append the original last 4 digits
         return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+    }
+
+    /**
+     * Reutrns the first 4 chars from the IFSC, i.e. the bank code
+     *
+     * SBIN0001234 => SBIN
+     *
+     * @return string|null
+     */
+    public function getBankCode()
+    {
+        $ifsc = $this->getIfscCode();
+        $code = substr($ifsc, 0, 4);
+
+        if ((empty($ifsc) === true) or
+            ($code === false))
+        {
+            return null;
+        }
+
+        return $code;
     }
 
     public function matches(array $input)

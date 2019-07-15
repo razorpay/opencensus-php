@@ -141,12 +141,22 @@ class Status extends Base
 
         $beneName = $response[Constants::BENEFICIARY_NAME] ?? null;
 
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), $statusCode, $bankSubStatus);
+
+        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), $statusCode, $bankSubStatus);
+
+        $mode = $this->entity->getMode();
+
         // capture failed response codes
         $this->captureBankStatusMetric(
             Channel::YESBANK,
-            ValidStatus::getFailureStatus(),
-            ValidStatus::getSuccessfulStatus(),
-            ValidStatus::FAILED,
+            $product,
+            $isFailure,
+            $isSuccess,
+            $mode,
+            $statusCode,
             $bankSubStatus);
 
         return [
@@ -172,10 +182,20 @@ class Status extends Base
 
         $subCode = $response[Constants::CODE][Constants::SUB_CODE][Constants::VALUE] ?? null;
 
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), ValidStatus::FAILED, $subCode);
+
+        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), ValidStatus::FAILED, $subCode);
+
+        $mode = $this->entity->getMode();
+
         $this->captureBankStatusMetric(
             Channel::YESBANK,
-            ValidStatus::getFailureStatus(),
-            ValidStatus::getSuccessfulStatus(),
+            $product,
+            $isFailure,
+            $isSuccess,
+            $mode,
             ValidStatus::FAILED,
             $subCode);
 
@@ -212,7 +232,7 @@ class Status extends Base
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
 
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
-        $utr = (strtolower($utr) !== 'na')? $utr : null;
+        $utr = (strtolower($utr) !== 'na') ? $utr : null;
 
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
@@ -226,15 +246,31 @@ class Status extends Base
 
         $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
 
-        $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($statusCode, $finalResponseCode);
+
+        $product = $this->entity->getSourceType();
+
+        $isSuccess = ValidStatus::inStatus(ValidStatus::getSuccessfulStatus(), $statusCode, $finalResponseCode);
+
+        $isFailure = ValidStatus::inStatus(ValidStatus::getFailureStatus(), $statusCode, $finalResponseCode);
+
+        $mode = $this->entity->getMode();
+
+        $this->captureBankStatusMetric(
+            Channel::YESBANK,
+            $product,
+            $isFailure,
+            $isSuccess,
+            $mode,
+            $statusCode,
+            $finalResponseCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
             ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
-            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
-            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($finalResponseCode),
             ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
-            ReconConstants::BANK_SUB_STATUS_CODE  => null,
             ReconConstants::PAYMENT_DATE          => null,
             ReconConstants::TRANSFER_TYPE         => null,
             ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
@@ -247,7 +283,9 @@ class Status extends Base
     {
         $bankStatusCode = $fta->getBankStatusCode();
 
-        $publicFailureReason = GatewayStatus::getPublicFailureReason($bankStatusCode);
+        $bankResponseCode = $fta->getBankResponseCode();
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($bankStatusCode, $bankResponseCode);
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $fta->getId(),
@@ -275,7 +313,7 @@ class Status extends Base
 
         return json_encode([
             $this->responseIdentifier => [
-                Constants::VERSION                => "2.0",
+                Constants::VERSION                => '2.0',
                 Constants::TRANSFER_TYPE          => $this->entity->getMode(),
                 Constants::REQ_TRANSFER_TYPE      => $this->entity->getMode(),
                 Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
@@ -331,7 +369,7 @@ class Status extends Base
 
         return json_encode([
             $this->responseIdentifier => [
-                Constants::VERSION                => "2.0",
+                Constants::VERSION                => '2.0',
                 Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
@@ -355,7 +393,7 @@ class Status extends Base
 
         return json_encode([
             $this->responseIdentifier => [
-                Constants::VERSION                => "2.0",
+                Constants::VERSION                => '2.0',
                 Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
                 Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),

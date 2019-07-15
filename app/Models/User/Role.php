@@ -5,6 +5,7 @@ namespace RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Exception\LogicException;
+use RZP\Trace\TraceCode;
 
 class Role
 {
@@ -89,7 +90,7 @@ class Role
                 break;
 
             case Product::BANKING:
-                $productRoles = BankingRole::getAllRolesForMerchant($merchant);
+                $productRoles = BankingRole::getAllRoles();
                 break;
 
             default:
@@ -101,6 +102,8 @@ class Role
 
     public static function allExceptPaymentLinkRoles()
     {
-        return array_diff(self::ALL_ROLES, self::PL_ROLES);
+        $allRoles = array_merge(self::ALL_ROLES, BankingRole::getAllRoles());
+
+        return array_diff($allRoles, self::PL_ROLES);
     }
 }

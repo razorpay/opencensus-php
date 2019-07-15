@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Role;
 use RZP\Models\Invitation;
 
 class Entity extends Base\PublicEntity
@@ -160,6 +161,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany(Invitation\Entity::class, Invitation\Entity::EMAIL, Entity::EMAIL)
                     ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
+    }
+
+    public function roles()
+    {
+        return $this->morphToMany(Role\Entity::class, 'entity', Table::ROLE_MAP);
     }
 
     public function setConfirmTokenNull()

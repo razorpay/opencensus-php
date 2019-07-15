@@ -49,7 +49,7 @@ class AdminAccess
     {
         $orgId = $this->getOrgIdForRoute($request);
 
-        //setting here so app auth also uses orgId.
+        // setting here so app auth also uses orgId.
         $this->ba->setOrgId($orgId);
 
         $this->setOrgType($orgId);

@@ -1046,10 +1046,10 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE            => $currencyCode,
         ];
 
-        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
-        {
-            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
-        }
+//        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
+//        {
+//            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
+//        }
 
         return $content;
     }
@@ -1449,14 +1449,15 @@ class Gateway extends Base\Gateway
     {
         if ($this->isLiveMode() === true)
         {
-            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
-            {
-                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
-            }
-            else
-            {
-                return 'https://172.16.18.40:10010/PaymentGateway.aspx';
-            }
+            return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+//            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
+//            {
+//                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
+//            }
+//            else
+//            {
+//
+//            }
         }
 
         return constant(Url::class . '::' . strtoupper($this->mode));

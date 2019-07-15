@@ -19,6 +19,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
@@ -435,6 +436,27 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onRefundProcessed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onRefundFailed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onRefundSpeedChanged(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPayoutProcessed(Payout\Entity $payout)
     {
         if ($payout->isOfMerchantTransaction() === true)
@@ -672,6 +694,17 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::PAYMENT => [
                 'entity' => $payment->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getRefundPayload(RefundEntity $refund)
+    {
+        $payload = [
+            Constants\Entity::REFUND => [
+                'entity' => $refund->toArrayPublic(),
             ],
         ];
 

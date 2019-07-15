@@ -83,6 +83,14 @@ class Entity extends Base\PublicEntity
         self::DETAILS,
     ];
 
+    protected $publicAuth = [
+        self::ID,
+        self::ACCOUNT_TYPE,
+        self::CARD,
+        self::VPA,
+        self::BANK_ACCOUNT,
+    ];
+
     protected $defaults = [
         self::ACTIVE => true,
     ];
