@@ -11,7 +11,6 @@ use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
-use RZP\Http\BasicAuth\BasicAuth;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
