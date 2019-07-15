@@ -10,6 +10,11 @@ class Channel
     const YESBANK = FTAChannel::YESBANK;
     const RBL     = FTAChannel::RBL;
 
+    protected static $channels = [
+        self::YESBANK,
+        self::RBL,
+    ];
+
     public static function isValid(string $channel = null): bool
     {
         $key = __CLASS__ . '::' . strtoupper($channel);
@@ -26,5 +31,10 @@ class Channel
                 Entity::CHANNEL,
                 [Entity::CHANNEL => $channel]);
         }
+    }
+
+    public static function getAll(): array
+    {
+        return self::$channels;
     }
 }

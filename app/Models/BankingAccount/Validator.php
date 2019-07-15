@@ -106,13 +106,7 @@ class Validator extends Base\Validator
      */
     protected function validateStatus(string $attribute, string $status = null)
     {
-        if (Status::validate($status) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Banking account status is invalid',
-                Entity::STATUS,
-                [Entity::STATUS => $status]);
-        }
+        Status::validate($status);
     }
 
     protected function validateAccountType(string $attribute, string $accountType)
