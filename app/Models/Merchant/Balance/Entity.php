@@ -168,9 +168,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_TYPE);
     }
 
-    public function getAccountProvider()
+    public function getChannel()
     {
-        return $this->getAttribute(self::ACCOUNT_PROVIDER);
+        return $this->getAttribute(self::CHANNEL);
     }
 
     public function merchant()

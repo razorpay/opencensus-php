@@ -53,6 +53,6 @@ class DownstreamProcessor
 
     protected function getChannelForFundTransfer()
     {
-        return $this->payout->balance->getAccountProvider() ?? Channel::YESBANK;
+        return $this->payout->balance->getChannel() ?? Channel::YESBANK;
     }
 }
