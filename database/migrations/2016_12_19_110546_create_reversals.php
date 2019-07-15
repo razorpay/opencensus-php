@@ -57,6 +57,10 @@ class CreateReversals extends Migration
             $table->string(Entity::CHANNEL, 255)
                   ->nullable();
 
+            $table->string(Entity::UTR)
+                  ->nullable()
+                  ->unique();
+
             $table->text(Entity::NOTES);
 
             $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
@@ -79,6 +83,8 @@ class CreateReversals extends Migration
             $table->index(Entity::UPDATED_AT);
 
             $table->index(Entity::ENTITY_ID);
+
+            $table->index(Entity::UTR);
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 

@@ -139,14 +139,14 @@ class Core extends Base\Core
 
     /**
      * Create and process a reversal on a transfer initiated by a Linked Account
-     * Also process refund to the customer if cutomer_refund flag is present in input
+     * Also process refund to the customer if customer_refund flag is present in input
      *
-     * @param  Transfer\Entity $transfer
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
+     * @param Transfer\Entity $transfer
+     * @param array           $input
+     * @param Merchant\Entity $merchant
      *
      * @return Entity
-     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     public function linkedAccountReverseForTransfer(
         Transfer\Entity $transfer,
@@ -168,6 +168,110 @@ class Core extends Base\Core
         }
 
         return $this->reverseForTransferAndCustomerRefund($transfer, $input, $merchant->parent, $merchant);
+    }
+
+    /**
+     * No return type hint since there are cases in transaction processor
+     * where we don't create reversal transaction. For example, for Direct-RBL.
+     *
+     * @param Entity $reversal
+     *
+     * @return mixed
+     */
+    public function createTransactionFromPayoutReversal(Entity $reversal)
+    {
+        return $this->repo->transaction(function() use ($reversal)
+        {
+            $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->repo->saveOrFail($reversal);
+
+            return $reversal;
+        });
+    }
+
+    /**
+     * Create a full reversal for a payout
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return Entity
+     */
+    public function reverseForPayout(Payout\Entity $payout): Entity
+    {
+        if ($payout->isCustomerPayout() === true)
+        {
+            $reversal = $this->reverseCustomerPayout($payout);
+        }
+        else
+        {
+            $reversal = $this->reverseMerchantPayout($payout);
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_CREATED,
+            [
+                'payout_id' => $payout->getId(),
+                'reversal_id' => $reversal->getId(),
+            ]);
+
+        return $reversal;
+    }
+
+    /**
+     * Create a full reversal for a refund
+     *
+     * @param Refund\Entity $refund
+     * @param bool $feeOnlyReversal
+     *
+     * @return Entity
+     */
+    public function reverseForRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal): Entity
+    {
+        $reversalInput = [
+            Entity::AMOUNT   => ($feeOnlyReversal === false) ? $refund->getAmount() : 0,
+            Entity::FEE      => $refund->getFees(),
+            Entity::TAX      => $refund->getTax(),
+            Entity::CURRENCY => $refund->getCurrency(),
+        ];
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->setChannel($refund->getChannel());
+
+        $reversal->merchant()->associate($refund->merchant);
+        $reversal->entity()->associate($refund);
+
+        // Todo: remove null balance check after backfilling is done
+        $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
+
+        $reversal = $this->repo->transaction(function() use ($reversal)
+        {
+            $txnCore = new Transaction\Core;
+
+            list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->repo->saveOrFail($reversal);
+
+            $txnCore->saveFeeDetails($txn, $feesSplit);
+
+            return $reversal;
+        });
+
+        $this->trace->info(
+            TraceCode::REFUND_REVERSAL_CREATED,
+            [
+                'refund_id'   => $refund->getId(),
+                'reversal_id' => $reversal->getId(),
+                'payment_id'  => $refund->getPaymentId(),
+                'balance_id'  => $reversal->balance->getId(),
+            ]);
+
+        return $reversal;
     }
 
     /**
@@ -257,98 +361,7 @@ class Core extends Base\Core
 
         $reversal->balance()->associate($payout->balance);
 
-        $reversal = $this->repo->transaction(function() use ($reversal)
-        {
-            $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
-
-            $this->repo->saveOrFail($txn);
-
-            $this->repo->saveOrFail($reversal);
-
-            return $reversal;
-        });
-
-        return $reversal;
-    }
-
-    /**
-     * Create a full reversal for a payout
-     *
-     * @param Payout\Entity $payout
-     *
-     * @return Entity
-     */
-    public function reverseForPayout(Payout\Entity $payout): Entity
-    {
-        if ($payout->isCustomerPayout() === true)
-        {
-            $reversal = $this->reverseCustomerPayout($payout);
-        }
-        else
-        {
-            $reversal = $this->reverseMerchantPayout($payout);
-        }
-
-        $this->trace->info(
-            TraceCode::PAYOUT_REVERSAL_CREATED,
-            [
-                'payout_id' => $payout->getId(),
-                'reversal_id' => $reversal->getId(),
-            ]);
-
-        return $reversal;
-    }
-
-    /**
-     * Create a full reversal for a refund
-     *
-     * @param Refund\Entity $refund
-     * @param bool $feeOnlyReversal
-     *
-     * @return Entity
-     */
-    public function reverseForRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal): Entity
-    {
-        $reversalInput = [
-            Entity::AMOUNT   => ($feeOnlyReversal === false) ? $refund->getAmount() : 0,
-            Entity::FEE      => $refund->getFees(),
-            Entity::TAX      => $refund->getTax(),
-            Entity::CURRENCY => $refund->getCurrency(),
-        ];
-
-        $reversal = $this->create($reversalInput);
-
-        $reversal->setChannel($refund->getChannel());
-
-        $reversal->merchant()->associate($refund->merchant);
-        $reversal->entity()->associate($refund);
-
-        // Todo: remove null balance check after backfilling is done
-        $reversal->balance()->associate($refund->balance ?? $refund->merchant->primaryBalance);
-
-        $reversal = $this->repo->transaction(function() use ($reversal)
-        {
-            $txnCore = new Transaction\Core;
-
-            list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
-
-            $this->repo->saveOrFail($txn);
-
-            $this->repo->saveOrFail($reversal);
-
-            $txnCore->saveFeeDetails($txn, $feesSplit);
-
-            return $reversal;
-        });
-
-        $this->trace->info(
-            TraceCode::REFUND_REVERSAL_CREATED,
-            [
-                'refund_id'   => $refund->getId(),
-                'reversal_id' => $reversal->getId(),
-                'payment_id'  => $refund->getPaymentId(),
-                'balance_id'  => $reversal->balance->getId(),
-             ]);
+        $reversal = $this->createTransactionFromPayoutReversal($reversal);
 
         return $reversal;
     }
@@ -356,12 +369,9 @@ class Core extends Base\Core
     /**
      * Process Customer Refund if applicable
      *
-     * @param  Transfer\Entity $transfer
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     *
-     * @return Entity
-     * @throws Exception\LogicException|null
+     * @param Transfer\Entity $transfer
+     * @param array           $input
+     * @param Entity          $reversal
      */
     protected function customerRefundIfApplicable(Transfer\Entity $transfer, array $input, Reversal\Entity $reversal)
     {
@@ -380,8 +390,7 @@ class Core extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $refund = (new Payment\Processor\Processor($merchant))
-                                    ->refund($payment, $input);
+        $refund = (new Payment\Processor\Processor($merchant))->refund($payment, $input);
 
         $reversal->customerRefund()->associate($refund);
 

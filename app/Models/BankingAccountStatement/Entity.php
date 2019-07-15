@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
         self::ID,
     ];
 
-    // Relations
+    // --------------------------- Relations ---------------------------------- //
 
     public function merchant()
     {
@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(BankingAccount\Entity::class);
     }
 
-    // Setters and Getters
+    // ---------------------------- Setters ----------------------------------- //
 
     public function setAccountNumber(string $accountNumber)
     {
@@ -216,6 +216,8 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRANSACTION_DATE, $date);
     }
 
+    // -------------------------- Getters ------------------------------------ //
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -269,5 +271,21 @@ class Entity extends Base\PublicEntity
     public function getAccountNumber()
     {
         return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function isTypeCredit()
+    {
+        return ($this->getType() === Type::CREDIT);
+    }
+
+    public function isTypeDebit()
+    {
+        return ($this->getType() === Type::DEBIT);
+    }
+
+    public function getUtrFromDescription()
+    {
+        // TODO: Fill this up!
+        return '';
     }
 }

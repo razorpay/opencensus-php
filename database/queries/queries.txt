@@ -5128,3 +5128,7 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_channel_index (channel),
     ADD INDEX banking_accounts_status_index (status),
     ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
+
+ALTER TABLE reversals
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER channel,
+    ADD INDEX reversals_utr_index (utr);

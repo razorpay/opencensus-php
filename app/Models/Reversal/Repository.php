@@ -3,8 +3,10 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
 use RZP\Models\Payment\Refund;
+use RZP\Exception\LogicException;
 
 class Repository extends Base\Repository
 {
@@ -21,7 +23,7 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * fetches reverals for a LA transfer by joining refunds
+     * fetches reversals for a LA transfer by joining refunds
      *
      * @param string $transferId
      * @param string $merchantId
@@ -58,10 +60,31 @@ class Repository extends Base\Repository
     public function fetchReversalsList($skip = 0, $take = 100, $entityType = Entity::TRANSFER)
     {
         return $this->newQuery()
-                    ->where(Reversal\Entity::ENTITY_TYPE, $entityType)
-                    ->orderBy(Reversal\Entity::ID, 'desc')
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->orderBy(Entity::ID, 'desc')
                     ->skip($skip)
                     ->take($take)
                     ->get();
+    }
+
+    public function fetchFromUtr($utr, $balanceId): Base\Collection
+    {
+        $reversals = $this->newQuery()
+                          ->where(Entity::BALANCE_ID, $balanceId)
+                          ->where(Entity::UTR, $utr)
+                          ->get();
+
+        if ($reversals->count() > 1)
+        {
+            throw new LogicException(
+                'Found too many reversals for a given UTR',
+                ErrorCode::SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR,
+                [
+                    'balance_id'    => $balanceId,
+                    'utr'           => $utr
+                ]);
+        }
+
+        return $reversals;
     }
 }

@@ -37,6 +37,8 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const INITIATOR_ID          = 'initiator_id';
     const CUSTOMER_REFUND_ID    = 'customer_refund_id';
+    // TODO: Need to fill UTR from FTS.
+    const UTR                   = 'utr';
 
     // Input attribute const
     const LINKED_ACCOUNT_NOTES  = 'linked_account_notes';
@@ -59,6 +61,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::CHANNEL,
+        self::UTR,
         self::LINKED_ACCOUNT_NOTES,
     ];
 
@@ -80,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::PAYOUT_ID,
         self::INITIATOR_ID,
         self::CUSTOMER_REFUND_ID,
+        self::UTR,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -98,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::LINKED_ACCOUNT_NOTES,
         self::INITIATOR_ID,
         self::CUSTOMER_REFUND_ID,
+        self::UTR,
         self::CREATED_AT,
     ];
 
@@ -222,9 +227,42 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INITIATOR_ID);
     }
 
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
     // -------------------- End Getters --------------------------
 
     // -------------------- Setters ------------------------------
+
+    public function setChannel($channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setFee(int $fee)
+    {
+        assertTrue($fee >= 0);
+
+        $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setTax(int $tax)
+    {
+        assertTrue($tax >= 0);
+
+        $this->setAttribute(self::TAX, $tax);
+    }
+
+    public function setUtr($utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
+    }
+
+    // -------------------- End Setters --------------------------
+
+    // -------------------- Public Setters ------------------------------
 
     public function setPublicTransferIdAttribute(array & $array)
     {
@@ -305,26 +343,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setChannel($channel)
-    {
-        $this->setAttribute(self::CHANNEL, $channel);
-    }
+    // -------------------- End Public Setters --------------------------
 
-    public function setFee(int $fee)
-    {
-        assertTrue($fee >= 0);
-
-        $this->setAttribute(self::FEE, $fee);
-    }
-
-    public function setTax(int $tax)
-    {
-        assertTrue($tax >= 0);
-
-        $this->setAttribute(self::TAX, $tax);
-    }
-
-    // -------------------- End Setters --------------------------
+    // -------------------- Accessors ------------------------------
 
     public function getPayoutIdAttribute()
     {
@@ -345,4 +366,6 @@ class Entity extends Base\PublicEntity
 
         return null;
     }
+
+    // -------------------- End Accessors ------------------------------
 }

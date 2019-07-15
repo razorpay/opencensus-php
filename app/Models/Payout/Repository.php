@@ -45,6 +45,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchFromUtr($utr, $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->where(Entity::UTR, $utr)
+                    ->get();
+    }
+
     public function fetchQueuedPayouts(array $merchantIdsWhitelist = [],
                                        array $merchantIdsBlacklist = [],
                                        int $from = null,

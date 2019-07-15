@@ -14,7 +14,7 @@ class DownstreamProcessor
 
     protected $ftaAccount;
 
-    public function __construct(string $type, Entity $payout, PublicEntity $ftaAccount)
+    public function __construct(string $type, Entity $payout, PublicEntity $ftaAccount = null)
     {
         $this->type = $type;
 
@@ -28,6 +28,13 @@ class DownstreamProcessor
         $subProcessor = $this->getSubProcessorClass();
 
         $subProcessor->process($this->payout, $this->ftaAccount);
+    }
+
+    public function processTransaction()
+    {
+        $subProcessor = $this->getSubProcessorClass();
+
+        $subProcessor->processTransaction($this->payout);
     }
 
     protected function getSubProcessorClass()
