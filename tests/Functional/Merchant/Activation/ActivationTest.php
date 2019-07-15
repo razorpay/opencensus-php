@@ -990,4 +990,13 @@ class ActivationTest extends TestCase
 
         $this->assertNull($merchant->convertOnApi());
     }
+
+    public function testNeedsClarificationResponseForAdminAuth()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
 }

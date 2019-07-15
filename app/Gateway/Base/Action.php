@@ -21,6 +21,7 @@ class Action
     const PAYOUT        = 'payout';
     const PAYOUT_VERIFY = 'payout_verify';
     const VERIFY_REFUND = 'verify_refund';
+    const OMNI_PAY      = 'omni_pay';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE
@@ -31,5 +32,6 @@ class Action
         self::CALLBACK,
         self::CAPTURE,
         self::VERIFY,
+        self::OMNI_PAY,
     ];
 }

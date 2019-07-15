@@ -48,6 +48,11 @@ class Entity extends Base\Entity
     const BOB_ORG_ID      = '7ia1ttoyqIL8sw';
 
     /**
+     * Key used to send hostname of org for other services
+     */
+    const PRIMARY_HOST_NAME = 'primary_host_name';
+
+    /**
      * One of the types
      */
     const RESTRICTED      = 'restricted';

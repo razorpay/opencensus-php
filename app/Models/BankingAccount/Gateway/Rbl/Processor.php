@@ -17,11 +17,11 @@ use RZP\Exception\GatewayErrorException;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
-    const DATE_FORMAT                   = 'Y-m-d';
-
     const PINCODES_REDIS_KEY            = 'rbl_pincode_set';
 
     const CREDENTIALS_VAULT_NAMESPACE   = 'banking_account_creds';
+
+    const DATE_FORMAT = 'd-M-Y';
 
     const MAX_MOZART_RETRIES            = 1;
 
@@ -32,12 +32,12 @@ class Processor extends BankingAccount\Gateway\Processor
     // we are starting the reference number from 10000
     const START_BANK_REFERENCE_NUMBER = 10000;
 
-    protected $mutex;
-
     protected $mozartRetryCode = [
+        TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+        TraceCode::MOZART_SERVICE_REQUEST_TIMEOUT,
         ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT,
         ErrorCode::SERVER_ERROR_MOZART_SERVICE_ERROR,
-        ErrorCode::SERVER_ERROR_MOZART_SERVICE_FAILURE,
+        ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
     ];
 
     public function preProcessAccountInfoNotification(array $input)
@@ -55,8 +55,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $attributes = $this->getMappedAttributes(Fields::$rblFieldsToEntityMap, $input);
 
-        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $this->parseAndFormatRblDate(
-                                                        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
+        $activationDate = $this->parseAndFormatRblDate($attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE]);
+
+        $attributes[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE] = $activationDate;
 
         $attributes[BankingAccount\Entity::STATUS] = BankingAccount\Status::PROCESSED;
 
@@ -354,20 +355,6 @@ class Processor extends BankingAccount\Gateway\Processor
         return $referenceNumber;
     }
 
-    /**
-     * We are not rejecting requests based on the pincode availability for now.
-     * This is being done to store all the leads we get for account creation.
-     * Later we can choose to reject requests directly from here.
-     *
-     * @param string $pincode
-     *
-     * @return array
-     */
-    protected function isPincodeServiceable(string $pincode): bool
-    {
-        return parent::isPincodeServiceable($pincode);
-    }
-
     protected function getMappedAttributes($map, array $input)
     {
         $attr = [];
@@ -386,9 +373,10 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function parseAndFormatRblDate(string $date)
     {
-        $date = Carbon::parse($date, Timezone::IST)->getTimestamp();
+        $epochDate = Carbon::createFromFormat(self::DATE_FORMAT, $date, Timezone::IST)
+                            ->getTimestamp();
 
-        return $date;
+        return $epochDate;
     }
 
     protected function checkRblToInternalStatusMapping(array $input)

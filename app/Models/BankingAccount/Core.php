@@ -12,6 +12,7 @@ use RZP\Constants\Product;
 use RZP\Services\CardVault;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\BadRequestException;
@@ -59,6 +60,12 @@ class Core extends Base\Core
 
         $bankingAccount->merchant()->associate($merchant);
 
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_ENTITY_CREATED,
+            [
+                $bankingAccount->toArray(),
+            ]);
+
         $this->repo->saveOrFail($bankingAccount);
 
         return $bankingAccount;
@@ -66,6 +73,13 @@ class Core extends Base\Core
 
     public function processAccountInfoWebhook(string $channel, array $input)
     {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST,
+            [
+                'input'         => $input,
+                'gateway'       => $channel,
+            ]);
+
         Channel::validate($channel);
 
         $processor = $this->getProcessor($channel);
@@ -81,10 +95,15 @@ class Core extends Base\Core
                                    ->findByBankReferenceAndChannel($channel,
                                                                    $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
-            $alreadyProcessed = $this->checkIfAccountOpeningWebhookAlreadyProcessed($bankingAccount);
-
-            if ($alreadyProcessed === false)
+            if ($bankingAccount->isAlreadyActivated() === false)
             {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_ACCOUNT_INFO_WEBHOOK,
+                    [
+                        'input'     => $input,
+                        'channel'   => $channel,
+                    ]);
+
                 $this->updateBankingAccount($bankingAccount, $attributes);
             }
 
@@ -92,8 +111,17 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e);
+
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::CANCELLED);
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_RESPONSE,
+            [
+                'response'  => $response,
+                'gateway'   => $channel,
+            ]);
 
         return $response;
     }
@@ -101,6 +129,14 @@ class Core extends Base\Core
     public function updateBankingAccount(Entity $bankingAccount, array $input)
     {
         $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
+            ]);
 
         $processor = $this->getProcessor($channel);
 
@@ -187,14 +223,20 @@ class Core extends Base\Core
                         Entity::BANK_INTERNAL_STATUS    => Gateway\Rbl\Status::CLOSED
                     ];
 
+                    // TODO: Fix this undefined function!
                     $this->updateRblBankingAccount($bankingAccount, $attributes);
 
                     break;
                 }
 
             default:
-                // not throwing any exception here, since this statement will be executed for valid channels only
-                return;
+                throw new LogicException(
+                    'Attempt to update account to processed for an Invalid channel',
+                    null,
+                    [
+                        'channel'               => $channel,
+                        'banking_account_id'    => $bankingAccount->getId(),
+                    ]);
         }
     }
 
@@ -212,6 +254,13 @@ class Core extends Base\Core
 
     public function addServiceablePincodes(array $pincodes, string $channel)
     {
+        $this->trace->info(
+            TraceCode::ADD_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
+
         $processor = $this->getProcessor($channel);
 
         $processor->addServiceablePincodes($pincodes);
@@ -219,6 +268,13 @@ class Core extends Base\Core
 
     public function deleteServiceablePincodes(array $pincodes, string $channel)
     {
+        $this->trace->info(
+            TraceCode::REMOVE_SERVICEABLE_PINCODES,
+            [
+                'pincodes' => $pincodes,
+                'channel'  => $channel,
+            ]);
+
         $processor = $this->getProcessor($channel);
 
         $processor->deleteServiceablePincodes($pincodes);
@@ -226,6 +282,12 @@ class Core extends Base\Core
 
     public function storeCredentialsAndActivateAccount(Entity $bankingAccount, array $input)
     {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $bankingAccount->getChannel(),
+            ]);
+
         $channel = $bankingAccount->getChannel();
 
         $processor = $this->getProcessor($channel);
@@ -245,9 +307,9 @@ class Core extends Base\Core
                                                                       Product::BANKING,
                                                                       $balanceInfo,
                                                                       $mode);
-        $content[Entity::STATUS] = Status::ACTIVATED;
+        $input[Entity::STATUS] = Status::ACTIVATED;
 
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $content);
+        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
         $bankingAccount->fill($input);
 
@@ -349,15 +411,6 @@ class Core extends Base\Core
         );
     }
 
-    protected function checkIfAccountOpeningWebhookAlreadyProcessed(Entity $bankingAccount)
-    {
-        $accountProcessedAt = $bankingAccount->getAccountActivationDate();
-
-        $processed = ($accountProcessedAt === null) ? false : true;
-
-        return $processed;
-    }
-
     /**
      * This method is responsible for checking that unless the merchant is L2 activated, no one can update
      * the status of current account to activated. This to avoid cases of manual error by Bizops.
@@ -369,6 +422,13 @@ class Core extends Base\Core
      */
     protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
     {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $bankingAccount->getChannel(),
+                'input'   => $input,
+            ]);
+
         $merchant = $bankingAccount->merchant;
 
         if ((isset($input[Entity::STATUS]) === true) and

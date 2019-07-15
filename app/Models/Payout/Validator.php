@@ -336,8 +336,49 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        // Currently, we support queued concept only for Fund Account type.
-        // If we are supporting for others, the processor call needs to be fixed in Core.
+        $this->validateIsFundAccountPayout($payout);
+    }
+
+    public function validateProcessingPendingPayout()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusPending() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+
+        $this->validateIsFundAccountPayout($payout);
+    }
+
+    public function validateRejectPayout()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusPending() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+
+        $this->validateIsFundAccountPayout($payout);
+    }
+
+    public function validateIsFundAccountPayout(Entity $payout)
+    {
         if (($payout->hasFundAccount() === false) or
             ($payout->hasCustomer() === true))
         {

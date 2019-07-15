@@ -32,4 +32,17 @@ trait PaymentEvent
 
         $this->trackPaymentEvent($event, $payment, $ex, $customProperties);
     }
+
+    public function trackGatewayPaymentEvent(
+        array $eventData,
+        array $gatewayInput,
+        \Throwable $ex = null,
+        array $customProperties = [])
+    {
+        $event = new PE(null, $ex, $customProperties);
+
+        $properties = $event->parseGatewayProperties($gatewayInput);
+
+        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
+    }
 }

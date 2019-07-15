@@ -332,7 +332,6 @@ class GatewayStatus extends BaseStatus
         self::ERSP90296                         => 'Payout failed. Contact support for help.',
         self::ERSP90188                         => 'Payout failed. Contact support for help.',
         self::ERSP8014                          => 'Payout failed. Contact support for help.',
-        self::RZP_DUPLICATE_PAYOUT              => 'Duplicate reference id passed. Reference id needs to be unique',
         self::RZP_FTA_REQUEST_INVALID           => 'Payout failed. Contact support for help.',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'Payout failed. Contact support for help.',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'Payout request timed out. Try again later',
@@ -575,7 +574,6 @@ class GatewayStatus extends BaseStatus
         self::ERSP90296                         => 'To Account Number is Invalid',
         self::ERSP90188                         => 'Voucher entry not allowed for this GL account.',
         self::ERSP8014                          => 'Failed to debit from remitter’s account',
-        self::RZP_DUPLICATE_PAYOUT              => 'RZP: A payout with given reference Id already exists',
         self::RZP_FTA_REQUEST_INVALID           => 'RZP: payout fta request is invalid',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'RZP: request encryption failure',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'RZP: payout request failed',
@@ -588,42 +586,54 @@ class GatewayStatus extends BaseStatus
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::COMPLETED,
-            self::COMPLETED2,
-            self::BT_TCC,
+            self::STATUS_CODE_SUCCESS => [],
+            self::STATUS_CODE_TIMEOUT => [
+                self::BT_TCC
+            ],
         ];
     }
 
     public static function getFailureStatus(): array
     {
-        return array_keys(self::FAILURE_CODE_PUBLIC_MAPPING);
+        return [
+            self::STATUS_CODE_FAILURE => [],
+            self::STATUS_CODE_TIMEOUT => [
+                self::BT_RRC,
+                self::BT_RET,
+            ],
+        ];
     }
 
     public static function getCriticalErrorStatus(): array
     {
        return [
-           self::RZP_PAYOUT_VERIFY_TIMED_OUT,
-           self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE,
-           self::RZP_DUPLICATE_PAYOUT,
-           self::RZP_FTA_REQUEST_INVALID,
-           self::RZP_REQUEST_ENCRYPTION_FAILURE,
-           self::RZP_RESPONSE_DECRYPTION_FAILED,
-           self::RZP_REF_ID_MISMATCH,
-           self::RZP_AMOUNT_MISMATCH,
-           self::RZP_PAYOUT_UNKNOWN_ERROR,
-           self::U14,
-           self::U15,
-           self::U77,
-           self::U05,
-           self::U02,
-           self::U03,
-           self::U07,
-           self::U10,
-           self::U11,
-           self::U12,
-           self::XK,
-           self::DT,
-           self::E99,
+           self::STATUS_CODE_FAILURE => [
+               self::RZP_FTA_REQUEST_INVALID,
+               self::RZP_REQUEST_ENCRYPTION_FAILURE,
+               self::RZP_RESPONSE_DECRYPTION_FAILED,
+               self::RZP_REF_ID_MISMATCH,
+               self::RZP_AMOUNT_MISMATCH,
+               self::U14,
+               self::U15,
+               self::U77,
+               self::U05,
+               self::U02,
+               self::U03,
+               self::U07,
+               self::U10,
+               self::U11,
+               self::U12,
+               self::XK,
+               self::DT,
+               self::E99,
+           ],
+           self::STATUS_CODE_TIMEOUT => [
+               self::RZP_PAYOUT_VERIFY_TIMED_OUT,
+               self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE,
+           ],
+           self::STATUS_CODE_PENDING => [
+               self::RZP_PAYOUT_UNKNOWN_ERROR,
+           ],
        ];
     }
 
@@ -639,7 +649,7 @@ class GatewayStatus extends BaseStatus
         return [];
     }
 
-    public static function isCriticalStatus($bankStatusCode): bool
+    public static function isCriticalStatus($bankStatusCode, $bankResponseCode): bool
     {
         $statusCodes = static::getCriticalErrorStatus();
 
@@ -659,18 +669,22 @@ class GatewayStatus extends BaseStatus
         return $isCritical;
     }
 
-    public static function getPublicFailureReason($bankStatusCode)
+    public static function getPublicFailureReason($bankStatusCode, $bankResponseCode = null)
     {
-        if (in_array($bankStatusCode, self::getSuccessfulStatus(), true) === true)
+        $successfulStatus = self::getSuccessfulStatus();
+
+        $isSuccessful = self::inStatus($successfulStatus, $bankStatusCode, $bankResponseCode);
+
+        if ($isSuccessful === true)
         {
             return null;
         }
-        else if (in_array($bankStatusCode, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
+        else if (in_array($bankResponseCode, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
         {
-            return self::FAILURE_CODE_PUBLIC_MAPPING[$bankStatusCode] ?? 'Payout failed. Contact support for help.';
+            return self::FAILURE_CODE_PUBLIC_MAPPING[$bankResponseCode] ?? 'Payout failed. Contact support for help.';
         }
 
-        return "Transfer not completed. Contact support for help.";
+        return 'Transfer not completed. Contact support for help.';
     }
 
     public static function getUsableCode($responseCode, $errorCode, $responseErrorCode)

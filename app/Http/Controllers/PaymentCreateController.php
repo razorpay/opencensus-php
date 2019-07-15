@@ -534,6 +534,14 @@ class PaymentCreateController extends Controller
                 else if (($data['method'] === Payment\Method::CARDLESS_EMI) or
                          ($data['method'] === Payment\Method::PAYLATER))
                 {
+                    if ((isset($data['missing']) === true) and
+                        (in_array('contact' , $data['missing'], true) === true))
+                    {
+                        $data['cdn'] = $this->config->get('url.cdn.production');
+
+                        return View::make('gateway.gatewayCardlessEmiForm')
+                                   ->with('data', $data);
+                    }
                     $templateData = [
                        'data' => $data,
                        'cdn'  => $this->config->get('url.cdn.production')
@@ -684,6 +692,18 @@ class PaymentCreateController extends Controller
 
     protected function logPaymentRequestEvent(array $input)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $input);
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $properties = [
+            'payment' => $input,
+            'merchant' => [
+                'id'        => $merchant->getId(),
+                'name'      => $merchant->getBillingLabel(),
+                'mcc'       => $merchant->getCategory(),
+                'category'  => $merchant->getCategory2(),
+            ]
+        ];
+
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_CREATION_INITIATED, null, null, $properties);
     }
 }

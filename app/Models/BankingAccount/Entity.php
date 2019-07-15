@@ -172,6 +172,8 @@ class Entity extends Base\PublicEntity
 
     public function setStatus(string $status)
     {
+        Status::validate($status);
+
         $this->setAttribute(self::STATUS, $status);
     }
 
@@ -290,6 +292,11 @@ class Entity extends Base\PublicEntity
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function isAlreadyActivated()
+    {
+        return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
     }
 
     // --------------------------- Relations ---------------------------------- //

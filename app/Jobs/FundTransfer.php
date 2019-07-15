@@ -133,6 +133,32 @@ class FundTransfer extends Job
                 return;
             }
 
+            /**
+             * rzp.mode is set by basicAuth. Since an instance of initiator is being created from job
+             * so, any method or sub-method calls within initiator will have $app[rzp.mode] = null
+             * Hence , the following.
+             */
+            if ($this->mode !== null)
+            {
+                $this->trace->info(
+                    TraceCode::FTA_MODE_SET,
+                    [
+                        'fta_id' => $this->ftaId,
+                        'mode'   => $this->mode
+                    ]);
+
+                $ftaInitiator->setModeAndDefaultConnection($this->mode);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::FTA_MODE_NOT_FOUND,
+                    [
+                        'fta_id' => $this->ftaId,
+                        'mode'   => $this->mode
+                    ]);
+            }
+
             $ftaInitiator->initFundTransferOnChannel($fta, $channel);
         }
         catch (\Throwable $e)

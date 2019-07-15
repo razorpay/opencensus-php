@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
@@ -1202,39 +1203,6 @@ class PaymentCreateTest extends TestCase
 
     }
 
-    public function testPaymentFailOnNetBankingAndDisableMerchant()
-    {
-        $this->changeEnvToNonTest();
-
-        $this->ba->publicLiveAuth();
-
-        $this->fixtures->merchant->activate();
-
-        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
-
-        // first payment with hdfc bank
-        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
-
-        // disabling the terminal as we want to test for "No terminal found"
-        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
-
-        $this->doAuthPayment($payment);
-
-        // second payment with sbi bank
-        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
-
-        // disabling the terminal as we want to test for "No terminal found"
-        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
-
-        $this->doAuthPayment($payment);
-
-        $methods = $entity = $this->getDbLastEntity('methods', 'live');
-
-        // checking the list of disabled banks for the merchant
-        $this->assertEquals(['HDFC','SBIN'], $methods->getDisabledBanks());
-    }
-
-
     public function testForRuPayPaymentOnHitachiTerminalModePurchase()
     {
         $this->mockCardVault();
@@ -1301,5 +1269,25 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $content);
         $paymentObj = $this->getLastEntity('payment', true);
         $this->assertTrue($paymentObj['gateway_captured'] );
+    }
+
+    public function testPaymentFailOnNetBankingAndDisableMerchant()
+    {
+        $this->changeEnvToNonTest();
+
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        // disabling the terminal as we want to test for "No terminal found"
+        $this->fixtures->on('live')->terminal->edit('1n25f6uN5S1Z5a', ['enabled' =>  0]);
+
+        $res = $this->doAuthPayment($payment);
+
+        $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 }

@@ -119,7 +119,7 @@ class Refund extends Base
         }
     }
 
-    protected function setMerchantBalanceLockForUpdate()
+    public function setMerchantBalanceLockForUpdate()
     {
         // TODO: Remove the second condition later once we backfill refunds
         // with all existing refunds having primaryBalance filled in.

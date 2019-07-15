@@ -314,6 +314,11 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    public function postProcessServerCallback($input): array
+    {
+        return ['success' => true];
+    }
+
     public function getTerminalDetailsFromCallbackIfApplicable($input)
     {
         return [
@@ -438,6 +443,7 @@ class Gateway extends Base\Gateway
             'acquirer' => [
                 Payment\Entity::VPA => $gatewayPayment->getVpa(),
                 Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+                Payment\Entity::REFERENCE1  => $gatewayPayment->getGatewayPaymentId(),
             ]
         ];
     }
@@ -1030,6 +1036,15 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] !== Status::REFUND_SUCCESS))
         {
             $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::REFUND_SUCCESS, $content);
+        }
+
+        // 'MPIN Captured and Pay Request Initiated' in 'status_description' is a pending state, should be verified again
+        if (($content[ResponseFields::STATUS] === Status::REFUND_FAILED) and
+            ($content[ResponseFields::STATUS_DESCRIPTION] === StatusDescription::MPIN_CAPTURED_AND_PAY_REQUEST_INITIATED))
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_INVALID_STATUS_DESCRIPTION)
+                                   ->toArray();
         }
 
         if (($content[ResponseFields::STATUS] === Status::FAILURE) or

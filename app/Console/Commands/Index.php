@@ -23,7 +23,7 @@ class Index extends Command
 
                             {--slave=0       : Whether to use slave or master db connection? (0|1)}
                             {--index_prefix= : ES new index prefix (eg. 20171201_beta_api_) }
-                            {--skip=0        : Skip offset (eg. skip first 100 rows) }
+                            {--after_id=     : Skip until specified row id }
                             {--take=5000     : Take count (eg. 1000 at a time) }
                             {--start_at=     : Start value(epoch) for time range query }
                             {--end_at=       : End value(epoch) for time range query }';
@@ -34,7 +34,7 @@ class Index extends Command
     protected $entity;
     protected $slave;
     protected $indexPrefix;
-    protected $skip;
+    protected $afterId;
     protected $take;
     protected $startAt;
     protected $endAt;
@@ -59,7 +59,7 @@ class Index extends Command
 
         $this->slave       = (int) $this->option('slave');
         $this->indexPrefix = $this->option('index_prefix');
-        $this->skip        = (int) $this->option('skip');
+        $this->afterId     = trim($this->option('after_id'));
         $this->take        = (int) $this->option('take');
         $this->startAt     = $this->option('start_at');
         $this->endAt       = $this->option('end_at');
@@ -118,25 +118,25 @@ class Index extends Command
      */
     protected function doIndexing()
     {
-        $skip = $this->skip;
+        $afterId = $this->afterId ?: null;
 
         while (true)
         {
-            $this->info('Offset: ' . $skip);
+            $this->info('Offset (Row ID): ' . $afterId);
 
             $documents = $this->repo
                               ->findManyForIndexing(
-                                    $skip,
+                                    $afterId,
                                     $this->take,
                                     $this->startAt,
                                     $this->endAt);
-
-            $skip += $this->take;
 
             if (count($documents) === 0)
             {
                 break;
             }
+
+            $afterId = end($documents)['id'];
 
             $this->info('Filtering..');
 
@@ -165,7 +165,7 @@ class Index extends Command
                 $this->trace->info(
                     TraceCode::ES_INDEX_PROGRESS,
                     [
-                        'offset'  => $skip,
+                        'offset'  => $afterId,
                         'took_ms' => $response['took'],
                     ]);
             }
