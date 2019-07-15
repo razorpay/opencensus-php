@@ -85,6 +85,7 @@ class Entity
     const SUBSCRIPTION_CYCLE            = 'subscription_cycle';
     const SUBSCRIPTION_UPDATE_REQUEST   = 'subscription_update_request';
 
+    const EXTERNAL                  = 'external';
     const ENTITY_OFFER              = 'entity_offer';
     const FUND_ACCOUNT              = 'fund_account';
     const ENTITY_ORIGIN             = 'entity_origin';
@@ -100,6 +101,7 @@ class Entity
     const VIRTUAL_ACCOUNT           = 'virtual_account';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const TERMINAL_ACTION           = 'terminal_action';
+    const BANKING_ACCOUNT           = 'banking_account';
     const PAYMENT_DOWNTIME          = 'payment.downtime';
     const MERCHANT_REQUEST          = 'merchant_request';
     const CUSTOMER_BALANCE          = 'customer_balance';
@@ -119,7 +121,7 @@ class Entity
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
     const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
-    const BANKING_ACCOUNT           = 'banking_account';
+    const BANKING_ACCOUNT_STATEMENT = 'banking_account_statement';
 
     // heimdall
     const ORG                   = 'org';

@@ -38,6 +38,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Payout\Repository                     $payout
  * @property Models\Merchant\Detail\Repository            $merchant_detail
  * @property Models\BankingAccount\Repository             $banking_account
+ * @property Models\BankingAccountStatement\Repository    $banking_account_statement
  * @property Models\Admin\Role\Repository                 $role
  * @property Models\Admin\Permission\Repository           $permission
  * @property Models\Workflow\Action\Repository            $workflow_action

@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Models\BankingAccount;
 use RZP\Error\PublicErrorCode;
 
 return [
@@ -15,7 +16,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'channel'     => 'rbl',
                 'status'      => 'created'
             ],
@@ -28,14 +28,13 @@ return [
             'method'  => 'POST',
             'content' => [
                 'channel' => 'rbl',
-                'pincode' => '899090',
+                'pincode' => '462016',
             ],
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'channel'     => 'rbl',
-                'status'      => 'unserviceable'
+                'status'      => 'created'
             ],
         ],
     ],
@@ -45,7 +44,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The pincode field is required when channel is rbl.',
+                    'description' => 'The pincode field is required.',
                 ],
             ],
             'status_code' => 400,
@@ -72,6 +71,152 @@ return [
         ],
     ],
 
+    'testSuccessBankAccountInfoNotification' => [
+        'request'  => [
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No'        => '309002180853',
+                        'Customer Name'     => 'INTERNET BANKING CA',
+                        'Customer ID'       => 'Customer ID',
+                        'Account Open Date' => '22-MAY-2019',
+                        'RZP_Ref No'        => '15597',
+                        'IFSC'              => 'HDFC0000090',
+                        'ADDR_1'            => 'RAM NAGAR',
+                        'ADDR_2'            => 'ADARSHA LANE',
+                        'ADDR_3'            => '.',
+                        'CITY'              => 'MUMBAI',
+                        'STATE'             => 'MAHARASH',
+                        'COUNTRY'           => 'INDIA',
+                        'PINCODE'           => '123456',
+                        'Phone no'          => '9899807189',
+                        'Email Id'          => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '12345'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountToInitiated' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
+            ],
+        ],
+    ],
+
+    'testUpdateAccountInfoWebhookInternally'  => [
+        'request'  => [
+            'url'     => '/banking_accounts/internal/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No'         => '309002180853',
+                        'Customer Name'      => 'INTERNET BANKING CA',
+                        'Customer ID'        => 'Customer ID',
+                        'Account Open Date'  => '22-MAY-2019',
+                        'RZP_Ref No'         => '15597',
+                        'IFSC'               => 'HDFC0000090',
+                        'ADDR_1'             => 'RAM NAGAR',
+                        'ADDR_2'             => 'ADARSHA LANE',
+                        'ADDR_3'             => '.',
+                        'CITY'               => 'MUMBAI',
+                        'STATE'              => 'MAHARASH',
+                        'COUNTRY'            => 'INDIA',
+                        'PINCODE'            => '123456',
+                        'Phone no'           => '9899807189',
+                        'Email Id'           => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '12345'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testDoubleAccountOpeningWebhooks' => [
+        'request'  => [
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No'        => '319002180853',
+                        'Customer Name'     => 'INTERNET BANKING CA',
+                        'Customer ID'       => 'Customer ID',
+                        'Account Open Date' => '22-MAY-2019',
+                        'RZP_Ref No'        => '15597',
+                        'IFSC'              => 'HDFC0000090',
+                        'ADDR_1'            => 'RAM NAGAR',
+                        'ADDR_2'            => 'ADARSHA LANE',
+                        'ADDR_3'            => '.',
+                        'CITY'              => 'MUMBAI',
+                        'STATE'             => 'MAHARASH',
+                        'COUNTRY'           => 'INDIA',
+                        'PINCODE'           => '123456',
+                        'Phone no'          => '9899807189',
+                        'Email Id'          => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '12345'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testStoreMerchantCredentials' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/credentials',
@@ -85,6 +230,95 @@ return [
         'response' => [
             'content' => [
                 'success' => true,
+            ]
+        ],
+    ],
+
+    'testFailedBankAccountInfoNotification' => [
+        'request'  => [
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No'            => '309002180853',
+                        'Customer Name'         => 'INTERNET BANKING CA',
+                        'Customer ID'           => 'Customer ID',
+                        'Account Open Date'     => '22-MAY-2019',
+                        'RZP_Ref No'            => '15597',
+                        'IFSC'                  => 'HDFC0000090',
+                        'ADDR_1'                => 'RAM NAGAR',
+                        'ADDR_2'                => 'ADARSHA LANE',
+                        'ADDR_3'                => '.',
+                        'CITY'                  => 'MUMBAI',
+                        'STATE'                 => 'MAHARASH',
+                        'COUNTRY'               => 'INDIA',
+                        'PINCODE'               => '123456',
+                        'Phone no'              => '9899807189',
+                        'Email Id'              => 'test@gmail.com'
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => null
+                    ],
+                    'Body' => [
+                        'Status' => 'Failure'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdateAccountOpeningInfoWebhookDetailsForMissedWebhook' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS                           => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::BANK_INTERNAL_STATUS             => BankingAccount\Gateway\Rbl\Status::CLOSED,
+                BankingAccount\Entity::ACCOUNT_IFSC                     => 'HDFC0000090',
+                BankingAccount\Entity::ACCOUNT_NUMBER                   => '309002180853',
+                BankingAccount\Entity::BENEFICIARY_NAME                 => 'INTERNET BANKING CA',
+                BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER   => 'random',
+                BankingAccount\Entity::BANK_REFERENCE_NUMBER            => 'tobefilled',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS1             => 'RAM NAGAR',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS2             => 'ADARSHA LANE',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS3             => '.',
+                BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE          => '2019-06-22',
+                BankingAccount\Entity::BENEFICIARY_CITY                 => 'MUMBAI',
+                BankingAccount\Entity::BENEFICIARY_STATE                => 'MAHARASH',
+                BankingAccount\Entity::BENEFICIARY_COUNTRY              => 'INDIA',
+                BankingAccount\Entity::BENEFICIARY_MOBILE               => '9899807189',
+                BankingAccount\Entity::BENEFICIARY_EMAIL                => 'test@gmail.com',
+                BankingAccount\Entity::BENEFICIARY_PIN                  => '560030',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountToUnserviceable' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'                  => '10000000000000',
+                'channel'                      => 'rbl',
+                 BankingAccount\Entity::STATUS => BankingAccount\Status::UNSERVICEABLE,
             ],
         ],
     ],
@@ -102,6 +336,24 @@ return [
         'response' => [
             'content' => [
                 'success' => false,
+            ]
+        ],
+    ],
+
+    'testUpdateBankingAccount' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS               => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\Gateway\Rbl\Status::CLOSED
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'channel'     => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
             ],
         ],
     ],
