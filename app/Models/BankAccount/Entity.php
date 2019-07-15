@@ -10,6 +10,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
+use RZP\Http\BasicAuth\BasicAuth;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -264,9 +265,19 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BENEFICIARY_NAME];
     }
 
-    protected function getRegisteredBeneficiaryNameAttribute()
+    protected function getAccountNumberAttribute()
     {
-        return $this->attributes[self::REGISTERED_BENEFICIARY_NAME];
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        $accountNumber = $this->attributes[self::ACCOUNT_NUMBER];
+
+        if ($basicAuth->isPublicAuth() === true)
+        {
+            $accountNumber = mask_except_last4($accountNumber);
+        }
+
+        return $accountNumber;
     }
 
     public function settlements()
@@ -387,11 +398,6 @@ class Entity extends Base\PublicEntity
     protected function setNameAttribute($name)
     {
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
-    }
-
-    public function setRegisteredBeneficiaryName($name)
-    {
-        $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
     }
 
     public function setFtsFundAccountId($ftsFundAccountId)
