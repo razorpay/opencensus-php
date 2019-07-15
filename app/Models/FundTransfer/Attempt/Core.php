@@ -51,14 +51,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if ($instantDispatch === true)
-        {
-            $this->dispatchForTransfer($fundTransferAttempt);
-        }
-        else if ($fundTransferAttempt->getIsFTS() === true)
+        if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
+
 
         return $fundTransferAttempt;
     }
