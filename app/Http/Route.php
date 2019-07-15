@@ -1065,7 +1065,7 @@ final class Route
 
         // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
-        'contact_get_public'                       => ['get',      'contacts/{id}/public',                           'ContactController@get'                                             ],
+        'contact_get_public'                       => ['get',      'contacts/{x_entity_id}/public',                  'ContactController@get'                                             ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
         'contact_update'                           => ['patch',    'contacts/{id}',                                  'ContactController@update'                                          ],
