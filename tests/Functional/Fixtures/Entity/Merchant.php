@@ -502,7 +502,7 @@ class Merchant extends Base
                 'merchant_id'      => $merchantId,
                 'balance'          => $balance,
                 'account_type'     => 'shared',
-                'account_provider' => Channel::YESBANK,
+                'channel'          => Channel::YESBANK,
             ]);
     }
 
