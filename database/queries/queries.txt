@@ -4970,7 +4970,7 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status),
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
-    ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER password;
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
@@ -5053,7 +5053,7 @@ ALTER TABLE banking_accounts
     MODIFY COLUMN bank_reference_number VARCHAR(255) DEFAULT NULL,
     ADD INDEX banking_accounts_channel_index (channel),
     ADD INDEX banking_accounts_status_index (status),
-    ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
+    ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference1;
 
 ALTER TABLE `merchant_details`
     ADD COLUMN `business_registered_address_l2` VARCHAR(255) DEFAULT NULL after `business_registered_address`,
