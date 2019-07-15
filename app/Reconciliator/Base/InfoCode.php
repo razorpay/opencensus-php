@@ -18,6 +18,8 @@ class InfoCode
 
     const UNKNOWN_CARD_TYPE                             = 'UNKNOWN_CARD_TYPE';
 
+    const AMOUNT_ABSENT                                 = 'AMOUNT_ABSENT';
+
     const UNKNOWN_RECON_TYPE                            = 'UNKNOWN_RECON_TYPE';
 
     const RECON_TYPE_NOT_FOUND                          = 'RECON_TYPE_NOT_FOUND';

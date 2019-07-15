@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\Mobikwik\SubReconciliator;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -49,7 +50,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      *
      * @return int $paymentAmount
      */
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
     }

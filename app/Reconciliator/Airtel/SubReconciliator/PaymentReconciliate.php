@@ -49,7 +49,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         if (isset($row[self::COLUMN_AMOUNT]) === false)
         {

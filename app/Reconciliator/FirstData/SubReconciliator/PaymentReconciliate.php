@@ -77,7 +77,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * @param array $row
      * @return integer $paymentAmount
      */
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
 
