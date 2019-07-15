@@ -211,6 +211,18 @@ class Core extends Base\Core
     {
         if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
         {
+            if ($sourceType === Type::PAYOUT)
+            {
+                if ($source->getChannel() === Settlement\Channel::RBL)
+                {
+                    return [true, Settlement\Channel::RBL];
+                }
+                else
+                {
+                    return [false, Settlement\Channel::YESBANK];
+                }
+            }
+
             $srcMerchantId = $source->getMerchantId();
 
             $merchantId = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);

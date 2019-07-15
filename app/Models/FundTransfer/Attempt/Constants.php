@@ -2,7 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
-use RZP\Constants\Entity as EntityConstatns;
+use RZP\Constants\Entity as EntityConstants;
 
 final class Constants
 {
@@ -33,7 +33,8 @@ final class Constants
     const DEFAULT_STATUS_CHECK_DISPATCH_TIME = 180;
 
     const ALLOWED_PRODUCTS_ON_FTS = [
-        EntityConstatns::REFUND,
+        EntityConstants::REFUND,
+        EntityConstants::PAYOUT,
     ];
 
     const VIRTUAL_ACCOUNT_IFSC = [

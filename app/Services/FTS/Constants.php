@@ -113,4 +113,6 @@ final class Constants
     const INTERNAL_ERROR                = 'internal_error';
 
     const CODE                          = 'code';
+
+    const PREFERRED_SOURCE_ACCOUNT_ID   = "preferred_source_account_id";
 }

@@ -24,12 +24,12 @@ trait AttemptTrait
     protected function initiateTransfer(string $channel, string $purpose, bool $failureTest = false, string $sourceType = '')
     {
         $content = [
-            Attempt\Entity::PURPOSE => $purpose,
+            'failed_response'           => (int) $failureTest,
+            Attempt\Entity::PURPOSE     => $purpose,
             Attempt\Entity::SOURCE_TYPE => $sourceType,
-            'failed_response'       => (int) $failureTest,
         ];
 
-        if ($sourceType !== '')
+        if (empty($sourceType) === false)
         {
             $content[Attempt\Entity::SOURCE_TYPE] = $sourceType;
         }

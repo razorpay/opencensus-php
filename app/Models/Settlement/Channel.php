@@ -207,4 +207,16 @@ class Channel
             throw new Exception\BadRequestValidationFailureException('Invalid channel name: ' . $channel);
         }
     }
+
+    /**
+     * Gives list of channels which supports variation in source accounts
+     *
+     * @return array
+     */
+    public static function getSourceAccountChannels()
+    {
+        return [
+            self::RBL,
+        ];
+    }
 }

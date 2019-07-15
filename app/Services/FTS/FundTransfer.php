@@ -5,6 +5,7 @@ namespace RZP\Services\FTS;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
@@ -158,6 +159,8 @@ class FundTransfer extends Base
             $mode = Constants::MODE_IMPS;
         }
 
+        $channel = $this->fta->getChannel();
+
         $request[Constants::TRANSFER] = [
             Constants::PREFERRED_MODE    => $mode,
             Constants::AMOUNT            => $this->source->getAmount(),
@@ -165,8 +168,19 @@ class FundTransfer extends Base
             Constants::SOURCE_ID         => $this->fta->getSourceId(),
             Constants::SOURCE_TYPE       => $this->fta->getSourceType(),
             Constants::INITIATE_AT       => $this->fta->getInitiateAt(),
-            Constants::PREFERRED_CHANNEL => $this->fta->getChannel(),
+            Constants::PREFERRED_CHANNEL => $channel,
         ];
+
+        if (in_array($channel, Channel::getSourceAccountChannels(), true) === true)
+        {
+            $source = $this->fta->source;
+
+            if (method_exists($source, 'getSourceFtsFundAccountId'))
+            {
+                $request[Constants::TRANSFER]
+                    [Constants::PREFERRED_SOURCE_ACCOUNT_ID] = $this->fta->source->getSourceFtsFundAccountId();
+            }
+        }
 
         return $request;
     }
