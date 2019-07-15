@@ -702,7 +702,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       const subscriptionData = scheduledChanges.data
           ? scheduledChanges.data
           : entity,
-        planData = scheduledChanges.plan ? scheduledChanges.plan : plan;
+        planData = scheduledChanges.plan.id ? scheduledChanges.plan : plan;
 
       if (
         this.checkNextDueInvoiceValidity(
