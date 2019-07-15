@@ -5093,5 +5093,5 @@ ALTER TABLE workflows
 	ADD INDEX workflows_merchant_id_index (merchant_id);
 
 ALTER TABLE gateway_rules
-    ADD COLUMN category VARCHAR(255) NULL AFTER emi_subvention,
+    ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
     ADD INDEX gateway_rules_category_index (category);
