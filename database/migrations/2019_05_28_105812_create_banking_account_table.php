@@ -38,7 +38,8 @@ class CreateBankingAccountTable extends Migration
 
             $table->string(Entity::CHANNEL, 255);
 
-            $table->char(Entity::PINCODE, Entity::PINCODE_LENGTH);
+            $table->string(Entity::PINCODE, 255)
+                  ->nullable();
 
             $table->char(Entity::FTS_FUND_ACCOUNT_ID, Entity::ID_LENGTH)
                   ->nullable();
@@ -94,11 +95,21 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::REFERENCE1, 255)
                   ->nullable();
 
+            $table->string(Entity::ACCOUNT_TYPE, 255);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->index(Entity::STATUS);
+
+            $table->index(Entity::CHANNEL);
+
             $table->index(Entity::BANK_INTERNAL_STATUS);
+
+            $table->index(Entity::BALANCE_ID);
+
+            $table->index(Entity::FTS_FUND_ACCOUNT_ID);
 
             $table->index(Entity::BANK_REFERENCE_NUMBER);
 

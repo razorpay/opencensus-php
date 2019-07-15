@@ -2,13 +2,16 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Razorpay\IFSC\Bank;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Services\FTS;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Services\CardVault;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
@@ -25,6 +28,56 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->config = $this->app['config']->get('banking_account');
+    }
+
+    public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
+    {
+        // Virtual account has to be with receiver_type bank account
+        if ($virtualAccount->hasBankAccount() === false)
+        {
+            throw new LogicException(
+                'Banking accounts can only be create on bank type virtual accounts',
+                null,
+                ['virtual_account_id' => $virtualAccount->getId()]);
+        }
+
+        $bankAccount = $virtualAccount->bankAccount;
+        $bankCode    = $bankAccount->getBankCode();
+
+        // Only Yesbank bank accounts are allowed as shared banking accounts, for now
+        if ($bankCode !== Bank::YESB)
+        {
+            throw new LogicException(
+                'Only YesBank virtual accounts are supported', // for now 🤑
+                null,
+                ['bank_code' => $bankCode]);
+        }
+
+        $balanceId = $virtualAccount->getBalanceId();
+
+        //
+        // If a banking_account already exists for a balance_id, return that instead
+        // of creating a new one.
+        //
+        $existingBankingAcc = $this->repo->banking_account->getFromBalanceId($balanceId);
+
+        if ($existingBankingAcc !== null)
+        {
+            return $existingBankingAcc;
+        }
+
+        $bankingAccountInput = [
+            Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
+            Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
+            Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
+            Entity::ACCOUNT_TYPE        => AccountType::NODAL,
+            Entity::STATUS              => Status::CREATED,
+        ];
+
+        return $this->createYesbankBankingAccount(
+            $bankingAccountInput,
+            $virtualAccount->merchant,
+            $virtualAccount->balance);
     }
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
@@ -53,6 +106,8 @@ class Core extends Base\Core
 
         $bankingAccount = new Entity;
 
+        $input[Entity::ACCOUNT_TYPE] = AccountType::CURRENT;
+
         $bankingAccount->build($input);
 
         $bankingAccount->merchant()->associate($merchant);
@@ -62,6 +117,11 @@ class Core extends Base\Core
             [
                 $bankingAccount->toArray(),
             ]);
+
+        // TODO: Fix this logic
+        $refNumber = substr(time(), 0, 5);
+
+        $bankingAccount->setBankReferenceNumber($refNumber);
 
         $this->repo->saveOrFail($bankingAccount);
 
@@ -144,6 +204,38 @@ class Core extends Base\Core
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
         $bankingAccount = $bankingAccount->edit($input);
+
+        $this->repo->saveOrFail($bankingAccount);
+
+        return $bankingAccount;
+    }
+
+    protected function createYesbankBankingAccount(
+        array $input,
+        Merchant\Entity $merchant,
+        Merchant\Balance\Entity $balance): Entity
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE,
+            [
+                'channel' => Channel::YESBANK,
+                'input'   => $input,
+            ]);
+
+        (new Validator)->validateInput(Validator::YESBANK_CREATE, $input);
+
+        $input[Entity::CHANNEL] = Channel::YESBANK;
+
+        $bankingAccount = new Entity;
+
+        $bankingAccount->build($input);
+
+        $bankingAccount->merchant()->associate($merchant);
+
+        $bankingAccount->balance()->associate($balance);
+
+        // Yesbank accounts are always created in the processed state
+        $bankingAccount->setStatus(Status::ACTIVATED);
 
         $this->repo->saveOrFail($bankingAccount);
 

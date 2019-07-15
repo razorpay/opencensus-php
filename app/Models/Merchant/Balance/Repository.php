@@ -276,7 +276,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->where(Entity::ACCOUNT_PROVIDER, $channel)
+                    ->where(Entity::CHANNEL, $channel)
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->firstOrFailPublic();
     }

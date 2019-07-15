@@ -68,6 +68,37 @@ class Core extends Base\Core
     }
 
     /**
+     * Shared Banking balance is the first banking account created on business banking
+     * This is of account_type=shared, and only one of these can exist (currently)
+     *
+     * @param Merchant\Entity $merchant
+     * @param null            $mode
+     *
+     * @return Entity
+     */
+    public function createOrFetchSharedBankingBalance(Merchant\Entity $merchant, $mode = null)
+    {
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                                            $merchant->getId(),
+                                            Type::BANKING,
+                                            AccountType::SHARED,
+                                            $mode);
+
+        if ($balance === null)
+        {
+            $input = [
+                Entity::TYPE         => Type::BANKING,
+                Entity::ACCOUNT_TYPE => AccountType::SHARED,
+                Entity::CURRENCY     => Currency::INR,
+            ];
+
+            $balance = $this->create($merchant, $input, $mode);
+        }
+
+        return $balance;
+    }
+
+    /**
      * Check that a merchant's balance is greater than amount argument passed
      *
      * @param  Merchant\Entity $merchant
