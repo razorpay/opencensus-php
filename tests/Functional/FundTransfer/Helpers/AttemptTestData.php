@@ -83,6 +83,20 @@ return [
         'failure_reason'    => null,
     ],
 
+    'matchAttemptForReconFlipStatusIcici' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'Cancelled',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconFlipStatusAxis2' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'REJECTED',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
     'matchAttemptForReconSuccessHdfc' => [
         'version'           => 'V3',
         'bank_status_code'  => 'E',
