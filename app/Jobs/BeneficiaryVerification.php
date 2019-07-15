@@ -102,6 +102,10 @@ class BeneficiaryVerification extends Job
 
                 $this->release(self::RETRY_INTERVAL);
             }
+            else
+            {
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+            }
         }
         catch (\Throwable $e)
         {

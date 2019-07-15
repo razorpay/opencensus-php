@@ -86,7 +86,7 @@ class Beneficiary extends Base\Core
                 return ;
             }
 
-            Cache::put($cacheKey, 'in_progress');
+            Cache::put($cacheKey, 'in_progress', 300);
 
             BeneficiaryRegistration::dispatch($this->mode, $channel, $bankAccount->getId());
 
@@ -100,14 +100,7 @@ class Beneficiary extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $cacheValue = Cache::pull($cacheKey);
-
-            $this->trace->info(
-                TraceCode::BENEFICIARY_REGISTRATION_REDIS_KEY_REMOVED,
-                [
-                    'key'           => $cacheKey,
-                    'value'         => $cacheValue,
-                ]);
+            $this->removeBeneficiaryRegistrationCacheKey($bankAccount->getId());
 
             $this->trace->traceException(
                 $e,
@@ -129,10 +122,10 @@ class Beneficiary extends Base\Core
         {
             if (Cache::has($cacheKey) === true)
             {
-                return;
+                return ;
             }
 
-            Cache::put($cacheKey, 'in_progress');
+            Cache::put($cacheKey, 'in_progress', 300);
 
             BeneficiaryVerification::dispatch($this->mode, $channel, $bankAccount->getId());
 
@@ -146,14 +139,7 @@ class Beneficiary extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $cacheValue = Cache::pull($cacheKey);
-
-            $this->trace->info(
-                TraceCode::BENEFICIARY_VERIFICATION_REDIS_KEY_REMOVED,
-                [
-                    'key'           => $cacheKey,
-                    'value'         => $cacheValue,
-                ]);
+            $this->removeBeneficiaryVerificationCacheKey($bankAccount->getId());
 
             $this->trace->traceException(
                 $e,
@@ -319,6 +305,11 @@ class Beneficiary extends Base\Core
 
         $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
 
+        if ($status === true)
+        {
+            $this->removeBeneficiaryRegistrationCacheKey($bankAccount->getId());
+        }
+
         if ($status === false)
         {
             throw new LogicException(
@@ -355,6 +346,11 @@ class Beneficiary extends Base\Core
         $this->verifyBeneficiary($bankAccounts, $channel);
 
         $status = $this->checkBeneficiaryVerificationStatus($bankAccount, $channel);
+
+        if ($status === true)
+        {
+            $this->removeBeneficiaryVerificationCacheKey($bankAccount->getId());
+        }
 
         if ($status === false)
         {
@@ -524,5 +520,45 @@ class Beneficiary extends Base\Core
         return [
             'status' => 'Request dispatched to fts',
         ];
+    }
+
+    /**
+     * Remove Bank Account Id Key in cache which denotes that Registration
+     * is in progress for that bank account.
+     *
+     * @param Entity $bankAccountId
+     */
+    public function removeBeneficiaryRegistrationCacheKey($bankAccountId)
+    {
+        $cacheKey = $cacheKey = 'beneficiary_registration:' . $bankAccountId;
+
+        $cacheValue = Cache::pull($cacheKey);
+
+        $this->trace->info(
+            TraceCode::BENEFICIARY_REGISTRATION_REDIS_KEY_REMOVED,
+            [
+                'key' => $cacheKey,
+                'value' => $cacheValue,
+            ]);
+    }
+
+    /**
+     * Remove Bank Account Id Key in cache which denotes that Verification
+     * is in progress for that bank account.
+     *
+     * @param Entity $bankAccountId
+     */
+    public function removeBeneficiaryVerificationCacheKey($bankAccountId)
+    {
+        $cacheKey = $cacheKey = 'beneficiary_verification:' . $bankAccountId;
+
+        $cacheValue = Cache::pull($cacheKey);
+
+        $this->trace->info(
+            TraceCode::BENEFICIARY_VERIFICATION_REDIS_KEY_REMOVED,
+            [
+                'key' => $cacheKey,
+                'value' => $cacheValue,
+            ]);
     }
 }

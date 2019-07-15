@@ -14,7 +14,7 @@ class BeneficiaryRegistration extends Job
 {
     const MAX_ALLOWED_ATTEMPTS = 5;
 
-    const RETRY_INTERVAL       = 300;
+    const RETRY_INTERVAL       = 60;
 
     /**
      * @var string
@@ -99,6 +99,10 @@ class BeneficiaryRegistration extends Job
                 $this->traceData(TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY);
 
                 $this->release(self::RETRY_INTERVAL);
+            }
+            else
+            {
+                (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
             }
         }
         catch (\Throwable $e)

@@ -80,7 +80,12 @@ class FundTransfer extends Job
                 return;
             }
 
-            $this->checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, $data);
+            $shouldReturn = $this->checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, $data);
+
+            if ($shouldReturn === true)
+            {
+                return;
+            }
 
             /**
              * rzp.mode is set by basicAuth. Since an instance of initiator is being created from job
@@ -137,8 +142,6 @@ class FundTransfer extends Job
         if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
         {
             $this->logAndDelete($data, $traceCode, true);
-
-            return;
         }
         else
         {
@@ -146,6 +149,8 @@ class FundTransfer extends Job
 
             $this->logAndDelete($data, $traceCode);
         }
+
+        return true;
     }
 
     protected function logAndDelete(
@@ -187,14 +192,16 @@ class FundTransfer extends Job
                 $beneficiaryStatus !== BeneficiaryStatus::REGISTERED) {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
 
-                $this->checkRetryOrDelete($data);
+                return $this->checkRetryOrDelete($data);
             }
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED) {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
 
-                $this->checkRetryOrDelete($data);
+                return $this->checkRetryOrDelete($data);
             }
         }
+
+        return false;
     }
 }
