@@ -4970,7 +4970,7 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status),
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
-    ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER password;
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
