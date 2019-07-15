@@ -94,33 +94,6 @@ class Core extends Base\Core
         return $balance;
     }
 
-
-    /**
-     * @param Merchant\Entity $merchant
-     * @param string          $accType
-     * @param string|null     $accProvider
-     * @param string|null     $mode
-     *
-     * @return Entity
-     */
-    public function createBankingBalance(
-        Merchant\Entity $merchant,
-        string $accType,
-        string $channel = null,
-        string $mode = null)
-    {
-        $input = [
-            Entity::TYPE             => Type::BANKING,
-            Entity::CURRENCY         => Currency::INR,
-            Entity::ACCOUNT_TYPE     => $accType,
-            Entity::CHANNEL          => $channel,
-        ];
-
-        $balance = $this->create($merchant, $input, $mode);
-
-        return $balance;
-    }
-
     /**
      * Check that a merchant's balance is greater than amount argument passed
      *

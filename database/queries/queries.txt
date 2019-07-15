@@ -5042,19 +5042,6 @@ ALTER TABLE transactions
     CHANGE reference5 balance_updated TINYINT(4),
     ALGORITHM=INPLACE, LOCK=NONE;
 
-ALTER TABLE balance
-    DROP INDEX balance_account_provider_index,
-    CHANGE COLUMN account_provider channel varchar(255) DEFAULT NULL,
-    ADD INDEX balance_account_channel_index (channel),
-    DROP INDEX balance_merchant_id_type_unique;
-
-ALTER TABLE banking_accounts
-    MODIFY COLUMN pincode VARCHAR(255) DEFAULT NULL,
-    MODIFY COLUMN bank_reference_number VARCHAR(255) DEFAULT NULL,
-    ADD INDEX banking_accounts_channel_index (channel),
-    ADD INDEX banking_accounts_status_index (status),
-    ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
-
 ALTER TABLE `merchant_details`
     ADD COLUMN `business_registered_address_l2` VARCHAR(255) DEFAULT NULL after `business_registered_address`,
     ADD COLUMN `business_registered_country` VARCHAR(255) DEFAULT NULL after `business_registered_pin`,
@@ -5124,3 +5111,16 @@ ALTER TABLE banking_accounts
        ADD COLUMN account_activation_date INT(11) DEFAULT NULL AFTER bank_reference_number,
        ADD INDEX banking_account_bank_reference_number_index (bank_reference_number),
        ADD INDEX banking_account_account_number_index (account_number);
+
+ALTER TABLE balance
+    DROP INDEX balance_account_provider_index,
+    CHANGE COLUMN account_provider channel varchar(255) DEFAULT NULL,
+    ADD INDEX balance_account_channel_index (channel),
+    DROP INDEX balance_merchant_id_type_unique;
+
+ALTER TABLE banking_accounts
+    MODIFY COLUMN pincode VARCHAR(255) DEFAULT NULL,
+    MODIFY COLUMN bank_reference_number VARCHAR(255) DEFAULT NULL,
+    ADD INDEX banking_accounts_channel_index (channel),
+    ADD INDEX banking_accounts_status_index (status),
+    ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;

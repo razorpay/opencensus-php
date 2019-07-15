@@ -70,13 +70,14 @@ class Core extends Base\Core
             Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
             Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
             Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
-            Entity::ACCOUNT_TYPE        => AccountType::VIRTUAL,
+            Entity::ACCOUNT_TYPE        => AccountType::NODAL,
             Entity::STATUS              => Status::CREATED,
         ];
 
-        return $this->createYesbankBankingAccount($bankingAccountInput, $virtualAccount->merchant,
+        return $this->createYesbankBankingAccount(
+            $bankingAccountInput,
+            $virtualAccount->merchant,
             $virtualAccount->balance);
-
     }
 
     public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
@@ -209,8 +210,10 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    protected function createYesbankBankingAccount(array $input, Merchant\Entity $merchant,
-                                                   Merchant\Balance\Entity $balance): Entity
+    protected function createYesbankBankingAccount(
+        array $input,
+        Merchant\Entity $merchant,
+        Merchant\Balance\Entity $balance): Entity
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
@@ -219,7 +222,7 @@ class Core extends Base\Core
                 'input'   => $input,
             ]);
 
-        (new Validator)->validateInput('yesbank_create', $input);
+        (new Validator)->validateInput(Validator::YESBANK_CREATE, $input);
 
         $input[Entity::CHANNEL] = Channel::YESBANK;
 

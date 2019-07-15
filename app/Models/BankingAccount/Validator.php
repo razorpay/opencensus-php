@@ -8,7 +8,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const PRE_PROCESS = 'pre_process';
+    const PRE_PROCESS    = 'pre_process';
+    const YESBANK_CREATE = 'yesbank_create';
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
@@ -18,7 +19,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
         Entity::ACCOUNT_IFSC        => 'required|string|size:11',
         Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
-        Entity::ACCOUNT_TYPE        => 'required|string|in:virtual',
+        Entity::ACCOUNT_TYPE        => 'required|string|in:nodal',
         Entity::STATUS              => 'required|in:created',
     ];
 
@@ -116,14 +117,12 @@ class Validator extends Base\Validator
 
     protected function validateAccountType(string $attribute, string $accountType)
     {
-        if (AccountType::isAccountTypeValid($accountType) === false)
+        if (AccountType::isValid($accountType) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Banking account type is invalid',
                 Entity::ACCOUNT_TYPE,
-                [
-                    Entity::ACCOUNT_TYPE => $accountType
-                ]);
+                [Entity::ACCOUNT_TYPE => $accountType]);
         }
     }
 }

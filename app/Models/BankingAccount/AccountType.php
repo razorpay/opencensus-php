@@ -4,10 +4,11 @@ namespace RZP\Models\BankingAccount;
 
 class AccountType
 {
-    const VIRTUAL       = 'virtual';
-    const CURRENT       = 'current';
+    const NODAL   = 'nodal';
+    const SAVINGS = 'savings';
+    const CURRENT = 'current';
 
-    public static function isAccountTypeValid($type)
+    public static function isValid(string $type): bool
     {
         $key = __CLASS__ . '::' . strtoupper($type);
 

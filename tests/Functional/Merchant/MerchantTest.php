@@ -4027,7 +4027,7 @@ class MerchantTest extends TestCase
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->assertEquals(BankingAccount\AccountType::VIRTUAL, $bankingAccount->getAccountType());
+        $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
     }
 
     public function testBulkAssignPricing()
