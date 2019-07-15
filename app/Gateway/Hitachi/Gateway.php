@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Hitachi;
 
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Gateway\Mpi;
 use RZP\Models\Admin;
@@ -493,6 +494,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_MOTO_AUTH_RESPONSE);
@@ -512,7 +515,6 @@ class Gateway extends Base\Gateway
         parent::advice($input);
 
         $request = $this->getAdviceRequestArrayForPaysecure($input);
-
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::CAPTURE);
 
@@ -535,6 +537,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
@@ -554,6 +558,8 @@ class Gateway extends Base\Gateway
 
         $hitachiEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::AUTHORIZE);
 
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
@@ -572,6 +578,8 @@ class Gateway extends Base\Gateway
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
         $gatewayEntity = $this->createGatewayPaymentEntity($input,[],Base\Action::AUTHORIZE);
+
+        $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -1038,10 +1046,10 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE            => $currencyCode,
         ];
 
-        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
-        {
-            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
-        }
+//        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
+//        {
+//            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
+//        }
 
         return $content;
     }
@@ -1441,14 +1449,15 @@ class Gateway extends Base\Gateway
     {
         if ($this->isLiveMode() === true)
         {
-            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
-            {
-                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
-            }
-            else
-            {
-                return 'https://172.16.18.40:10010/PaymentGateway.aspx';
-            }
+            return 'https://172.16.18.40:10010/PaymentGateway.aspx';
+//            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_NEW_URL_ENABLED, false) === true)
+//            {
+//                return 'https://172.18.24.213:10010/PaymentGateway.aspx';
+//            }
+//            else
+//            {
+//
+//            }
         }
 
         return constant(Url::class . '::' . strtoupper($this->mode));

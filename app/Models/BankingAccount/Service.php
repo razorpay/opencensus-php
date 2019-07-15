@@ -4,7 +4,6 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 
@@ -21,64 +20,36 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        (new Validator)->setStrictFalse()->validateInput('pre_create', $input);
-
-        $channel = $input[Entity::CHANNEL];
-
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_CREATE,
             [
-                'channel'            => $channel,
-                'input'              => $input,
+                'input' => $input,
             ]);
 
-        switch ($channel)
-        {
-            case Channel::RBL:
-                $account = $this->core->createRblBankingAccount($input, $this->merchant);
-
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-                return null;
-        }
+        $account = $this->core->createBankingAccount($input, $this->merchant);
 
         return $account->toArrayPublic();
     }
 
+    /**
+     * This function to be used only for admin or internal routes since
+     * we are not fetching banking_account by merchant_id.
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
     public function update(string $id, array $input): array
     {
         /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
-        $channel = $bankingAccount->getChannel();
-
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_EDIT,
-            [
-                'id'      => $bankingAccount->getId(),
-                'channel' => $channel,
-                'input'   => $input,
-            ]);
-
-        switch ($channel)
-        {
-            case Channel::RBL:
-                $account = $this->core->updateRblBankingAccount($bankingAccount, $input);
-
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-                return null;
-        }
+        $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         return $account->toArrayPublic();
     }
-  
+
     public function storeCredentials(string $id, array $input)
     {
         $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
@@ -137,20 +108,7 @@ class Service extends Base\Service
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
 
-        switch ($channel)
-        {
-            case Channel::RBL:
-                $coreMethod = $coreMethod . 'ForRbl';
-
-                $this->core->$coreMethod($input[Entity::PINCODES]);
-
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-                return null;
-        }
+        $this->core->$coreMethod($input[Entity::PINCODES], $channel);
 
         return ['success' => true];
     }
@@ -158,6 +116,13 @@ class Service extends Base\Service
     public function fetchMultiple()
     {
         return $this->merchant->bankingAccounts;
+    }
+
+    public function processAccountInfoWebhook(string $channel, array $input)
+    {
+        $response = $this->core->processAccountInfoWebhook($channel, $input);
+
+        return $response;
     }
 
     /**
@@ -169,8 +134,11 @@ class Service extends Base\Service
     protected function throwUnhandledChannelException(string $channel, array $input)
     {
         throw new LogicException(
-            'Banking Account logic undefined for channel: ' . $channel,
+            'Banking Account logic undefined for channel',
             null,
-            $input);
+            [
+                'input'     => $input,
+                'channel'   => $channel
+            ]);
     }
 }

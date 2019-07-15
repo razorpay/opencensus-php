@@ -20,6 +20,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
@@ -666,6 +667,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantAutoRefundDelay()
+    {
+        $this->createMerchant();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantDefaultRefundSpeed()
     {
         $this->createMerchant();
 
@@ -2347,9 +2357,13 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['google_pay']);
 
+        $this->fixtures->merchant->addFeatures(['google_pay_omnichannel']);
+
         $response = $this->startTest();
 
         $this->assertNotNull($response['features']['google_pay']);
+
+        $this->assertNotNull($response['features']['google_pay_omnichannel']);
     }
 
     public function testPutPaytmMethod()
@@ -3976,6 +3990,33 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedBankingAccount = [
+            'channel'     => 'yesbank',
+            'merchant_id' => '10000000000000',
+            'status'      => 'activated',
+            'pincode'     => null
+        ];
+
+        $balanceId = $bankingAccount->getBalanceId();
+
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $bankingAccount->toArray());
+        $this->assertNotNull($balanceId);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $expectedBalance = [
+            'type'             => 'banking',
+            'account_type'     => 'shared',
+            'channel'          =>  null,
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBalance, $balance->toArray());
+
         $merchants = DB::connection('test')->table('merchant_users')
                                            ->where('user_id', '=', $user['id'])
                                            ->pluck('merchant_id', 'product');
@@ -3983,6 +4024,10 @@ class MerchantTest extends TestCase
         $this->assertEquals(count($merchants), 2);
 
         $this->assertArrayHasKey('banking', $merchants);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
     }
 
     public function testBulkAssignPricing()

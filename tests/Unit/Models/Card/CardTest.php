@@ -81,6 +81,8 @@ class ValidationTest extends TestCase
             ['3538105814111110',  '888', 'JCB',  'credit'],
             ['2131005964111147',  '888', 'JCB',  'credit'],
             ['3538001111111111',  '888', 'RuPay',  'credit'],
+            ['3538010000000004',  '888', 'JCB',  'credit'],
+            ['3538020000000003',  '888', 'RuPay',  'credit'],
             ['2030400000121212',  '888', 'Bajaj Finserv',  'credit'],
             ['5900006817596627', '888', 'MasterCard', 'credit'],
             ['2720992121212123', '888', 'MasterCard', 'credit'],

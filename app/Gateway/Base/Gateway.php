@@ -302,6 +302,18 @@ class Gateway
         $this->input = $input;
     }
 
+    public function omniPay(array $input)
+    {
+        if (empty($input['gateway']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT);
+        }
+
+        $this->input = $input;
+        $this->action = Action::OMNI_PAY;
+    }
+
     public function debit(array $input)
     {
         $this->input = $input;

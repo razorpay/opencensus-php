@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccount\Entity;
 
 class CreateBankingAccountTable extends Migration
@@ -37,7 +38,8 @@ class CreateBankingAccountTable extends Migration
 
             $table->string(Entity::CHANNEL, 255);
 
-            $table->char(Entity::PINCODE, Entity::PINCODE_LENGTH);
+            $table->string(Entity::PINCODE, 255)
+                  ->nullable();
 
             $table->char(Entity::FTS_FUND_ACCOUNT_ID, Entity::ID_LENGTH)
                   ->nullable();
@@ -45,7 +47,44 @@ class CreateBankingAccountTable extends Migration
             $table->char(Entity::BALANCE_ID, Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Entity::BANK_REFERENCE_NUMBER, 5);
+            $table->string(Entity::BANK_INTERNAL_REFERENCE_NUMBER, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_NAME, 255)
+                  ->nullable();
+
+            $table->char(Entity::ACCOUNT_CURRENCY, 3)
+                  ->default(Currency::INR);
+
+            $table->string(Entity::BENEFICIARY_EMAIL, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_MOBILE, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_CITY, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_STATE, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_COUNTRY, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_ADDRESS1, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_ADDRESS2, 255)
+                  ->nullable();
+
+            $table->string(Entity::BENEFICIARY_ADDRESS3, 255)
+                  ->nullable();
+
+            $table->string(Entity::BANK_REFERENCE_NUMBER, 255)
+                  ->nullable();
+
+            $table->integer(Entity::ACCOUNT_ACTIVATION_DATE)
+                  ->nullable();
 
             $table->string(Entity::USERNAME, 255)
                   ->nullable();
@@ -56,11 +95,25 @@ class CreateBankingAccountTable extends Migration
             $table->string(Entity::REFERENCE1, 255)
                   ->nullable();
 
+            $table->string(Entity::ACCOUNT_TYPE, 255);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->index(Entity::STATUS);
+
+            $table->index(Entity::CHANNEL);
+
             $table->index(Entity::BANK_INTERNAL_STATUS);
+
+            $table->index(Entity::BALANCE_ID);
+
+            $table->index(Entity::FTS_FUND_ACCOUNT_ID);
+
+            $table->index(Entity::BANK_REFERENCE_NUMBER);
+
+            $table->index(Entity::ACCOUNT_NUMBER);
         });
     }
 

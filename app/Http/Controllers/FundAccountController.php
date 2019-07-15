@@ -24,13 +24,4 @@ class FundAccountController extends Controller
 
         return ApiResponse::json($entity);
     }
-
-    public function createPublic()
-    {
-        $input = Request::all();
-
-        $entity = $this->service()->createPublic($input);
-
-        return ApiResponse::json($entity);
-    }
 }

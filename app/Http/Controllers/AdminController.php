@@ -224,6 +224,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getHourlyReconciliationStatusSummary()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchHourlyReconciliationSummary($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createAdminBatch()
     {
         $input = Request::all();
