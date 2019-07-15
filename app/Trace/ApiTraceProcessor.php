@@ -90,7 +90,7 @@ class ApiTraceProcessor
 
         if ($stackPresent === true)
         {
-            $record['request']['route_name'] = $this->app['router']->currentRouteName() ?? '';
+            $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
         }
     }
 }
