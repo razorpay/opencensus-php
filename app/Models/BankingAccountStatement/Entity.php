@@ -8,15 +8,23 @@ use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
 
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const CHANNEL               = 'channel';
     const MERCHANT_ID           = 'merchant_id';
     const ACCOUNT_NUMBER        = 'account_number';
+    /**
+     * This must be unique in the account statement for a given channel.
+     * It's being used in the core function to figure out whether we
+     * should skip the entity creation or not.
+     */
     const BANK_TRANSACTION_ID   = 'bank_transaction_id';
-    const AMOUNT                = 'transaction_amount';
-    const CURRENCY              = 'transaction_currency';
-    const TYPE                  = 'transaction_type';
+    const AMOUNT                = 'amount';
+    const CURRENCY              = 'currency';
+    const TYPE                  = 'type';
     const DESCRIPTION           = 'description';
     const CATEGORY              = 'category';
     /**
@@ -40,8 +48,6 @@ class Entity extends Base\PublicEntity
     const SOURCE                = 'source';
 
     protected static $sign = 'bas';
-
-    protected $generateIdOnCreate = true;
 
     protected $entity = 'banking_account_statement';
 
@@ -97,11 +103,17 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT            => 'int',
         self::BALANCE           => 'int',
+        self::POSTED_DATE       => 'int',
+        self::TRANSACTION_DATE  => 'int',
     ];
 
     protected $defaults = [
         self::CURRENCY          => Currency::INR,
         self::BALANCE_CURRENCY  => Currency::INR,
+    ];
+
+    protected static $generators = [
+        self::ID,
     ];
 
     // Relations
@@ -252,5 +264,10 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 }

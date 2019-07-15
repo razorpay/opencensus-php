@@ -268,4 +268,16 @@ class Repository extends Base\Repository
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->firstOrFailPublic();
     }
+
+    public function getBalanceByMerchantIdAccountNumberAndChannelOrFail(
+        string $merchantId,
+        string $accountNumber,
+        string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::ACCOUNT_PROVIDER, $channel)
+                    ->merchantIdAndType($merchantId, Type::BANKING)
+                    ->firstOrFailPublic();
+    }
 }

@@ -1135,6 +1135,8 @@ final class Route
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
+        'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
+
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
     ];
@@ -1545,6 +1547,7 @@ final class Route
         'banking_account_webhook_account_info',
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
+        'banking_account_statement_process',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.

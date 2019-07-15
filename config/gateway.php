@@ -748,7 +748,17 @@ return [
         ],
         'netbanking_yesb' => [
             'gateway_secure_secret' => env('NETBANKING_YESB_GATEWAY_SECURE_SECRET')
-        ]
+        ],
+        'razorpayx' => [
+            'direct' => [
+                'rbl' => [
+                    'auth_username' => env('BANKING_ACCOUNT_RBL_USERNAME'),
+                    'auth_password' => env('BANKING_ACCOUNT_RBL_PASSWORD'),
+                    'client_id'     => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
+                    'client_secret' => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
+                ],
+            ]
+        ],
     ],
 
     'sharp' => [
