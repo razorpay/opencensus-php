@@ -735,14 +735,14 @@ class Core extends Base\Core
 
         if (empty($extraInfo[BankAccountEntity::BENEFICIARY_NAME]) === false)
         {
-            $beneficiaryName = $input[BankAccountEntity::BENEFICIARY_NAME];
+            $beneficiaryName = $extraInfo[BankAccountEntity::BENEFICIARY_NAME];
         }
 
         $internalError = false;
 
         if (empty($extraInfo[AttemptConstants::INTERNAL_ERROR]) === false)
         {
-            $internalError = $input[AttemptConstants::INTERNAL_ERROR];
+            $internalError = $extraInfo[AttemptConstants::INTERNAL_ERROR];
         }
 
         return array($beneficiaryName, $internalError);
