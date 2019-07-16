@@ -78,7 +78,7 @@ class Entity extends Base\PublicEntity
     const PASSWORD                          = 'password';
     const REFERENCE1                        = 'reference1';
 
-    const ACCOUNT_TYPE                      = 'current';
+    const ACCOUNT_TYPE                      = 'account_type';
 
     const VAULT_NAMESPACE                   = 'banking_accounts_creds';
 
@@ -113,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_COUNTRY,
         self::ACCOUNT_ACTIVATION_DATE,
         self::BENEFICIARY_NAME,
+        self::ACCOUNT_TYPE,
         self::BANK_INTERNAL_REFERENCE_NUMBER,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_ADDRESS2,
         self::BENEFICIARY_ADDRESS3,
         self::BANK_INTERNAL_STATUS,
+        self::ACCOUNT_TYPE,
         self::BANK_REFERENCE_NUMBER,
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_NAME,
@@ -159,6 +161,10 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
+        self::BANK_INTERNAL_STATUS,
+        self::USERNAME,
+        self::REFERENCE1,
+        self::ACCOUNT_TYPE,
         self::ACCOUNT_CURRENCY,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_MOBILE,
@@ -172,9 +178,12 @@ class Entity extends Base\PublicEntity
 
     public function setStatus(string $status)
     {
-        Status::validate($status);
-
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setBankReferenceNumber(string $number)
+    {
+        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $number);
     }
 
     public function setBankInternalStatus(string $internalStatus)
@@ -192,16 +201,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute([self::PASSWORD], $password);
     }
 
-    public function setBankReferenceNumber(string $bankReferenceNumber)
-    {
-        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $bankReferenceNumber);
-    }
-
     // -------------------------- Getters ------------------------------------ //
 
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
     }
 
     public function getStatus()
@@ -276,7 +285,7 @@ class Entity extends Base\PublicEntity
 
     public function getAccountType()
     {
-        return self::ACCOUNT_TYPE;
+        return $this->getAttribute(self::ACCOUNT_TYPE);
     }
 
     public function getUsername()

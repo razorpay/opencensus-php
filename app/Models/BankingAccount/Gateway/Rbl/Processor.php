@@ -171,7 +171,7 @@ class Processor extends BankingAccount\Gateway\Processor
     {
         $attributes = [
             Balance\Entity::ACCOUNT_TYPE        => 'direct',
-            Balance\Entity::ACCOUNT_PROVIDER    => Channel::RBL
+            Balance\Entity::CHANNEL             => Channel::RBL
         ];
 
         return $attributes;

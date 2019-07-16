@@ -9,11 +9,10 @@ use RZP\Models\BankingAccount\Channel;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::CURRENCY            => 'required|string|in:INR',
-        Entity::TYPE                => 'required|string|custom',
-        Entity::ACCOUNT_NUMBER      => 'string|nullable',
-        Entity::ACCOUNT_PROVIDER    => 'sometimes|string|nullable',
-        Entity::ACCOUNT_TYPE        => 'string|nullable'
+        Entity::CURRENCY         => 'required|string|in:INR',
+        Entity::TYPE             => 'required|string|custom',
+        Entity::ACCOUNT_TYPE     => 'filled|string|custom',
+        Entity::CHANNEL          => 'sometimes|string|nullable|custom',
     ];
 
     protected function validateType($attribute, $type)
@@ -31,6 +30,24 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid account provider name: ' . $provider);
+        }
+    }
+
+    protected function validateAccountType($attribute, $accType)
+    {
+        if (AccountType::exists($accType) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid account type:' . $accType);
+        }
+    }
+
+    protected function validateChannel($attribute, $channel)
+    {
+        if (Channel::validateChannel($channel) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid account provider:' . $channel);
         }
     }
 }

@@ -3,6 +3,7 @@
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Gateway\Rbl;
+use RZP\Models\BankingAccount\AccountType;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -28,6 +29,10 @@ class BankingAccountTest extends TestCase
     public function testCreateBankingAccount()
     {
         $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
     }
 
     public function testCreateBankingAccountTwiceForSameMerchant()
@@ -227,7 +232,7 @@ class BankingAccountTest extends TestCase
 
         $balance = $this->getDbLastEntity('balance');
 
-        $this->assertEquals('rbl', $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_PROVIDER]);
+        $this->assertEquals('rbl', $balance[RZP\Models\Merchant\Balance\Entity::CHANNEL]);
 
         $this->assertEquals('direct', $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_TYPE]);
 
@@ -345,11 +350,6 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::INITIATED, $bankingAccount->getStatus());
-    }
-
-    public function testStoreCredentialsVaultFailure()
-    {
-
     }
 
     protected function createBankingAccount(array $attributes = [])
