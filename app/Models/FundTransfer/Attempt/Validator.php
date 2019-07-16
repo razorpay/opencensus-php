@@ -54,6 +54,7 @@ class Validator extends Base\Validator
         'bank_processed_time'  => 'sometimes|string',
         'fund_transfer_id'     => 'required|int',
         'extra_info'           => 'sometimes',
+        'extra_info.*'         => 'sometimes',
     ];
 
     protected function validateStatus($attribute, $value)
