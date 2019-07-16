@@ -456,4 +456,39 @@ abstract class NodalAccount extends Base\Core
 
         return Mode::NEFT;
     }
+
+    /**
+     * Before attempts in a batch are sent for processing
+     * to any channel attributes such as amount,fees,tax
+     * and other relevant details are captured and cumulative
+     * values are stored in the batch_fund_transfer. Now, if
+     * during processing any attempt is skipped so the
+     * cumulative sum gets messed up and the values will
+     * never match. Hence, updating batch info to keep consistency
+     *
+     * @param $attempt
+     * @throws RuntimeException
+     */
+    protected function updateBatchInfo($attempt)
+    {
+        if ($this->batchFundTransfer !== null)
+        {
+            $allowedSourceTypes = [Attempt\Type::PAYOUT, Attempt\Type::SETTLEMENT];
+
+            if (in_array($attempt->getSourceType, $allowedSourceTypes, true) === true)
+            {
+                $this->fees -= $attempt->source->getFees();
+
+                $this->tax -= $attempt->source->getTax();
+            }
+
+            $this->amount -= $attempt->source->getAmount();
+
+            $this->count--;
+
+            $this->txnsCount--;
+
+            $this->updateBatchFundTransferEntity();
+        }
+    }
 }

@@ -315,24 +315,4 @@ class NodalAccount extends NodalBase\NodalAccount
 
         return false;
     }
-
-    protected function updateBatchInfo($attempt)
-    {
-        $allowedSourceTypes = [Attempt\Type::PAYOUT, Attempt\Type::SETTLEMENT];
-
-        if (in_array($attempt->getSourceType, $allowedSourceTypes, true) === true)
-        {
-            $this->fees -= $attempt->source->getFees();
-
-            $this->tax -= $attempt->source->getTax();
-        }
-
-        $this->amount -= $attempt->source->getAmount();
-
-        $this->count--;
-
-        $this->txnsCount--;
-
-        $this->updateBatchFundTransferEntity();
-    }
 }

@@ -476,7 +476,11 @@ class Initiator extends Base\Core
         {
             try
             {
-                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT,  $data);
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT,
+                    [
+                        'data'   => $data,
+                        'fta_id' => $id,
+                    ]);
 
                 FundTransfer::dispatch($this->mode, $id);
 
