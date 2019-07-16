@@ -144,6 +144,20 @@ class Payment extends Base
             return $this->validateAndGetOnePricingRule($rules);
         }
 
+        if ($cardType === Card\Type::PREPAID)
+        {
+            $filterPrepaid = [
+                [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      false,   null    ],
+            ];
+
+            $prepaidRules = $this->applyFiltersOnRules($rules, $filterPrepaid);
+
+            if (empty($prepaidRules) === true)
+            {
+                $cardType = Card\Type::CREDIT;
+            }
+        }
+
         // If network is not amex, we can check for AMOUNT RANGE FILTERS
 
         $filters2 = [

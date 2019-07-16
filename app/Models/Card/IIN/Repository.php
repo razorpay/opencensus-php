@@ -18,7 +18,7 @@ class Repository extends Base\Repository
         Entity::NETWORK         => 'sometimes|alpha_space',
         Entity::INTERNATIONAL   => 'sometimes|in:0,1',
         Entity::EMI             => 'sometimes|in:0,1',
-        Entity::TYPE            => 'sometimes|string|in:debit,credit,unknown',
+        Entity::TYPE            => 'sometimes|string|in:debit,credit,prepaid,unknown',
         Entity::OTP_READ        => 'sometimes|in:0,1',
         Entity::ISSUER          => 'sometimes|string',
     );

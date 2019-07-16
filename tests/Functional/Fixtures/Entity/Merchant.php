@@ -406,7 +406,7 @@ class Merchant extends Base
 
     public function disableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['debit_card' => false, 'credit_card' => false]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => false, 'credit_card' => false, 'prepaid_card' => false]);
     }
 
     public function disableCreditCard($id = '10000000000000')
@@ -437,6 +437,16 @@ class Merchant extends Base
     public function disableNetbanking($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['netbanking' => false]);
+    }
+
+    public function enablePrepaidCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['prepaid_card' => true]);
+    }
+
+    public function disablePrepaidCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['prepaid_card' => false]);
     }
 
     public function enableEmi($id = '10000000000000')
