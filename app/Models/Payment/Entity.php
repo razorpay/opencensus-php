@@ -1362,7 +1362,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 $upiTransactionId = $this->getReference1();
 
-                if (isset($upiTransactionId)) {
+                if (isset($upiTransactionId) === true) {
                     $acquirerData["upi_transaction_id"] = $upiTransactionId;
                 }
                 break;
