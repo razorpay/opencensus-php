@@ -89,11 +89,11 @@ class Initiator extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
-            function() use ($input, $channel, $purpose)
+            function() use ($input, $channel)
             {
                 RuntimeManager::setMemoryLimit('1024M');
 
-                return $this->processBankTransfers($input, $channel, $purpose);
+                return $this->processBankTransfers($input, $channel);
             },
             $mutexTimeout,
             ErrorCode::BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS);
@@ -102,14 +102,13 @@ class Initiator extends Base\Core
     /**
      * @param array $input
      * @param string $channel
-     * @param string $purpose
      * @return array
      */
-    protected function processBankTransfers(array $input, string $channel, string $purpose): array
+    protected function processBankTransfers(array $input, string $channel): array
     {
         $this->trace->info(TraceCode::FTA_PROCESS_BEGIN);
 
-        return $this->repo->transaction(function() use ($input, $channel, $purpose)
+        return $this->repo->transaction(function() use ($input, $channel)
         {
             (new Validator)->validateInput('initiate_fund_transfer', $input);
 
@@ -154,14 +153,14 @@ class Initiator extends Base\Core
             }
             else
             {
-                $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
+                $data[$channel] = $this->processFundTransferAttempts($channel, $attempts);
             }
             return $data;
         });
     }
 
     public function processFundTransferAttempts(
-        string $purpose, string $channel, Base\PublicCollection $attempts): array
+        string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
 
@@ -175,6 +174,8 @@ class Initiator extends Base\Core
 
             return $data;
         }
+
+        $purpose = $attempts->first()->getPurpose();
 
         list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
             $attempts,
@@ -418,7 +419,7 @@ class Initiator extends Base\Core
 
         $attempts = (new PublicCollection)->push($fta);
 
-        $response = $this->processFundTransferAttempts($fta->getPurpose(), $channel, $attempts);
+        $response = $this->processFundTransferAttempts($channel, $attempts);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }
