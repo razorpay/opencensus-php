@@ -236,17 +236,43 @@ export default class RefundModal extends Component {
     }
   };
 
+  hasEnoughFunds = () => {
+    const { payment } = this.props;
+    const { data } = this.props.current_balance;
+
+    let amount = payment.amount;
+    let balance = data.balance;
+
+    if (balance) {
+      if (amount > balance) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  };
+
+  getInstantRefundClassNames = boolVal => {
+    if (boolVal) {
+      return 'checkbox instant-refund-disable';
+    } else {
+      return 'checkbox';
+    }
+  };
+
   render() {
     const { handleSubmit, payment, transfers, refunds } = this.props;
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
 
-    console.log('Refund Modal: CB', this.props.current_balance);
-
     const nonFraudDisputeCount =
       payment.disputes &&
       payment.disputes.items.filter(dispute => dispute.phase !== 'fraud')
         .length;
+
+    let isInstantDisabled = !this.hasEnoughFunds();
     return (
       <div>
         <ModalHeader
@@ -325,12 +351,13 @@ export default class RefundModal extends Component {
               />
             </div>
             {refunds.isInstantRefund && (
-              <div class="checkbox">
+              <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
                 <label>
                   <Field
                     name="instant_refund"
                     component="input"
                     type="checkbox"
+                    disabled={isInstantDisabled}
                   />
                   <b>Refund Instantly</b>
                 </label>
