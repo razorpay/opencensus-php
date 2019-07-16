@@ -73,8 +73,11 @@ class Processor extends Base\Core
 
         try
         {
-            // if the vault service times out after some retries, we want to show error to the merchant
-            $response = $this->app['card.cardVault']->createVaultToken($request);
+            // If the vault service times out after some retries, we want to show error to the merchant
+            /** @var CardVault $cardVaultService */
+            $cardVaultService = app('card.cardVault');
+
+            $response = $cardVaultService->createVaultToken($request);
         }
         catch (\Requests_Exception $e)
         {

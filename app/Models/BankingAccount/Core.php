@@ -269,15 +269,21 @@ class Core extends Base\Core
 
         $retryCount = 0;
 
+        /** @var FTS\CreateAccount $ftsService */
+        $ftsService = app('fts_create_account');
+
+        $response = [];
+
         while (true)
         {
             try
             {
-                $response = $this->app['fts_create_account']->createFundAccount($bankingAccount->getId(),
-                                                                                Constants\Entity::BANKING_ACCOUNT,
-                                                                                'payout');
-                break;
+                $response = $ftsService->createFundAccount(
+                                                    $bankingAccount->getId(),
+                                                    Constants\Entity::BANKING_ACCOUNT,
+                                                    'payout');
 
+                break;
             }
             catch(\Throwable $e)
             {
@@ -300,14 +306,12 @@ class Core extends Base\Core
             }
         }
 
-        if (isset($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === false)
+        if (empty($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === true)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED,
                 null,
-                [
-                    'id' => $bankingAccount->getId()
-                ],
+                ['id' => $bankingAccount->getId(), 'response' => $response],
                 'FTS fund Account Id could not stored, Please try again!'
             );
         }
@@ -408,10 +412,8 @@ class Core extends Base\Core
 
         $balanceInfo = $processor->getBalanceAttributesToSave();
 
-        $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant,
-                                                                      Product::BANKING,
-                                                                      $balanceInfo,
-                                                                      $mode);
+        $balance = (new Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
+
         $input[Entity::STATUS] = Status::ACTIVATED;
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);

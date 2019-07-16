@@ -4,6 +4,11 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use RZP\Models\BankingAccount\Entity;
 
+/**
+ * Class Fields
+ *
+ * @package RZP\Models\BankingAccount\Gateway\Rbl
+ */
 class Fields
 {
     const ACCOUNT_NUMBER                    = 'Account No';
@@ -28,7 +33,7 @@ class Fields
     const RZP_ALERT_NOTIFICATION_REQUEST    = 'RZPAlertNotiReq';
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
 
-    //credentials fields
+    // Credentials fields
     const SUBCORP_ID                        = 'subcorp_id';
     const SUBCORP_USER_NAME                 = 'subcorp_user_name';
     const SUBCORP_USER_PASSWORD             = 'subcorp_user_password';
@@ -38,7 +43,7 @@ class Fields
     const PASSWORD                          = 'password';
     const MOZART_IDENTIFIER                 = 'mozart_identifier';
 
-    // fields for fetch balance api
+    // Fields for Fetch Balance API
     const SOURCE_ACCOUNT                    = 'source_account';
     const SOURCE_ACCOUNT_NUMBER             = 'account_number';
     const ID                                = 'id';

@@ -50,6 +50,7 @@ class Service extends Base\Service
 
     public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
+        /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,

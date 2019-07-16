@@ -170,8 +170,6 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
-        self::USERNAME,
-        self::REFERENCE1,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -198,7 +196,7 @@ class Entity extends Base\PublicEntity
 
     public function setPassword(string $password)
     {
-        $this->setAttribute([self::PASSWORD], $password);
+        $this->setAttribute(self::PASSWORD, $password);
     }
 
     // -------------------------- Getters ------------------------------------ //

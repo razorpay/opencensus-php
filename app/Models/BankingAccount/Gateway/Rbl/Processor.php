@@ -11,7 +11,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
-use RZP\Models\Settlement\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 
@@ -122,8 +121,12 @@ class Processor extends BankingAccount\Gateway\Processor
 
     /**
      * @param BankingAccount\Entity $bankingAccount
-     * @param array $input
-     * @return array
+     * @param array                 $input
+     *
+     * @return void
+     * @throws BadRequestException
+     * @throws \Requests_Exception
+     * @throws \Throwable
      */
     public function storeCredentials(BankingAccount\Entity $bankingAccount, array $input)
     {
@@ -170,8 +173,8 @@ class Processor extends BankingAccount\Gateway\Processor
     public function getBalanceAttributesToSave()
     {
         $attributes = [
-            Balance\Entity::ACCOUNT_TYPE        => 'direct',
-            Balance\Entity::CHANNEL             => Channel::RBL
+            Balance\Entity::ACCOUNT_TYPE        => Balance\AccountType::DIRECT,
+            Balance\Entity::CHANNEL             => Balance\Channel::RBL
         ];
 
         return $attributes;
@@ -187,7 +190,7 @@ class Processor extends BankingAccount\Gateway\Processor
                 ErrorCode::BAD_REQUEST_ERROR_ACTIVATION_AMOUNT_NON_ZERO,
                 [
                     'balance' => $balance,
-                    'channel' => Channel::RBL
+                    'channel' => Balance\Channel::RBL
                 ]);
         }
     }
