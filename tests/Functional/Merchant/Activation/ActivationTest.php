@@ -33,6 +33,8 @@ class ActivationTest extends TestCase
         parent::setUp();
 
         $this->setupMockDns();
+
+        $this->fixtures->create('org:hdfc_org');
     }
 
     public function testMerchantActivationCategoriesResponseForAdminAuth()
@@ -731,11 +733,15 @@ class ActivationTest extends TestCase
         $this->assertNull($merchant->convertOnApi());
     }
 
-    public function testWhitelistInternationalExperimentOff()
+    /**
+     * Validates that On L1 form submission for non rzp org(whitelist international activation flow) merchant,
+     * international activation flow and international should not be set.
+     */
+    public function testWhitelistInternationalForNonRZPOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->runFixturesForInternationalActivation($merchantId, 'control');
+        $this->runFixturesForInternationalActivation($merchantId,  Org::HDFC_ORG);
 
         $this->startTest();
 
@@ -748,11 +754,15 @@ class ActivationTest extends TestCase
         $this->assertNull($merchant->convertOnApi());
     }
 
-    public function testGreylistInternationalExperimentOff()
+    /**
+     * Validates On L1 form submission for non rzp org(greylist international activation flow) merchant,
+     * international activation flow and international should not be set.
+     */
+    public function testGreylistInternationalForNonRZPOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->runFixturesForInternationalActivation($merchantId, 'control');
+        $this->runFixturesForInternationalActivation($merchantId,  Org::HDFC_ORG);
 
         $this->startTest();
 
@@ -765,27 +775,12 @@ class ActivationTest extends TestCase
         $this->assertNull($merchant->convertOnApi());
     }
 
-    public function testBlacklistInternationalExperimentOff()
+    /**
+     * Validates that On L2 form submission(when merchant belongs to greylist activation flow) for non rzp org(greylist international activation flow) merchant,
+     * international should not be set.
+     */
+    public function testGreylistInternationalOnForNonRZPOrg()
     {
-        $merchantId = '1cXSLlUU8V9sXl';
-
-        $this->runFixturesForInternationalActivation($merchantId, 'control');
-
-        $this->startTest();
-
-        $merchant = $this->getDbEntityById('merchant', $merchantId);
-
-        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
-
-        $this->assertNull($merchantDetails->getInternationalActivationFlow());
-
-        $this->assertNull($merchant->convertOnApi());
-    }
-
-    public function testGreylistInternationalOnKYCExperimentOff()
-    {
-        $this->setUpRazorxMock('control');
-
         $data = [
             'submitted'             => 1,
             'business_category'     => 'not_for_profit',
@@ -797,7 +792,7 @@ class ActivationTest extends TestCase
 
         $merchantId = $merchantDetail->getMerchantId();
 
-        $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
+        $this->fixtures->edit('merchant', $merchantId, ['international' => 0, 'org_id' => Org::HDFC_ORG]);
 
         $activationRequest = [
             'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
@@ -818,10 +813,12 @@ class ActivationTest extends TestCase
         $this->assertNull($merchant->convertOnApi());
     }
 
-    public function testGreylistInternationalInstantActivationOnKYCExperimentOff()
+    /**
+     * Validates that On L2 form submission(when merchant belongs to whitelist activation flow) for non rzp org(greylist international activation flow) merchant,
+     * international should not be set.
+     */
+    public function testGreylistInternationalInstantActivationForNonRZPOrg()
     {
-        $this->setUpRazorxMock('control');
-
         $data = [
             'submitted'             => 1,
             'business_category'     => 'healthcare',
@@ -833,7 +830,9 @@ class ActivationTest extends TestCase
 
         $merchantId = $merchantDetail->getMerchantId();
 
-        $this->fixtures->edit('merchant', $merchantId, ['activated' => 1, 'international' => 0]);
+        $this->fixtures->edit('merchant',
+                              $merchantId,
+                              ['activated' => 1, 'international' => 0, 'org_id' => Org::HDFC_ORG]);
 
         $activationRequest = [
             'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
@@ -854,11 +853,9 @@ class ActivationTest extends TestCase
         $this->assertNull($merchant->convertOnApi());
     }
 
-    protected function runFixturesForInternationalActivation(string $merchantId, string $experimentVal = 'on')
+    protected function runFixturesForInternationalActivation(string $merchantId, string $orgId = Org::RZP_ORG)
     {
-        $this->setUpRazorxMock($experimentVal);
-
-        $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
+        $this->fixtures->edit('merchant', $merchantId, ['international' => 0, 'org_id' => $orgId]);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 

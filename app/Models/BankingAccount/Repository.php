@@ -9,6 +9,21 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account';
 
+    public function getFromBalanceId(string $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, '=', $balanceId)
+                    ->first();
+    }
+
+    public function findByAccountNumberAndChannel(string $accountNumber, string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->firstOrFail();
+    }
+
     /**
      * @param string      $channel
      * @param string|null $bankReference

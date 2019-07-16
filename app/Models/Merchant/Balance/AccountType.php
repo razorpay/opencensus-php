@@ -2,20 +2,29 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+/**
+ * Class AccountType
+ *
+ * ENUM, applicable to balance of type=banking
+ *
+ * @package RZP\Models\Merchant\Balance
+ */
 class AccountType
 {
     /**
-     * Account types.
+     * Direct accounts (ex: RBL current accounts)
      */
-    // These are Virtual Accounts
-    const SHARED = 'shared';
-    // These are Current Accounts
     const DIRECT = 'direct';
 
-    public static function exists(string $type): bool
-    {
-        $key = __CLASS__ . '::' . strtoupper($type);
+    /**
+     * Shared network accounts
+     */
+    const SHARED = 'shared';
 
-        return ((defined($key) === true) and (constant($key) === $type));
+    public static function exists(string $accType): bool
+    {
+        $key = __CLASS__ . '::' . strtoupper($accType);
+
+        return ((defined($key) === true) and (constant($key) === $accType));
     }
 }

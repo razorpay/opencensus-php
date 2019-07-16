@@ -38,6 +38,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Payout\Repository                     $payout
  * @property Models\Merchant\Detail\Repository            $merchant_detail
  * @property Models\BankingAccount\Repository             $banking_account
+ * @property Models\BankingAccountStatement\Repository    $banking_account_statement
  * @property Models\Admin\Role\Repository                 $role
  * @property Models\Admin\Permission\Repository           $permission
  * @property Models\Workflow\Action\Repository            $workflow_action
@@ -253,7 +254,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         }
         else
         {
-            $result = $this->db->transaction($callback);
+            $result = $this->db->transaction($callback, ...$params);
         }
 
         return $result;
@@ -352,5 +353,18 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             $dbConnection->resetConnectionAttributes();
         }
+    }
+
+    /**
+     * Run a dummy select and add a comment. Useful for adding markers in query logs.
+     *
+     * => $this->repo->addComment('My comment');
+     *
+     * @param string $comment
+     */
+    public function addComment(string $comment = 'default')
+    {
+        $this->db
+             ->select('SELECT /* comment: ' . $comment . ' */ 1;' );
     }
 }

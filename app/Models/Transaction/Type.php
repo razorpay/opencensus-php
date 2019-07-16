@@ -13,6 +13,7 @@ class Type
     const DISPUTE                 = 'dispute';
     const TRANSFER                = 'transfer';
     const REVERSAL                = 'reversal';
+    const EXTERNAL                = 'external';
     const ADJUSTMENT              = 'adjustment';
     const SETTLEMENT              = 'settlement';
     const BANK_TRANSFER           = 'bank_transfer';
@@ -29,6 +30,7 @@ class Type
         self::REFUND,
         self::DISPUTE,
         self::REVERSAL,
+        self::EXTERNAL,
         self::SETTLEMENT,
         self::ADJUSTMENT,
         self::BANK_TRANSFER,
