@@ -12,7 +12,9 @@ use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
@@ -497,9 +499,11 @@ class Merchant extends Base
         return $this->fixtures->create(
             'balance',
             [
-                'type' => 'banking',
-                'merchant_id' => $merchantId,
-                'balance' => $balance
+                'type'             => 'banking',
+                'merchant_id'      => $merchantId,
+                'balance'          => $balance,
+                'account_type'     => AccountType::SHARED,
+                'channel'          => Channel::YESBANK,
             ]);
     }
 
