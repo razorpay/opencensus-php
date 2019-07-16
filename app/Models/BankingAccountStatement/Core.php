@@ -52,6 +52,7 @@ class Core extends Base\Core
         string $accountNumber,
         Merchant\Entity $merchant)
     {
+        $bankTxnCount = count($bankTransactions);
         $skippedCount = 0;
 
         foreach ($bankTransactions as $bankTransaction)
@@ -70,15 +71,17 @@ class Core extends Base\Core
             $this->saveAccountStatement($bankTransaction, $merchant);
         }
 
-        $processedCount = count($bankTransactions) - $skippedCount;
+        $processedCount = $bankTxnCount - $skippedCount;
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_SAVE_SUMMARY,
             [
-                'total'     => count($bankTransactions),
+                'total'     => $bankTxnCount,
                 'skipped'   => $skippedCount,
                 'processed' => $processedCount,
             ]);
+
+        $this->checkAndTraceForStaleResponse($bankTxnCount, $processedCount, $accountNumber);
     }
 
     protected function saveAccountStatement(array $bankTransaction, Merchant\Entity $merchant)
@@ -151,4 +154,26 @@ class Core extends Base\Core
             );
         }
     }
+
+    protected function checkAndTraceForStaleResponse(int $bankTxnCount, int $processedCount, string $accountNumber)
+    {
+        //
+        // Check for stale response from the channel,
+        // This happens when we have stored the txns already,
+        // but the bank is still sending us the same txns again
+        // Since we are using the last txn for pagination, we
+        // should never be receiving the same txns again
+        //
+        if (($bankTxnCount > 0) and ($processedCount === 0))
+        {
+            $this->trace->error(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_STALE_RESPONSE,
+                [
+                    'account_number'    => $accountNumber,
+                    'total'             => $bankTxnCount,
+                    'processed'         => $processedCount,
+                ]);
+        }
+    }
+
 }
