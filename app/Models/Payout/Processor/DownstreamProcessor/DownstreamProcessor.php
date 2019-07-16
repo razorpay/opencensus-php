@@ -5,6 +5,7 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class DownstreamProcessor
 {
@@ -48,7 +49,7 @@ class DownstreamProcessor
 
     protected function getAccountTypeForFundTransfer()
     {
-        return $this->payout->balance->getAccountType() ?? 'shared';
+        return $this->payout->balance->getAccountType() ?? AccountType::SHARED;
     }
 
     protected function getChannelForFundTransfer()

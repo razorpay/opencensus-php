@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
@@ -501,7 +502,7 @@ class Merchant extends Base
                 'type'             => 'banking',
                 'merchant_id'      => $merchantId,
                 'balance'          => $balance,
-                'account_type'     => 'shared',
+                'account_type'     => AccountType::SHARED,
                 'channel'          => Channel::YESBANK,
             ]);
     }

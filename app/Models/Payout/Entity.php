@@ -1194,10 +1194,7 @@ class Entity extends Base\PublicEntity
     {
         $bankingAccount = $this->balance->bankingAccount;
 
-        if ($bankingAccount !== null)
-        {
-            return $bankingAccount->getFtsFundAccountId();
-        }
+        return optional($bankingAccount)->getFtsFundAccountId();
     }
 
     protected function modifyMode(& $input)
