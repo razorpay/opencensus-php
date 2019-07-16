@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use App;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -35,11 +36,12 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
-    const ENTITIES          = 'entities';
-    const REFUND_IDS        = 'refund_ids';
-    const DB_FETCH_LIMIT    = 'limit';
-    const GATEWAY_ENTITY    = 'gateway_entity';
-    const REFUND_REFERENCE1 = 'refund_reference1';
+    const ENTITIES              = 'entities';
+    const REFUND_IDS            = 'refund_ids';
+    const DB_FETCH_LIMIT        = 'limit';
+    const GATEWAY_ENTITY        = 'gateway_entity';
+    const REFUND_REFERENCE1     = 'refund_reference1';
+    const GET_SPEED_CHANGE_DATA = 'get_speed_change_data';
 
     const MAX_REFUND_VERIFY_REQUESTS     = 20;
     const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
@@ -312,9 +314,13 @@ class Service extends Base\Service
         return array($from, $to);
     }
 
-    public function fetch($id)
+    public function fetch($id, $input = [])
     {
-        return $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
+        $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
+
+        $refundArray['speed_change_time'] = $this->addSpeedChangeData($refundArray['id'], $input);
+
+        return $refundArray;
     }
 
     public function fetchEntity($id)
@@ -2067,5 +2073,57 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::REFUND_IS_SCROOGE_UPDATED_COUNT, $responseData);
 
         return $responseData;
+    }
+
+    protected function addSpeedChangeData(string $refundId, array $input)
+    {
+        if ((isset($input[self::GET_SPEED_CHANGE_DATA]) === false) or
+            ($input[self::GET_SPEED_CHANGE_DATA] !== "1"))
+        {
+            return null;
+        }
+
+        $id = $refundId;
+
+        Entity::verifyIdAndStripSign($id);
+
+        $refund = $this->repo->refund->find($id);
+
+        if (($refund->getSpeedRequested() === RefundSpeed::OPTIMUM) and
+            (($refund->getSpeedProcessed() === RefundSpeed::NORMAL) or
+             ($refund->getSpeedProcessed() === null)))
+        {
+            $app   = App::getFacadeRoot();
+
+            $trace = $app['trace'];
+
+            $queryParams = [
+                self::GET_SPEED_CHANGE_DATA => 1,
+            ];
+
+            try
+            {
+                $scroogeResponse = $app['scrooge']->getPublicRefund($refundId, $queryParams);
+
+                $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
+
+                if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
+                {
+                    return $scroogeResponse[RefundEntity::RESPONSE_BODY]->get_speed_change_time;
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::SCROOGE_GET_REFUND_SPEED_CHANGE_DATA_FAILED,
+                    [
+                        'refund_id' => $refundId,
+                    ]);
+            }
+        }
+
+        return null;
     }
 }
