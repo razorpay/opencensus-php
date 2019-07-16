@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
+use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
@@ -313,5 +315,61 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId)
                     ->first();
+    }
+
+    /**
+     * Fetches bank accounts which are not present in banking account table
+     * for balance type banking
+     *
+     * @param string $limit
+     * @return mixed
+     */
+    public function fetchAccountsNotPresentInBankingAccountsForYesbank(string $limit)
+    {
+         // select `bank_accounts`.* from `bank_accounts` inner join `virtual_accounts` on
+         // `virtual_accounts`.`bank_account_id` = `bank_accounts`.`id` inner join `balance`
+         // on `balance`.`id` = `virtual_accounts`.`balance_id` where `balance`.`type` = 'banking'
+         // and `balance`.`id` not in (select `banking_accounts`.`balance_id` from `banking_accounts`
+         // where `banking_accounts`.`balance_id` is not null) and `bank_accounts`.`deleted_at` is null
+
+        $bankAccountColumns = $this->dbColumn('*');
+
+        $bankAccountId = $this->dbColumn(Entity::ID);
+
+        $balanceRepo = $this->repo->balance;
+
+        $balanceType = $balanceRepo->dbColumn(Balance\Entity::TYPE);
+
+        $balanceId = $balanceRepo->dbColumn(Balance\Entity::ID);
+
+        $virtualAccountRepo = $this->repo->virtual_account;
+
+        $virtualAccountBankAccountId = $virtualAccountRepo->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
+
+        $virtualAccountBalanceId = $virtualAccountRepo->dbColumn(VirtualAccount\Entity::BALANCE_ID);
+
+        $bankingAccountRepo = $this->repo->banking_account;
+
+        $bankingAccountTableName = $bankingAccountRepo->getTableName();
+
+        $bankingAccountBalanceId = $bankingAccountRepo->dbColumn(BankingAccount\Entity::BALANCE_ID);
+
+        return $this->newQuery()
+                    ->select($bankAccountColumns)
+                    ->join($virtualAccountRepo->getTableName(), $virtualAccountBankAccountId, '=', $bankAccountId)
+                    ->join($balanceRepo->getTableName(), $balanceId, '=', $virtualAccountBalanceId)
+                    ->where($balanceType, '=', 'banking')
+                    ->whereNotIn(
+                        $balanceId,
+                        function($query)
+                        use ($bankingAccountBalanceId,
+                            $bankingAccountTableName)
+                        {
+                            $query->select($bankingAccountBalanceId)
+                                  ->from($bankingAccountTableName)
+                                  ->whereNotNull($bankingAccountBalanceId);
+                        })
+                    ->limit($limit)
+                    ->get();
     }
 }

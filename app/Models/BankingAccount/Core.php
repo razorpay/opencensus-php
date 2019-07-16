@@ -10,11 +10,13 @@ use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
 use RZP\Services\CardVault;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -67,11 +69,22 @@ class Core extends Base\Core
         }
 
         $bankingAccountInput = [
-            Entity::ACCOUNT_IFSC        => $bankAccount->getIfscCode(),
-            Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
-            Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
-            Entity::ACCOUNT_TYPE        => AccountType::NODAL,
-            Entity::STATUS              => Status::CREATED,
+            Entity::ACCOUNT_IFSC              => $bankAccount->getIfscCode(),
+            Entity::ACCOUNT_NUMBER            => $bankAccount->getAccountNumber(),
+            Entity::FTS_FUND_ACCOUNT_ID       => $bankAccount->getFtsFundAccountId(),
+            Entity::ACCOUNT_TYPE              => AccountType::NODAL,
+            Entity::STATUS                    => Status::CREATED,
+            Entity::BENEFICIARY_EMAIL         => $bankAccount->getBeneficiaryEmail(),
+            Entity::BENEFICIARY_MOBILE        => $bankAccount->getBeneficiaryMobile(),
+            Entity::BENEFICIARY_CITY          => $bankAccount->getBeneficiaryCity(),
+            Entity::BENEFICIARY_STATE         => $bankAccount->getBeneficiaryState(),
+            Entity::BENEFICIARY_COUNTRY       => $bankAccount->getBeneficiaryCountry(),
+            Entity::BENEFICIARY_NAME          => $bankAccount->getBeneficiaryName(),
+            Entity::BENEFICIARY_ADDRESS1      => $bankAccount->getBeneficiaryAddress1(),
+            Entity::BENEFICIARY_ADDRESS2      => $bankAccount->getBeneficiaryAddress2(),
+            Entity::BENEFICIARY_PIN           => $bankAccount->getBeneficiaryPin(),
+            Entity::BENEFICIARY_ADDRESS3      => $bankAccount->getBeneficiaryAddress3() . ' ' .
+                                                 $bankAccount->getBeneficiaryAddress4(),
         ];
 
         return $this->createYesbankBankingAccount(
@@ -391,6 +404,63 @@ class Core extends Base\Core
         $processor->deleteServiceablePincodes($pincodes);
     }
 
+    public function bulkCreateBankingAccountsForYesbank(array $input, string $limit)
+    {
+        $bankAccounts = $this->repo->bank_account->fetchAccountsNotPresentInBankingAccountsForYesbank($limit);
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        if (count($bankAccounts) !== 0)
+        {
+            foreach ($bankAccounts as $bankAccount)
+            {
+                try
+                {
+                    $merchant = $bankAccount->virtualAccount->merchant;
+
+                    $balance = $bankAccount->virtualAccount->balance;
+
+                    $attributes = $this->getYesbankAccountAttributes($bankAccount);
+
+                    $this->createYesbankBankingAccount($attributes, $merchant, $balance);
+
+                    $successCount++;
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::INFO,
+                        TraceCode::BANKING_ACCOUNT_YESBANK_CREATE_FAILED);
+
+                    $failedIds[] = $bankAccount->getId();
+
+                    $failedCount++;
+                }
+            }
+        }
+
+        $response = [
+            'total_count'       => count($bankAccounts),
+            'success_count'     => $successCount,
+            'failed_count'      => $failedCount,
+            'failed_ids'        => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_YESBANK_BULK_CREATE_RESPONSE,
+            [
+                'response'  => $response,
+                'range'     => $limit,
+                'input'     => $input,
+                'channel'   => Channel::YESBANK,
+            ]);
+
+        return $response;
+    }
+
     protected function makeSourceAccountRequest(string $id, string $ftsAccountId, array $content,
                                                 string $product = 'PAYOUT', string $channel = 'ICICI')
     {
@@ -472,5 +542,28 @@ class Core extends Base\Core
                 'Merchant credentials could not be stored, Please try again!'
             );
         }
+    }
+
+    protected function getYesbankAccountAttributes(BankAccount\Entity $bankAccount)
+    {
+        $attributes = [
+            Entity::ACCOUNT_NUMBER            => $bankAccount->getAccountNumber(),
+            Entity::ACCOUNT_IFSC              => $bankAccount->getIfscCode(),
+            Entity::BENEFICIARY_EMAIL         => $bankAccount->getBeneficiaryEmail(),
+            Entity::BENEFICIARY_MOBILE        => $bankAccount->getBeneficiaryMobile(),
+            Entity::BENEFICIARY_CITY          => $bankAccount->getBeneficiaryCity(),
+            Entity::BENEFICIARY_STATE         => $bankAccount->getBeneficiaryState(),
+            Entity::BENEFICIARY_COUNTRY       => $bankAccount->getBeneficiaryCountry(),
+            Entity::BENEFICIARY_NAME          => $bankAccount->getBeneficiaryName(),
+            Entity::BENEFICIARY_ADDRESS1      => $bankAccount->getBeneficiaryAddress1(),
+            Entity::BENEFICIARY_ADDRESS2      => $bankAccount->getBeneficiaryAddress2(),
+            Entity::BENEFICIARY_PIN           => $bankAccount->getBeneficiaryPin(),
+            Entity::ACCOUNT_TYPE              => AccountType::NODAL,
+            Entity::STATUS                    => Status::CREATED,
+            Entity::BENEFICIARY_ADDRESS3      => $bankAccount->getBeneficiaryAddress3() . ' ' .
+                                                 $bankAccount->getBeneficiaryAddress4(),
+        ];
+
+        return $attributes;
     }
 }

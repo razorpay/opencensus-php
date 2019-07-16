@@ -35,4 +35,13 @@ class BankingAccountController extends Controller
 
         return $response;
     }
+
+    public function bulkCreateBankingAccountsForYesbank(string $limit)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkCreateBankingAccountsForYesbank($input, $limit);
+
+        return ApiResponse::json($response);
+    }
 }
