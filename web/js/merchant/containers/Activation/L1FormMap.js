@@ -1,9 +1,10 @@
 import Input from 'component/Input';
-import { states } from 'rzp/utils/constants';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
 import { validatePANCard, isUrlLenient } from 'rzp/utils/validators';
+
+import AddressFields from './AddressFieldsMap';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
@@ -122,36 +123,40 @@ export default [
     validator: validatePANCard,
     _when: excludeFor_Indiv,
   },
-  {
-    label: 'Business Type',
-    name: 'business_type',
-    _cmp: Input.Select,
-    options: BUSINESS_TYPE_OPTIONS,
-    description: activation => {
-      // Changing description of self
-      const currentBusinessType =
-        activation.state.dirty.business_type ||
-        activation.props.data.business_type;
-
-      // if user has selected individual business type
-      if (currentBusinessType && !activation.props.accountId) {
-        if (currentBusinessType == INDIVIDUAL) {
-          return (
-            <div class="warning-svg red">
-              {WarningSvg()}
-              <span>{individualMsg}</span>
-            </div>
-          );
-        }
-      }
-    },
-  },
-  {
-    label: 'Full Business Name',
-    name: 'business_name',
-    info: 'Example: Acme Infotech Private Limited',
-  },
+  ...AddressFields, // check ./AddressFieldsMap.js for address fields
   [
+    {
+      compressed: true,
+    },
+    {
+      label: 'Business Type',
+      name: 'business_type',
+      _cmp: Input.Select,
+      options: BUSINESS_TYPE_OPTIONS,
+      description: activation => {
+        // Changing description of self
+        const currentBusinessType =
+          activation.state.dirty.business_type ||
+          activation.props.data.business_type;
+
+        // if user has selected individual business type
+        if (currentBusinessType && !activation.props.accountId) {
+          if (currentBusinessType == INDIVIDUAL) {
+            return (
+              <div class="warning-svg red">
+                {WarningSvg()}
+                <span>{individualMsg}</span>
+              </div>
+            );
+          }
+        }
+      },
+    },
+    {
+      label: 'Full Business Name',
+      name: 'business_name',
+      info: 'Example: Acme Infotech Private Limited',
+    },
     {
       label: 'Website/App URL',
       _cmp: Input.Radio,

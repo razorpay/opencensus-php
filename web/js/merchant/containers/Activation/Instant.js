@@ -82,6 +82,12 @@ export default class ActivationWizard extends React.Component {
   state = {
     dirty: {},
     tabs: [],
+    same_address:
+      this.props.data &&
+      (this.props.data.business_operation_pin ===
+      this.props.data.business_registered_pin
+        ? '1'
+        : '0'), // '1' => checkbox ticked
     has_url:
       this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
   };
