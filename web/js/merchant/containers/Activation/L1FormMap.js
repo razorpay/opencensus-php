@@ -39,35 +39,6 @@ export const BUSINESS_TYPE_OPTIONS = [
 /* Form fields of Payment Links */
 export default [
   {
-    label: 'Business Type',
-    name: 'business_type',
-    _cmp: Input.Select,
-    options: BUSINESS_TYPE_OPTIONS,
-    description: activation => {
-      // Changing description of self
-      const currentBusinessType =
-        activation.state.dirty.business_type ||
-        activation.props.data.business_type;
-
-      // if user has selected individual business type
-      if (currentBusinessType && !activation.props.accountId) {
-        if (currentBusinessType == INDIVIDUAL) {
-          return (
-            <div class="warning-svg red">
-              {WarningSvg()}
-              <span>{individualMsg}</span>
-            </div>
-          );
-        }
-      }
-    },
-  },
-  {
-    label: 'Full Business Name',
-    name: 'business_name',
-    info: 'Example: Acme Infotech Private Limited',
-  },
-  {
     label: 'Billing Label',
     name: 'business_dba',
     info:
@@ -150,6 +121,35 @@ export default [
     className: 'Input--capitalize Input--vTop',
     validator: validatePANCard,
     _when: excludeFor_Indiv,
+  },
+  {
+    label: 'Business Type',
+    name: 'business_type',
+    _cmp: Input.Select,
+    options: BUSINESS_TYPE_OPTIONS,
+    description: activation => {
+      // Changing description of self
+      const currentBusinessType =
+        activation.state.dirty.business_type ||
+        activation.props.data.business_type;
+
+      // if user has selected individual business type
+      if (currentBusinessType && !activation.props.accountId) {
+        if (currentBusinessType == INDIVIDUAL) {
+          return (
+            <div class="warning-svg red">
+              {WarningSvg()}
+              <span>{individualMsg}</span>
+            </div>
+          );
+        }
+      }
+    },
+  },
+  {
+    label: 'Full Business Name',
+    name: 'business_name',
+    info: 'Example: Acme Infotech Private Limited',
   },
   [
     {

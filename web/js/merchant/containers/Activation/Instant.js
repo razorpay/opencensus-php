@@ -63,7 +63,7 @@ function defaultFieldProps(f) {
 }
 
 let FORM_TABS; // Maintains naming of the tabs
-let BUSINESS_CATEGORY_FIELD = 3;
+let BUSINESS_CATEGORY_FIELD = 1;
 
 @withRouter
 @connect(
