@@ -61,7 +61,9 @@ class Status
                 'Status change not permitted',
                 Entity::STATUS,
                 [
-                    Entity::STATUS => $currentStatus
+                    'current_status'  => $currentStatus,
+                    'previous_status' => $previousStatus,
+
                 ]);
         }
     }
