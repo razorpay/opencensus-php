@@ -2055,6 +2055,15 @@ class Processor
 
         $payment->order()->associate($this->order);
 
+        //
+        // FIXME: Hack for reliance AMC, moving order receipt to payment
+        // description
+        //
+        if ($payment->getMerchantId() === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $payment->setDescription($this->order->getReceipt());
+        }
+
         $orderNotes = $this->order->getNotes()->toArray();
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
