@@ -14,6 +14,7 @@ class Status
     const DISCREPANCY    = 'discrepancy';
     const CLOSED         = 'closed';
     const CANCELLED      = 'cancelled';
+    const HOLD           = 'hold';
 
     // RBL webhook wants the final status of processing from our end.
     // If the webhook is processed properly we send a Success status to them
@@ -27,7 +28,8 @@ class Status
             self::DRAFT,
             self::REWORK,
             self::VERIFIED,
-            self::DISCREPANCY
+            self::DISCREPANCY,
+            self::HOLD,
         ],
         BankingAccount\Status::PROCESSED      => [
             self::CLOSED

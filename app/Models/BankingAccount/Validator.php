@@ -13,6 +13,7 @@ class Validator extends Base\Validator
     const PROCESSED_STATUS      = 'processed_status';
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
     const YESBANK_CREATE        = 'yesbank_create';
+    const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
@@ -63,8 +64,7 @@ class Validator extends Base\Validator
     protected static $internalEditRules = [
         Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
-        Entity::STATUS                          => 'filled|string|in:initiated,processing,processed,' .
-                                                   'cancelled,unserviceable',
+        Entity::STATUS                          => 'filled|string',
         Entity::BENEFICIARY_PIN                 => 'filled|string',
         Entity::BENEFICIARY_CITY                => 'filled|string',
         Entity::BENEFICIARY_COUNTRY             => 'filled|string',
@@ -76,6 +76,10 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'filled|string',
         Entity::BENEFICIARY_EMAIL               => 'filled|string',
         Entity::BENEFICIARY_NAME                => 'filled|string',
+    ];
+
+    protected static $internalEditValidators = [
+        self::INTERNAL_EDIT_STATUS,
     ];
 
     // ToDo handle cases when some fields are already present in the model when the status is processed.
@@ -156,6 +160,24 @@ class Validator extends Base\Validator
                 'Banking account type is invalid',
                 Entity::ACCOUNT_TYPE,
                 [Entity::ACCOUNT_TYPE => $accountType]);
+        }
+    }
+
+    protected function validateInternalEditStatus(array $input)
+    {
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            $status = $input[Entity::STATUS];
+
+            if (in_array($status, Status::$internallyEditStatuses, true) === false)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Given status is not an allowed status',
+                    Entity::STATUS,
+                    [
+                        Entity::STATUS => $status,
+                    ]);
+            }
         }
     }
 }

@@ -23,6 +23,14 @@ class Status
         self::UNSERVICEABLE,
     ];
 
+    public static $internallyEditStatuses = [
+      self::INITIATED,
+      self::PROCESSED,
+      self::CANCELLED,
+      self::PROCESSED,
+      self::UNSERVICEABLE,
+    ];
+
     public static function isValidStatus(string $status = null)
     {
         $key = __CLASS__ . '::' . strtoupper($status);
