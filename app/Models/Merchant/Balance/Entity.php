@@ -296,9 +296,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACCOUNT_TYPE, $type);
     }
 
-    public function setAccountProvider(string $provider = null)
+    public function setChannel(string $channel = null)
     {
-        $this->setAttribute(self::ACCOUNT_PROVIDER, $provider);
+        $this->setAttribute(self::CHANNEL, $channel);
     }
 
     public function save(array $options = array())

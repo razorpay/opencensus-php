@@ -24,15 +24,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAccountProvider($attribute, $provider)
-    {
-        if (Channel::validateChannel($provider) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid account provider name: ' . $provider);
-        }
-    }
-
     protected function validateAccountType($attribute, $accType)
     {
         if (AccountType::exists($accType) === false)
