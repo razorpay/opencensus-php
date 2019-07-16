@@ -1901,7 +1901,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testWhitelistInternationalExperimentOff' => [
+    'testWhitelistInternationalForNonRZPOrg' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1933,7 +1933,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testGreylistInternationalExperimentOff' => [
+    'testGreylistInternationalForNonRZPOrg' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1965,7 +1965,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testBlacklistInternationalExperimentOff' => [
+    'testBlacklistInternationalForNonRZPOrg' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',

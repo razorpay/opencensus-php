@@ -255,16 +255,17 @@ class CardlessEmiGatewayTest extends TestCase
 
         $capturedPayment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $refund = $this->refundPayment($capturedPayment['id']);
+        $this->refundPayment($capturedPayment['id']);
 
         $gatewayRefund = $this->getLastEntity('cardless_emi', true);
 
         $refund = $this->getLastEntity('refund', true);
 
-        //$this->assertTestResponse($gatewayRefund);
         $this->assertEquals($payment['id'], 'pay_' . $gatewayRefund['payment_id']);
 
-       // $this->assertEquals('rfnd_' . $gatewayRefund['refund_id'], $refund['id']);
+        $this->assertEquals('1234567', $refund['acquirer_data']['arn']);
+
+        $this->assertEquals('rfnd_' . $gatewayRefund['refund_id'], $refund['id']);
     }
 
     public function testReversePayment()

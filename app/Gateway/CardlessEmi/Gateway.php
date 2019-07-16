@@ -362,6 +362,23 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($responseArray);
 
         $this->checkRefundSuccess($responseArray);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => $response,
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($responseArray)
+        ];
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                Refund\Entity::RRN => $response[ResponseFields::PROVIDER_REFUND_ID] ?? null
+            ];
+        }
+
+        return [];
     }
 
     public function reverse(array $input)

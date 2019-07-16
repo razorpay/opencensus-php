@@ -533,6 +533,12 @@ class Entity extends Base\PublicEntity
                     self::UTR   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::CARDLESS_EMI:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));

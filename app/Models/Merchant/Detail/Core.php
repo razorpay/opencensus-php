@@ -136,9 +136,9 @@ class Core extends Base\Core
             Metric::MERCHANT_ACTIVATION,
             $activation_metric_dimensions);
 
-        $isExperimentEnabled = (new Merchant\Core)->isInternationalActivationsExperimentEnabled($this->merchant);
+        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($this->merchant);
 
-        if ($isExperimentEnabled === true)
+        if ($autoEnableInternational === true)
         {
             $merchantDetails->setInternationalActivationFlow(
                 $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
