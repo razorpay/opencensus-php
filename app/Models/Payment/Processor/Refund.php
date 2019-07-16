@@ -26,6 +26,7 @@ use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
+use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -1314,20 +1315,22 @@ trait Refund
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
-        if (($payment->getMethod() === Payment\Method::CARD) and
-            ($this->payment->isCaptured() === true) and
-            ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true))
-        {
-            $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
+        $refund->setSpeedRequested(RefundSpeed::NORMAL);
+        $refund->setSpeedDecisioned(RefundSpeed::NORMAL);
 
-            if (empty($input['speed']) === false)
-            {
-                $refund->setSpeedRequested($input['speed']);
-            }
-        }
-        else
+        if ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true)
         {
-            $refund->setSpeedRequested(RefundSpeed::NORMAL);
+            $refund->setSpeedRequested($this->merchant->getDefaultRefundSpeed());
+
+            if (empty($input[RefundEntity::SPEED]) === false)
+            {
+                $refund->setSpeedRequested($input[RefundEntity::SPEED]);
+            }
+
+            if ($this->isInstantRefundsSupportedRefund($payment, $refund) === true)
+            {
+                $refund->setSpeedDecisioned($refund->getSpeedRequested());
+            }
         }
 
         $refund->merchant()->associate($this->merchant);
@@ -1819,6 +1822,13 @@ trait Refund
             'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
         ];
 
+        $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
+
+        //
+        // Speed decisioned is being sent as speed_requested - no need to be sent again
+        //
+        unset($refundData[RefundEntity::SPEED_DECISIONED]);
+
         $scroogeData = array_merge($refundData, $extraData);
 
         if ($payment->isNetbanking() === true)
@@ -2245,6 +2255,20 @@ trait Refund
     }
 
     /**
+     * @param Payment\Entity $payment
+     * @param RefundEntity $refund
+     * @return bool
+     * @throws \Exception
+     */
+    protected function isInstantRefundsSupportedRefund(Payment\Entity $payment, RefundEntity $refund): bool
+    {
+        return (($refund->isRefundRequestedSpeedInstant() === true) and
+                ($payment->getMethod() === Payment\Method::CARD) and
+                ($payment->hasBeenCaptured() === true) and
+                ($this->isPaymentCardAndCardTransferRefund($refund, $payment) === true));
+    }
+
+    /**
      * Checking if a card payment is valid to be refunded by Card instantly.
      * If card_transfer_refund feature is present for the merchant,
      * refund will be made on card. Card should be credit card, should have vault token stored and
@@ -2437,17 +2461,25 @@ trait Refund
     }
 
     /**
-     * Currently saving reference number sent by bank in refund response only for UPI refunds.
+     * Currently saving reference number sent by bank in refund response only for UPI and Cardless Emi refunds.
      *
      * @param array $response
      */
     protected function setRefundReference1(array $response)
     {
-        if (($this->refund->payment->getMethod() === Payment\Method::UPI) and
+        if ((in_array($this->refund->payment->getMethod(), $this->getMethodsToSetRefundReference1(), true)) and
             (isset($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]) === true) and
             (empty($this->refund->getReference1()) === true))
         {
             $this->refund->setReference1($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]);
         }
+    }
+
+    protected function getMethodsToSetRefundReference1()
+    {
+        return [
+            Payment\Method::UPI,
+            Payment\Method::CARDLESS_EMI
+        ];
     }
 }

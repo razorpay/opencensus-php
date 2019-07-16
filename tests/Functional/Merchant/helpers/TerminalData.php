@@ -93,7 +93,7 @@ return [
                 'gateway_acquirer'          => 'ratn',
                 'gateway_merchant_id'       => '12345',
                 'gateway_terminal_id'       => '12345678',
-                'mc_mpan'                   => '123456788012345',
+                'mc_mpan'                   => '1234567880123456',
                 'visa_mpan'                 => '1234567890123456',
                 'rupay_mpan'                => '1234567890123456',
                 'category'                  => '4567',
@@ -415,7 +415,7 @@ return [
                 'gateway_acquirer'          => 'ratn',
                 'gateway_merchant_id'       => '12345',
                 'gateway_terminal_id'       => '12345678',
-                'mc_mpan'                   => '123456788012345',
+                'mc_mpan'                   => '1234567880123456',
                 'visa_mpan'                 => '1234567890123456',
                 'rupay_mpan'                => '1234567890123456',
                 'category'                  => '4567',
@@ -432,7 +432,7 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'mc_mpan'             => '123456788012345',
+                'mc_mpan'             => '1234567880123456',
                 'visa_mpan'           => '1234567890123456',
                 'rupay_mpan'          => '1234567890123456',
                 'category'            => '4567',
@@ -474,7 +474,7 @@ return [
                 'gateway_acquirer'          => 'ratn',
                 'gateway_merchant_id'       => '12345',
                 'gateway_terminal_id'       => '12345678',
-                'mc_mpan'                   => '428734642398642',
+                'mc_mpan'                   => '4287346423986423',
                 'visa_mpan'                 => '5287346853986423',
                 'rupay_mpan'                => '6287346823986423',
                 'category'                  => '4567',
@@ -566,6 +566,7 @@ return [
                 'type'                      => [
                     'non_recurring' => '1',
                 ],
+                'international'             => 0,
             ],
             'url' => '/merchants/10000000000000/terminals',
             'method' => 'POST'
@@ -899,17 +900,17 @@ return [
                 'gateway'                   => 'paylater',
                 'gateway_acquirer'          => 'epaylater',
                 'category'                  => 1234,
-                'gateway_merchant_id'       => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id'       => 'abcd',
                 'gateway_merchant_id2'      => 'test merchant',
                 'mode'                      => 1,
                 'paylater'                  => 1,
-                'gateway_terminal_password' => 'aabbccdd'
+                'gateway_terminal_password' => '64517b42-7b8d-4137-924a-4b6a065e7e4d'
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content'  => [
-                'gateway_merchant_id'  => '64517b42-7b8d-4137-924a-4b6a065e7e4d',
+                'gateway_merchant_id'  => 'abcd',
                 'gateway_merchant_id2' => 'test merchant',
                 'enabled'              => true,
             ]
@@ -1314,7 +1315,7 @@ return [
                 'gateway'                   => 'isg',
                 'gateway_merchant_id'       => 'random',
                 'gateway_terminal_id'       => '12345678',
-                'mc_mpan'                   => '123456788012345',
+                'mc_mpan'                   => '1234567880123456',
                 'visa_mpan'                 => '1234567890123456',
                 'rupay_mpan'                => '1234567890123456',
                 'type'                      => [
@@ -1330,7 +1331,7 @@ return [
             'content' => [
                 'gateway_merchant_id' => 'random',
                 'gateway_terminal_id' => '12345678',
-                'mc_mpan'             => '123456788012345',
+                'mc_mpan'             => '1234567880123456',
                 'visa_mpan'           => '1234567890123456',
                 'rupay_mpan'          => '1234567890123456',
                 'enabled'             => true
@@ -1344,7 +1345,7 @@ return [
                 'gateway'                   => 'isg',
                 'gateway_merchant_id'       => 'random',
                 'gateway_terminal_id'       => '12345678',
-                'mc_mpan'                   => '123456788012345',
+                'mc_mpan'                   => '1234567880123456',
                 'visa_mpan'                 => '1234567890123456',
                 'rupay_mpan'                => '1234567890123456',
                 'type'                      => [
@@ -1945,6 +1946,35 @@ return [
         'response' => [
             'content'  => [
                 'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateWorldlineTerminal'  => [
+        'request' => [
+            'content' => [
+                'merchant_id'               => '10000000000000',
+                'gateway'                   => 'worldline',
+                'gateway_merchant_id'       => '037122003842039',
+                'gateway_terminal_id'       => '70374018',
+                'gateway_acquirer'          => 'axis',
+                'card'                      => 1,
+                'gateway_terminal_password' => '9900991100',
+                'mc_mpan'                   => '5122600004774122',
+                'visa_mpan'                 => '4604901004774122',
+                'rupay_mpan'                => '6100020004774141',
+                'vpa'                       => 'MAB.037122003842039@AXISBANK',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '037122003842039',
                 'enabled'              => true,
             ]
         ]

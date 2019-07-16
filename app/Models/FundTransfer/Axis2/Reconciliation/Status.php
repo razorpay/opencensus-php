@@ -10,17 +10,30 @@ class Status extends BaseStatus
     const SUCCESS  = 'SUCCESS';
     const REJECTED = 'REJECTED';
 
+    /**
+     * These are the statuses which, if received after an attempt is marked as processed,
+     * need us to mark it as initiated so that it can be reassessed by the bulk recon cron.
+     *
+     * @return array
+     */
+    public static function getFlipStatus(): array
+    {
+        return [
+            self::REJECTED,
+        ];
+    }
+
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::SUCCESS
+            self::SUCCESS => [],
         ];
     }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::REJECTED
+            self::REJECTED => [],
         ];
     }
 

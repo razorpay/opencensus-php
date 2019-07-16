@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow;
 
+use RZP\Models\Admin;
+use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Step;
 
@@ -20,14 +22,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchWorkflowsByPermissionsAndOrgId(string $permissionId, string $orgId, array $relations = [])
+    public function fetchWorkflowsByPermissionsOrgAndMerchant(
+        string $permissionId,
+        string $orgId,
+        string $merchantId = null,
+        array $relations = [])
     {
-        return $this->newQuery()
-                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
-                    ->with($relations)
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->where('workflow_permissions.permission_id', $permissionId)
-                    ->get();
+        /** @var BuilderEx $query */
+        $query = $this->newQuery()
+                      ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
+                      ->with($relations)
+                      ->where(Entity::ORG_ID, '=', $orgId)
+                      ->where('workflow_permissions.permission_id', $permissionId);
+
+        if ($merchantId !== null)
+        {
+            $query->merchantId($merchantId);
+        }
+
+        return $query->get();
     }
 
     public function fetchWorkflow(Step\Entity $step)

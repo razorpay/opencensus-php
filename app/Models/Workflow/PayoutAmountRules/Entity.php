@@ -4,8 +4,16 @@ namespace RZP\Models\Workflow\PayoutAmountRules;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Base;
 
+/**
+ * Class Entity
+ *
+ * @package RZP\Models\Workflow\PayoutAmountRules
+ *
+ * @property Workflow\Repository $workflow
+ */
 class Entity extends Base\Entity
 {
     use SoftDeletes;
@@ -14,9 +22,12 @@ class Entity extends Base\Entity
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
     const CONDITION   = 'condition';
-    const X_AMOUNT    = 'x_amount';
-    const Y_AMOUNT    = 'y_amount';
+    const MIN_AMOUNT  = 'min_amount';
+    const MAX_AMOUNT  = 'max_amount';
     const WORKFLOW_ID = 'workflow_id';
+
+    // Relations
+    const WORKFLOW = 'workflow';
 
     protected $generateIdOnCreate = false;
 
@@ -25,25 +36,24 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::MERCHANT_ID,
         self::CONDITION,
-        self::X_AMOUNT,
-        self::Y_AMOUNT,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
         self::WORKFLOW_ID,
     ];
 
     protected $visible = [
         self::MERCHANT_ID,
         self::CONDITION,
-        self::X_AMOUNT,
-        self::Y_AMOUNT,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
         self::WORKFLOW_ID,
+        self::WORKFLOW,
     ];
 
     protected $public = [
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
         self::WORKFLOW_ID,
-        self::MERCHANT_ID,
-        self::CONDITION,
-        self::X_AMOUNT,
-        self::Y_AMOUNT,
     ];
 
     protected $dates = [
@@ -53,28 +63,32 @@ class Entity extends Base\Entity
     ];
 
     protected $amounts = [
-        self::X_AMOUNT,
-        self::Y_AMOUNT,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
     ];
 
+    protected $casts = [
+        self::MIN_AMOUNT => 'int',
+        self::MAX_AMOUNT => 'int',
+    ];
+
+    public function workflow()
+    {
+        return $this->belongsTo(Workflow\Entity::class);
+    }
 
     public function getCondition()
     {
         return $this->getAttribute(self::CONDITION);
     }
 
-    public function getXAmount()
+    public function getMinAmount()
     {
-        return $this->getAttribute(self::X_AMOUNT);
+        return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    public function getYAmount()
+    public function getMaxAmount()
     {
-        return $this->getAttribute(self::Y_AMOUNT);
-    }
-
-    public function getWorkflowID()
-    {
-        return $this->getAttribute(self::WORKFLOW_ID);
+        return $this->getAttribute(self::MAX_AMOUNT);
     }
 }

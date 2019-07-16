@@ -14,6 +14,7 @@ use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -431,6 +432,13 @@ class Gateway extends Base\Gateway
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $data[Fields::VALIDATE_PAYER_ACCOUNT] = 'Y';
+            $data[Fields::PAYER_ACCOUNT] = $input['order']['bank_account'][BankAccount\Entity::ACCOUNT_NUMBER];
+            $data[Fields::PAYER_IFSC] = $input['order']['bank_account'][BankAccount\Entity::IFSC];
+        }
 
         $content = $this->transformRequestArrayToContent($data);
 

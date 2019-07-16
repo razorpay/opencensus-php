@@ -130,7 +130,7 @@ class CreateTransactions extends Migration
             $table->char(Transaction::REFERENCE4, Transaction::ID_LENGTH)
                   ->nullable();
 
-            $table->tinyInteger(Transaction::REFERENCE5)
+            $table->tinyInteger(Transaction::BALANCE_UPDATED)
                   ->nullable();
 
             $table->tinyInteger(Transaction::REFERENCE6)

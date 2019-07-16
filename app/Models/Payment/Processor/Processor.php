@@ -462,10 +462,31 @@ class Processor
             return;
         }
 
-        $merchant = $payment->merchant;
-
         $gateway = Payment\Gateway::CARDLESS_EMI;
 
+        $merchant = $payment->merchant;
+
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'cardless_emi',
+                'version' => '1',
+                'provider' => $input['provider'],
+            ];
+
+            $coproto['missing'][] = 'contact';
+
+            unset($coproto['request']['content']['contact']);
+
+            return $coproto;
+        }
 
         $terminal = $this->repo
                          ->terminal
@@ -1172,9 +1193,20 @@ class Processor
 
         $validator->validateInput('transfer', $input);
 
+        $merchantId = $payment->getMerchantId();
+
+        $result = app('razorx')->getTreatment($merchantId, 'transfer_deadlock_retry', $this->mode);
+
+        $deadLockRetryAttempts = 1;
+
+        if (strtolower($result) === 'on')
+        {
+            $deadLockRetryAttempts = 2;
+        }
+
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $input)
+            function() use ($payment, $input, $deadLockRetryAttempts)
             {
                 $this->repo->reload($payment);
 
@@ -1190,7 +1222,7 @@ class Processor
                         ['transfer_ids' => $transfers->getIds()]);
 
                     return $transfers;
-                });
+                }, $deadLockRetryAttempts);
             });
     }
 
@@ -1676,26 +1708,23 @@ class Processor
             }
 
             /*
-             * If error indicates gateway downtime, we might act on it later
+             * Because error indicates gateway downtime, we might act on it later
              * so set $gatewayDowntimeError = true
              */
-            if ($error->isGatewayDowntimeError() === true)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::INFO,
-                    TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
-                    [
-                        'payment_id' => $this->payment->getId(),
-                        'gateway'    => $gateway,
-                        'action'     => $action,
-                        'method'     => $gatewayData['payment']['method'],
-                    ]);
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::GATEWAY_DOWNTIME_ERROR_CODE,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'gateway'    => $gateway,
+                    'action'     => $action,
+                    'method'     => $gatewayData['payment']['method'],
+                ]);
 
-                $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
+            $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
 
-                $gatewayDowntimeError = true;
-            }
+            $gatewayDowntimeError = true;
 
             throw $ex;
         }
@@ -1735,7 +1764,6 @@ class Processor
             Action::AUTHORIZE,
             Action::CALLBACK
         ];
-
 
         return in_array($action, $gatewayDowntimeActions, true);
     }
@@ -2035,6 +2063,15 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        //
+        // FIXME: Hack for reliance AMC, moving order receipt to payment
+        // description
+        //
+        if ($payment->getMerchantId() === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $payment->setDescription($this->order->getReceipt());
+        }
 
         $orderNotes = $this->order->getNotes()->toArray();
 

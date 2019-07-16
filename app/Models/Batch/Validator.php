@@ -264,10 +264,10 @@ class Validator extends Base\Validator
 
     // This is not a copy paste of above ^ rules!
     protected static $payoutTypeRowRules = [
-        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|string',
+        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|alpha_num|between:5,22',
         Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
         Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
+        Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:10000000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
         Header::PAYOUT_MODE                 => 'required|string|custom',
         Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',

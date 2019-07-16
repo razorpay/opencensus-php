@@ -1141,6 +1141,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->metadata = $input['_'] ?? null;
     }
 
+    public function setDescription($description)
+    {
+        $this->setAttribute(self::DESCRIPTION, $description);
+    }
+
     public function setDisputed($disputed)
     {
         $this->setAttribute(self::DISPUTED, $disputed);

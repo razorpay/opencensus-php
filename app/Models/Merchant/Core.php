@@ -35,6 +35,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -1993,9 +1994,9 @@ class Core extends Base\Core
      */
     protected function shouldActivateInternational(Entity $merchant, Detail\Entity $merchantDetails): bool
     {
-        $isExperimentEnabled = $this->isInternationalActivationsExperimentEnabled($merchant);
+        $autoEnableInternational = $this->autoEnableInternational($merchant);
 
-        if ($isExperimentEnabled === false)
+        if ($autoEnableInternational === false)
         {
             return false;
         }
@@ -2014,10 +2015,10 @@ class Core extends Base\Core
             return false;
         }
 
-        $featureValue = BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
+        $featureValue = $merchantDetails->getInternationalActivationFlow() ?: (BusinessSubCategoryMetaData::getFeatureValueUsingCategoryOrSubcategory(
             BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION,
             $category,
-            $subcategory);
+            $subcategory));
 
         //
         // Conditions being checked:
@@ -2034,16 +2035,18 @@ class Core extends Base\Core
         return false;
     }
 
-    public function isInternationalActivationsExperimentEnabled(Entity $merchant): bool
+    /**
+     * Auto Enable International for merchant if
+     *  1) Merchant belongs to Razorpay org
+     *
+     * @param Entity $merchant
+     *
+     * @return bool
+     */
+    public function autoEnableInternational(Entity $merchant): bool
     {
-        // Get razorx treatment
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::INTERNATIONAL_ACTIVATIONS,
-            $this->mode
-        );
 
-        return (strtolower($variant) === 'on');
+        return ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID);
     }
 
     /*

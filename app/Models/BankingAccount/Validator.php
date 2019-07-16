@@ -8,24 +8,66 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    protected static $preCreateRules = [
+    const PRE_PROCESS    = 'pre_process';
+    const YESBANK_CREATE = 'yesbank_create';
+
+    protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
     ];
 
-    protected static $rblAvailabilityRules = [
-        Entity::CHANNEL => 'required|string|custom',
-        Entity::PINCODE => 'required_if:channel,rbl',
+    protected static $yesbankCreateRules = [
+        Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
+        Entity::ACCOUNT_IFSC        => 'required|string|size:11',
+        Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE        => 'required|string|in:nodal',
+        Entity::STATUS              => 'required|in:created',
     ];
 
     protected static $createRules = [
-        Entity::CHANNEL => 'required|string|custom',
-        Entity::PINCODE => 'required_if:channel,rbl',
+        Entity::CHANNEL               => 'required|string|custom',
+        Entity::STATUS                => 'required|in:created',
+        Entity::BANK_REFERENCE_NUMBER => 'required_if:channel,rbl',
+        Entity::PINCODE               => 'required_if:channel,rbl',
+        Entity::ACCOUNT_IFSC          => 'sometimes|nullable|string|size:11',
+        Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|nullable|string|size:14',
+        Entity::ACCOUNT_TYPE          => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER        => 'sometimes|nullable|string|max:40',
+    ];
+
+    protected static $editRules = [
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
+        Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
+        Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
+        Entity::STATUS                          => 'filled|string|custom',
+        Entity::BANK_REFERENCE_NUMBER           => 'filled|string',
+        Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
+        Entity::BENEFICIARY_PIN                 => 'filled|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'filled|string',
+        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
+        Entity::BENEFICIARY_STATE               => 'filled|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'filled|integer',
+        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
+        Entity::BENEFICIARY_MOBILE              => 'filled|string',
+        Entity::BENEFICIARY_EMAIL               => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|string',
+        Entity::USERNAME                        => 'filled|string',
+        Entity::PASSWORD                        => 'filled|string',
+        Entity::REFERENCE1                      => 'filled|string',
     ];
 
     protected static $serviceablePincodeRules = [
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
         Entity::PINCODES        => 'required|array|filled',
+    ];
+
+    // ToDo Need to make the rules stricter
+    protected static $rblCreateMerchantTokenRules = [
+        RblFields::SUBCORP_ID               => 'required|string',
+        RblFields::SUBCORP_USER_ID          => 'required|string',
+        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 
     protected static $serviceablePincodeValidators = [
@@ -56,44 +98,25 @@ class Validator extends Base\Validator
         Channel::validateChannel($channel);
     }
 
-    protected static $editRules = [
-        Entity::ACCOUNT_NUMBER       => 'filled|string|max:40',
-        Entity::ACCOUNT_IFSC         => 'filled|string|size:11',
-        Entity::BANK_INTERNAL_STATUS => 'filled|string',
-        Entity::STATUS               => 'filled|string|custom',
-        Entity::USERNAME             => 'filled|string',
-        Entity::PASSWORD             => 'filled|string',
-        Entity::REFERENCE1           => 'filled|string',
-    ];
-
-    protected static $rblUpdateRules = [
-        Entity::ACCOUNT_NUMBER       => 'required_with:account_ifsc|max:40',
-        Entity::ACCOUNT_IFSC         => 'required_with:account_number|size:11',
-        Entity::STATUS               => 'filled|string|custom',
-        Entity::BANK_INTERNAL_STATUS => 'required_if:status,processing,processed,cancelled|string',
-    ];
-
-    // ToDo Need to make the rules stricter
-    protected static $rblCreateMerchantTokenRules = [
-        RblFields::SUBCORP_ID               => 'required|string',
-        RblFields::SUBCORP_USER_ID          => 'required|string',
-        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
-    ];
-
     /**
      * @param string $attribute
      * @param string $status
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function validateStatus(string $attribute, string $status)
+    protected function validateStatus(string $attribute, string $status = null)
     {
-        if (Status::isValidStatus($status) === false)
+        Status::validate($status);
+    }
+
+    protected function validateAccountType(string $attribute, string $accountType)
+    {
+        if (AccountType::isValid($accountType) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Banking account status is invalid',
-                Entity::STATUS,
-                [Entity::STATUS => $status]);
+                'Banking account type is invalid',
+                Entity::ACCOUNT_TYPE,
+                [Entity::ACCOUNT_TYPE => $accountType]);
         }
     }
 }

@@ -16,15 +16,26 @@ class Core extends Base\Core
     {
         $workflow = (new Entity)->generateId();
 
+        $orgId = $input[Entity::ORG_ID];
+
         // Check if the permissions given are enabled to have workflows
-        $workflow->getValidator()->validatePermissionsForOrg(
-            $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
+        $workflow->getValidator()->validatePermissionsForOrg($orgId, $input[Entity::PERMISSIONS]);
 
+        $createPayoutPerm = $this->repo
+                                 ->permission
+                                 ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, $orgId)
+                                 ->first();
+
+        //
         // Check if passed permissions already have a workflow assigned to them
-        $workflow->getValidator()->validatePermissionHasOneWorkflow(
-            $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
+        // create_payout can have multiple workflows though, skip the validation for that.
+        //
+        if (in_array($createPayoutPerm, $input[Entity::PERMISSIONS], true) === false)
+        {
+            $workflow->getValidator()->validatePermissionHasOneWorkflow($orgId, $input[Entity::PERMISSIONS]);
+        }
 
-        $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
+        $org = $this->repo->org->findOrFailPublic($orgId);
 
         $workflow->org()->associate($org);
 

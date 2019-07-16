@@ -18,6 +18,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Batch\Entity;
+use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Yesbank\Request\HealthCheck;
@@ -96,7 +97,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
             if ($attempt->hasCard() === true)
             {
-                if ($attempt->card->getType() === Type::CREDIT)
+                $iin = $attempt->card->iinRelation;
+
+                if (($iin !== null) and ($iin->getType() === Type::CREDIT))
                 {
                     $transfer->disableLogs();
                 }
@@ -111,7 +114,6 @@ class NodalAccount extends NodalBase\NodalAccount
                     continue;
                 }
             }
-
             try
             {
                 // Calling init will reset all the data of previous request
@@ -227,6 +229,11 @@ class NodalAccount extends NodalBase\NodalAccount
         $ifsc = $ba->getIfscCode();
 
         $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if (in_array($ifsc, Constants::VIRTUAL_ACCOUNT_IFSC, true) === true)
+        {
+            return Mode::NEFT;
+        }
 
         if (starts_with($ifscFirstFour, static::IFSC_IDENTIFIER) === true)
         {

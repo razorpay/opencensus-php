@@ -36,12 +36,14 @@ class Validator extends Base\Validator
         Entity::EMI                => 'sometimes|boolean',
         Entity::CREDIT_CARD        => 'sometimes|boolean',
         Entity::DEBIT_CARD         => 'sometimes|boolean',
+        Entity::PREPAID_CARD       => 'sometimes|boolean',
         Entity::UPI                => 'sometimes|boolean',
         Entity::AEPS               => 'sometimes|boolean',
         Entity::EMANDATE           => 'sometimes|boolean',
         Entity::MPESA              => 'sometimes|boolean',
         Entity::BANK_TRANSFER      => 'sometimes|boolean',
         Entity::CARDLESS_EMI       => 'sometimes|boolean',
+        Entity::PAYLATER           => 'sometimes|boolean',
         Entity::CARD_NETWORKS      => 'sometimes|array',
         Entity::CARD_NETWORKS.'.*' => 'sometimes|boolean'
     ];

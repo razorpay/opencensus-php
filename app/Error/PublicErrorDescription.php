@@ -66,7 +66,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED               = 'The payout amount provided is greater than the payment amount captured';
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                = 'The payout amount provided is greater than the payout amount pending for the payment';
     const BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT               = 'Payouts of method fund_transfer cannot be created on Credit Card payments';
-    const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                               = 'Given mode cannot be used for the payout amount specified';
+    const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                               = 'Given method / mode cannot be used for the payout amount specified';
+    const BAD_REQUEST_FTA_AMOUNT_MODE_MISMATCH                                  = 'Given mode cannot be used for the amount given';
     const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT                                  = 'Payout retry is not allowed only for payment payouts';
     const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                              = 'Payout retry is allowed only for reversed payouts';
     const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                     = 'The payment has been fully paidout already';
@@ -111,6 +112,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                      = 'Account Balance is insufficient';
+    const BAD_REQUEST_INVALID_USER_CREDENTIALS                                  = 'Payment failed due to invalid user credentials';
     const BAD_REQUEST_APP_TOKEN_ABSENT                                          = 'Customer not logged in';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                      = 'Global customer not logged in';
     const BAD_REQUEST_PAYMENT_WALLET_CUSTOMER_TOKEN_NOT_FOUND                   = 'Payment failed';
@@ -389,6 +391,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                        = 'Payment failed because account limit exceeded';
     const BAD_REQUEST_PAYMENT_KYC_PENDING                                       = 'Payment failed because account KYC pending';
 
+    const BAD_REQUEST_EMANDATE_AMOUNT_LIMIT_EXCEEDED                            = 'Amount exceeds E-mandate limit';
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
     const BAD_REQUEST_EMANDATE_INVALID_AADHAAR_BANK_ACCOUNT_MAPPING             = 'EMandate registration failed because of invalid aadhaar bank account mapping';
     const BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED                               = 'EMandate aadhaar not mapped';
@@ -724,6 +727,9 @@ class PublicErrorDescription
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
+    const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED                             = 'An error occurred performing this action';
+    const BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE                                   = 'An error occurred while creating the payout. Payout workflow could not be initiated';
 
     // Scrooge
     const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';
@@ -763,7 +769,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'Credit request is timed out';
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
-    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Validation error';
+    const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Payment failed due to validation failure at bank or wallet gateway';
     const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
     const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
@@ -790,6 +796,18 @@ class PublicErrorDescription
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_ACTIVATED                       = 'Cardless Emi credit limit of customer not activated';
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED                        = 'Cardless Emi credit limit of customer not approved';
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED                             = 'Cardless Emi credit limit of customer has expired';
+
+    const BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST                                  = 'User does not have an account with the selected provider';
+    const GATEWAY_ERROR_PAYLATER_INVALID_TOKEN                                      = 'Payment failed due to technical error. Please try again with different provider/method';
+    const BAD_REQUEST_PAYLATER_INVALID_MERCHANT_NAME                                = 'Merchant integration with the selected provider is incomplete. Please try again with different provider/method';
+    const BAD_REQUEST_PAYLATER_MINIMUM_AMOUNT_REQUIRED                              = 'Amount less than minimum amount required';
+    const BAD_REQUEST_PAYLATER_MAXIMUM_AMOUNT_LIMIT                                 = 'Amount more than the maximum amount limit';
+    const GATEWAY_ERROR_PAYLATER_PAYMENT_FAILED_PARTNER                             = 'Payment failed by the provider';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXHAUSTED                               = 'Credit limit exhausted';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_ACTIVATED                           = 'Customer not activated';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_APPROVED                            = 'Credit limit of customer not activated';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXPIRED                                 = 'Customer credit limit expired.';
+
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
     const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';

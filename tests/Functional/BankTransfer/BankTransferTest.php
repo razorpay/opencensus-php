@@ -280,45 +280,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals(1500 + $transaction['amount'] * 1 / 100, $transaction['fee'] - $transaction['tax']);
     }
 
-    public function testBankTransferTerminalDataMigration()
-    {
-        $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
-
-        // Process API always returns true
-        $response = $this->processBankTransfer($accountNumber, $ifsc);
-        $this->assertEquals(true, $response['valid']);
-        $this->assertNull($response['message']);
-
-        // Created bank transfer is an expected one
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
-        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
-        $this->assertEquals(true, $bankTransfer['expected']);
-        $this->assertNotNull($bankTransfer['payment_id']);
-
-        // Payment is automatically captured
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
-
-        $this->fixtures->payment->edit($payment['id'], ['terminal_id' => null]);
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertNull($payment['terminal_id']);
-
-        $request = [
-            'method'    => 'POST',
-            'url'       => '/payment/bank_transfer_terminal_backfill',
-            'content'   => []
-        ];
-
-        $this->ba->cronAuth();
-
-        $this->makeRequestAndGetContent($request);
-
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
-    }
-
     public function testBankTransferRefund()
     {
         $channel = Channel::AXIS;
@@ -441,9 +402,9 @@ class BankTransferTest extends TestCase
 
         // Adding this since post reconciliation, we update the status at scrooge side,
         // post which scrooge sends an update status request to API
-//        $this->scroogeUpdateRefundStatus($refund, Refund\Status::PROCESSED);
+        $this->scroogeUpdateRefundStatus($refund, 'processed_event');
 
-//        $refund = $this->getLastEntity('refund', true);
+        $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertNotNull($refund['processed_at']);
@@ -2065,7 +2026,7 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 

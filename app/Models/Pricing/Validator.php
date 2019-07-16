@@ -203,12 +203,13 @@ class Validator extends Base\Validator
                 $validCardTypes = [
                     CardType::DEBIT,
                     CardType::CREDIT,
+                    CardType::PREPAID,
                 ];
 
                 if (in_array($cardType, $validCardTypes, true) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
-                        'Payment method type for card should be debit / credit');
+                        'Payment method type for card should be debit / credit / prepaid');
                 }
             }
         }

@@ -15,7 +15,6 @@ class EventCode
         'name'  => 'order.creation.processed'
     ];
 
-
     // payment flow events
     const PAYMENT_CREATION_INITIATED                    = [
         'group' => 'initiation',
@@ -97,14 +96,19 @@ class EventCode
         'name'  => 'payment.authentication.initiated'
     ];
 
-    const PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED = [
+    const PAYMENT_AUTHENTICATION_ENROLLMENT_INITIATED              = [
         'group' => 'authentication',
-        'name'  => 'payment.authentication.otp.generate.initiated'
+        'name'  => 'payment.authentication.enrollment.initiated'
     ];
 
-    const PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED = [
+    const PAYMENT_AUTHENTICATION_ENROLLMENT_PROCESSED              = [
         'group' => 'authentication',
-        'name'  => 'payment.authentication.otp.generate.processed'
+        'name'  => 'payment.authentication.enrollment.processed'
+    ];
+
+    const PAYMENT_AUTHENTICATION_PROCESSED              = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.processed'
     ];
 
     const PAYMENT_AUTHENTICATION_OTP_RESEND_INITIATED   = [
@@ -142,14 +146,14 @@ class EventCode
         'name'  => 'payment.authentication.3ds.redirect.initiated'
     ];
 
-    const PAYMENT_AUTHORIZATION_INITIATED               = [
-        'group' => 'authorization',
-        'name'  => 'payment.authorization.initiated'
-    ];
-
     const PAYMENT_AUTHENTICATION_2FA_URL_SENT           = [
         'group' => 'authentication',
         'name'  => 'payment.authentication.2fa.url.sent'
+    ];
+
+    const PAYMENT_AUTHORIZATION_INITIATED               = [
+        'group' => 'authorization',
+        'name'  => 'payment.authorization.initiated'
     ];
 
     const PAYMENT_AUTHORIZATION_DROPPED                 = [
@@ -206,7 +210,6 @@ class EventCode
         'group' => 'payment_response',
         'name'  => 'payment.response.sent'
     ];
-
 
     // payment verification
     const PAYMENT_VERIFICATION_INITIATED                = [

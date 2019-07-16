@@ -114,6 +114,29 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createBharatQrWorldlineTerminal()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'worldline',
+            'gateway_merchant_id'       => '037122003842039',
+            'gateway_terminal_id'       => '70374018',
+            'gateway_acquirer'          => 'axis',
+            'card'                      => 1,
+            'gateway_terminal_password' => '9900991100',
+            'mc_mpan'                   => '5122600004774122',
+            'visa_mpan'                 => '4604901004774122',
+            'rupay_mpan'                => '6100020004774141',
+            'vpa'                       => 'MAB.037122003842039@AXISBANK',
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::BHARAT_QR     => '1',
+            ],
+        ];
+
+        return parent::create($attributes);
+    }
+
     public function createBharatQrTerminal()
     {
         $attributes = [
@@ -2169,6 +2192,16 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingYesbTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::NETBANKING_YESB_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedNetbankingYesbTerminal($attributes);
+    }
+
     public function createSharedNetbankingCubTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
@@ -2184,6 +2217,17 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingCubTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            // not adding in shared as cub terminals will anyway be direct
+            'id'               => '1000NbCubTpvTl',
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedNetbankingCubTerminal($attributes);
     }
 
     public function createSharedNetbankingSbiTerminal(array $attributes = [])
@@ -2219,6 +2263,16 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingSibTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::NETBANKING_SIB_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedNetbankingSibTerminal($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])
@@ -2568,6 +2622,16 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
+    public function createSharedUpiICICITpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_ICICI_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiIciciTerminal($attributes);
     }
 
     public function createSharedUpiMindgateIntentTpvTerminal(array $attributes = [])

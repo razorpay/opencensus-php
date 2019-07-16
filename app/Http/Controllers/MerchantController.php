@@ -319,6 +319,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOrg(string $id)
+    {
+        $data = $this->service()->getOrgDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function setBanks($id)
     {
         $input = Request::all();
@@ -869,6 +876,18 @@ class MerchantController extends Controller
     public function getBusinessCategories()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Returns clarification reason against each field
+     *
+     * @return mixed
+     */
+    public function getNeedsClarificationReasons()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getNeedsClarificationReasons();
 
         return ApiResponse::json($response);
     }

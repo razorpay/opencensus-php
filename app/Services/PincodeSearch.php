@@ -122,6 +122,7 @@ class PincodeSearch
         {
             throw new Exception\IntegrationException(
                 'Third Party Error',
+                null,
                 $response
             );
         }
@@ -137,12 +138,14 @@ class PincodeSearch
 
             throw new Exception\IntegrationException(
                 $errorMessage,
+                null,
                 $response
             );
         }
 
         throw new Exception\IntegrationException(
             'Something Went Wrong',
+            null,
             $response);
     }
 

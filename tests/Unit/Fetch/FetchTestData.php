@@ -103,6 +103,14 @@ return [
         ],
     ],
 
+    E::BANKING_ACCOUNT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::BANK_TRANSFER => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -453,4 +461,6 @@ return [
     E::P2P_CONCERN => [],
 
     E::CUSTOMER => [],
+
+    E::CREDITNOTE => [],
 ];

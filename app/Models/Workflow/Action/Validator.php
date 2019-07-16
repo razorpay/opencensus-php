@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::STATE                 => 'sometimes|string|max:25',
         Entity::STATE_CHANGER_ROLE_ID => 'sometimes|nullable|string|max:14',
         Entity::STATE_CHANGER_ID      => 'sometimes|nullable|string|max:14',
+        Entity::STATE_CHANGER_TYPE    => 'required_with:state_changer_id|nullable|string|max:255',
     ];
 
     public function validateLiveActionsOnEntity(string $entityId, string $entity, string $permissionName)

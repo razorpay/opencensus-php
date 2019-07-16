@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use Illuminate\Support\Facades\Redis;
 use Mail;
 use Queue;
 
@@ -113,6 +114,41 @@ class PaysecureGatewayTest extends TestCase
         $this->assertSuccess($authResponse, 'redirect');
 
         return $authResponse;
+    }
+
+    public function testStanIncrementAndTtl()
+    {
+        $redis = Redis::connection()->client();
+
+        $this->testPaymentAuthViaRedirect();
+
+        $counter = $redis->get(Gateway::GATEWAY_PAYSECURE_STAN);
+
+        $this->assertEquals(1, $counter);
+
+        $this->testPaymentAuthViaRedirect();
+
+        $counter = $redis->get(Gateway::GATEWAY_PAYSECURE_STAN);
+        $ttl = $redis->ttl(Gateway::GATEWAY_PAYSECURE_STAN);
+
+        // Assert that the counter is increased and that the ttl is set for the same.
+        // We can't check the value of ttl, since it depends on the current time and it changes every second
+        $this->assertEquals(2, $counter);
+        $this->assertGreaterThan(0, $ttl);
+
+        $redis->set(Gateway::GATEWAY_PAYSECURE_STAN, 999999);
+
+        $this->testPaymentAuthViaRedirect();
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_stan')
+                {
+                    // Assert that the stan gets resetted to 0 once it reaches 999999
+                    $this->assertEquals('000000', $content);
+                }
+            }
+        );
     }
 
     public function testLocalCustomersPaymentAuthViaRedirect()
