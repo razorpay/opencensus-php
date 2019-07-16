@@ -16,6 +16,8 @@ use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
 
 class Core extends Base\Core
@@ -259,9 +261,14 @@ class Core extends Base\Core
 
         $reversal = $this->repo->transaction(function() use ($reversal)
         {
-            $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
+            $skipTxn = $this->shouldSkipReversalTransaction($reversal);
 
-            $this->repo->saveOrFail($txn);
+            if ($skipTxn === false)
+            {
+                $txn = (new Transaction\Core)->createFromPayoutReversal($reversal);
+
+                $this->repo->saveOrFail($txn);
+            }
 
             $this->repo->saveOrFail($reversal);
 
@@ -407,5 +414,36 @@ class Core extends Base\Core
         ];
 
         $this->trace->info($code, $traceMessage);
+    }
+
+    /**
+     * This function tells if a creating a reversal transaction should be skipped or not
+     *
+     * @param Entity $reversal
+     * @return bool
+     */
+    protected function shouldSkipReversalTransaction(Reversal\Entity $reversal): bool
+    {
+        $balance     = $reversal->balance;
+        $type        = optional($balance)->getType();
+        $accountType = optional($balance)->getAccountType();
+        $channel     = optional($balance)->getAccountProvider();
+
+        //
+        // For direct(current) accounts, there are some channels for which we don't create txns
+        // when creating reversals, these txns are created while fetching account statement
+        // This is different than usual cases because, since the credit/debit is happening at
+        // the channel bank, and we use that as the source of truth for transactions. Though the reversal
+        // entity may be created when we get the payout status as reversed from FTS. This helps in communicating
+        // the same to the merchant as early as possible
+        //
+        if (($type === Balance\Type::BANKING) and
+            ($accountType === Balance\AccountType::DIRECT) and
+            (Channel::shouldSkipTransaction($channel) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
