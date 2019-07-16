@@ -643,7 +643,7 @@ class Gateway extends Base\Gateway
             return [];
         }
 
-        $request = $this->getVerifyRequestArray($input, 'payment');
+        $request = $this->getVerifyRequestArray($input, $gatewayPayment, 'payment');
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
@@ -673,7 +673,7 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
-        $verifyRefundRequest = $this->getVerifyRequestArray($input, 'refund');
+        $verifyRefundRequest = $this->getVerifyRequestArray($input, null, 'refund');
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
@@ -1216,7 +1216,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getVerifyRequestArray(array $input, $entity)
+    protected function getVerifyRequestArray(array $input, $gatewayPayment, $entity)
     {
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::VERIFY,
@@ -1226,6 +1226,12 @@ class Gateway extends Base\Gateway
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
             RequestFields::MERCHANT_REF_NUMBER => $input[$entity]['id']
         ];
+
+        if (($entity === 'payment') and
+            ($input['payment']['receiver_type'] === 'qr_code'))
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = $gatewayPayment->getRrn();
+        }
 
         return $this->getStandardRequestArray($content);
     }
