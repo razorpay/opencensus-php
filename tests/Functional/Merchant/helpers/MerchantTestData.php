@@ -4335,6 +4335,23 @@ return [
         ],
     ],
 
+    'testInternationalEnableWhenInternationalActivationFlowIsAlreadySet' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'international'    => true,
+                'convert_currency' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testInternationalEnableWhenWebsiteNotSet' => [
         'request'  => [
             'url'     => '/merchant/international',

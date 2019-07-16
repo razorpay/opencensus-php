@@ -85,7 +85,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         ];
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
     }

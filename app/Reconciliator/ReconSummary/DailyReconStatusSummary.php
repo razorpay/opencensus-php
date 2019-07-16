@@ -40,6 +40,8 @@ class DailyReconStatusSummary extends Base\Core
 
     const UNRECONCILED_TRANSACTIONS_SUMMARY = 'Unreconciled Transactions Summary';
 
+    const UNRECON_CACHE_TTL = 4320; // cache ttl in mins.(3 days)
+
     const RECON_ALLOWED_GATEWAYS = [
         Gateway::UPI_MINDGATE,
     ];
@@ -177,7 +179,7 @@ class DailyReconStatusSummary extends Base\Core
 
     private function setUnreconciledGatewayCache(array $value)
     {
-        Cache::put(self::UNRECON_DATA_CACHE_KEY, json_encode($value));
+        Cache::put(self::UNRECON_DATA_CACHE_KEY, json_encode($value), self::UNRECON_CACHE_TTL);
     }
 
     private function setPreviousUnreconciledGateways(array $additionalGateways) : array
@@ -191,8 +193,6 @@ class DailyReconStatusSummary extends Base\Core
             $gatewayUnreconCache = [];
         }
 
-        $unreconciledGatewaysData = [];
-
         $day = Carbon::today(Timezone::IST)->subDays(self::LAST_PREVIOUS_UNRECON_DAY)->getTimestamp();
 
         foreach($allGateways as $gateway)
@@ -203,11 +203,11 @@ class DailyReconStatusSummary extends Base\Core
             {
                 array_push($dates, $day);
 
-                $unreconciledGatewaysData[$gateway] = $dates;
+                $gatewayUnreconCache[$gateway] = $dates;
             }
         }
 
-        return $unreconciledGatewaysData;
+        return $gatewayUnreconCache;
     }
 
 
@@ -244,10 +244,10 @@ class DailyReconStatusSummary extends Base\Core
             foreach ($summary as $row)
             {
                 $count = $row['count'];
+                $date = $row['date'];
 
                 if ($count > $maxAllowedUnreconCount)
                 {
-                    $date = $row['date'];
                     if (array_key_exists($date, $formattedSummary) === false)
                     {
                         $formattedSummary[$date] = '';
@@ -264,7 +264,7 @@ class DailyReconStatusSummary extends Base\Core
                 }
                 else
                 {
-                    $timeStamp = Carbon::parse($row['date'])->setTimezone(Timezone::IST)
+                    $timeStamp = Carbon::parse($date)->setTimezone(Timezone::IST)
                                ->startOfDay()->subDay(1)->getTimestamp();
 
                     $unreconciledGatewaysData = $this->removeDateFromGateway($unreconciledGatewaysData,
