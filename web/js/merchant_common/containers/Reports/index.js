@@ -108,7 +108,7 @@ export default function Reports(store, opts) {
   @reduxForm({
     form: 'generateReports',
     initialValues: {
-      type: 'dateRange',
+      type: 'daily',
       date: moment(),
       startAt: moment().subtract('1', 'days'),
       endAt: moment(),
@@ -742,16 +742,17 @@ export default function Reports(store, opts) {
                       <div class="col-sm-3">
                         <div class="title">PERIOD</div>
                       </div>
-                      {type === 'dateRange' && (
-                        <>
-                          <div class="col-sm-4 visible-sm visible-lg">
-                            <div className="title">Start At</div>
-                          </div>
-                          <div class="col-sm- visible-lg visible-sm">
-                            <div className="title">End At</div>
-                          </div>
-                        </>
-                      )}
+                      {type === 'dateRange' &&
+                        entity !== 'monthlyInvoice' && (
+                          <>
+                            <div class="col-sm-4 visible-sm visible-lg">
+                              <div className="title">Start At</div>
+                            </div>
+                            <div class="col-sm- visible-lg visible-sm">
+                              <div className="title">End At</div>
+                            </div>
+                          </>
+                        )}
                     </div>
                     <div class="clearfix">
                       {entity === 'monthlyInvoice' || (
@@ -837,60 +838,61 @@ export default function Reports(store, opts) {
                           </div>
                         )}
 
-                      {type === 'dateRange' && (
-                        <>
-                          <div class="col-sm-4 col-xs-12">
-                            <div class="form-group">
-                              <Field
-                                name="startAt"
-                                dateFormat="DD MMM, YYYY"
-                                placeholder="Starts at"
-                                component={ReduxDatetime}
-                                timeFormat={false}
-                                isValidDate={validYear}
-                                closeOnSelect
-                              />
-                              {dateRangeData.withTime && (
+                      {type === 'dateRange' &&
+                        entity !== 'monthlyInvoice' && (
+                          <>
+                            <div class="col-sm-4 col-xs-12">
+                              <div class="form-group">
                                 <Field
-                                  name="startAtTime"
-                                  placeholder="Select Time"
+                                  name="startAt"
+                                  dateFormat="DD MMM, YYYY"
+                                  placeholder="Starts at"
                                   component={ReduxDatetime}
+                                  timeFormat={false}
+                                  isValidDate={validYear}
                                   closeOnSelect
-                                  dateFormat={false}
-                                  class="m-t"
                                 />
-                              )}
-                            </div>
-                          </div>
-                          <div
-                            class="col-sm-4 col-xs-12"
-                            style={{ marginRight: '0' }}
-                          >
-                            <div class="form-group">
-                              <Field
-                                name="endAt"
-                                dateFormat="DD MMM, YYYY"
-                                placeholder="Ends At"
-                                component={ReduxDatetime}
-                                timeFormat={false}
-                                isValidDate={isDateRangeEndAtValid(
-                                  dateRangeData.startAt
+                                {dateRangeData.withTime && (
+                                  <Field
+                                    name="startAtTime"
+                                    placeholder="Select Time"
+                                    component={ReduxDatetime}
+                                    closeOnSelect
+                                    dateFormat={false}
+                                    class="m-t"
+                                  />
                                 )}
-                                closeOnSelect
-                              />
-                              {dateRangeData.withTime && (
-                                <Field
-                                  name="endAtTime"
-                                  component={ReduxDatetime}
-                                  closeOnSelect
-                                  dateFormat={false}
-                                  class="m-t"
-                                />
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        </>
-                      )}
+                            <div
+                              class="col-sm-4 col-xs-12"
+                              style={{ marginRight: '0' }}
+                            >
+                              <div class="form-group">
+                                <Field
+                                  name="endAt"
+                                  dateFormat="DD MMM, YYYY"
+                                  placeholder="Ends At"
+                                  component={ReduxDatetime}
+                                  timeFormat={false}
+                                  isValidDate={isDateRangeEndAtValid(
+                                    dateRangeData.startAt
+                                  )}
+                                  closeOnSelect
+                                />
+                                {dateRangeData.withTime && (
+                                  <Field
+                                    name="endAtTime"
+                                    component={ReduxDatetime}
+                                    closeOnSelect
+                                    dateFormat={false}
+                                    class="m-t"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
                     </div>
                     <div class="clearfix">
                       <div className="col-sm-8 col-xs-12">
