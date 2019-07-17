@@ -66,10 +66,13 @@ class Processor extends Base\Core
 
     protected function tokenizeCredentials(string $element): string
     {
-        $request = [
-            'namespace' => self::CREDENTIALS_VAULT_NAMESPACE,
-            'secret'    => $element
-        ];
+        $request = $traceRequest =
+            [
+                'namespace' => self::CREDENTIALS_VAULT_NAMESPACE,
+                'secret'    => $element
+            ];
+
+        unset($traceRequest['secret']);
 
         try
         {
@@ -79,14 +82,14 @@ class Processor extends Base\Core
 
             $response = $cardVaultService->createVaultToken($request);
         }
-        catch (\Requests_Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace\Logger::CRITICAL,
                 TraceCode::CARD_VAULT_REQUEST_FAILED,
                 [
-                    'request' => $request,
+                    'request' => $traceRequest,
                     'channel' => Channel::RBL
                 ]);
 

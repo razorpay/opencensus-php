@@ -188,10 +188,8 @@ class Processor extends BankingAccount\Gateway\Processor
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR_ACTIVATION_AMOUNT_NON_ZERO,
-                [
-                    'balance' => $balance,
-                    'channel' => Balance\Channel::RBL
-                ]);
+                ['balance' => $balance, 'channel' => Balance\Channel::RBL]
+            );
         }
     }
 

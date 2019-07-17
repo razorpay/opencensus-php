@@ -264,6 +264,11 @@ class Core extends Base\Core
 
         if ($fundAccountId !== null)
         {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_FTS_MAPPING_ALREADY_PRESENT,
+                ['fts_id' => $fundAccountId, 'id'=> $bankingAccount->getId()]
+            );
+
             return $fundAccountId;
         }
 
@@ -308,12 +313,17 @@ class Core extends Base\Core
         if (empty($response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID]) === true)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED,
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED,
                 null,
                 ['id' => $bankingAccount->getId(), 'response' => $response],
                 'FTS fund Account Id could not stored, Please try again!'
             );
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_RESPONSE,
+            ['id' => $bankingAccount->getId(), 'response' => $response]
+        );
 
         return $response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID];
     }
@@ -426,6 +436,11 @@ class Core extends Base\Core
 
     public function createAccountMappingForFts(Entity $bankingAccount)
     {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_FTS_MAPPING_CREATION_REQUEST,
+            ['id' => $bankingAccount->getId()]
+        );
+
         // we do not want the merchant to get affected by failures in FTS service so handling
         // the same in try catch block
         try
@@ -458,23 +473,33 @@ class Core extends Base\Core
     {
         $retryCount = 0;
 
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_REQUEST,
+            ['id' => $id, 'fts_id' => $ftsAccountId]
+        );
+
+        /** @var FTS\CreateAccount $ftsService */
+        $ftsService = app('fts_create_account');
+
         while (true)
         {
             try
             {
-                $response = $this->app['fts_create_account']->createSourceAccount($id, $ftsAccountId, $content,
-                    $product, $channel);
+                $response = $ftsService->createSourceAccount(
+                                                    $id,
+                                                    $ftsAccountId,
+                                                    $content,
+                                                    $product,
+                                                    $channel);
 
                 return $this->checkSourceAccountResponseForError($response);
 
             }
             catch (RecordAlreadyExists $e)
             {
-                $this->trace->info(TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT,
-                    [
-                        'content' => $content,
-                        'channel' => $channel,
-                    ]);
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_ALREADY_PRESENT,
+                    ['channel' => $channel, 'id' => $id, 'fts_id' => $ftsAccountId]
+                );
 
                 return null;
             }
@@ -505,6 +530,11 @@ class Core extends Base\Core
         if (((isset($response[FTS\Constants::MESSAGE]) === true) and
             ($response[FTS\Constants::MESSAGE] === 'source account registered')))
         {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_RESPONSE,
+                ['response' => $response]
+            );
+
             return null;
         }
 
@@ -528,6 +558,8 @@ class Core extends Base\Core
      */
     protected function checkMerchantIsActivatedBeforeAccountActivation(Entity $bankingAccount, array $input)
     {
+        $this->redactSecrets($input);
+
         $this->trace->info(TraceCode::BANKING_ACCOUNT_ACTIVATION_REQUEST,
             [
                 'id'      => $bankingAccount->getId(),
@@ -545,9 +577,9 @@ class Core extends Base\Core
 
             if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
             {
-                throw new BadRequestValidationFailureException(
-                    'Operation not allowed, merchant is not L2 activated',
-                    null,
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCOUNT_ACTIVATION_NOT_PERMITTED,
+                    Entity::STATUS,
                     [
                         'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),
                         'banking_account'            => $bankingAccount->getId(),
@@ -578,5 +610,10 @@ class Core extends Base\Core
                 'Merchant credentials could not be stored, Please try again!'
             );
         }
+    }
+
+    protected function redactSecrets(array $input)
+    {
+        unset($input[Entity::PASSWORD]);
     }
 }
