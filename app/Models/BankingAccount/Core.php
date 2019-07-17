@@ -277,7 +277,6 @@ class Core extends Base\Core
                                                                                 Constants\Entity::BANKING_ACCOUNT,
                                                                                 'payout');
                 break;
-
             }
             catch(\Throwable $e)
             {

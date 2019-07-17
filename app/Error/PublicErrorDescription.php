@@ -842,4 +842,8 @@ class PublicErrorDescription
 
     // Instant refunds
     const BAD_REQUEST_INSTANT_REFUND_NOT_SUPPORTED                                  = 'Instant refund not supported for the payment';
+
+    // Banking Accounts
+    const BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT                           = 'Operation could not be completed. Please try again';
+    const BAD_REQUEST_ERROR_FUND_ACCOUNT_CREATION_FAILED                            = 'Operation could not be completed. Please try again';
 }

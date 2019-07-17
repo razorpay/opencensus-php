@@ -162,7 +162,6 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
         self::BANK_INTERNAL_STATUS,
-        self::USERNAME,
         self::REFERENCE1,
         self::ACCOUNT_TYPE,
         self::ACCOUNT_CURRENCY,
@@ -198,7 +197,7 @@ class Entity extends Base\PublicEntity
 
     public function setPassword(string $password)
     {
-        $this->setAttribute([self::PASSWORD], $password);
+        $this->setAttribute(self::PASSWORD, $password);
     }
 
     // -------------------------- Getters ------------------------------------ //
