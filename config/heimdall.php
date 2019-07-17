@@ -140,7 +140,11 @@ return [
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
             Permission::EDIT_IIN_RULE                       => '',
-            Permission::EDIT_IIN_RULE_BULK                  => '',
+            Permission::EDIT_IIN_RULE_BULK                  => [
+                'description' => 'Bulk Edit IIN Rule',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
             Permission::EDIT_ACTIVATE_MERCHANT              => [
                 'assignable' => true,
                 'workflow'   => true
@@ -365,6 +369,11 @@ return [
                 'description' => 'View Operations Reports',
                 'assignable'  => true,
             ],
+            Permission::PAYMENT_CAPTURE_BULK => [
+                'description' => 'Bulk Capture Payment',
+                'assignable'  => true,
+                'workflow'    => false,
+            ]
         ],
 
         PermissionCategory::SETTLEMENT => [
