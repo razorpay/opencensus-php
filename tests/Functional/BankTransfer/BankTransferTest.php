@@ -367,7 +367,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
 
         $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals(Refund\Status::INITIATED, $refund['status']);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertNotNull($refund['processed_at']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);

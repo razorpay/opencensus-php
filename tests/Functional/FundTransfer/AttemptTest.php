@@ -213,12 +213,16 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
+        $this->markTestSkipped('Yesbank dispatch via queue async flow');
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::YESBANK, 2, Attempt\Type::PAYOUT);
     }
 
     public function testPayoutFileCreationYesbankRtgsSuccess()
     {
+        $this->markTestSkipped('Yesbank dispatch via queue async flow');
+
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($now);
@@ -229,6 +233,8 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankRtgsFailed()
     {
+        $this->markTestSkipped('Yesbank dispatch via queue async flow');
+
         $channel = Channel::YESBANK;
 
         $purpose = Attempt\Purpose::SETTLEMENT;
@@ -269,6 +275,8 @@ class AttemptTest extends TestCase
 
     public function testYesbankRefundToCreditCard()
     {
+        $this->markTestSkipped('Yesbank dispatch via queue async flow');
+
         $channel = Channel::YESBANK;
 
         $purpose = Attempt\Purpose::REFUND;
@@ -318,6 +326,8 @@ class AttemptTest extends TestCase
 
     public function testYesbankRefundToInvalidCard()
     {
+        $this->markTestSkipped('Yesbank dispatch via queue async flow');
+        
         $channel = Channel::YESBANK;
 
         $purpose = Attempt\Purpose::REFUND;
