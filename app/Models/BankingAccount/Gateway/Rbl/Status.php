@@ -15,9 +15,11 @@ class Status
     const CLOSED         = 'closed';
     const CANCELLED      = 'cancelled';
 
+    //
     // RBL webhook wants the final status of processing from our end.
     // If the webhook is processed properly we send a Success status to them
     // else Failure Status is sent to them
+    //
     const SUCCESS           = 'Success';
     const FAILURE           = 'Failure';
 

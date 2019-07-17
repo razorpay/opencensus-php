@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -63,13 +64,10 @@ class Core extends Base\Core
         return $balance;
     }
 
-    public function createBalanceForCurrentAccount(Merchant\Entity $merchant,
-                                                   string $balanceType,
-                                                   array $input, string $mode)
+    public function createBalanceForCurrentAccount(Merchant\Entity $merchant, array $input, string $mode)
     {
-
         $content = [
-            Entity::TYPE     => $balanceType,
+            Entity::TYPE     => Product::BANKING,
             Entity::CURRENCY => Currency::INR,
         ];
 

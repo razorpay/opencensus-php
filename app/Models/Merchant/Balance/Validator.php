@@ -19,8 +19,7 @@ class Validator extends Base\Validator
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid type name: ' . $type);
+            throw new Exception\BadRequestValidationFailureException('Invalid type name: ' . $type);
         }
     }
 
@@ -28,8 +27,7 @@ class Validator extends Base\Validator
     {
         if (AccountType::exists($accType) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid account type:' . $accType);
+            throw new Exception\BadRequestValidationFailureException('Invalid account type:' . $accType);
         }
     }
 
@@ -37,8 +35,7 @@ class Validator extends Base\Validator
     {
         if (Channel::validateChannel($channel) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid account provider:' . $channel);
+            throw new Exception\BadRequestValidationFailureException('Invalid channel:' . $channel);
         }
     }
 }
