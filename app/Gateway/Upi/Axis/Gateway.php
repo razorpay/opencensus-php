@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use phpseclib\Crypt\RSA;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -1132,5 +1133,19 @@ class Gateway extends Base\Gateway
         }
 
         return [];
+    }
+
+    protected function getPaymentRemark(array $input)
+    {
+        if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $description = $input['payment']['description'];
+
+            $filteredDescription = Payment\Entity::getFilteredDescription($description);
+
+            return substr($filteredDescription, 0, 50);
+        }
+
+        return parent::getPaymentRemark($input);
     }
 }
