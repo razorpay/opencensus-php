@@ -252,7 +252,9 @@ class GatewayEmiFileTest extends TestCase
         $amountData = [58846,44894];
         $merchantNames = ['A WEIRD MERCH NT NAME  W TH SPECIAL CHAR'];
 
-        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames);
+        $cardNumbers = ['0004006660000086709'];
+
+        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers);
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
         {
@@ -334,7 +336,7 @@ class GatewayEmiFileTest extends TestCase
     }
 
     // One file would be encrypted and the other not encrypted
-    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [])
+    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [])
     {
         $files = $this->getDbEntities('file_store')->toArray();
 
@@ -352,16 +354,22 @@ class GatewayEmiFileTest extends TestCase
 
         $fileContent = $encryptor->decrypt($fileContent);
 
-        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames);
+        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers);
 
         $outputFile = $files[1];
 
         $fileContent = file_get_contents('storage/files/filestore/' . $outputFile['location']);
 
-        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, true);
+        // For the output files, the card numbers would be replaced with 0s
+        if (empty($cardNumbers) === false)
+        {
+            $cardNumbers = ['0000000000000000000'];
+        }
+
+        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, true);
     }
 
-    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $outputFile = false)
+    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $outputFile = false)
     {
         $fileRows = explode("\r\n", $fileContent);
 
@@ -369,6 +377,7 @@ class GatewayEmiFileTest extends TestCase
 
         $amounts = [];
         $names = [];
+        $cards = [];
 
         // Remove header
         unset($fileRows[0]);
@@ -377,9 +386,11 @@ class GatewayEmiFileTest extends TestCase
         foreach ($fileRows as $key => $row)
         {
             $amount = (int)substr($row, 325, 17);
-            $amounts[] = $amount;
 
+            $amounts[] = $amount;
             $names[] = substr($row, 166, 40);
+            $cards[] = substr($row, 57, 19);
+
             $this->assertEquals(450, strlen($row));
         }
 
@@ -398,6 +409,14 @@ class GatewayEmiFileTest extends TestCase
             $this->assertArraySelectiveEquals(
                 $merchantNames,
                 $names
+            );
+        }
+
+        if (empty($cardNumbers) !== true)
+        {
+            $this->assertArraySelectiveEquals(
+                $cardNumbers,
+                $cards
             );
         }
 
