@@ -410,6 +410,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->disableMethod('10000000000000', 'credit_card');
         $this->fixtures->merchant->disableMethod('10000000000000', 'debit_card');
+        $this->fixtures->merchant->disableMethod('10000000000000', 'prepaid_card');
         $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
 
         $this->expectException(\RZP\Exception\LogicException::class);

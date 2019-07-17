@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Rule;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Currency\Currency;
