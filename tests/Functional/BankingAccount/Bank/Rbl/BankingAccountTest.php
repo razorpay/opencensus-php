@@ -3,6 +3,8 @@
 use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Entity;
+
+use RZP\Models\BankingAccount\AccountType;
 use RZP\Mail\BankingAccount\NotifyStatusUpdate;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -46,6 +48,10 @@ class BankingAccountTest extends TestCase
 
             return $mail->hasTo('test@razorpay.com');
         });
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
     }
 
     public function testCreateBankingAccountTwiceForSameMerchant()

@@ -797,6 +797,18 @@ class PublicErrorDescription
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED                        = 'Cardless Emi credit limit of customer not approved';
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED                             = 'Cardless Emi credit limit of customer has expired';
 
+    const BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST                                  = 'User does not have an account with the selected provider';
+    const GATEWAY_ERROR_PAYLATER_INVALID_TOKEN                                      = 'Payment failed due to technical error. Please try again with different provider/method';
+    const BAD_REQUEST_PAYLATER_INVALID_MERCHANT_NAME                                = 'Merchant integration with the selected provider is incomplete. Please try again with different provider/method';
+    const BAD_REQUEST_PAYLATER_MINIMUM_AMOUNT_REQUIRED                              = 'Amount less than minimum amount required';
+    const BAD_REQUEST_PAYLATER_MAXIMUM_AMOUNT_LIMIT                                 = 'Amount more than the maximum amount limit';
+    const GATEWAY_ERROR_PAYLATER_PAYMENT_FAILED_PARTNER                             = 'Payment failed by the provider';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXHAUSTED                               = 'Credit limit exhausted';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_ACTIVATED                           = 'Customer not activated';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_NOT_APPROVED                            = 'Credit limit of customer not activated';
+    const BAD_REQUEST_PAYLATER_CREDIT_LIMIT_EXPIRED                                 = 'Customer credit limit expired.';
+
+
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
     const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';
     const BAD_REQUEST_EXPIRED_VPA                                                   = 'Payment failed because VPA is marked as Expired';

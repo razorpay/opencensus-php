@@ -693,6 +693,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::DEBIT);
     }
 
+    public function isPrepaid()
+    {
+        return ($this->getType() === Type::PREPAID);
+    }
+
     public function isRecurringSupported()
     {
         $iin = $this->iinRelation;

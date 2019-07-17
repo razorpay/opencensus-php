@@ -12,9 +12,6 @@ class Base extends FundAccountPayout\Base
     {
         $this->setChannel($payout);
 
-        // TODO: For direct, we need to pass FTA Account ID for the source.
-        // Changes to be done after FTA and account module changes are done.
-
         $this->createFundTransferAttempt($payout, $ftaAccount);
     }
 }

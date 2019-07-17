@@ -32,6 +32,13 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->contact;
     }
 
+    public function fetch(string $id, array $input): array
+    {
+        $contact =  $this->repo->contact->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        return $contact->toArrayPublic();
+    }
+
     public function getTypes(): array
     {
         return (new Type)->getAll($this->merchant);

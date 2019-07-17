@@ -79,7 +79,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
         if (strtolower($onusIndicator) === self::ONUS_INDICATOR_VALUE)
         {
-           return $rrn;
+            return $rrn;
         }
 
         return null;
