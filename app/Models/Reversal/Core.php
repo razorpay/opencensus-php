@@ -427,7 +427,7 @@ class Core extends Base\Core
         $balance     = $reversal->balance;
         $type        = optional($balance)->getType();
         $accountType = optional($balance)->getAccountType();
-        $channel     = optional($balance)->getAccountProvider();
+        $channel     = optional($balance)->getChannel();
 
         //
         // For direct(current) accounts, there are some channels for which we don't create txns
