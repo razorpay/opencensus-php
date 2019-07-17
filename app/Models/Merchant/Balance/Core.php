@@ -47,11 +47,7 @@ class Core extends Base\Core
      */
     public function createOrFetchBalance(Merchant\Entity $merchant, string $balanceType, $mode = null): Entity
     {
-        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-            $merchant->getId(),
-            $balanceType,
-            Merchant\Balance\AccountType::SHARED,
-            $mode);
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType, $mode);
 
         if ($balance === null)
         {
