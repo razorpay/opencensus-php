@@ -63,15 +63,11 @@ class Initiator extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, self::FTA_PURPOSE);
 
-        $purpose ='';
-
         if ($channel === Channel::YESBANK)
         {
             if ((isset($input[Entity::PURPOSE]) === true) and (Purpose::isValid($input[Entity::PURPOSE])))
             {
                 $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE]);
-
-                $purpose = $input[Entity::PURPOSE];
             }
             else
             {
