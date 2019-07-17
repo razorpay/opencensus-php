@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use Queue;
 use Config;
 use Illuminate\Support\Facades\Artisan;
 
@@ -505,6 +506,8 @@ class PayoutTest extends TestCase
 
     public function testRetryPayout(): array
     {
+        Queue::fake();
+
         $payout = $this->testCreatePayout();
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -552,6 +555,8 @@ class PayoutTest extends TestCase
 
     public function testRetryMerchantOnDemandPayout()
     {
+        Queue::fake();
+
         $payout = $this->testCreateMerchantPayoutOnDemand();
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
