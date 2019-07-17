@@ -2,7 +2,7 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
-
+import { Link } from 'react-router-dom';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InputField from 'rzp/ui/Forms/InputField';
@@ -364,6 +364,16 @@ export default class RefundModal extends Component {
                 <span class="ir-help">
                   <i class="i i-help" />
                 </span>
+                {isInstantDisabled ? (
+                  <div class="low-funds">
+                    Your account does not have sufficient balance to instantly
+                    refund this payment.
+                    <Link to={'/addfunds'} target="_blank">
+                      Add Funds
+                      <i class="i i-external-link" />
+                    </Link>
+                  </div>
+                ) : null}
               </div>
             )}
             <div class="Modal__actions">
