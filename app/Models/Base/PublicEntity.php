@@ -94,6 +94,14 @@ class PublicEntity extends UniqueIdEntity
     protected $publicCustomer      = [];
 
     /**
+     * This is used to expose only specific fields when `toArrayPublic`
+     * is being called from public auth.
+     *
+     * @var array
+     */
+    protected $publicAuth = [];
+
+    /**
      * This is used for displaying payments for certain
      * heimdall orgs' admins that use heimdall internally
      * in a restricted fashion. They see a limited subset
@@ -400,7 +408,7 @@ class PublicEntity extends UniqueIdEntity
 
     public function arrangePublicAttributes(array $array)
     {
-        $publicArray = array();
+        $publicArray = [];
 
         foreach ($this->public as $attr)
         {
@@ -418,6 +426,12 @@ class PublicEntity extends UniqueIdEntity
             {
                 unset($publicArray[$attr]);
             }
+        }
+
+        if (($app['basicauth']->isPublicAuth() === true) and
+            (empty($this->publicAuth) === false))
+        {
+            $publicArray = array_only($publicArray, $this->publicAuth);
         }
 
         return $publicArray;

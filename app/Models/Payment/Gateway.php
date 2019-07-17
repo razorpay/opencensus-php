@@ -308,6 +308,9 @@ class Gateway
         IFSC::IOBA,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
+        IFSC::RATN,
+        IFSC::MAHB,
+        IFSC::DEUT,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [

@@ -99,7 +99,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
     }
 
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         if (empty($row[self::COLUMN_PAYMENT_AMOUNT]) === true)
         {

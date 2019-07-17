@@ -69,6 +69,8 @@ class MerchantTest extends TestCase
 
         $this->setupMockDns();
 
+        $this->fixtures->create('org:hdfc_org');
+
         $this->app->make(Factory::class)->load($factoryPath);
     }
 
@@ -4266,6 +4268,40 @@ class MerchantTest extends TestCase
     public function testGetOrgDetails()
     {
         $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * When international activation flow is already set then use same
+     * instead of recalculating international activation flow from business category and subcategory again
+     */
+    public function testInternationalEnableWhenInternationalActivationFlowIsAlreadySet()
+    {
+
+        $merchantData = [
+            'international'    => 0,
+            'activated'        => 1,
+            'convert_currency' => null,
+            'website'          => 'abc@gmail.com'
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        //
+        // If international activation flow is recalculated from business category and subcategory
+        // then it points to blacklist category
+        //
+        $merchantDetailData = [
+            'business_category'             => 'healthcare',
+            'business_subcategory'          => 'pharmacy',
+            'international_activation_flow' => 'whitelist',
+            'merchant_id'                   => $merchant['id']
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
     }

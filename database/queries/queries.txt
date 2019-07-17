@@ -5031,6 +5031,9 @@ ALTER TABLE virtual_accounts
     ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
     ADD INDEX virtual_accounts_close_by_index (close_by);
 
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `prepaid_card` TINYINT(1) NOT NULL DEFAULT 1 AFTER `debit_card`;
+
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);

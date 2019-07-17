@@ -15,7 +15,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_REFUND_ID          = 'unique_bill_id';
-    const COLUMN_REFUND_AMOUNT      = 'bill_amount_in_rs';
     const COLUMN_SETTLED_AT         = 'date_of_settlement';
     const SETTLEMENT_DATE_FORMAT    = 'Y-m-d H:i:s.u';
 
