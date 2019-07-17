@@ -932,7 +932,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->reconcileEntitiesForChannel($channel);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
         $refund = $this->getLastEntity('refund', true);
 

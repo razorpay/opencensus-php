@@ -48,7 +48,7 @@ class FundAccountValidationTest extends TestCase
         $fav         = $this->getLastEntity('fund_account_validation', true);
 
         // Queue will be processed by now.
-        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('created', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('active', $fav['results']['account_status']);
         $this->assertEquals('10000000000000', $fav['balance_id']);

@@ -18,7 +18,7 @@ trait FundAccountValidationTrait
 
         // Queue will be processed by now.
         $fav = $this->getLastEntity('fund_account_validation', true);
-        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('created', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('active', $fav['results']['account_status']);
         // Fee and tax will be calculated at the time fund account validation is created.
