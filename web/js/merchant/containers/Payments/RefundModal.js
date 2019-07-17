@@ -351,19 +351,21 @@ export default class RefundModal extends Component {
               />
             </div>
             {refunds.isInstantRefund && (
-              <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
-                <label>
-                  <Field
-                    name="instant_refund"
-                    component="input"
-                    type="checkbox"
-                    disabled={isInstantDisabled}
-                  />
-                  <b>Refund Instantly</b>
-                </label>
-                <span class="ir-help">
-                  <i class="i i-help" />
-                </span>
+              <div>
+                <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
+                  <label>
+                    <Field
+                      name="instant_refund"
+                      component="input"
+                      type="checkbox"
+                      disabled={isInstantDisabled}
+                    />
+                    <b>Refund Instantly</b>
+                  </label>
+                  <span class="ir-help">
+                    <i class="i i-help" />
+                  </span>
+                </div>
                 {isInstantDisabled ? (
                   <div class="low-funds">
                     Your account does not have sufficient balance to instantly
