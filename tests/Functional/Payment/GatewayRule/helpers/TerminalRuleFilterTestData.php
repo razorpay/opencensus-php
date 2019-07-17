@@ -1062,7 +1062,8 @@ return [
             '1000HdfcShared',
         ]
     ],
-    'testMerchantCategoryFilter' => [
+
+    'testMerchantCategoryFilterReject' => [
         'payment_options' => [
             'method' => Method::CARD,
         ],
@@ -1098,6 +1099,46 @@ return [
         ],
         'expected_terminal_ids' => [
             '1000HdfcShared',
+        ]
+    ],
+
+    'testMerchantCategoryFilterDontReject' => [
+        'payment_options' => [
+            'method' => Method::CARD,
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
+                'gateway'     => 'hdfc',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
+                'gateway'     => 'axis_migs',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'        => Method::CARD,
+                'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                'step'          => 'authorization',
+                'gateway'       => 'axis_migs',
+                'type'          => 'filter',
+                'filter_type'   => 'reject',
+                'group'         => 'category_filter',
+                'category'     =>  '1234' // assume 1234 is a blacklisted MCC for axis
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '1000HdfcShared',
+            '1000AxisMigsTl',
         ]
     ],
 
