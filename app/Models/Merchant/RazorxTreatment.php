@@ -25,9 +25,6 @@ final class RazorxTreatment
     // Razorx treatment constant for which batch validation needs to skip or not.
     const BATCH_SERVICE_SKIP_VALIDATION = 'batch_service_skip_validation';
 
-    // Razorx treatment constant whether batchService be called or not.
-    const BATCH_SERVICE_BE_CALLED = 'batch_service_be_called';
-
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
