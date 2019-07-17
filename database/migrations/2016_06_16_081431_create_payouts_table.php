@@ -107,8 +107,7 @@ class CreatePayoutsTable extends Migration
                   ->default(1);
 
             $table->string(Payout::UTR)
-                  ->nullable()
-                  ->unique();
+                  ->nullable();
 
             $table->string(Payout::FAILURE_REASON)
                   ->nullable();

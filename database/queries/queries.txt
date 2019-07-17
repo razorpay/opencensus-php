@@ -5135,3 +5135,7 @@ ALTER TABLE banking_accounts
 ALTER TABLE reversals
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER channel,
     ADD INDEX reversals_utr_index (utr);
+
+ALTER TABLE external
+    ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
+    ADD INDEX external_utr_index (utr);

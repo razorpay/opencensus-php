@@ -170,15 +170,7 @@ class Core extends Base\Core
         return $this->reverseForTransferAndCustomerRefund($transfer, $input, $merchant->parent, $merchant);
     }
 
-    /**
-     * No return type hint since there are cases in transaction processor
-     * where we don't create reversal transaction. For example, for Direct-RBL.
-     *
-     * @param Entity $reversal
-     *
-     * @return mixed
-     */
-    public function createTransactionFromPayoutReversal(Entity $reversal)
+    public function createTransactionFromPayoutReversal(Entity $reversal): Entity
     {
         return $this->repo->transaction(function() use ($reversal)
         {

@@ -36,6 +36,9 @@ class CreateExternalTable extends Migration
 
             $table->string(Entity::BANK_REFERENCE_NUMBER, 255);
 
+            $table->string(Entity::UTR, 255)
+                  ->nullable();
+
             $table->string(Entity::TYPE, 255);
 
             $table->bigInteger(Entity::AMOUNT)

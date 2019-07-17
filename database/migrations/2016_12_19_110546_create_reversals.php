@@ -53,13 +53,13 @@ class CreateReversals extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
-            // Todo: Remove null-able after code deploy and backfilling
+            // TODO: Remove null-able after code deploy and backfilling
             $table->string(Entity::CHANNEL, 255)
                   ->nullable();
 
+            // TODO: Figure out uniqueness stuff
             $table->string(Entity::UTR)
-                  ->nullable()
-                  ->unique();
+                  ->nullable();
 
             $table->text(Entity::NOTES);
 
