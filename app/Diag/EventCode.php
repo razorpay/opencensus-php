@@ -72,6 +72,11 @@ class EventCode
         'name'  => 'payment.terminal.selection.processed'
     ];
 
+    const PAYMENT_SORTED_TERMINAL_RESPONSE_RECEIVED    = [
+        'group' => 'internal_checks',
+        'name'  => 'payment.sorted.terminal.response.received'
+    ];
+
     const PAYMENT_CREATION_PROCESSED                    = [
         'group' => 'payment_creation',
         'name'  => 'payment.creation.processed'

@@ -7,6 +7,7 @@ use Cache;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
@@ -62,12 +63,6 @@ class Selector extends Base\Core
 
         // Boosts specific auth type terminals over 3ds terminals
         Sorters\AuthTypeSorter::class,
-
-        // Sorting based on older failed attempts
-        Sorters\FailedTerminalsSorter::class,
-
-        // Sorting based on gateway downtimes
-        Sorters\GatewayDowntimeSorter::class,
 
         // Boosts terminals with gateway tokens over fallback terminal (without gateway tokens)
         // No fallback sorting. We are not giving priority
@@ -153,6 +148,28 @@ class Selector extends Base\Core
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
 
+        $sortedTerminalsFromSmartRouting = $this->sendParametersToSmartRoutingService($payment, $this->input['merchant'],
+            $allTerminals, $sortedTerminals, $filteredTerminals);
+
+        $sortedTerminals = json_decode($sortedTerminalsFromSmartRouting);
+
+        $terminalIds = [];
+
+        if (count($sortedTerminals) > 0) {
+
+            foreach ($sortedTerminals as $terminal) {
+                array_push($terminalIds, $terminal->id);
+            };
+
+        }
+
+        // sending the event to data link layer
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_SORTED_TERMINAL_RESPONSE_RECEIVED, $payment, null,
+            [
+                'sorted_terminalIds' => $terminalIds,
+            ]
+        );
+
         if (empty($sortedTerminals) === true)
         {
             if (($this->isTestMode() === true) or
@@ -227,8 +244,6 @@ class Selector extends Base\Core
             }
         }
 
-        $this->sendParametersToSmartRoutingService($this->input['payment'], $this->input['merchant'],
-                                                    $allTerminals, $sortedTerminals, $filteredTerminals);
         return $sortedTerminals;
     }
 
@@ -474,7 +489,8 @@ class Selector extends Base\Core
                 'chance'              => $this->options->getChance(),
             ];
 
-            $this->app->smartRouting->sendPaymentData($data);
+            $response = $this->app->smartRouting->sendPaymentData($data);
+            s($response);
         }
         catch (\Throwable $e)
         {
@@ -484,6 +500,8 @@ class Selector extends Base\Core
                     'error'     => $e->getMessage(),
                 ]);
         }
+
+        return $response;
     }
 
     protected function shouldHitRoutingService(string $merchantId)
