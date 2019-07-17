@@ -939,12 +939,12 @@ return [
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
-                'gateway'                   => 'upi_axis',
+                'gateway'                   => 'upi_airtel',
                 'gateway_merchant_id'       => '12345',
                 'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => 'random password',
                 'upi'                       => '1',
                 'tpv'                       => '2',
-                'vpa'                       => 'razorpay@axis',
                 'type'                      => [
                     'non_recurring'                    => '1',
                     'direct_settlement_without_refund' => '1',
