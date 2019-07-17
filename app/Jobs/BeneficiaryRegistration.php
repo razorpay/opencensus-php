@@ -5,7 +5,6 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception\LogicException;
-use RZP\Models\BankAccount\Type;
 use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Beneficiary;

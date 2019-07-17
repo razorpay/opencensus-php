@@ -29,6 +29,8 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Beneficiary extends Base\Core
 {
+    const BENEFICIARY_CACHE_KEY_TTL = 300;
+
     public function register(array $input, string $channel): array
     {
         (new Validator)->validateInput('merchant_beneficiary_register', $input);
@@ -73,20 +75,20 @@ class Beneficiary extends Base\Core
      *
      * @param Entity $bankAccount
      * @param string $channel
-     * @return bool
      */
     public function dispatchBankAccountForBeneficiaryRegistration(Entity $bankAccount, string $channel)
     {
-        $cacheKey = 'beneficiary_registration:'.$bankAccount->getId();
+        $cacheKey = ConfigKey::BENEFICIARY_REGISTRATION . $bankAccount->getId();
 
         try
         {
+            // Return if Already dispatched and in process.
             if (Cache::has($cacheKey) === true)
             {
                 return ;
             }
 
-            Cache::put($cacheKey, 'in_progress', 300);
+            Cache::put($cacheKey, 'in_progress', self::BENEFICIARY_CACHE_KEY_TTL);
 
             BeneficiaryRegistration::dispatch($this->mode, $channel, $bankAccount->getId());
 
@@ -114,18 +116,26 @@ class Beneficiary extends Base\Core
         }
     }
 
+    /**
+     * Push the bank account id to the queue along with the channel on which bene verification
+     * has to be performed. Also suppresses error which might happen because of queue
+     *
+     * @param Entity $bankAccount
+     * @param string $channel
+     */
     public function dispatchBankAccountForBeneficiaryVerification(Entity $bankAccount, string $channel)
     {
-        $cacheKey = 'beneficiary_verification:'.$bankAccount->getId();
+        $cacheKey = ConfigKey::BENEFICIARY_VERIFICATION . $bankAccount->getId();
 
         try
         {
+            // Return if Already dispatched and in process.
             if (Cache::has($cacheKey) === true)
             {
                 return ;
             }
 
-            Cache::put($cacheKey, 'in_progress', 300);
+            Cache::put($cacheKey, 'in_progress', self::BENEFICIARY_CACHE_KEY_TTL);
 
             BeneficiaryVerification::dispatch($this->mode, $channel, $bankAccount->getId());
 
@@ -213,6 +223,14 @@ class Beneficiary extends Base\Core
         return $response;
     }
 
+    /**
+     * Invokes the respective method in Beneficary Class
+     * for the channel and returns response
+     * @param PublicCollection $bankAccounts
+     * @param string $channel
+     * @param array $input
+     * @return array
+     */
     public function verifyBeneficiary(
         Base\PublicCollection $bankAccounts,
         string $channel,
@@ -463,6 +481,13 @@ class Beneficiary extends Base\Core
         return false;
     }
 
+    /**
+     * Get Nodal Beneficiary Status For Bank Account
+     *
+     * @param $bankAccount
+     * @param $channel
+     * @return |null
+     */
     public function getBeneficiaryStatus($bankAccount, $channel)
     {
         $nodalBeneficiary = $this->repo
@@ -471,6 +496,7 @@ class Beneficiary extends Base\Core
                                      $bankAccount->getId(),
                                      $channel
                             );
+
         if (empty($nodalBeneficiary) === true)
         {
             return null;
@@ -530,7 +556,7 @@ class Beneficiary extends Base\Core
      */
     public function removeBeneficiaryRegistrationCacheKey($bankAccountId)
     {
-        $cacheKey = $cacheKey = 'beneficiary_registration:' . $bankAccountId;
+        $cacheKey = ConfigKey::BENEFICIARY_REGISTRATION . $bankAccountId;
 
         $cacheValue = Cache::pull($cacheKey);
 
@@ -550,7 +576,7 @@ class Beneficiary extends Base\Core
      */
     public function removeBeneficiaryVerificationCacheKey($bankAccountId)
     {
-        $cacheKey = $cacheKey = 'beneficiary_verification:' . $bankAccountId;
+        $cacheKey = ConfigKey::BENEFICIARY_VERIFICATION . $bankAccountId;
 
         $cacheValue = Cache::pull($cacheKey);
 

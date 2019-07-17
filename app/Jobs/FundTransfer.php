@@ -184,18 +184,21 @@ class FundTransfer extends Job
         // Checks if registration is required based on product and account type
         $isBeneRegistrationRequired = $fta->isBeneRegistrationRequired();
 
-        if ($isBeneRegistrationRequired === true) {
+        if ($isBeneRegistrationRequired === true)
+        {
             $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($bankAccount,
                 $channel);
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED and
-                $beneficiaryStatus !== BeneficiaryStatus::REGISTERED) {
+                $beneficiaryStatus !== BeneficiaryStatus::REGISTERED)
+            {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
 
                 return $this->checkRetryOrDelete($data);
             }
 
-            if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED) {
+            if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED)
+            {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
 
                 return $this->checkRetryOrDelete($data);
