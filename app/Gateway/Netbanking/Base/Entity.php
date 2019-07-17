@@ -226,6 +226,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getClientCode()
+    {
+        return $this->getAttribute(self::CLIENT_CODE);
+    }
+
     public function getSIToken()
     {
         return $this->getAttribute(self::SI_TOKEN);

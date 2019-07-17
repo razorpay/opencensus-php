@@ -2427,7 +2427,7 @@ final class Route
         'org_get_self'                             => '*',
         'payment_authorize_time_out'               => '*',
         'payment_auto_capture_email'               => '*',
-        'payment_bulk_capture'                     => '*',
+        'payment_bulk_capture'                     => Permission::PAYMENT_CAPTURE_BULK,
         'payment_capture_gateway_manual'           => '*',
         'payment_capture_verify'                   => '*',
         'payment_fix_authorize_at'                 => '*',

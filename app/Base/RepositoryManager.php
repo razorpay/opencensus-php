@@ -254,7 +254,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         }
         else
         {
-            $result = $this->db->transaction($callback);
+            $result = $this->db->transaction($callback, ...$params);
         }
 
         return $result;
