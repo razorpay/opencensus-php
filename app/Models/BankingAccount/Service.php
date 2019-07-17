@@ -45,7 +45,6 @@ class Service extends Base\Service
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
-
         $channel = $bankingAccount->getChannel();
 
         $this->trace->info(
