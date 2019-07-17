@@ -4,6 +4,7 @@ import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 
 import ShowWhen from 'merchant/components/ShowWhen';
+import Collapsible from 'merchant/components/Collapsible';
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
@@ -386,6 +387,24 @@ export default class ActivationWizard extends React.Component {
 
     const content = FORM_TABS.map((field, i) => {
       if (Array.isArray(field)) {
+        if (field[0].compressed) {
+          return (
+            <Collapsible
+              title={collapsibleOpen => (
+                <span class="text-primary">
+                  {collapsibleOpen ? 'Hide' : 'Show'} previously filled details
+                </span>
+              )}
+              childrenPosition="top"
+              class="CollapsibleFields"
+            >
+              <Input.Group key={i}>
+                {field.slice(1).map(ActivationField, this)}
+              </Input.Group>
+            </Collapsible>
+          );
+        }
+
         return (
           <Input.Group key={i}>{field.map(ActivationField, this)}</Input.Group>
         );
