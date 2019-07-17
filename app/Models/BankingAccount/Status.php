@@ -27,7 +27,7 @@ class Status
       self::INITIATED,
       self::PROCESSED,
       self::CANCELLED,
-      self::PROCESSED,
+      self::PROCESSING,
       self::UNSERVICEABLE,
     ];
 
