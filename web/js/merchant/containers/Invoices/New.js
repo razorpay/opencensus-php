@@ -167,8 +167,6 @@ export default class InvoicesNewContainer extends Component {
     return this.props
       .fetchInvoice(invoiceId)
       .then(data => {
-        console.log('DATA..', data);
-
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
 
         // If null or is before current time
@@ -179,7 +177,7 @@ export default class InvoicesNewContainer extends Component {
         }
 
         // Resetting values to initial state
-        data.draft = '0'; // Not sure where it's being consumed but re-initializing same as redux form
+        // data.draft = '0'; // Not sure where it's being consumed but re-initializing same as redux form
         data.date = Math.ceil(new Date().getTime() / 1000); // Overriding invoice.date to initial date in redux form
         data.expire_by = expire_by;
         data.id = '';
@@ -189,8 +187,6 @@ export default class InvoicesNewContainer extends Component {
         return data;
       })
       .catch(err => {
-        console.log('ERR..', err);
-
         this.props.showNotification({
           type: 'error',
           message: err,
@@ -262,7 +258,7 @@ export default class InvoicesNewContainer extends Component {
     const nextSearchQuery = getURLQueryParams(nextProps.location.search);
 
     if (curSearchQuery.duplicate_id !== nextSearchQuery.duplicate_id) {
-      this.initInvoicePage();
+      this.initInvoicePage(nextProps);
     }
   }
 
@@ -270,11 +266,12 @@ export default class InvoicesNewContainer extends Component {
     this.initInvoicePage();
   }
 
-  initInvoicePage() {
+  initInvoicePage(props) {
     let promises = [];
+    props = props || this.props;
 
-    let invoiceId = this.props.match.params.id;
-    const searchQuery = getURLQueryParams(this.props.location.search);
+    let invoiceId = props.match.params.id;
+    const searchQuery = getURLQueryParams(props.location.search);
 
     if (invoiceId) {
       promises.push(
@@ -292,9 +289,9 @@ export default class InvoicesNewContainer extends Component {
     } else if (searchQuery.duplicate_id) {
       promises.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
     } else {
-      this.props.initializeInvoice();
+      props.initializeInvoice();
 
-      if (this.props.session.user.isInttCurrenciesEnabled) {
+      if (props.session.user.isInttCurrenciesEnabled) {
         this.openInvoiceCurrencyChangeModal({
           showCross: false,
           currency: 'INR',
@@ -303,13 +300,13 @@ export default class InvoicesNewContainer extends Component {
     }
 
     promises = [
-      this.props.fetchCustomersForAutocomplete(),
-      this.props.fetchItemsForAutocomplete({
+      props.fetchCustomersForAutocomplete(),
+      props.fetchItemsForAutocomplete({
         type: 'invoice',
         'expand[]': 'tax',
       }),
-      this.props.fetchStates(),
-      this.props.fetchGSTTaxes(),
+      props.fetchStates(),
+      props.fetchGSTTaxes(),
       ...promises,
     ];
 
@@ -361,37 +358,7 @@ export default class InvoicesNewContainer extends Component {
 
     if (this.props.match.params.id !== invoiceId) {
       this.props.closeModal();
-
-      if (invoiceId) {
-        this.setState({
-          isLoading: true,
-        });
-
-        this.props
-          .fetchInvoice(nextProps.match.params.id)
-          .then(invoice => {
-            this.setState({
-              isLoading: false,
-              invoiceCurrency: invoice.currency || 'INR',
-            });
-
-            if (this.isPaymentLink(invoice)) {
-              return;
-            }
-          })
-          .catch(({ errors }) => {
-            this.props.showNotification({
-              type: 'error',
-              message: errors,
-            });
-          });
-      } else {
-        this.props.initializeInvoice();
-        this.props.initialize(this.props.initialValues);
-        if (this.props.session.user.isInttCurrenciesEnabled) {
-          this.openInvoiceCurrencyChangeModal({ showCross: false });
-        }
-      }
+      this.initInvoicePage(nextProps);
     }
   }
 
@@ -1566,6 +1533,20 @@ export default class InvoicesNewContainer extends Component {
 
     const showGstn = invoiceCurrency === 'INR';
 
+    const duplicateInvoiceButton = this.props.invoice.id && (
+      <NavLink
+        class="btn btn-default btn-block btn-lg"
+        to={`/invoices/new?duplicate_id=${invoice.id}`}
+      >
+        <div class="row inv__optiongroupbutton">
+          <div class="col-xs-4">
+            <i class="i i-copy" />
+          </div>
+          <div class="col-xs-8">Duplicate Invoice</div>
+        </div>
+      </NavLink>
+    );
+
     return (
       <div class="react-root">
         {this.state.isLoading ? (
@@ -2243,19 +2224,7 @@ export default class InvoicesNewContainer extends Component {
                               </div>
                             </AsyncButton>
                           )}
-                          {this.props.invoice.id && (
-                            <NavLink
-                              class="btn btn-default btn-block btn-lg"
-                              to={`/invoices/new?duplicate_id=${invoice.id}`}
-                            >
-                              <div class="row inv__optiongroupbutton">
-                                <div class="col-xs-4">
-                                  <i class="i i-copy" />
-                                </div>
-                                <div class="col-xs-8">Duplicate Invoice</div>
-                              </div>
-                            </NavLink>
-                          )}
+                          {duplicateInvoiceButton}
                           {(isNew || isDraft) && (
                             <button
                               type="button"
@@ -2406,6 +2375,18 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                       </div>
                     )}
+
+                    <ShowWhen
+                      additionalCondition={user =>
+                        locked && user.isAllowedEdit('invoices')
+                      }
+                    >
+                      <div className="inv__cta">
+                        <div className="btn-group-vertical">
+                          {duplicateInvoiceButton}
+                        </div>
+                      </div>
+                    </ShowWhen>
 
                     <InvoiceInfo invoice={invoice} />
                     <InvoiceNotes
