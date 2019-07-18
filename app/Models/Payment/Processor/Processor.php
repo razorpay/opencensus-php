@@ -1193,9 +1193,20 @@ class Processor
 
         $validator->validateInput('transfer', $input);
 
+        $merchantId = $payment->getMerchantId();
+
+        $result = app('razorx')->getTreatment($merchantId, 'transfer_deadlock_retry', $this->mode);
+
+        $deadLockRetryAttempts = 1;
+
+        if (strtolower($result) === 'on')
+        {
+            $deadLockRetryAttempts = 2;
+        }
+
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $input)
+            function() use ($payment, $input, $deadLockRetryAttempts)
             {
                 $this->repo->reload($payment);
 
@@ -1211,7 +1222,7 @@ class Processor
                         ['transfer_ids' => $transfers->getIds()]);
 
                     return $transfers;
-                });
+                }, $deadLockRetryAttempts);
             });
     }
 
@@ -1715,7 +1726,6 @@ class Processor
 
             $gatewayDowntimeError = true;
 
-
             throw $ex;
         }
         finally
@@ -1754,7 +1764,6 @@ class Processor
             Action::AUTHORIZE,
             Action::CALLBACK
         ];
-
 
         return in_array($action, $gatewayDowntimeActions, true);
     }
@@ -2054,6 +2063,15 @@ class Processor
         $this->repo->saveOrFail($this->order);
 
         $payment->order()->associate($this->order);
+
+        //
+        // FIXME: Hack for reliance AMC, moving order receipt to payment
+        // description
+        //
+        if ($payment->getMerchantId() === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $payment->setDescription($this->order->getReceipt());
+        }
 
         $orderNotes = $this->order->getNotes()->toArray();
 

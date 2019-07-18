@@ -1487,6 +1487,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const VERIFY_ENROLLMENT_RESPONSE                            = 'VERIFY_ENROLLMENT_RESPONSE';
     const GATEWAY_PARES_RESPONSE                                = 'GATEWAY_PARES_RESPONSE';
+    const GATEWAY_RAW_PARES_RESPONSE                            = 'GATEWAY_RAW_PARES_RESPONSE';
 
     // Trace code for \Models\Settings
     const SETTINGS_UPSERT_REQUEST                               = 'SETTINGS_UPSERT_REQUEST';
@@ -1904,7 +1905,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_STATEMENT_SAVE                        = 'BANKING_ACCOUNT_STATEMENT_SAVE';
     const BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA            = 'BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA';
     const BANKING_ACCOUNT_STATEMENT_SAVE_SUMMARY                = 'BANKING_ACCOUNT_STATEMENT_SAVE_SUMMARY';
-
+    const BANKING_ACCOUNT_STATEMENT_STALE_RESPONSE              = 'BANKING_ACCOUNT_STATEMENT_STALE_RESPONSE';
 
     // External
     const EXTERNAL_TXN_INPUT_DATA                               = 'EXTERNAL_TXN_INPUT_DATA';

@@ -48,15 +48,9 @@ abstract class Beneficiary extends BaseCore
      *                         'local_file_path'
      *                         'file_name'
      */
-    public function verify(PublicCollection $bankAccounts, array $input = []): array
+    public function verify(PublicCollection $bankAccounts): array
     {
         $response = $this->verifyBeneficiary($bankAccounts);
-
-        $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
-
-        $mailData = array_merge($response, [BankAccount::RECIPIENT_EMAILS => $recipientEmails]);
-
-        $this->sendEmail($mailData);
 
         return $response;
     }

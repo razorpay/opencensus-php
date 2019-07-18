@@ -450,7 +450,9 @@ class Server extends Base\Mock\Server
 
         $res = array();
 
-        if ($type === 'debit')
+        // Debit and prepaid cards are "ENROLLED" cards and we're returning the enrolled response.
+        if (($type === 'debit') or
+            ($type === 'prepaid'))
         {
             $res = $this->getResponseParamsForEnrollDebit();
         }

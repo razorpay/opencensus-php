@@ -15,7 +15,6 @@ class Fetch extends BaseFetch
             Entity::TRANSACTION_ID          => 'sometimes|alpha_num|size:14',
             Entity::MERCHANT_ID             => 'sometimes|alpha_num|size:14',
             Entity::SOURCE                  => 'sometimes|string|min:14',
-            Entity::RECIPIENT               => 'sometimes|string|min:14'
         ],
     ];
 

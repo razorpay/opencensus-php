@@ -29,74 +29,13 @@ class Beneficiary extends ApiProcessor
      */
     public function process(PublicCollection $bankAccounts, $action)
     {
-        if ($action === 'VERIFY')
+        if ($action === Constants::VERIFY_BENE_FLAG)
         {
             $this->processVerification($bankAccounts);
         }
         else
         {
-            $this->count = $bankAccounts->count();
-
-            // TODO: Figure out how to do beneficiary registration on two different nodal accounts of the same channel!
-            $request = new BeneficiaryRequest;
-
-            foreach ($bankAccounts as $bankAccount) {
-                try {
-                    $this->trace->info(
-                        TraceCode::BENEFICIARY_REGISTER_BANK_ACCOUNT,
-                        [
-                            'bank_account_id' => $bankAccount->getId(),
-                            'channel' => $this->channel
-                        ]);
-
-                    $input = [
-                        Entity::CHANNEL => Channel::YESBANK,
-                        Entity::MERCHANT_ID => $bankAccount->merchant->getId(),
-                        Entity::BANK_ACCOUNT_ID => $bankAccount->getId(),
-                        Entity::BENEFICIARY_CODE => $bankAccount->getBeneficiaryCode(),
-                        Entity::REGISTRATION_STATUS => Status::CREATED
-                    ];
-
-                    $nodalBeneficiary = $this->repo->nodal_beneficiary
-                        ->fetchNonRegisteredBeneficiary(
-                            $bankAccount->getId(),
-                            Channel::YESBANK
-                        );
-
-                    $status = $this->checkBeneficiaryStatusForRegistration($input, $nodalBeneficiary);
-
-                    if ($status === false) {
-                        continue;
-                    }
-
-                    $beneRegResponse = $request->init()
-                        ->setEntity($bankAccount)
-                        ->makeRequest();
-
-                    $beneStatus = $this->getBeneficiaryStatus($beneRegResponse);
-
-                    if ($beneStatus === Status::FAILED) {
-                        $this->summary[] = $bankAccount->getId();
-                    }
-
-                    $this->updateBeneficiaryStatus($bankAccount, $beneStatus);
-                } catch (\Throwable $e) {
-                    $this->summary[] = $bankAccount->getId();
-
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::BENEFICIARY_REGISTRATION_FAILED,
-                        [
-                            'bank_account_id' => $bankAccount->getId(),
-                            'error' => $e->getMessage()
-                        ]);
-
-                    $this->updateBeneficiaryStatus($bankAccount, Status::FAILED);
-                }
-            }
-
-            $this->notify();
+            $this->processRegistration($bankAccounts);
         }
     }
 
@@ -107,8 +46,10 @@ class Beneficiary extends ApiProcessor
         // Creating beneficiary Verification Request to YesBank
         $request = new VerifyBeneficiaryRequest;
 
-        foreach ($bankAccounts as $bankAccount) {
-            try {
+        foreach ($bankAccounts as $bankAccount)
+        {
+            try
+            {
                 $this->trace->info(
                     TraceCode::BENEFICIARY_VERIFY_BANK_ACCOUNT,
                     [
@@ -117,24 +58,26 @@ class Beneficiary extends ApiProcessor
                     ]);
 
                 $nodalBeneficiary = $this->repo->nodal_beneficiary
-                    ->fetchNonRegisteredBeneficiary(
-                        $bankAccount->getId(),
-                        Channel::YESBANK
-                    );
+                                               ->fetchNonRegisteredBeneficiary(
+                                                   $bankAccount->getId(),
+                                                   Channel::YESBANK
+                                               );
 
                 $status = $this->checkBeneficiaryStatusForVerification($nodalBeneficiary);
 
-                if ($status === false) {
+                if ($status === false)
+                {
                     continue;
                 }
 
                 $beneVerifyResponse = $request->init()
-                    ->setEntity($bankAccount)
-                    ->makeRequest();
+                                              ->setEntity($bankAccount)
+                                              ->makeRequest();
 
                 $beneStatus = $this->getBeneficiaryStatusAfterVerification($beneVerifyResponse);
 
-                if ($beneStatus === Status::FAILED) {
+                if ($beneStatus === Status::FAILED)
+                {
                     $this->summary[] = $bankAccount->getId();
                 }
 
@@ -254,5 +197,78 @@ class Beneficiary extends ApiProcessor
         }
 
         return false;
+    }
+
+    /**
+     * @param PublicCollection $bankAccounts
+     */
+    protected function processRegistration(PublicCollection $bankAccounts)
+    {
+        $this->count = $bankAccounts->count();
+
+        // TODO: Figure out how to do beneficiary registration on two different nodal accounts of the same channel!
+        $request = new BeneficiaryRequest;
+
+        foreach ($bankAccounts as $bankAccount)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::BENEFICIARY_REGISTER_BANK_ACCOUNT,
+                    [
+                        'bank_account_id' => $bankAccount->getId(),
+                        'channel' => $this->channel
+                    ]);
+
+                $input = [
+                    Entity::CHANNEL => Channel::YESBANK,
+                    Entity::MERCHANT_ID => $bankAccount->merchant->getId(),
+                    Entity::BANK_ACCOUNT_ID => $bankAccount->getId(),
+                    Entity::BENEFICIARY_CODE => $bankAccount->getBeneficiaryCode(),
+                    Entity::REGISTRATION_STATUS => Status::CREATED
+                ];
+
+                $nodalBeneficiary = $this->repo->nodal_beneficiary
+                                               ->fetchNonRegisteredBeneficiary(
+                                                   $bankAccount->getId(),
+                                                   Channel::YESBANK
+                                                );
+
+                $status = $this->checkBeneficiaryStatusForRegistration($input, $nodalBeneficiary);
+
+                if ($status === false)
+                {
+                    continue;
+                }
+
+                $beneRegResponse = $request->init()
+                                           ->setEntity($bankAccount)
+                                           ->makeRequest();
+
+                $beneStatus = $this->getBeneficiaryStatus($beneRegResponse);
+
+                if ($beneStatus === Status::FAILED)
+                {
+                    $this->summary[] = $bankAccount->getId();
+                }
+
+                $this->updateBeneficiaryStatus($bankAccount, $beneStatus);
+            }
+            catch (\Throwable $e)
+            {
+                $this->summary[] = $bankAccount->getId();
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::BENEFICIARY_REGISTRATION_FAILED,
+                    [
+                        'bank_account_id' => $bankAccount->getId(),
+                        'error' => $e->getMessage()
+                    ]);
+
+                $this->updateBeneficiaryStatus($bankAccount, Status::FAILED);
+            }
+        }
     }
 }

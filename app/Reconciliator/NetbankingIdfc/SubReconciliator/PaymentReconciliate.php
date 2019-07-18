@@ -59,7 +59,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Helper::getIntegerFormattedAmount($row[Constants::TRANSACTION_AMOUNT] ?? null);
     }

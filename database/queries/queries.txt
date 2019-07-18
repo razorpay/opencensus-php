@@ -4970,7 +4970,7 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_bank_internal_status_index (bank_internal_status),
     ADD COLUMN username VARCHAR(255) DEFAULT NULL AFTER bank_reference_number,
     ADD COLUMN password VARCHAR(255) DEFAULT NULL AFTER username,
-    ADD COLUMN reference_1 VARCHAR(255) DEFAULT NULL AFTER password;
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER password;
 
 ALTER TABLE balance
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number,
@@ -5030,6 +5030,9 @@ ALTER TABLE virtual_accounts
     ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
     ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
     ADD INDEX virtual_accounts_close_by_index (close_by);
+
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `prepaid_card` TINYINT(1) NOT NULL DEFAULT 1 AFTER `debit_card`;
 
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
@@ -5111,3 +5114,20 @@ ALTER TABLE banking_accounts
        ADD COLUMN account_activation_date INT(11) DEFAULT NULL AFTER bank_reference_number,
        ADD INDEX banking_account_bank_reference_number_index (bank_reference_number),
        ADD INDEX banking_account_account_number_index (account_number);
+
+ALTER TABLE banking_accounts
+    ADD INDEX banking_accounts_fts_fund_account_id_index (fts_fund_account_id),
+    ADD INDEX banking_accounts_balance_id_index (balance_id);
+
+ALTER TABLE balance
+    DROP INDEX balance_account_provider_index,
+    CHANGE COLUMN account_provider channel varchar(255) DEFAULT NULL,
+    ADD INDEX balance_account_channel_index (channel),
+    DROP INDEX balance_merchant_id_type_unique;
+
+ALTER TABLE banking_accounts
+    MODIFY COLUMN pincode VARCHAR(255) DEFAULT NULL,
+    MODIFY COLUMN bank_reference_number VARCHAR(255) DEFAULT NULL,
+    ADD INDEX banking_accounts_channel_index (channel),
+    ADD INDEX banking_accounts_status_index (status),
+    ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
