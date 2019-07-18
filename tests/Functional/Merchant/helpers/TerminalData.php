@@ -589,12 +589,15 @@ return [
     'testAssignTerminalForDifferentGateway' => [
         'request'  => [
             'content' => [
-                'gateway'               => 'atom',
-                'netbanking'            => 1,
-                'gateway_merchant_id'   => '12345',
-                'gateway_secure_secret' => 'random_secret',
-                'gateway_access_code'   => 'random_access_code',
-                'network_category'      => 'ecommerce',
+                'gateway'                    => 'atom',
+                'netbanking'                 => 1,
+                'gateway_merchant_id'        => '12345',
+                'gateway_secure_secret'      => 'random_secret',
+                'gateway_access_code'        => 'random_access_code',
+                'network_category'           => 'ecommerce',
+                'gateway_terminal_password'  => 'password',
+                'gateway_terminal_password2' => 'password2',
+                'gateway_secure_secret2'     => 'securepassword',
             ],
             'url'     => '/merchants/10000000000000/terminals',
             'method'  => 'POST'
