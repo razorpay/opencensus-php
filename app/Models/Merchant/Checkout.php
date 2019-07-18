@@ -792,7 +792,6 @@ class Checkout
                 {
                     $data['downtime'] = $downtimeData;
                 }
-
             }
         }
         catch (\Throwable $ex)
