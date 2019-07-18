@@ -85,7 +85,7 @@ class Beneficiary extends Base\Core
             // Return if Already dispatched and in process.
             if (Cache::has($cacheKey) === true)
             {
-                return ;
+                return;
             }
 
             Cache::put($cacheKey, 'in_progress', self::BENEFICIARY_CACHE_KEY_TTL);

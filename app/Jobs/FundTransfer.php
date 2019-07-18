@@ -174,10 +174,11 @@ class FundTransfer extends Job
      * Checks if Beneficiary Registration or Verification is required
      * then dispatch it for the same and wait for the RELEASE_WAIT_SECS.
      *
-     * @param $fta
-     * @param $bankAccount
-     * @param $channel
+     * @param       $fta
+     * @param       $bankAccount
+     * @param       $channel
      * @param array $data
+     * @return bool
      */
     public function checkBeneficiaryRegistrationAndVerification($fta, $bankAccount, $channel, array $data)
     {
@@ -186,8 +187,7 @@ class FundTransfer extends Job
 
         if ($isBeneRegistrationRequired === true)
         {
-            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($bankAccount,
-                $channel);
+            $beneficiaryStatus = (new Beneficiary)->getBeneficiaryStatus($bankAccount, $channel);
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED and
                 $beneficiaryStatus !== BeneficiaryStatus::REGISTERED)
