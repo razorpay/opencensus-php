@@ -20,7 +20,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $yesbankCreateRules = [
-        Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
+        Entity::ACCOUNT_NUMBER      => 'required|string|between:5,40',
         Entity::ACCOUNT_IFSC        => 'required|string|size:11',
         Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
         Entity::ACCOUNT_TYPE        => 'required|string|in:nodal',
@@ -43,7 +43,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
         Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
         Entity::STATUS                          => 'filled|string|custom',
@@ -66,7 +66,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $internalEditRules = [
-        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|max:40',
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
         Entity::STATUS                          => 'filled|string',
         Entity::BENEFICIARY_PIN                 => 'filled|string',
@@ -88,7 +88,7 @@ class Validator extends Base\Validator
 
     // TODO: handle cases when some fields are already present in the model when the status is processed.
     protected static $processedStatusRules = [
-        Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|max:40',
+        Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,40',
         Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
         Entity::STATUS                          => 'required|string|custom',
         Entity::BENEFICIARY_PIN                 => 'required|string',

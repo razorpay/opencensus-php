@@ -201,7 +201,7 @@ class Entity extends Base\PublicEntity
 
         $newStatus = $this->getStatus();
 
-        Status::validateCurrentToPreviousMapping($originalStatus, $newStatus);
+        Status::validatePreviousToCurrentMapping($originalStatus, $newStatus);
 
         if ($newStatus === Status::PROCESSED)
         {

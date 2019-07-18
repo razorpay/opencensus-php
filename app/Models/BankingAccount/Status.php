@@ -31,19 +31,9 @@ class Status
     /**
      * @var array
      * This contains a status map that keeps mapping of a status
-     * to previous possible statuses. This is to ensure the status
+     * to next possible statuses. This is to ensure the status
      * change on Banking Account Entity happens in an order.
      */
-    protected static $currentToPreviousStatusMap = [
-        self::CREATED           => [],
-        self::INITIATED         => [self::CREATED],
-        self::PROCESSING        => [self::INITIATED],
-        self::PROCESSED         => [self::INITIATED, self::PROCESSING],
-        self::ACTIVATED         => [self::PROCESSED],
-        self::UNSERVICEABLE     => [self::CREATED, self::INITIATED, self::PROCESSING],
-        self::CANCELLED         => [self::CREATED, self::INITIATED, self::PROCESSING]
-    ];
-
     protected static $fromToStatusMap = [
         self::CREATED => [
             self::INITIATED,
@@ -96,7 +86,7 @@ class Status
         }
     }
 
-    public static function validateCurrentToPreviousMapping(string $previousStatus, string $currentStatus)
+    public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
