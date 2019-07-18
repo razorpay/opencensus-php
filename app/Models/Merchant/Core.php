@@ -1662,7 +1662,13 @@ class Core extends Base\Core
     {
         $partnerUsers = $partner->users()->get();
 
-        $submerchantIds = $submerchants->pluck(Entity::ID)->toArray();
+        //
+        // if partner added himself as a submerchant which used to happen before but not anymore
+        // then we should not remove his own user
+        //
+        $submerchantIds = $submerchants->reject(function($subMerchant) use ($partner) {
+            return ($subMerchant->getId() === $partner->getId());
+        })->pluck(Entity::ID)->toArray();
 
         foreach ($partnerUsers as $partnerUser)
         {

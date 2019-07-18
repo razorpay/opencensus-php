@@ -861,7 +861,7 @@ class Gateway
             /**
              * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
              */
-            $metricsDriver->histogram('gateway_request_total_time_ms',
+            $metricsDriver->histogram(Metric::GATEWAY_REQUEST_TIME,
                 $info['total_time'] * 1000,
                 [
                     'gateway' => $this->gateway ?? 'none',

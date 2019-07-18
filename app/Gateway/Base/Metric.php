@@ -23,6 +23,7 @@ class Metric
     // Counter type metric names only for gateway api calls
     const GATEWAY_REQUEST_COUNT          = 'gateway_request_count_v2';
     const GATEWAY_REQUEST_COUNT_V3       = 'gateway_request_count_v3';
+    const GATEWAY_REQUEST_TIME           = 'gateway_request_total_time_v2_ms';
 
     // class constants for usage in the class
     const SUCCESS                        = 'success';

@@ -386,7 +386,7 @@ trait RequestHandlerTrait
                 /**
                  * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
                  */
-                $metricsDriver->histogram('gateway_request_total_time_ms',
+                $metricsDriver->histogram(\RZP\Gateway\Base\Metric::GATEWAY_REQUEST_TIME,
                     ($completed - $startTime) * 1000,
                     [
                         'gateway' => 'paysecure',

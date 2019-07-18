@@ -19,6 +19,7 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
+use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 
 class Selector extends Base\Core
 {
@@ -412,10 +413,11 @@ class Selector extends Base\Core
         {
             $payment = $this->input['payment'];
 
-            if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false))
-            {
-                $merchant = $this->input['merchant'];
+            $merchant = $this->input['merchant'];
 
+            if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false)
+                and (in_array($merchant->getCategory(), GatewayProcessor::HITACHI_BLACKLISTED_MCC) === false))
+            {
                 $payment = $this->input['payment'];
 
                 $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
