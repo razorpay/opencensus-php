@@ -306,10 +306,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_JOB_ERROR                                   = 'DASHBOARD_JOB_ERROR';
 
     const NODAL_BEN_ADD_REQUEST                                 = 'NODAL_BEN_ADD_REQUEST';
+    const NODAL_BEN_VERIFY_REQUEST                              = 'NODAL_BEN_VERIFY_REQUEST';
     const NODAL_TRANSFER_REQUEST                                = 'NODAL_TRANSFER_REQUEST';
     const NODAL_TRANSFER_RESPONSE                               = 'NODAL_TRANSFER_RESPONSE';
     const NODAL_FAILURE_RESPONSE                                = 'NODAL_FAILURE_RESPONSE';
     const NODAL_BEN_ADD_RESPONSE                                = 'NODAL_BEN_ADD_RESPONSE';
+    const NODAL_BEN_VERIFY_RESPONSE                             = 'NODAL_BEN_VERIFY_RESPONSE';
     const NODAL_FAILED_RESPONSE                                 = 'NODAL_FAILED_RESPONSE';
     const NODAL_TRANSFER_REQUEST_FAILED                         = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                          = 'NODAL_PAYMENT_STATUS_REQUEST';
@@ -1596,6 +1598,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BENEFICIARY_REGISTER_EMAIL_SENT                       = 'BENEFICIARY_REGISTER_EMAIL_SENT';
     const BENEFICIARY_REGISTER_FILE_SEND_VIA_BEAM               = 'BENEFICIARY_REGISTER_FILE_SEND_VIA_BEAM';
     const BENEFICIARY_REGISTER_RESPONSE                         = 'BENEFICIARY_REGISTER_RESPONSE';
+    const BENEFICIARY_VERIFY_BANK_ACCOUNT                       = 'BENEFICIARY_VERIFY_BANK_ACCOUNT';
+    const BENEFICIARY_VERIFY_FAILED                             = 'BENEFICIARY_VERIFY_FAILED';
     const BEAM_NOTIFIER_FAILED                                  = 'BEAM_NOTIFIER_FAILED';
     const SLACK_NOTIFICATION_SEND_FAILED                        = 'SLACK_NOTIFICATION_SEND_FAILED';
     const VERIFY_FUND_TRANSFER_INIT                             = 'VERIFY_FUND_TRANSFER_INIT';
