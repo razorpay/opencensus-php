@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Mail\BankingAccount;
 
 use RZP\Models\Merchant;
