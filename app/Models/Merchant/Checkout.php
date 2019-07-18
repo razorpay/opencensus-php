@@ -817,7 +817,7 @@ class Checkout
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION);
+            $this->trace->traceException($ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_GET_PAYMENT_DOWNTIME_EXCEPTION);
         }
     }
 
