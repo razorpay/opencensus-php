@@ -4,7 +4,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
 use Monolog\Logger;
-use App\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
