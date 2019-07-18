@@ -40,6 +40,10 @@ class Processor extends BankingAccount\Gateway\Processor
         ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
     ];
 
+    protected $mozartUserErrorCode = [401];
+
+    protected $mozartUserErrorDescription = ['SubCorpID does not exists'];
+
     public function preProcessAccountInfoNotification(array $input)
     {
         (new Validator)->validateInput(Validator::PRE_ACCOUNT_INFO_WEBHOOK, $input);
@@ -245,7 +249,12 @@ class Processor extends BankingAccount\Gateway\Processor
             }
         }
 
-        $this->checkMozartResponseForErrors($response);
+        $isErrorPresent = $this->checkIfMozartResponseHasErrors($response);
+
+        if ($isErrorPresent === true)
+        {
+            $this->handleErrorForFetchBalance($response);
+        }
 
         $balance = $response[Fields::DATA][Fields::GET_ACCOUNT_BALANCE]
                             [Fields::BODY][Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
@@ -253,25 +262,21 @@ class Processor extends BankingAccount\Gateway\Processor
         return $this->getFormattedAmount($balance);
     }
 
-    protected function checkMozartResponseForErrors(array $response)
+    protected function checkIfMozartResponseHasErrors(array $response)
     {
-        if ($response['data']['success'] !== true)
+        if ($response['data']['success'] === true)
         {
-            $this->trace->info(
-                TraceCode::MOZART_SERVICE_REQUEST_FAILED,
-                [
-                    'response'       => $response,
-                    'channel'        => BankingAccount\Channel::RBL,
-                ]);
-
-            throw new GatewayErrorException(
-                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_ERROR',
-                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
-                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
-                [],
-                null,
-                null);
+            return false;
         }
+
+        $this->trace->info(
+            TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+            [
+                'response'       => $response,
+                'channel'        => BankingAccount\Channel::RBL,
+            ]);
+
+        return true;
     }
 
     protected function getFormattedAmount($amount)
@@ -412,5 +417,40 @@ class Processor extends BankingAccount\Gateway\Processor
         {
             return true;
         }
+    }
+
+    protected function handleErrorForFetchBalance(array $response)
+    {
+        if ($this->shouldInformUserForErrorFromMozartResponse($response) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS,
+                null,
+                ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
+        }
+
+        // throwing a generic error since there is
+        // no issue with user entered information
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+            null,
+            ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
+    }
+
+    protected function shouldInformUserForErrorFromMozartResponse(array $response)
+    {
+        $gatewayErrorCode = $response['error']['gateway_error_code'] ?? 'gateway_error_code';
+
+        $gatewayErrorDesc = $response['error']['gateway_error_description'] ?? 'gateway_error_desc';
+
+        // adding this dirty check for now to prompt the user
+        // with appropriate error message
+        if ((in_array($gatewayErrorCode, $this->mozartUserErrorCode, true) === true) or
+            (in_array($gatewayErrorDesc, $this->mozartUserErrorDescription, true)  === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
