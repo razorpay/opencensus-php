@@ -249,22 +249,23 @@ class Gateway
         {
             $previousExc = $exc->getPrevious();
 
-            if (($previousExc instanceof \Requests_Exception) and
-                ($previousExc->getType() === 'curlerror') and
-                (property_exists($exc, 'isPropagatedException') === false))
+            if (property_exists($exc, 'isPropagatedException') === false)
             {
-                $excData = curl_errno($previousExc->getData());
+                if (($previousExc instanceof \Requests_Exception) and
+                    ($previousExc->getType() === 'curlerror'))
+                {
+                    $excData = curl_errno($previousExc->getData());
 
-                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+                    $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
 
-                $exc->isPropagatedException = true;
-            }
+                    $exc->isPropagatedException = true;
+                }
+                else
+                {
+                    $this->pushDimensions($action, $input, Metric::FAILED);
 
-            else if (property_exists($exc, 'isPropagatedException') === false)
-            {
-                $this->pushDimensions($action, $input, Metric::FAILED);
-
-                $exc->isPropagatedException = true;
+                    $exc->isPropagatedException = true;
+                }
             }
 
             throw $exc;
@@ -1527,10 +1528,6 @@ class Gateway
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
     }
-
-    //
-    // This is a temporary function for debugging the curl issue
-    //
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {
