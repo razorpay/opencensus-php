@@ -49,6 +49,8 @@ class Service extends Base\Service
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
+        $previousStatus = $bankingAccount->getStatus();
+
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         $this->notifyUpdate($previousStatus, $input, $bankingAccount);
@@ -161,39 +163,5 @@ class Service extends Base\Service
     protected function isStatusChanged(string $previousStatus, string $newStatus): bool
     {
         return $previousStatus !== $newStatus;
-    }
-
-    protected function notifyStatusChange(string $previousStatus, string $newStatus): bool
-    {
-        switch ($newStatus)
-        {
-            case Status::CREATED:
-                $result = in_array(
-                    $previousStatus,
-                    [Status::PROCESSED, Status::PROCESSING, Status::CANCELLED, Status::INITIATED, Status::CREATED],
-                    true) === false;
-
-                break;
-
-            case Status::PROCESSING:
-                $result = $previousStatus === Status::INITIATED;
-
-                break;
-
-            case Status::PROCESSED:
-                $result = $previousStatus === Status::PROCESSING;
-
-                break;
-
-            case Status::CANCELLED:
-                $result = $previousStatus === Status::PROCESSING;
-
-                break;
-
-            default:
-                $result = true;
-        }
-
-        return $result;
     }
 }
