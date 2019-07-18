@@ -94,26 +94,43 @@ class Service extends Base\Service
                 $gateway);
         }
 
-        $transactions = $this->repo->transaction->getCancelledBilldeskTransactions();
+        $paymentTransactions = $this->repo->transaction->getCancelledBilldeskPaymentTransactions();
+
+        $refundTransactions = $this->repo->transaction->getCancelledBilldeskPaymentRefundTransactions();
+
+        $allTransactions = [
+            'payment' => $paymentTransactions,
+            'refund'  => $refundTransactions
+        ];
 
         $transactionCore = new Transaction\Core;
 
-        $successCount = $failureCount = 0;
+        // list of transaction IDs for which update recon failed
+        $failures = [
+            'payment'   => [],
+            'refund'    => [],
+        ];
 
-        $failures = [];
+        $successCount = $failureCount = [
+            'payment'   => 0,
+            'refund'    => 0,
+        ];
 
-        foreach ($transactions as $transaction)
+        foreach ($allTransactions as $entityType => $transactions)
         {
-            $success = $transactionCore->updateReconciliationData($transaction);
+            foreach ($transactions as $transaction)
+            {
+                $success = $transactionCore->updateReconciliationData($transaction);
 
-            if ($success === true)
-            {
-                $successCount++;
-            }
-            else
-            {
-                $failures[] = $transaction->getId();
-                $failureCount++;
+                if ($success === true)
+                {
+                    $successCount[$entityType]++;
+                }
+                else
+                {
+                    $failures[$entityType] = $transaction->getId();
+                    $failureCount[$entityType]++;
+                }
             }
         }
 
