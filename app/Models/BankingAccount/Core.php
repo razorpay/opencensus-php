@@ -10,7 +10,6 @@ use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Product;
 use RZP\Services\CardVault;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Detail;
@@ -291,7 +290,8 @@ class Core extends Base\Core
             }
             catch(\Throwable $e)
             {
-                if ((checkRequestTimeout($e) === true) and
+                if (($e instanceof \Requests_Exception) and
+                    (checkRequestTimeout($e) === true) and
                     ($retryCount < self::FTS_MAX_RETRIES))
                 {
                     $this->trace->info(
@@ -326,36 +326,6 @@ class Core extends Base\Core
         );
 
         return $response[FTS\Constants::BODY][FTS\Constants::FUND_ACCOUNT_ID];
-    }
-
-    public function updateAccountToProcessed(Entity $bankingAccount)
-    {
-        $channel = $bankingAccount->getChannel();
-
-        switch ($channel)
-        {
-            case Channel::RBL:
-                {
-                    $attributes = [
-                        Entity::STATUS                  => Status::PROCESSED,
-                        Entity::BANK_INTERNAL_STATUS    => Gateway\Rbl\Status::CLOSED
-                    ];
-
-                    // TODO: Fix this undefined function!
-                    $this->updateRblBankingAccount($bankingAccount, $attributes);
-
-                    break;
-                }
-
-            default:
-                throw new LogicException(
-                    'Attempt to update account to processed for an Invalid channel',
-                    null,
-                    [
-                        'channel'               => $channel,
-                        'banking_account_id'    => $bankingAccount->getId(),
-                    ]);
-        }
     }
 
     public function updateBankingAccountWithFtsId(Entity $bankingAccount, $ftsFundAccountId)
@@ -505,7 +475,8 @@ class Core extends Base\Core
             }
             catch (\Throwable $e)
             {
-                if ((checkRequestTimeout($e) === true) and
+                if (($e instanceof \Requests_Exception) and
+                    (checkRequestTimeout($e) === true) and
                     ($retryCount < self::FTS_MAX_RETRIES))
                 {
                     $this->trace->info(

@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 
@@ -212,6 +213,15 @@ class Processor extends BankingAccount\Gateway\Processor
             }
             catch (\Throwable $exception)
             {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::CRITICAL,
+                    TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+                    [
+                        'request' => $request,
+                        'channel' => Channel::RBL
+                    ]);
+
                 $errorCode = $exception->getCode();
 
                 if (($this->shouldRetryMozartRequest($errorCode) === true) and
@@ -228,7 +238,9 @@ class Processor extends BankingAccount\Gateway\Processor
                 }
                 else
                 {
-                    throw $exception;
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED
+                    );
                 }
             }
         }

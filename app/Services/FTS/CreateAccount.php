@@ -214,7 +214,7 @@ class CreateAccount extends Base
             Constants::PRODUCT              => $product,
             Constants::CREDENTIALS          => $content[Constants::CREDENTIALS],
             Constants::MOZART_IDENTIFIER    => $content[Constants::MOZART_IDENTIFIER],
-            Constants::FUND_ACCOUNT_ID      => $fundAccountId,
+            Constants::FUND_ACCOUNT_ID      => intval($fundAccountId),
             Constants::CHANNEL              => $channel
         ];
 

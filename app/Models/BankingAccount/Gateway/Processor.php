@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Services\CardVault;
 use RZP\Exception\LogicException;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Exception\BadRequestException;
 
 class Processor extends Base\Core
 {
@@ -93,7 +94,9 @@ class Processor extends Base\Core
                     'channel' => Channel::RBL
                 ]);
 
-            throw $e;
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED
+            );
         }
 
         $this->checkForVaultResponseErrors($response);
