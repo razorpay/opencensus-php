@@ -485,14 +485,18 @@ class Initiator extends Base\Core
                 $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT,
                     [
                         'fta_id'  => $id,
-                        'channel' => $channel,
+                        'data'    => $info
                     ]);
 
                 FundTransfer::dispatch($this->mode, $id);
 
                 $successCount ++;
 
-                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data);
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,
+                    [
+                        'fta_id'  => $id,
+                        'data'    => $info
+                    ]);
             }
             catch (\Exception $exception)
             {
