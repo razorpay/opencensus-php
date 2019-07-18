@@ -506,7 +506,7 @@ class Initiator extends Base\Core
             }
         }
 
-        $info[] = [
+        $info += [
             "success" => $successCount,
             "failed"  => $failureCount,
         ];
