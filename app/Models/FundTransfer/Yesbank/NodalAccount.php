@@ -17,7 +17,6 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\FundTransfer\Batch\Entity;
 use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
@@ -67,21 +66,6 @@ class NodalAccount extends NodalBase\NodalAccount
 
             if ($isTransferAllowedToday === false)
             {
-                continue;
-            }
-
-            $attempt->reload();
-
-            if ($attempt->getStatus() !== Attempt\Status::CREATED)
-            {
-                $this->trace->info(TraceCode::FTA_IN_PROGRESS,
-                    [
-                        'channel'       => $this->channel,
-                        'attempt_id'    => $attempt->getId(),
-                    ]);
-
-                $this->updateBatchInfo($attempt);
-
                 continue;
             }
 

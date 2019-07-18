@@ -143,14 +143,15 @@ class Initiator extends Base\Core
 
             if ($channel === Channel::YESBANK)
             {
-                $attemptIds = $attempts->pluck(Entity::ID);
-
-                return $this->dispatchTransfers($channel, $attemptIds, $data);
+                $response = $this->dispatchTransfers($channel, $attempts);
             }
             else
             {
-                $data[$channel] = $this->processFundTransferAttempts($channel, $attempts);
+                $response = $this->processFundTransferAttempts($channel, $attempts);
             }
+
+            $data[$channel]  = $response;
+
             return $data;
         });
     }
@@ -467,26 +468,36 @@ class Initiator extends Base\Core
         return [true, null];
     }
 
-    protected function dispatchTransfers(string $channel, $attemptIds, array $data)
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts)
     {
+        $attemptIds = $attempts->pluck(Entity::ID);
+
+        $info = ['channel' => $channel, 'count' => $attempts->count()];
+
+        $successCount = 0;
+
+        $failureCount = 0;
+
         foreach ($attemptIds as $id)
         {
             try
             {
                 $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT,
                     [
-                        'data'   => $data,
-                        'fta_id' => $id,
+                        'fta_id'  => $id,
+                        'channel' => $channel,
                     ]);
 
                 FundTransfer::dispatch($this->mode, $id);
 
-                $data[$channel]++;
+                $successCount ++;
 
                 $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data);
             }
             catch (\Exception $exception)
             {
+                $failureCount++;
+
                 $this->trace->traceException(
                     $exception,
                     Trace::CRITICAL,
@@ -494,6 +505,12 @@ class Initiator extends Base\Core
                 );
             }
         }
-        return $data;
+
+        $info[] = [
+            "success" => $successCount,
+            "failed"  => $failureCount,
+        ];
+
+        return $info;
     }
 }

@@ -318,6 +318,7 @@ class BankTransferTest extends TestCase
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Attempt\Status::CREATED, $attempt[Attempt\Entity::STATUS]);
 
+        $channel = Channel::YESBANK;
         $content = $this->initiateTransferAndAssertSuccess(
             $channel,
             Attempt\Purpose::REFUND,
@@ -1685,6 +1686,7 @@ class BankTransferTest extends TestCase
         $content = $this->initiateTransferViaFileAndAssertSuccess(
             $channel, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
 
+        $channel = Channel::YESBANK;
         $content = $this->initiateTransferAndAssertSuccess(
             $channel,
             Attempt\Purpose::REFUND,

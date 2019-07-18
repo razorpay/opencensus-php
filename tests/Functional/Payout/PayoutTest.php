@@ -505,12 +505,7 @@ class PayoutTest extends TestCase
 
     public function testRetryPayout(): array
     {
-        // Yesbank dispatch goes through queue async flow
-
-        $this->markTestSkipped();
-
         $payout = $this->testCreatePayout();
-
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->fixtures->edit(
@@ -538,7 +533,7 @@ class PayoutTest extends TestCase
 
         $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals(Payout\Status::PROCESSING, $newPayout['status']);
+        $this->assertEquals(Payout\Status::PROCESSED, $newPayout['status']);
         $this->assertEquals(Attempt\Status::PROCESSED, $payoutAttempt['status']);
 
         // Verify attempt entity
@@ -557,9 +552,6 @@ class PayoutTest extends TestCase
 
     public function testRetryMerchantOnDemandPayout()
     {
-        // Yesbank dispatch goes through queue async flow
-        $this->markTestSkipped();
-
         $payout = $this->testCreateMerchantPayoutOnDemand();
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -841,9 +833,6 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutAttemptSuccess()
     {
-        //FTA initiate for yesbank is through queue in async mode
-        $this->markTestSkipped();
-
         // FTA initiate happens via sync queue
         $this->ba->privateAuth();
         $p1 = $this->testCreatePayout();

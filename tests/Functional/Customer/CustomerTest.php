@@ -483,9 +483,6 @@ class CustomerTest extends TestCase
 
     public function testCustomerWalletPayout()
     {
-        // Yesbank dispatch goes through queue async flow
-        $this->markTestSkipped();
-
         $this->ba->privateAuth();
 
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
@@ -598,9 +595,6 @@ class CustomerTest extends TestCase
 
     public function testCustomerWalletPayoutReversal()
     {
-        // Yesbank dispatch goes through queue async flow
-        $this->markTestSkipped();
-
         $payout = $this->testCustomerWalletPayout();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [

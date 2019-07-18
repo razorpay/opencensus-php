@@ -774,7 +774,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE                  = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
     const FTA_SAVED_TO_DB                                       = 'FTA_SAVED_TO_DB';
     const FTA_BATCH_UPDATED                                     = 'FTA_BATCH_UPDATED';
-    const FTA_IN_PROGRESS                                       = 'FTA_IN_PROGRESS';
 
     const FTA_RECON_REPORT_FILE_CREATED                         = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                            = 'FTA_RECON_REPORT_INITIATED';
