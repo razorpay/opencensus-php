@@ -169,15 +169,18 @@ export default class InvoicesNewContainer extends Component {
       .then(data => {
         console.log('DATA..', data);
 
-        let expire_by = moment(data.expire_by * 1000);
+        let expire_by = data.expire_by && moment(data.expire_by * 1000);
 
-        if (expire_by.diff(moment()) < 0) {
+        // If null or is before current time
+        if (!expire_by || expire_by.diff(moment()) < 0) {
           expire_by = '';
         } else {
           expire_by = data.expire_by;
         }
 
         // Resetting values to initial state
+        data.draft = '0'; // Not sure where it's being consumed but re-initializing same as redux form
+        data.date = Math.ceil(new Date().getTime() / 1000); // Overriding invoice.date to initial date in redux form
         data.expire_by = expire_by;
         data.id = '';
         data.receipt_no = '';
@@ -254,7 +257,20 @@ export default class InvoicesNewContainer extends Component {
     setTimeout(() => this.getMerchantInfo());
   }
 
+  componentWillUpdate(nextProps) {
+    const curSearchQuery = getURLQueryParams(this.props.location.search);
+    const nextSearchQuery = getURLQueryParams(nextProps.location.search);
+
+    if (curSearchQuery.duplicate_id !== nextSearchQuery.duplicate_id) {
+      this.initInvoicePage();
+    }
+  }
+
   componentWillMount() {
+    this.initInvoicePage();
+  }
+
+  initInvoicePage() {
     let promises = [];
 
     let invoiceId = this.props.match.params.id;
