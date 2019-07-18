@@ -1,4 +1,5 @@
 <!doctype html><html style="height:100%"><head><title>Razorpay - Payment in progress</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"><style>
 body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;padding:0;width:100%;height:100%;text-align:center;display:table}
