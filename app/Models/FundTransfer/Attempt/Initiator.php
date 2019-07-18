@@ -492,7 +492,7 @@ class Initiator extends Base\Core
 
                 $successCount ++;
 
-                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_DISPATCHED,
                     [
                         'fta_id'  => $id,
                         'data'    => $info
