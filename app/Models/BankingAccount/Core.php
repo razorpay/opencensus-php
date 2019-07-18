@@ -478,29 +478,33 @@ class Core extends Base\Core
 
     protected function runStatusValidationsForUpdate(Entity $bankingAccount, array $input)
     {
-        // we will run status validations only if the status of the account entity has changed
-        // and we will run separate validators for for processed status
-        if ($bankingAccount->isDirty(Entity::STATUS) === true)
+        //
+        // We will run status validations only if the status of the account entity
+        // has changed and we will run separate validators for processed status
+        //
+        if ($bankingAccount->isDirty(Entity::STATUS) === false)
         {
-            $originalStatus = $bankingAccount->getOriginal(Entity::STATUS);
+            return;
+        }
 
-            $newStatus = $bankingAccount->getStatus();
+        $originalStatus = $bankingAccount->getOriginal(Entity::STATUS);
 
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE,
-                [
-                    'id'                => $bankingAccount->getId(),
-                    'input'             => $input,
-                    'current_status'    => $originalStatus,
-                    'new_status'        => $newStatus,
-                ]);
+        $newStatus = $bankingAccount->getStatus();
 
-            Status::validateCurrentToPreviousMapping($newStatus, $originalStatus);
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE,
+            [
+                'id'                => $bankingAccount->getId(),
+                'input'             => $input,
+                'current_status'    => $originalStatus,
+                'new_status'        => $newStatus,
+            ]);
 
-            if ($newStatus === Status::PROCESSED)
-            {
-                (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $input);
-            }
+        Status::validateCurrentToPreviousMapping($newStatus, $originalStatus);
+
+        if ($newStatus === Status::PROCESSED)
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $input);
         }
     }
 }

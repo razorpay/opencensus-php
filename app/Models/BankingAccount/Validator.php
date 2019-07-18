@@ -82,7 +82,7 @@ class Validator extends Base\Validator
         self::INTERNAL_EDIT_STATUS,
     ];
 
-    // ToDo handle cases when some fields are already present in the model when the status is processed.
+    // TODO: handle cases when some fields are already present in the model when the status is processed.
     protected static $processedStatusRules = [
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|max:40',
         Entity::ACCOUNT_IFSC                    => 'required|alpha_num|size:11',
@@ -106,7 +106,7 @@ class Validator extends Base\Validator
         Entity::PINCODES        => 'required|array|filled',
     ];
 
-    // ToDo Need to make the rules stricter
+    // TODO: Need to make the rules stricter
     protected static $rblCreateMerchantTokenRules = [
         RblFields::SUBCORP_ID               => 'required|string',
         RblFields::SUBCORP_USER_ID          => 'required|string',
