@@ -610,6 +610,10 @@ class PayoutTest extends TestCase
 
     public function testRetryDelayedMerchantOnDemandPayout()
     {
+        // Removed in verify beneficiary PR
+
+        $this->markTestSkipped();
+
         $payout = $this->testCreateMerchantPayoutOnDemand();
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
