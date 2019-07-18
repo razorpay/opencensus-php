@@ -26,7 +26,7 @@ import { updatePLInReduxList } from 'merchant/modules/invoices/list';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { luminateRow } from 'merchant/modules/app';
 
-import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import { getURLQueryParams, paiseToRupees } from 'rzp/utils/rzp-utils';
 import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
 
 import Spinner from 'rzp/ui/Spinner';
@@ -185,39 +185,42 @@ export default class CreateNewContainer extends React.Component {
     this.props
       .fetchInvoice(invoiceId)
       .then(data => {
-        // TODO: Update data in state
-        console.log('DATA....', data);
+        let expire_by = data.expire_by && moment(data.expire_by * 1000);
 
-        let expire_by = moment(data.expire_by * 1000);
-
-        if (expire_by.diff(moment()) < 0) {
+        // If null or is before current time
+        if (!expire_by || expire_by.diff(moment()) < 0) {
           expire_by = '';
         } else {
           expire_by = data.expire_by;
         }
+
+        const defaultValueNotes = Object.keys(data.notes).map(key => ({
+          key,
+          value: data.notes[key],
+        }));
 
         this.setState({
           fetchingInvoice: false,
           dirty: {
             currency: data.currency,
             description: data.description,
-            amount: data.amount / 100,
+            amount: paiseToRupees(data.amount),
             partial_payment: data.partial_payment | 0,
             sms_notify: data.sms_notify | 0,
             email_notify: data.email_notify | 0,
             email: data.customer_details.email,
             contact: data.customer_details.contact,
             expire_by,
-            notes: Object.keys(data.notes).map(key => ({
-              key,
-              value: data.notes[key],
-            })),
+            notes: defaultValueNotes,
           },
           _name: {
-            hasNoExpiry: !data.expire_by,
-            expire_by_date: moment(data.expire_by * 1000),
+            hasNoExpiry: expire_by ? '0' : '1',
+            expire_by_date: expire_by ? moment(data.expire_by * 1000) : null,
           },
         });
+
+        // state.dirty.notes of this component has different structure than defaultValue of notes component. So, after defaultValue is set, updating notes value in state.dirty
+        setTimeout(_ => this.onChangeNotes(defaultValueNotes), 0);
       })
       .catch(err => {
         console.log('ERR..', err);

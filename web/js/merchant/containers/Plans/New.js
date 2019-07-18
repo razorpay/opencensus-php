@@ -19,6 +19,7 @@ import {
   getKeysSeparatedByPipe,
   getEventCategoryFromPath,
   getURLQueryParams,
+  paiseToRupees,
 } from 'rzp/utils/rzp-utils';
 
 const selector = formValueSelector('newPlan');
@@ -82,7 +83,7 @@ export default class AddPlan extends Component {
         const newPlan = {};
 
         newPlan.item = {
-          amount: (data.item.amount /= 100),
+          amount: paiseToRupees(data.item.amount),
           currency: data.item.currency,
           description: data.item.description,
           name: data.item.name,

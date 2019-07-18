@@ -25,6 +25,7 @@ import LinkDetails from './LinkDetails';
 import PlanDetails from '../common/PlanDetails';
 import Review from './Review';
 import Spinner from 'rzp/ui/Spinner';
+import moment from 'moment';
 
 @withRouter
 @connect(
@@ -87,19 +88,28 @@ export default class NewSubscriptionLink extends Component {
       });
 
       this.props.fetchSubscription(searchQuery.duplicate_id).then(data => {
-        let expire_by = moment(data.expire_by * 1000);
+        let expire_by = data.expire_by && moment(data.expire_by * 1000);
+        let start_at = data.start_at && moment(data.start_at * 1000);
 
-        if (expire_by.diff(moment()) < 0) {
+        // If null or is before current time
+        if (!expire_by || expire_by.diff(moment()) < 0) {
           expire_by = '';
         } else {
           expire_by = data.expire_by;
+        }
+
+        // If null or is before current time
+        if (!start_at || start_at.diff(moment()) < 0) {
+          start_at = '';
+        } else {
+          start_at = data.start_at;
         }
 
         const newSubscription = {
           customer_notify: data.customer_notify,
           plan_id: data.plan_id,
           quantity: data.quantity,
-          start_at: null,
+          start_at,
           total_count: data.total_count,
           expire_by,
         };
@@ -115,7 +125,8 @@ export default class NewSubscriptionLink extends Component {
           {
             fields: newSubscription,
             internals: {
-              _startsImmediately: false,
+              _startsImmediately: !start_at,
+              _isNonExpiringLink: !expire_by,
             },
           },
           _ => this.initializePlan()
@@ -279,6 +290,7 @@ export default class NewSubscriptionLink extends Component {
     fieldName = fieldName.replace('_time', '');
 
     let current = this.state.fields[fieldName];
+
     // adding time to current day
     current = Number(
       moment(current, 'X')

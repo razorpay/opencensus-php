@@ -2236,7 +2236,7 @@ export default class InvoicesNewContainer extends Component {
                                 <div class="col-xs-4">
                                   <i class="i i-copy" />
                                 </div>
-                                <div class="col-xs-8">Copy Invoice</div>
+                                <div class="col-xs-8">Duplicate Invoice</div>
                               </div>
                             </NavLink>
                           )}
