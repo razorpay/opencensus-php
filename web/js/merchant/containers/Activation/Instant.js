@@ -423,49 +423,20 @@ export default class ActivationWizard extends React.Component {
 
           <Form onChange={this.onChange} layout="tabular">
             {content}
-            <div className="form-footer Input">
-              <div className="Input-content">
-                <p>
-                  <small>
-                    By submitting this form you agree to our{' '}
-                    <ShowWhen
-                      additionalCondition={user =>
-                        user.isOrgAllowedFunctionality('external_links')
-                      }
-                    >
-                      <a
-                        className="text-primary"
-                        target="_blank"
-                        href="https://razorpay.com/terms/"
-                        onClick={trackTnCClick}
-                      >
-                        Terms and Conditions
-                      </a>
-                    </ShowWhen>
-                    <ShowWhen
-                      additionalCondition={user =>
-                        !user.isOrgAllowedFunctionality('external_links')
-                      }
-                    >
-                      Terms and Conditions
-                    </ShowWhen>
-                  </small>
-                </p>
-                <div className="text-right">
-                  <AsyncButton
-                    type="button"
-                    className="btn btn-primary submit-btn"
-                    onClick={this.submitForm}
-                    disabled={!this.tabValidity()}
-                    pendingText="Submitting..."
-                  >
-                    Activate Account
-                  </AsyncButton>
-                </div>
-              </div>
-            </div>
           </Form>
         </main>
+        <footer>
+          {renderTnCLink()}
+          <AsyncButton
+            type="button"
+            className="btn btn-primary submit-btn m-l"
+            onClick={this.submitForm}
+            disabled={!this.tabValidity()}
+            pendingText="Submitting..."
+          >
+            Activate Account
+          </AsyncButton>
+        </footer>
       </div>
     );
   }
@@ -608,4 +579,36 @@ function updateHubSpotContactsProperties(data) {
   }
 
   trackhubsContactUpdate(hbsData);
+}
+
+function renderTnCLink() {
+  return (
+    <span>
+      <small>
+        By submitting this form you agree to our{' '}
+        {/* only merchants of our can see the TnC link rest will only see label */}
+        <ShowWhen
+          additionalCondition={user =>
+            user.isOrgAllowedFunctionality('external_links')
+          }
+        >
+          <a
+            className="text-primary"
+            target="_blank"
+            href="https://razorpay.com/terms/"
+            onClick={trackTnCClick}
+          >
+            Terms and Conditions
+          </a>
+        </ShowWhen>
+        <ShowWhen
+          additionalCondition={user =>
+            !user.isOrgAllowedFunctionality('external_links')
+          }
+        >
+          Terms and Conditions
+        </ShowWhen>
+      </small>
+    </span>
+  );
 }
