@@ -1647,6 +1647,8 @@ class MerchantTest extends TestCase
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'ALL',]);
 
+        $this->fixtures->merchant->addFeatures(['expose_downtimes']);
+
         $this->startTest();
     }
 
