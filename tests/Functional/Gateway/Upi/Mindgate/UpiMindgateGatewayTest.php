@@ -120,7 +120,7 @@ class UpiMindgateGatewayTest extends TestCase
                 Metric::DIMENSION_STATUS            => 'success',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
             ],
-        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT));
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment['amount']);
@@ -188,7 +188,7 @@ class UpiMindgateGatewayTest extends TestCase
                 //TODO: This should be intent, fix this.
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
             ],
-        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT));
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }
 
     public function testIntentAuthorizeFailed()
