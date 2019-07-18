@@ -19,6 +19,15 @@ export default props => {
       </div>
 
       <div class="form-group list-filter-item">
+        <label>Status</label>
+        <Field name="status" component="select" class="form-control input-sm">
+          <option value="">All</option>
+          <option value="processed">Processed</option>
+          <option value="processing">Processing</option>
+        </Field>
+      </div>
+
+      <div class="form-group list-filter-item">
         <label>Notes</label>
         <Field name="notes" component="input" class="form-control input-sm" />
       </div>
