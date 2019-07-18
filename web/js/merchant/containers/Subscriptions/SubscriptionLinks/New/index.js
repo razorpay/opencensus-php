@@ -17,7 +17,7 @@ import { Modal, ModalContent } from 'component/Modal';
 import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 
-import { stringToObj } from 'common/util';
+import { stringToObj, deepClone } from 'common/util';
 import { isPresent, findBy, getURLQueryParams } from 'rzp/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
@@ -312,7 +312,7 @@ export default class NewSubscriptionLink extends Component {
 
   handleCreate = () => {
     let { fields: data, internals } = this.state;
-    data = { ...data };
+    data = deepClone(data);
 
     if (internals._startsImmediately) {
       delete data.start_at;
