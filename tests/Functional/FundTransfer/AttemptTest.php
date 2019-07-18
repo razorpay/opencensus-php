@@ -213,6 +213,8 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
+        $this->markTestSkipped();
+
         // Yesbank now uses api based channels
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::YESBANK, 2, Attempt\Type::PAYOUT);
