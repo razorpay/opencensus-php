@@ -71,6 +71,10 @@ class SharpGatewayTest extends TestCase
 
         $this->assertNotNull($payment['reference1']);
 
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
+
+        $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
+
         $this->assertNotEmpty($payment['vpa']);
     }
 
