@@ -13,25 +13,25 @@ var stateOptions = ['--Select--'].concat(
 export default [
   [
     {
-      name: 'business_operation_address',
+      name: 'business_registered_address',
       // placeholder: 'Enter Street Address',
-      label: 'Operational Address',
+      label: 'Registered Address',
       _cmp: Input.Textarea,
     },
     {
-      name: 'business_operation_pin',
+      name: 'business_registered_pin',
       label: 'Pincode',
       size: 'small',
       maxLength: '6',
       validator: isPinValid,
     },
     {
-      name: 'business_operation_city',
+      name: 'business_registered_city',
       label: 'City',
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
     },
     {
-      name: 'business_operation_state',
+      name: 'business_registered_state',
       label: 'State',
       _cmp: Input.Select,
       options: stateOptions,
@@ -46,14 +46,14 @@ export default [
   },
   [
     {
-      name: 'business_registered_address',
+      name: 'business_operation_address',
       // placeholder: 'Enter Street Address',
-      label: 'Registered Address',
+      label: 'Operational Address',
       _cmp: Input.Textarea,
       _when: differentAddress,
     },
     {
-      name: 'business_registered_pin',
+      name: 'business_operation_pin',
       label: 'Pincode',
       size: 'small',
       maxLength: '6',
@@ -61,18 +61,18 @@ export default [
       _when: differentAddress,
     },
     {
-      name: 'business_registered_city',
+      name: 'business_operation_city',
       label: 'City',
-      _when: differentAddress,
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
+      _when: differentAddress,
     },
     {
-      name: 'business_registered_state',
+      name: 'business_operation_state',
       label: 'State',
-      _when: differentAddress,
       _cmp: Input.Select,
       options: stateOptions,
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
+      _when: differentAddress,
     },
   ],
 ];
