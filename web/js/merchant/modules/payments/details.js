@@ -22,7 +22,10 @@ export const fetchItem = id => {
     payload: payment.fetch(
       id,
       {},
-      { expand: ['card', 'emi_plan', 'disputes'] }
+      {
+        expand: ['card', 'emi_plan', 'disputes'],
+        refund: 'instant_refund_supported',
+      }
     ),
   };
 };
