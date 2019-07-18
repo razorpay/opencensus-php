@@ -94,8 +94,13 @@ class NotifyStatusUpdate extends Mailable
 
                 break;
 
+            case STATUS::PROCESSING:
+                $subject = 'Your RazorpayX Current Account is under' . $this->data['status'];
+
+                break;
+
             default:
-                $subject = 'Your RazorpayX Current Account is ' . $this->data['status'];
+                $subject = 'Your RazorpayX Current Account is ' . ucfirst($this->data['status']);
 
         }
 
