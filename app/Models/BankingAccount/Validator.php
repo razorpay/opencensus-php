@@ -24,12 +24,16 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC        => 'required|string|size:11',
         Entity::FTS_FUND_ACCOUNT_ID => 'sometimes|nullable|string|size:14',
         Entity::ACCOUNT_TYPE        => 'required|string|in:nodal',
-        Entity::STATUS              => 'required|in:created',
+    ];
+
+    protected static $rblCreateRules = [
+        Entity::CHANNEL               => 'required|string|custom',
+        Entity::BANK_REFERENCE_NUMBER => 'required|integer|digits:5',
+        Entity::PINCODE               => 'required|string',
     ];
 
     protected static $createRules = [
         Entity::CHANNEL               => 'required|string|custom',
-        Entity::STATUS                => 'required|in:created',
         Entity::BANK_REFERENCE_NUMBER => 'required_if:channel,rbl',
         Entity::PINCODE               => 'required_if:channel,rbl',
         Entity::ACCOUNT_IFSC          => 'sometimes|nullable|string|size:11',

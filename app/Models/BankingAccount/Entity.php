@@ -174,9 +174,39 @@ class Entity extends Base\PublicEntity
 
     // ---------------------------- Setters ----------------------------------- //
 
-    public function setStatus(string $status)
+    public function setStatus(string $status, array $input)
     {
-        $this->setAttribute(self::STATUS, $status);
+        if ($this->isYesbankInput($input) === true)
+        {
+            $this->setAttribute(self::STATUS, $status);
+
+            return;
+        }
+
+        if ($this->isStatusBeingSetForFirstTime() === true)
+        {
+            Status::validateInInitialStatuses($status);
+
+            $this->setAttribute(self::STATUS, $status);
+
+            return;
+        }
+
+        if ($this->isDirty(Entity::STATUS) === false)
+        {
+            return;
+        }
+
+        $originalStatus = $this->getOriginal(Entity::STATUS);
+
+        $newStatus = $this->getStatus();
+
+        Status::validateCurrentToPreviousMapping($originalStatus, $newStatus);
+
+        if ($newStatus === Status::PROCESSED)
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $input);
+        }
     }
 
     public function setBankReferenceNumber(string $number)
@@ -322,5 +352,24 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
+    }
+
+    // checking if the status is getting set for the first time.
+    protected function isStatusBeingSetForFirstTime()
+    {
+        $original = $this->getOriginal(Entity::STATUS);
+
+        return ($original === null ? true : false);
+    }
+
+    protected function isYesbankInput(array $input)
+    {
+        if ((isset($input[Entity::CHANNEL]) === true) and
+        ($input[Entity::CHANNEL] === Channel::YESBANK))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -71,7 +71,6 @@ class Core extends Base\Core
             Entity::ACCOUNT_NUMBER      => $bankAccount->getAccountNumber(),
             Entity::FTS_FUND_ACCOUNT_ID => $bankAccount->getFtsFundAccountId(),
             Entity::ACCOUNT_TYPE        => AccountType::NODAL,
-            Entity::STATUS              => Status::CREATED,
         ];
 
         return $this->createYesbankBankingAccount(
@@ -98,17 +97,28 @@ class Core extends Base\Core
             return $bankingAccount;
         }
 
+        $bankingAccount = new Entity;
+
         $processor = $this->getProcessor($channel);
 
         $bankContent = $processor->validateAndPreProcessInputForAccountCreation($input);
 
         $input = array_merge($input, $bankContent);
 
-        $bankingAccount = new Entity;
+        // we want to setStatus method to handle all the status validations
+        // also we might add logic around updating other columns based on
+        // change of status. So moving status out of input and explicitly
+        // calling setStatus
+
+        array_pull($input, Entity::STATUS);
+
+        (new Validator)->validateInput($channel . 'Create', $input);
 
         $input[Entity::ACCOUNT_TYPE] = AccountType::CURRENT;
 
         $bankingAccount->build($input);
+
+        $bankingAccount->setStatus($bankContent[Entity::STATUS], $input);
 
         $bankingAccount->merchant()->associate($merchant);
 
@@ -203,7 +213,7 @@ class Core extends Base\Core
 
         $bankingAccount->edit($input);
 
-        $this->runStatusValidationsForUpdate($bankingAccount, $input);
+        $bankingAccount->setStatus($input[Entity::STATUS], $input);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
@@ -237,7 +247,7 @@ class Core extends Base\Core
         $bankingAccount->balance()->associate($balance);
 
         // Yesbank accounts are always created in the processed state
-        $bankingAccount->setStatus(Status::ACTIVATED);
+        $bankingAccount->setStatus(Status::ACTIVATED, $input);
 
         $this->repo->saveOrFail($bankingAccount);
 
@@ -473,38 +483,6 @@ class Core extends Base\Core
                 ],
                 'Merchant credentials could not be stored, Please try again!'
             );
-        }
-    }
-
-    protected function runStatusValidationsForUpdate(Entity $bankingAccount, array $input)
-    {
-        //
-        // We will run status validations only if the status of the account entity
-        // has changed and we will run separate validators for processed status
-        //
-        if ($bankingAccount->isDirty(Entity::STATUS) === false)
-        {
-            return;
-        }
-
-        $originalStatus = $bankingAccount->getOriginal(Entity::STATUS);
-
-        $newStatus = $bankingAccount->getStatus();
-
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE,
-            [
-                'id'                => $bankingAccount->getId(),
-                'input'             => $input,
-                'current_status'    => $originalStatus,
-                'new_status'        => $newStatus,
-            ]);
-
-        Status::validateCurrentToPreviousMapping($newStatus, $originalStatus);
-
-        if ($newStatus === Status::PROCESSED)
-        {
-            (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $input);
         }
     }
 }

@@ -14,6 +14,11 @@ class Status
     const ACTIVATED         = 'activated';
     const UNSERVICEABLE     = 'unserviceable';
 
+    protected static $initialStatuses = [
+        Status::CREATED,
+        Status::UNSERVICEABLE,
+    ];
+
     protected static $statuses = [
         self::CREATED,
         self::INITIATED,
@@ -21,6 +26,46 @@ class Status
         self::CANCELLED,
         self::PROCESSED,
         self::UNSERVICEABLE,
+    ];
+
+    /**
+     * @var array
+     * This contains a status map that keeps mapping of a status
+     * to previous possible statuses. This is to ensure the status
+     * change on Banking Account Entity happens in an order.
+     */
+    protected static $currentToPreviousStatusMap = [
+        self::CREATED           => [],
+        self::INITIATED         => [self::CREATED],
+        self::PROCESSING        => [self::INITIATED],
+        self::PROCESSED         => [self::INITIATED, self::PROCESSING],
+        self::ACTIVATED         => [self::PROCESSED],
+        self::UNSERVICEABLE     => [self::CREATED, self::INITIATED, self::PROCESSING],
+        self::CANCELLED         => [self::CREATED, self::INITIATED, self::PROCESSING]
+    ];
+
+    protected static $fromToStatusMap = [
+        self::CREATED => [
+            self::INITIATED,
+            self::UNSERVICEABLE,
+            self::CANCELLED
+        ],
+        self::INITIATED => [
+            self::PROCESSING,
+            self::PROCESSED,
+            self::UNSERVICEABLE,
+            self::CANCELLED
+        ],
+        self::PROCESSING => [
+            self::PROCESSED,
+            self::UNSERVICEABLE,
+            self::CANCELLED
+        ],
+        self::PROCESSED => [
+            self::ACTIVATED
+        ],
+        self::UNSERVICEABLE => [],
+        self::CANCELLED => [],
     ];
 
     public static $internallyEditStatuses = [
@@ -51,11 +96,11 @@ class Status
         }
     }
 
-    public static function validateCurrentToPreviousMapping(string $currentStatus, string $previousStatus)
+    public static function validateCurrentToPreviousMapping(string $previousStatus, string $currentStatus)
     {
-        $previousStatuses = self::$currentToPreviousStatusMap[$currentStatus];
+        $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
-        if (in_array($previousStatus, $previousStatuses, true) !== true)
+        if (in_array($currentStatus, $nextStatusList, true) !== true)
         {
             throw new BadRequestValidationFailureException(
                 'Status change not permitted',
@@ -73,19 +118,18 @@ class Status
         return self::$statuses;
     }
 
-    /**
-     * @var array
-     * This contains a status map that keeps mapping of a status
-     * to previous possible statuses. This is to ensure the status
-     * change on Banking Account Entity happens in an order.
-     */
-    protected static $currentToPreviousStatusMap = [
-        self::CREATED           => [],
-        self::INITIATED         => [self::CREATED],
-        self::PROCESSING        => [self::INITIATED],
-        self::PROCESSED         => [self::INITIATED, self::PROCESSING],
-        self::ACTIVATED         => [self::PROCESSED],
-        self::UNSERVICEABLE     => [self::CREATED, self::INITIATED, self::PROCESSING],
-        self::CANCELLED         => [self::CREATED, self::INITIATED, self::PROCESSING]
-    ];
+    public static function validateInInitialStatuses(string $status)
+    {
+        $statusList = self::$initialStatuses;
+
+        if (in_array($status, $statusList, true) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'bank status' . $status. 'cannot be saved',
+                Entity::BANK_INTERNAL_STATUS,
+                [
+                    Entity::STATUS               => $status
+                ]);
+        }
+    }
 }
