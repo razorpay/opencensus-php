@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html dir='ltr'>
   <head>
-    <meta charset='utf-8'>
     <title>Razorpay · Manage Your Account</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset='utf-8'>
     <meta name='viewport' content='user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1'>
     <link href='https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet'>
     <link href='https://fonts.googleapis.com/css?family=PT+Mono' rel='stylesheet'>
