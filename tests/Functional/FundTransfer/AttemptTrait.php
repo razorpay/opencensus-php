@@ -160,7 +160,6 @@ trait AttemptTrait
         $suffix = ($isFileBased === true) ? '' : 'Api';
 
         $batchTestData = 'testFileCreation' . ucfirst($sourceType). $suffix;
-
         $this->assertTestResponse($batch, $batchTestData);
 
         $this->assertEquals($channel, $batch[Batch\Entity::CHANNEL]);
