@@ -375,9 +375,9 @@ class PaysecureGatewayTest extends TestCase
 
                     $content['status'] = 'failure';
 
-                    $content['errorcode'] = '57';
+                    $content['errorcode'] = 'CA';
 
-                    $content['errormsg'] = 'DECLINED (cardholder not allowed)';
+                    $content['errormsg'] = 'Compliance error code for acquirer';
                 }
             }
         );
