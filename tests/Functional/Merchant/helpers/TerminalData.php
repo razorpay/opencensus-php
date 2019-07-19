@@ -1982,4 +1982,22 @@ return [
             ]
         ]
     ],
+
+    'testCreateBilldeskTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'billdesk',
+                'gateway_merchant_id'       => 'testmerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'gateway_access_code'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'testmerchantid',
+                'enabled'              => true,
+            ]
+        ]
+    ],
 ];
