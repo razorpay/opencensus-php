@@ -123,8 +123,6 @@ export default class NewSubscriptionLink extends Component {
           value: data.notes[key],
         }));
 
-        console.log('NEW SUBSCRIPTION....', newSubscription);
-
         this.setState(
           {
             fields: newSubscription,
