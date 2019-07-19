@@ -251,7 +251,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'expected_column'   => $amountColumn,
                     'currency'          => $this->payment->getCurrency(),
                     'payment_id'        => $this->payment->getId(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
