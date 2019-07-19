@@ -785,7 +785,6 @@ class PayoutTest extends TestCase
     public function testCreatePayoutAttemptSuccess()
     {
         // FTA initiate happens via sync queue
-
         $this->ba->privateAuth();
         $p1 = $this->testCreatePayout();
 
