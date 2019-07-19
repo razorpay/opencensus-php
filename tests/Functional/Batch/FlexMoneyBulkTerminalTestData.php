@@ -42,14 +42,12 @@ return [
                         Header::FLEXMONEY_MERCHANT_ID          => '10NodalAccount',
                         Header::FLEXMONEY_GATEWAY_MERCHANT_ID  => '123',
                         Header::FLEXMONEY_GATEWAY_MERCHANT_ID2 => '123',
-                        Header::FLEXMONEY_TERMINAL_PASSWORD    => 'password',
                         Header::FLEXMONEY_CATEGORY             => '1234'
                     ],
                     [
                         Header::FLEXMONEY_MERCHANT_ID          => '100000Razorpay',
                         Header::FLEXMONEY_GATEWAY_MERCHANT_ID  => '321',
                         Header::FLEXMONEY_GATEWAY_MERCHANT_ID2 => '321',
-                        Header::FLEXMONEY_TERMINAL_PASSWORD    => 'password',
                         Header::FLEXMONEY_CATEGORY             => '1234'
                     ]
                 ],

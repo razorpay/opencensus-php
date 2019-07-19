@@ -594,7 +594,7 @@ class Repository extends Base\Repository
                     ->update($attributes);
     }
 
-    public function getCancelledBilldeskTransactions()
+    public function getCancelledBilldeskPaymentTransactions()
     {
         $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
@@ -610,6 +610,44 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
+                    ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
+                    ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
+                    ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+                    ->whereNull($transactionReconciledAt)
+                    ->get();
+    }
+
+    /**
+     * select `transactions`.* from `transactions`
+     * inner join `refunds` on `refunds`.`id` = `transactions`.`entity_id`
+     * inner join `payments` on `refunds`.`payment_id` = `payments`.`id`
+     * inner join `billdesk` on `billdesk`.`payment_id` = `payments`.`id`
+     * where `billdesk`.`RefStatus` = '0699'
+     * and `payments`.`status` = 'refunded'
+     * and `transactions`.`reconciled_at` is null
+     *
+     * @return mixed
+     */
+    public function getCancelledBilldeskPaymentRefundTransactions()
+    {
+        $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
+        $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+
+        $refundId = $this->repo->refund->dbColumn(Refund\Entity::ID);
+        $refundPaymentId = $this->repo->refund->dbColumn(Refund\Entity::PAYMENT_ID);
+
+        $transactionEntityId = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->dbColumn(Entity::RECONCILED_AT);
+
+        $transactionData = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::REFUND, $refundId, '=', $transactionEntityId)
+                    ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
                     ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
                     ->where($paymentStatus, '=', Payment\Status::REFUNDED)

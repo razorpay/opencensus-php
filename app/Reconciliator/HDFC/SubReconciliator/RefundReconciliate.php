@@ -8,6 +8,7 @@ use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\HDFC\Reconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
@@ -15,7 +16,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_REFUND_ID                      = 'merchant_trackid';
-    const COLUMN_REFUND_AMOUNT                  = 'domestic_amt';
+    const COLUMN_REFUND_AMOUNT                  = ['domestic_amt', 'intnl_amt'];
     const COLUMN_INTERNATIONAL_REFUND_AMOUNT    = 'paycur_usd';
     const COLUMN_ARN                            = 'arn_no';
     const COLUMN_GATEWAY_TRANSACTION_ID         = 'tran_id';
@@ -121,6 +122,64 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         $paymentId = $gatewayEntity->getPaymentId();
 
         return $paymentId;
+    }
+
+    protected function getReconRefundAmount(array $row)
+    {
+        $amountColumn = ($this->isInternationalRefund($row) === true) ?
+                        self::COLUMN_INTERNATIONAL_REFUND_AMOUNT :
+                        self::COLUMN_REFUND_AMOUNT;
+
+        $refundAmountColumns = (is_array($amountColumn) === false) ?
+                                [$amountColumn] :
+                                $amountColumn;
+
+        $refundAmountColumn = array_first(
+            $refundAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (array_key_exists($amount, $row) === true);
+            });
+
+        if ($refundAmountColumn === null)
+        {
+            // None of the expected payment columns set
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'refund_id'         => $this->refund->getId(),
+                    'expected_column'   => $amountColumn,
+                    'amount'            => $this->refund->getBaseAmount(),
+                    'currency'          => $this->payment->getCurrency(),
+                    'payment_id'        => $this->payment->getId(),
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        //
+        // for HDFC, sometimes we are getting rows where 'domestic_amt' column is 0
+        // and amount is given in 'intnl_amt' column. In this case, we can't just calculate
+        // the recon amount on first key set. Instead we should calculate on the non zero
+        // amount column if any.
+        //
+        $refundAmountNonZeroColumn = array_first(
+            $refundAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (empty($row[$amount]) === false);
+            });
+
+        if ($refundAmountNonZeroColumn === null)
+        {
+            // There was no non zero amount column, so returning 0
+            return 0;
+        }
+
+        return Helper::getIntegerFormattedAmount($row[$refundAmountNonZeroColumn]);
     }
 
     protected function getArn(array $row)

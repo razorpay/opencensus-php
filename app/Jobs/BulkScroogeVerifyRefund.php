@@ -26,6 +26,11 @@ class BulkScroogeVerifyRefund extends Job
 
     protected $data;
 
+    /**
+     * @var string
+     */
+    protected $queueConfigKey = 'scrooge_refund_verify';
+
     public function __construct(array $data)
     {
         parent::__construct($data['mode']);

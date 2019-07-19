@@ -69,14 +69,12 @@ class ZestMoneyBulkTerminalTest extends TestCase
                 Batch\Header::ZESTMONEY_MERCHANT_ID          => '10NodalAccount',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID  => '123',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID2 => '123',
-                Batch\Header::ZESTMONEY_TERMINAL_PASSWORD    => 'password',
                 Batch\Header::ZESTMONEY_CATEGORY             => '1234',
             ],
             [
                 Batch\Header::ZESTMONEY_MERCHANT_ID          => '100000Razorpay',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID  => '321',
                 Batch\Header::ZESTMONEY_GATEWAY_MERCHANT_ID2 => '321',
-                Batch\Header::ZESTMONEY_TERMINAL_PASSWORD    => 'password',
                 Batch\Header::ZESTMONEY_CATEGORY             => '1234',
 
             ],
