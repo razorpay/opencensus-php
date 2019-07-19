@@ -304,6 +304,9 @@ class Beneficiary extends Base\Core
     }
 
     /**
+     * Registers Beneficiary through api based channels, If Registration status is false,
+     * It throws logic exception else returns the status.
+     *
      * @param Entity $bankAccount
      * @param string $channel
      *
@@ -343,6 +346,9 @@ class Beneficiary extends Base\Core
     }
 
     /**
+     * Verifies Beneficiary through api based channels, If Verification status is false,
+     * It throws logic exception else returns the status.
+     *
      * @param Entity $bankAccount
      * @param string $channel
      *

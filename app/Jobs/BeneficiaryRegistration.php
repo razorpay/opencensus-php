@@ -4,9 +4,10 @@ namespace RZP\Jobs;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount\Type;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
-use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Beneficiary;
 
 class BeneficiaryRegistration extends Job
@@ -68,8 +69,19 @@ class BeneficiaryRegistration extends Job
                 return;
             }
 
+            // Check to avoid unnecessary tries.
+            // As the `registerBeneficiaryThroughApi` checks for the type
+            // and returns false for the bank account which are not `merchant` or `contact`
+            if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
+            {
+                return;
+            }
+
             $status = (new Beneficiary)->registerBeneficiaryThroughApi($bankAccount, $this->channel);
 
+            // If Beneficiary Registration is successful dispatch it for Verification
+            // Else Method registerBeneficiaryThroughApi throws a logic exception which
+            // gets handled by catch block below.
             if ($status === true)
             {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $this->channel);
