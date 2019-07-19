@@ -103,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::USERNAME,
         self::PASSWORD,
         self::REFERENCE1,
+        self::BENEFICIARY_PIN,
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_EMAIL,
         self::BENEFICIARY_ADDRESS1,
@@ -142,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
         self::BENEFICIARY_ADDRESS3,
+        self::BENEFICIARY_PIN,
         self::BANK_INTERNAL_STATUS,
         self::ACCOUNT_TYPE,
         self::BANK_REFERENCE_NUMBER,
@@ -174,16 +176,16 @@ class Entity extends Base\PublicEntity
 
     // ---------------------------- Setters ----------------------------------- //
 
-    public function setStatus(string $status, array $input)
+    public function setStatus(string $status)
     {
-        if ($this->isYesbankInput($input) === true)
+        if ($this->isYesbankInput() === true)
         {
             $this->setAttribute(self::STATUS, $status);
 
             return;
         }
 
-        if ($this->isStatusBeingSetForFirstTime() === true)
+        if ($this->getStatus() === null)
         {
             Status::validateInInitialStatuses($status);
 
@@ -205,7 +207,7 @@ class Entity extends Base\PublicEntity
 
         if ($newStatus === Status::PROCESSED)
         {
-            (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $input);
+            (new Validator)->setStrictFalse()->validateInput(Validator::PROCESSED_STATUS, $this->toArray());
         }
     }
 
@@ -354,18 +356,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
-    // checking if the status is getting set for the first time.
-    protected function isStatusBeingSetForFirstTime()
+    protected function isYesbankInput()
     {
-        $original = $this->getOriginal(Entity::STATUS);
+        $channel = $this->getChannel();
 
-        return ($original === null ? true : false);
-    }
-
-    protected function isYesbankInput(array $input)
-    {
-        if ((isset($input[Entity::CHANNEL]) === true) and
-        ($input[Entity::CHANNEL] === Channel::YESBANK))
+        if ($channel === Channel::YESBANK)
         {
             return true;
         }

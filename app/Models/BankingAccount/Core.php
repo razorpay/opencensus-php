@@ -118,7 +118,7 @@ class Core extends Base\Core
 
         $bankingAccount->build($input);
 
-        $bankingAccount->setStatus($bankContent[Entity::STATUS], $input);
+        $bankingAccount->setStatus($bankContent[Entity::STATUS]);
 
         $bankingAccount->merchant()->associate($merchant);
 
@@ -213,7 +213,7 @@ class Core extends Base\Core
 
         $bankingAccount->edit($input);
 
-        $bankingAccount->setStatus($input[Entity::STATUS], $input);
+        $bankingAccount->setStatus($input[Entity::STATUS]);
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 
@@ -247,7 +247,7 @@ class Core extends Base\Core
         $bankingAccount->balance()->associate($balance);
 
         // Yesbank accounts are always created in the processed state
-        $bankingAccount->setStatus(Status::ACTIVATED, $input);
+        $bankingAccount->setStatus(Status::ACTIVATED);
 
         $this->repo->saveOrFail($bankingAccount);
 
