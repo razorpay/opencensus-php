@@ -174,7 +174,7 @@ export default class InvoicesNewContainer extends Component {
       .then(data => {
         this.isIntentDuplicate = true;
 
-        let expire_by = data.expire_by && moment(data.expire_by * 1000);
+        let expire_by = data.expire_by && moment(data.expire_by);
 
         // If null or is before current time
         if (!expire_by || expire_by.diff(moment()) < 0) {
@@ -188,7 +188,7 @@ export default class InvoicesNewContainer extends Component {
         data.date = Math.ceil(new Date().getTime() / 1000); // Overriding invoice.date to initial date in redux form
         data.expire_by = expire_by;
         data.id = '';
-        data.receipt_no = '';
+        data.receipt = '';
         data.status = 'draft';
 
         return data;
@@ -279,6 +279,7 @@ export default class InvoicesNewContainer extends Component {
 
     let invoiceId = props.match.params.id;
     const searchQuery = getURLQueryParams(props.location.search);
+    this.isIntentDuplicate = false;
 
     if (invoiceId) {
       promises.push(
@@ -361,9 +362,10 @@ export default class InvoicesNewContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const invoiceId = nextProps.match.params.id;
+    const invoiceId = this.props.match.params.id;
+    const nextInvoiceId = nextProps.match.params.id;
 
-    if (this.props.match.params.id !== invoiceId) {
+    if (invoiceId !== nextInvoiceId) {
       this.props.closeModal();
       this.initInvoicePage(nextProps);
     }
@@ -960,9 +962,13 @@ export default class InvoicesNewContainer extends Component {
       isSaving: true,
     });
     return this.props
-      .saveInvoice(props, {
-        'Content-Type': 'application/json',
-      })
+      .saveInvoice(
+        props,
+        {
+          'Content-Type': 'application/json',
+        },
+        this.isIntentDuplicate
+      )
       .then(invoice => {
         this.setState({
           isSaving: false,
@@ -1544,20 +1550,21 @@ export default class InvoicesNewContainer extends Component {
 
     const showGstn = invoiceCurrency === 'INR';
 
-    const duplicateInvoiceButton = this.props.invoice.id && (
-      <NavLink
-        class="btn btn-default btn-block btn-lg"
-        to={`/invoices/new?duplicate_id=${invoice.id}`}
-        onClick={trackClickDuplicateInvoice}
-      >
-        <div class="row inv__optiongroupbutton">
-          <div class="col-xs-4">
-            <i class="i i-copy" />
+    const duplicateInvoiceButton = this.props.invoice.id &&
+      !this.props.invoice.subscription_id && (
+        <NavLink
+          class="btn btn-default btn-block btn-lg"
+          to={`/invoices/new?duplicate_id=${invoice.id}`}
+          onClick={trackClickDuplicateInvoice}
+        >
+          <div class="row inv__optiongroupbutton">
+            <div class="col-xs-4">
+              <i class="i i-copy" />
+            </div>
+            <div class="col-xs-8">Duplicate Invoice</div>
           </div>
-          <div class="col-xs-8">Duplicate Invoice</div>
-        </div>
-      </NavLink>
-    );
+        </NavLink>
+      );
 
     return (
       <div class="react-root">
