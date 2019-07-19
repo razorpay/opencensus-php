@@ -178,6 +178,10 @@ class Entity extends Base\PublicEntity
         self::TRIVIA         => null,
     ];
 
+    protected $casts = [
+        self::IIN            => 'string'
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

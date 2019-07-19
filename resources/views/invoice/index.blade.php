@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Invoice</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="robots" content="noindex">

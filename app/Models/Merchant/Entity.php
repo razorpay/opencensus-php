@@ -189,6 +189,7 @@ class Entity extends Base\PublicEntity
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
     const PARTNER_ID                = 'partner_id';
     const BANKING_ACCOUNT           = 'banking_account';
+    const ACCOUNTS                  = 'accounts';
 
     protected $entity = 'merchant';
 

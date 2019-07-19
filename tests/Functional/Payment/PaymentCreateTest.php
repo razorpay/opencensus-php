@@ -973,6 +973,30 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('Razorpay', $payment['settled_by']);
     }
 
+    public function testPaymentS2SAxisEmandate()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB');
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+
+    }
+
     public function testPaymentS2SRedirectPrivateAuth()
     {
         $this->ba->privateAuth();

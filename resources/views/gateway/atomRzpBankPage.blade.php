@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Razorpay Bank</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <meta http-equiv="pragma" content="no-cache">

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Base\Beneficiary;
 
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
@@ -28,6 +29,19 @@ abstract class RequestProcessor extends Beneficiary
         ];
 
         return $response;
+    }
+
+    /**
+     * Place holder method for verifyBeneficiary since parent abstract class has it.
+     * @param PublicCollection $bankAccounts
+     * @return array
+     * @throws Exception\LogicException
+     */
+    public function verifyBeneficiary(PublicCollection $bankAccounts): array
+    {
+        throw new Exception\LogicException('Beneficiary verification not supported for channel '.$this->channel);
+
+        return [];
     }
 
     /**
