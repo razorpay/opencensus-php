@@ -249,6 +249,34 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
+    public function testMerchantCategoryFilterReject()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->merchant->setCategory('1234');
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
+    }
+
+    public function testMerchantCategoryFilterDontReject()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->merchant->setCategory('4321');
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
+    }
+
     public function testMerchantCategory2Filter()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal');

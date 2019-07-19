@@ -19,6 +19,12 @@ class GatewayProcessor extends BaseGatewayProcessor
     const HITACHI_INDEX_KEY     = 'hitachi_gateway_terminal_creation_index';
     const HITACHI_TERMINAL_TID_PREFIX = '38R';
     const HITACHI_TERMINAL_MID_PREFIX = '38RR000000';
+    /*
+     * Maintain a list of blacklisted MCCs (merchant categories) in the code(hard coded),
+     * and skip Hitachi automatic onboarding for merchants belonging to these categories.
+     * Use case is high-risk merchants, who should not be onboarded via Hitachi.
+     */
+    const HITACHI_BLACKLISTED_MCC = ['5962', '5966', '5967', '7995', '5912', '5122'];
 
     public function __construct()
     {

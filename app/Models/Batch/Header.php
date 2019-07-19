@@ -466,7 +466,6 @@ class Header
     const ZESTMONEY_GATEWAY_MERCHANT_ID  = 'Gateway Merchant ID';
     const ZESTMONEY_CATEGORY             = 'Terminal Category';
     const ZESTMONEY_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant ID2';
-    const ZESTMONEY_TERMINAL_PASSWORD    = 'Gateway Terminal Password';
     const ZESTMONEY_TERMINAL_ID          = 'Terminal ID';
 
     //
@@ -476,7 +475,6 @@ class Header
     const FLEXMONEY_GATEWAY_MERCHANT_ID  = 'Gateway Merchant ID';
     const FLEXMONEY_CATEGORY             = 'Terminal Category';
     const FLEXMONEY_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant ID2';
-    const FLEXMONEY_TERMINAL_PASSWORD    = 'Gateway Terminal Password';
     const FLEXMONEY_TERMINAL_ID          = 'Terminal ID';
 
 
@@ -487,7 +485,6 @@ class Header
     const EARLYSALARY_GATEWAY_MERCHANT_ID  = 'Gateway Merchant ID';
     const EARLYSALARY_CATEGORY             = 'Terminal Category';
     const EARLYSALARY_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant ID2';
-    const EARLYSALARY_TERMINAL_PASSWORD    = 'Gateway Terminal Password';
     const EARLYSALARY_TERMINAL_ID          = 'Terminal ID';
 
     //
@@ -1453,7 +1450,6 @@ class Header
                 self::EARLYSALARY_MERCHANT_ID,
                 self::EARLYSALARY_GATEWAY_MERCHANT_ID,
                 self::EARLYSALARY_GATEWAY_MERCHANT_ID2,
-                self::EARLYSALARY_TERMINAL_PASSWORD,
                 self::EARLYSALARY_CATEGORY,
             ],
             self::OUTPUT => [
@@ -1471,7 +1467,6 @@ class Header
                 self::FLEXMONEY_MERCHANT_ID,
                 self::FLEXMONEY_GATEWAY_MERCHANT_ID,
                 self::FLEXMONEY_GATEWAY_MERCHANT_ID2,
-                self::FLEXMONEY_TERMINAL_PASSWORD,
                 self::FLEXMONEY_CATEGORY,
             ],
             self::OUTPUT => [
@@ -1489,7 +1484,6 @@ class Header
                 self::ZESTMONEY_MERCHANT_ID,
                 self::ZESTMONEY_GATEWAY_MERCHANT_ID,
                 self::ZESTMONEY_GATEWAY_MERCHANT_ID2,
-                self::ZESTMONEY_TERMINAL_PASSWORD,
                 self::ZESTMONEY_CATEGORY,
             ],
             self::OUTPUT => [

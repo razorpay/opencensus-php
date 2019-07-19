@@ -8,19 +8,22 @@ class Status
     const CREATED    = 'created';
     const PENDING    = 'pending';
     const REGISTERED = 'registered';
+    const VERIFIED   = 'verified';
 
     protected static $registrationStatuses = [
         self::CREATED,
         self::PENDING,
         self::FAILED,
-        self::REGISTERED
+        self::REGISTERED,
+        self::VERIFIED,
     ];
 
     protected static $allowedStateTransition = [
         self::FAILED     => [ self::FAILED, self::PENDING, self::REGISTERED ],
         self::PENDING    => [ self::PENDING, self::FAILED, self::REGISTERED ],
         self::CREATED    => [ self::CREATED, self::PENDING, self::REGISTERED, self::FAILED ],
-        self::REGISTERED => [ self::REGISTERED, self::FAILED ]
+        self::REGISTERED => [ self::REGISTERED, self::FAILED, self::VERIFIED ],
+        self::VERIFIED   => [ self::VERIFIED, self::FAILED]
     ];
 
     /**

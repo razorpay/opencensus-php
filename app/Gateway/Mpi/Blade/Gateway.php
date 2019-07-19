@@ -3,19 +3,21 @@
 namespace RZP\Gateway\Mpi\Blade;
 
 use Cache;
-use Carbon\Carbon;
-use GuzzleHttp;
 use DOMDocument;
-use RZP\Diag\EventCode;
+use Carbon\Carbon;
+use Lib\Formatters\Xml;
+
 use RZP\Exception;
 use Requests_Hooks;
 use RZP\Models\Card;
-use RZP\Gateway\Mpi\Base;
+use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
-use Lib\Formatters\Xml;
+use RZP\Gateway\Mpi\Base;
+
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base as BaseGateway;
@@ -211,6 +213,14 @@ class Gateway extends Base\Gateway
         $this->app['diag']->trackGatewayPaymentEvent(
             EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
             $input);
+
+        if ($input['payment'][Payment\Entity::GATEWAY] === Payment\Gateway::FIRST_DATA)
+        {
+            $this->trace->info(TraceCode::GATEWAY_RAW_PARES_RESPONSE, [
+                'pares'     => $input['gateway'][PARes::GATEWAY_PARES],
+                'store_id'  => $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID],
+            ]);
+        }
 
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity

@@ -133,10 +133,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
-        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -195,6 +195,8 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TYPE . '.non_recurring'    => 'sometimes|in:0,1',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string'
     ];
 
     protected static $ebsTerminalRules = [
@@ -323,6 +325,8 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string'
     ];
 
     protected static $hdfcEditTerminalRules = [

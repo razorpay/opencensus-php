@@ -5131,3 +5131,7 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_channel_index (channel),
     ADD INDEX banking_accounts_status_index (status),
     ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
+    ADD INDEX gateway_rules_category_index (category);
