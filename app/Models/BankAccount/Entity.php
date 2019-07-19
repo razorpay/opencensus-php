@@ -149,8 +149,7 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
-        self::ENTITY,
-        self::ACCOUNT_NUMBER,
+        self::ENTITY
     ];
 
     protected $appends = [
