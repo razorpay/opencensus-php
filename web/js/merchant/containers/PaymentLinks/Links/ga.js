@@ -70,3 +70,21 @@ export function closePaymentLinkForm(text) {
     eventLabel: text + ' | Payment Links V2',
   });
 }
+
+/*
+* Track click on duplicate payment link button
+* */
+export function trackClickDuplicatePaymentLink() {
+  track({
+    eventAction: 'Click - Duplicate Payment Link',
+  });
+}
+
+/*
+* Track click on saving duplicate payment link
+* */
+export function trackSaveDuplicatePaymentLink() {
+  track({
+    eventAction: 'Save - Duplicate Payment Link',
+  });
+}

@@ -10,6 +10,7 @@ import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 import { subscriptionId, createdAt, status } from 'rzp/ui/item/pair';
 import Tooltip from 'rzp/ui/Tooltip';
+import { trackClickDuplicatePlan } from 'merchant/containers/Plans/ga';
 
 export default ({ plan, isLoading, statusMsg, subscriptions }) => {
   const tableLimit = 5; // Set limit to total rows displayed in table
@@ -26,6 +27,7 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
             <strong>{plan.id}</strong>
             <div className="btn-toolbar pull-right">
               <NavLink
+                onClick={trackClickDuplicatePlan}
                 class="btn Button--primary--invert"
                 to={`/plans/new?duplicate_id=${plan.id}`}
               >

@@ -52,7 +52,12 @@ import AddressDisplay from 'merchant/components/AddressDisplay';
 import * as constants from 'rzp/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
-import { track, trackLinkClick } from './ga';
+import {
+  track,
+  trackLinkClick,
+  trackClickDuplicateInvoice,
+  trackSaveDuplicateInvoice,
+} from './ga';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import PickCurrency from 'merchant/components/Invoices/PickCurrency';
 import { classList } from 'common/util';
@@ -167,6 +172,8 @@ export default class InvoicesNewContainer extends Component {
     return this.props
       .fetchInvoice(invoiceId)
       .then(data => {
+        this.isIntentDuplicate = true;
+
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
 
         // If null or is before current time
@@ -976,6 +983,10 @@ export default class InvoicesNewContainer extends Component {
   }
 
   save = props => {
+    if (this.isIntentDuplicate) {
+      trackSaveDuplicateInvoice();
+    }
+
     props = removeTaxForNonINRItems(props, this.state.invoiceCurrency);
 
     return this._save(props).then(invoice => {
@@ -1537,6 +1548,7 @@ export default class InvoicesNewContainer extends Component {
       <NavLink
         class="btn btn-default btn-block btn-lg"
         to={`/invoices/new?duplicate_id=${invoice.id}`}
+        onClick={trackClickDuplicateInvoice}
       >
         <div class="row inv__optiongroupbutton">
           <div class="col-xs-4">

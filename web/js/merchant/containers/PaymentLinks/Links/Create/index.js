@@ -27,7 +27,11 @@ import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { luminateRow } from 'merchant/modules/app';
 
 import { getURLQueryParams, paiseToRupees } from 'rzp/utils/rzp-utils';
-import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
+import {
+  trackOpenCreateForm,
+  closePaymentLinkForm,
+  trackSaveDuplicatePaymentLink,
+} from '../ga';
 
 import Spinner from 'rzp/ui/Spinner';
 
@@ -185,6 +189,7 @@ export default class CreateNewContainer extends React.Component {
     this.props
       .fetchInvoice(invoiceId)
       .then(data => {
+        this.isIntentDuplicate = true;
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
 
         // If null or is before current time
@@ -223,8 +228,6 @@ export default class CreateNewContainer extends React.Component {
         setTimeout(_ => this.onChangeNotes(defaultValueNotes), 0);
       })
       .catch(err => {
-        console.log('ERR..', err);
-
         this.props.showNotification({
           type: 'error',
           message: err,
@@ -363,6 +366,10 @@ export default class CreateNewContainer extends React.Component {
   };
 
   onCreate = () => {
+    if (this.isIntentDuplicate) {
+      trackSaveDuplicatePaymentLink();
+    }
+
     const IS_MODAL_VIEW = this.props.onClose;
 
     this.setState({

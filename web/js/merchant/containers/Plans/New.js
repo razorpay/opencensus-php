@@ -14,6 +14,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
 import { fetchPlan } from 'merchant/modules/plans';
+import { trackSaveDuplicatePlan } from './ga';
 
 import {
   getKeysSeparatedByPipe,
@@ -80,6 +81,8 @@ export default class AddPlan extends Component {
     const searchQuery = getURLQueryParams(this.props.location.search);
     if (searchQuery.duplicate_id) {
       this.props.fetchPlan(searchQuery.duplicate_id).then(data => {
+        this.isIntentDuplicate = true;
+
         const newPlan = {};
 
         newPlan.item = {
@@ -123,6 +126,10 @@ export default class AddPlan extends Component {
   }
 
   save = props => {
+    if (this.isIntentDuplicate) {
+      trackSaveDuplicatePlan();
+    }
+
     return this.props
       .savePlan(props)
       .then(plan => {

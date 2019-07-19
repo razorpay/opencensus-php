@@ -20,6 +20,8 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { changeData } from 'merchant/containers/Subscriptions/SubscriptionLinks/Update/Review';
 import Tooltip from 'rzp/ui/Tooltip';
 
+import { trackClickDuplicateSubscription } from 'merchant/containers/Subscriptions/ga';
+
 export default props => {
   const {
     mode,
@@ -101,6 +103,7 @@ export default props => {
             )}
             <div className="btn-toolbar pull-right">
               <NavLink
+                onClick={trackClickDuplicateSubscription}
                 class="btn Button--primary--invert"
                 to={`/subscriptions/new?duplicate_id=${subscription.id}`}
               >

@@ -27,6 +27,8 @@ import Review from './Review';
 import Spinner from 'rzp/ui/Spinner';
 import moment from 'moment';
 
+import { trackSaveDuplicateSubscription } from '../../ga';
+
 @withRouter
 @connect(
   state => ({
@@ -88,6 +90,8 @@ export default class NewSubscriptionLink extends Component {
       });
 
       this.props.fetchSubscription(searchQuery.duplicate_id).then(data => {
+        this.isIntentDuplicate = true;
+
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
         let start_at = data.start_at && moment(data.start_at * 1000);
 
@@ -311,6 +315,10 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleCreate = () => {
+    if (this.isIntentDuplicate) {
+      trackSaveDuplicateSubscription();
+    }
+
     let { fields: data, internals } = this.state;
     data = deepClone(data);
 

@@ -24,6 +24,7 @@ import {
 import {
   trackDetailViewEdits,
   trackTogglePartialPayment,
+  trackClickDuplicatePaymentLink,
 } from 'merchant/containers/PaymentLinks/Links/ga';
 
 const notificationClassMap = {
@@ -138,6 +139,7 @@ export default props => {
             <strong>{invoice.id}</strong>
             <div class="btn-toolbar pull-right">
               <NavLink
+                onClick={trackClickDuplicatePaymentLink}
                 class="btn Button--primary--invert"
                 to={`/paymentlinks/new?duplicate_id=${invoice.id}`}
               >
