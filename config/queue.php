@@ -84,6 +84,13 @@ return [
             'token' => [
                 'confirmed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
+            'payout' => [
+                'processed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'created'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'reversed'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'queued'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'initiated'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
         ],
         'live' => [
             'payment' => [
@@ -129,9 +136,13 @@ return [
             'token' => [
                 'confirmed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
-            'payouts' => [
+            'payout' => [
                 'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-            ]
+                'created'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'reversed'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'queued'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'initiated'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
         ],
     ],
     'dashboard' => [
