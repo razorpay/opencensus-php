@@ -129,6 +129,9 @@ return [
             'token' => [
                 'confirmed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
+            'payouts' => [
+                'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ]
         ],
     ],
     'dashboard' => [
