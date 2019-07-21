@@ -436,4 +436,13 @@ class Repository extends Base\Repository
                     ->enabled()
                     ->get();
     }
+
+    public function getTerminalsByIds(array $terminalIds)
+    {
+        $query = $this->newQuery();
+
+        $terminals = $query->findOrFail($terminalIds);
+
+        return $terminals;
+    }
 }

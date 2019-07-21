@@ -148,28 +148,6 @@ class Selector extends Base\Core
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
 
-        $sortedTerminalsFromSmartRouting = $this->sendParametersToSmartRoutingService($payment, $this->input['merchant'],
-            $allTerminals, $sortedTerminals, $filteredTerminals);
-
-        $sortedTerminals = json_decode($sortedTerminalsFromSmartRouting);
-
-        $terminalIds = [];
-
-        if (count($sortedTerminals) > 0) {
-
-            foreach ($sortedTerminals as $terminal) {
-                array_push($terminalIds, $terminal->id);
-            };
-
-        }
-
-        // sending the event to data link layer
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_SORTED_TERMINAL_RESPONSE_RECEIVED, $payment, null,
-            [
-                'sorted_terminalIds' => $terminalIds,
-            ]
-        );
-
         if (empty($sortedTerminals) === true)
         {
             if (($this->isTestMode() === true) or
@@ -243,6 +221,31 @@ class Selector extends Base\Core
                     ['payment' => $this->input['payment']->toArrayAdmin()]);
             }
         }
+
+        $sortedTerminalsFromSmartRouting = $this->sendParametersToSmartRoutingService($payment, $this->input['merchant'],
+            $allTerminals, $sortedTerminals, $filteredTerminals);
+
+        $terminalIds = [];
+
+        if ($sortedTerminalsFromSmartRouting !== null)
+        {
+
+            foreach ($sortedTerminalsFromSmartRouting as $terminal)
+            {
+
+                array_push($terminalIds, $terminal['id']);
+
+            };
+
+            $sortedTerminals = (new Terminal\Repository)->getTerminalsByIds($terminalIds);
+        }
+
+        // sending the event to data link layer
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_SORTED_TERMINAL_RESPONSE_RECEIVED, $payment, null,
+            [
+                'sorted_terminalIds' => $terminalIds,
+            ]
+        );
 
         return $sortedTerminals;
     }
@@ -449,6 +452,8 @@ class Selector extends Base\Core
     {
         try
         {
+            $response = null;
+
             if ($this->shouldHitRoutingService($merchant->getId()) === false)
             {
                 return;
@@ -490,7 +495,6 @@ class Selector extends Base\Core
             ];
 
             $response = $this->app->smartRouting->sendPaymentData($data);
-            s($response);
         }
         catch (\Throwable $e)
         {
