@@ -201,6 +201,7 @@ class Gateway
         self::AMEX              => self::AMEX,
         self::UPI_MINDGATE      => self::HDFC,
         self::ISG               => self::HDFC,
+        self::UPI_AXIS          => self::AXIS,
     ];
 
     /**

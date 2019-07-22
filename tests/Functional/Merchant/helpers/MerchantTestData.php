@@ -2902,6 +2902,16 @@ return [
                         ],
                     ],
                 ],
+                'payment_downtime' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'method'    => 'netbanking',
+                            'severity'  => 'low',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],

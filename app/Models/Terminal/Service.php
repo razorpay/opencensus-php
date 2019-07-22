@@ -178,6 +178,16 @@ class Service extends Base\Service
             $flag = $terminal->matchEncryptedAttribute(
                         Terminal\Entity::GATEWAY_ACCESS_CODE, $input['access_code']);
         }
+        else if (isset($input['password2']))
+        {
+            $flag = $terminal->matchEncryptedAttribute(
+                Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2, $input['password2']);
+        }
+        else if (isset($input['secret2']))
+        {
+            $flag = $terminal->matchEncryptedAttribute(
+                Terminal\Entity::GATEWAY_SECURE_SECRET2, $input['secret2']);
+        }
 
         return ['match' => $flag];
     }

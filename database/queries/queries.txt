@@ -5070,14 +5070,14 @@ ALTER TABLE `refunds`
     ADD COLUMN `speed_decisioned` enum('normal', 'optimum', 'instant') NOT NULL DEFAULT 'normal' AFTER `speed_requested`;
 
 ALTER TABLE `action_checker`
-	ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
-	ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
-	MODIFY COLUMN admin_id CHAR(14) DEFAULT NULL,
-	ADD INDEX action_checker_checker_id_index (checker_id);
+    ADD COLUMN `checker_type` VARCHAR(255) DEFAULT NULL AFTER admin_id,
+    ADD COLUMN `checker_id` CHAR(14) DEFAULT NULL AFTER checker_type,
+    MODIFY COLUMN admin_id CHAR(14) DEFAULT NULL,
+    ADD INDEX action_checker_checker_id_index (checker_id);
 
 ALTER TABLE action_state
-	ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
-	ADD INDEX action_state_user_id_index (user_id);
+    ADD COLUMN user_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD INDEX action_state_user_id_index (user_id);
 
 ALTER TABLE `workflow_payout_amount_rules`
     CHANGE COLUMN x_amount min_amount BIGINT UNSIGNED DEFAULT NULL,
@@ -5091,12 +5091,12 @@ ALTER TABLE payouts
 
 ALTER TABLE `workflow_actions`
     ADD COLUMN `state_changer_type` VARCHAR(255) DEFAULT NULL AFTER state_changer_id,
-	MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
+    MODIFY COLUMN state_changer_id CHAR(14) DEFAULT NULL,
     DROP FOREIGN KEY workflow_actions_state_changer_id_foreign;
 
 ALTER TABLE workflows
-	ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
-	ADD INDEX workflows_merchant_id_index (merchant_id);
+    ADD COLUMN merchant_id CHAR(14) DEFAULT NULL AFTER org_id,
+    ADD INDEX workflows_merchant_id_index (merchant_id);
 
 ALTER TABLE banking_accounts
        ADD COLUMN bank_internal_reference_number VARCHAR(255) DEFAULT NULL AFTER balance_id,
@@ -5131,6 +5131,10 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_channel_index (channel),
     ADD INDEX banking_accounts_status_index (status),
     ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
+    ADD INDEX gateway_rules_category_index (category);
 
 ALTER TABLE reversals
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER channel,

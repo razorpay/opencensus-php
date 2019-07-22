@@ -769,6 +769,14 @@ return [
             'test_hash_secret' => env('CARDLESS_EMI_TEST_HASH_SECRET'),
             'live_hash_secret' => env('CARDLESS_EMI_LIVE_HASH_SECRET')
         ],
+
+        'live_earlysalary_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_EARLYSALARY'),
+        'live_zestmoney_terminal_password'   => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_ZESTMONEY'),
+        'live_flexmoney_terminal_password'   => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_FLEXMONEY'),
+    ],
+
+    'netbanking_cub' => [
+        'live_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_NETBANKING_CUB'),
     ],
 
     'worldline'    => [
