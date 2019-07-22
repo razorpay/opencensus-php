@@ -585,6 +585,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:upi_axis',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::VPA                        => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TPV                        => 'sometimes|in:0,2',
