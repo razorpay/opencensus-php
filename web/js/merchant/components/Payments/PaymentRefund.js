@@ -6,7 +6,13 @@ import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
+import {
+  refundId,
+  amount,
+  createdAt,
+  refundMode,
+  refundStatus,
+} from 'rzp/ui/item/pair';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -39,10 +45,11 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 };
 
 const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
-  const refundsHeading = {
-    title: 'Refund Details',
-    subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
-  };
+  // const refundsHeading = {
+  //   title: 'Refund Details',
+  //   amount:'Amount',
+  //   subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
+  // };
 
   return (
     <ContentToggler onToggleClick={onToggleClick}>
@@ -52,12 +59,12 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
           customClass="refunds-table"
           progressLoader={true}
           title="Refunds"
-          columns={[refundId, amount, createdAtWithStyle]}
+          columns={[refundId, refundMode, amount, refundStatus]}
           items={refunds.items}
           loading={refunds.loading}
-          showHeaders={false}
+          showHeaders={true}
           noStripe={true}
-          panelHeading={refundsHeading}
+          // panelHeading={refundsHeading}
         />
       </div>
     </ContentToggler>

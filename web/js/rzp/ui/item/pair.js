@@ -3,6 +3,7 @@ import * as id from './id';
 import { getAmount, getTime } from 'rzp/ui/item';
 import { makeIdLink } from 'rzp/ui/item/id';
 import { getIntervalCycle, subString } from 'rzp/utils/rzp-utils';
+import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = onClick => ({ value, ...rest }) => {
   return {
@@ -16,7 +17,7 @@ const textRightClass = 'text-right';
 export const amount = {
   title: 'Amount',
   value: items.amount,
-  columnClass: textRightClass,
+  columnClass: 'text-center',
 };
 export const amountRefunded = {
   title: 'Amount Refunded',
@@ -51,6 +52,14 @@ export const paymentId = { title: 'Payment Id', value: id.payment };
 export const orderId = { title: 'Order Id', value: id.order };
 export const rzpOrderId = { title: 'Razorpay Order Id', value: id.rzpOrder };
 export const refundId = { title: 'Refund Id', value: id.refund };
+export const refundMode = {
+  title: 'Mode',
+  value: item => item.speed,
+};
+export const refundStatus = {
+  title: 'Status',
+  value: item => <PaymentStatusLabel status={item.status} />,
+};
 export const customerRefundId = {
   title: 'Refund Id',
   value: item => item.customer_refund_id,
