@@ -8,8 +8,11 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::TYPE  => 'required|string|max:255|custom',
-        Entity::EMAIL => 'required|email|max:255',
+        Entity::TYPE   => 'required|string|max:255|custom',
+        Entity::EMAIL  => 'required|email|max:255',
+        Entity::PHONE  => 'sometimes|string',
+        Entity::POLICY => 'sometimes|string',
+        Entity::URL    => 'sometimes|string',
     ];
 
     public function validateType(string $attribute, string $value)

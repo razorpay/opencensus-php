@@ -233,4 +233,17 @@ class BusinessCategory
         self::OTHERS => [
         ],
     ];
+
+    public static function getCategoryFromSubCategory(string $subCategory)
+    {
+        foreach (self::SUBCATEGORY_MAP as $category => $subCategories)
+        {
+            if (in_array($subCategory, $subCategories, true) === true)
+            {
+                return $category;
+            }
+        }
+
+        return self::OTHERS;
+    }
 }
