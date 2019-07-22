@@ -461,6 +461,9 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
@@ -510,6 +513,9 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
@@ -608,6 +614,9 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
@@ -680,6 +689,9 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
@@ -752,6 +764,9 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
@@ -801,6 +816,9 @@ pipeline:
         - api-sqs-cps-sync-live
         - api-sqs-merchant-balance-update-test
         - api-sqs-merchant-balance-update-live
+        - api-sqs-gateway-file
+        - api-sqs-beam-live
+        - api-sqs-beam-test
         - api-sqs-scrooge-test
         - api-sqs-scrooge-live
         - api-sqs-refund
@@ -851,6 +869,9 @@ pipeline:
         - api-sqs-cps-sync-live
         - api-sqs-merchant-balance-update-test
         - api-sqs-merchant-balance-update-live
+        - api-sqs-gateway-file
+        - api-sqs-beam-live
+        - api-sqs-beam-test
         - api-sqs-scrooge-test
         - api-sqs-scrooge-live
         - api-sqs-refund
@@ -980,6 +1001,9 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund

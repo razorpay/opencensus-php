@@ -198,16 +198,16 @@ return [
         'live'      => env('AWS_SCROOGE_LIVE_QUEUE'),
     ],
     'gateway_file' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'       => env('AWS_GATEWAY_FILE_QUEUE'),
+        'live'       => env('AWS_GATEWAY_FILE_QUEUE'),
     ],
     'run_shield_check' => [
         'test'       => env('AWS_SHIELD_QUEUE'),
         'live'       => env('AWS_SHIELD_QUEUE'),
     ],
-    'beam_request' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    'beam_job' => [
+        'test'       => env('AWS_BEAM_TEST_QUEUE'),
+        'live'       => env('AWS_BEAM_LIVE_QUEUE'),
     ],
     'settlement_transactions' => [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
