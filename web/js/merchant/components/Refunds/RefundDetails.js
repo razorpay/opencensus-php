@@ -5,6 +5,9 @@ import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { Link } from 'react-router-dom';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
+import RefundStatusTimeline from 'merchant/components/Refunds/RefundTimeline';
+import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 
 export default ({ refund, isLoading, statusMsg }) => {
   return (
@@ -30,6 +33,11 @@ export default ({ refund, isLoading, statusMsg }) => {
                       <code>{refund.payment_id}</code>
                     </Link>
                   )}
+                />
+
+                <EntityDetailRow
+                  label="Status"
+                  value={() => <RefundStatusTimeline />}
                 />
 
                 <EntityDetailRow
