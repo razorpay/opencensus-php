@@ -502,7 +502,11 @@ class Selector extends Base\Core
                 'gateway_config'      => $this->getGatewayConfig(),
                 'chance'              => $this->options->getChance(),
             ];
-
+            $this->trace->info(
+                TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
+                [
+                    'data'     => $data,
+                ]);
             $this->app->smartRouting->sendPaymentData($data);
         }
         catch (\Throwable $e)
