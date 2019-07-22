@@ -178,7 +178,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus(string $status)
     {
-        if ($this->isYesbankInput() === true)
+        if ($this->isChannelYesbank() === true)
         {
             $this->setAttribute(self::STATUS, $status);
 
@@ -356,7 +356,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Balance\Entity::class);
     }
 
-    protected function isYesbankInput()
+    protected function isChannelYesbank()
     {
         $channel = $this->getChannel();
 
