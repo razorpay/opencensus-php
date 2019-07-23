@@ -26,6 +26,9 @@ class CreateTerminals extends Migration
 
             $table->char(Terminal::MERCHANT_ID, Terminal::ID_LENGTH);
 
+            $table->string(Terminal::PROCURER)
+                  ->default('razorpay');
+
             $table->integer(Terminal::USED_COUNT)
                   ->unsigned()
                   ->default(0);
