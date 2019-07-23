@@ -494,10 +494,10 @@ class Selector extends Base\Core
             $data = [
                 'payment'             => $paymentData,
                 'merchant'            => $merchantData,
-                'terminals'           => $allTerminals,
-                'filtered_terminals'  => $sortedTerminals,
+                'terminals'           => array_values($allTerminals),
+                'filtered_terminals'  => array_values($sortedTerminals),
                 'gateway_downtime'    => $downtimes,
-                'failed_terminals'    => $failedTerminalIds,
+                'failed_terminals'    => array_values($failedTerminalIds),
                 'gateway_tokens'      => $this->input['gateway_tokens'],
                 'gateway_config'      => $this->getGatewayConfig(),
                 'chance'              => $this->options->getChance(),
