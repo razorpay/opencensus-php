@@ -461,6 +461,7 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
       - api-sqs-gateway-file
       - api-sqs-beam-live
       - api-sqs-beam-test
@@ -513,6 +514,7 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
       - api-sqs-gateway-file
       - api-sqs-beam-live
       - api-sqs-beam-test
@@ -614,6 +616,7 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
       - api-sqs-gateway-file
       - api-sqs-beam-live
       - api-sqs-beam-test
@@ -689,6 +692,7 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
       - api-sqs-gateway-file
       - api-sqs-beam-live
       - api-sqs-beam-test
@@ -764,6 +768,7 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
       - api-sqs-gateway-file
       - api-sqs-beam-live
       - api-sqs-beam-test
@@ -816,6 +821,7 @@ pipeline:
         - api-sqs-cps-sync-live
         - api-sqs-merchant-balance-update-test
         - api-sqs-merchant-balance-update-live
+        - api-sqs-irctc-batch
         - api-sqs-gateway-file
         - api-sqs-beam-live
         - api-sqs-beam-test
@@ -869,6 +875,7 @@ pipeline:
         - api-sqs-cps-sync-live
         - api-sqs-merchant-balance-update-test
         - api-sqs-merchant-balance-update-live
+        - api-sqs-irctc-batch
         - api-sqs-gateway-file
         - api-sqs-beam-live
         - api-sqs-beam-test
@@ -1001,6 +1008,7 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
       - api-sqs-gateway-file
       - api-sqs-beam-live
       - api-sqs-beam-test

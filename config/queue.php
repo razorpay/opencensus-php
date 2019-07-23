@@ -173,6 +173,10 @@ return [
         'test'       => env('AWS_BATCH_QUEUE'),
         'live'       => env('AWS_BATCH_QUEUE'),
     ],
+    'irctc_batch' => [
+        'test'       => env('AWS_IRCTC_BATCH_QUEUE'),
+        'live'       => env('AWS_IRCTC_BATCH_QUEUE'),
+    ],
     'capture' => [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
