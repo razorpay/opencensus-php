@@ -492,14 +492,20 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['disabled_banks' => $disabledBanks]);
     }
 
-    public function createBalanceOfBankingType(int $balance = 0, string $merchantId = '10000000000000')
+    public function createBalanceOfBankingType(
+        int $balance = 0,
+        string $merchantId = '10000000000000',
+        string $accountType = AccountType::SHARED,
+        $channel = Channel::YESBANK)
     {
         return $this->fixtures->create(
             'balance',
             [
-                'type' => 'banking',
-                'merchant_id' => $merchantId,
-                'balance' => $balance
+                'type'             => 'banking',
+                'merchant_id'      => $merchantId,
+                'balance'          => $balance,
+                'account_type'     => $accountType,
+                'channel'          => $channel,
             ]);
     }
 
@@ -960,5 +966,18 @@ class Merchant extends Base
         }
 
         unset($merchants);
+    }
+
+    public function createBankingType(int $balance = 0, string $merchantId = '10000000000000')
+    {
+        return $this->fixtures->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => $merchantId,
+                'balance'          => $balance,
+                'account_type'     => AccountType::SHARED,
+                'channel'          => Channel::YESBANK,
+            ]);
     }
 }

@@ -29,7 +29,11 @@ class FundAccountPayout extends Base
             // payout creation flow fails for any reason after downstream processor runs.
             //
 
-            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            //Todo: To be refactored accordingly once rbl specific changes in payout module is being done
+            if ($payout->getChannel() === Settlement\Channel::YESBANK)
+            {
+                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+            }
         }
 
         return $payout;

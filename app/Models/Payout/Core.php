@@ -265,24 +265,18 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)
     {
-        $status = $this->getDerivedStatus($payout, $ftaData);
-
-        switch ($status)
+        switch ($ftaData[Attempt\Constants::FTA_STATUS])
         {
-            case Status::PROCESSED:
+            case Attempt\Status::PROCESSED:
                 $this->handleFtaProcessed($payout);
                 break;
 
-            case Status::FAILED:
+            case Attempt\Status::FAILED:
                 $this->handleFtaFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
-            case Status::REVERSED:
-                $this->handleFTAReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
-                break;
-
-            case Status::CREATED:
-            case Status::INITIATED:
+            case Attempt\Status::CREATED:
+            case Attempt\Status::INITIATED:
                 break;
 
             default:
@@ -669,25 +663,6 @@ class Core extends Base\Core
 
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
     {
-        if ($payout->isStatusReversed() === true)
-        {
-            throw new Exception\LogicException(
-                'Attempted to fail a reversed payout',
-                null,
-                [
-                    'payout_id' => $payout->getId(),
-                ]);
-        }
-
-        $payout->setStatus(Status::FAILED);
-
-        $this->repo->saveOrFail($payout);
-
-        $this->app->events->fire('api.payout.failed', [$payout]);
-    }
-
-    protected function handleFTAReversed(Entity $payout, string $ftaFailureReason = null)
-    {
         $this->reversePayout($payout, $ftaFailureReason);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
@@ -821,6 +796,14 @@ class Core extends Base\Core
             return;
         }
 
+        // After FTA creation the fund account source internally dispatches Fund transfer to FTS
+        $isFts = $payout->fundTransferAttempts->first()->getIsFts();
+
+        if ($isFts === true)
+        {
+            return;
+        }
+
         $ftaId = $payout->fundTransferAttempts->first()->getId();
 
         $info = [
@@ -913,10 +896,5 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
-    }
-
-    protected function getDerivedStatus(Entity $payout, string $ftaStatus)
-    {
-        return Status::$attemptToPayoutStatusUsingChannels[$payout->getChannel()][$ftaStatus];
     }
 }

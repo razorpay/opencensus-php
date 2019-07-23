@@ -3,19 +3,25 @@
 namespace RZP\Tests\Functional\FundTransfer;
 
 use Queue;
+use Redis;
 use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Payout;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class AttemptTest extends TestCase
 {
     use AttemptTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -368,89 +374,54 @@ class AttemptTest extends TestCase
         $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
     }
 
-    public function testRblSettlementWithInvalidSourceType()
+    public function testRblPayoutSuccess()
     {
+        $redis = Redis::connection()->client();
+
+        $parameters = [ Channel::RBL => Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS ];
+
+        $redis->hmset(ConfigKey::FTS_CHANNELS, $parameters);
+
         $channel = Channel::RBL;
 
-        $purpose = Attempt\Purpose::SETTLEMENT;
+        $this->ba->privateAuth();
 
-        $sourceType = Attempt\Type::SETTLEMENT;
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            9000000,
+            AccountType::DIRECT,
+            $channel);
 
-        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+        $this->createContact();
 
-        Carbon::setTestNow($now);
+        $this->createFundAccount();
 
-        $payout = $this->fixtures->create(
-            'payout',
-            [
-                'channel' => $channel,
-                'amount' => 1000,
-            ]);
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 200000,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'notes'           => [
+                'abc' => 'xyz',
+                ],
+            ];
 
-        $this->fixtures->create(
-            'fund_transfer_attempt',
-            [
-                'channel'                   => $channel,
-                'source_id'                 => $payout->getId(),
-                'bank_account_id'           => $payout->getDestinationId(),
-                'merchant_id'               => $payout->getMerchantId(),
-                'purpose'                   => $purpose,
-                'status'                    => Attempt\Status::CREATED,
-                'source_type'               => Attempt\Type::PAYOUT,
-                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
-            ]
-        );
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
 
-        $content = $this->initiateTransfer($channel, $purpose, false, $sourceType);
+        $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($channel, $content['channel']);
-        $this->assertEquals(0, $content['count']);
-    }
+        $payout = $this->getLastEntity('payout', true);
 
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-    public function testPayoutStatusWithFtaUpdateViaFts()
-    {
-        $channel = Channel::RBL;
-
-        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
-
-        Carbon::setTestNow($now);
-
-        $payout = $this->fixtures->create(
-            'payout',
-            [
-                'channel' => $channel,
-                'amount' => 1000,
-                'status' => Payout\Status::INITIATED
-            ]);
-
-        $fta = $this->fixtures->create(
-            'fund_transfer_attempt',
-            [
-                'channel'                   => $channel,
-                'source_id'                 => $payout->getId(),
-                'bank_account_id'           => $payout->getDestinationId(),
-                'merchant_id'               => $payout->getMerchantId(),
-                'purpose'                   => Attempt\Purpose::SETTLEMENT,
-                'status'                    => Attempt\Status::INITIATED,
-                'source_type'               => Attempt\Type::PAYOUT,
-                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
-                'fts_transfer_id'           => 1,
-                'is_fts'                    => true
-            ]
-        );
-
-        $response = $this->updateFta(1, $payout->getId(),Attempt\Type::PAYOUT);
-
-        $processedFTA = $this->getEntityById('fund_transfer_attempt', $fta->getId(), true);
-
-        $processedPayout = $this->getEntityById('payout', $processedFTA['source'], true);
-
-        $this->assertEquals(Attempt\Status::REVERSED, $processedFTA['status']);
-
-        //TODO: Update the status to reversed once payout module handles it
-        $this->assertEquals(Payout\Status::PROCESSING, $processedPayout['status']);
-
-        $this->assertEquals('FTA and source updated succesfully', $response['message']);
+        $this->assertEquals($channel, $payout['channel']);
+        $this->assertEquals($channel, $attempt['channel']);
+        $this->assertEquals(1, $attempt['is_fts']);
     }
 }

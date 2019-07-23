@@ -219,4 +219,11 @@ class Channel
             self::RBL,
         ];
     }
+
+    public static function getFtsSupportedPayoutChannels()
+    {
+        return [
+            self::RBL,
+        ];
+    }
 }

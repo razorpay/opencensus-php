@@ -10,9 +10,9 @@ use RZP\Exception;
 use RZP\Models\Payout;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Batch;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -21,23 +21,17 @@ trait AttemptTrait
     use PaymentTrait;
     use SettlementTrait;
 
-    protected function initiateTransfer(string $channel, string $purpose, bool $failureTest = false, string $sourceType = '')
+    protected function initiateTransfer(string $channel, string $purpose, bool $failureTest = false)
     {
-        $content = [
-            'failed_response'           => (int) $failureTest,
-            Attempt\Entity::PURPOSE     => $purpose,
-            Attempt\Entity::SOURCE_TYPE => $sourceType,
-        ];
-
-        if (empty($sourceType) === false)
-        {
-            $content[Attempt\Entity::SOURCE_TYPE] = $sourceType;
-        }
+        $content['purpose'] = $purpose;
 
         $request = [
             'url'       => '/fund_transfer_attempts/initiate/'.$channel,
             'method'    => 'POST',
-            'content'   => $content
+            'content'   =>  [
+                Attempt\Entity::PURPOSE => $purpose,
+                'failed_response'       => (int) $failureTest,
+            ]
         ];
 
         $this->ba->cronAuth();
@@ -371,10 +365,10 @@ trait AttemptTrait
         $this->initiateSettlements($channel);
     }
 
-    protected function updateFta( $ftsId, string $sourceId, string $sourceType)
+    protected function updateFta( $ftsId, string $sourceId, string $sourceType, string $status)
     {
         $content = [
-            Attempt\Entity::STATUS           => Attempt\Status::REVERSED,
+            Attempt\Entity::STATUS           => $status,
             Attempt\Entity::SOURCE_ID        => $sourceId,
             Attempt\Entity::SOURCE_TYPE      => $sourceType,
             Attempt\Entity::FUND_TRANSFER_ID => $ftsId
