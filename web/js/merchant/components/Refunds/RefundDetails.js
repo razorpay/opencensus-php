@@ -8,6 +8,7 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import RefundStatusTimeline from 'merchant/components/Refunds/RefundTimeline';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import RefundUpdate from 'merchant/components/Refunds/RefundUpdate';
 
 export default ({ refund, isLoading, statusMsg }) => {
   return (
@@ -44,6 +45,38 @@ export default ({ refund, isLoading, statusMsg }) => {
                   label="Amount"
                   value={() => (
                     <Amount value={refund.amount} currency={refund.currency} />
+                  )}
+                />
+
+                <EntityDetailRow
+                  label="Refund Mode"
+                  value={() => (
+                    <RefundUpdate
+                      strikeThroughContent="Instant"
+                      updatedContent="Normal"
+                      description="Refund mode updated to normal as this refund was not able to be processed instantly."
+                    />
+                  )}
+                />
+
+                <EntityDetailRow
+                  label="Total Fee"
+                  value={() => (
+                    <RefundUpdate
+                      strikeThroughContent={
+                        <Amount
+                          value={refund.amount}
+                          currency={refund.currency}
+                        />
+                      }
+                      updatedContent={
+                        <Amount
+                          value={refund.amount}
+                          currency={refund.currency}
+                        />
+                      }
+                      description="Previously charged fee has been reversed."
+                    />
                   )}
                 />
 
