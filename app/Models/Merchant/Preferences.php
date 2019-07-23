@@ -47,6 +47,7 @@ class Preferences
     const MID_RBLLENDING            = 'BOX702yaBbEfJo';
     const MID_APOLLO_MUNICH         = 'BYqeLRvN6FfCCY';
     const MID_SWIGGY_DROPPT         = 'CTwAEBRfwEjEme';
+    const MID_RELIANCE_AMC          = 'CR3D37POcSDpR3';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [

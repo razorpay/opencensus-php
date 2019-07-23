@@ -100,4 +100,20 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->get();
     }
+
+    /**
+     * Returns access maps linking the submerchant and the partner
+     *
+     * @param string $subMerchantId
+     * @param string $partnerId
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchAccessMapForMerchantIdAndOwnerId(string $subMerchantId, string $partnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $subMerchantId)
+                    ->where(Entity::ENTITY_OWNER_ID, $partnerId)
+                    ->get();
+    }
 }

@@ -2481,45 +2481,14 @@ class Service extends Base\Service
 
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
 
-        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchant->getId());
+        $isMapped = $this->core()->isMerchantMappedToNonPurePlatformPartner($subMerchant->getId(), $aggregatorMerchant->getId());
 
-        if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
+        if (($isNonPurePlatformAggregator === true) and ($isMapped === true))
         {
             return;
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
-    }
-
-    /**
-     * This function checks for a mapping between the partner merchant's dummy app from
-     * auth database and the submerchant. This is stored in the `merchant_access_map` table
-     * on API side.
-     *
-     * @param  string $merchantId
-     * @param  string $partnerId
-     *
-     * @return bool
-     */
-    public function isPartnerMerchantMapped(string $merchantId, string $partnerId): bool
-    {
-        $app = $this->getPartnerAppByMerchantId($partnerId);
-
-        $mapping = (new AccessMap\Repository)
-                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
-
-        return (empty($mapping) === false);
-    }
-
-    /**
-     * TODO: Check if the core function (getPartnerApp) is needed at all and remove it if not
-     * @param  string $merchantId
-     *
-     * @return null|OAuthApplication\Entity
-     */
-    public function getPartnerAppByMerchantId(string $merchantId)
-    {
-        return (new OAuthApplication\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
     }
 
     /**
@@ -3023,7 +2992,9 @@ class Service extends Base\Service
         /** @var Entity $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic($id);
 
-        if ($this->isPartnerMerchantMapped($subMerchant->getId(), $merchant->getId()) === false)
+        $isMapped = $this->core()->isMerchantMappedToNonPurePlatformPartner($subMerchant->getId(), $merchant->getId());
+
+        if ($isMapped === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);

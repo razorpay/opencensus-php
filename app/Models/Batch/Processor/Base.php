@@ -169,7 +169,8 @@ class Base extends BaseModel\Core
         // gets associated with this batch
         list($ufhFile, $entries) = $this->saveInputFileAndValidateEntries($input);
 
-        // if type is payment_link just return the ufhFile and do not save batches and files entity.
+        // if batch is migrated to new batch service
+        // just return the ufhFile and do not save batches and files entity.
         if ($this->shouldSendToBatchService())
         {
             return $ufhFile;

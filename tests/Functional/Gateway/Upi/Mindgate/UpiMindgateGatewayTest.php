@@ -102,6 +102,7 @@ class UpiMindgateGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertNotNull($upiEntity['npci_reference_id']);
         $this->assertNotNull($payment['acquirer_data']['rrn']);
+        $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
 
         $this->assertEquals($payment['reference16'], $upiEntity['npci_reference_id']);
         $this->assertNotNull($upiEntity['gateway_payment_id']);
@@ -120,7 +121,7 @@ class UpiMindgateGatewayTest extends TestCase
                 Metric::DIMENSION_STATUS            => 'success',
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
             ],
-        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT));
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment['amount']);
@@ -188,7 +189,7 @@ class UpiMindgateGatewayTest extends TestCase
                 //TODO: This should be intent, fix this.
                 Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
             ],
-        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT));
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }
 
     public function testIntentAuthorizeFailed()

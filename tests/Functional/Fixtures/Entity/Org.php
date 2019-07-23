@@ -74,6 +74,7 @@ class Org extends Base
         $org = $this->fixtures->create('org', [
             'id'                      => self::HDFC_ORG,
             'email'                   => 'admin@hdfc.com',
+            'from_email'              => 'noreplay@hdfc.com',
             'cross_org_access'        => true,
             'default_pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
         ]);

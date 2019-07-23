@@ -162,6 +162,7 @@ class BatchMicroService
      * @param Merchant\Entity $merchant
      *
      * @return array
+     * @throws Exception\ServerNotFoundException
      */
     public function forwardNotify(string $batchId, array $input,Merchant\Entity $merchant): array
     {
@@ -394,7 +395,7 @@ class BatchMicroService
 
     public function prepareBatchItemResponse(array & $input)
     {
-        $input['type'] = Batch\Type::PAYMENT_LINK;
+        $input['type'] = $input['batch_type_id'];
 
         $input['entity'] = 'batch';
 
@@ -619,19 +620,6 @@ class BatchMicroService
             return false;
         }
 
-        if ($this->app['basicauth']->isAdminAuth() === true)
-        {
-            return true;
-        }
-
-        $requestId = $this->app['request']->getId();
-
-        $variant = $this->app->razorx->getTreatment(
-            $requestId,
-            Merchant\RazorxTreatment::BATCH_SERVICE_BE_CALLED,
-            $this->mode
-        );
-
-        return (strtolower($variant) === 'on');
+        return true;
     }
 }

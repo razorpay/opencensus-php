@@ -89,14 +89,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST,
         ],
     ],
 

@@ -10,6 +10,7 @@ use RZP\Gateway\Cybersource;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\HDFC\Reconciliate;
 use RZP\Exception\ReconciliationException;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -19,25 +20,28 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID                 = 'merchant_trackid';
-    const COLUMN_CARD_TYPE                  = 'debitcredit_type';
-    const COLUMN_SERVICE_TAX                = ['serv_tax', 'service_tax', 'st_sbces'];
-    const COLUMN_SB_CESS                    = 'sb_cess';
-    const COLUMN_KK_CESS                    = 'kk_cess';
-    const COLUMN_FEE                        = 'msf';
-    const COLUMN_CARD_TRIVIA                = 'card_type';
-    const COLUMN_ISSUER                     = 'arn_no';
-    const COLUMN_CGST                       = 'cgst_amt';
-    const COLUMN_IGST                       = 'igst_amt';
-    const COLUMN_SGST                       = 'sgst_amt';
-    const COLUMN_UTGST                      = 'utgst_amt';
-    const COLUMN_ARN                        = 'arn_no';
-    const COLUMN_AUTH_CODE                  = 'approv_code';
-    const COLUMN_SEQUENCE_NUMBER            = 'sequence_number';
+    const COLUMN_PAYMENT_ID                     = 'merchant_trackid';
+    const COLUMN_CARD_TYPE                      = 'debitcredit_type';
+    const COLUMN_SERVICE_TAX                    = ['serv_tax', 'service_tax', 'servtax_usd', 'st_sbces'];
+    const COLUMN_SB_CESS                        = ['sb_cess', 'sb_cess_usd'];
+    const COLUMN_KK_CESS                        = ['kk_cess', 'kk_cess_usd'];
+    const COLUMN_FEE                            = ['msf', 'discount_usd'];
+    const COLUMN_CARD_TRIVIA                    = 'card_type';
+    const COLUMN_ISSUER                         = 'arn_no';
+    const COLUMN_CGST                           = ['cgst_amt', 'cgst_amt_usd'];
+    const COLUMN_IGST                           = ['igst_amt', 'igst_amt_usd'];
+    const COLUMN_SGST                           = ['sgst_amt', 'sgst_amt_usd'];
+    const COLUMN_UTGST                          = ['utgst_amt','utgst_amt_usd'];
+    const COLUMN_ARN                            = 'arn_no';
+    const COLUMN_AUTH_CODE                      = 'approv_code';
+    const COLUMN_SEQUENCE_NUMBER                = 'sequence_number';
 
-    const COLUMN_TERMINAL_NUMBER            = 'terminal_number';
-    const COLUMN_GATEWAY_TRANSACTION_ID     = 'tran_id';
-    const COLUMN_DOMESTIC_AMOUNT            = 'domestic_amt';
+    const COLUMN_TERMINAL_NUMBER                = 'terminal_number';
+    const COLUMN_GATEWAY_TRANSACTION_ID         = 'tran_id';
+
+    const COLUMN_PAYMENT_AMOUNT                 = ['domestic_amt', 'intnl_amt'];
+    const COLUMN_INR_PAYMENT_AMOUNT             = 'inr';
+    const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT   = 'paycur_usd';
 
     /**
      * If we are not able to find payment id to reconcile,
@@ -162,22 +166,80 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $paymentId;
     }
 
+    protected function getReconPaymentAmount(array $row)
+    {
+        $amountColumn = ($this->isInternationalPayment($row) === true) ?
+                        self::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT :
+                        self::COLUMN_PAYMENT_AMOUNT;
+
+        $paymentAmountColumns = (is_array($amountColumn) === false) ?
+                                [$amountColumn] :
+                                $amountColumn;
+
+        $paymentAmountColumn = array_first(
+            $paymentAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (array_key_exists($amount, $row) === true);
+            });
+
+        if ($paymentAmountColumn === null)
+        {
+            // None of the expected payment columns set
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'payment_id'        => $this->payment->getId(),
+                    'expected_column'   => $amountColumn,
+                    'amount'            => $this->payment->getBaseAmount(),
+                    'currency'          => $this->payment->getCurrency(),
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        //
+        // for HDFC, sometimes we are getting rows where 'domestic_amt' column is 0
+        // and amount is given in 'intnl_amt' column. In this case, we can't just calculate
+        // the recon amount on first key set. Instead we should calculate on the non zero
+        // amount column if any.
+        //
+        $paymentAmountNonZeroColumn = array_first(
+            $paymentAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (empty($row[$amount]) === false);
+            });
+
+        if ($paymentAmountNonZeroColumn === null)
+        {
+            // There was no non zero amount column, so returning 0
+            return 0;
+        }
+
+        return Helper::getIntegerFormattedAmount($row[$paymentAmountNonZeroColumn]);
+    }
+
+    /**
+     * @param $row
+     * @return float|null
+     * @throws ReconciliationException
+     */
     protected function getGatewayServiceTax($row)
     {
         $columnServiceTax = null;
 
-        foreach(self::COLUMN_SERVICE_TAX as $cst)
+        $columnServiceTax = array_first(self::COLUMN_SERVICE_TAX, function ($cst) use ($row)
         {
             //
             // This should be isset only and not empty
             // because service tax can be 0 also.
             //
-            if (isset($row[$cst]) === true)
-            {
-                $columnServiceTax = $cst;
-                break;
-            }
-        }
+            return (isset($row[$cst]) === true);
+        });
 
         if ($columnServiceTax === null)
         {
@@ -193,7 +255,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         // Convert service tax into paise
-        $serviceTax = floatval($row[$columnServiceTax]) * 100;
+        $serviceTax = Helper::getIntegerFormattedAmount($row[$columnServiceTax]);
 
         // Some hdfc reconciliation files have sb cess added to the service tax itself.
         // If sb cess is present separately, it means it's not added to the service tax.
@@ -210,6 +272,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $serviceTax += $igst + $sgst + $cgst + $utgst;
 
+        $serviceTax = $serviceTax * $this->getCurrencyConversionRate($row);
+
         return round($serviceTax);
     }
 
@@ -217,124 +281,138 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $columnIgst = null;
 
-        //
-        // This should be isset only and not empty
-        // because igst can be 0 also.
-        //
-        if (isset($row[self::COLUMN_IGST]) === true)
+        $columnIgst = array_first(self::COLUMN_IGST, function ($cIgst) use ($row)
         {
-            $columnIgst = $row[self::COLUMN_IGST];
-        }
+            //
+            // This should be isset only and not empty
+            // because igst can be 0 also.
+            //
+            return (isset($row[$cIgst]) === true);
+        });
 
-        $igst = floatval($columnIgst) * 100;
+        $igst = ($columnIgst !== null) ? $row[$columnIgst] : null;
 
-        return $igst;
+        return Helper::getIntegerFormattedAmount($igst);
     }
 
     protected function getCgst($row)
     {
         $columnCgst = null;
 
-        //
-        // This should be isset only and not empty
-        // because cgst can be 0 also.
-        //
-        if (isset($row[self::COLUMN_CGST]) === true)
+        $columnCgst = array_first(self::COLUMN_CGST, function ($cGst) use ($row)
         {
-            $columnCgst = $row[self::COLUMN_CGST];
-        }
+            //
+            // This should be isset only and not empty
+            // because cgst can be 0 also.
+            //
+            return (isset($row[$cGst]) === true);
+        });
 
-        $cgst = floatval($columnCgst) * 100;
+        $cgst = ($columnCgst !== null) ? $row[$columnCgst] : null;
 
-        return $cgst;
+        return Helper::getIntegerFormattedAmount($cgst);
     }
 
     protected function getSgst($row)
     {
         $columnSgst = null;
-        //
-        // This should be isset only and not empty
-        // because sgst can be 0 also.
-        //
-        if (isset($row[self::COLUMN_SGST]) === true)
+
+        $columnSgst = array_first(self::COLUMN_SGST, function ($sgst) use ($row)
         {
-            $columnSgst = $row[self::COLUMN_SGST];
-        }
+            //
+            // This should be isset only and not empty
+            // because sgst can be 0 also.
+            //
+            return (isset($row[$sgst]) === true);
+        });
 
-        $sgst = floatval($columnSgst) * 100;
+        $sgst = ($columnSgst !== null) ? $row[$columnSgst] : null;
 
-        return $sgst;
+        return Helper::getIntegerFormattedAmount($sgst);
     }
 
     protected function getUtgst($row)
     {
-        $columnUtgst = null;
+        $columnUtGst = null;
 
-        //
-        // This should be isset only and not empty
-        // because utgst can be 0 also.
-        //
-        if (isset($row[self::COLUMN_UTGST]) === true)
+        $columnUtGst = array_first(self::COLUMN_UTGST, function ($utGst) use ($row)
         {
-            $columnUtgst = $row[self::COLUMN_UTGST];
-        }
+            //
+            // This should be isset only and not empty
+            // because UtGst can be 0 also.
+            //
+            return (isset($row[$utGst]) === true);
+        });
 
-        $utgst = floatval($columnUtgst) * 100;
+        $utGst = ($columnUtGst !== null) ? $row[$columnUtGst] : null;
 
-        return $utgst;
+        return Helper::getIntegerFormattedAmount($utGst);
     }
 
     protected function getSbCess($row)
     {
         $columnSbCess = null;
 
-        //
-        // This should be isset only and not empty
-        // because cess can be 0 also.
-        //
-        if (isset($row[self::COLUMN_SB_CESS]) === true)
+        $columnSbCess = array_first(self::COLUMN_SB_CESS, function ($sbCess) use ($row)
         {
-            $columnSbCess = $row[self::COLUMN_SB_CESS];
-        }
+            //
+            // This should be isset only and not empty
+            // because sbCess can be 0 also.
+            //
+            return (isset($row[$sbCess]) === true);
+        });
 
-        $sbCess = floatval($columnSbCess) * 100;
+        $sbCess = ($columnSbCess !== null) ? $row[$columnSbCess] : null;
 
-        return $sbCess;
+        return Helper::getIntegerFormattedAmount($sbCess);
     }
 
     protected function getKkCess($row)
     {
         $columnKkCess = null;
 
-        //
-        // This should be isset only and not empty
-        // because cess can be 0 also.
-        //
-        if (isset($row[self::COLUMN_KK_CESS]) === true)
+        $columnKkCess = array_first(self::COLUMN_KK_CESS, function ($kkCess) use ($row)
         {
-            $columnKkCess = $row[self::COLUMN_KK_CESS];
-        }
+            //
+            // This should be isset only and not empty
+            // because kkCess can be 0 also.
+            //
+            return (isset($row[$kkCess]) === true);
+        });
 
-        $kkCess = floatval($columnKkCess) * 100;
+        $kkCess = ($columnKkCess !== null) ? $row[$columnKkCess] : null;
 
-        return $kkCess;
+        return Helper::getIntegerFormattedAmount($kkCess);
     }
 
+    /**
+     * @param $row
+     * @return float|null
+     * @throws ReconciliationException
+     */
     protected function getGatewayFee($row)
     {
         $columnFee = null;
 
-        //
-        // This should be isset only and not empty
-        // because fee can be 0 also.
-        //
-        if (isset($row[self::COLUMN_FEE]) === true)
+        $columnFee = array_first(self::COLUMN_FEE, function ($fee) use ($row)
         {
-            $columnFee = $row[self::COLUMN_FEE];
-        }
+            //
+            // This should be isset only and not empty
+            // because fee can be 0 also.
+            //
+            return (isset($row[$fee]) === true);
+        });
+
+        $fee = ($columnFee !== null) ? $row[$columnFee] : null;
 
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = floatval($columnFee) * 100;
+        $fee =  Helper::getIntegerFormattedAmount($fee);
+
+        //
+        // If payment is international, we may want to get currency conversion rate to
+        // get fee in INR.
+        //
+        $fee = $fee * $this->getCurrencyConversionRate($row);
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
@@ -590,33 +668,48 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
     }
 
-    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    /**
+     * In case of Non INR payments, we want to find conversion rate
+     * to convert non INR service tax and fee into INR
+     * @param array $row
+     * @return float|int|null
+     */
+    protected function getCurrencyConversionRate(array $row)
     {
-        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'payment_id'      => $this->payment->getId(),
-                    'expected_amount' => $this->payment->getBaseAmount(),
-                    'recon_amount'    => $this->getReconPaymentAmount($row),
-                    'currency'        => $this->payment->getCurrency(),
-                    'gateway'         => $this->gateway
-                ]);
+        $conversionRate = 1;
 
-            return false;
+        if ($this->isInternationalPayment($row) === true)
+        {
+            $inrAmount = $row[self::COLUMN_INR_PAYMENT_AMOUNT];
+
+            $inrAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($inrAmount);
+
+            $internationalAmount = $this->getReconPaymentAmount($row);
+
+            $conversionRate = (empty($internationalAmount) === false) ? ($inrAmount / $internationalAmount) : 1;
         }
 
-        return true;
+        return $conversionRate;
     }
 
-    protected function getReconPaymentAmount(array $row)
+    /**
+     * In case on Non INR payments, a non empty field of 'inr' is set in transaction row and
+     * convert_currency will be false for such payment.
+     * @param array $row
+     * @return bool
+     */
+    protected function isInternationalPayment(array $row)
     {
-        if (empty($row[self::COLUMN_DOMESTIC_AMOUNT]) === false)
+        $inrAmountColumnSet =  (empty($row[self::COLUMN_INR_PAYMENT_AMOUNT]) === false) ? true : false;
+
+        $convertCurrencyFlag = $this->payment->getConvertCurrency();
+
+        if (($inrAmountColumnSet === true) and ($convertCurrencyFlag === false))
         {
-            return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_DOMESTIC_AMOUNT]);
+            return true;
         }
+
+        return false;
     }
 
     /**

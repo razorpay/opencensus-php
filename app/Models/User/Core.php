@@ -185,9 +185,13 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
-                $balance = $this->repo->balance->getMerchantBalanceByType($merchant[Entity::ID], Product::BANKING);
+                $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                    $merchant['id'],
+                    Merchant\Balance\Type::BANKING,
+                    Merchant\Balance\AccountType::SHARED);
 
-                // We hit this flow during /login too where merchant even though of X, doesn't have balance etc created yet.
+                // We hit this flow during /login too where merchant even though of X,
+                // doesn't have balance etc created yet.
                 if ($balance === null)
                 {
                     return $merchant;
@@ -199,9 +203,28 @@ class Core extends Base\Core
                     [
                         Merchant\Entity::BANKING_BALANCE => $balance->only([Merchant\Balance\Entity::BALANCE, Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT => $bankAccount->toArrayHosted(),
+                        Merchant\Entity::ACCOUNTS        => $this->fetchBankingAccountWithBalance($merchant['id']),
                     ];
             },
             $merchants);
+    }
+
+    protected function fetchBankingAccountWithBalance($merchantId)
+    {
+        $bankingAccounts = $this->repo->banking_account->getBankingAccountsWithBalance($merchantId);
+
+        $result = [];
+
+        foreach ($bankingAccounts as $bankingAccount)
+        {
+            $bankingAccountArray = $bankingAccount->toArrayPublic();
+
+            $bankingAccountArray['banking_balance'] = $bankingAccount->balance;
+
+            $result[] = $bankingAccountArray;
+        }
+
+        return $result;
     }
 
     /**
@@ -554,7 +577,7 @@ class Core extends Base\Core
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
         $receiver = $user->getContactMobile();
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
-        $source   = "api";
+        $source   = 'api';
 
         return compact(
             'token',

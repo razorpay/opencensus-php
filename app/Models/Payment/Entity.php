@@ -1141,6 +1141,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->metadata = $input['_'] ?? null;
     }
 
+    public function setDescription($description)
+    {
+        $this->setAttribute(self::DESCRIPTION, $description);
+    }
+
     public function setDisputed($disputed)
     {
         $this->setAttribute(self::DISPUTED, $disputed);
@@ -1359,6 +1364,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $acquirerData = [
                     'rrn' => $this->getReference16()
                 ];
+
+                $upiTransactionId = $this->getReference1();
+
+                if (isset($upiTransactionId) === true)
+                {
+                    $acquirerData["upi_transaction_id"] = $upiTransactionId;
+                }
                 break;
         }
 

@@ -65,6 +65,12 @@ class OpenwalletPaymentTest extends TestCase
 
         $this->assertEquals($payment['status'], 'captured');
 
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($txn['reconciled_at']);
+
+        $this->assertNotNull($txn['reconciled_type']);
+
         // Assert - merchant balance/ nodal account ?
     }
 

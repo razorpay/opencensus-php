@@ -32,6 +32,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
             'merchant_id'           => '10000000000000',
             'channel'               => 'rbl',
             'pincode'               => '1',
@@ -41,7 +42,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
         $this->fixtures->balance->edit($this->balance->getId(),
-            ['balance' => 10000, 'account_type' => 'direct', 'account_provider' => 'rbl']);
+            ['balance' => 10000, 'account_type' => 'direct', 'channel' => 'rbl']);
     }
 
     /**

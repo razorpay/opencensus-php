@@ -17,7 +17,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_PAYMENT_ID     = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_RRN            = 'rrn_no';
     const COLUMN_ARN            = 'arn';
-    const COLUMN_REFUND_AMOUNT  = 'txn_amount';
     const COLUMN_ORDER_ID       = 'order_id';
     const COLUMN_MSG_TYPE       = 'msg_type';
     const COLUMN_MID            = 'mid';

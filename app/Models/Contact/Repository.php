@@ -35,7 +35,7 @@ class Repository extends Base\Repository
             (empty($input[Entity::EMAIL]) === true) and
             (empty($input[Entity::REFERENCE_ID]) === true))
         {
-            return;
+            return null;
         }
 
         return $this->newQuery()

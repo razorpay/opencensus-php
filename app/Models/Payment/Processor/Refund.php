@@ -2461,17 +2461,26 @@ trait Refund
     }
 
     /**
-     * Currently saving reference number sent by bank in refund response only for UPI refunds.
+     * Currently saving reference number sent by bank in refund response only for UPI and Cardless Emi refunds.
      *
      * @param array $response
      */
     protected function setRefundReference1(array $response)
     {
-        if (($this->refund->payment->getMethod() === Payment\Method::UPI) and
+        if ((in_array($this->refund->payment->getMethod(), $this->getMethodsToSetRefundReference1(), true)) and
             (isset($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]) === true) and
             (empty($this->refund->getReference1()) === true))
         {
             $this->refund->setReference1($response[Payment\Gateway::GATEWAY_KEYS][RefundEntity::RRN]);
         }
+    }
+
+    protected function getMethodsToSetRefundReference1()
+    {
+        return [
+            Payment\Method::UPI,
+            Payment\Method::CARDLESS_EMI,
+            Payment\Method::PAYLATER,
+        ];
     }
 }

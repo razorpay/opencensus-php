@@ -254,7 +254,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         }
         else
         {
-            $result = $this->db->transaction($callback);
+            $result = $this->db->transaction($callback, ...$params);
         }
 
         return $result;
@@ -353,5 +353,18 @@ class RepositoryManager extends Illuminate\Support\Manager
         {
             $dbConnection->resetConnectionAttributes();
         }
+    }
+
+    /**
+     * Run a dummy select and add a comment. Useful for adding markers in query logs.
+     *
+     * => $this->repo->addComment('My comment');
+     *
+     * @param string $comment
+     */
+    public function addComment(string $comment = 'default')
+    {
+        $this->db
+             ->select('SELECT /* comment: ' . $comment . ' */ 1;' );
     }
 }
