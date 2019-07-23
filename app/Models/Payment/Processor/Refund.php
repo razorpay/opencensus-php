@@ -2479,7 +2479,8 @@ trait Refund
     {
         return [
             Payment\Method::UPI,
-            Payment\Method::CARDLESS_EMI
+            Payment\Method::CARDLESS_EMI,
+            Payment\Method::PAYLATER,
         ];
     }
 }

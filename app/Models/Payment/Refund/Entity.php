@@ -539,6 +539,12 @@ class Entity extends Base\PublicEntity
                     self::ARN  => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::PAYLATER:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));
