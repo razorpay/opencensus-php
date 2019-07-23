@@ -36,12 +36,17 @@ class Fields
     const DATE1                     = 'Date1';          // Start date
     const DATE2                     = 'Date2';          // End date
     const DISPLAY_DETAILS           = 'DisplayDetails'; // Always Y
-    const DETAILS1                  = 'Details1';       // Merchant name
-    const DETAILS2                  = 'Details2';       // Merchant unique reference no. (payment id)
+    const DETAILS1                  = 'Details1';
+    const DETAILS2                  = 'Details2';
+    const DETAILS3                  = 'Details3';
 
-    // The following values are prepended to the details field
-    const MERCHANT_NAME                = 'MERCHANT NAME';
-    const MERCHANT_REFERENCE_NO_DETAIL = 'MERCHANT REF NO';
+    // The following values are prepended to the details field. They are displayed on the browser to the customer
+    const DISPLAY_DEBIT_START_DATE  = 'Debit Start Date';
+    const DISPLAY_DEBIT_END_DATE    = 'Debit End Date';
+    const DISPLAY_FREQUENCY         = 'Frequency';
+    const DISPLAY_MANDATE_AMOUNT    = 'Mandate Amount';
+    const DISPLAY_CUSTOMER_NAME     = 'Customer Name';
+    const DISPLAY_MANDATE_ID        = 'Mandate Id';
 
     // Constant values used in E-Mandate registration request
     const CLIENT_NAME       = 'RAZORPAY';
