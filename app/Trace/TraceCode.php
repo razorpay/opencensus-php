@@ -191,7 +191,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REFUND_ABSENT                                 = 'GATEWAY_REFUND_ABSENT';
     const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE             = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
     const REFUND_FILE_GENERATE_REQUEST                          = 'REFUND_FILE_GENERATE_REQUEST';
-    const RECONCILE_CANCELLED_TRANSACTIONS                      = 'RECONCILE_CANCELLED_TRANSACTIONS';
+    const RECONCILE_CANCELLED_TRANSACTIONS_REQUEST              = 'RECONCILE_CANCELLED_TRANSACTIONS_REQUEST';
+    const RECONCILE_CANCELLED_TRANSACTIONS_RESPONSE             = 'RECONCILE_CANCELLED_TRANSACTIONS_RESPONSE';
     const ORDER_REFUNDED                                        = 'ORDER_REFUNDED';
     const WEBHOOK_EDIT                                          = 'WEBHOOK_EDIT';
     const REFUND_AUTHORIZE_BULK                                 = 'REFUND_AUTHORIZE_BULK';

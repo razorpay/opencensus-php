@@ -594,7 +594,7 @@ class Repository extends Base\Repository
                     ->update($attributes);
     }
 
-    public function getCancelledBilldeskPaymentTransactions()
+    public function getCancelledBilldeskPaymentTransactions(int $limit = 200)
     {
         $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
@@ -614,6 +614,7 @@ class Repository extends Base\Repository
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
                     ->where($paymentStatus, '=', Payment\Status::REFUNDED)
                     ->whereNull($transactionReconciledAt)
+                    ->limit($limit)
                     ->get();
     }
 
@@ -626,9 +627,10 @@ class Repository extends Base\Repository
      * and `payments`.`status` = 'refunded'
      * and `transactions`.`reconciled_at` is null
      *
+     * @param $limit
      * @return mixed
      */
-    public function getCancelledBilldeskPaymentRefundTransactions()
+    public function getCancelledBilldeskPaymentRefundTransactions(int $limit = 200)
     {
         $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
@@ -652,6 +654,7 @@ class Repository extends Base\Repository
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
                     ->where($paymentStatus, '=', Payment\Status::REFUNDED)
                     ->whereNull($transactionReconciledAt)
+                    ->limit($limit)
                     ->get();
     }
 
