@@ -149,7 +149,7 @@ export default class RefundModal extends Component {
     }
 
     if (props.instant_refund) {
-      this.props.fetchRefundFee(this.props.payment);
+      this.props.fetchRefundFee(this.props.payment, props.amount);
       this.context
         .confirm({
           header: 'Do you want to refund this payment?',

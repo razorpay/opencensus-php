@@ -99,10 +99,10 @@ export const fetchCurrentBalance = () => {
   };
 };
 
-export const fetchRefundFee = payment => {
+export const fetchRefundFee = (payment, amount) => {
   return {
     type: FETCH_REFUND_FEE,
-    payload: payment.fetchInstantRefundFee(),
+    payload: payment.fetchInstantRefundFee(amount),
   };
 };
 
