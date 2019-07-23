@@ -215,7 +215,7 @@ export default props => {
                     <div>
                       The subscription will be updated on{' '}
                       {moment
-                        .unix(subscription.start_at)
+                        .unix(scheduledChanges.data.change_scheduled_at)
                         .format('DD MMM, YYYY')}
                       {!hideCancelUpdate && (
                         <Button.Transparent
