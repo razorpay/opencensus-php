@@ -83,4 +83,9 @@ export default class Payment extends GenericEntity {
     console.log('Fetch Instant Refund', this);
     return true;
   }
+
+  fetchInstantRefundFee() {
+    console.log('Calling fee api..');
+    return 5;
+  }
 }

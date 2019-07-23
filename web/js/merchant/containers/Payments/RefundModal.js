@@ -121,8 +121,6 @@ export default class RefundModal extends Component {
   componentDidMount() {
     this.props.onMount && this.props.onMount(this.props.payment);
     this.props.fetchMerchantBalance();
-    // this.props.isInstantRefund &&
-    //   this.props.isInstantRefund(this.props.payment);
   }
 
   componentWillUnmount() {
@@ -151,6 +149,7 @@ export default class RefundModal extends Component {
     }
 
     if (props.instant_refund) {
+      this.props.fetchRefundFee(this.props.payment);
       this.context
         .confirm({
           header: 'Do you want to refund this payment?',
@@ -159,8 +158,8 @@ export default class RefundModal extends Component {
               <div class="text-semi-muted">
                 <p>
                   This payment will be instantly refunded to the customer. A fee
-                  of &#8377; 5(plus taxes) will be charged from your unsettled
-                  balance.
+                  of &#8377; {this.props.refunds.refundFee} will be charged from
+                  your unsettled balance.
                 </p>
               </div>
               <div class="confirm-note">
