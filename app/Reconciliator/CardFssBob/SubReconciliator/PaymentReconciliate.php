@@ -52,7 +52,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         return true;
     }
 
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
     }
