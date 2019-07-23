@@ -108,7 +108,9 @@ class PayoutTest extends TestCase
         $this->bankAccount->setIfsc('YESB0CMSNOC');
 
         // Setting the mock carbon timestamp to 1 minute less than today's ending timing i.e. 6:14 PM
-        $endTime = Carbon::createFromTimestamp(Carbon::today(Timezone::IST)->hour(18)->minute(14)->getTimestamp());
+        $endTime = Carbon::createFromDate(2019, 07, 11., Timezone::IST)
+                           ->hour(18)
+                           ->minute(14);
 
         Carbon::setTestNow($endTime);
 
@@ -608,6 +610,10 @@ class PayoutTest extends TestCase
 
     public function testRetryDelayedMerchantOnDemandPayout()
     {
+        // Removed in verify beneficiary PR
+
+        $this->markTestSkipped();
+
         $payout = $this->testCreateMerchantPayoutOnDemand();
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -832,7 +838,6 @@ class PayoutTest extends TestCase
     public function testCreatePayoutAttemptSuccess()
     {
         // FTA initiate happens via sync queue
-
         $this->ba->privateAuth();
         $p1 = $this->testCreatePayout();
 

@@ -868,6 +868,23 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeEditLostWithoutDeduction()
+    {
+        $this->createWebhook(['events' => ['payment.dispute.created' => '1', 'payment.dispute.lost' => '1']]);
+
+        $data = $this->updateEditTestData();
+
+        $eventTestDataKey = 'testDisputeEditLostWithoutDeductionEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array

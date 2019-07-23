@@ -92,12 +92,21 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
+
         $this->setEventContainedIds();
 
         // TODO: Remove backward compatible code in few days having guaranteed
         // no old formatted job payload exists in queue.
         $this->eventName = $data['event_name'] ?? null;
         $this->eventQueuedAt = $data['queued_at'] ?? null;
+
+        if (($this->eventName === 'payment.downtime.started') or
+            ($this->eventName === 'payment.downtime.resolved'))
+        {
+            $this->job->delete();
+
+            return;
+        }
 
         $this->trace->count(Metric::WEBHOOK_EVENTS_CONSUMED_TOTAL, ['event' => $this->eventName]);
 

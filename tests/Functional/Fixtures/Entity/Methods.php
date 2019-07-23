@@ -10,6 +10,7 @@ class Methods extends Base
             'merchant_id'    => '10000000000000',
             'credit_card'    => '1',
             'debit_card'     => '1',
+            'prepaid_card'   => '1',
             'mobikwik'       => '1',
             'payzapp'        => '1',
             'payumoney'      => '1',

@@ -1069,7 +1069,7 @@ class Gateway extends Base\Gateway
                 break;
         }
 
-        return $accessCode;
+        return $this->getLiveGatewayAccessCode() ?: $accessCode;
     }
 
     public function getSecret()
@@ -1091,7 +1091,7 @@ class Gateway extends Base\Gateway
                 break;
         }
 
-        return $secret;
+        return $this->getLiveSecret() ?: $secret;
     }
 
     protected function isTPVEnabled()

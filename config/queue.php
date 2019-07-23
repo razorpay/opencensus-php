@@ -84,6 +84,13 @@ return [
             'token' => [
                 'confirmed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
+            'payout' => [
+                'processed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'created'           => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'reversed'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'queued'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'initiated'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
         ],
         'live' => [
             'payment' => [
@@ -129,6 +136,13 @@ return [
             'token' => [
                 'confirmed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
+            'payout' => [
+                'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'created'           => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'reversed'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'queued'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'initiated'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
         ],
     ],
     'dashboard' => [
@@ -164,26 +178,36 @@ return [
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
     'bulk_refund' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'       => env('AWS_REFUND_QUEUE'),
+        'live'       => env('AWS_REFUND_QUEUE'),
     ],
-    // TODO: Get own queue
-    // TODO: Test that refund goes to this queue
     'scrooge_refund' => [
-        'test'      => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'      => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'      => env('AWS_SCROOGE_TEST_QUEUE'),
+        'live'      => env('AWS_SCROOGE_LIVE_QUEUE'),
+    ],
+    'scrooge_refund_retry' => [
+        'test'      => env('AWS_SCROOGE_TEST_QUEUE'),
+        'live'      => env('AWS_SCROOGE_LIVE_QUEUE'),
+    ],
+    'scrooge_refund_update' => [
+        'test'      => env('AWS_SCROOGE_TEST_QUEUE'),
+        'live'      => env('AWS_SCROOGE_LIVE_QUEUE'),
+    ],
+    'scrooge_refund_verify' => [
+        'test'      => env('AWS_SCROOGE_TEST_QUEUE'),
+        'live'      => env('AWS_SCROOGE_LIVE_QUEUE'),
     ],
     'gateway_file' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'       => env('AWS_GATEWAY_FILE_QUEUE'),
+        'live'       => env('AWS_GATEWAY_FILE_QUEUE'),
     ],
     'run_shield_check' => [
         'test'       => env('AWS_SHIELD_QUEUE'),
         'live'       => env('AWS_SHIELD_QUEUE'),
     ],
-    'beam_request' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    'beam_job' => [
+        'test'       => env('AWS_BEAM_TEST_QUEUE'),
+        'live'       => env('AWS_BEAM_LIVE_QUEUE'),
     ],
     'settlement_transactions' => [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),

@@ -3095,3 +3095,5 @@ WHERE payments.id IN
 'CcCfQEuvmOT8PF'
 )
 LIMIT 26;
+
+insert into merchant_users values('9TNYKDWfwoisYQ','9TNYK5A5fJBMST','primary','owner',UNIX_TIMESTAMP(),UNIX_TIMESTAMP());

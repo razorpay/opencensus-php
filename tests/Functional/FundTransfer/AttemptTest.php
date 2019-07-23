@@ -50,7 +50,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testSettlementFileCreationKotak()
@@ -74,7 +74,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testInitiateAtCheckDuringFileCreation()
@@ -220,12 +220,18 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
+        $this->markTestSkipped();
+
+        // Yesbank now uses api based channels
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::YESBANK, 2, Attempt\Type::PAYOUT);
     }
 
     public function testPayoutFileCreationYesbankRtgsSuccess()
     {
+        // Yesbank using api based channels
+        $this->markTestSkipped();
+
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($now);
@@ -270,8 +276,6 @@ class AttemptTest extends TestCase
         $content = $this->initiateTransfer($channel, $purpose, false);
 
         $this->assertEquals(1, $content[$channel]['count']);
-        $this->assertEquals(0, $content[$channel]['success']);
-        $this->assertEquals(1, $content[$channel]['failed']);
     }
 
     public function testYesbankRefundToCreditCard()
@@ -369,8 +373,6 @@ class AttemptTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(1, $content[$channel]['count']);
-        $this->assertEquals(0, $content[$channel]['success']);
-        $this->assertEquals(1, $content[$channel]['failed']);
         $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
     }
 

@@ -115,7 +115,7 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function setParsedData(array $response)
     {
-        $this->reconEntityId = $response[Constants::PAYMENT_REF_NO];
+        $this->reconEntityId = $response[Constants::PAYMENT_REF_NO] ?? null;
 
         if ($this->reconEntityId === null)
         {

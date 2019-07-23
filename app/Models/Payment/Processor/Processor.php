@@ -1193,9 +1193,20 @@ class Processor
 
         $validator->validateInput('transfer', $input);
 
+        $merchantId = $payment->getMerchantId();
+
+        $result = app('razorx')->getTreatment($merchantId, 'transfer_deadlock_retry', $this->mode);
+
+        $deadLockRetryAttempts = 1;
+
+        if (strtolower($result) === 'on')
+        {
+            $deadLockRetryAttempts = 2;
+        }
+
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $input)
+            function() use ($payment, $input, $deadLockRetryAttempts)
             {
                 $this->repo->reload($payment);
 
@@ -1211,7 +1222,7 @@ class Processor
                         ['transfer_ids' => $transfers->getIds()]);
 
                     return $transfers;
-                });
+                }, $deadLockRetryAttempts);
             });
     }
 
@@ -1715,7 +1726,6 @@ class Processor
 
             $gatewayDowntimeError = true;
 
-
             throw $ex;
         }
         finally
@@ -1754,7 +1764,6 @@ class Processor
             Action::AUTHORIZE,
             Action::CALLBACK
         ];
-
 
         return in_array($action, $gatewayDowntimeActions, true);
     }
@@ -2055,6 +2064,15 @@ class Processor
 
         $payment->order()->associate($this->order);
 
+        //
+        // FIXME: Hack for reliance AMC, moving order receipt to payment
+        // description
+        //
+        if ($payment->getMerchantId() === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $payment->setDescription($this->order->getReceipt());
+        }
+
         $orderNotes = $this->order->getNotes()->toArray();
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
@@ -2289,6 +2307,15 @@ class Processor
         return $ba;
     }
 
+    /**
+     * This function is used to identify if a payment can be auto captured or not
+     * Please *note* that the order of the conditions is important and shouldn't be chnaged
+     * without understanding the consequences
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return bool
+     */
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
         // Bank transfers are auto-captured only if they are expected. This is checked later.
@@ -2307,19 +2334,6 @@ class Processor
             return false;
         }
 
-        if ($payment->isDirectSettlement() === true)
-        {
-            return true;
-        }
-
-        //
-        // We do an auto capture only if payment is associated with an order.
-        //
-        if ($payment->hasOrder() === false)
-        {
-            return false;
-        }
-
         //
         // The payment should always be in authorized if it has reached this point.
         // Ideally, this should throw an exception. But, we do not want to fail
@@ -2334,6 +2348,19 @@ class Processor
                     'status'        => $payment->getStatus()
                 ]);
 
+            return false;
+        }
+
+        if ($payment->isDirectSettlement() === true)
+        {
+            return true;
+        }
+
+        //
+        // We do an auto capture only if payment is associated with an order.
+        //
+        if ($payment->hasOrder() === false)
+        {
             return false;
         }
 

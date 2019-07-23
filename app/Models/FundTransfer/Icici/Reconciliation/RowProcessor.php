@@ -68,7 +68,7 @@ class RowProcessor extends BaseRowProcessor
 
         $flipStatus = Status::getFlipStatus();
 
-        if ((in_array($currentBankStatusCode, $successStatuses, true) === true) and
+        if ((Status::inStatus($successStatuses, $currentBankStatusCode) === true) and
             (in_array($newBankStatusCode, $flipStatus, true) === true))
         {
             $this->reconEntity->setStatus(Attempt\Status::INITIATED);

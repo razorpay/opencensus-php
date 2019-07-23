@@ -35,6 +35,7 @@ final class Constants
     const ALLOWED_PRODUCTS_ON_FTS = [
         EntityConstants::REFUND,
         EntityConstants::PAYOUT,
+        EntityConstants::FUND_ACCOUNT_VALIDATION,
     ];
 
     const VIRTUAL_ACCOUNT_IFSC = [

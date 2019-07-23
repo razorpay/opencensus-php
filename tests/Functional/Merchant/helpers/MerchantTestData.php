@@ -2902,6 +2902,16 @@ return [
                         ],
                     ],
                 ],
+                'payment_downtime' => [
+                    'entity' => 'collection',
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'method'    => 'netbanking',
+                            'severity'  => 'low',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
@@ -4332,6 +4342,23 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL,
+        ],
+    ],
+
+    'testInternationalEnableWhenInternationalActivationFlowIsAlreadySet' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'international'    => true,
+                'convert_currency' => false,
+            ],
+            'status_code' => 200,
         ],
     ],
 

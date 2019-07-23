@@ -360,7 +360,7 @@ class Scrooge
         $code = $response->status_code;
 
         if (($throwExceptionOnFailure === true) and
-            (in_array($code, [200, 201, 204], true) === false))
+            (in_array($code, [200, 201, 204, 302], true) === false))
         {
 
             throw new Exception\RuntimeException(

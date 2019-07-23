@@ -589,12 +589,15 @@ return [
     'testAssignTerminalForDifferentGateway' => [
         'request'  => [
             'content' => [
-                'gateway'               => 'atom',
-                'netbanking'            => 1,
-                'gateway_merchant_id'   => '12345',
-                'gateway_secure_secret' => 'random_secret',
-                'gateway_access_code'   => 'random_access_code',
-                'network_category'      => 'ecommerce',
+                'gateway'                    => 'atom',
+                'netbanking'                 => 1,
+                'gateway_merchant_id'        => '12345',
+                'gateway_secure_secret'      => 'random_secret',
+                'gateway_access_code'        => 'random_access_code',
+                'network_category'           => 'ecommerce',
+                'gateway_terminal_password'  => 'password',
+                'gateway_terminal_password2' => 'password2',
+                'gateway_secure_secret2'     => 'securepassword',
             ],
             'url'     => '/merchants/10000000000000/terminals',
             'method'  => 'POST'
@@ -939,12 +942,12 @@ return [
     'testCreateDirectSettlemtTerminalFailure' => [
         'request' => [
             'content' => [
-                'gateway'                   => 'upi_axis',
+                'gateway'                   => 'upi_airtel',
                 'gateway_merchant_id'       => '12345',
                 'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => 'random password',
                 'upi'                       => '1',
                 'tpv'                       => '2',
-                'vpa'                       => 'razorpay@axis',
                 'type'                      => [
                     'non_recurring'                    => '1',
                     'direct_settlement_without_refund' => '1',
@@ -1975,6 +1978,24 @@ return [
         'response' => [
             'content'  => [
                 'gateway_merchant_id'  => '037122003842039',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateBilldeskTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'billdesk',
+                'gateway_merchant_id'       => 'testmerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'gateway_access_code'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'testmerchantid',
                 'enabled'              => true,
             ]
         ]

@@ -69,14 +69,12 @@ class FlexMoneyBulkTerminalTest extends TestCase
                 Batch\Header::FLEXMONEY_MERCHANT_ID          => '10NodalAccount',
                 Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID  => '123',
                 Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID2 => '123',
-                Batch\Header::FLEXMONEY_TERMINAL_PASSWORD    => 'password',
                 Batch\Header::FLEXMONEY_CATEGORY             => '1234',
             ],
             [
                 Batch\Header::FLEXMONEY_MERCHANT_ID          => '100000Razorpay',
                 Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID  => '321',
                 Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID2 => '321',
-                Batch\Header::FLEXMONEY_TERMINAL_PASSWORD    => 'password',
                 Batch\Header::FLEXMONEY_CATEGORY             => '1234',
 
             ],

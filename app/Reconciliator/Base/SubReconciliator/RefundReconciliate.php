@@ -25,7 +25,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
      *******************/
 
     // This will need to be overridden in each gateway's refund recon.
+    // This will contain column having amount in case of domestic transaction
     const COLUMN_REFUND_AMOUNT = '';
+
+    // This will need to be overridden in each gateway's refund recon.
+    // This will contain column having amount in case of international transaction
+    const COLUMN_INTERNATIONAL_REFUND_AMOUNT = '';
 
     // List of gateways whose refund status must be set to processed without ARN
     const GATEWAYS_PROCESSED_WO_ARN = [
@@ -49,11 +54,16 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
     {
         parent::__construct($gateway, $batch);
 
-        $this->messenger = new Messenger();
+        $this->messenger = new Messenger;
 
         $this->messenger->batch = $batch;
     }
 
+    /**
+     * @param $row
+     * @throws ReconciliationException
+     * @throws \RZP\Exception\LogicException
+     */
     public function runReconciliate($row)
     {
         //
@@ -120,7 +130,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'trace_code'    => TraceCode::RECON_FAILURE,
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
-                    'row'           => $row,
+                    'refund_id'     => $refundId,
                     'extra_details' => $this->extraDetails,
                     'gateway'       => $this->gateway
                 ]);
@@ -210,14 +220,70 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
     protected function getReconRefundAmount(array $row)
     {
-        if (isset($row[static::COLUMN_REFUND_AMOUNT]) === false)
+        if ((static::COLUMN_REFUND_AMOUNT === '') and
+            (static::COLUMN_INTERNATIONAL_REFUND_AMOUNT === ''))
         {
             return null;
         }
 
-        $refundAmount = floatval($row[static::COLUMN_REFUND_AMOUNT]) * 100;
+        $amountColumn = ($this->isInternationalRefund($row) === true) ?
+                        static::COLUMN_INTERNATIONAL_REFUND_AMOUNT :
+                        static::COLUMN_REFUND_AMOUNT;
 
-        return $refundAmount;
+        $refundAmountColumns = (is_array($amountColumn) === false) ?
+                                [$amountColumn] :
+                                 $amountColumn;
+
+        $refundAmountColumn = array_first(
+            $refundAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (array_key_exists($amount, $row) === true);
+            });
+
+        if ($refundAmountColumn === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'refund_id'         => $this->refund->getId(),
+                    'expected_column'   => $amountColumn,
+                    'currency'          => $this->payment->getCurrency(),
+                    'payment_id'        => $this->payment->getId(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return Helper::getIntegerFormattedAmount($row[$refundAmountColumn]);
+    }
+
+    /**
+     * Gets amount of refund entity based on transaction currency
+     */
+    protected function getRefundEntityAmount()
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        if ($convertCurrency === true)
+        {
+            return $this->refund->getBaseAmount();
+        }
+
+        return $this->refund->getAmount();
+    }
+
+    /**
+     * This function has to be overriden in child classes.
+     * This will return true of current transaction is domestic or international
+     * @param array $row
+     * @return bool
+     */
+    protected function isInternationalRefund(array $row)
+    {
+        return false;
     }
 
     protected function runPreReconciledAtCheckRecon(array $rowDetails)
@@ -350,6 +416,11 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
     }
 
+    /**
+     * @param $row
+     * @return array|null
+     * @throws ReconciliationException
+     */
     protected function getRowDetailsStructured($row)
     {
         $this->app['trace']->info(
@@ -377,7 +448,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'message'    => 'Corresponding payment for the refund not found in DB.',
-                    'row'        => $row,
                     'refund_id'  => $refundId,
                     'amount'     => $refund->getAmount(),
                     'gateway'    => $this->gateway
@@ -427,7 +497,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 TraceCode::RECON_INFO_ALERT,
                 [
                     'message'    => 'Refund ID being sent in the file is not as expected.',
-                    'row'        => $row,
                     'refund_id'  => $refundId,
                     'gateway'    => $this->gateway
                 ]);
@@ -464,7 +533,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
     /**
      * Checks if amount in recon file matches the actual amount in refund entity
-     * Implementation to be provided by child clasess
+     * Implementation to be provided by child classes
      *
      * @param  array $row Row data
      *
@@ -472,6 +541,48 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
+        $reconRefundAmount = $this->getReconRefundAmount($row);
+
+        //
+        //  If refund amount column is expected in gateway recon but not present in MIS.
+        //  this will return false and amount validation fails.
+        //
+        if ($reconRefundAmount === false)
+        {
+            return false;
+        }
+
+        //
+        // If refund column is not defined for the gateway recon, this will return
+        // true. Because that means, either we are not recseiving refund amount column in MIS or
+        // we do not want to validate amount for this gateway, in such cases, validation
+        // always returns true.
+        //
+        if ($reconRefundAmount === null)
+        {
+            return true;
+        }
+
+        // To handle multi-currency, get amount/base amount of refund entity
+        $refundEntityAmount = $this->getRefundEntityAmount();
+
+        if ($refundEntityAmount !== $reconRefundAmount)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
+                    'refund_id'         => $this->refund->getId(),
+                    'expected_amount'   => $refundEntityAmount,
+                    'recon_amount'      => $reconRefundAmount,
+                    'payment_id'        => $this->payment->getId(),
+                    'currency'          => $this->payment->getCurrency(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
         return true;
     }
 
@@ -619,7 +730,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                             'amount'        => $refund->getAmount(),
                             'refund_arn'    => $currentArn,
                             'recon_arn'     => $reconArn,
-                            'row'           => $rowDetails,
                             'gateway'       => $this->gateway,
                         ]);
 

@@ -72,6 +72,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::CARD_FSS_BOB => 1539541800,
     ];
 
+    // This will need to be overridden in each gateway's payment recon.
+    // This contains domestic amount of transaction
+    const COLUMN_PAYMENT_AMOUNT = '';
+
+    // This will need to be overridden in each gateway's payment recon.
+    // This contains international amount of transaction
+    const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT = '';
+
     /*******************
      * Instance objects
      *******************/
@@ -368,9 +376,77 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     protected function getReconPaymentStatus(array $row)
     {
         //
-        // The return value of this method must be mapped to one of the statuses in Payment\Status
+        // The return value of this method must be mapped
+        // to one of the statuses in Payment\Status
         //
         return null;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        //
+        // If this constant is not defined in the gateway classes,
+        // we don't do any recon on the payment amount at all.
+        //
+        if ((static::COLUMN_PAYMENT_AMOUNT === '') and
+            (static::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT === ''))
+        {
+            return null;
+        }
+
+        $amountColumn = ($this->isInternationalPayment($row) === true) ?
+                        static::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT :
+                        static::COLUMN_PAYMENT_AMOUNT;
+
+        $paymentAmountColumns = (is_array($amountColumn) === false) ?
+                                [$amountColumn] :
+                                 $amountColumn;
+
+        $paymentAmountColumn = array_first(
+            $paymentAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (array_key_exists($amount, $row) === true);
+            });
+
+        if ($paymentAmountColumn === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'payment_id'        => $this->payment->getId(),
+                    'expected_column'   => $amountColumn,
+                    'amount'            => $this->payment->getBaseAmount(),
+                    'currency'          => $this->payment->getCurrency(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return Helper::getIntegerFormattedAmount($row[$paymentAmountColumn]);
+    }
+
+    /**
+     * Gets amount of payment entity based on transaction currency
+     */
+    protected function getPaymentEntityAmount()
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        return ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+    }
+
+    /**
+     * This function has to be overriden in child classes.
+     * This will return true of current transaction is domestic or international
+     * @param array $row
+     * @return bool
+     */
+    protected function isInternationalPayment(array $row)
+    {
+        return false;
     }
 
     protected function tryAuthorizeFailedPayment($row)
@@ -1952,6 +2028,47 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
+        $reconPaymentAmount = $this->getReconPaymentAmount($row);
+
+        //
+        //  If payment amount column is expected in gateway recon but not present in MIS.
+        //  this will return false and amount validation fails.
+        //
+        if ($reconPaymentAmount === false)
+        {
+            return false;
+        }
+
+        //
+        // If payment column is not defined for the gateway recon, this will return
+        // true. Because that means, either we are not receiving payment amount column in MIS or
+        // we do not want to validate amount for this gateway, in such cases, validation
+        // always returns true.
+        //
+        if ($reconPaymentAmount === null)
+        {
+            return true;
+        }
+
+        // To handle multi-currency, get amount/base amount of payment entity
+        $paymentEntityAmount = $this->getPaymentEntityAmount();
+
+        if ($paymentEntityAmount !== $reconPaymentAmount)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
+                    'expected_amount'   => $paymentEntityAmount,
+                    'recon_amount'      => $reconPaymentAmount,
+                    'currency'          => $this->payment->getCurrency(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
         return true;
     }
 

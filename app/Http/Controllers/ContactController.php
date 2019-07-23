@@ -18,6 +18,15 @@ class ContactController extends Controller
 
     protected $service = Contact\Service::class;
 
+    public function get(string $id)
+    {
+        $input = Request::all();
+
+        $contact = $this->service()->fetch($id, $input);
+
+        return ApiResponse::json($contact);
+    }
+
     public function getTypes()
     {
         $data = $this->service()->getTypes();

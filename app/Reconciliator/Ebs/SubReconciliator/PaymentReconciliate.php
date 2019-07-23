@@ -56,7 +56,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      *
      * @return int $paymentAmount integer
      */
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         $paymentAmount = Helper::getArrayFirstValue($row, self::COLUMN_PAYMENT_AMOUNT);
 
