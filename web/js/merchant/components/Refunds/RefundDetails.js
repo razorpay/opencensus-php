@@ -38,7 +38,12 @@ export default ({ refund, isLoading, statusMsg }) => {
 
                 <EntityDetailRow
                   label="Status"
-                  value={() => <RefundStatusTimeline />}
+                  value={() => (
+                    <ContentToggler onToggleClick={() => {}}>
+                      <span>View History</span>
+                      <RefundStatusTimeline />
+                    </ContentToggler>
+                  )}
                 />
 
                 <EntityDetailRow
