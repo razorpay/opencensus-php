@@ -7,5 +7,5 @@ return [
 
     // Used for CORS validation
     'auth_service_url'       => env('AUTH_SERVICE_URL'),
-    'auth_service_url_green' => env('AUTH_SERVICE_URL_GREEN'),
+    'auth_service_url_cde'   => env('AUTH_SERVICE_URL_CDE'),
 ];
