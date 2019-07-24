@@ -64,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
         self::CHANNEL,
+        self::UPDATED_AT,
     ];
 
     protected $entity = 'balance';

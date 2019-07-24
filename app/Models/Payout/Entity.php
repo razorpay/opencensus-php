@@ -116,7 +116,8 @@ class Entity extends Base\PublicEntity
     const PAYOUT_IDS           = 'payout_ids';
 
     // Output keys
-    const WORKFLOW_HISTORY = 'workflow_history';
+    const WORKFLOW_HISTORY   = 'workflow_history';
+    const BANKING_ACCOUNT_ID = 'banking_account_id';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
@@ -206,6 +207,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::BATCH_ID,
         self::INTERNAL_STATUS,
+        self::BANKING_ACCOUNT_ID,
         self::INITIATED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -238,6 +240,7 @@ class Entity extends Base\PublicEntity
         self::REVERSAL,
         self::CANCELLED_AT,
         self::QUEUED_AT,
+        self::BANKING_ACCOUNT_ID,
         self::INITIATED_AT,
         self::PENDING_AT,
         self::PROCESSED_AT,
@@ -264,6 +267,7 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNT,
         self::PENDING_ON_USER,
         self::WORKFLOW_HISTORY,
+        self::BANKING_ACCOUNT_ID,
         self::REVERSAL,
         // We want to show the failure reason only if the status is reversed.
         // This is because we might have intermittent failure reasons even
@@ -914,6 +918,18 @@ class Entity extends Base\PublicEntity
         }
 
         $attributes[self::WORKFLOW_HISTORY] = $this->getWorkflowHistoryData();
+    }
+
+    public function setPublicBankingAccountIdAttribute(array & $attributes)
+    {
+        $isBanking = optional($this->balance)->isTypeBanking() ?? false;
+
+        if ($isBanking === false)
+        {
+            unset($attributes[self::BANKING_ACCOUNT_ID]);
+        }
+
+        $attributes[self::BANKING_ACCOUNT_ID] = optional($this->balance->bankingAccount)->getPublicId();
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
