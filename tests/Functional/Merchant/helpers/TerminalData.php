@@ -1903,6 +1903,24 @@ return [
         ]
     ],
 
+    'testCreateWalletPaypalTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_paypal',
+                'gateway_merchant_id'       => 'merchant_id',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_access_code'       => 'access_code',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'merchant_id',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateNetbankingSibTerminal'  => [
         'request' => [
             'content' => [

@@ -63,6 +63,35 @@ class RefundData extends Base\Mock\Server
         return $response;
     }
 
+    public static function wallet_paypal($entities)
+    {
+        $response = [
+            'data' => [
+                '_raw' => '',
+                'code' => 'PAYMENT_SUCCESS',
+                'data' => [
+                    'amount'                => $entities['refund']['amount'],
+                    'merchantId'            => 'abc',
+                    'payResponseCode'       => 'PAYMENT_SUCCESS',
+                    'providerReferenceId'   => 'phonepeProviderRefId',
+                    'status'                => 'SUCCESS',
+                    'transactionId'         => $entities['refund']['id'],
+                ],
+                'message' => 'Payment succeded',
+                'received' => true,
+                'status' => 'refund_successfull',
+                'success' => false
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
     public static function bajajfinserv($entities)
     {
         $response = [

@@ -87,6 +87,50 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function wallet_paypal($entities)
+    {
+        $this->gateway = $entities['payment']['gateway'];
+
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_mozart_payment_post',
+            [
+                'gateway' => $entities['payment']['gateway'],
+                'paymentId' => $entities['payment']['id']
+            ]);
+
+        $output = [
+            'code'    => 'PAYMENT_SUCCESS',
+            'merchantId' => 'abc',
+            'transactionId' => $entities['payment']['id'],
+            'amount' => $entities['payment']['amount'],
+            'providerReferenceId' => 'phonepeProviderRefId',
+        ];
+
+        $response = [
+            'data' => [
+                '_raw' => '',
+                'code' => '',
+                'message' => '',
+                'received' => true,
+                'status' => 'authorization_successfull',
+                'success' => null
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => '',
+            'next' => [
+                'redirect' => [
+                    'content' => $output,
+                    'method' => 'post',
+                    'url' => $url,
+                ]
+            ],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
     public function upi_airtel($entities)
     {
         $response = [

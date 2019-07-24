@@ -93,6 +93,7 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const WALLET_PHONEPE     = 'wallet_phonepe';
+    const WALLET_PAYPAL      = 'wallet_paypal';
 
     const CARDLESS_EMI       = 'cardless_emi';
     const PAYLATER           = 'paylater';
@@ -684,6 +685,7 @@ class Gateway
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
+            self::WALLET_PAYPAL,
         ],
 
         Method::EMI => [
@@ -956,6 +958,7 @@ class Gateway
         Wallet::MPESA       => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
         Wallet::PHONEPE     => Gateway::WALLET_PHONEPE,
+        Wallet::PAYPAL      => Gateway::WALLET_PAYPAL,
     ];
 
     public static $upiToGatewayMap = [

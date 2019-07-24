@@ -142,6 +142,7 @@ class Gateway extends Base\Gateway
     public function immediateVerifyApplicable($gatewayName)
     {
         $immediateVerificationGateways = [
+            Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
@@ -414,6 +415,13 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
+            Payment\Gateway::WALLET_PAYPAL => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => null,
+                Action::REFUND => null,
+                Action::VERIFY_REFUND => null,
+            ],
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -469,6 +477,14 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::WALLET_PHONEPE => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => null,
+                Action::VERIFY => null,
+                Action::REFUND => null,
+                Action::VERIFY_REFUND => null,
+            ],
+
+            Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
                 Action::VERIFY => null,
@@ -708,6 +724,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CUB,
+            Payment\Gateway::WALLET_PAYPAL
         ];
 
         return in_array($gateway, $validationGateways, true);

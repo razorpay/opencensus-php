@@ -70,6 +70,35 @@ class VerifyRefundData extends Base\Mock\Server
         return $response;
     }
 
+    public function wallet_paypal($entities)
+    {
+        $response = [
+            'data'=>
+                [
+                    '_raw'=> '',
+                    'code'=> 'PAYMENT_SUCCESS',
+                    'data'=> [
+                        'amount'=> $entities['payment']['amount'],
+                        'merchantId'=> 'abc',
+                        'payResponseCode'=> 'SUCCESS',
+                        'paymentState'=> 'COMPLETED',
+                        'providerReferenceId'=> 'phonepeProviderRefId',
+                        'transactionId'=> $entities['refund']['id'],
+                    ],
+                    'message'=> 'Your payment is successful.',
+                    'received'=> true,
+                    'status'=> 'verification_successful',
+                    'success'=> true
+                ],
+            'error'=> null,
+            'external_trace_id'=> '',
+            'mozart_id'=> '',
+            'next'=> [],
+            'success'=> true,
+        ];
+        return $response;
+    }
+
     public function upi_airtel($entities)
     {
         $response = [

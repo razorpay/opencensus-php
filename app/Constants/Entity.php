@@ -223,6 +223,7 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
     const WALLET_PHONEPE         = 'wallet_phonepe';
+    const WALLET_PAYPAL          = 'wallet_paypal';
     const CARDLESS_EMI           = 'cardless_emi';
     const MOZART                 = 'mozart';
     const BAJAJFINSERV           = 'bajajfinserv';
@@ -483,6 +484,7 @@ class Entity
         self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
         self::GOOGLE_PAY             => \RZP\Gateway\Mozart::class,
         self::WALLET_PHONEPE         => \RZP\Gateway\Mozart::class,
+        self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,

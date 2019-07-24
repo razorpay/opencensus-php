@@ -21,6 +21,7 @@ class Wallet
     const OPENWALLET  = 'openwallet';
     const MPESA       = 'mpesa';
     const PHONEPE     = 'phonepe';
+    const PAYPAL     = 'paypal';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -36,6 +37,7 @@ class Wallet
         self::MPESA         => 'Vodafone mPesa',
         self::AMAZONPAY     => 'AmazonPay',
         self::PHONEPE       => 'PhonePe',
+        self::PAYPAL        => 'PayPal',
     );
 
     public static $emailRequiredWallets = array(

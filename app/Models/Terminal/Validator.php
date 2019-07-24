@@ -92,6 +92,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
@@ -451,6 +452,13 @@ class Validator extends Base\Validator
 
     protected static $walletPhonepeTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_phonepe',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+    ];
+
+    protected static $walletPaypalTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_paypal',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
