@@ -989,12 +989,29 @@ class PaymentCreateTest extends TestCase
 
         $response = $this->doS2SPrivateAuthPayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+        $this->assertEquals($paymentEntity['id'], $response['razorpay_payment_id']);
 
         $this->assertTrue($this->redirectToAuthorize);
 
+        $payment['token'] = $paymentEntity['token_id'];
+        $payment['amount'] = 3000;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+        $payment['order_id'] = $order->getPublicId();
+
+        //
+        // Second auth payment for the recurring product
+        //
+
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('netbanking_axis', $paymentEntity['gateway']);
     }
 
     public function testPaymentS2SRedirectPrivateAuth()

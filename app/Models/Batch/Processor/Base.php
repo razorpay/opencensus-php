@@ -1426,10 +1426,23 @@ class Base extends BaseModel\Core
     {
         $result = false;
 
-        if ($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true)
+        if ($this->app->batchService->isCompletelyMigratedBatchType($this->batch->getType()) === true)
         {
+            // not required to call razorx.
+            return true;
+        }
+
+        if ($this->app->batchService->isMigratingBatchType($this->batch->getType()) === true)
+        {
+            //
+            // Get the RazorxTreatment based on batch Type:
+            // BATCH_SERVICE_<BATCH_TYPE>_MIGRATION
+            // Eg: for payment_link, RazorxTreatment will be batch_service_payment_link_migration
+            //
+            $razorxTreatment = 'batch_service_' . $this->batch->getType() . '_migration';
+
             $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
+                                                        $razorxTreatment,
                                                         $this->mode
                                                         );
 
@@ -1454,7 +1467,7 @@ class Base extends BaseModel\Core
     {
         $result = false;
 
-        if ($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true)
+        if ($this->app->batchService->isMigratingBatchType($this->batch->getType()) === true)
         {
             $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
                                                         Merchant\RazorxTreatment::BATCH_SERVICE_SKIP_VALIDATION,

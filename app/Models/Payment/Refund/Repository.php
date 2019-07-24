@@ -46,6 +46,7 @@ class Repository extends Base\Repository
         Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
         Entity::GATEWAY         => 'sometimes|string|max:30',
+        Entity::PUBLIC_STATUS   => 'sometimes|filled|in:processed,processing',
         Payment\Entity::METHOD  => 'sometimes|string|max:30',
         'payment_gateway'       => 'sometimes|string|max:30',
     ];
@@ -130,6 +131,26 @@ class Repository extends Base\Repository
         $query->where(Payment\Entity::METHOD, '=', $method);
 
         $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamPublicStatus($query, $params)
+    {
+        switch($params[Entity::PUBLIC_STATUS])
+        {
+            case 'processed':
+                $query->where(function($subQuery) {
+                    $subQuery->where(Entity::SPEED_DECISIONED, Speed::NORMAL)
+                             ->orWhereNotNull(Entity::SPEED_PROCESSED);
+                });
+
+                break;
+
+            case 'processing':
+                $query->where(Entity::SPEED_DECISIONED, '!=', Speed::NORMAL)
+                      ->WhereNull(Entity::SPEED_PROCESSED);
+
+                break;
+        }
     }
 
     protected function joinQueryPayment($query)

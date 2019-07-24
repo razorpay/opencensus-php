@@ -1159,7 +1159,11 @@ class Gateway extends Base\Gateway
                                                                            ->TransactionState,
                 Entity::AUTH_CODE           => (string) $verifyAuthResponse->children('ipgapi', true)
                                                                            ->IPGApiOrderResponse
-                                                                           ->ProcessorApprovalCode
+                                                                           ->ProcessorApprovalCode,
+
+                Entity::APPROVAL_CODE       => (string) $verifyAuthResponse->children('ipgapi', true)
+                                                                           ->IPGApiOrderResponse
+                                                                           ->ApprovalCode,
             ];
 
             if ($this->shouldUpdatePaymentInternalErrorCode($input['payment']) === true)

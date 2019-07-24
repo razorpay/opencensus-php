@@ -139,6 +139,7 @@ class Type
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
+    const SBI_EMI_OUTPUT_FILE               = 'sbi_emi_output_file';
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
@@ -222,6 +223,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SBI_EMI_FILE,
+            self::SBI_EMI_OUTPUT_FILE,
             self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::BOB_EMI_FILE,
@@ -294,6 +296,7 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SBI_EMI_FILE,
+        self::SBI_EMI_OUTPUT_FILE,
         self::BOB_EMI_FILE,
         self::CITI_EMI_FILE,
         self::SCBL_EMI_FILE,
@@ -393,6 +396,7 @@ class Type
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_MAIL,
+            self::SBI_EMI_OUTPUT_FILE,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,

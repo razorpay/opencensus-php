@@ -32,6 +32,13 @@ class Service extends Base\Service
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
     ];
 
+    /**
+     * This limit is being used as default while fetching the cancelled billdesk
+     * payments and corresponding refunds. The route get hit via cron.
+     * This limit is needed as sometimes cron fails due to longer query time.
+     */
+    const BILLDESK_CANCELLED_TXN_FETCH_QUERY_LIMIT = 200;
+
     protected $core;
 
     public function __construct()
@@ -84,8 +91,16 @@ class Service extends Base\Service
         }
     }
 
-    public function reconciliateCancelledTransactions($gateway)
+    public function reconciliateCancelledTransactions($gateway, array $input = [])
     {
+        $this->trace->info(
+            TraceCode::RECONCILE_CANCELLED_TRANSACTIONS_REQUEST,
+            [
+                'gateway'   => $gateway,
+                'input'     => $input,
+            ]
+        );
+
         if ($gateway !== Payment\Gateway::BILLDESK)
         {
             throw new Exception\BadRequestException(
@@ -94,9 +109,14 @@ class Service extends Base\Service
                 $gateway);
         }
 
-        $paymentTransactions = $this->repo->transaction->getCancelledBilldeskPaymentTransactions();
+        // Limit for payment and refund transactions fetch query
+        $paymentLimit = $input['payment_limit'] ?? self::BILLDESK_CANCELLED_TXN_FETCH_QUERY_LIMIT;
 
-        $refundTransactions = $this->repo->transaction->getCancelledBilldeskPaymentRefundTransactions();
+        $refundLimit = $input['refund_limit'] ?? self::BILLDESK_CANCELLED_TXN_FETCH_QUERY_LIMIT;
+
+        $paymentTransactions = $this->repo->transaction->getCancelledBilldeskPaymentTransactions($paymentLimit);
+
+        $refundTransactions = $this->repo->transaction->getCancelledBilldeskPaymentRefundTransactions($refundLimit);
 
         $allTransactions = [
             'payment' => $paymentTransactions,
@@ -135,13 +155,14 @@ class Service extends Base\Service
         }
 
         $data = [
+            'gateway'       => $gateway,
             'success_count' => $successCount,
             'failure_count' => $failureCount,
             'failures'      => $failures,
         ];
 
         $this->trace->info(
-            TraceCode::RECONCILE_CANCELLED_TRANSACTIONS,
+            TraceCode::RECONCILE_CANCELLED_TRANSACTIONS_RESPONSE,
             $data
         );
 

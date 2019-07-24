@@ -97,6 +97,8 @@ class Entity extends Base\PublicEntity
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
 
+    const PUBLIC_STATUS = 'public_status';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';

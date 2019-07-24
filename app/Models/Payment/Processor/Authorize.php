@@ -5457,7 +5457,8 @@ trait Authorize
         }
 
         if (($payment->isEmandate() === true) and
-            ($payment->getBank() === IFSC::UTIB))
+            ($payment->getBank() === IFSC::UTIB) and
+            ($payment->isRecurringTypeInitial() === true))
         {
                 return true;
         }
