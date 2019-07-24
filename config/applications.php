@@ -336,4 +336,10 @@ return [
     'non_blocking_http' => [
         'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
     ],
+
+    'hubspot' => [
+        'mock'     => env('HUBSPOT_MOCK', false),
+        'url'      => env('HUBSPOT_URL'),
+        'secret'   => env('HUBSPOT_SECRET'),
+    ],
 ];

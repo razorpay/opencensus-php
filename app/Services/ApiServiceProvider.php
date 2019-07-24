@@ -129,6 +129,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RazorXClient($app);
         });
 
+        $this->app->singleton('hubspot', function($app)
+        {
+            return new HubspotClient($app);
+        });
+
         $this->app->singleton('card.cardVault', function($app)
         {
             $cardVaultMock = $app['config']->get('applications.card_vault.mock');
@@ -349,6 +354,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'smartRouting',
             'diag',
             'mozart',
+            'hubspot',
         ];
     }
 
