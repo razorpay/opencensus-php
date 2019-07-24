@@ -461,6 +461,10 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
@@ -510,9 +514,14 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
     repo: razorpay/api
     namespace: beta
     tag:
@@ -608,9 +617,14 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
     repo: razorpay/api
     namespace: echo
     tag:
@@ -680,9 +694,14 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
     repo: razorpay/api
     namespace: delta
     tag:
@@ -752,9 +771,14 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
     repo: razorpay/api
     namespace: charlie
     tag:
@@ -801,9 +825,14 @@ pipeline:
         - api-sqs-cps-sync-live
         - api-sqs-merchant-balance-update-test
         - api-sqs-merchant-balance-update-live
+        - api-sqs-irctc-batch
+        - api-sqs-gateway-file
+        - api-sqs-beam-live
+        - api-sqs-beam-test
         - api-sqs-scrooge-test
         - api-sqs-scrooge-live
         - api-sqs-refund
+        - api-sqs-payment-batch
       repo: razorpay/api
       namespace: api
       tag:
@@ -851,9 +880,14 @@ pipeline:
         - api-sqs-cps-sync-live
         - api-sqs-merchant-balance-update-test
         - api-sqs-merchant-balance-update-live
+        - api-sqs-irctc-batch
+        - api-sqs-gateway-file
+        - api-sqs-beam-live
+        - api-sqs-beam-test
         - api-sqs-scrooge-test
         - api-sqs-scrooge-live
         - api-sqs-refund
+        - api-sqs-payment-batch
       repo: razorpay/api
       namespace: api
       tag:
@@ -980,9 +1014,14 @@ pipeline:
       - api-sqs-cps-sync-live
       - api-sqs-merchant-balance-update-test
       - api-sqs-merchant-balance-update-live
+      - api-sqs-irctc-batch
+      - api-sqs-gateway-file
+      - api-sqs-beam-live
+      - api-sqs-beam-test
       - api-sqs-scrooge-test
       - api-sqs-scrooge-live
       - api-sqs-refund
+      - api-sqs-payment-batch
     repo: razorpay/api
     namespace: zeta
     tag:

@@ -695,7 +695,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayTimeoutException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -704,7 +704,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayRequestException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -814,7 +814,7 @@ class Gateway
             $data = ['status_code' => $response->status_code, 'body' => $response->body];
             $e->setData($data);
 
-            if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+            if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
             {
                 $e->markSafeRetryTrue();
             }

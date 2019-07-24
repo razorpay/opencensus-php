@@ -20,11 +20,6 @@ class IrctcBatch extends Job
     ];
 
     /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'batch';
-
-    /**
      * Associative array with key as batch type and value
      * as Batch entity object.
      *

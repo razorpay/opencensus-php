@@ -191,7 +191,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_REFUND_ABSENT                                 = 'GATEWAY_REFUND_ABSENT';
     const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE             = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
     const REFUND_FILE_GENERATE_REQUEST                          = 'REFUND_FILE_GENERATE_REQUEST';
-    const RECONCILE_CANCELLED_TRANSACTIONS                      = 'RECONCILE_CANCELLED_TRANSACTIONS';
+    const RECONCILE_CANCELLED_TRANSACTIONS_REQUEST              = 'RECONCILE_CANCELLED_TRANSACTIONS_REQUEST';
+    const RECONCILE_CANCELLED_TRANSACTIONS_RESPONSE             = 'RECONCILE_CANCELLED_TRANSACTIONS_RESPONSE';
     const ORDER_REFUNDED                                        = 'ORDER_REFUNDED';
     const WEBHOOK_EDIT                                          = 'WEBHOOK_EDIT';
     const REFUND_AUTHORIZE_BULK                                 = 'REFUND_AUTHORIZE_BULK';
@@ -936,6 +937,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_EDIT                                         = 'MERCHANT_EDIT';
     const MERCHANT_BULK_EDIT_INPUT                              = 'MERCHANT_BULK_EDIT_INPUT';
     const MERCHANT_EDIT_ACTION                                  = 'MERCHANT_EDIT_ACTION';
+    const ACCOUNT_EDIT_ACTION                                   = 'ACCOUNT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                                = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS                      = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
     const MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA             = 'MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA';
@@ -1091,6 +1093,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
+
+    const NON_BLOCKING_HTTP_ERROR                               = 'NON_BLOCKING_HTTP_ERROR';
 
     // Gateway component error messages
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
@@ -1843,7 +1847,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
-    const SELECTED_TERMINAL_IDS                                 = 'SELECTED_TERMINAL_IDS';
+    const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+
+    const PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR              = "PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR";
 
     // Core Payment Service tracecodes
     const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
@@ -1922,6 +1928,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_SUCCESSFULL                   = 'MERCHANT_BALANCE_UPDATE_SUCCESSFULL';
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
+
+    // Smart Routing
+    const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
+    const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
+    const NON_BLOCKING_HTTP_DATA                                = 'NON_BLOCKING_HTTP_DATA';
+    const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

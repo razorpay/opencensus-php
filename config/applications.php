@@ -325,4 +325,15 @@ return [
         'username'          => env('BATCH_USERNAME'),
         'password'          => env('BATCH_PASSWORD'),
     ],
+
+    'smart_routing' => [
+        'url'       => env('SMART_ROUTING_URL'),
+        'mock'      => env('SMART_ROUTING_MOCK',false),
+        'username'  => env('SMART_ROUTING_USERNAME'),
+        'password'  => env('SMART_ROUTING_PASSWORD')
+    ],
+
+    'non_blocking_http' => [
+        'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
+    ],
 ];

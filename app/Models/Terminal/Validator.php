@@ -86,6 +86,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::NETBANKING_YESB,
         Payment\Gateway::NETBANKING_FEDERAL,
+        Payment\Gateway::NETBANKING_CUB,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
@@ -518,6 +519,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
     ];
 
+    protected static $netbankingCubEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:netbanking_cub',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+    ];
+
     protected static $netbankingVijayaTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
@@ -574,6 +585,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:upi_axis',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::VPA                        => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TPV                        => 'sometimes|in:0,2',

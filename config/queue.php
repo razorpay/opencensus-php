@@ -173,6 +173,14 @@ return [
         'test'       => env('AWS_BATCH_QUEUE'),
         'live'       => env('AWS_BATCH_QUEUE'),
     ],
+    'irctc_batch' => [
+        'test'       => env('AWS_IRCTC_BATCH_QUEUE'),
+        'live'       => env('AWS_IRCTC_BATCH_QUEUE'),
+    ],
+    'emandate_batch' => [
+        'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+        'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+    ],
     'capture' => [
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
@@ -181,11 +189,9 @@ return [
         'test'       => env('AWS_REFUND_QUEUE'),
         'live'       => env('AWS_REFUND_QUEUE'),
     ],
-    // TODO: Get own queue
-    // TODO: Test that refund goes to this queue
     'scrooge_refund' => [
-        'test'      => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'      => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'      => env('AWS_SCROOGE_TEST_QUEUE'),
+        'live'      => env('AWS_SCROOGE_LIVE_QUEUE'),
     ],
     'scrooge_refund_retry' => [
         'test'      => env('AWS_SCROOGE_TEST_QUEUE'),
@@ -200,16 +206,16 @@ return [
         'live'      => env('AWS_SCROOGE_LIVE_QUEUE'),
     ],
     'gateway_file' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'       => env('AWS_GATEWAY_FILE_QUEUE'),
+        'live'       => env('AWS_GATEWAY_FILE_QUEUE'),
     ],
     'run_shield_check' => [
         'test'       => env('AWS_SHIELD_QUEUE'),
         'live'       => env('AWS_SHIELD_QUEUE'),
     ],
-    'beam_request' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    'beam_job' => [
+        'test'       => env('AWS_BEAM_TEST_QUEUE'),
+        'live'       => env('AWS_BEAM_LIVE_QUEUE'),
     ],
     'settlement_transactions' => [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
