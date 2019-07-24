@@ -42,6 +42,8 @@ class ApiRequestAny
 
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
 
+    const IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD = 'is_visible_to_fe_dashboard';
+
     /**
      * Construct a RawApiRequest instance
      *
@@ -388,6 +390,17 @@ class ApiRequestAny
         {
             $json = $e->getResponse()->json();
             $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
+
+            //in case of 2fa api calls we need the data passed by the api
+            // and dashboard will consume that data. For eg.
+            // even if username and password is correct we can have failures, if otp was not passed.
+            // dashboard needs to explicitly handle these issues.
+            if ((empty($json['error']['data']) === false) and
+                (empty($json['error']['data'][self::IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD]) === false) and
+                ($json['error']['data'][self::IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD] === true))
+            {
+                $errors['data'] = $json['error']['data'];
+            }
         }
         catch(\GuzzleHttp\Exception\ServerException $e)
         {

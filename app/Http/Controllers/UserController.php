@@ -143,6 +143,26 @@ class UserController extends Controller
     }
 
     /**
+     * Handle the authentication request from the user.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postSetup2faVerifyMobile()
+    {
+        $input = Input::all();
+
+        // Lowercasing emails for consistency
+        if (isset($input['email']))
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
+        list($error, $data) = (new User\Service)->login($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
      * Log out the currently authenticated user.
      *
      * @return \Illuminate\Http\Response
