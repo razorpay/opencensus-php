@@ -104,9 +104,6 @@ class PaymentCreateTest extends TestCase
 
         $this->fixtures->create('order', ['id' => '100000000order']);
 
-        // for testing
-        $this->fixtures->create('terminal:multiple_category_terminals');
-
         $payment['amount'] = 1000000;
 
         $payment['order_id'] = 'order_100000000order';
@@ -1131,5 +1128,23 @@ class PaymentCreateTest extends TestCase
         $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentFlowWithSyncCallToSmartRouting()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        // adding terminals to get multiple terminals for sorting
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->doAuthPayment($payment);
     }
 }
