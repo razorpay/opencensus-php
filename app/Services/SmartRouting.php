@@ -76,7 +76,7 @@ class SmartRouting
         return $this->sendRequest(self::UPDATE_GATEWAY_RULE, $data);
     }
 
-    public function deleteGateway($id, $group)
+    public function deleteGatewayRule($id, $group)
     {
         $params = null;
 

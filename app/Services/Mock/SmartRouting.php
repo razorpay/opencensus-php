@@ -14,21 +14,21 @@ class SmartRouting extends BaseSmartRouting
             'success' => true,
         ];    }
 
-    public function createGateway($data)
+    public function createGatewayRule($data)
     {
         return [
             'error' => '',
             'success' => true,
         ];    }
 
-    public function updateGateway($data)
+    public function updateGatewayRule($data)
     {
         return [
             'error' => '',
             'success' => true,
         ];    }
 
-    public function deleteGateway($id)
+    public function deleteGatewayRule($id)
     {
         return [
             'error' => '',
