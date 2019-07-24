@@ -462,6 +462,13 @@ return [
     'upi_sbi' => [
         'test_merchant_id' => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
         'hash_secret'      => env('UPI_MINDGATE_SBI_HASH_SECRET'),
+        'public_key'       => env('UPI_MINDGATE_SBI_PUBLIC_KEY'),
+        'private_key'      => env('UPI_MINDGATE_SBI_PRIVATE_KEY'),
+        'passphrase'       => env('UPI_MINDGATE_SBI_PASSPHRASE'),
+        'client_id'        => env('UPI_MINDGATE_SBI_CLIENT_ID'),
+        'client_secret'    => env('UPI_MINDGATE_SBI_CLIENT_SECRET'),
+        'username'         => env('UPI_MINDGATE_SBI_OAUTH_USERNAME'),
+        'password'         => env('UPI_MINDGATE_SBI_OAUTH_PASSWORD'),
     ],
 
     'wallet_payzapp' => [

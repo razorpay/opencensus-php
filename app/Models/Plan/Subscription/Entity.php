@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait, ExternalOwner;
 
+    const SOURCE                 = 'source';
     const PLAN_ID                = 'plan_id';
     const CUSTOMER_ID            = 'customer_id';
     const GLOBAL_CUSTOMER        = 'global_customer';
