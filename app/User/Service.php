@@ -520,7 +520,7 @@ class Service extends Base\Service
                 $data['pre_signup_complete'] = true;
             }
 
-            if ($data['activation_status'] !== null)
+            if ((isset($data['activation_status']) === true) and ($data['activation_status'] !== null))
             {
                 $data['pre_signup_complete'] = true;
             }
