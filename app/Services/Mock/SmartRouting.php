@@ -28,7 +28,7 @@ class SmartRouting extends BaseSmartRouting
             'success' => true,
         ];    }
 
-    public function deleteGatewayRule($id)
+    public function deleteGatewayRule($id, $group)
     {
         return [
             'error' => '',
