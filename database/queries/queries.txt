@@ -5031,12 +5031,25 @@ ALTER TABLE virtual_accounts
     ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
     ADD INDEX virtual_accounts_close_by_index (close_by);
 
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `prepaid_card` TINYINT(1) NOT NULL DEFAULT 1 AFTER `debit_card`;
+
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
 ALTER TABLE `banking_account_statement`
   ADD UNIQUE INDEX `banking_account_statement_bank_transaction_id_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`);
+
+ALTER TABLE items
+    MODIFY COLUMN amount bigint(20) unsigned;
+
+ALTER TABLE `payment_links`
+    ADD COLUMN `type` VARCHAR(30) NOT NULL DEFAULT 'payment' AFTER `terms`,
+    ADD INDEX `payment_links_type_index` (`type`);
+
+ALTER TABLE subscriptions
+    ADD COLUMN source VARCHAR(32) DEFAULT NULL AFTER `type`;
 
 ALTER TABLE transactions
     CHANGE reference5 balance_updated TINYINT(4),
@@ -5128,3 +5141,7 @@ ALTER TABLE banking_accounts
     ADD INDEX banking_accounts_channel_index (channel),
     ADD INDEX banking_accounts_status_index (status),
     ADD COLUMN account_type VARCHAR(255) NOT NULL AFTER reference_1;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
+    ADD INDEX gateway_rules_category_index (category);

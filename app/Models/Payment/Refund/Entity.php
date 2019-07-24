@@ -97,6 +97,8 @@ class Entity extends Base\PublicEntity
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
 
+    const PUBLIC_STATUS = 'public_status';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';
@@ -535,6 +537,12 @@ class Entity extends Base\PublicEntity
                 break;
 
             case Payment\Method::CARDLESS_EMI:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::PAYLATER:
                 $acquirerData = [
                     self::ARN  => $this->getAttribute(self::REFERENCE1)
                 ];

@@ -152,7 +152,8 @@ class DailyReconStatusSummary extends Base\Core
 
             Constants::RECON_SUMMARY_FILE => boolval($input[Constants::RECON_SUMMARY_FILE] ?? true),
 
-            Constants::ADDITIONAL_GATEWAYS => $input[Constants::ADDITIONAL_GATEWAYS] ?? [],
+            Constants::ADDITIONAL_GATEWAYS => (empty($input[Constants::ADDITIONAL_GATEWAYS]) === false) ?
+                                    explode(',', $input[Constants::ADDITIONAL_GATEWAYS]) : [],
 
             Constants::MAX_ALLOWED_UNRECON_COUNT => $input[Constants::MAX_ALLOWED_UNRECON_COUNT] ?? 0,
         ];
@@ -272,10 +273,13 @@ class DailyReconStatusSummary extends Base\Core
                 }
             }
         }
+        
+        if (empty($formattedSummary) === false)
+        {
+            $formattedSummary['headLine'] = self::UNRECONCILED_TRANSACTIONS_SUMMARY;
 
-        $formattedSummary['headLine'] = self::UNRECONCILED_TRANSACTIONS_SUMMARY;
-
-        $this->messenger->raiseReconWarn($formattedSummary);
+            $this->messenger->raiseReconWarn($formattedSummary);
+        }
 
         $this->setUnreconciledGatewayCache($unreconciledGatewaysData);
     }

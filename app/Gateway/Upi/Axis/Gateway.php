@@ -9,6 +9,8 @@ use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use phpseclib\Crypt\RSA;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -29,8 +31,10 @@ class Gateway extends Base\Gateway
 
     const TIMEOUT       = 20;
 
+    const EMPTY_RESPONSE_CURL_ERROR_STRING = 'cURL error 52: Empty reply from server';
+
     /**
-     * @var Crypto
+     * @var AESCrypto
      */
     protected $aesCrypto;
 
@@ -147,6 +151,27 @@ class Gateway extends Base\Gateway
             null,
             Action::AUTHENTICATE,
             true);
+    }
+
+    protected function shouldRetry($e)
+    {
+        if ((empty($this->action) === true) or
+            (in_array($this->action, $this->getActionsToRetry(), true) === false))
+        {
+            return false;
+        }
+
+        $exceptionData = $e->getDataAsString();
+
+        if ((get_class($e) === Exception\GatewayRequestException::class) and
+            ((stripos($exceptionData, self::LIBRESSL_CONNECT_ERROR_STRING) !== false) or
+             (stripos($exceptionData, self::EMPTY_RESPONSE_CURL_ERROR_STRING) !== false) or
+             (stripos($exceptionData, self::LIBRESSL_READ_ERROR_STRING) !== false)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /*
@@ -599,9 +624,8 @@ class Gateway extends Base\Gateway
 
         if ($gatewayPayment[Entity::TYPE] === Base\Type::PAY)
         {
-            $data[Fields::CHECK_STATUS_MERCH_ID] = $this->config['live_razorpay_merchant_id'];
-
-            $data[Fields::CHECK_STATUS_MERCH_CHAN_ID] = $this->config['live_razorpay_merchant_channel_id'];
+            list($data[Fields::CHECK_STATUS_MERCH_ID],
+                $data[Fields::CHECK_STATUS_MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
         }
 
         $dataStr = implode('', $data);
@@ -835,9 +859,7 @@ class Gateway extends Base\Gateway
 
         if ($upiPaymentType === Base\Type::PAY)
         {
-            $data[Fields::MERCH_ID] = $this->config['live_razorpay_merchant_id'];
-
-            $data[Fields::MERCH_CHAN_ID] = $this->config['live_razorpay_merchant_channel_id'];
+            list($data[Fields::MERCH_ID], $data[Fields::MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
         }
 
         $dataStr = implode('', $data);
@@ -955,9 +977,7 @@ class Gateway extends Base\Gateway
 
         if ($type === Base\Type::PAY)
         {
-            $data[Fields::MERCH_ID] = $this->config['live_razorpay_merchant_id'];
-
-            $data[Fields::MERCH_CHAN_ID] = $this->config['live_razorpay_merchant_channel_id'];
+            list($data[Fields::MERCH_ID], $data[Fields::MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
         }
 
         $dataStr = implode('', $data);
@@ -1132,5 +1152,32 @@ class Gateway extends Base\Gateway
         }
 
         return [];
+    }
+
+    protected function getPaymentRemark(array $input)
+    {
+        if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $description = $input['payment']['description'];
+
+            $filteredDescription = Payment\Entity::getFilteredDescription($description);
+
+            return substr($filteredDescription, 0, 50);
+        }
+
+        return parent::getPaymentRemark($input);
+    }
+
+    protected function getAggregatorIds($terminal)
+    {
+        if (($terminal[Terminal\Entity::GATEWAY_TERMINAL_ID] !== null) and
+            ($terminal[Terminal\Entity::GATEWAY_ACCESS_CODE] !== null))
+        {
+            return array($terminal[Terminal\Entity::GATEWAY_TERMINAL_ID], $terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]);
+        }
+        else
+        {
+            return array($this->config['live_razorpay_merchant_id'], $this->config['live_razorpay_merchant_channel_id']);
+        }
     }
 }

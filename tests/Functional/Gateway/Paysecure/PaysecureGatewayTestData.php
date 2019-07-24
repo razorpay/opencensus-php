@@ -69,15 +69,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 500,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         ],
     ],
     'testAuthorizeFailureWithNoErrorMessage' => [

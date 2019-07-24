@@ -59,7 +59,7 @@ class Validator extends Base\Validator
         ConfigKey::SETTLEMENT_TRANSACTION_LIMIT       => 'filled|integer',
         ConfigKey::FTS_ROUTE_PERCENTAGE               => 'filled|integer',
         ConfigKey::ENABLE_PAYMENT_DOWNTIMES           => 'filled|boolean',
-        ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string|size:14',
+        ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string',
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',

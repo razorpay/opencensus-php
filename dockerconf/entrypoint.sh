@@ -46,6 +46,7 @@ configure_dark(){
     echo QUEUE_DRIVER=sync >> ./environment/.env.production
     echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
     echo "MOZART_URL=\"https://mozart-dark.razorpay.com/\"" >> ./environment/.env.production
+    echo "SCROOGE_URL=\"https://scrooge-dark.razorpay.com/v1/\"" >> ./environment/.env.production
 }
 
 start_apache(){

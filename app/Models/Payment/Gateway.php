@@ -201,6 +201,7 @@ class Gateway
         self::AMEX              => self::AMEX,
         self::UPI_MINDGATE      => self::HDFC,
         self::ISG               => self::HDFC,
+        self::UPI_AXIS          => self::AXIS,
     ];
 
     /**
@@ -308,6 +309,9 @@ class Gateway
         IFSC::IOBA,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
+        IFSC::RATN,
+        IFSC::MAHB,
+        IFSC::DEUT,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [

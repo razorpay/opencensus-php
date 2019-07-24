@@ -249,22 +249,23 @@ class Gateway
         {
             $previousExc = $exc->getPrevious();
 
-            if (($previousExc instanceof \Requests_Exception) and
-                ($previousExc->getType() === 'curlerror') and
-                (property_exists($exc, 'isPropagatedException') === false))
+            if (property_exists($exc, 'isPropagatedException') === false)
             {
-                $excData = curl_errno($previousExc->getData());
+                if (($previousExc instanceof \Requests_Exception) and
+                    ($previousExc->getType() === 'curlerror'))
+                {
+                    $excData = curl_errno($previousExc->getData());
 
-                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+                    $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
 
-                $exc->isPropagatedException = true;
-            }
+                    $exc->isPropagatedException = true;
+                }
+                else
+                {
+                    $this->pushDimensions($action, $input, Metric::FAILED);
 
-            else if (property_exists($exc, 'isPropagatedException') === false)
-            {
-                $this->pushDimensions($action, $input, Metric::FAILED);
-
-                $exc->isPropagatedException = true;
+                    $exc->isPropagatedException = true;
+                }
             }
 
             throw $exc;
@@ -694,7 +695,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayTimeoutException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -703,7 +704,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayRequestException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -813,7 +814,7 @@ class Gateway
             $data = ['status_code' => $response->status_code, 'body' => $response->body];
             $e->setData($data);
 
-            if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+            if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
             {
                 $e->markSafeRetryTrue();
             }
@@ -861,7 +862,7 @@ class Gateway
             /**
              * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
              */
-            $metricsDriver->histogram('gateway_request_total_time_ms',
+            $metricsDriver->histogram(Metric::GATEWAY_REQUEST_TIME,
                 $info['total_time'] * 1000,
                 [
                     'gateway' => $this->gateway ?? 'none',
@@ -1527,10 +1528,6 @@ class Gateway
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
     }
-
-    //
-    // This is a temporary function for debugging the curl issue
-    //
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {

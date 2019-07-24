@@ -462,6 +462,13 @@ return [
     'upi_sbi' => [
         'test_merchant_id' => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
         'hash_secret'      => env('UPI_MINDGATE_SBI_HASH_SECRET'),
+        'public_key'       => env('UPI_MINDGATE_SBI_PUBLIC_KEY'),
+        'private_key'      => env('UPI_MINDGATE_SBI_PRIVATE_KEY'),
+        'passphrase'       => env('UPI_MINDGATE_SBI_PASSPHRASE'),
+        'client_id'        => env('UPI_MINDGATE_SBI_CLIENT_ID'),
+        'client_secret'    => env('UPI_MINDGATE_SBI_CLIENT_SECRET'),
+        'username'         => env('UPI_MINDGATE_SBI_OAUTH_USERNAME'),
+        'password'         => env('UPI_MINDGATE_SBI_OAUTH_PASSWORD'),
     ],
 
     'wallet_payzapp' => [
@@ -769,6 +776,14 @@ return [
             'test_hash_secret' => env('CARDLESS_EMI_TEST_HASH_SECRET'),
             'live_hash_secret' => env('CARDLESS_EMI_LIVE_HASH_SECRET')
         ],
+
+        'live_earlysalary_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_EARLYSALARY'),
+        'live_zestmoney_terminal_password'   => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_ZESTMONEY'),
+        'live_flexmoney_terminal_password'   => env('GATEWAY_TERMINAL_PASSWORD_CARDLESSEMI_FLEXMONEY'),
+    ],
+
+    'netbanking_cub' => [
+        'live_terminal_password' => env('GATEWAY_TERMINAL_PASSWORD_NETBANKING_CUB'),
     ],
 
     'worldline'    => [

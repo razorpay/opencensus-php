@@ -54,6 +54,7 @@ class ErrorCodes
     const EC_399 = '399';
 
     const EC_ED = 'ED';
+    const EC_CA = 'CA';
 
     protected static $descriptionMappings = [
         // Check BIN error codes
@@ -104,6 +105,7 @@ class ErrorCodes
         self::EC_120  => 'ACCT CLOSED',
         self::EC_399  => 'SYSTEM UNAVAILABLE',
         self::EC_ED   => 'E-commerce decline',
+        self::EC_CA   => 'Compliance error code for acquirer',
     ];
 
     // todo: Add correct mappings for these
@@ -153,11 +155,12 @@ class ErrorCodes
         self::EC_120  => ErrorCode::BAD_REQUEST_ACCOUNT_CLOSED,
         self::EC_399  => ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
         self::EC_ED   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_CA   => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
     ];
 
     public static function getErrorCodeMapped($errorCode)
     {
-        return self::$errorCodeMappings[$errorCode] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        return self::$errorCodeMappings[$errorCode] ?? ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
     }
 
     public static function getErrorDescription($errorCode)

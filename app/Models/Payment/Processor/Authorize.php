@@ -5428,7 +5428,8 @@ trait Authorize
             $input['gateway_input'] = $gatewayInput;
         }
 
-        if (empty($input[Payment\Entity::TOKEN]) === true)
+        if (($payment->isMethodCardOrEmi() === true) and
+            (empty($input[Payment\Entity::TOKEN]) === true))
         {
             /*
              * In Maestro card sometimes cvv will be null and
@@ -5448,26 +5449,42 @@ trait Authorize
         $this->cache->put($key, $input, $ttl);
     }
 
-    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    protected function shouldRedirect(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
-
         if ($this->app['basicauth']->isPrivateAuth() === false)
         {
-            return null;
+            return false;
+        }
+
+        if (($payment->isEmandate() === true) and
+            ($payment->getBank() === IFSC::UTIB))
+        {
+                return true;
         }
 
         if (($payment->isMethodCardOrEmi() === false) or
             ($payment->isRecurring() === true) or
             ($payment->isPushPaymentMethod() === true))
         {
-            return null;
+            return false;
         }
 
         $authType = $payment->getAuthType();
 
         if (($authType !== null) and
             ($authType !== Payment\AuthType::_3DS))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    {
+        $merchant = $payment->merchant;
+
+        if ($this->shouldRedirect($payment) === false)
         {
             return null;
         }
@@ -5623,7 +5640,7 @@ trait Authorize
             );
         }
 
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
+        if (($payment->isMethodCardOrEmi() === true) and (empty($inputDetails[Payment\Entity::TOKEN]) === true))
         {
             $this->setCardNumberAndCvv($inputDetails);
         }

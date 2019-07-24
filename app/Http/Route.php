@@ -985,7 +985,7 @@ final class Route
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
         // Account API routes
-        'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
+        'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
         'beta_account_fetch_multiple'              => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'beta_account_post_bank_account'           => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
@@ -993,7 +993,10 @@ final class Route
         'account_features_add'                     => ['post',     'accounts/me/features',                           'FeatureController@addAccountFeatures'                              ],
         'account_features_get'                     => ['get',      'accounts/me/features',                           'FeatureController@getAccountFeatures'                              ],
 
-        'account_fetch'                            => ['get',      'accounts',                                       'AccountController@listLinkedAccounts'                              ],
+        'account_create'                           => ['post',     'accounts',                                       'AccountController@createAccount'                                   ],
+        'account_list'                             => ['get',      'accounts',                                       'AccountController@listAccounts'                                    ],
+        'account_fetch'                            => ['get',      'accounts/{id}',                                  'AccountController@fetchAccount'                                    ],
+        'account_action'                           => ['patch',    'accounts/{id}/{action}',                         'AccountController@performAction'                                   ],
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
@@ -1413,6 +1416,10 @@ final class Route
         'credit_note_list',
         'credit_note_get',
         'credit_note_apply',
+        'account_create',
+        'account_list',
+        'account_fetch',
+        'account_action',
     ];
 
     // Only routes defined in internalApps go here
@@ -1706,7 +1713,6 @@ final class Route
         'dispute_files_fetch',
         'merchant_get_tags',
         'merchant_edit_email_la',
-        'account_fetch',
         'la_fetch',
         'merchant_add_bank_account',
         'merchant_bank_account_create',
@@ -2427,7 +2433,7 @@ final class Route
         'org_get_self'                             => '*',
         'payment_authorize_time_out'               => '*',
         'payment_auto_capture_email'               => '*',
-        'payment_bulk_capture'                     => '*',
+        'payment_bulk_capture'                     => Permission::PAYMENT_CAPTURE_BULK,
         'payment_capture_gateway_manual'           => '*',
         'payment_capture_verify'                   => '*',
         'payment_fix_authorize_at'                 => '*',
@@ -3027,7 +3033,6 @@ final class Route
         'beta_account_fetch_multiple'          => [Feature::MARKETPLACE],
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
-        'account_fetch'                        => [Feature::MARKETPLACE],
         'la_fetch'                             => [Feature::MARKETPLACE],
         'on_demand_settlement'                 => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],

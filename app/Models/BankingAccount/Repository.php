@@ -53,4 +53,12 @@ class Repository extends Base\Repository
                     ->latest(Entity::BANK_REFERENCE_NUMBER)
                     ->first();
     }
+
+    public function getBankingAccountsWithBalance($merchantId)
+    {
+        return $this->newQuery()
+                    ->with(['balance:id,balance,currency'])
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->get();
+    }
 }

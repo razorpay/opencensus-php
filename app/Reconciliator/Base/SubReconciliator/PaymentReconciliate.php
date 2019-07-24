@@ -415,9 +415,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'payment_id'        => $this->payment->getId(),
                     'expected_column'   => $amountColumn,
+                    'amount'            => $this->payment->getBaseAmount(),
                     'currency'          => $this->payment->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
@@ -2058,9 +2059,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
                     'expected_amount'   => $paymentEntityAmount,
+                    'recon_amount'      => $reconPaymentAmount,
                     'currency'          => $this->payment->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
