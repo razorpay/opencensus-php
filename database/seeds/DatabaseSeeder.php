@@ -542,6 +542,7 @@ class DatabaseSeeder extends Seeder
                     'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'aeps'          => '1',
+                    'paypal'        => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
