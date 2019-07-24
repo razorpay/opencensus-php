@@ -5,6 +5,9 @@ namespace RZP\Models\Partner\Config;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+
+use Razorpay\OAuth\Application;
 
 class Validator extends Base\Validator
 {
@@ -74,6 +77,35 @@ class Validator extends Base\Validator
             ($input[Entity::COMMISSION_MODEL] === CommissionModel::SUBVENTION))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION);
+        }
+    }
+
+    /**
+     * Blocks pure platform merchants (applications with type != partner) to set/update this attribute since pure
+     * platform partners should never have access to the merchant settlements
+     *
+     * @param Application\Entity   $application
+     * @param array                $input
+     * @param Merchant\Entity|null $subMerchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateSettleToPartner(
+        Application\Entity $application,
+        array $input,
+        Merchant\Entity $subMerchant = null)
+    {
+        if (empty($input[Entity::SETTLE_TO_PARTNER]) === true)
+        {
+            return;
+        }
+
+        if ($application->getType() !== Merchant\Constants::PARTNER)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PURE_PLATFORM_INVALID_CONFIGURATION,
+                Entity::SETTLE_TO_PARTNER,
+                $input);
         }
     }
 }

@@ -74,6 +74,8 @@ class Core extends Base\Core
         $configValidator->validateEmptyConfig($config);
 
         $this->validatePricingPlans($input);
+
+        (new Validator)->validateSettleToPartner($application, $input, $subMerchant);
     }
 
     /**
@@ -130,7 +132,11 @@ class Core extends Base\Core
 
         $config = $this->repo->partner_config->findOrFailPublic($id);
 
+        list($application, $submerchant) = $this->getEntitiesFromConfig($config);
+
         $config->edit($input, 'edit');
+
+        (new Validator)->validateSettleToPartner($application, $input, $submerchant);
 
         $this->repo->saveOrFail($config);
 
@@ -263,5 +269,37 @@ class Core extends Base\Core
         {
             $this->repo->pricing->getCommissionPlanById($input[Entity::EXPLICIT_PLAN_ID], true, true);
         }
+    }
+
+    /**
+     * Returns submerchant and application entity from the Partner config entity
+     *
+     * @param Entity $config
+     *
+     * @return array
+     */
+    protected function getEntitiesFromConfig(Entity $config): array
+    {
+        $subMerchant     = null;
+        $application     = null;
+        $applicationRepo = new Application\Repository;
+
+        $entityType = $config->getEntityType();
+        $entityId   = $config->getEntityId();
+
+        switch ($entityType)
+        {
+            case Constants::APPLICATION:
+                $application = $applicationRepo->findOrFail($entityId);
+                break;
+
+            case Constants::MERCHANT:
+                $originId    = $config->getOriginId();
+                $application = $applicationRepo->findOrFail($originId);
+                $subMerchant = $this->repo->merchant->findOrFail($entityId);
+                break;
+        }
+
+        return [$application, $subMerchant];
     }
 }

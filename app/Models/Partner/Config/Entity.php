@@ -105,6 +105,16 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getOriginId()
+    {
+        return $this->getAttribute(self::ORIGIN_ID);
+    }
+
     public function isCommissionsEnabled() : bool
     {
         return ($this->getAttribute(self::COMMISSIONS_ENABLED) === true);

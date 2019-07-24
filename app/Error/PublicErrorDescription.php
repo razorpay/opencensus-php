@@ -835,6 +835,7 @@ class PublicErrorDescription
     const BAD_REQUEST_APPLICATION_ID_PARTNER_ID_BOTH_PRESENT                        = 'Application id and Partner id both sent in the request';
     const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
     const BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION                                = 'Expiry date should not be set for subvention model';
+    const BAD_REQUEST_PURE_PLATFORM_INVALID_CONFIGURATION                           = 'The configuration is invalid for a platform partner';
 
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
 
