@@ -84,6 +84,13 @@ class PartnerConfigTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddingInvalidConfigForPlatformPartner()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     public function testAddingConfigForSubvention()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
@@ -269,12 +276,39 @@ class PartnerConfigTest extends OAuthTestCase
             'partner_config',
             [
                 'id'                     => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'            => 'application',
                 'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'commissions_enabled'    => 1,
                 'implicit_plan_id'       => '10ZeroPricingP',
                 'explicit_plan_id'       => '10ZeroPricingP',
                 'explicit_refund_fees'   => 1,
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->startTest($testData);
+    }
+
+    public function testEditingOverriddenConfig()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                   => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_type'          => 'merchant',
+                'entity_id'            => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'          => 'application',
+                'origin_id'            => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'commissions_enabled'  => 1,
+                'implicit_plan_id'     => '10ZeroPricingP',
+                'explicit_plan_id'     => '10ZeroPricingP',
+                'explicit_refund_fees' => 1,
             ]
         );
 
