@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payment\Refund;
 
-use App;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -36,12 +35,12 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
-    const ENTITIES              = 'entities';
-    const REFUND_IDS            = 'refund_ids';
-    const DB_FETCH_LIMIT        = 'limit';
-    const GATEWAY_ENTITY        = 'gateway_entity';
-    const REFUND_REFERENCE1     = 'refund_reference1';
-    const GET_SPEED_CHANGE_DATA = 'get_speed_change_data';
+    const ENTITIES          = 'entities';
+    const REFUND_IDS        = 'refund_ids';
+    const DB_FETCH_LIMIT    = 'limit';
+    const GATEWAY_ENTITY    = 'gateway_entity';
+    const REFUND_REFERENCE1 = 'refund_reference1';
+    const SPEED_CHANGE_TIME = 'speed_change_time';
 
     const MAX_REFUND_VERIFY_REQUESTS     = 20;
     const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
@@ -314,11 +313,11 @@ class Service extends Base\Service
         return array($from, $to);
     }
 
-    public function fetch($id, $input = [])
+    public function fetch($id)
     {
         $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
 
-        $refundArray['speed_change_time'] = $this->addSpeedChangeData($refundArray['id'], $input);
+        $this->addSpeedChangeTime($refundArray);
 
         return $refundArray;
     }
@@ -2075,55 +2074,46 @@ class Service extends Base\Service
         return $responseData;
     }
 
-    protected function addSpeedChangeData(string $refundId, array $input)
+    protected function addSpeedChangeTime(array &$refundArray)
     {
-        if ((isset($input[self::GET_SPEED_CHANGE_DATA]) === false) or
-            ($input[self::GET_SPEED_CHANGE_DATA] !== "1"))
-        {
-            return null;
-        }
-
-        $id = $refundId;
+        $id = $refundArray[Entity::ID];
 
         Entity::verifyIdAndStripSign($id);
 
         $refund = $this->repo->refund->find($id);
 
-        if (($refund->getSpeedRequested() === RefundSpeed::OPTIMUM) and
-            (($refund->getSpeedProcessed() === RefundSpeed::NORMAL) or
-             ($refund->getSpeedProcessed() === null)))
+        if (($refund->getSpeedDecisioned() === RefundSpeed::OPTIMUM) and
+            ($refund->getSpeedProcessed() !== RefundSpeed::INSTANT))
         {
-            $app   = App::getFacadeRoot();
-
-            $trace = $app['trace'];
-
             $queryParams = [
-                self::GET_SPEED_CHANGE_DATA => 1,
+                self::SPEED_CHANGE_TIME => 1,
             ];
 
             try
             {
-                $scroogeResponse = $app['scrooge']->getPublicRefund($refundId, $queryParams);
+                $scroogeResponse = $this->app['scrooge']->getPublicRefund($refundArray[Entity::ID], $queryParams);
 
                 $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
-                    return $scroogeResponse[RefundEntity::RESPONSE_BODY]->get_speed_change_time;
+                    if ((isset($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time) === true) and
+                        ($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time !== null))
+                    {
+                        $refundArray[self::SPEED_CHANGE_TIME] = $scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time;
+                    }
                 }
             }
             catch(\Throwable $e)
             {
-                $trace->traceException(
+                $this->trace->traceException(
                     $e,
                     Trace::WARNING,
-                    TraceCode::SCROOGE_GET_REFUND_SPEED_CHANGE_DATA_FAILED,
+                    TraceCode::SCROOGE_GET_REFUND_SPEED_CHANGE_TIME_FAILED,
                     [
-                        'refund_id' => $refundId,
+                        'refund_id' => $refund[Entity::ID],
                     ]);
             }
         }
-
-        return null;
     }
 }

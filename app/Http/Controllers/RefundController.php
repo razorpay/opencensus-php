@@ -20,9 +20,7 @@ class RefundController extends Controller
 
     public function getRefund($id)
     {
-        $input = Request::all();
-
-        $refunds = $this->service()->fetch($id, $input);
+        $refunds = $this->service()->fetch($id);
 
         return ApiResponse::json($refunds);
     }
