@@ -40,9 +40,9 @@ class Processor extends BankingAccount\Gateway\Processor
         ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
     ];
 
-    protected $mozartUserErrorCode = [401];
+    protected $mozartErrorCode = [401];
 
-    protected $mozartUserErrorDescription = ['SubCorpID does not exists'];
+    protected $mozartErrorDescription = ['SubCorpID does not exists'];
 
     public function preProcessAccountInfoNotification(array $input)
     {
@@ -185,14 +185,13 @@ class Processor extends BankingAccount\Gateway\Processor
         return $attributes;
     }
 
-    // Currently we will be activating accounts for which there is no previous balance
-    // Slack thread - https://razorpay.slack.com/archives/CE4DMABE3/p1562231335372700
+    // Currently we will be activating accounts even if there is previous balance
     protected function checkBalanceForActivation($balance)
     {
         if ($balance !== 0)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_ACTIVATION_AMOUNT_NON_ZERO,
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_NON_ZERO_OPENING_BALANCE,
                 ['balance' => $balance, 'channel' => Balance\Channel::RBL]
             );
         }
@@ -309,7 +308,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected function getAccountCredentials()
     {
-        $config = $this->config['gateway']['razorpayx']['ca']['rbl'];
+        $config = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
 
         $credentials = [
             Fields::USERNAME      => $config[Fields::AUTH_USERNAME],
@@ -429,8 +428,7 @@ class Processor extends BankingAccount\Gateway\Processor
                 ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
         }
 
-        // throwing a generic error since there is
-        // no issue with user entered information
+        // throwing a generic error since there is no issue with user entered information
         throw new BadRequestException(
             ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
             null,
@@ -443,10 +441,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $gatewayErrorDesc = $response['error']['gateway_error_description'] ?? 'gateway_error_desc';
 
-        // adding this dirty check for now to prompt the user
-        // with appropriate error message
-        if ((in_array($gatewayErrorCode, $this->mozartUserErrorCode, true) === true) or
-            (in_array($gatewayErrorDesc, $this->mozartUserErrorDescription, true)  === true))
+        // adding this dirty check for now to prompt the user with appropriate error message
+        if ((in_array($gatewayErrorCode, $this->mozartErrorCode, true) === true) or
+            (in_array($gatewayErrorDesc, $this->mozartErrorDescription, true)  === true))
         {
             return true;
         }

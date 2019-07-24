@@ -4,8 +4,8 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Exception\LogicException;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -50,14 +50,16 @@ class Service extends Base\Service
 
     public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
+            ['id'=> $id]);
+
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
-            [
-                'id'      => $id,
-                'channel' => $bankingAccount->getChannel(),
-            ]);
+        // validating if user tries to add/change credentials
+        // after his account gets activated successfully
+
+        $this->checkIfAccountAlreadyActivated($bankingAccount);
 
         $this->core->storeCredentialsAndActivateAccount($bankingAccount, $input);
 
@@ -96,5 +98,17 @@ class Service extends Base\Service
         $response = $this->core->processAccountInfoWebhook($channel, $input);
 
         return $response;
+    }
+
+    protected function checkIfAccountAlreadyActivated(Entity $bankingAccount)
+    {
+        if ($bankingAccount->getStatus() === Status::ACTIVATED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED,
+                null,
+                ['id' => $bankingAccount->getId()]
+            );
+        }
     }
 }

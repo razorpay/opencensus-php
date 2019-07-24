@@ -251,15 +251,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation could not be completed. Please try again',
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\RuntimeException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
         ],
     ],
 

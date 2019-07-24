@@ -549,7 +549,7 @@ class Core extends Base\Core
             if ($merchantActivationStatus !== Detail\Status::ACTIVATED)
             {
                 throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_ACCOUNT_ACTIVATION_NOT_PERMITTED,
+                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED,
                     Entity::STATUS,
                     [
                         'merchant_activation_status' => $merchant->merchantDetail->getActivationStatus(),

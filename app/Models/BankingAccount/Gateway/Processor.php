@@ -95,7 +95,12 @@ class Processor extends Base\Core
                 ]);
 
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+                null,
+                [
+                    'request' => $traceRequest,
+                    'channel' => Channel::RBL
+                ]
             );
         }
 
@@ -108,12 +113,10 @@ class Processor extends Base\Core
     {
         if ($response[CardVault::SUCCESS] === false)
         {
-            throw new LogicException(
-                'Merchant credentials could not be saved in vault',
-                ErrorCode::SERVER_ERROR_VAULT_TOKENIZE_FAILED,
-                [
-                    'response' => $response
-                ]);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+                null,
+                ['response' => $response]);
         }
     }
 

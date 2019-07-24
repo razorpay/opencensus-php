@@ -763,6 +763,7 @@ return [
                     'auth_password' => env('BANKING_ACCOUNT_RBL_PASSWORD'),
                     'client_id'     => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
                     'client_secret' => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
+                    'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]
         ],
@@ -856,18 +857,6 @@ return [
         'live_secret'                       => env('ENSTAGE_GATEWAY_LIVE_SECRET'),
         'live_mastercard_acq_bin'           => env('ENSTAGE_LIVE_MASTERCARD_ACQ_BIN'),
         'live_visa_acq_bin'                 => env('ENSTAGE_LIVE_VISA_ACQ_BIN'),
-    ],
-
-    'razorpayx' => [
-        'ca' => [
-            'rbl' => [
-                    'auth_username'     => env('BANKING_ACCOUNT_RBL_USERNAME'),
-                    'auth_password'     => env('BANKING_ACCOUNT_RBL_PASSWORD'),
-                    'client_id'         => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
-                    'client_secret'     => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
-                    'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER')
-            ],
-        ],
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),
