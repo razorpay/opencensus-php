@@ -2516,6 +2516,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $gateway = $this->getGateway();
 
             $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
+
             $this->setSettledBy($settledBy);
         }
 
