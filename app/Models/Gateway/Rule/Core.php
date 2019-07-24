@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use RZP\Services\SmartRouting;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
@@ -30,7 +31,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $this->app->smartRouting->createGatewayRule($rule->toArray());
+        // try catch added temporarily
+        try
+        {
+            $this->app->smartRouting->createGatewayRule($rule->toArray());
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
+        }
 
         return $rule;
     }
@@ -56,7 +65,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($rule);
 
-        $this->app->smartRouting->updateGatewayRule($rule->toArray());
+        // try catch added temporarily
+        try
+        {
+            $this->app->smartRouting->updateGatewayRule($rule->toArray());
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
+        }
 
         return $rule;
     }

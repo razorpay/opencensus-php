@@ -158,7 +158,6 @@ class SmartRouting
             $this->trace->error(
                 TraceCode::SMART_ROUTING_SERVICE_ERROR,
                 [
-                    'request'  => $request,
                     'response' => $e->getMessage(),
                     'action'   => $action,
                     'data'     => $data,

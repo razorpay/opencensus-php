@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\Rule;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Services\SmartRouting;
 
 class Service extends Base\Service
@@ -27,7 +28,15 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($rule);
 
-        $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+        // try catch added temporarily
+        try
+        {
+            $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
+        }
 
         return $rule->toArrayDeleted();
     }
