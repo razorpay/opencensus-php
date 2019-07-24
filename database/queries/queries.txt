@@ -5145,3 +5145,6 @@ ALTER TABLE banking_accounts
 ALTER TABLE gateway_rules
     ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
     ADD INDEX gateway_rules_category_index (category);
+
+ALTER TABLE partner_configs
+    ADD COLUMN settle_to_partner TINYINT(1) NOT NULL DEFAULT 0 AFTER commission_model;

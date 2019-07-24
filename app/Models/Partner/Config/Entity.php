@@ -21,6 +21,7 @@ class Entity extends PublicEntity
     const IMPLICIT_PLAN_ID        = 'implicit_plan_id';
     const EXPLICIT_PLAN_ID        = 'explicit_plan_id';
     const COMMISSION_MODEL        = 'commission_model';
+    const SETTLE_TO_PARTNER       = 'settle_to_partner';
     const IMPLICIT_EXPIRY_AT      = 'implicit_expiry_at';
     const COMMISSIONS_ENABLED     = 'commissions_enabled';
     const EXPLICIT_REFUND_FEES    = 'explicit_refund_fees';
@@ -39,6 +40,7 @@ class Entity extends PublicEntity
         self::COMMISSIONS_ENABLED,
         self::EXPLICIT_REFUND_FEES,
         self::EXPLICIT_SHOULD_CHARGE,
+        self::SETTLE_TO_PARTNER,
         self::REVISIT_AT,
     ];
 
@@ -56,6 +58,7 @@ class Entity extends PublicEntity
         self::COMMISSIONS_ENABLED,
         self::EXPLICIT_REFUND_FEES,
         self::EXPLICIT_SHOULD_CHARGE,
+        self::SETTLE_TO_PARTNER,
         self::REVISIT_AT,
         self::CREATED_AT,
     ];
@@ -71,12 +74,14 @@ class Entity extends PublicEntity
         self::EXPLICIT_REFUND_FEES   => 0,
         self::EXPLICIT_SHOULD_CHARGE => 0,
         self::COMMISSION_MODEL       => CommissionModel::COMMISSION,
+        self::SETTLE_TO_PARTNER      => 0,
     ];
 
     protected $casts = [
         self::COMMISSIONS_ENABLED    => 'bool',
         self::EXPLICIT_REFUND_FEES   => 'bool',
         self::EXPLICIT_SHOULD_CHARGE => 'bool',
+        self::SETTLE_TO_PARTNER      => 'bool',
     ];
 
     protected static $unsetCreateInput = [Constants::APPLICATION_ID, Constants::PARTNER_ID];
@@ -128,6 +133,11 @@ class Entity extends PublicEntity
     public function getCommissionModel(): string
     {
         return $this->getAttribute(self::COMMISSION_MODEL);
+    }
+
+    public function shouldSettleToPartner(): bool
+    {
+        return ($this->getAttribute(self::SETTLE_TO_PARTNER) === true);
     }
 
     // --------------------- SETTERS ---------------------

@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         Entity::COMMISSIONS_ENABLED    => 'required|boolean',
         Entity::EXPLICIT_REFUND_FEES   => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
         Entity::EXPLICIT_SHOULD_CHARGE => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
+        Entity::SETTLE_TO_PARTNER      => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -33,6 +34,7 @@ class Validator extends Base\Validator
         Entity::COMMISSIONS_ENABLED    => 'sometimes|boolean',
         Entity::EXPLICIT_REFUND_FEES   => 'sometimes|boolean',
         Entity::EXPLICIT_SHOULD_CHARGE => 'sometimes|boolean',
+        Entity::SETTLE_TO_PARTNER      => 'sometimes|boolean',
     ];
 
     protected static $createValidators = [

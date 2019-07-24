@@ -90,6 +90,7 @@ return [
                 'application_id'         => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled'    => 1,
                 'revisit_at'             => 1648416783,
+                'settle_to_partner'      => 1,
             ],
         ],
         'response' => [
@@ -99,6 +100,7 @@ return [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'commissions_enabled'    => true,
                 'revisit_at'             => 1648416783,
+                'settle_to_partner'      => true,
             ],
         ],
     ],
@@ -453,6 +455,7 @@ return [
                 'implicit_plan_id'       => null,
                 'explicit_plan_id'       => null,
                 'implicit_expiry_at'     => null,
+                'settle_to_partner'      => 1,
             ],
         ],
         'response' => [
@@ -466,6 +469,7 @@ return [
                 'implicit_expiry_at'     => null,
                 'explicit_refund_fees'   => true,
                 'explicit_should_charge' => false,
+                'settle_to_partner'      => true,
             ],
         ],
     ],
