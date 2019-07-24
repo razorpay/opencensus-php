@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
@@ -12,14 +14,15 @@ class Status
     // FTA module to update the source status. Things will
     // get wrecked if these are removed.
     //
-    const PROCESSED     = 'processed';
+    const PROCESSED     = Attempt\Status::PROCESSED;
     const INITIATED     = Attempt\Status::INITIATED;
-    const FAILED        = 'reversed';
+    const REVERSED      = Attempt\Status::REVERSED;
+    const FAILED        = Attempt\Status::FAILED;
 
     const CREATED       = 'created';
     const PENDING       = 'pending';
     const REJECTED      = 'rejected';
-    const REVERSED      = 'reversed';
+//    const REVERSED      = 'reversed';
     const QUEUED        = 'queued';
     const CANCELLED     = 'cancelled';
 
@@ -38,6 +41,7 @@ class Status
         self::REJECTED  => self::REJECTED,
         self::QUEUED    => self::QUEUED,
         self::CANCELLED => self::CANCELLED,
+        self::FAILED    => self::FAILED,
     ];
 
     /**
@@ -65,6 +69,46 @@ class Status
     public static $preCreateStatuses = [
         self::QUEUED,
         self::PENDING,
+    ];
+
+    /**
+     * Mapping the FTA status to Payout status. This is required because,
+     * for some gateways `failed` at FTA means `reversed` for payout.
+     *
+     * @var array
+     */
+    public static $ftaToPayoutStatusMap = [
+        // Eg: Primary accounts
+        Entity::DEFAULT => [
+            Entity::DEFAULT => [
+                Attempt\Status::CREATED   => Status::CREATED,
+                Attempt\Status::INITIATED => Status::INITIATED,
+                Attempt\Status::REVERSED  => Status::REVERSED,
+                Attempt\Status::FAILED    => Status::REVERSED,
+            ],
+            Channel::AXIS2   => [],
+            Channel::ICICI   => [],
+        ],
+        // Eg: Virtual Accounts
+        AccountType::SHARED => [
+            Entity::DEFAULT => [
+                Attempt\Status::CREATED   => Status::CREATED,
+                Attempt\Status::INITIATED => Status::INITIATED,
+                Attempt\Status::REVERSED  => Status::REVERSED,
+                Attempt\Status::FAILED    => Status::REVERSED,
+            ],
+            Channel::YESBANK => [],
+        ],
+        // Eg: Current Accounts
+        AccountType::DIRECT => [
+            Entity::DEFAULT => [
+                Attempt\Status::CREATED   => Status::CREATED,
+                Attempt\Status::INITIATED => Status::INITIATED,
+                Attempt\Status::REVERSED  => Status::REVERSED,
+                Attempt\Status::FAILED    => Status::FAILED,
+            ],
+            Channel::RBL => [],
+        ],
     ];
 
     public static function getPublicStatusFromInternalStatus($internalStatus): string

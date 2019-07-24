@@ -46,6 +46,7 @@ class Event
     const PAYOUT_CREATED                    = 'payout.created';
     const PAYOUT_PROCESSED                  = 'payout.processed';
     const PAYOUT_REVERSED                   = 'payout.reversed';
+    const PAYOUT_FAILED                     = 'payout.failed';
     const FUND_ACCOUNT_VALIDATION_COMPLETED = 'fund_account.validation.completed';
     const PAYMENT_DOWNTIME_STARTED          = 'payment.downtime.started';
     const PAYMENT_DOWNTIME_RESOLVED         = 'payment.downtime.resolved';
@@ -87,6 +88,7 @@ class Event
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
+        self::PAYOUT_FAILED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
         self::PAYMENT_DOWNTIME_STARTED,
         self::PAYMENT_DOWNTIME_RESOLVED,
@@ -134,6 +136,7 @@ class Event
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
+        self::PAYOUT_FAILED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
         self::PAYMENT_DOWNTIME_STARTED,
         self::PAYMENT_DOWNTIME_RESOLVED,
@@ -185,6 +188,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => 38,
         self::REFUND_PROCESSED                  => 39,
         self::REFUND_FAILED                     => 40,
+        self::PAYOUT_FAILED                     => 41,
     ];
 
     /**
@@ -221,6 +225,7 @@ class Event
         self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_FAILED                     => [Product::BANKING],
         self::PAYMENT_DOWNTIME_STARTED          => [Product::PRIMARY],
         self::PAYMENT_DOWNTIME_RESOLVED         => [Product::PRIMARY],
         self::PAYOUT_QUEUED                     => [Product::BANKING],
@@ -264,6 +269,7 @@ class Event
         self::PAYOUT_CREATED                    => Entity::PAYOUT,
         self::PAYOUT_PROCESSED                  => Entity::PAYOUT,
         self::PAYOUT_REVERSED                   => Entity::PAYOUT,
+        self::PAYOUT_FAILED                     => Entity::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => FundAccount\Validation\Entity::PUBLIC_ENTITY_NAME,
         self::PAYMENT_DOWNTIME_STARTED          => Entity::PAYMENT_DOWNTIME,
         self::PAYMENT_DOWNTIME_RESOLVED         => Entity::PAYMENT_DOWNTIME,
@@ -290,6 +296,7 @@ class Event
         self::PAYOUT_CREATED                    => Feature\Constants::PAYOUT,
         self::PAYOUT_PROCESSED                  => Feature\Constants::PAYOUT,
         self::PAYOUT_REVERSED                   => Feature\Constants::PAYOUT,
+        self::PAYOUT_FAILED                     => Feature\Constants::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
         self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,
