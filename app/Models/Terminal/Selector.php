@@ -523,7 +523,7 @@ class Selector extends Base\Core
 
         if ($isProduction === false)
         {
-            return true;
+            return false;
         }
 
         if ($this->isTestMode() === true)

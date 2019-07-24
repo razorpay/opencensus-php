@@ -28,9 +28,13 @@ class Core extends Base\Core
 
         $this->$validatorMethod($rule, $matchingRules);
 
-        $this->repo->saveOrFail($rule);
+        $this->transaction(function() use($rule) {
 
-        $this->app->smartRouting->createGateway($rule->toArray());
+            $this->repo->saveOrFail($rule);
+
+            $this->app->smartRouting->createGatewayRule($rule->toArray());
+
+        });
 
         return $rule;
     }
@@ -54,9 +58,13 @@ class Core extends Base\Core
 
         $this->$validatorMethod($rule, $matchingRules);
 
-        $this->repo->saveOrFail($rule);
+        $this->transaction(function() use($rule) {
 
-        $this->app->smartRouting->updateGateway($rule->toArray());
+            $this->repo->saveOrFail($rule);
+
+            $this->app->smartRouting->updateGatewayRule($rule->toArray());
+
+        });
 
         return $rule;
     }
