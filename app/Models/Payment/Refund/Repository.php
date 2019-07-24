@@ -26,7 +26,8 @@ class Repository extends Base\Repository
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID      => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::PAYMENT_ID    => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::PUBLIC_STATUS => 'sometimes|filled|in:processed,processing',
     ];
 
     // These are proxy allowed params to search on.
@@ -46,7 +47,6 @@ class Repository extends Base\Repository
         Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
         Entity::GATEWAY         => 'sometimes|string|max:30',
-        Entity::PUBLIC_STATUS   => 'sometimes|filled|in:processed,processing',
         Payment\Entity::METHOD  => 'sometimes|string|max:30',
         'payment_gateway'       => 'sometimes|string|max:30',
     ];
