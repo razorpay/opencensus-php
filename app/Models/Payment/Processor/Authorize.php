@@ -248,7 +248,7 @@ trait Authorize
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             // Uncomment this to test with Sharp or any other terminal locally.
-            // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
+             $currentTerminal = Terminal\Entity::findOrFail('qwertyuioplkm');
 
             $payment->associateTerminal($currentTerminal);
 
