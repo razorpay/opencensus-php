@@ -87,7 +87,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
 
-        $content = $this->getDecryptedContent($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+        $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
 
         $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
@@ -125,7 +125,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
 
-        $content = $this->getDecryptedContent($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+        $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
 
         $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
@@ -409,7 +409,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
 
-        $content = $this->getDecryptedContent($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+        $content = ($this->getDecryptedContent($content[ResponseFields::MESSAGE]))[ResponseFields::API_RESPONSE];
 
         $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
@@ -664,7 +664,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $content = $mockServer->getAsyncCallbackContent($upiEntity);
 
-        $decryptedResp = $mockServer->decrypt($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+        $decryptedResp = $this->getDecryptedContent($content[ResponseFields::MESSAGE]);
 
         $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::UPI_TRANS_REFERENCE_NO] = 'Random';
 
@@ -684,7 +684,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $content = $mockServer->getAsyncCallbackContent($upiEntity);
 
-        $decryptedResp = $mockServer->decrypt($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+        $decryptedResp = $this->getDecryptedContent($content[ResponseFields::MESSAGE]);
 
         $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT] = 1;
 
@@ -721,8 +721,8 @@ class UpiSbiGatewayTest extends TestCase
             });
     }
 
-    protected function getDecryptedContent(string $json, $messageKey, $responseKey = ResponseFields::API_RESPONSE)
+    protected function getDecryptedContent(string $json)
     {
-        return $this->mockServer()->decrypt($json, $messageKey)[$responseKey];
+        return $this->mockServer()->decrypt(json_decode($json, true)['resp']);
     }
 }
