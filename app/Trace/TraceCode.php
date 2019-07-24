@@ -1094,6 +1094,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
 
+    const NON_BLOCKING_HTTP_ERROR                               = 'NON_BLOCKING_HTTP_ERROR';
+
     // Gateway component error messages
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
     const PAYMENT_DOWNTIME_CREATE                               = 'PAYMENT_DOWNTIME_CREATE';
@@ -1845,7 +1847,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
-    const SELECTED_TERMINAL_IDS                                 = 'SELECTED_TERMINAL_IDS';
+    const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+
+    const PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR              = "PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR";
 
     // Core Payment Service tracecodes
     const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
@@ -1924,6 +1928,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_SUCCESSFULL                   = 'MERCHANT_BALANCE_UPDATE_SUCCESSFULL';
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
+
+    // Smart Routing
+    const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
+    const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
+    const NON_BLOCKING_HTTP_DATA                                = 'NON_BLOCKING_HTTP_DATA';
+    const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

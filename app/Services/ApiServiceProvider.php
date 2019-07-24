@@ -263,6 +263,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRaven();
 
+        $this->registerNonBlockingHttp();
+
+        $this->registerSmartRouting();
+
         $this->registerBatchService();
 
         $this->registerScrooge();
@@ -341,6 +345,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'fts_create_account',
             'fts_register_account',
             'fts_fund_transfer',
+            'nonBlockingHttp',
+            'smartRouting',
             'diag',
             'mozart',
         ];
@@ -368,6 +374,31 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\Raven::class : Raven::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerNonBlockingHttp()
+    {
+        $this->app->bind('nonBlockingHttp', function($app)
+        {
+            $implementation = NonBlockingHttp::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerSmartRouting()
+    {
+        $this->app->bind('smartRouting', function($app)
+        {
+            $smartRoutingtMock = $app['config']->get('applications.smart_routing.mock');
+
+            if ($smartRoutingtMock === true)
+            {
+                return new Mock\SmartRouting($app);
+            }
+
+            return new SmartRouting($app);
         });
     }
 
