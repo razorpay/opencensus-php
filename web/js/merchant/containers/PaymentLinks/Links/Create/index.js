@@ -195,8 +195,6 @@ export default class CreateNewContainer extends React.Component {
         // If null or is before current time
         if (!expire_by || expire_by.diff(moment()) < 0) {
           expire_by = '';
-        } else {
-          expire_by = data.expire_by;
         }
 
         const defaultValueNotes = Object.keys(data.notes).map(key => ({
@@ -220,7 +218,7 @@ export default class CreateNewContainer extends React.Component {
           },
           _name: {
             hasNoExpiry: expire_by ? '0' : '1',
-            expire_by_date: expire_by ? moment(data.expire_by * 1000) : null,
+            expire_by_date: expire_by ? expire_by : null,
           },
         });
 

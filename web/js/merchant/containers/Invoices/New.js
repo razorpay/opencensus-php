@@ -174,7 +174,7 @@ export default class InvoicesNewContainer extends Component {
       .then(data => {
         this.isIntentDuplicate = true;
 
-        let expire_by = data.expire_by && moment(data.expire_by);
+        let expire_by = data.expire_by && moment(data.expire_by * 1000);
 
         // If null or is before current time
         if (!expire_by || expire_by.diff(moment()) < 0) {
@@ -961,6 +961,7 @@ export default class InvoicesNewContainer extends Component {
     this.setState({
       isSaving: true,
     });
+
     return this.props
       .saveInvoice(
         props,
