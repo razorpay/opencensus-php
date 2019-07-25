@@ -218,6 +218,8 @@ export default class User {
   }
 
   get isChargeAtWillEnabled() {
+    return true;
+
     return this.findTag('Charge_at_will');
   }
 

@@ -137,8 +137,7 @@ export default class CreateNewAuthLinkContainer extends Component {
       receipt: data.receipt,
       expire_by: !Number(data.hasNoExpiry) ? data.expireAt : undefined,
       currency: data.currency,
-      amount:
-        data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
+      amount: rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
       email_notify: data.emailNotify,
       notes: notes || undefined,
@@ -199,9 +198,12 @@ export default class CreateNewAuthLinkContainer extends Component {
         });
       });
   };
+
   renderForm = ({ isModalView }) => {
     const { mandateMethod: method, avlblMethods, loading } = this.state;
     const skipBankDetails = !!Number(this.state.skipBankDetails);
+
+    const showAmount = ['card', 'emandate'].includes(method);
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -383,7 +385,7 @@ export default class CreateNewAuthLinkContainer extends Component {
               </Fragment>
             )}
 
-            {method === 'card' && (
+            {showAmount && (
               <Input.Group class="InputGroup--inline" label="Amount">
                 <div class="Input-content">
                   <Input.CurrencySelect name="currency" />
@@ -426,6 +428,7 @@ export default class CreateNewAuthLinkContainer extends Component {
 
   render() {
     const isModalView = this.props.onClose;
+
     return isModalView ? (
       <Modal class="PaymentLinks animate-down" onClose={this.props.onClose}>
         <ModalContent>{this.renderForm({ isModalView })}</ModalContent>
