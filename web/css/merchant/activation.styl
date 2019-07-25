@@ -38,7 +38,7 @@ $side-width = 240px
 
   aside .li--submit
     margin-top: 28px
-  
+
 
   main
     left: 0
@@ -143,6 +143,12 @@ $side-width = 240px
     .text-fade
       font-size: 14px
       margin-bottom 32px
+
+  .CollapsibleFields
+    .Collapsible--title
+      margin-left: 190px
+      width: 260px
+      line-height: 40px
 
 .Activation--success, .Activation--welcome
   border-radius: 2px
@@ -278,6 +284,10 @@ $side-width = 240px
           margin-bottom: 0;
         }
       }
+
+      footer {
+        position: relative
+      }
     }
   }
 
@@ -293,8 +303,8 @@ $side-width = 240px
 
     &--Instant {
 
-      max-width: 640px;
-      height: auto;
+      max-width: 700px;
+      height: 90vh;
       max-height: none;
       overflow: visible;
       min-height: 0;
@@ -307,20 +317,10 @@ $side-width = 240px
       }
 
       .Activation--wizard {
-
-        height: auto;
+        height: 90vh
         max-height: none;
-        min-height: 0;
 
         main {
-
-          position: relative;
-          top: auto;
-          left: auto;
-          right: auto;
-          bottom: auto;
-          overflow: visible;
-
           main-title {
 
             font-size: 18px !important;
@@ -343,26 +343,6 @@ $side-width = 240px
           .Input--Website {
 
             margin-top: 18px;
-          }
-
-          .form-footer {
-
-            .Input-content {
-
-              border-top: 1px solid #E2E2E2;
-              margin-top: 18px;
-              
-              small {
-
-                color: #838383;
-                line-height: 20px;
-              }
-
-              .submit-btn {
-
-                margin-top: 20px;
-              }
-            }
           }
         }
       }
