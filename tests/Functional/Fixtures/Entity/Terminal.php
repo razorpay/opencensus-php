@@ -1221,6 +1221,30 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createCybersourceAxisMotoTerminal(array $attributes = [])
+    {
+        $termId = '10CybAxMtTrmnl';
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'gateway_acquirer'          => 'axis',
+            'gateway_merchant_id'       => 'cybersource',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+            'type'                      => [
+                Type::MOTO              => '1',
+                Type::NON_RECURRING     => '1',
+            ],
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedHitachiTerminal(array $attributes = [])
     {
         $terminalId = \RZP\Models\Terminal\Shared::HITACHI_TERMINAL;
