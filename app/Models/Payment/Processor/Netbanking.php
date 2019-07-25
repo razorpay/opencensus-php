@@ -155,7 +155,6 @@ class Netbanking
                 IFSC::INDB,
                 IFSC::KKBK,
                 IFSC::SIBL,
-                IFSC::UTIB,
             ],
         ],
     ];
@@ -263,7 +262,6 @@ class Netbanking
                 IFSC::SBTR,
                 IFSC::SIBL,
                 IFSC::STBP,
-                IFSC::UTIB,
                 IFSC::UTIB,
                 self::LAVB_R,
             ],
