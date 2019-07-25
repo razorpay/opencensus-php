@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_IFSC                      = 'account_ifsc';
     const ACCOUNT_CURRENCY                  = 'account_currency';
     const ACCOUNT_ACTIVATION_DATE           = 'account_activation_date';
+    const MERCHANT                          = 'merchant';
 
     /**
      * Pincode field is being used to store the pincode entered by Merchant
@@ -153,6 +154,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_EMAIL,
         self::ACCOUNT_ACTIVATION_DATE,
         self::BANK_INTERNAL_REFERENCE_NUMBER,
+        self::MERCHANT,
     ];
 
     protected $public = [
@@ -172,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
+        self::MERCHANT,
     ];
 
     // ---------------------------- Setters ----------------------------------- //

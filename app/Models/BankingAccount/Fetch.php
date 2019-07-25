@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount;
 
+use RZP\Http\BasicAuth;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
 
@@ -18,6 +19,10 @@ class Fetch extends BaseFetch
             Entity::BANK_REFERENCE_NUMBER => 'sometimes|string',
             Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|unsigned_id',
         ],
+        BasicAuth\Type::PRIVILEGE_AUTH => [
+            self::EXPAND . '.*'           => 'filled|string|in:merchant,merchant.merchantDetail',
+            Entity::MERCHANT_ID           => 'sometimes|unsigned_id',
+        ]
     ];
 
     const ACCESSES = [
@@ -30,6 +35,7 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID,
             Entity::BANK_REFERENCE_NUMBER,
             Entity::FTS_FUND_ACCOUNT_ID,
+            self::EXPAND . '.*',
         ],
     ];
 

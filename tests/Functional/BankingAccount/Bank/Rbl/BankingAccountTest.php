@@ -421,4 +421,50 @@ class BankingAccountTest extends TestCase
 
         return $response;
     }
+
+    public function testBankingAccountFetch()
+    {
+        $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchForAccountNumber()
+    {
+        $response = $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account', $response['id'], [
+            'account_number' => '1234567808',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testFetchBankingAccountRequests()
+    {
+        $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchBankingAccountsOfCreatedStatus()
+    {
+        $response = $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+            $response['id'],
+            [
+                'status' => 'initiated',
+            ]);
+
+        $this->startTest();
+    }
 }

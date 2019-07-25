@@ -431,5 +431,79 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testBankingAccountFetch' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForAccountNumber' => [
+        'request' => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'get',
+            'content' => [
+                'account_number' => '1234567808',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountRequests' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'status'        => 'created',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@razorpay.com'
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountsOfCreatedStatus'  => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+                'status' => 'created',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'admin'  => true,
+                'items'  => [],
+            ],
+        ],
+    ],
 ];
