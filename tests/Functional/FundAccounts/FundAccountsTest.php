@@ -61,6 +61,58 @@ class FundAccountsTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
     }
 
+    public function testCreateFundAccountBankAccountBeneficiaryVerified()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        // Verify Nodal Beneficiary entity
+        $this->assertNotNull($nodalBeneficiary['id']);
+        $this->assertEquals('verified', $nodalBeneficiary['registration_status']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$nodalBeneficiary['bank_account_id']);
+
+        $expectedBankAccount = [
+            'type'           => 'contact',
+            'entity_id'      => '1000000contact',
+            'ifsc_code'      => 'SBIN0007105',
+            'account_number' => '111000111',
+            'merchant_id'    => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+    }
+
+    public function testCreateFundAccountBankAccountBeneficiaryFailed()
+    {
+        $this->fixtures->create('contact', ['id' => 'invalidcontact']);
+
+        $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        // Verify Nodal Beneficiary entity
+        $this->assertNotNull($nodalBeneficiary['id']);
+        $this->assertEquals('failed', $nodalBeneficiary['registration_status']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$nodalBeneficiary['bank_account_id']);
+
+        $expectedBankAccount = [
+            'type'           => 'contact',
+            'entity_id'      => 'invalidcontact',
+            'ifsc_code'      => 'SBIN0007105',
+            'account_number' => '111000111',
+            'merchant_id'    => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+    }
+
     public function testCreateVpa()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);

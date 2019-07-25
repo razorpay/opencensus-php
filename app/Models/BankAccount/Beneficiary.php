@@ -55,7 +55,9 @@ class Beneficiary extends Base\Core
         $isValidType = Type::isValidBeneficiaryRegistrationType($bankAccount->getType());
 
         // We don't have to register beneficiary for the bank account created in test mode.
-        if (($this->mode === Mode::TEST) or ($isValidType === false))
+        // Enabled it for test cases.
+        if (($this->app['env'] !== 'testing') and
+            (($this->mode === Mode::TEST) or ($isValidType === false)))
         {
             return;
         }
