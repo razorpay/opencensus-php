@@ -1484,7 +1484,6 @@ export default class InvoicesNewContainer extends Component {
 
   render() {
     const { handleSubmit, customer, invoice, session: { user } } = this.props;
-    // console.log('INVOICE...', invoice);
 
     let isTestMode = this.props.session.mode === 'test';
     let isNew = !invoice.id;
