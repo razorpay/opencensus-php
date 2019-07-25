@@ -192,8 +192,8 @@ return [
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
     'capture' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'       => env('AWS_CAPTURE_TEST_QUEUE'),
+        'live'       => env('AWS_CAPTURE_LIVE_QUEUE'),
     ],
     'bulk_refund' => [
         'test'       => env('AWS_REFUND_QUEUE'),
