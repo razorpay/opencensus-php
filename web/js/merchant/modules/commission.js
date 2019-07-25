@@ -22,9 +22,9 @@ export const commAggSingleDayReducer = makeEntityReducer(
   COMM_AGG_SINGLE_DAY_FETCH
 );
 
-export const fetchSingleDayAggregate = (from, mode) => {
+export const fetchSingleDayAggregate = (from, queryType) => {
   return {
     type: COMM_AGG_SINGLE_DAY_FETCH,
-    payload: new Commission().fetchSingleDayAggregateData({ from, mode }),
+    payload: new Commission().fetchSingleDayAggregateData({ from, queryType }),
   };
 };

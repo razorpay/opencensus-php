@@ -11,7 +11,6 @@ const baseUrl = {
   disp: '/disputes/',
   acc: '/partners/submerchants/',
   token: '/tokens/',
-  comm: '/partners/earnings/transactional/',
   rvrsl: '/route/reversals/',
 };
 
@@ -27,6 +26,11 @@ const batchBaseUrls = {
   auth_link: 'subscriptions',
   recurring_charge: 'subscriptions',
   linked_account_reversal: 'reversals',
+};
+
+const commissionBase = {
+  subvention: 'subventions',
+  commission: 'earnings',
 };
 
 export const idItem = id => <code>{id}</code>;
@@ -60,7 +64,6 @@ export const settlement = makeIdLink('settlement');
 export const order = makeIdLink('order');
 export const dispute = makeIdLink('dispute');
 export const token = makeIdLink('token');
-export const commission = makeIdLink('commission');
 
 export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
@@ -74,6 +77,16 @@ export const batchLink = item => {
     <Link to={`/${url}/batchuploads/${item.id}`}>{idItem(item.id)}</Link>
   ) : (
     idItem(item.id)
+  );
+};
+
+export const commission = item => {
+  return (
+    <Link
+      to={`/partners/${commissionBase[item.model]}/transactional/${item.id}`}
+    >
+      {idItem(item.id)}
+    </Link>
   );
 };
 

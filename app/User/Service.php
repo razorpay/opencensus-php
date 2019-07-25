@@ -298,6 +298,7 @@ class Service extends Base\Service
             'token'         => $token,
             'email'         => $user->email,
             'name'          => $user->name,
+            'merchant_id'   => $currentMerchant->id,
             'role'          => $currentMerchant->role,
             'merchant_name' => $currentMerchant->name,
             'logo'          => $currentMerchant->logo_url
@@ -438,6 +439,9 @@ class Service extends Base\Service
                     $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
                     $data['experiments']['international_currencies'] = $merchantService->getTreatment('international_currencies');
                     $data['experiments']['announcements_early_settlements_1'] = $merchantService->getTreatment('announcements_early_settlements_1');
+                    $data['experiments']['report_date_range'] = $merchantService->getTreatment('report_date_range');
+
+                    $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
 
                     $data['current'] = $currentMerchantId;
 
@@ -516,6 +520,11 @@ class Service extends Base\Service
                 $data['pre_signup_complete'] = true;
             }
 
+            if ((isset($data['activation_status']) === true) and ($data['activation_status'] !== null))
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
             if ($currentMerchant->role !== 'owner')
             {
                 $data['pre_signup_complete'] = true;
@@ -571,6 +580,14 @@ class Service extends Base\Service
         {
             $genericUser = (new Helper)->createdGenericUser($data);
         }
+        else
+        {
+            $email = $input['email'] ?? '';
+            $this->trace->info(
+                TraceCode::USER_LOGIN_FAILURE,
+                ['error' => $error, 'email' => $email]);
+        }
+
 
         return [$error, $genericUser];
     }
@@ -742,9 +759,12 @@ class Service extends Base\Service
 
         if (empty($user) === false)
         {
-            if ($user->id !== $token->getClaim('user_id'))
+            $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+            if (($user->id !== $token->getClaim(self::USER_ID)) or
+                ($currentMerchantId !== $token->getClaim(self::MERCHANT_ID)))
             {
-                throw new AuthorizationException('Different user is loggedin to the dashboard');
+                throw new AuthorizationException('Different user/merchant is loggedin to the dashboard');
             }
         }
     }

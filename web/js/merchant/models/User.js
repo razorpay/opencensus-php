@@ -339,6 +339,10 @@ export default class User {
   get getCurrencyList() {
     return window.currencyList;
   }
+
+  get isReportDateRangeEnabled() {
+    return this.getExpStatus('report_date_range');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

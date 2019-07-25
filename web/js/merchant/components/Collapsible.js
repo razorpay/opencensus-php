@@ -4,6 +4,7 @@ import { classList } from 'common/util';
 export default class Collapsible extends Component {
   static defaultProps = {
     defaultOpen: false,
+    childrenPosition: 'bottom',
   };
 
   constructor(props) {
@@ -36,12 +37,27 @@ export default class Collapsible extends Component {
     });
   };
 
+  renderTitle = () => {
+    const title = this.props.title;
+    if (typeof title === 'function') {
+      return title(this.state.open);
+    }
+    return title;
+  };
+
+  renderBody = () => (
+    <div class={classList('Collapsible--body', this.state.open && 'open')}>
+      {this.props.children}
+    </div>
+  );
+
   render() {
     const { state, props } = this;
     return (
       <div className={classList('Collapsible', props.className)}>
+        {props.childrenPosition === 'top' && this.renderBody()}
         <header class="Collapsible--title" onClick={this.onToggleClick}>
-          <span>{props.title}</span>
+          <span>{this.renderTitle()}</span>
           <i
             class={classList(
               `i-arrow-${state.open ? 'up' : 'down'}`,
@@ -49,9 +65,7 @@ export default class Collapsible extends Component {
             )}
           />
         </header>
-        <div class={classList('Collapsible--body', state.open && 'open')}>
-          {props.children}
-        </div>
+        {props.childrenPosition === 'bottom' && this.renderBody()}
       </div>
     );
   }
