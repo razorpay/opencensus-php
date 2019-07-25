@@ -53,9 +53,28 @@ class Reconciliation extends Base
         $this->scroogeDispatch();
     }
 
-    public function setScroogeDispatchData(array $data)
+    public function setScroogeDispatchData(array $scroogeData)
     {
-        $this->scroogeDispatchData = $data;
+        if (empty($this->scroogeDispatchData) === true)
+        {
+            // setting for the first time
+            $this->scroogeDispatchData = $scroogeData;
+        }
+        else
+        {
+            //
+            // When excel sheet has multiple sheets, then this method
+            // is called for each sheet. So we should not overwrite the
+            // scroogeDispatchData, instead we add them along with refunds
+            // belonging to previous sheets.
+            //
+            $refunds = $scroogeData['data'];
+
+            foreach ($refunds as $refundId => $refundDetails)
+            {
+                $this->scroogeDispatchData['data'][$refundId] = $refundDetails;
+            }
+        }
     }
 
     public function setStatusAfterSuccessfulProcessing()
