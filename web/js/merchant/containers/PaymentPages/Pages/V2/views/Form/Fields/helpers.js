@@ -15,11 +15,15 @@ export const FIELD_TYPES = [
     icon: 'sort i-fix-sort',
     options: [
       fUnits.str,
+      fUnits.alphabets,
+      fUnits.alphanumeric,
       fUnits.number,
       fUnits.email,
       fUnits.phone,
       fUnits.url,
       fUnits.textarea,
+      fUnits.pan,
+      fUnits.pincode,
     ],
   },
   fUnits.dropdown,
@@ -214,7 +218,15 @@ export function _isSupportedType(type) {
 }
 
 export function _isSupportedPattern(pattern) {
-  const supportedPatterns = ['email', 'phone', 'number', 'url'];
+  const supportedPatterns = [
+    'email',
+    'phone',
+    'number',
+    'url',
+    'alphanumeric',
+    'alphabets',
+    'pan',
+  ];
 
   return supportedPatterns.indexOf(pattern) > -1;
 }
