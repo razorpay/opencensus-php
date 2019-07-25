@@ -26,6 +26,7 @@ use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
@@ -85,6 +86,11 @@ trait Refund
         $this->processRefund();
 
         $this->pushMetrics();
+
+        if ($refund->getSpeedDecisioned() === RefundSpeed::NORMAL)
+        {
+            $this->eventRefundProcessed($this->refund);
+        }
 
         return $refund;
     }
@@ -2060,6 +2066,33 @@ trait Refund
         ];
 
         return $this->callGatewayForRefundValidation($data);
+    }
+
+    public function eventRefundProcessed(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.processed', $eventPayload);
+    }
+
+    public function eventRefundFailed(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.failed', $eventPayload);
+    }
+
+    public function eventRefundSpeedChanged(RefundEntity $refund)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $refund,
+        ];
+
+        $this->app['events']->fire('api.refund.speed_changed', $eventPayload);
     }
 
     protected function refundViaFundTransfer(RefundEntity $refund, Payment\Entity $payment, $data = []): array
