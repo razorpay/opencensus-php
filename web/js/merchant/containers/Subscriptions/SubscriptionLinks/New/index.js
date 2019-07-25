@@ -138,14 +138,26 @@ export default class NewSubscriptionLink extends Component {
         fetchAddOns({
           subscription_id: searchQuery.duplicate_id,
         }).then(({ data }) => {
+          const addons = data.items.map(a => ({
+            item_id: a.item.id,
+            quantity: a.quantity,
+            item: {
+              name: a.item.name,
+              description: a.item.description,
+              amount: a.item.amount,
+              currency: a.item.currency,
+              type: 'addon',
+            },
+          }));
+
           this.setState({
             fields: {
               ...this.state.fields,
-              addons: data.items,
+              addons,
             },
             internals: {
               ...this.state.internals,
-              _addOnPresent: isPresent(data.items),
+              _addOnPresent: isPresent(addons),
             },
           });
         });
