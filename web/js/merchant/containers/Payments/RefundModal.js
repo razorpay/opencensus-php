@@ -362,9 +362,8 @@ export default class RefundModal extends Component {
                     <b>Refund Instantly</b>
                   </label>
                   <span
-                    class="ir-help"
-                    data-tip="You can refund this 
-                  payment instantly for a small fee"
+                    data-tooltip="You can refund this payment instantly for a small fee"
+                    data-tooltip-position="top"
                   >
                     <i class="i i-help" />
                   </span>
