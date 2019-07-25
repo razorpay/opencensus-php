@@ -51,7 +51,11 @@ class Terminal extends Base
 
         $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
 
-        $attributes['enabled_banks'] = $supportedBanks;
+        $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
+
+        $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+        $attributes['enabled_banks'] = $enabledBanks;
     }
 
     public function createAllSharedTerminals()
