@@ -571,7 +571,11 @@ class Selector extends Base\Core
     {
         $metadata = $payment->getMetadata();
 
-        $metadata['payment_analytics'] = $metadata['payment_analytics']->toArray();
+        if ( (isset ($metadata['payment_analytics']) === true) and
+            ($metadata['payment_analytics'] !== null ))
+        {
+            $metadata['payment_analytics'] = $metadata['payment_analytics']->toArray();
+        }
 
         return $metadata;
     }
