@@ -235,6 +235,9 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankRtgsFailed()
     {
+        // Yesbank using api based channels
+        $this->markTestSkipped();
+
         $channel = Channel::YESBANK;
 
         $purpose = Attempt\Purpose::SETTLEMENT;
@@ -368,8 +371,8 @@ class AttemptTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(1, $content[$channel]['count']);
-        $this->assertEquals(0, $content[$channel]['success']);
-        $this->assertEquals(1, $content[$channel]['failed']);
+        $this->assertEquals(1, $content[$channel]['success']);
+        $this->assertEquals(0, $content[$channel]['failed']);
         $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
     }
 }
