@@ -56,6 +56,10 @@ export default class NewInvitation extends Component {
   render() {
     const { handleSubmit, selectedRole, user } = this.props;
 
+    if (!user.isEnhancedEPOSEnabled) {
+      delete ROLES.sellerapp_plus;
+    }
+
     if (user.isAgentRole) {
       ROLES = { ...ROLES, ...agentRole };
     } else {
