@@ -213,12 +213,18 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
+        // Yesbank using api based channels
+        $this->markTestSkipped();
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::YESBANK, 2, Attempt\Type::PAYOUT);
     }
 
     public function testPayoutFileCreationYesbankRtgsSuccess()
     {
+        // Yesbank using api based channels
+        $this->markTestSkipped();
+
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($now);
