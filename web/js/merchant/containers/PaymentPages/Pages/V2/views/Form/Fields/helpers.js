@@ -70,23 +70,54 @@ export function mapFieldToIndex(field) {
       ? Object.keys(schemaFields.options)
       : {};
 
+    let isMismatch = false;
+
     if (
       FIELD_TYPES_keys.length !== field_keys.length ||
       FIELD_TYPES_opts_keys.length !== field_opts_keys.length
     ) {
+      isMismatch = true;
+    }
+
+    if (isMismatch) {
       continue;
     }
 
     for (let j = 0; j < FIELD_TYPES_keys.length; j++) {
-      if (FIELD_TYPES_keys[j] !== field_keys[j]) {
+      // EXCEPTION 1: values of schema.options is checked in next for-each block.
+      // EXCEPTION 2: value for enum is not to be compared as it's an array, it can be skipped and options.cmp will handle existence of 'key:enum'
+      if (['options', 'enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
+        continue;
+      }
+
+      const valueInFieldSchema = schemaFields[FIELD_TYPES_keys[j]];
+      const valueInFieldMapSchema = fieldTypes[i].schema[FIELD_TYPES_keys[j]];
+
+      if (valueInFieldSchema !== valueInFieldMapSchema) {
+        isMismatch = true;
         break;
       }
     }
 
+    if (isMismatch) {
+      continue;
+    }
+
     for (let j = 0; j < FIELD_TYPES_opts_keys.length; j++) {
-      if (FIELD_TYPES_opts_keys[j] !== field_opts_keys[j]) {
+      const valueInFieldSchemaOptions =
+        schemaFields.options && schemaFields.options[FIELD_TYPES_opts_keys[j]];
+      const valueInFieldMapSchemaOptions =
+        fieldTypes[i].schema.options &&
+        fieldTypes[i].schema.options[FIELD_TYPES_opts_keys[j]];
+
+      if (valueInFieldSchemaOptions !== valueInFieldMapSchemaOptions) {
+        isMismatch = true;
         break;
       }
+    }
+
+    if (isMismatch) {
+      continue;
     }
 
     selectedIndexInOptions = fieldTypes[i].level;
