@@ -16,6 +16,7 @@ class Type
 
     // IRCTC Batch Types
     const IRCTC_REFUND              = 'irctc_refund';
+    const IRCTC_DELTA_REFUND        = 'irctc_delta_refund';
     const IRCTC_SETTLEMENT          = 'irctc_settlement';
 
     // Marketplace Batch
