@@ -108,7 +108,7 @@ export default class EntityDetailList extends Component {
       if (item.id === 'inv_upcoming') {
         this.INVOICE_MAP['upcoming'] = index;
       } else {
-        this.INVOICE_MAP[item.created_at || 'upcoming'] = index;
+        this.INVOICE_MAP[item.created_at] = index;
       }
 
       list.push(
