@@ -443,6 +443,7 @@ class Service extends Base\Service
                     $data['experiments']['show_extra_fields_in_pp'] = $merchantService->getTreatment('show_extra_fields_in_pp');
 
                     $data['experiments']['checkout_survey'] = $merchantService->getTreatment('checkout_survey');
+                    $data['experiments']['sellerapp_plus'] = $merchantService->getTreatment('sellerapp_plus');
 
                     $data['current'] = $currentMerchantId;
 
