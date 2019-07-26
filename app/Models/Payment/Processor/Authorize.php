@@ -91,6 +91,7 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
+        //reached till here paypal
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
     }
 
@@ -206,6 +207,7 @@ trait Authorize
             );
         }
 
+        //reached here paypal
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
         $this->runShieldCheck($payment);
@@ -248,7 +250,7 @@ trait Authorize
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             // Uncomment this to test with Sharp or any other terminal locally.
-             $currentTerminal = Terminal\Entity::findOrFail('qwertyuioplkm');
+             $currentTerminal = Terminal\Entity::findOrFail('1n25f6uN5S1Zak');
 
             $payment->associateTerminal($currentTerminal);
 
@@ -290,6 +292,7 @@ trait Authorize
                 }
                 else
                 {
+                    // reached till here paypal
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
 
@@ -2202,7 +2205,7 @@ trait Authorize
             }
 
             // mcc is supported only for card payments
-            if ($payment->isCard() === false)
+            if ($payment->isCard() === false and $payment->isWallet() == false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -2219,10 +2222,10 @@ trait Authorize
             // else api should do currency conersion and use INR terminals
             $convertCurrency = $merchant->convertOnApi();
 
-            if ($payment->isInternational() === false)
-            {
-                $convertCurrency = true;
-            }
+//            if ($payment->isInternational() === false)
+//            {
+//                $convertCurrency = true;
+//            }
 
             $payment->setConvertCurrency($convertCurrency);
 
@@ -4479,6 +4482,7 @@ trait Authorize
 
     protected function callGatewayAuthorize(Payment\Entity $payment, array $data)
     {
+        // reached till here paypal
         $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
 
         return $response;

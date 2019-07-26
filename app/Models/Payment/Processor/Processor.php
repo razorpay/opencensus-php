@@ -284,6 +284,7 @@ class Processor
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
+            //reaching here paypal
             $paymentData = $this->authorize($payment, $input, $gatewayInput);
 
             // Creates an origin entity for the payment based on the auth used to initiate the payment.

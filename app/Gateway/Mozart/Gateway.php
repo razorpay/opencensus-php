@@ -142,7 +142,6 @@ class Gateway extends Base\Gateway
     public function immediateVerifyApplicable($gatewayName)
     {
         $immediateVerificationGateways = [
-            Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
@@ -724,7 +723,6 @@ class Gateway extends Base\Gateway
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CUB,
-            Payment\Gateway::WALLET_PAYPAL
         ];
 
         return in_array($gateway, $validationGateways, true);
