@@ -99,8 +99,7 @@ trait Refund
     {
         return ((isset($input[RefundEntity::SPEED]) === true) and
                 (in_array($input[RefundEntity::SPEED], RefundSpeed::REFUND_INSTANT_SPEEDS) === true) and
-                (($payment->getMethod() !== Payment\Method::CARD) or
-                 ($this->payment->isCaptured() === false) or
+                (($this->payment->isCaptured() === false) or
                  ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === false)));
     }
 
