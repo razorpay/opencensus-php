@@ -2,8 +2,12 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
+use RZP\Exception;
+use RZP\Models\Org;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
+use RZP\Error\ErrorCode;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Payment as PaymentModel;
 
