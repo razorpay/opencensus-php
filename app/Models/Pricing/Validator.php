@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::PRODUCT             => 'sometimes|string|custom',
         Entity::FEATURE             => 'sometimes|alpha_dash',
         Entity::GATEWAY             => 'sometimes',
+        Entity::PROCURER            => 'sometimes|in:razorpay,merchant',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',

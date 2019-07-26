@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
+use RZP\Constants\Procurer;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
@@ -71,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::PLAN_NAME,
         self::PRODUCT,
         self::FEATURE,
+        self::PROCURER,
         self::GATEWAY,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
@@ -111,6 +113,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::PROCURER            => Procuer::RAZORPAY,
         self::PRODUCT             => Product::PRIMARY,
         self::FEATURE             => Feature::PAYMENT,
         self::PAYMENT_METHOD_TYPE => null,
@@ -133,6 +136,7 @@ class Entity extends Base\PublicEntity
      * @var array
      */
     protected $casts = [
+        self::PROCURER            => 'string',
         self::INTERNATIONAL       => 'bool',
         self::AMOUNT_RANGE_ACTIVE => 'bool',
         self::PERCENT_RATE        => 'int',

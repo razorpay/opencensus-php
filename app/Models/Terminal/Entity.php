@@ -350,6 +350,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function getProcurer()
+    {
+        return $this->getAttribute(self::PROCURER);
+    }
+
     public function getGatewayAcquirer()
     {
         return $this->getAttribute(self::GATEWAY_ACQUIRER);

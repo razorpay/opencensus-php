@@ -5167,3 +5167,7 @@ ALTER TABLE terminals
 
 ALTER TABLE gateway_rules
     ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER merchant_id;
+
+ALTER TABLE pricing
+    ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway;
+    ADD INDEX pricing_procurer_index (procurer);
