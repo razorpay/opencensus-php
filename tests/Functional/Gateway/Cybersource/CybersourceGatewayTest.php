@@ -72,6 +72,29 @@ class CybersourceGatewayTest extends TestCase
         // $this->assertNull($payment['verify_at']);
     }
 
+    public function testMotoTransaction()
+    {
+        $motoTerminal = $this->fixtures->create('terminal:cybersource_axis_moto_terminal');
+
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['auth_type'] = 'skip';
+
+        unset($payment['card']['cvv']);
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($motoTerminal['id'], $payment['terminal_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('skip', $payment['auth_type']);
+    }
+
     public function testPaymentEnrolledCard()
     {
         $enrolledCard = [

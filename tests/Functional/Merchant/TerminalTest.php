@@ -759,6 +759,19 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetTerminalBanksForBilldesk()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testGetTerminalBanksForDirectNetbankingTerminal()
     {
         $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');

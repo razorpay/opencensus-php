@@ -14,6 +14,7 @@ class Status
     const DISCREPANCY    = 'discrepancy';
     const CLOSED         = 'closed';
     const CANCELLED      = 'cancelled';
+    const HOLD           = 'hold';
 
     //
     // RBL webhook wants the final status of processing from our end.
@@ -29,7 +30,8 @@ class Status
             self::DRAFT,
             self::REWORK,
             self::VERIFIED,
-            self::DISCREPANCY
+            self::DISCREPANCY,
+            self::HOLD,
         ],
         BankingAccount\Status::PROCESSED      => [
             self::CLOSED
@@ -103,6 +105,19 @@ class Status
         BankingAccount\Status::isValidStatus($status);
 
         return self::$internalToBankStatusForWebhookMap[$status];
+    }
+
+    public static function checkRblToInternalStatusMapping(array $input)
+    {
+        if ((isset($input[BankingAccount\Entity::BANK_INTERNAL_STATUS]) === true) and
+            (isset($input[BankingAccount\Entity::STATUS]) === true))
+        {
+            $bankInternalStatus = $input[BankingAccount\Entity::BANK_INTERNAL_STATUS];
+
+            $status = $input[BankingAccount\Entity::STATUS];
+
+            self::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
+        }
     }
 
     public static function getAll(): array

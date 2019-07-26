@@ -108,9 +108,16 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function validateAccountBeforeUpdating(array $input)
     {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATUS_TO_INTERNAL_STATUS_CHECK,
+            [
+                'input'     => $input,
+                'channel'   => BankingAccount\Channel::RBL,
+            ]);
+
         (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_UPDATE, $input);
 
-        $this->checkRblToInternalStatusMapping($input);
+        Status::checkRblToInternalStatusMapping($input);
     }
 
     public function formatInputParametersIfRequired(array $input)

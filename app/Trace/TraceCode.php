@@ -1095,6 +1095,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
 
+    const NON_BLOCKING_HTTP_ERROR                               = 'NON_BLOCKING_HTTP_ERROR';
+
     // Gateway component error messages
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
     const PAYMENT_DOWNTIME_CREATE                               = 'PAYMENT_DOWNTIME_CREATE';
@@ -1151,6 +1153,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_BATCH_CREATION_FAILED                           = 'RECON_BATCH_CREATION_FAILED';
     const RECON_UNPROCESSED_ROW                                 = 'RECON_UNPROCESSED_ROW';
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED              = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
+    const RECON_BATCH_OUTPUT_FILE                               = 'RECON_BATCH_OUTPUT_FILE';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -1723,7 +1726,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_STATUS_CHECK_FAILED                  = 'FTA_DISPATCH_FOR_STATUS_CHECK_FAILED';
     const FTA_PROCESSING_FOR_MERCHANT_FAILED                    = 'FTA_PROCESSING_FOR_MERCHANT_FAILED';
     const FTA_DISPATCH_FOR_MERCHANT_COMPLETE                    = 'FTA_DISPATCH_FOR_MERCHANT_COMPLETE';
-    const FTA_MERCHANT_FUND_TRANSFER_DISPATCHED                 = 'FTA_MERCHANT_FUND_TRANSFER_DISPATCHED';
     const FTA_DISPATCH_FOR_MERCHANT_DELETED                     = 'FTA_DISPATCH_FOR_MERCHANT_DELETED';
     const FTA_STATUS_CHECK_INIT                                 = 'FTA_STATUS_CHECK_INIT';
     const FTA_STATUS_CHECK_PROCESS_STATUS                       = 'FTA_STATUS_CHECK_PROCESS_STATUS';
@@ -1848,7 +1850,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
-    const SELECTED_TERMINAL_IDS                                 = 'SELECTED_TERMINAL_IDS';
+    const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+
+    const PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR              = "PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR";
 
     // Core Payment Service tracecodes
     const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
@@ -1896,6 +1900,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_REQUEST       = 'BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_REQUEST';
     const BANKING_ACCOUNT_SOURCE_ACCOUNT_ALREADY_PRESENT        = 'BANKING_ACCOUNT_SOURCE_ACCOUNT_ALREADY_PRESENT';
     const BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_RESPONSE      = 'BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_RESPONSE';
+    const BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE            = 'BANKING_ACCOUNT_VALIDATE_STATUS_FOR_UPDATE';
+    const BANKING_ACCOUNT_STATUS_TO_INTERNAL_STATUS_CHECK       = 'BANKING_ACCOUNT_STATUS_TO_INTERNAL_STATUS_CHECK';
 
     // Banking Account Statement
     const BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE            = 'BANKING_ACCOUNT_STATEMENT_UNEXPECTED_VALUE';
@@ -1936,6 +1942,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_UPDATE_SUCCESSFULL                   = 'MERCHANT_BALANCE_UPDATE_SUCCESSFULL';
     const MERCHANT_BALANCE_UPDATE_FAILURE                       = 'MERCHANT_BALANCE_UPDATE_FAILURE';
     const MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED               = 'MERCHANT_BALANCE_UPDATE_SQS_PUSH_FAILED';
+
+    // Smart Routing
+    const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
+    const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
+    const NON_BLOCKING_HTTP_DATA                                = 'NON_BLOCKING_HTTP_DATA';
+    const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
+
+
+    const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

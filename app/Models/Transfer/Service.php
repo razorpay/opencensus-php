@@ -68,9 +68,20 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $transfer = $this->core->createForMerchant($input, $this->merchant);
+        try
+        {
+            $transfer = $this->core->createForMerchant($input, $this->merchant);
 
-        return $transfer->toArrayPublic();
+            (new Metric)->pushCreateSuccessMetrics($input);
+
+            return $transfer->toArrayPublic();
+        }
+        catch (\Exception $e)
+        {
+            (new Metric)->pushCreateFailedMetrics($e);
+
+            throw $e;
+        }
     }
 
     public function edit(string $id, array $input) : array
@@ -100,13 +111,24 @@ class Service extends Base\Service
                 'input'       => $input
             ]);
 
-        $transfer =  $this->repo
-                          ->transfer
-                          ->findByPublicIdAndMerchant($id, $this->merchant);
+        try
+        {
+            $transfer = $this->repo
+                             ->transfer
+                             ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $reversal = (new Reversal\Core)->reverseForTransferAndCustomerRefund($transfer, $input, $this->merchant, $this->merchant);
+            $reversal = (new Reversal\Core)->reverseForTransferAndCustomerRefund($transfer, $input, $this->merchant, $this->merchant);
 
-        return $reversal->toArrayPublic();
+            (new Metric)->pushReversalSuccessMetrics();
+
+            return $reversal->toArrayPublic();
+        }
+        catch (\Exception $e)
+        {
+            (new Metric)->pushReversalFailedMetrics($e);
+
+            throw $e;
+        }
     }
 
     public function linkedAccountReversal(string $id, array $input): array
@@ -118,13 +140,22 @@ class Service extends Base\Service
                 'input'       => $input
             ]);
 
-        $transfer = $this->repo
-                         ->transfer
-                         ->fetchByPublicIdAndLinkedAccountMerchant($id, $this->merchant);
+        try
+        {
+            $transfer = $this->repo
+                             ->transfer
+                             ->fetchByPublicIdAndLinkedAccountMerchant($id, $this->merchant);
 
-        $reversal = (new Reversal\Core)->linkedAccountReverseForTransfer($transfer, $input, $this->merchant);
+            $reversal = (new Reversal\Core)->linkedAccountReverseForTransfer($transfer, $input, $this->merchant);
 
-        return $reversal->toArrayPublic();
+            return $reversal->toArrayPublic();
+        }
+        catch (\Exception $e)
+        {
+            (new Metric)->pushReversalFailedMetrics($e);
+
+            throw $e;
+        }
     }
 
     public function fetchLinkedAccountTransfer(string $id): array

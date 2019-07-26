@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         Fields::STATE                  => 'required|string',
         Fields::COUNTRY                => 'required|string',
         Fields::RZP_REFERENCE_NUMBER   => 'required|string|size:5',
-        Fields::ACTIVATION_DATE        => 'required|string',
+        Fields::ACTIVATION_DATE        => 'required|date',
         Fields::PHONE_NUM              => 'required|string',
         Fields::EMAIL_ID               => 'required|email',
     ];

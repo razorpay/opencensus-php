@@ -961,8 +961,11 @@ class Processor
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
         // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
-        if ((empty($gatewayInput['authenticate']['gateway']) === false) and
-            ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
+        // Adding cybersource check until cybersource emi payments are fixed
+        if (((empty($gatewayInput['authenticate']['gateway']) === false) and
+             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway())) or
+            (($payment->getGateway() === E::CYBERSOURCE) and
+             ($payment->isMethod(Payment\Method::CARD) === false)))
         {
             $payment->disableCpsRoute();
 
