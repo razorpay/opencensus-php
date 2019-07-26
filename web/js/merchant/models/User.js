@@ -345,7 +345,7 @@ export default class User {
   }
 
   get toShowExtraFieldsInPP() {
-    return this.getExpStatus('show_extra_field_in_pp');
+    return this.getExpStatus('show_extra_fields_in_pp');
   }
 }
 
