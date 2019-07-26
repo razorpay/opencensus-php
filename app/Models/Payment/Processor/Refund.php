@@ -29,11 +29,13 @@ use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Refund\Validator;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+
 
 /**
  * Trait Refund
@@ -757,12 +759,23 @@ trait Refund
             //         'The reversals parameter is required for this refund request');
         }
 
-        $this->repo->transaction(function () use ($input)
+        try
         {
-            $this->processReversals($input['reversals']);
+            $this->repo->transaction(function() use ($input)
+            {
+                $this->processReversals($input['reversals']);
 
-            unset($input['reversals']);
-        });
+                unset($input['reversals']);
+            });
+
+            (new TransferMetric)->pushReversalSuccessMetrics();
+        }
+        catch (\Exception $e)
+        {
+            (new TransferMetric)->pushReversalFailedMetrics(e);
+
+            throw $e;
+        }
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, array $input)
