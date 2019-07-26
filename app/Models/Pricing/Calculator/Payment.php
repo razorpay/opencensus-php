@@ -9,9 +9,50 @@ use RZP\Models\Payment as PaymentModel;
 
 class Payment extends Base
 {
-    public function __construct(BaseModel\PublicEntity $entity, string $product)
+    protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
-        parent::__construct($entity, $product);
+        $method   = $this->entity->getMethod();
+        $orgId    = $this->entity->merchant->org->getId();
+        $product  = $this->product;
+        $procurer = $this->entity->terminal->getProcurer();
+
+        $filters = [
+            [Pricing\Entity::PRODUCT,        $product,   false, null],
+            [Pricing\Entity::FEATURE,        $feature,   false, null],
+            [Pricing\Entity::PAYMENT_METHOD, $method,    false, null],
+            [Pricing\Entity::PROCURER,       $procurer,  true,  null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($pricing, $filters);
+
+        $rulesCount = count($rules);
+
+        //
+        // If pricing for the feature is optional, no rules may exist
+        // In this case, we add the zero pricing rule and return
+        //
+        if (($rulesCount === 0) and
+            (Pricing\Feature::isFeaturePricingOptional($feature) === true) and
+            ($orgId === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
+
+            $this->pricingRules->push($zeroPricingRule);
+
+            return;
+        }
+
+        $rule = $this->getPricingRule($rules, $method);
+
+        if ($rule === null)
+        {
+            throw new Exception\LogicException(
+                'No appropriate pricing rule found for entity ' . $this->entity->getEntity(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                ['entity' => $this->entity->toArray()]);
+        }
+
+        $this->pricingRules->push($rule);
     }
 
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)

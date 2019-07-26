@@ -238,13 +238,11 @@ abstract class Base extends BaseModel\Core
         $method   = $this->entity->getMethod();
         $orgId    = $this->entity->merchant->org->getId();
         $product  = $this->product;
-        $procurer = $this->entity->terminal->getProcurer();
 
         $filters = [
             [Pricing\Entity::PRODUCT,        $product,   false, null],
             [Pricing\Entity::FEATURE,        $feature,   false, null],
             [Pricing\Entity::PAYMENT_METHOD, $method,    false, null],
-            [Pricing\Entity::PROCURER,       $procurer,  true,  null],
         ];
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
