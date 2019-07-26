@@ -38,7 +38,7 @@ class Validator extends Base\Validator
         Fields::STATE                  => 'required|string',
         Fields::COUNTRY                => 'required|string',
         Fields::RZP_REFERENCE_NUMBER   => 'required|string|size:5',
-        Fields::ACTIVATION_DATE        => 'required|string',
+        Fields::ACTIVATION_DATE        => 'required|date',
         Fields::PHONE_NUM              => 'required|string',
         Fields::EMAIL_ID               => 'required|email',
     ];
@@ -48,11 +48,6 @@ class Validator extends Base\Validator
         BankingAccount\Entity::BANK_REFERENCE_NUMBER           => 'filled|string|size:5',
         BankingAccount\Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
     ];
-
-    protected function validateStatus(string $attribute, string $status = null)
-    {
-        BankingAccount\Status::isValidStatus($status);
-    }
 
     protected function validateBankInternalStatus(string $attribute, string $bankInternalStatus = null)
     {

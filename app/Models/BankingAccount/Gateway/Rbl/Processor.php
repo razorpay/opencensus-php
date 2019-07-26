@@ -85,9 +85,16 @@ class Processor extends BankingAccount\Gateway\Processor
 
     public function validateAccountBeforeUpdating(array $input)
     {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATUS_TO_INTERNAL_STATUS_CHECK,
+            [
+                'input'     => $input,
+                'channel'   => BankingAccount\Channel::RBL,
+            ]);
+
         (new Validator)->setStrictFalse()->validateInput(Validator::ACCOUNT_UPDATE, $input);
 
-        $this->checkRblToInternalStatusMapping($input);
+        Status::checkRblToInternalStatusMapping($input);
     }
 
     public function formatInputParametersIfRequired(array $input)
@@ -176,19 +183,5 @@ class Processor extends BankingAccount\Gateway\Processor
                             ->getTimestamp();
 
         return $epochDate;
-    }
-
-    protected function checkRblToInternalStatusMapping(array $input)
-    {
-        if (isset($input[BankingAccount\Entity::BANK_INTERNAL_STATUS]) === false)
-        {
-            return;
-        }
-
-        $bankInternalStatus = $input[BankingAccount\Entity::BANK_INTERNAL_STATUS];
-
-        $status = $input[BankingAccount\Entity::STATUS];
-
-        Status::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
     }
 }
