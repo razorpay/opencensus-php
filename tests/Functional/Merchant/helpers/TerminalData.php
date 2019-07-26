@@ -1160,6 +1160,8 @@ return [
                 'gateway_terminal_id'       => 'randommerchantid',
                 'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
                 'gateway_acquirer'          => 'hdfc',
                 'mode'                      => Terminal\Mode::DUAL,
                 'type'                      => [
@@ -1188,6 +1190,8 @@ return [
                 'gateway_terminal_id'       => 'randommerchantid',
                 'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
                 'gateway_acquirer'          => 'hdfc',
                 'mode'                      => Terminal\Mode::DUAL,
                 'type'                      => [
