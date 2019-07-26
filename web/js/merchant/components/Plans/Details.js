@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
@@ -7,8 +8,9 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
-
 import { subscriptionId, createdAt, status } from 'rzp/ui/item/pair';
+import Tooltip from 'rzp/ui/Tooltip';
+import { trackClickDuplicatePlan } from 'merchant/containers/Plans/ga';
 
 export default ({ plan, isLoading, statusMsg, subscriptions }) => {
   const tableLimit = 5; // Set limit to total rows displayed in table
@@ -23,6 +25,16 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
           <div class="panel-heading">
             <i class="i i-plan text-main icon--formal" />{' '}
             <strong>{plan.id}</strong>
+            <div className="btn-toolbar pull-right">
+              <NavLink
+                onClick={trackClickDuplicatePlan}
+                class="btn Button--primary--invert"
+                to={`/plans/new?duplicate_id=${plan.id}`}
+              >
+                <i className="i i-copy" />
+                <Tooltip theme="dark">Duplicate Plan</Tooltip>
+              </NavLink>
+            </div>
           </div>
 
           <div class="SliderPanel__Body">
