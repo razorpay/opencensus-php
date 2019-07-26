@@ -206,11 +206,7 @@ trait Authorize
 
             if ($request != null)
             {
-                // Fees validation can only happen after international validation has gone through
-                // otherwise can cause issues with international pricing rule being not available when
-                // international is not enabled.
-                $this->verifyFeesLessThanAmount($payment);
-
+                // todo: Check if fee verify is required
                 return $request;
             }
         }

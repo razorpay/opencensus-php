@@ -15,10 +15,12 @@ class Payment extends Base
 {
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
-        $method   = $this->entity->getMethod();
-        $orgId    = $this->entity->merchant->org->getId();
+        $payment = $this->entity;
+
+        $method   = $payment->getMethod();
+        $orgId    = $payment->merchant->org->getId();
         $product  = $this->product;
-        $procurer = $this->entity->terminal->getProcurer();
+        $procurer = ($payment->getTerminalId() !== null) ? $payment->terminal->getProcurer() : null;
 
         $filters = [
             [Pricing\Entity::PRODUCT,        $product,   false, null],
@@ -39,7 +41,7 @@ class Payment extends Base
             (Pricing\Feature::isFeaturePricingOptional($feature) === true) and
             ($orgId === Org\Entity::RAZORPAY_ORG_ID))
         {
-            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
+            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($payment);
 
             $this->pricingRules->push($zeroPricingRule);
 
@@ -51,9 +53,9 @@ class Payment extends Base
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'No appropriate pricing rule found for entity ' . $this->entity->getEntity(),
+                'No appropriate pricing rule found for entity ' . $payment->getEntity(),
                 ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
-                ['entity' => $this->entity->toArray()]);
+                ['entity' => $payment->toArray()]);
         }
 
         $this->pricingRules->push($rule);
