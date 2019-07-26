@@ -109,7 +109,7 @@ class TerminalTest extends TestCase
         $terminal   = $this->fixtures->create(
             'terminal:bank_account_terminal', $attributes);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];;
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];
 
         $this->startTest();
     }
@@ -126,7 +126,7 @@ class TerminalTest extends TestCase
         $terminal   = $this->fixtures->create(
             'terminal:bank_account_terminal', $attributes);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];;
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];
 
         $this->startTest();
     }
@@ -354,6 +354,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateDirectSettlemtTerminalFailure()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTerminalWithMerchantProcurer()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
