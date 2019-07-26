@@ -343,6 +343,10 @@ export default class User {
   get isReportDateRangeEnabled() {
     return this.getExpStatus('report_date_range');
   }
+
+  get toShowExtraFieldsInPP() {
+    return this.getExpStatus('show_extra_fields_in_pp');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

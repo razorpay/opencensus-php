@@ -59,13 +59,59 @@ const url = {
 };
 
 const textarea = {
-  label: 'Large text area',
+  label: 'Large Textarea',
   icon: 'sort i-fix-sort',
   schema: {
     type: 'string',
     options: {
       cmp: 'textarea',
     },
+  },
+};
+
+const alphabets = {
+  label: 'Alphabets',
+  icon: 'alphabets',
+  schema: {
+    type: 'string',
+    pattern: 'alphabets',
+    options: {
+      // keydown_restrictive: true
+    },
+  },
+};
+
+const alphanumeric = {
+  label: 'Alphanumeric',
+  icon: 'alphanumeric',
+  schema: {
+    type: 'string',
+    pattern: 'alphanumeric',
+    options: {
+      // keydown_restrictive: true
+    },
+  },
+};
+
+const pan = {
+  label: 'PAN Number',
+  icon: 'card',
+  schema: {
+    type: 'string',
+    pattern: 'pan',
+    options: {},
+  },
+};
+
+const pincode = {
+  label: 'Pincode',
+  icon: 'location',
+  schema: {
+    type: 'number',
+    minLength: 5,
+    maxLength: 6,
+    pattern: 'number',
+    options: {},
   },
 };
 
@@ -90,4 +136,8 @@ export default {
   url,
   textarea,
   dropdown,
+  alphabets,
+  alphanumeric,
+  pan,
+  pincode,
 };
