@@ -86,6 +86,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleWithProcurer()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testDuplicateReceiverRule()
     {
         $content = $this->createPricingPlan(['receiver_type' => 'qr_code']);
@@ -599,7 +608,7 @@ class PricingTest extends TestCase
                 'plan_id' => '1ycviEdCgurrFY'
             ],
             [
-                'X-Cross-Org-Id' => "org_" . Org::SBIN_ORG
+                'X-Cross-Org-Id' => 'org_' . Org::SBIN_ORG
             ]
         );
 
@@ -1106,8 +1115,7 @@ class PricingTest extends TestCase
 
         $this->ba->adminAuth();
 
-
-        if($adminHeaders !=null)
+        if ($adminHeaders != null)
         {
             $this->ba->setAdminHeaders($adminHeaders);
         }

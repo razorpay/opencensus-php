@@ -513,6 +513,40 @@ return [
         ],
     ],
 
+    'testAddPricingPlanRuleWithProcurer' => [
+        'request' => [
+            'content' => [
+                'procurer'            => 'razorpay',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'DICL',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'receiver_type'       => 'qr_code',
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'procurer'            => 'razorpay',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'DICL',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'receiver_type'       => 'qr_code',
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+        ],
+    ],
 
     'testDuplicateReceiverRule' => [
         'request' => [
