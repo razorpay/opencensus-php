@@ -783,25 +783,12 @@ class TransactionFilter extends Terminal\Filter
 
     public function feeBearerFilter($terminal, $applicableTerminals)
     {
-       $nonDirectSettlementTerminals = array_filter(
-                                    $applicableTerminals,
-                                    function ($terminal)
-                                    {
-                                        return ($terminal->isDirectSettlement() === false);
-                                    });
-
-        // if no direct settlement terminals found, return true.
-        if (empty($nonDirectSettlementTerminals) === true)
+        if ($this->input['merchant']->isFeeBearerCustomer() === true)
         {
-            return true;
+            return ($terminal->isDirectSettlement() === false);
         }
 
-        if (in_array($terminal, $nonDirectSettlementTerminals, true) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     public function hitachiSharedTerminalFilter($terminal, $applicableTerminals)
