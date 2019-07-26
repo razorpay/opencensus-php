@@ -39,6 +39,7 @@ class Event
     const SETTLEMENT_PROCESSED              = 'settlement.processed';
     const VIRTUAL_ACCOUNT_CREDITED          = 'virtual_account.credited';
     const VIRTUAL_ACCOUNT_CREATED           = 'virtual_account.created';
+    const VIRTUAL_ACCOUNT_CLOSED            = 'virtual_account.closed';
     const PAYMENT_DISPUTE_WON               = 'payment.dispute.won';
     const PAYMENT_DISPUTE_LOST              = 'payment.dispute.lost';
     const PAYMENT_DISPUTE_CLOSED            = 'payment.dispute.closed';
@@ -80,6 +81,7 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::VIRTUAL_ACCOUNT_CLOSED,
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
@@ -127,6 +129,7 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::VIRTUAL_ACCOUNT_CLOSED,
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
@@ -185,6 +188,7 @@ class Event
         self::REFUND_SPEED_CHANGED              => 38,
         self::REFUND_PROCESSED                  => 39,
         self::REFUND_FAILED                     => 40,
+        self::VIRTUAL_ACCOUNT_CLOSED            => 41,
     ];
 
     /**
@@ -213,6 +217,7 @@ class Event
         self::SETTLEMENT_PROCESSED              => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREDITED          => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREATED           => [Product::PRIMARY],
+        self::VIRTUAL_ACCOUNT_CLOSED            => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_WON               => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_LOST              => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
@@ -243,6 +248,7 @@ class Event
         self::PAYMENT_DISPUTE_CREATED           => Entity::PAYMENT,
         self::VIRTUAL_ACCOUNT_CREDITED          => Entity::PAYMENT,
         self::VIRTUAL_ACCOUNT_CREATED           => Entity::VIRTUAL_ACCOUNT,
+        self::VIRTUAL_ACCOUNT_CLOSED            => Entity::VIRTUAL_ACCOUNT,
         self::INVOICE_PAID                      => Entity::INVOICE,
         self::INVOICE_PARTIALLY_PAID            => Entity::INVOICE,
         self::INVOICE_EXPIRED                   => Entity::INVOICE,
@@ -286,6 +292,7 @@ class Event
         self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED          => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED           => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::VIRTUAL_ACCOUNT_CLOSED            => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::SETTLEMENT_PROCESSED              => Feature\Constants::MARKETPLACE,
         self::PAYOUT_CREATED                    => Feature\Constants::PAYOUT,
         self::PAYOUT_PROCESSED                  => Feature\Constants::PAYOUT,

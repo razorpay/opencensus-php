@@ -517,6 +517,41 @@ return [
         ],
     ],
 
+    'testWebhookVirtualAccountClosed' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'virtual_account.closed',
+            'contains' => [
+                'virtual_account',
+            ],
+            'payload' => [
+                'virtual_account' => [
+                    'entity' => [
+                        'name'            => 'Test virtual account',
+                        'entity'          => 'virtual_account',
+                        'status'          => 'closed',
+                        'description'     => 'VA for tests',
+                        'amount_expected' => null,
+                        'notes' => [
+                            'a' => 'b',
+                        ],
+                        'amount_paid' => 0,
+                        'customer_id' => null,
+                        'receivers' => [
+                            [
+                                'name'      => 'Test virtual account',
+                                'entity'    => 'bank_account',
+                                'ifsc'      => 'RAZR0000001',
+                                'bank_name' => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPayVirutalAccountOnBankingBalance' => [
         'request' => [
             'url'     => '/ecollect/validate',
