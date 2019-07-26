@@ -40,6 +40,7 @@ class TransactionFilter extends Terminal\Filter
         'auth_type',
         'bharat_qr',
         'direct_settlement',
+        'fee_bearer',
         'bank_account_type',
         'hitachi_shared_terminal',
         'capability',
@@ -773,6 +774,29 @@ class TransactionFilter extends Terminal\Filter
         }
 
         if (in_array($terminal, $directSettlementTerminals, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function feeBearerFilter($terminal, $applicableTerminals)
+    {
+       $nonDirectSettlementTerminals = array_filter(
+                                    $applicableTerminals,
+                                    function ($terminal)
+                                    {
+                                        return ($terminal->isDirectSettlement() === false);
+                                    });
+
+        // if no direct settlement terminals found, return true.
+        if (empty($nonDirectSettlementTerminals) === true)
+        {
+            return true;
+        }
+
+        if (in_array($terminal, $nonDirectSettlementTerminals, true) === true)
         {
             return true;
         }

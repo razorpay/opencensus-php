@@ -182,6 +182,11 @@ trait Authorize
 
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
+            // Fees validation can only happen after international validation has gone through
+            // otherwise can cause issues with international pricing rule being not available when
+            // international is not enabled.
+            $this->verifyFeesLessThanAmount($payment);
+
             $this->repo->saveOrFail($payment);
 
             return null;
@@ -193,6 +198,11 @@ trait Authorize
 
             if ($request != null)
             {
+                // Fees validation can only happen after international validation has gone through
+                // otherwise can cause issues with international pricing rule being not available when
+                // international is not enabled.
+                $this->verifyFeesLessThanAmount($payment);
+
                 return $request;
             }
         }
@@ -745,11 +755,6 @@ trait Authorize
             $this->runInternationalChecks($payment);
 
             $this->runFraudChecksIfApplicable($payment);
-
-            // Fees validation can only happen after international validation has gone through
-            // otherwise can cause issues with international pricing rule being not available when
-            // international is not enabled.
-            $this->verifyFeesLessThanAmount($payment);
 
             $this->validateOfferIfApplicable($payment, $input);
 
@@ -1590,6 +1595,11 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
+        // Fees validation can only happen after international validation has gone through
+        // otherwise can cause issues with international pricing rule being not available when
+        // international is not enabled.
+        $this->verifyFeesLessThanAmount($payment);
+
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
