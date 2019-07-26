@@ -1,36 +1,60 @@
 import fUnits from './field-units';
+import { getUser } from 'merchant/store';
 
 /*
 * A. Type: text
-*    Validation: single line text(string), number, email, phone, url, large text area
+*    Validation: single line text(string), alphabets, alphanumeric, number, email, phone, url, large text area, pan, pincode
 *
 * B. Type: Select
 *     Validation: string
 *
 * */
 
-export const FIELD_TYPES = [
-  {
-    label: 'Text',
-    icon: 'sort i-fix-sort',
-    options: [
-      fUnits.str,
-      fUnits.alphabets,
-      fUnits.alphanumeric,
-      fUnits.number,
-      fUnits.email,
-      fUnits.phone,
-      fUnits.url,
-      fUnits.textarea,
-      fUnits.pan,
-      fUnits.pincode,
-    ],
-  },
-  fUnits.dropdown,
-];
+export function getFieldTypes() {
+  let FIELD_TYPES = [
+    {
+      label: 'Text',
+      icon: 'sort i-fix-sort',
+      options: [
+        fUnits.str,
+        fUnits.number,
+        fUnits.email,
+        fUnits.phone,
+        fUnits.url,
+        fUnits.textarea,
+      ],
+    },
+    fUnits.dropdown,
+  ];
+
+  if (getUser().toShowExtraFieldsInPP) {
+    FIELD_TYPES = [
+      {
+        label: 'Text',
+        icon: 'sort i-fix-sort',
+        options: [
+          fUnits.str,
+          fUnits.alphabets,
+          fUnits.alphanumeric,
+          fUnits.number,
+          fUnits.email,
+          fUnits.phone,
+          fUnits.url,
+          fUnits.textarea,
+          fUnits.pan,
+          fUnits.pincode,
+        ],
+      },
+      fUnits.dropdown,
+    ];
+  }
+
+  return FIELD_TYPES;
+}
 
 export function flattenFIELD_TYPES() {
   const flatten = [];
+  const FIELD_TYPES = getFieldTypes();
 
   for (let i = 0; i < FIELD_TYPES.length; i++) {
     const FIELD = FIELD_TYPES[i];
@@ -133,6 +157,7 @@ export function mapFieldToIndex(field) {
 
 export function getFieldFromIndices(indicesString) {
   let FIELD;
+  const FIELD_TYPES = getFieldTypes();
 
   if (indicesString === null || indicesString === undefined) {
     return false;
