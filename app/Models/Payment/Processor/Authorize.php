@@ -182,9 +182,17 @@ trait Authorize
 
         if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
-            // Fees validation can only happen after international validation has gone through
-            // otherwise can cause issues with international pricing rule being not available when
-            // international is not enabled.
+            $currentTerminal = $this->selectedTerminals[0];
+
+            //
+            // TODO:: Add a check to verify that this terminal is same as
+            // the terminal id stored in token used for the first payment
+            //
+            $payment->associateTerminal($currentTerminal);
+
+            // Fees validation can only happen after terminal selection has gone through
+            // otherwise can cause issues with procurer and international pricing rule being
+            // not available when international is not enabled.
             $this->verifyFeesLessThanAmount($payment);
 
             $this->repo->saveOrFail($payment);
@@ -463,17 +471,6 @@ trait Authorize
      */
     protected function processCreated(Payment\Entity $payment): array
     {
-        $currentTerminal = $this->selectedTerminals[0];
-
-        //
-        // TODO:: Add a check to verify that this terminal is same as
-        // the terminal id stored in token used for the first payment
-        //
-
-        $payment->associateTerminal($currentTerminal);
-
-        $this->repo->saveOrFail($payment);
-
         $payment = $this->payment;
 
         return ['razorpay_payment_id' => $payment->getPublicId()];
@@ -491,10 +488,8 @@ trait Authorize
         {
             return $this->processCreated($payment);
         }
-        else
-        {
-            return $this->processAuth($payment);
-        }
+
+        return $this->processAuth($payment);
     }
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
