@@ -35,12 +35,13 @@ class Fields
 
     // Credentials fields
     const SUBCORP_ID                        = 'subcorp_id';
+    const SUBCORP_USER_ID                   = 'subcorp_user_id';
     const SUBCORP_USER_NAME                 = 'subcorp_user_name';
     const SUBCORP_USER_PASSWORD             = 'subcorp_user_password';
     const CLIENT_ID                         = 'client_id';
     const CLIENT_SECRET                     = 'client_secret';
-    const USERNAME                          = 'username';
-    const PASSWORD                          = 'password';
+    const USERNAME                          = 'auth_username';
+    const PASSWORD                          = 'auth_password';
     const MOZART_IDENTIFIER                 = 'mozart_identifier';
 
     // Fields for Fetch Balance API
@@ -49,7 +50,7 @@ class Fields
     const ID                                = 'id';
     const CREDENTIALS                       = 'credentials';
     const DATA                              = 'data';
-    const GET_ACCOUNT_BALANCE               = 'getAccountBalanceRes';
+    const GET_ACCOUNT_BALANCE               = 'PayGenRes';
     const AMOUNT_VALUE                      = 'amountValue';
     const BAL_AMOUNT                        = 'BalAmt';
     const AUTH_USERNAME                     = 'auth_username';

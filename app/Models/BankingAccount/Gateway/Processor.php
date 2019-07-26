@@ -17,7 +17,7 @@ class Processor extends Base\Core
 {
     const PINCODES_REDIS_KEY = 'pincode_set';
 
-    const CREDENTIALS_VAULT_NAMESPACE = 'banking_account_creds';
+    const CREDENTIALS_VAULT_NAMESPACE = 'nodal_certs';
 
     public function validateAndPreProcessInputForAccountCreation(array $input)
     {

@@ -498,8 +498,8 @@ class Core extends Base\Core
 
     protected function checkSourceAccountResponseForError(array $response)
     {
-        if (((isset($response[FTS\Constants::MESSAGE]) === true) and
-            ($response[FTS\Constants::MESSAGE] === 'source account registered')))
+        if (((isset($response[FTS\Constants::BODY][FTS\Constants::MESSAGE]) === true) and
+            ($response[FTS\Constants::BODY][FTS\Constants::MESSAGE] === 'source account registered')))
         {
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_SOURCE_ACCOUNT_CREATION_RESPONSE,

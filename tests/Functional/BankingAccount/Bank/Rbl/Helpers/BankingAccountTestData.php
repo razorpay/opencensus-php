@@ -411,7 +411,7 @@ return [
 
     'accountBalanceSuccess' => [
         'data' => [
-            'getAccountBalanceRes' => [
+            'PayGenRes' => [
                 'Body' => [
                     'BalAmt' => [
                         'amountValue'  => '0',
@@ -436,6 +436,42 @@ return [
             'mozart_id'         => 'bk5pjbrc1osidogfb7jg',
             'next'              => '{}',
             'success'           => true
+        ]
+    ],
+
+    'accountBalanceFailure' => [
+        'data' => [
+            'PayGenRes' => [
+                'Body' => [
+                    'BalAmt' => [
+                        'amountValue'  => '0',
+                        'currencyCode' => '{}'
+                    ]
+                ],
+                'Header' => [
+                    'Approver_ID' => '',
+                    'Corp_ID'     => '',
+                    'Error_Cde'   => 'ER022',
+                    'Error_Desc'  => 'Request not valid for the given AccountId',
+                    'Status'      => 'FAILED',
+                    'TranID'      => '1234'
+                ],
+                'Signature' => [
+                    'Signature' => 'Signature'
+                ],
+            ],
+
+            'error'             => [
+                'description'               => 'Request not valid for the given AccountId',
+                'gateway_error_code'        => 'ER022',
+                'gateway_error_description' => 'Request not valid for the given AccountId',
+                'gateway_status_code'       => 200,
+                'internal_error_code'       => 'TXN_NOT_ALLOWED'
+            ],
+            'external_trace_id' => '',
+            'mozart_id'         => 'bk5pjbrc1osidogfb7jg',
+            'next'              => '{}',
+            'success'           => false
         ]
     ],
 ];

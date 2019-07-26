@@ -244,7 +244,7 @@ class BankingAccountTest extends TestCase
 
     public function testStoreMerchantCredentialsFailedDueToVaultFailure()
     {
-         $this->ba->proxyAuth();
+        $this->ba->proxyAuth();
 
         $this->createBankingAccount();
 
@@ -259,27 +259,6 @@ class BankingAccountTest extends TestCase
         $this->mockCardVault(function ()
         {
             return [];
-        });
-
-        $this->startTest($dataToReplace);
-    }
-
-    public function testStoreMerchantCredentialsFailedDueToMozartFailure()
-    {
-        $this->markTestSkipped('Need to handle this, as the failure structure is different in case of error');
-        $this->createBankingAccount();
-
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $dataToReplace = [
-            'request' => [
-                'url' => '/banking_accounts/' . $bankingAccount->getId() . '/credentials'
-            ]
-        ];
-
-        $this->mockCardVault(function ()
-        {
-            return ['success' => false];
         });
 
         $this->startTest($dataToReplace);

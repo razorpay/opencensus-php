@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 use Carbon\Carbon;
 
 use RZP\Services\FTS;
+use RZP\Services\Mozart;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -40,9 +41,9 @@ class Processor extends BankingAccount\Gateway\Processor
         ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
     ];
 
-    protected $mozartErrorCode = [401];
+    protected $mozartGatewayErrorCodes = ['ER022', 'ERR_PG_003'];
 
-    protected $mozartErrorDescription = ['SubCorpID does not exists'];
+    protected $mozartErrorInformation = ['UserID or Password Not Correct '];
 
     public function preProcessAccountInfoNotification(array $input)
     {
@@ -139,7 +140,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $input[Fields::SUBCORP_USER_PASSWORD] = $this->tokenizeCredentials($input[Fields::SUBCORP_USER_PASSWORD]);
 
-        $balance = $this->verifyCredentialsAndFetchBalance($bankingAccount, $input);
+        $response = $this->verifyCredentials($bankingAccount, $input);
+
+        $balance = $this->fetchBalanceFromMozartResponse($response);
 
         $this->checkBalanceForActivation($balance);
 
@@ -153,7 +156,7 @@ class Processor extends BankingAccount\Gateway\Processor
     
     public function generateRequestForSourceAccount(BankingAccount\Entity $bankingAccount)
     {
-        $rbl = $this->config['gateway']['razorpayx']['ca']['rbl'];
+        $rbl = $this->config['gateway']['mozart']['razorpayx']['direct']['rbl'];
 
         $credentials = [
             Fields::USERNAME                  => $rbl[Fields::AUTH_USERNAME],
@@ -161,7 +164,7 @@ class Processor extends BankingAccount\Gateway\Processor
             Fields::CLIENT_ID                 => $rbl[Fields::CLIENT_ID],
             Fields::CLIENT_SECRET             => $rbl[Fields::CLIENT_SECRET],
             Fields::SUBCORP_ID                => $bankingAccount->getReference1(),
-            Fields::SUBCORP_USER_NAME         => $bankingAccount->getUsername(),
+            Fields::SUBCORP_USER_ID           => $bankingAccount->getUsername(),
             Fields::SUBCORP_USER_PASSWORD     => $bankingAccount->getPassword(),
         ];
 
@@ -197,11 +200,13 @@ class Processor extends BankingAccount\Gateway\Processor
         }
     }
 
-    protected function verifyCredentialsAndFetchBalance(BankingAccount\Entity $bankingAccount, array $input)
+    protected function verifyCredentials(BankingAccount\Entity $bankingAccount, array $input)
     {
         $request = $this->formatDataForMozartFetchBalanceApi($bankingAccount, $input);
 
         $retryCount = 0;
+
+        $response = [];
 
         while (true)
         {
@@ -212,7 +217,40 @@ class Processor extends BankingAccount\Gateway\Processor
                                                                    Action::ACCOUNT_BALANCE,
                                                                    $request);
 
-                break;
+                return $response;
+            }
+            catch (GatewayErrorException $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::MOZART_SERVICE_REQUEST_FAILED,
+                    [
+                        'request' => $request,
+                        'channel' => BankingAccount\Channel::RBL,
+                    ]);
+
+                $content = $ex->getData();
+
+                $error = $content[Mozart::ERROR];
+
+                $data = $content[Mozart::DATA];
+
+                $shouldInformUser = $this->shouldInformUserForErrorFromMozartResponse($data, $error);
+
+                if ($shouldInformUser === true)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS,
+                        null,
+                        ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
+                }
+
+                // throwing a generic error since there is no issue with user entered information
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+                    null,
+                    ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
             }
             catch (\Throwable $exception)
             {
@@ -222,12 +260,13 @@ class Processor extends BankingAccount\Gateway\Processor
                     TraceCode::MOZART_SERVICE_REQUEST_FAILED,
                     [
                         'request' => $request,
-                        'channel' => Channel::RBL
+                        'channel' => BankingAccount\Channel::RBL
                     ]);
 
                 $errorCode = $exception->getCode();
 
                 if (($this->shouldRetryMozartRequest($errorCode) === true) and
+
                     ($retryCount < self::MAX_MOZART_RETRIES))
                 {
                     $this->trace-info(
@@ -247,35 +286,6 @@ class Processor extends BankingAccount\Gateway\Processor
                 }
             }
         }
-
-        $isErrorPresent = $this->checkIfMozartResponseHasErrors($response);
-
-        if ($isErrorPresent === true)
-        {
-            $this->handleErrorForFetchBalance($response);
-        }
-
-        $balance = $response[Fields::DATA][Fields::GET_ACCOUNT_BALANCE]
-                            [Fields::BODY][Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
-
-        return $this->getFormattedAmount($balance);
-    }
-
-    protected function checkIfMozartResponseHasErrors(array $response)
-    {
-        if ($response['data']['success'] === true)
-        {
-            return false;
-        }
-
-        $this->trace->info(
-            TraceCode::MOZART_SERVICE_REQUEST_FAILED,
-            [
-                'response'       => $response,
-                'channel'        => BankingAccount\Channel::RBL,
-            ]);
-
-        return true;
     }
 
     protected function getFormattedAmount($amount)
@@ -289,7 +299,7 @@ class Processor extends BankingAccount\Gateway\Processor
         
         $merchantCredentials = [
             Fields::SUBCORP_ID                => $input[Fields::SUBCORP_ID],
-            Fields::SUBCORP_USER_NAME         => $input[Fields::SUBCORP_USER_NAME],
+            Fields::SUBCORP_USER_ID           => $input[Fields::SUBCORP_USER_NAME],
             Fields::SUBCORP_USER_PASSWORD     => $input[Fields::SUBCORP_USER_PASSWORD]
         ];
 
@@ -416,6 +426,8 @@ class Processor extends BankingAccount\Gateway\Processor
         {
             return true;
         }
+
+        return false;
     }
 
     protected function handleErrorForFetchBalance(array $response)
@@ -435,19 +447,27 @@ class Processor extends BankingAccount\Gateway\Processor
             ['response' => $response, 'channel' => BankingAccount\Channel::RBL]);
     }
 
-    protected function shouldInformUserForErrorFromMozartResponse(array $response)
+    protected function shouldInformUserForErrorFromMozartResponse(array $data, array $error)
     {
-        $gatewayErrorCode = $response['error']['gateway_error_code'] ?? 'gateway_error_code';
+        $gatewayErrorCode = $error[Mozart::GATEWAY_ERROR_CODE] ?? 'gateway_error_code';
 
-        $gatewayErrorDesc = $response['error']['gateway_error_description'] ?? 'gateway_error_desc';
+        $errorInformation = $data[Mozart::MORE_INFORMATION] ?? 'moreInformation';
 
         // adding this dirty check for now to prompt the user with appropriate error message
-        if ((in_array($gatewayErrorCode, $this->mozartErrorCode, true) === true) or
-            (in_array($gatewayErrorDesc, $this->mozartErrorDescription, true)  === true))
+        if ((in_array($errorInformation, $this->mozartErrorInformation, true) === true) or
+            (in_array($gatewayErrorCode, $this->mozartGatewayErrorCodes, true) === true))
         {
             return true;
         }
 
         return false;
+    }
+
+    protected function fetchBalanceFromMozartResponse(array $response)
+    {
+        $balance = $response[Fields::DATA][Fields::GET_ACCOUNT_BALANCE]
+                   [Fields::BODY][Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
+
+        return $this->getFormattedAmount($balance);
     }
 }

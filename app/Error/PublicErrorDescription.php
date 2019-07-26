@@ -847,6 +847,6 @@ class PublicErrorDescription
     const BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_FAILED            = 'Operation could not be completed. Please try again';
     const BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED                       = 'Operation could not be completed. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_NOT_PERMITTED                      = 'Account cannot be activated, Please contact support';
-    const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account credentials are incorrect. Please try again';
+    const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
 }
