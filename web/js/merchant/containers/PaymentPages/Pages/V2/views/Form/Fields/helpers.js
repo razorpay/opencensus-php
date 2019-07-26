@@ -133,6 +133,11 @@ export function mapFieldToIndex(field) {
     }
 
     for (let j = 0; j < FIELD_TYPES_opts_keys.length; j++) {
+      // EXCEPTION 1: values of schema.options.enum_label will always be different. So, skipped because relying on schema.options.cmp == 'select'
+      if (['enum_labels'].indexOf(FIELD_TYPES_opts_keys[j]) > -1) {
+        continue;
+      }
+
       const valueInFieldSchemaOptions =
         schemaFields.options && schemaFields.options[FIELD_TYPES_opts_keys[j]];
       const valueInFieldMapSchemaOptions =
