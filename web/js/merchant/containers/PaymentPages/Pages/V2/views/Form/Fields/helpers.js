@@ -1,5 +1,10 @@
 import fUnits from './field-units';
-import { getUser } from 'merchant/store';
+
+let getUser;
+
+if (typeof window !== 'undefined') {
+  getUser = require('merchant/store').getUser;
+}
 
 /*
 * A. Type: text
@@ -27,7 +32,7 @@ export function getFieldTypes() {
     fUnits.dropdown,
   ];
 
-  if (getUser().toShowExtraFieldsInPP) {
+  if (getUser && getUser().toShowExtraFieldsInPP) {
     FIELD_TYPES = [
       {
         label: 'Text',
