@@ -5041,6 +5041,16 @@ ALTER TABLE `roles`
 ALTER TABLE `banking_account_statement`
   ADD UNIQUE INDEX `banking_account_statement_bank_transaction_id_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`);
 
+ALTER TABLE items
+    MODIFY COLUMN amount bigint(20) unsigned;
+
+ALTER TABLE `payment_links`
+    ADD COLUMN `type` VARCHAR(30) NOT NULL DEFAULT 'payment' AFTER `terms`,
+    ADD INDEX `payment_links_type_index` (`type`);
+
+ALTER TABLE subscriptions
+    ADD COLUMN source VARCHAR(32) DEFAULT NULL AFTER `type`;
+
 ALTER TABLE transactions
     CHANGE reference5 balance_updated TINYINT(4),
     ALGORITHM=INPLACE, LOCK=NONE;
@@ -5137,3 +5147,6 @@ ALTER TABLE gateway_rules
 
 ALTER TABLE banking_accounts
     ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
+    
+ALTER TABLE `transactions`
+    MODIFY COLUMN `fee_credits` BIGINT NOT NULL DEFAULT 0;

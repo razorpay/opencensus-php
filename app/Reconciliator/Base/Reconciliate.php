@@ -7,14 +7,19 @@ use App;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
 use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Reconciliate extends Base\Core
 {
+    use FileHandlerTrait;
+
     /***********************
      * Reconciliation Types
      ***********************/
@@ -75,6 +80,9 @@ class Reconciliate extends Base\Core
     const GATEWAY_ERROR_CODE     = 'gateway_error_code';
     const GATEWAY_ERROR_DESC     = 'gateway_error_desc';
     const GATEWAY_STATUS_CODE    = 'gateway_status_code';
+
+    const OUTPUT_FILE_SUFFIX     = '_recon_batch_output';
+    const DIRECTORY_PATH         = 'files/settlement';
 
     /*************************
      * Card types
@@ -192,6 +200,11 @@ class Reconciliate extends Base\Core
 
                 $this->trace->traceException($e, Logger::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
             }
+            finally
+            {
+                // Create the output file
+                $this->generateReconOutputFile($batchProcessor, $extraDetails);
+            }
         }
 
         //
@@ -202,6 +215,67 @@ class Reconciliate extends Base\Core
         {
             $this->traceBatchProcessingSummary($batch);
         }
+    }
+
+    /**
+     * Creates an output file corresponding to the current recon batch file,
+     * This output file contains all valid rows of input MIS file and 3 additional
+     * columns i.e. recon_type, recon_status, error_msg
+     *
+     * @param Batch\Processor\Reconciliation $batchProcessor
+     * @param array $extraDetails
+     */
+    protected function generateReconOutputFile(Batch\Processor\Reconciliation $batchProcessor, array $extraDetails)
+    {
+        $data = $batchProcessor->getReconBatchOutputData();
+
+        $batch = $batchProcessor->batch;
+
+        $batchId = $batch->getId();
+
+        $sheetName = null;
+
+        //
+        // In case of excel file with multiple sheets, we should keep the recon output file
+        // name different, else the previous sheet output file will be replaced by current one.
+        // So here we are putting the sheet name to create filename in case of excel files.
+        //
+        if ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL)
+        {
+            $sheetName = $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
+
+            $sheetName = '_' . strtolower(str_replace(' ', '_', $sheetName));
+        }
+
+        $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+
+        $extension = FileStore\Format::XLSX;
+
+        $filePath = $this->createExcelFile($data, $fileName, self::DIRECTORY_PATH);
+
+        $file = new UploadedFile($filePath, $fileName);
+
+        $creator = new FileStore\Creator;
+
+        $creator->localFile($file)
+                ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                ->name($fileName)
+                ->extension($extension)
+                ->type(FileStore\Type::RECONCILIATION_BATCH_OUTPUT)
+                ->entity($batch)
+                ->save();
+
+        $fileStoreEntity = $creator->get();
+
+        $traceData = [
+            'trace_code'   => TraceCode::RECON_BATCH_OUTPUT_FILE,
+            'file_id'      => $fileStoreEntity['id'],
+            'file_name'    => $fileStoreEntity['name'],
+            'batch_id'     => $batchId,
+            'gateway'      => $this->gateway,
+        ];
+
+        $this->messenger->raiseReconInfo($traceData);
     }
 
     /**
@@ -440,14 +514,35 @@ class Reconciliate extends Base\Core
     // Sends recon batch processing summary
     public function traceBatchProcessingSummary($batch)
     {
+        $outputFiles = $batch->filesByType(FileStore\Type::RECONCILIATION_BATCH_OUTPUT);
+
+        //
+        // In case of excel file having 2 or more sheets, those many batch output files
+        // get generated. So need to put all the output file_ids in the trace
+        //
+        $outputFileIds = [];
+
+        if (count($outputFiles) > 1)
+        {
+            foreach ($outputFiles as $file)
+            {
+                $outputFileIds[] = $file->id;
+            }
+        }
+        else
+        {
+            $outputFileIds = $outputFiles->first()->id;
+        }
+
         $summary = [
-            'info'          => 'Processed Batch Summary',
-            'file'          => basename($batch->latestFile()->location),
-            'total_count'   => $batch->getTotalCount(),
-            'success_count' => $batch->getSuccessCount(),
-            'failure_count' => $batch->getFailureCount(),
-            'batch_id'      => $batch->getId(),
-            'gateway'       => $batch->getGateway()
+            'info'              => 'Processed Batch Summary',
+            'file'              => basename($batch->latestFileByType(FileStore\Type::RECONCILIATION_BATCH_INPUT)->location),
+            'output_file_id'    => $outputFileIds,
+            'total_count'       => $batch->getTotalCount(),
+            'success_count'     => $batch->getSuccessCount(),
+            'failure_count'     => $batch->getFailureCount(),
+            'batch_id'          => $batch->getId(),
+            'gateway'           => $batch->getGateway()
         ];
 
         //Check if recon request was made through dashboard

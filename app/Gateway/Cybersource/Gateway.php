@@ -147,6 +147,15 @@ class Gateway extends Base\Gateway
             return $this->sendMozartRequest($input);
         }
 
+        if ($this->isMotoTransactionRequest($input) === true)
+        {
+            parent::action($input, 'pay_init');
+
+            $this->app['diag']->trackGatewayPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $input);
+
+            return $this->sendMozartRequest($input);
+        }
+
         $authenticationGateway = $this->decideAuthenticationGateway($input);
 
         switch ($authenticationGateway)

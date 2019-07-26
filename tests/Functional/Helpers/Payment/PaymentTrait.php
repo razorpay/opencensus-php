@@ -18,6 +18,7 @@ use RZP\Models\Payment\Verify\Action;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
@@ -1000,6 +1001,11 @@ trait PaymentTrait
                 case 3470:
                     $event = 'fee_only_reversal_event';
                     break;
+
+                case 3471:
+                    $event = 'processed_event';
+                    $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
+                    break;
             }
 
             if ($event !== '')
@@ -1038,6 +1044,11 @@ trait PaymentTrait
         if (($this->gateway === Payment\Gateway::UPI_MINDGATE) or ($this->gateway === Payment\Gateway::UPI_ICICI))
         {
             $input['reference_no'] = random_integer(12);
+        }
+
+        if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
+        {
+            $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
         }
 
         $input['event'] = $event;

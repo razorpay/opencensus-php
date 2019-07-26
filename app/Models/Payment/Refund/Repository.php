@@ -26,7 +26,8 @@ class Repository extends Base\Repository
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID      => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::PAYMENT_ID    => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::PUBLIC_STATUS => 'sometimes|filled|in:processed,processing',
     ];
 
     // These are proxy allowed params to search on.
@@ -130,6 +131,26 @@ class Repository extends Base\Repository
         $query->where(Payment\Entity::METHOD, '=', $method);
 
         $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamPublicStatus($query, $params)
+    {
+        switch($params[Entity::PUBLIC_STATUS])
+        {
+            case 'processed':
+                $query->where(function($subQuery) {
+                    $subQuery->where(Entity::SPEED_DECISIONED, Speed::NORMAL)
+                             ->orWhereNotNull(Entity::SPEED_PROCESSED);
+                });
+
+                break;
+
+            case 'processing':
+                $query->where(Entity::SPEED_DECISIONED, '!=', Speed::NORMAL)
+                      ->WhereNull(Entity::SPEED_PROCESSED);
+
+                break;
+        }
     }
 
     protected function joinQueryPayment($query)

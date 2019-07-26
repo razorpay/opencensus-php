@@ -216,4 +216,11 @@ trait PartnerTrait
 
         return [$client->getId(), 'acc_' . $submerchantId];
     }
+
+    public function markMerchantAsNonPurePlatformPartner(string $merchantId, string $partnerType)
+    {
+        $this->setUpPartnerMerchantAppAndGetClient('dev', [], $merchantId);
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
+    }
 }

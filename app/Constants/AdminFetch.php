@@ -535,6 +535,7 @@ class AdminFetch
                         'emandate',
                         'reconciliation',
                         'irctc_refund',
+                        'irctc_delta_refund',
                         'irctc_settlement',
                         'linked_account',
                         'virtual_bank_account',

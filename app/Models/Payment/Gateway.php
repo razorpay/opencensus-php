@@ -191,17 +191,20 @@ class Gateway
         self::BILLDESK,
     ];
 
+    // TODO: Add gateway and gateway_acquirer map to fix
+    // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
-        self::NETBANKING_HDFC   => self::HDFC,
-        self::NETBANKING_KOTAK  => self::KOTAK,
-        self::NETBANKING_ICICI  => self::ICICI,
-        self::NETBANKING_RBL    => self::RBL,
-        self::NETBANKING_AXIS   => self::AXIS,
-        self::PAYTM             => self::PAYTM,
         self::AMEX              => self::AMEX,
-        self::UPI_MINDGATE      => self::HDFC,
+        self::HDFC              => self::HDFC,
         self::ISG               => self::HDFC,
+        self::NETBANKING_AXIS   => self::AXIS,
+        self::NETBANKING_HDFC   => self::HDFC,
+        self::NETBANKING_ICICI  => self::ICICI,
+        self::NETBANKING_KOTAK  => self::KOTAK,
+        self::NETBANKING_RBL    => self::RBL,
+        self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
+        self::UPI_MINDGATE      => self::HDFC,
     ];
 
     /**
