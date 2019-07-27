@@ -191,10 +191,6 @@ return [
         'test'       => env('AWS_BATCH_QUEUE'),
         'live'       => env('AWS_BATCH_QUEUE'),
     ],
-    'irctc_batch' => [
-        'test'       => env('AWS_IRCTC_BATCH_QUEUE'),
-        'live'       => env('AWS_IRCTC_BATCH_QUEUE'),
-    ],
     'emandate_batch' => [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
