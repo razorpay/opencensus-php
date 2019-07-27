@@ -106,8 +106,6 @@ class CaptureTest extends TestCase
             return $payment['id'] === $data['payment']['public_id'];
         });
 
-        Queue::assertPushedOn('capture_test', CaptureJob::class);
-
         Mail::assertQueued(CapturedMail::class);
     }
 
@@ -162,8 +160,6 @@ class CaptureTest extends TestCase
 
             return $payment['id'] === $data['payment']['public_id'];
         });
-
-        Queue::assertPushedOn('capture_test', CaptureJob::class);
 
         Mail::assertQueued(CapturedMail::class);
     }
