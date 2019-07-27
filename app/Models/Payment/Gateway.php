@@ -296,31 +296,33 @@ class Gateway
       Payment\Gateway::NETBANKING_CANARA
     ];
 
-    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates-new
+    // Please keep this list sorted. The list of Live Banks in API E-Mandate is available at https://www.npci.org.in/nach-e-mandates-new
     const ENACH_NPCI_NETBANKING_BANKS = [
-        IFSC::YESB,
-        IFSC::IDFB,
-        IFSC::UTIB,
         IFSC::CBIN,
-        IFSC::KKBK,
-        IFSC::INDB,
-        IFSC::ICIC,
-        IFSC::USFB,
-        IFSC::IBKL,
+        IFSC::CIUB,
+        IFSC::DEUT,
         IFSC::HDFC,
-        IFSC::TMBL,
+        IFSC::IBKL,
+        IFSC::ICIC,
+        IFSC::IDFB,
+        IFSC::INDB,
         IFSC::IOBA,
+        IFSC::KKBK,
+        IFSC::MAHB,
+        IFSC::PYTM,
+        IFSC::RATN,
+        IFSC::TMBL,
+        IFSC::USFB,
+        IFSC::UTIB,
+        IFSC::YESB,        
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
-        IFSC::RATN,
-        IFSC::MAHB,
-        IFSC::DEUT,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
         IFSC::ICIC,
         IFSC::UTIB,
-        IFSC::HDFC,
+        IFSC::HDFC,       
     ];
 
     // The 2 commented banks are mentioned at the bottom
