@@ -7,11 +7,11 @@ use Redis;
 use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
-use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Payout;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Account;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -378,13 +378,17 @@ class AttemptTest extends TestCase
 
     public function testRblPayoutSuccess()
     {
-        $redis = Redis::connection()->client();
-
-        $parameters = [ Channel::RBL => Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS ];
-
-        $redis->hmset(ConfigKey::FTS_CHANNELS, $parameters);
-
         $channel = Channel::RBL;
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+              ->andReturn($redisMock);
+
+        $redisMock->method('hget')
+                  ->with('config:fts_channels', $channel)
+                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
 
         $this->ba->privateAuth();
 
@@ -425,5 +429,20 @@ class AttemptTest extends TestCase
         $this->assertEquals($channel, $payout['channel']);
         $this->assertEquals($channel, $attempt['channel']);
         $this->assertEquals(1, $attempt['is_fts']);
+        $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
     }
 }

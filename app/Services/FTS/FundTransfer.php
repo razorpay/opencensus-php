@@ -177,7 +177,7 @@ class FundTransfer extends Base
             Constants::PREFERRED_CHANNEL => $channel,
         ];
 
-        if (in_array($channel, Channel::getSourceAccountChannels(), true) === true)
+        if (in_array($channel, Channel::getFtsSupportedPayoutChannels(), true) === true)
         {
             $source = $this->fta->source;
 
@@ -389,7 +389,7 @@ class FundTransfer extends Base
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
-        $channelClass = 'RZP\\Models\\FundTransfer\\' . studly_case($channel);
+        $channelClass = '\RZP\\Models\\FundTransfer\\' . studly_case($channel) . '\\NodalAccount';
 
         if (starts_with($ifscFirstFour, $channelClass::IFSC_IDENTIFIER) === true)
         {

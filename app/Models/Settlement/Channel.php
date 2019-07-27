@@ -209,18 +209,17 @@ class Channel
     }
 
     /**
-     * Gives list of channels which supports variation in source accounts
-     *
+     * Supported FTS channels for payouts
      * @return array
      */
-    public static function getSourceAccountChannels()
+    public static function getFtsSupportedPayoutChannels()
     {
         return [
             self::RBL,
         ];
     }
 
-    public static function getFtsSupportedPayoutChannels()
+    public static function getNonTransactionChannels()
     {
         return [
             self::RBL,

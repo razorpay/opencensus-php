@@ -666,6 +666,12 @@ class Core extends Base\Core
 
         $this->sourceReconByFta($fta->source, $ftaData);
 
+        if (($fta->getSourceType() == Type::PAYOUT) and
+            (in_array($fta->getChannel(), Settlement\Channel::getNonTransactionChannels(), true) === true))
+        {
+            return;
+        }
+
         $this->updateTransactionEntity($fta->source);
     }
 

@@ -114,5 +114,5 @@ final class Constants
 
     const CODE                          = 'code';
 
-    const PREFERRED_SOURCE_ACCOUNT_ID   = "preferred_source_account_id";
+    const PREFERRED_SOURCE_ACCOUNT_ID   = 'preferred_source_account_id';
 }

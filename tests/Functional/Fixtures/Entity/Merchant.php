@@ -979,17 +979,4 @@ class Merchant extends Base
 
         unset($merchants);
     }
-
-    public function createBankingType(int $balance = 0, string $merchantId = '10000000000000')
-    {
-        return $this->fixtures->create(
-            'balance',
-            [
-                'type'             => 'banking',
-                'merchant_id'      => $merchantId,
-                'balance'          => $balance,
-                'account_type'     => AccountType::SHARED,
-                'channel'          => Channel::YESBANK,
-            ]);
-    }
 }
