@@ -322,7 +322,7 @@ class Gateway
     const EMANDATE_NB_DIRECT_BANKS = [
         IFSC::ICIC,
         IFSC::UTIB,
-        IFSC::HDFC,       
+        IFSC::HDFC,
     ];
 
     // The 2 commented banks are mentioned at the bottom
