@@ -1146,6 +1146,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createPartnerSubmerchantMap()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createPartnerSubmerchantMap($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * @param string $merchantId
      *

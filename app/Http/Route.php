@@ -1025,6 +1025,7 @@ final class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
+        'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
 
         'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
@@ -1557,6 +1558,7 @@ final class Route
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
         'banking_account_statement_process',
+        'partner_submerchant_map',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2947,6 +2949,7 @@ final class Route
             'invoice_create',
             'batch_send_mail',
             'bulk_invoice_create',
+            'partner_submerchant_map',
         ],
 
         'stork' => [

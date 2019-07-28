@@ -2491,6 +2491,17 @@ class Service extends Base\Service
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
     }
 
+    public function createPartnerSubmerchantMap(array $input)
+    {
+        $partnerType   = $input[ENTITY::PARTNER_TYPE];
+        $submerchantId = $input['submerchant_id'];
+        $partnerId     = $input['partner_merchant_id'];
+
+        $partner = $this->markAsPartner($partnerId, $partnerType);
+
+        return $this->mapSubmerchant($partner, $submerchantId);
+    }
+
     /**
      * @param string $merchantId
      *
@@ -2505,6 +2516,72 @@ class Service extends Base\Service
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
         return $accessMap;
+    }
+
+    /**
+     * @param Merchant\Entity $partner
+     * @param                 $submerchantId
+     *
+     * @throws BadRequestException
+     */
+    protected function mapSubmerchant(Merchant\Entity $partner, $submerchantId)
+    {
+        if (empty($submerchantId) === true)
+        {
+            return;
+        }
+
+        // Using findOrFail here will not give a proper error code in the batch output.
+        $submerchant = $this->repo->merchant->find($submerchantId);
+
+        if ($submerchant === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                Merchant\Entity::ID,
+                [
+                    Merchant\Entity::ID => $submerchantId
+                ]);
+        }
+
+        return $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
+    }
+
+    /**
+     * @param       $merchantId
+     * @param       $partnerType
+     *
+     * @return Merchant\Entity
+     * @throws BadRequestException
+     */
+    protected function markAsPartner($merchantId, $partnerType): Merchant\Entity
+    {
+        $partner = $this->repo->merchant->find($merchantId);
+
+        if ($partner === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID,
+                Merchant\Entity::ID,
+                [
+                    Merchant\Entity::ID => $merchantId
+                ]);
+        }
+
+        // Mark as partner only if the merchant is not a partner
+        if ($partner->isPartner() === true)
+        {
+            return $partner;
+        }
+
+        if (empty($partnerType) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+        }
+
+        $partner = $this->core()->markAsPartner($partner, $partnerType);
+
+        return $partner;
     }
 
     public function getSubmerchant(string $submerchantId, array $input): array
