@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="117px" height="104px" viewBox="0 0 117 104" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.1 (78136) - https://sketchapp.com -->
+    <title>Group 7 Copy</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <filter x="-56.2%" y="-56.2%" width="212.5%" height="212.5%" filterUnits="objectBoundingBox" id="filter-1">
+            <feGaussianBlur stdDeviation="3" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <filter x="-112.5%" y="-112.5%" width="325.0%" height="325.0%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="3" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <filter x="-112.5%" y="-112.5%" width="325.0%" height="325.0%" filterUnits="objectBoundingBox" id="filter-3">
+            <feGaussianBlur stdDeviation="3" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <filter x="-40.5%" y="-45.5%" width="181.1%" height="190.9%" filterUnits="objectBoundingBox" id="filter-4">
+            <feGaussianBlur stdDeviation="5" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <filter x="-56.2%" y="-56.2%" width="212.5%" height="212.5%" filterUnits="objectBoundingBox" id="filter-5">
+            <feGaussianBlur stdDeviation="3" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-7-Copy" transform="translate(5.000000, 0.000000)">
+            <g id="Group-6-Copy">
+                <g id="Group-3">
+                    <rect id="Rectangle" fill="#F36E6D" transform="translate(10.000000, 56.000000) rotate(45.000000) translate(-10.000000, -56.000000) " x="3" y="49" width="14" height="14" rx="3"></rect>
+                    <rect id="Rectangle-Copy-3" stroke="#F36E6D" stroke-width="2" transform="translate(96.000000, 5.656854) rotate(45.000000) translate(-96.000000, -5.656854) " x="93" y="2.65685425" width="6" height="6" rx="1.20000002"></rect>
+                    <rect id="Rectangle-Copy-7" stroke="#F36E6D" stroke-width="2" transform="translate(18.000000, 82.000000) rotate(45.000000) translate(-18.000000, -82.000000) " x="16" y="80" width="4" height="4" rx="1.20000002"></rect>
+                    <rect id="Rectangle-Copy-2" stroke="#E9EEF3" stroke-width="2" transform="translate(101.000000, 68.656854) rotate(45.000000) translate(-101.000000, -68.656854) " x="94" y="61.6568542" width="14" height="14" rx="2.40000004"></rect>
+                    <g id="Group-2" transform="translate(2.000000, 5.656854)">
+                        <circle id="Oval-Copy-2" fill="#F36E6D" opacity="0.177757626" filter="url(#filter-1)" cx="8" cy="58.3431458" r="8"></circle>
+                        <circle id="Oval-Copy-3" fill="#F36E6D" opacity="0.261765253" filter="url(#filter-2)" cx="16" cy="80.3431458" r="4"></circle>
+                        <circle id="Oval-Copy-4" fill="#F16F6D" opacity="0.261765253" filter="url(#filter-3)" cx="94" cy="4.34314575" r="4"></circle>
+                    </g>
+                </g>
+            </g>
+            <g id="Group-3-Copy-5" transform="translate(28.000000, 0.000000)">
+                <g id="Group-3-Copy">
+                    <g id="mobile" fill-rule="nonzero">
+                        <g id="Group">
+                            <rect id="Rectangle" fill="#B8C7D8" opacity="0.31" x="1.46" y="2.66" width="54.07" height="93.48"></rect>
+                            <path d="M50.06,0 L6.94,0 C3.11,0 0,3.11 0,6.94 L0,96.79 C0,100.62 3.11,103.73 6.94,103.73 L50.06,103.73 C53.89,103.73 57,100.62 57,96.79 L57,6.94 C57,3.11 53.89,0 50.06,0 Z M6.94,2.93 L14.25,2.93 L14.25,6.5 C14.25,7.47 15.03,8.25 16,8.25 L41,8.25 C41.97,8.25 42.75,7.47 42.75,6.5 L42.75,2.93 L50.06,2.93 C52.27,2.93 54.07,4.73 54.07,6.94 L54.07,90.54 C54.07,91.57 53.23,92.41 52.2,92.41 L4.8,92.41 C3.77,92.41 2.93,91.57 2.93,90.54 L2.93,6.94 C2.93,4.73 4.73,2.93 6.94,2.93 Z" id="Shape" fill="#B8C7D8"></path>
+                            <circle id="Oval" fill="#9DAFC1" cx="17.98" cy="4.53" r="1.6"></circle>
+                            <circle id="Oval" fill="#9DAFC1" cx="23.04" cy="4.53" r="1.6"></circle>
+                            <path d="M35.65,99.6 L21.35,99.6 C20.89,99.6 20.51,99.23 20.51,98.76 L20.51,96.17 C20.51,95.71 20.88,95.33 21.35,95.33 L35.66,95.33 C36.12,95.33 36.5,95.7 36.5,96.17 L36.5,98.76 C36.49,99.23 36.12,99.6 35.65,99.6 Z" id="Path" fill="#9DAFC1"></path>
+                        </g>
+                        <path d="M50.06,0 L6.94,0 C3.11,0 0,3.11 0,6.94 L0,96.79 C0,100.62 3.11,103.73 6.94,103.73 L50.06,103.73 C53.89,103.73 57,100.62 57,96.79 L57,6.94 C57,3.11 53.89,0 50.06,0 Z M54.07,96.32 C54.07,98.29 52.47,99.89 50.5,99.89 L14.22,99.89 C12.11,99.89 10.4,98.18 10.4,96.07 L10.4,6.94 C10.4,4.73 12.2,2.93 14.41,2.93 L14.24,2.93 L14.24,3.04 L42.74,3.04 L42.74,2.93 L50.05,2.93 C52.26,2.93 54.06,4.73 54.06,6.94 L54.06,96.32 L54.07,96.32 Z" id="Shape" fill="#FFFFFF" opacity="0.3"></path>
+                    </g>
+                    <g id="Group-2" transform="translate(32.000000, 13.656854)">
+                        <rect id="Rectangle" fill="#9DAFC1" fill-rule="nonzero" opacity="0.185221354" filter="url(#filter-4)" x="1" y="9" width="37" height="33" rx="15"></rect>
+                        <circle id="Oval-Copy" fill="#F7543D" opacity="0.259858631" filter="url(#filter-5)" cx="12" cy="19" r="8"></circle>
+                        <g id="Group-5">
+                            <circle id="Oval" fill="#FFFFFF" opacity="0.647577195" cx="19.5" cy="19.5" r="19"></circle>
+                            <circle id="Oval" fill="#F36E6D" cx="19.5" cy="19.5" r="15.5"></circle>
+                            <g id="Group-4" transform="translate(19.454545, 19.454545) rotate(45.000000) translate(-19.454545, -19.454545) translate(11.000000, 11.000000)" fill="#FFFFFF">
+                                <rect id="Rectangle" x="7.42985378" y="1.22599037" width="3.01948052" height="15.5"></rect>
+                                <polygon id="Rectangle" transform="translate(8.939594, 8.975990) rotate(90.000000) translate(-8.939594, -8.975990) " points="7.44920943 1.12534102 10.4299787 1.12534102 10.4299787 16.8266397 7.44920943 16.8266397"></polygon>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+            <rect id="Rectangle-Copy" stroke="#E9EEF3" stroke-width="2" transform="translate(17.000000, 33.000000) rotate(45.000000) translate(-17.000000, -33.000000) " x="14" y="30" width="6" height="6" rx="1.20000002"></rect>
+        </g>
+    </g>
+</svg>
