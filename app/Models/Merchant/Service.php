@@ -2491,8 +2491,18 @@ class Service extends Base\Service
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
     }
 
+    /**
+     * This used to map submerchants to the partner in merchant_access_map entity
+     * If the given partnerId is not a partner then it will mark him as a partner then proceed
+     * 
+     * @param array $input
+     *
+     * @return array
+     */
     public function createPartnerSubmerchantMap(array $input)
     {
+        (new Validator)->validateInput('partner_submerchant_map', $input);
+        
         $partnerType   = $input[ENTITY::PARTNER_TYPE];
         $submerchantId = $input['submerchant_id'];
         $partnerId     = $input['partner_merchant_id'];
@@ -2524,13 +2534,8 @@ class Service extends Base\Service
      *
      * @throws BadRequestException
      */
-    protected function mapSubmerchant(Merchant\Entity $partner, $submerchantId)
+    protected function mapSubmerchant(Merchant\Entity $partner, $submerchantId): array
     {
-        if (empty($submerchantId) === true)
-        {
-            return;
-        }
-
         // Using findOrFail here will not give a proper error code in the batch output.
         $submerchant = $this->repo->merchant->find($submerchantId);
 
