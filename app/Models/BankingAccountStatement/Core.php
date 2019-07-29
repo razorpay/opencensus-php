@@ -211,21 +211,72 @@ class Core extends Base\Core
 
         $balance = $this->getBalance($basEntity);
 
+        // TODO: Start storing UTR in reversals
         $reversal = $this->repo->reversal->fetchFromUtr($utr, $balance->getId())->first();
 
         return $reversal;
     }
 
+    /**
+     * TODO: The logic would be different based on the channel.
+     * Refactor this when adding more banks here.
+     *
+     * @param Entity $basEntity
+     *
+     * @return mixed
+     * @throws Exception\LogicException
+     */
     protected function fetchExistingPayoutIfPresent(Entity $basEntity)
     {
-        $utr = $basEntity->getUtrFromDescription();
+        $payouts = new Base\Collection;
 
         $balance = $this->getBalance($basEntity);
 
-        // TODO: Fix this logic to fetch payouts.
-        $payout = $this->repo->payout->fetchFromUtr($utr, $balance->getId())->first();
+        $utr = $basEntity->getUtrFromDescription();
 
-        return $payout;
+        //
+        // We first try to retrieve the payout from UTR, present in the description.
+        //
+        // In case of payouts
+        // - IMPS is the most common mode
+        // - UTR retrieval is supported only for IMPS.
+        // - We do not know the mode via BAS entity. If we did, we could
+        //   fetch using UTR or bank_transaction_id depending on the mode.
+        // Due to the above two reasons, we try to fetch a payout using UTR first.
+        //
+        if (empty($utr) === false)
+        {
+            $payouts = $this->repo->payout->fetchFromUtr($utr, $balance->getId());
+        }
+
+        //
+        // If either the UTR is not present in the description or if we were not able
+        // to retrieve any payouts using the UTR, we try with bank_transaction_id
+        //
+        if ($payouts->count() === 0)
+        {
+            $bankTxnId = $basEntity->getBankTransactionId();
+
+            $payouts = $this->repo->payout->fetchFromCmsRefNumber($bankTxnId, $balance->getId());
+        }
+
+        //
+        // Finally, if the search with either UTR or with bank_transaction_id gave more
+        // results than 1, it means our logic is wrong and needs to be re-looked at.
+        //
+        if ($payouts->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'Too many payouts found for the given criteria',
+                ErrorCode::SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND,
+                [
+                    'bas_id'        => $basEntity->getId(),
+                    'balance_id'    => $balance->getId(),
+                    'utr'           => $utr
+                ]);
+        }
+
+        return $payouts->first();
     }
 
     protected function validateBalance(Entity $basEntity, Base\PublicEntity $sourceEntity)

@@ -47,6 +47,10 @@ class Entity extends Base\PublicEntity
     // Relation names/attributes
     const SOURCE                = 'source';
 
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
+
+    const DEBIT_REGEX = '/^(.*?)-IMPS/';
+
     protected static $sign = 'bas';
 
     protected $entity = 'banking_account_statement';
@@ -273,6 +277,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
     public function isTypeCredit()
     {
         return ($this->getType() === Type::CREDIT);
@@ -285,7 +294,22 @@ class Entity extends Base\PublicEntity
 
     public function getUtrFromDescription()
     {
-        // TODO: Fill this up!
-        return '';
+        $description = $this->getDescription();
+
+        $regex = self::DEBIT_REGEX;
+
+        if ($this->isTypeCredit() === true)
+        {
+            $regex = self::CREDIT_REGEX;
+        }
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

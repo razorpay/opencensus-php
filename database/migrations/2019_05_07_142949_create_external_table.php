@@ -58,6 +58,8 @@ class CreateExternalTable extends Migration
 
             $table->index(Entity::BANK_REFERENCE_NUMBER);
 
+            $table->index(Entity::UTR);
+
             $table->index(Entity::CREATED_AT);
 
             $table->index(Entity::UPDATED_AT);
