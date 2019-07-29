@@ -9,7 +9,6 @@ import { without } from 'rzp/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-let ROLES = without(roles, 'owner');
 const selector = formValueSelector('newInvitation');
 @connect(
   state => {
@@ -53,12 +52,20 @@ export default class NewInvitation extends Component {
       });
   };
 
+  filterRoles = () => {
+    const rolesToRemove = ['owner'];
+
+    if (!this.props.user.isEnhancedEPOSEnabled) {
+      rolesToRemove.push('sellerapp_plus');
+    }
+
+    return without(roles, rolesToRemove);
+  };
+
   render() {
     const { handleSubmit, selectedRole, user } = this.props;
 
-    if (!user.isEnhancedEPOSEnabled) {
-      delete ROLES.sellerapp_plus;
-    }
+    let ROLES = this.filterRoles();
 
     if (user.isAgentRole) {
       ROLES = { ...ROLES, ...agentRole };
