@@ -161,10 +161,12 @@ class Repository extends Base\Repository
 
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
 
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
         return $this->newQuery()
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where($paymentStatus, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->where($terminalEmi, '=', false)
@@ -188,10 +190,12 @@ class Repository extends Base\Repository
 
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
 
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
         return $this->newQuery()
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where($paymentStatus, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->where($terminalEmi, '=', false)
