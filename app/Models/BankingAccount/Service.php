@@ -164,7 +164,8 @@ class Service extends Base\Service
 
     protected function notifyUpdate(string $previousStatus, array $input, Entity $bankingAccount)
     {
-        if ($this->isStatusChanged($previousStatus, $input[Entity::STATUS]) === true)
+        if (($this->isStatusChanged($previousStatus, $input[Entity::STATUS]) === true) and
+            (in_array($input[Entity::STATUS], Status::$notify_statuses, true) === true))
         {
             $mail = new NotifyStatusUpdate($input, $bankingAccount->merchant);
 

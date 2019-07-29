@@ -66,6 +66,13 @@ class Status
       self::UNSERVICEABLE,
     ];
 
+    public static $notify_statuses = [
+        self::CREATED,
+        self::PROCESSING,
+        self::CANCELLED,
+        self::PROCESSED,
+    ];
+
     public static function isValidStatus(string $status = null)
     {
         $key = __CLASS__ . '::' . strtoupper($status);
