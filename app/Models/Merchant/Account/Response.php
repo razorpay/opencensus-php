@@ -125,9 +125,18 @@ class Response extends Core
 
     protected function getSettlementData(Merchant\Entity $account): array
     {
+        $bankAccount = $account->bankAccount;
+
+        if (empty($bankAccount) === true)
+        {
+            return [];
+        }
+
         $data = [
             Constants::FUND_ACCOUNTS => [
-                Constants::BANK_ACCOUNTS => [$account->bankAccount->toArrayPublic()],
+                [
+                    Constants::BANK_ACCOUNT => $bankAccount->toArrayPublic(),
+                ]
             ],
         ];
 
