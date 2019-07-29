@@ -113,7 +113,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::PROCURER            => Procurer::RAZORPAY,
+        self::PROCURER            => null,
         self::PRODUCT             => Product::PRIMARY,
         self::FEATURE             => Feature::PAYMENT,
         self::PAYMENT_METHOD_TYPE => null,

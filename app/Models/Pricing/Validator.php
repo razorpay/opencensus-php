@@ -522,6 +522,7 @@ class Validator extends Base\Validator
         foreach ($rules as $rule)
         {
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
@@ -539,6 +540,7 @@ class Validator extends Base\Validator
             }
 
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
