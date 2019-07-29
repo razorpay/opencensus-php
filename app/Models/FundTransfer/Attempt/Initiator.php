@@ -139,7 +139,7 @@ class Initiator extends Base\Core
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_ENTITIES_FETCHED);
 
-            $data[$channel] = 0;
+            $data[$channel] = [];
 
             if ($channel === Channel::YESBANK)
             {
@@ -149,6 +149,7 @@ class Initiator extends Base\Core
             {
                 $response = $this->processFundTransferAttempts($channel, $attempts);
             }
+
             $data[$channel]  = $response;
 
             return $data;
@@ -467,12 +468,25 @@ class Initiator extends Base\Core
         return [true, null];
     }
 
-    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts)
+    /**
+     * Takes a list of attempt ids and dispatches to the queue
+     * @param string $channel
+     * @param PublicCollection $attempts
+     * @return array
+     */
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts): array
     {
         $attemptIds = $attempts->pluck(Entity::ID);
-        $info = ['channel' => $channel, 'count' => $attempts->count()];
+
+        $info = [
+            'channel' => $channel,
+            'count' => $attempts->count()
+        ];
+
         $successCount = 0;
+
         $failureCount = 0;
+
         foreach ($attemptIds as $id)
         {
             try
@@ -482,8 +496,11 @@ class Initiator extends Base\Core
                         'fta_id'  => $id,
                         'data'    => $info
                     ]);
+
                 FundTransfer::dispatch($this->mode, $id);
+
                 $successCount ++;
+
                 $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_DISPATCHED,
                     [
                         'fta_id'  => $id,
@@ -493,6 +510,7 @@ class Initiator extends Base\Core
             catch (\Exception $exception)
             {
                 $failureCount++;
+
                 $this->trace->traceException(
                     $exception,
                     Trace::CRITICAL,
@@ -500,10 +518,12 @@ class Initiator extends Base\Core
                 );
             }
         }
+
         $info += [
             "success" => $successCount,
             "failed"  => $failureCount,
         ];
+
         return $info;
     }
 }

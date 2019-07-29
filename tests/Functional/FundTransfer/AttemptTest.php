@@ -213,7 +213,8 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
-        // Yesbank using api based channels
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
         $this->markTestSkipped();
 
         $this->createDataAndAssertInitiateTransferSuccess(
@@ -222,7 +223,8 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankRtgsSuccess()
     {
-        // Yesbank using api based channels
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
         $this->markTestSkipped();
 
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
@@ -235,7 +237,9 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankRtgsFailed()
     {
-        // Yesbank using api based channels
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
+
         $this->markTestSkipped();
 
         $channel = Channel::YESBANK;
