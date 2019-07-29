@@ -21,8 +21,6 @@ class IrctcBatch extends Job
         BatchModel\Type::IRCTC_SETTLEMENT
     ];
 
-    protected $queueConfigKey = 'batch';
-
     /**
      * Associative array with key as batch type and value
      * as Batch entity object.

@@ -767,6 +767,7 @@ return [
                     'auth_password' => env('BANKING_ACCOUNT_RBL_PASSWORD'),
                     'client_id'     => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
                     'client_secret' => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
+                    'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]
         ],

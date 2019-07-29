@@ -1702,7 +1702,11 @@ class Processor
             // If CPS service is enabled then route this payment via CPS
             if ((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true)
             {
-                $this->persistCardDetails($gateway, $action, $gatewayData);
+                // Persist card details only when payment method is card or emi
+                if ($this->payment->isMethodCardOrEmi() === true)
+                {
+                    $this->persistCardDetails($gateway, $action, $gatewayData);
+                }
 
                 $gatewayData['cps_route'] = true;
             }

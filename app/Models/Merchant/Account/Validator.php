@@ -38,7 +38,7 @@ class Validator extends Merchant\Validator
         Constants::PHONE           => 'required|numeric|digits_between:8,11',
         Constants::NOTES           => 'sometimes|notes',
         Constants::PROFILE         => 'required|array',
-        Constants::SETTLEMENT      => 'required|array',
+        Constants::SETTLEMENT      => 'sometimes|array',
         Constants::TNC             => 'sometimes|array',
     ];
 
@@ -83,10 +83,14 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $settlementRules = [
-        Constants::BALANCE_RESERVED                                 => 'sometimes|numeric',
-        Constants::SCHEDULES                                        => 'sometimes|array',
-        Constants::FUND_ACCOUNTS                                    => 'required|array|size:1',
-        Constants::FUND_ACCOUNTS . '.*.' . Constants::BANK_ACCOUNTS => 'required|array|size:1',
+        Constants::BALANCE_RESERVED => 'sometimes|numeric',
+        Constants::SCHEDULES        => 'sometimes|array',
+        Constants::FUND_ACCOUNTS    => 'sometimes|array|size:1',
+    ];
+
+    protected static $fundAccountRules = [
+        Constants::CONTACT_ID    => 'sometimes|string',
+        Constants::BANK_ACCOUNT  => 'required|associative_array',
     ];
 
     protected static $bankAccountRules = [
@@ -137,13 +141,22 @@ class Validator extends Merchant\Validator
 
     protected function validateSettlementInput(array $input)
     {
+        if (isset($input[Constants::SETTLEMENT]) === false)
+        {
+            return;
+        }
+
         $this->validateInput('settlement', $input[Constants::SETTLEMENT]);
 
-        $fundAccounts = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS];
-
-        foreach ($fundAccounts[0][Constants::BANK_ACCOUNTS] as $bankAccount)
+        if (isset($input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS]) === true)
         {
-            $this->validateInput('bank_account', $bankAccount);
+            $fundAccounts = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS];
+
+            foreach ($fundAccounts as $fundAccount)
+            {
+                $this->validateInput('fund_account', $fundAccount);
+                $this->validateInput('bank_account', $fundAccount[Constants::BANK_ACCOUNT]);
+            }
         }
     }
 }

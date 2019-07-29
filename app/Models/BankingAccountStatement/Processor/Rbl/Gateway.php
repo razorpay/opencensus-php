@@ -64,8 +64,8 @@ class Gateway extends BaseProcessor
             {
                 $responseError = $ex->getData();
 
-                if ((isset($responseError[Mozart::GATEWAY_ERROR_CODE]) === true) and
-                    ($responseError[Mozart::GATEWAY_ERROR_CODE] === self::RBL_NO_NEW_DATA))
+                if ((isset($responseError[Mozart::ERROR][Mozart::GATEWAY_ERROR_CODE]) === true) and
+                    ($responseError[Mozart::ERROR][Mozart::GATEWAY_ERROR_CODE] === self::RBL_NO_NEW_DATA))
                 {
                     return [];
                 }
