@@ -20,14 +20,19 @@ class Payment extends Base
         $method   = $payment->getMethod();
         $orgId    = $payment->merchant->org->getId();
         $product  = $this->product;
-        $procurer = ($payment->getTerminalId() !== null) ? $payment->terminal->getProcurer() : null;
 
         $filters = [
             [Pricing\Entity::PRODUCT,        $product,   false, null],
             [Pricing\Entity::FEATURE,        $feature,   false, null],
             [Pricing\Entity::PAYMENT_METHOD, $method,    false, null],
-            [Pricing\Entity::PROCURER,       $procurer,  true,  null],
         ];
+
+        if ($payment->getTerminalId() !== null)
+        {
+            $procurer = $payment->terminal->getProcurer();
+
+            $filters[] = [Pricing\Entity::PROCURER, $procurer, false, null];
+        }
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
