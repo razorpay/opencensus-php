@@ -81,6 +81,26 @@ class Gateway extends Base\Gateway
         'card_group'                => 'cardGroup',
     ];
 
+    protected $actionVersion = [
+        Action::VERIFY              => 'v2',
+        Action::VERIFY_REFUND       => 'v2',
+        Base\Action::VERIFY_REFUND  => 'v2',
+    ];
+
+    protected function getVersionForAction($input, $action)
+    {
+        if ((empty($input['terminal']['gateway_secure_secret2']) === false) and
+            (empty($input['terminal']['gateway_access_code']) === false))
+        {
+            if (isset($this->actionVersion[$action]) === true)
+            {
+                return $this->actionVersion[$action];
+            }
+        }
+
+        return 'v1';
+    }
+
     public function setGatewayParams($input, $mode, $terminal)
     {
         parent::setGatewayParams($input, $mode, $terminal);
@@ -746,6 +766,7 @@ class Gateway extends Base\Gateway
             $this->handleSoapFault($exception, 'Reverse failed');
         }
     }
+
     /**
      * Calls gateway to verify if a refund has
      * been successfully performed or not.
@@ -762,6 +783,19 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VERIFY_REFUND);
 
+        if ((empty($input['terminal']['gateway_secure_secret2']) === false) and
+            (empty($input['terminal']['gateway_access_code']) === false))
+        {
+            return $this->verifyRefundMozart($input);
+        }
+        else
+        {
+            return $this->verifyRefundApi($input);
+        }
+    }
+
+    protected function verifyRefundMozart(array $input)
+    {
         $scroogeResponse = new Base\ScroogeResponse();
 
         if ($this->isUnprocessedRefund($input) === true)
@@ -769,6 +803,80 @@ class Gateway extends Base\Gateway
             return $scroogeResponse->setSuccess(false)
                 ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
                 ->toArray();
+
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(true)
+                ->toArray();
+        }
+
+        $content = $this->sendMozartRequest($input, false);
+
+        if ((isset($content['success']) === true) and
+            ($content['success'] === true))
+        {
+            $attributes = $this->getRefundAttributesFromMozartVerify($content['data']);
+
+            $status = $attributes['status'];
+
+            if ($status == 'reversed')
+            {
+                $action = 'reverse';
+            }
+            else if ($status == 'refunded')
+            {
+                $action = 'refund';
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Unexpected status',
+                    ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
+                    [
+                        Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content['data']),
+                        Payment\Gateway::GATEWAY_KEYS             => ['received_status' => $status]
+                    ]);
+            }
+
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            if ($gatewayEntity !== null)
+            {
+                $gatewayEntity->setStatus($status);
+
+                $this->repo->saveOrFail($gatewayEntity);
+            }
+            else
+            {
+                $this->createGatewayRefundEntity($attributes, $input, $action);
+            }
+
+            return $scroogeResponse->setSuccess(true)
+                ->setGatewayVerifyResponse($content['data']['_raw'])
+                ->setGatewayKeys($content['data'])
+                ->toArray();
+        }
+        else
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->setGatewayVerifyResponse($content['data']['_raw'])
+                                   ->setGatewayKeys($content['data'])
+                                   ->toArray();
+        }
+    }
+
+    protected function verifyRefundApi(array $input)
+    {
+        $scroogeResponse = new Base\ScroogeResponse();
+
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
 
         }
 
@@ -833,18 +941,27 @@ class Gateway extends Base\Gateway
                 }
 
                 return $scroogeResponse->setSuccess(true)
-                                       ->setGatewayVerifyResponse($content)
-                                       ->setGatewayKeys($this->getGatewayVerifyData($refundReply[0]))
-                                       ->toArray();
+                    ->setGatewayVerifyResponse($content)
+                    ->setGatewayKeys($this->getGatewayVerifyData($refundReply[0]))
+                    ->toArray();
             }
         }
 
         return $scroogeResponse->setSuccess(false)
-                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                               ->setGatewayVerifyResponse($content)
-                               ->setGatewayKeys($this->getGatewayVerifyData($content))
-                               ->toArray();
+            ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+            ->setGatewayVerifyResponse($content)
+            ->setGatewayKeys($this->getGatewayVerifyData($content))
+            ->toArray();
+    }
 
+    protected function getRefundAttributesFromMozartVerify(array $request)
+    {
+        return [
+            E::REF           => $request['gateway_reference_id1'],
+            E::REASON_CODE   => $request['reason_code'],
+            E::RECEIVED      => $request['received'],
+            E::STATUS        => $request['status'],
+        ];
     }
 
     protected function getRefundAttributesFromVerify(array $request)

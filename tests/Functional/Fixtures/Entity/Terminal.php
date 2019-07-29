@@ -832,6 +832,33 @@ class Terminal extends Base
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'     => 'secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceHdfcTerminalWithoutSecret2(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL_WITHOUT_SECRET2;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -852,6 +879,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'     => 'secret',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -896,6 +924,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'    => 'secret',
         ];
 
         // Add recurring 3ds terminal;
