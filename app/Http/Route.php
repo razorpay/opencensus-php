@@ -1146,6 +1146,8 @@ final class Route
     ];
 
     public static $public = [
+        'payment_verify',
+        'refund_verify',
         'checkout',
         'payment_create',
         'payment_create_checkout',
@@ -1906,7 +1908,7 @@ final class Route
         'pricing_add_plan_rule',
         'pricing_get_plan',
         'pricing_delete_plan_rule',
-        'payment_verify',
+
         'payment_verify_bulk',
         'payment_authorize_failed',
         'iin_add',
@@ -1923,7 +1925,6 @@ final class Route
         'merchant_edit_email',
         'dispute_reason_create',
         'merchant_tags_bulk',
-        'refund_verify',
         'refund_verify_bulk',
         'merchant_edit',
         'adj_add_bulk',
@@ -2360,7 +2361,7 @@ final class Route
         'refund_without_verify_bulk'               => Permission::RETRY_REFUND,
         'merchant_edit_bank_account'               => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_edit_email'                      => Permission::MERCHANT_EMAIL_EDIT,
-        'refund_verify'                            => Permission::VERIFY_REFUND,
+        'refund_verify'                            => '*',
         'refund_verify_bulk'                       => Permission::VERIFY_REFUND,
         'pricing_get_plans'                        => Permission::MERCHANT_PRICING_PLANS,
         'pricing_get_gateway_plans'                => '*',

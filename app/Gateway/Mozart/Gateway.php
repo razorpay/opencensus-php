@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Mozart;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
@@ -417,9 +418,9 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
-                Action::VERIFY => null,
-                Action::REFUND => null,
-                Action::VERIFY_REFUND => null,
+                Action::REFUND => Action::PAY_VERIFY,
+                Action::VERIFY_REFUND => Action::REFUND,
+                Action::VERIFY => Action::REFUND,
             ],
             Payment\Gateway::NETBANKING_CUB => [
                 Action::PAY_INIT => null,
@@ -486,9 +487,9 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PAYPAL => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => null,
-                Action::VERIFY => null,
-                Action::REFUND => null,
-                Action::VERIFY_REFUND => null,
+                Action::REFUND => Action::AUTHORIZE,
+                Action::VERIFY_REFUND => Action::REFUND,
+                Action::VERIFY => Action::REFUND,
             ],
 
             Payment\Gateway::UPI_AIRTEL => [
