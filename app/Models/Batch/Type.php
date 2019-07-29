@@ -16,6 +16,7 @@ class Type
 
     // IRCTC Batch Types
     const IRCTC_REFUND              = 'irctc_refund';
+    const IRCTC_DELTA_REFUND        = 'irctc_delta_refund';
     const IRCTC_SETTLEMENT          = 'irctc_settlement';
 
     // Marketplace Batch
@@ -176,7 +177,20 @@ class Type
         self::PAYMENT_LINK,
     ];
 
-    public static $batchTypeMigrated = [
+    /**
+     * Following batch types are not yet completely migrated to new batch service.
+     * @var array
+     */
+    public static $batchTypeMigrating = [
+        self::PAYMENT_LINK
+    ];
+
+    /**
+     * Following batch types are completely migrated to new batch service.
+     * Make sure batch type mentioned here is also present in $batchTypeMigrating array.
+     * @var array
+     */
+    public static $batchTypeMigrationCompleted = [
         self::PAYMENT_LINK
     ];
 

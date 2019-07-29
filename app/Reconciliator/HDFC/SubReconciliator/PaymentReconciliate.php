@@ -38,9 +38,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const COLUMN_TERMINAL_NUMBER                = 'terminal_number';
     const COLUMN_GATEWAY_TRANSACTION_ID         = 'tran_id';
-    const COLUMN_DOMESTIC_AMOUNT                = 'domestic_amt';
 
-    const COLUMN_PAYMENT_AMOUNT                 = 'domestic_amt';
+    const COLUMN_PAYMENT_AMOUNT                 = ['domestic_amt', 'intnl_amt'];
     const COLUMN_INR_PAYMENT_AMOUNT             = 'inr';
     const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT   = 'paycur_usd';
 
@@ -165,6 +164,63 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $paymentId = trim(str_replace("'", '', $paymentId));
         }
         return $paymentId;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        $amountColumn = ($this->isInternationalPayment($row) === true) ?
+                        self::COLUMN_INTERNATIONAL_PAYMENT_AMOUNT :
+                        self::COLUMN_PAYMENT_AMOUNT;
+
+        $paymentAmountColumns = (is_array($amountColumn) === false) ?
+                                [$amountColumn] :
+                                $amountColumn;
+
+        $paymentAmountColumn = array_first(
+            $paymentAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (array_key_exists($amount, $row) === true);
+            });
+
+        if ($paymentAmountColumn === null)
+        {
+            // None of the expected payment columns set
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_ABSENT,
+                    'payment_id'        => $this->payment->getId(),
+                    'expected_column'   => $amountColumn,
+                    'amount'            => $this->payment->getBaseAmount(),
+                    'currency'          => $this->payment->getCurrency(),
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        //
+        // for HDFC, sometimes we are getting rows where 'domestic_amt' column is 0
+        // and amount is given in 'intnl_amt' column. In this case, we can't just calculate
+        // the recon amount on first key set. Instead we should calculate on the non zero
+        // amount column if any.
+        //
+        $paymentAmountNonZeroColumn = array_first(
+            $paymentAmountColumns,
+            function ($amount) use ($row)
+            {
+                return (empty($row[$amount]) === false);
+            });
+
+        if ($paymentAmountNonZeroColumn === null)
+        {
+            // There was no non zero amount column, so returning 0
+            return 0;
+        }
+
+        return Helper::getIntegerFormattedAmount($row[$paymentAmountNonZeroColumn]);
     }
 
     /**

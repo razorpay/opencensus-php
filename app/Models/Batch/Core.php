@@ -202,7 +202,7 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-        BatchJob::dispatch($this->mode, $batch->getId(), $input);
+        BatchJob::dispatch($this->mode, $batch->getId(), $batch->getType(), $input);
 
         return $batch;
     }
@@ -246,7 +246,7 @@ class Core extends Base\Core
         {
             unset($input[Entity::FILE]);
 
-            BatchJob::dispatch($this->mode, $batch->getId(), $input);
+            BatchJob::dispatch($this->mode, $batch->getId(), $batch->getType(), $input);
         }
     }
 

@@ -51,6 +51,18 @@ class Service extends Base\Service
 
         $previousStatus = $bankingAccount->getStatus();
 
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
+            ]);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
+
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         $this->notifyUpdate($previousStatus, $input, $bankingAccount);
@@ -112,7 +124,7 @@ class Service extends Base\Service
     {
         $input[Entity::CHANNEL] = $channel;
 
-        (new Validator)->validateInput('serviceable_pincode', $input);
+        (new Validator)->validateInput(Validator::SERVICEABLE_PINCODE, $input);
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
 

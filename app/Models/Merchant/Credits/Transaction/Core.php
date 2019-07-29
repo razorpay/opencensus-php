@@ -8,7 +8,24 @@ use RZP\Models\Merchant\Credits;
 
 class Core extends Base\Core
 {
-    public function create(int $creditAmount, Transaction\Entity $txn, string $creditType)
+    public function create(Credits\Entity $credit, Transaction\Entity $txn, string $creditsUsed)
+    {
+        $creditTxn = new Entity;
+
+        $creditTxn->transaction()->associate($txn);
+
+        $credit->updateUsed($creditsUsed);
+
+        $creditTxn->credits()->associate($credit);
+
+        $creditTxn->updateCreditsUsed($creditsUsed);
+
+        $this->repo->saveOrFail($credit);
+
+        $this->repo->saveOrFail($creditTxn);
+    }
+
+    public function createCreditTransaction(int $creditAmount, Transaction\Entity $txn, string $creditType)
     {
         $timestamp = time();
 
@@ -33,19 +50,65 @@ class Core extends Base\Core
                 // Get number of credits used from particular credit entry
                 $creditsUsed = $this->getCreditsUsedAndUpdateCreditAmount($credit, $creditAmount);
 
-                $creditTxn = new Entity;
+                $this->create($credit, $txn, $creditsUsed);
+            }
+        });
+    }
 
-                $creditTxn->transaction()->associate($txn);
+    /**
+     * Should be used only for Credit types with `expired_at` = NULL
+     * else might result in crediting back to an expired credit entity
+     *
+     * @param int $creditAmount
+     * @param Transaction\Entity $txn
+     * @param string $forwardTxnId
+     */
+    public function createCreditReversalTransaction(int $creditAmount, Transaction\Entity $txn, string $forwardTxnId)
+    {
+        if ($creditAmount >= 0)
+        {
+            throw new Exception\LogicException('Credit Amount should be negative in reversal cases');
+        }
 
-                $credit->updateUsed($creditsUsed);
+        $creditAmount = -1 * $creditAmount;
 
-                $creditTxn->credits()->associate($credit);
+        // credit_transactions used in the forward transaction in reverse order
+        $creditTransactions = $this->repo->credit_transaction->getAllCreditLogsOfTransaction($forwardTxnId);
 
-                $creditTxn->updateCreditsUsed($creditsUsed);
+        $creditIds = $creditTransactions->pluck(Entity::CREDITS_ID)
+                                        ->toArray();
 
-                $this->repo->saveOrFail($credit);
+        $creditsUsed = $creditTransactions->pluck(Entity::CREDITS_USED)
+                                          ->toArray();
 
-                $this->repo->saveOrFail($creditTxn);
+        $creditsToReverse = [];
+
+        foreach ($creditIds as $key => $creditId)
+        {
+            // When all the credit logs are reversed with used amount/fee
+            if ($creditAmount === 0)
+            {
+                break;
+            }
+
+            $toReverse = min($creditAmount, $creditsUsed[$key]);
+
+            $creditAmount -= $toReverse;
+
+            $creditsToReverse[$creditId] = -1 * $toReverse;
+        }
+
+        $credits = $this->repo->credits->getCreditEntities(array_keys($creditsToReverse));
+
+        //
+        // The amount of credits to be deducted will be reflected in the credit log
+        // specifying how many credits are used from what log.
+        //
+        $this->repo->transaction(function() use ($credits, $creditsToReverse, $txn)
+        {
+            foreach ($credits as $credit)
+            {
+                $this->create($credit, $txn, $creditsToReverse[$credit->getId()]);
             }
         });
     }

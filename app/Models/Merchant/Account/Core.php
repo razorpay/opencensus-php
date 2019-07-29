@@ -2,10 +2,16 @@
 
 namespace RZP\Models\Merchant\Account;
 
+use RZP\Exception;
+use RZP\Models\User;
+use RZP\Models\State;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Base\PublicCollection;
 
 class Core extends Merchant\Core
 {
@@ -17,7 +23,7 @@ class Core extends Merchant\Core
      *
      * @return Entity
      */
-    public function createAccount(array $input, Merchant\Entity $parentMerchant): Entity
+    public function createLinkedAccount(array $input, Merchant\Entity $parentMerchant): Entity
     {
         //
         // When a linked account is created, mainly, 2 functions are executed -
@@ -74,6 +80,375 @@ class Core extends Merchant\Core
             ]);
 
         return $account->reload();
+    }
+
+    /**
+     * Creates a submerchant account and activates it
+     *
+     * @param Merchant\Entity $partner
+     * @param array           $input
+     *
+     * @return Merchant\Entity
+     * @throws Exception\BadRequestException
+     * @throws \Throwable
+     */
+    public function createAccount(Merchant\Entity $partner, array $input): Merchant\Entity
+    {
+        $this->validatePartnerAccess($partner);
+
+        (new Validator)->validateInput('create_account', $input);
+
+        $partner->getValidator()->validateMerchantEmailUnique($input[Constants::EMAIL], $partner->getOrgId());
+
+        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
+        {
+            $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
+
+            $this->activateSubMerchant($subMerchant, $subMerchant->merchantDetail);
+
+            return $subMerchant;
+        });
+
+        return $account;
+    }
+
+    public function fetchAccount(string $accountId)
+    {
+        $relations = ['merchantDetail', 'features', 'emails', 'bankAccount'];
+
+        return $this->repo
+                    ->merchant
+                    ->findOrFailPublicWithRelations($accountId, $relations);
+    }
+
+    public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null)
+    {
+        $partner->getValidator()->validateIsAggregatorPartner($partner);
+
+        if ($accountId !== null)
+        {
+            Entity::verifyIdAndStripSign($accountId);
+
+            $isMapped = $this->isMerchantMappedToNonPurePlatformPartner($accountId, $partner->getId());
+
+            if ($isMapped === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                    null,
+                    [
+                        'account_id' => $accountId,
+                        'partner_id' => $partner->getId(),
+                    ]);
+            }
+        }
+    }
+
+    /**
+     * Returns a list of submerchant accounts associated with a partner
+     *
+     * @param Merchant\Entity $partner
+     * @param array           $input
+     *
+     * @return PublicCollection
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function listAccounts(Merchant\Entity $partner, array $input): PublicCollection
+    {
+        $this->validatePartnerAccess($partner);
+
+        (new Validator)->validateInput('list_accounts', $input);
+
+        $appIds = $this->getPartnerApplicationIds($partner);
+
+        $relations = ['merchantDetail', 'features', 'emails', 'bankAccount'];
+
+        return $this->repo
+                    ->merchant
+                    ->fetchSubmerchantsByAppIds($appIds, $input, $relations);
+    }
+
+    protected function activateSubMerchant(Merchant\Entity $subMerchant, Detail\Entity $subMerchantDetails)
+    {
+        $this->repo->assertTransactionActive();
+
+        $stateCore          = new State\Core;
+        $merchantDetailCore = new Merchant\Detail\Core;
+
+        $stateData = [
+            State\Entity::NAME => Detail\Status::UNDER_REVIEW,
+        ];
+
+        $stateCore->createForMakerAndEntity($stateData, $subMerchant, $subMerchantDetails);
+
+        $merchantDetailCore->autoUpdateMerchantCategoryDetailsIfApplicable($subMerchantDetails, $subMerchant);
+
+        $merchantDetailCore->checkAndMarkHasKeyAccess($subMerchantDetails, $subMerchant);
+
+        $merchantDetailCore->markSubmittedAndLock($subMerchantDetails);
+
+        $merchantDetailCore->updateActivationSource($subMerchant, Product::PRIMARY);
+
+        $merchantDetailCore->setBankAccountForMerchant($subMerchantDetails);
+
+        $subMerchant->getValidator()->validateHasBankAccount();
+
+        $subMerchantDetails->edit([Detail\Entity::ACTIVATION_STATUS => Detail\Status::ACTIVATED]);
+
+        $this->repo->saveOrFail($subMerchantDetails);
+
+        $subMerchant->activate();
+
+        $this->repo->saveOrFail($subMerchant);
+
+        $stateData = [
+            State\Entity::NAME => Detail\Status::ACTIVATED,
+        ];
+
+        $stateCore->createForMakerAndEntity($stateData, $subMerchant, $subMerchantDetails);
+
+        // after activating, create live balance
+        $this->createBalance($subMerchant, 'live');
+    }
+
+    protected function createSubmerchantAndAssociatedEntities(Merchant\Entity $partner, array $input): Merchant\Entity
+    {
+        $this->repo->assertTransactionActive();
+
+        $subMerchantCreateInput = $this->getSubMerchantCreateInput($partner, $input);
+
+        // this creates only test balance
+        $subMerchantArray = (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner);
+        $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);
+
+        $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
+        $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+
+        $this->createMerchantEmails($subMerchant, $input);
+
+        return $subMerchant;
+    }
+
+    protected function fillSubMerchant(string $subMerchantId, array $input): Merchant\Entity
+    {
+        $this->repo->assertTransactionActive();
+
+        $subMerchant = $this->repo->merchant->findOrFailPublic($subMerchantId);
+
+        $subMerchant = $this->fillBrandData($subMerchant, $input);
+
+        if (isset($input[Constants::PROFILE][Constants::DASHBOARD_DISPLAY]) === true)
+        {
+            $subMerchant->setDisplayName($input[Constants::PROFILE][Constants::DASHBOARD_DISPLAY]);
+        }
+
+        if (isset($input[Constants::NOTES]) === true)
+        {
+            $subMerchant->setNotes($input[Constants::NOTES]);
+        }
+
+        $this->repo->saveOrFail($subMerchant);
+
+        return $subMerchant;
+    }
+
+    protected function fillSubMerchantDetails(Merchant\Entity $subMerchant, array $input): Merchant\Entity
+    {
+        $this->repo->assertTransactionActive();
+
+        $detailInput = $this->getSubMerchantDetailInput($input);
+
+        $subMerchantDetails = (new Merchant\Detail\Core)->getMerchantDetails($subMerchant, $detailInput);
+
+        $subMerchantDetails->edit($detailInput);
+
+        $this->repo->saveOrFail($subMerchantDetails);
+
+        $subMerchant = $this->syncMerchantEntityFields($subMerchant, $detailInput);
+
+        return $subMerchant;
+    }
+
+    protected function fillBrandData(Merchant\Entity $subMerchant, array $input): Merchant\Entity
+    {
+        if (isset($input[Constants::PROFILE][Constants::BRAND]) === true)
+        {
+            $brand = $input[Constants::PROFILE][Constants::BRAND];
+
+            if (isset($brand[Constants::LOGO]) === true)
+            {
+                $subMerchant->setLogoUrl($brand[Constants::LOGO]);
+            }
+
+            if (isset($brand[Constants::ICON]) === true)
+            {
+                $subMerchant->setIconUrl($brand[Constants::ICON]);
+            }
+
+            if (isset($brand[Constants::COLOR]) === true)
+            {
+                $subMerchant->setBrandColor($brand[Constants::COLOR]);
+            }
+        }
+
+        return $subMerchant;
+    }
+
+    protected function createMerchantEmails(Merchant\Entity $subMerchant, array $input)
+    {
+        $fieldNames = [
+            Constants::SUPPORT,
+            Constants::CHARGEBACK,
+            Constants::REFUND,
+            Constants::DISPUTE,
+        ];
+
+        $emailCore = new Merchant\Email\Core;
+
+        foreach ($fieldNames as $fieldName)
+        {
+            if (isset($input[Constants::PROFILE][$fieldName]) === true)
+            {
+                $emailInput = $input[Constants::PROFILE][$fieldName];
+
+                $emailInput[Constants::TYPE] = $fieldName;
+
+                $emailCore->create($subMerchant, $emailInput);
+            }
+        }
+    }
+
+    protected function getSubMerchantCreateInput(Merchant\Entity $partner, array $input)
+    {
+        // adding partner user id here, as we have to add partner user as member of submerchant merchant account
+        return [
+            User\Entity::USER_ID   => $partner->primaryOwner()->getId(),
+            Merchant\Entity::EMAIL => $input[Constants::EMAIL],
+            Merchant\Entity::NAME  => $input[Constants::PROFILE][Constants::NAME],
+        ];
+    }
+
+    protected function getSubMerchantDetailInput(array $input): array
+    {
+        $detailInput = [
+            Detail\Entity::CONTACT_EMAIL            => $input[Constants::EMAIL],
+            Detail\Entity::TRANSACTION_REPORT_EMAIL => $input[Constants::EMAIL],
+            Detail\Entity::CONTACT_MOBILE           => $input[Constants::PHONE],
+            Detail\Entity::BUSINESS_NAME            => $input[Constants::PROFILE][Constants::NAME],
+        ];
+
+        $customFields = $this->getCustomFieldsFromInput($input);
+
+        if (empty($customFields) === false)
+        {
+            $detailInput[Detail\Entity::CUSTOM_FIELDS] = $customFields;
+        }
+
+        if (isset($input[Constants::BUSINESS_ENTITY]) === true)
+        {
+            $businessType = Detail\BusinessType::getIndexFromKey($input[Constants::BUSINESS_ENTITY]);
+
+            $detailInput[Detail\Entity::BUSINESS_TYPE] = $businessType;
+        }
+
+        // fill profile data
+        $profileAttributesMapping = [
+            Constants::DESCRIPTION    => Detail\Entity::BUSINESS_DESCRIPTION,
+            Constants::BUSINESS_MODEL => Detail\Entity::BUSINESS_PAYMENTDETAILS,
+            Constants::BILLING_LABEL  => Detail\Entity::BUSINESS_DBA,
+            Constants::WEBSITE        => Detail\Entity::BUSINESS_WEBSITE,
+        ];
+
+        foreach ($profileAttributesMapping as $key => $value)
+        {
+            if (isset($input[Constants::PROFILE][$key]) === true)
+            {
+                $detailInput[$value] = $input[Constants::PROFILE][$key];
+            }
+        }
+
+        $mccCode = $input[Constants::PROFILE][Constants::MCC];
+
+        $categoryData = Detail\BusinessSubCategoryMetaData::fetchCategoryAndSubCategoryByMccCode($mccCode);
+
+        $detailInput = array_merge(
+            $detailInput,
+            $this->getRegisteredAddressFromInput($input),
+            $this->getOperationAddressFromInput($input),
+            $this->getBankAccountFromInput($input),
+            $categoryData
+            );
+
+        return $detailInput;
+    }
+
+    protected function getCustomFieldsFromInput(array $input): array
+    {
+        $customFields = [];
+
+        if (isset($input[Constants::TNC]) === true)
+        {
+            $customFields[Constants::TNC] = $input[Constants::TNC];
+        }
+
+        if (isset($input[Constants::PROFILE][Constants::APPS]) === true)
+        {
+            $customFields[Constants::APPS] = $input[Constants::PROFILE][Constants::APPS];
+        }
+
+        return $customFields;
+    }
+
+    protected function getBankAccountFromInput(array $input): array
+    {
+        $bankAccount = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNTS][0];
+
+        return [
+            Detail\Entity::BANK_ACCOUNT_NAME           => $bankAccount[Constants::NAME],
+            Detail\Entity::BANK_BRANCH_IFSC            => $bankAccount[Constants::IFSC],
+            Detail\Entity::BANK_ACCOUNT_NUMBER         => $bankAccount[Constants::ACCOUNT_NUMBER],
+        ];
+    }
+
+    protected function getRegisteredAddressFromInput(array $input): array
+    {
+        $registeredAddress = [];
+
+        foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
+        {
+            if ($address[Constants::TYPE] === Constants::REGISTERED)
+            {
+                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_ADDRESS]    = $address[Constants::LINE1];
+                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2] = $address[Constants::LINE2];
+                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_CITY]       = $address[Constants::CITY];
+                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_STATE]      = $address[Constants::STATE];
+                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_PIN]        = $address[Constants::PIN];
+                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_COUNTRY]    = $address[Constants::COUNTRY];
+            }
+        }
+
+        return $registeredAddress;
+    }
+
+    protected function getOperationAddressFromInput(array $input): array
+    {
+        $operationAddress = [];
+
+        foreach ($input[Constants::PROFILE][Constants::ADDRESSES] as $address)
+        {
+            if ($address[Constants::TYPE] === Constants::OPERATION)
+            {
+                $operationAddress[Detail\Entity::BUSINESS_OPERATION_ADDRESS]    = $address[Constants::LINE1];
+                $operationAddress[Detail\Entity::BUSINESS_OPERATION_ADDRESS_L2] = $address[Constants::LINE2];
+                $operationAddress[Detail\Entity::BUSINESS_OPERATION_CITY]       = $address[Constants::CITY];
+                $operationAddress[Detail\Entity::BUSINESS_OPERATION_STATE]      = $address[Constants::STATE];
+                $operationAddress[Detail\Entity::BUSINESS_OPERATION_PIN]        = $address[Constants::PIN];
+                $operationAddress[Detail\Entity::BUSINESS_OPERATION_COUNTRY]    = $address[Constants::COUNTRY];
+            }
+        }
+
+        return $operationAddress;
     }
 
     /**

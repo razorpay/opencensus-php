@@ -3,17 +3,18 @@
 namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
-use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Kotak\AESCrypto;
 use RZP\Gateway\Netbanking\Base\Entity as E;
 
@@ -262,7 +263,7 @@ class Gateway extends Base\Gateway
             'MerchantId'             => $input['terminal']['gateway_merchant_id'],
             'TraceNumber'            => time() . random_integer(5),
             'Amount'                 => $input['payment']['amount'] / 100,
-            'TransactionDescription' => $this->getDynamicMerchantName($input['merchant'], 50),
+            'TransactionDescription' => $this->getTxnDescription($input),
         );
 
         if ($this->mode === Mode::TEST)
@@ -611,5 +612,17 @@ class Gateway extends Base\Gateway
         }
 
         return Fields::LIVE_SCOPE;
+    }
+
+    protected function getTxnDescription($input)
+    {
+        $txnDesc = $this->getDynamicMerchantName($input['merchant'], 50);
+
+        if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $txnDesc = $input['payment']['description'] . '/' . $input['payment']['id'];
+        }
+
+        return $txnDesc;
     }
 }

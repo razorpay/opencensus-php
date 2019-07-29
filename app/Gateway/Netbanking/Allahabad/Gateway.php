@@ -83,11 +83,18 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::PRODUCT_REF_NUMBER]);
 
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->repo
+                                ->findByPaymentIdAndActionOrFail(
+                                    $content[ResponseFields::PRODUCT_REF_NUMBER],
+                                    Action::AUTHORIZE);
+
+        $this->saveCallbackResponse($content, $gatewayPayment);
 
         $this->checkCallbackStatus($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -153,14 +160,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function saveCallbackResponse($content)
+    protected function saveCallbackResponse($content, $gatewayPayment)
     {
         $content[NetbankingEntity::RECEIVED] = true;
-
-        $gatewayPayment = $this->repo
-                               ->findByPaymentIdAndActionOrFail(
-                                   $content[ResponseFields::PRODUCT_REF_NUMBER],
-                                   Action::AUTHORIZE);
 
         $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 

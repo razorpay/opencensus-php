@@ -43,7 +43,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testSettlementFileCreationKotak()
@@ -67,7 +67,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testInitiateAtCheckDuringFileCreation()

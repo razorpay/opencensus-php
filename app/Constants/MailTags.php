@@ -61,6 +61,7 @@ class MailTags
     const ICICI_UPI_FAILED_REFUNDS_MAIL    = 'icici_upi_failed_refunds_mail';
     const MINDGATE_UPI_FAILED_REFUNDS_MAIL = 'mindgate_upi_failed_refunds_mail';
     const BATCH_IRCTC_REFUNDS_FILE         = 'batch_irctc_refunds_file';
+    const BATCH_IRCTC_DELTA_REFUNDS_FILE   = 'batch_irctc_delta_refunds_file';
     const BATCH_IRCTC_SETTLEMENT_FILE      = 'batch_irctc_settlement_file';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
     const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';

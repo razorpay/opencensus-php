@@ -345,8 +345,37 @@ return [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
-                BankingAccount\Entity::STATUS               => BankingAccount\Status::PROCESSED,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\Gateway\Rbl\Status::CLOSED
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'channel'     => 'rbl',
+                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountStatusAsProcessed' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS                   => BankingAccount\Status::PROCESSED,
+                BankingAccount\Entity::ACCOUNT_NUMBER           => '12345678910',
+                BankingAccount\Entity::ACCOUNT_IFSC             => 'HDFC0009830',
+                BankingAccount\Entity::BENEFICIARY_NAME         => 'test name',
+                BankingAccount\Entity::BENEFICIARY_MOBILE       => '7899672680',
+                BankingAccount\Entity::BENEFICIARY_EMAIL        => 'test@gmail.com',
+                BankingAccount\Entity::BENEFICIARY_COUNTRY      => 'india',
+                BankingAccount\Entity::BENEFICIARY_PIN          => '560030',
+                BankingAccount\Entity::BENEFICIARY_STATE        => 'karanataka',
+                BankingAccount\Entity::BENEFICIARY_CITY         => 'Bangalore',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS1     => 'add1',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS2     => 'add2',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS3     => 'add3',
+                BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE  => '1562749680'
             ],
         ],
         'response' => [
@@ -358,88 +387,49 @@ return [
         ],
     ],
 
-    'testNotificationOnBankingAccountProcessedFromProcessing' => [
+    'testUpdateBankingAccountStatusAsProcessedFailed' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CLOSED,
             ],
         ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'channel'     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number field is required.',
+                ],
             ],
+            'status_code' => 400,
         ],
-    ],
-    'testNotificationOnBankingAccountCancelledFromProcessing' => [
-        'request'  => [
-            'url'     => '/banking_account',
-            'method'  => 'PATCH',
-            'content' => [
-                BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CANCELLED,
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'channel'     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
-            ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-    'testNotificationOnBankingAccountCancelledFromInitiated' => [
-        'request'  => [
-            'url'     => '/banking_account',
-            'method'  => 'PATCH',
-            'content' => [
-                BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::CANCELLED,
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'channel'     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::CANCELLED,
-            ],
-        ],
-    ],
-    'testNotificationOnBankingAccountProcessingFromInitiated' => [
+
+    'testUpdateBankingAccountIncorrectCurrentToPreviousStatus' => [
         'request'  => [
             'url'     => '/banking_account',
             'method'  => 'PATCH',
             'content' => [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSING,
-                BankingAccount\Entity::BANK_INTERNAL_STATUS => BankingAccount\RblStatus::OPEN,
             ],
         ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'channel'     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSING,
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Status change not permitted',
+                ],
             ],
+            'status_code' => 400,
         ],
-    ],
-    'testNotificationOnBankingAccountCreatedFromCreated' => [
-        'request'  => [
-            'url'     => '/banking_account',
-            'method'  => 'PATCH',
-            'content' => [
-                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
-            ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-        'response' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'channel'     => 'rbl',
-                BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
-            ],
-        ],
-    ],
+    ]
 ];

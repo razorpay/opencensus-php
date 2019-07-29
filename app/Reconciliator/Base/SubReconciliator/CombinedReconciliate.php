@@ -11,13 +11,10 @@ use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
-use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 
 class CombinedReconciliate extends Base\Foundation\SubReconciliate
 {
     const NA = 'not_applicable';
-
-    protected $messenger;
 
     protected $app;
     protected $repo;
@@ -34,8 +31,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
     public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
         parent::__construct($gateway);
-
-        $this->messenger = new Messenger();
 
         $this->messenger->batch = $batch;
     }
@@ -214,6 +209,8 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
         }
         finally
         {
+            $this->setReconOutputData($batchProcessor);
+
             if (count(static::$scroogeReconciliate) > 0)
             {
                 //

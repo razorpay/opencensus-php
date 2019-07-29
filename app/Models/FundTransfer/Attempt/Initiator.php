@@ -17,7 +17,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
-use \RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core

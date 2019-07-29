@@ -1364,6 +1364,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $acquirerData = [
                     'rrn' => $this->getReference16()
                 ];
+
+                $upiTransactionId = $this->getReference1();
+
+                if (isset($upiTransactionId) === true)
+                {
+                    $acquirerData["upi_transaction_id"] = $upiTransactionId;
+                }
                 break;
         }
 
@@ -2509,6 +2516,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $gateway = $this->getGateway();
 
             $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
+
             $this->setSettledBy($settledBy);
         }
 
