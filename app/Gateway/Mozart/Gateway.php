@@ -627,6 +627,28 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    public function syncGatewayTransaction(array $gatewayTransaction, array $input)
+    {
+        $paymentId = $gatewayTransaction[Entity::PAYMENT_ID];
+
+        $action = $input[Entity::ACTION];
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($paymentId, $action);
+
+        $mappedAttributes = $this->getMappedAttributes([
+            'data' => $gatewayTransaction
+        ]);
+
+        if ($gatewayEntity === null)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($mappedAttributes, $input, $action);
+        }
+        else
+        {
+            $this->updateGatewayPaymentEntityWithAction($gatewayEntity, $mappedAttributes, false, $action);
+        }
+    }
+
     protected function getPaymentToVerify(Verify $verify)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
