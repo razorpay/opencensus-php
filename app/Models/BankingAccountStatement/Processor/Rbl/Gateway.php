@@ -228,7 +228,7 @@ class Gateway extends BaseProcessor
 
     public function getFormattedResponse(array $responseData)
     {
-        $responseBody = $responseData[Fields::ACC_STMT_DATE_RANGE_RESPONSE][Fields::BODY];
+        $responseBody = $responseData[Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
 
         $transactionsData = $responseBody[Fields::TRANSACTION_DETAILS] ?? [];
 
@@ -374,7 +374,7 @@ class Gateway extends BaseProcessor
 
     public function hasMoreData($bankResponse)
     {
-        $responseBody = $bankResponse[Fields::DATA][Fields::ACC_STMT_DATE_RANGE_RESPONSE][Fields::BODY];
+        $responseBody = $bankResponse[Fields::DATA][Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
 
         $hasMoreData = $responseBody[Fields::HAS_MORE_DATA];
 
