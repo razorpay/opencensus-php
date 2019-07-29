@@ -420,7 +420,7 @@ return [
             ],
             'content' => [
                 'partner_merchant_id'   => '10000000000000',
-                'partner_type'          => 'application',
+                'partner_type'          => 'reseller',
                 'submerchant_id'        => '10000000000009',
             ],
         ],
