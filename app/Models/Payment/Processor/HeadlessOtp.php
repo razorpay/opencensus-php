@@ -341,6 +341,11 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
+        if ($payment->hasCard() === false)
+        {
+            return;
+        }
+
         if (empty(self::$errorCodeToFlow[$code]) === true)
         {
             return;
@@ -350,10 +355,12 @@ trait HeadlessOtp
 
         $iin = $payment->card->getIin();
 
-        $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
-            'iin' => $iin,
-            'flow'  => $flow,
-        ]);
+        $this->trace->info(
+            TraceCode::IIN_FLOW_DISABLE,
+            [
+                'iin' => $iin,
+                'flow'  => $flow,
+            ]);
 
         (new IIN\Service)->disableIinFlow($iin, $flow);
     }

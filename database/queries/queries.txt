@@ -5026,6 +5026,13 @@ ALTER TABLE `reversals`
     ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
     ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
 
+-- OmniChannel
+
+ALTER TABLE terminals
+    ADD COLUMN omnichannel TINYINT(1) DEFAULT 0 AFTER upi;
+
+-- OmniChannel
+
 ALTER TABLE virtual_accounts
     ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
     ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
