@@ -437,7 +437,7 @@ class Repository extends Base\Repository
     }
 
 
-    public function getTerminalsByIds(array $terminalIds)
+    public function getTerminalsByIds(string $terminalIds)
     {
         $query = $this->newQuery();
 

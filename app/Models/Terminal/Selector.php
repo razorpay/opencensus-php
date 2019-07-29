@@ -254,19 +254,22 @@ class Selector extends Base\Core
         $sortedTerminalsFromSmartRouting = $this->sendParametersToSmartRoutingService($payment, $this->input['merchant'],
             $allTerminals, $sortedTerminals, $filteredTerminals);
 
+        $newSortedTerminals = $sortedTerminals;
+
         $terminalIds = [];
 
         if ($sortedTerminalsFromSmartRouting !== null)
         {
 
+            $i = 0;
             foreach ($sortedTerminalsFromSmartRouting as $terminal)
             {
-
                 array_push($terminalIds, $terminal['id']);
-
+                $sortedTerminals[$i] = (new Terminal\Repository)->getTerminalsByIds($terminal['id']);
+                s($sortedTerminals[$i]['id']);
+                $i++;
             };
 
-            $sortedTerminals = (new Terminal\Repository)->getTerminalsByIds($terminalIds);
         }
 
         // sending the event to data link layer
@@ -545,7 +548,7 @@ class Selector extends Base\Core
 
         if ($isProduction === false)
         {
-            return false;
+            return true;
         }
 
         if ($this->isTestMode() === true)
