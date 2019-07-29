@@ -308,6 +308,11 @@ trait Authorize
                     $request = $this->runHeadlessOtpFlow($payment, $request);
                 }
 
+                if ($this->canRunOmnichannelFlow($payment) === true)
+                {
+                    $request = $this->runOmnichannelFlow($payment, $request);
+                }
+
                 break;
             }
             catch (Exception\BaseException $e)
@@ -329,7 +334,6 @@ trait Authorize
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))
                 {
-
                     $this->preProcessAuthBeforeRetry($payment);
 
                     continue;
@@ -2407,6 +2411,11 @@ trait Authorize
                 }
 
                 $this->validateIfIntentEnabled($payment);
+
+                if (isset($input[Payment\Entity::UPI_PROVIDER]) === true)
+                {
+                    $this->validateIfOmnipayEnabled($payment);
+                }
             }
         }
 
@@ -4651,7 +4660,8 @@ trait Authorize
     {
         if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
             (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
-            ($payment->getMetadata('flow') !== 'intent'))
+            (($payment->getMetadata('flow') !== 'intent') or
+             ($payment->getMetadata(Payment\Entity::UPI_PROVIDER, null) !== null)))
         {
             return true;
         }
@@ -5084,6 +5094,19 @@ trait Authorize
         }
     }
 
+    protected function validateIfOmnipayEnabled(Payment\Entity $payment)
+    {
+        $upiProvider = $payment->getMetadata(Payment\Entity::UPI_PROVIDER);
+
+        $feature = Payment\UpiProvider::$upiProviderToFeatureMap[$upiProvider];
+
+        if ($payment->merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $upiProvider . ' omnichannel is not enabled for the merchant');
+        }
+    }
+
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)
     {
         $amex = $methods->getAmex();
@@ -5457,7 +5480,8 @@ trait Authorize
         }
 
         if (($payment->isEmandate() === true) and
-            ($payment->getBank() === IFSC::UTIB))
+            ($payment->getBank() === IFSC::UTIB) and
+            ($payment->isRecurringTypeInitial() === true))
         {
                 return true;
         }

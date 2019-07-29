@@ -30,6 +30,7 @@ use RZP\Constants\MailTags;
 use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Models\Transfer\Metric as TransferMetric;
 
 class Service extends Base\Service
 {
@@ -659,9 +660,18 @@ class Service extends Base\Service
      */
     public function transfer(string $id, array $input) : array
     {
-        $transfers = $this->getNewProcessor()->transfer($id, $input);
+        try
+        {
+            $transfers = $this->getNewProcessor()->transfer($id, $input);
 
-        return $transfers->toArrayPublic();
+            return $transfers->toArrayPublic();
+        }
+        catch (\Exception $e)
+        {
+            (new TransferMetric)->pushCreateFailedMetrics($e);
+
+            throw $e;
+        }
     }
 
     /**

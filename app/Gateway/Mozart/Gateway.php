@@ -139,6 +139,7 @@ class Gateway extends Base\Gateway
 
         $this->authorize($input);
     }
+
     public function immediateVerifyApplicable($gatewayName)
     {
         $immediateVerificationGateways = [

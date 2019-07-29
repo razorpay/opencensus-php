@@ -1118,7 +1118,8 @@ class Core extends Base\Core
     public function updateRefundCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if (($txn->isTypeRefund() === false) or
+        if ((($txn->isTypeRefund() === false) and
+            ($txn->isTypeReversal() === false)) or
             ($txn->isRefundCredits() === false))
         {
             return;
@@ -1343,7 +1344,7 @@ class Core extends Base\Core
     {
         try
         {
-            (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
+            (new Credits\Transaction\Core)->createCreditTransaction($amount, $txn, $creditType);
         }
         catch (\Throwable $e)
         {

@@ -346,7 +346,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileGenerationMultipleUtilityCode()
@@ -400,7 +400,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testDebitFileReconciliation()

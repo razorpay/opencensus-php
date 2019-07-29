@@ -28,7 +28,9 @@ class BankCodes
         IFSC::DEUT => 'DBK',                    // Deutsche Bank Ag
         IFSC::DLXB => 'DLB',                    // Dhanlaxmi Bank Ltd
         IFSC::ESAF => 'ESF',                    // ESAF Small Finance Bank
+        IFSC::ESFB => 'EQB',                    // Equitas Small Finance Bank
         IFSC::FDRL => 'FBK',                    // Federal Bank Ltd
+        IFSC::HDFC => 'HDF',                    // HDFC Bank
         IFSC::IBKL => 'IDB',                    // Idbi Bank Ltd
         IFSC::ICIC => 'ICI',                    // ICICI Bank
         IFSC::IDFB => 'IDN',                    // IDFC Bank
