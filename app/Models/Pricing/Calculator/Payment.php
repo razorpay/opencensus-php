@@ -106,6 +106,11 @@ class Payment extends Base
     {
         $payment = $this->entity;
 
+        if ($payment->merchant->isFeeBearerCustomer() === true)
+        {
+            return $rules;
+        }
+
         //
         // Transfer method doesn't have terminal associated
         //
