@@ -41,12 +41,12 @@ class Payment extends Base
     {
         $rules = $this->getRelevantPricingRuleForProcurer($rules);
 
-        $rule = $this->getRelevantPricingRuleForMethod($rules);
+        $rule = $this->getRelevantPricingRuleForMethod($rules, $method);
 
         return $rule;
     }
 
-    protected function getRelevantPricingRuleForMethod($rules)
+    protected function getRelevantPricingRuleForMethod($rules, $method)
     {
         $rule = null;
 
@@ -109,7 +109,7 @@ class Payment extends Base
         //
         // Transfer method doesn't have terminal associated
         //
-        if ($payment->getMethod() === Method::TRANSFER)
+        if ($payment->getMethod() === PaymentModel\Method::TRANSFER)
         {
             return $rules;
         }
@@ -117,7 +117,7 @@ class Payment extends Base
         $procurer = $payment->terminal->getProcurer();
 
         $filters = [
-            [Pricing\Entity::PROCURER, $procurer, false, null]
+            [Pricing\Entity::PROCURER, $procurer, true, null]
         ];
 
         return $this->applyFiltersOnRules($rules, $filters);

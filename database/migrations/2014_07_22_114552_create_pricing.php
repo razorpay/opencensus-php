@@ -41,7 +41,7 @@ class CreatePricing extends Migration
                   ->nullable();
 
             $table->string(Pricing::PROCURER)
-                  ->default(Procurer::RAZORPAY);
+                  ->nullable();
 
             $table->string(Pricing::PAYMENT_METHOD);
 
