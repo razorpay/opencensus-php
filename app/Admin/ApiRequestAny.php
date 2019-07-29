@@ -42,7 +42,12 @@ class ApiRequestAny
 
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
 
-    const IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD = 'is_visible_to_fe_dashboard';
+    // is the login error visible to the front end dashboard. Controlling
+    // whether the data passed in the error data should be explicitly shown
+    // to the front end dashboard. 
+    // This flag will/should be passed by backend only when the username password
+    // is correct but due to some condition, user unable to login.
+    const IS_LOGIN_ERROR_VISIBLE_TO_FE = 'is_login_error_visible_to_fe';
 
     /**
      * Construct a RawApiRequest instance
@@ -396,8 +401,8 @@ class ApiRequestAny
             // even if username and password is correct we can have failures, if otp was not passed.
             // dashboard needs to explicitly handle these issues.
             if ((empty($json['error']['data']) === false) and
-                (empty($json['error']['data'][self::IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD]) === false) and
-                ($json['error']['data'][self::IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD] === true))
+                (empty($json['error']['data'][self::IS_LOGIN_ERROR_VISIBLE_TO_FE]) === false) and
+                ($json['error']['data'][self::IS_LOGIN_ERROR_VISIBLE_TO_FE] === true))
             {
                 $errors['data'] = $json['error']['data'];
             }
