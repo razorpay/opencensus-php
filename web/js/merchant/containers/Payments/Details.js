@@ -303,7 +303,6 @@ export default class PaymentDetailsContainer extends Component {
         message: this.props.error,
       };
     }
-
     return (
       <div className={`${this.state.secView ? 'multi-content' : ''}`}>
         <PaymentDetails

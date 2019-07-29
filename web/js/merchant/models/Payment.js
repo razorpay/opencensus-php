@@ -2,6 +2,7 @@ import GenericEntity from './GenericEntity';
 import Refund from './Refund';
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
+import User from 'merchant/models/User';
 
 export default class Payment extends GenericEntity {
   // listRouteName = 'payment_fetch_multiple';
@@ -84,8 +85,14 @@ export default class Payment extends GenericEntity {
     return true;
   }
 
-  fetchInstantRefundFee(amount) {
-    console.log('Calling fee api..', `${amount}`);
-    return 5;
+  fetchInstantRefundFee(id, amount) {
+    const method = 'get';
+    const url = `/refunds/fee/`;
+    const data = {
+      payment_id: id,
+      amount: amount,
+    };
+
+    return this.makeGenericAjaxCall({ method, data, url });
   }
 }

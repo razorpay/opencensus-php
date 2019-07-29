@@ -25,7 +25,7 @@ export const fetchItem = id => {
       {},
       {
         expand: ['card', 'emi_plan', 'disputes'],
-        refund: 'instant_refund_supported',
+        configs: ['instant_refund_support'],
       }
     ),
   };
@@ -102,7 +102,7 @@ export const fetchCurrentBalance = () => {
 export const fetchRefundFee = (payment, amount) => {
   return {
     type: FETCH_REFUND_FEE,
-    payload: payment.fetchInstantRefundFee(amount),
+    payload: payment.fetchInstantRefundFee(payment.id, amount),
   };
 };
 
