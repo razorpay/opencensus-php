@@ -584,6 +584,7 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayRefundEntity($attributes, $input, $action)
     {
+
         $redactedRaw = $this->getRedactedData($attributes['raw']);
         $attributes['raw'] = json_encode($redactedRaw);
 
@@ -720,6 +721,7 @@ class Gateway extends Base\Gateway
         $validationGateways = [
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::WALLET_PAYPAL,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
             Payment\Gateway::NETBANKING_CUB,
