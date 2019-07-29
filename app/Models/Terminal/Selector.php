@@ -251,25 +251,32 @@ class Selector extends Base\Core
             }
         }
 
-        $sortedTerminalsFromSmartRouting = $this->sendParametersToSmartRoutingService($payment, $this->input['merchant'],
-            $allTerminals, $sortedTerminals, $filteredTerminals);
+        $terminalSetSentToSmartRouting = array();
 
-        $newSortedTerminals = $sortedTerminals;
+        foreach ($sortedTerminals as $terminal)
+        {
+            $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
+        }
+
+        // calling the smart routing service for sorted terminals set
+        $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment, $this->input['merchant'],
+            $allTerminals, $sortedTerminals, $filteredTerminals);
 
         $terminalIds = [];
 
-        if ($sortedTerminalsFromSmartRouting !== null)
-        {
+        $i = 0;
 
-            $i = 0;
-            foreach ($sortedTerminalsFromSmartRouting as $terminal)
+        if (($terminalSetReceivedFromSmartRouting !== null) and
+            (count($terminalSetSentToSmartRouting) === count($terminalSetReceivedFromSmartRouting)))
+        {
+            foreach ($terminalSetReceivedFromSmartRouting as $terminal)
             {
                 array_push($terminalIds, $terminal['id']);
-                $sortedTerminals[$i] = (new Terminal\Repository)->getTerminalsByIds($terminal['id']);
-                s($sortedTerminals[$i]['id']);
+
+                $sortedTerminals[$i] = $terminalSetSentToSmartRouting[$terminal['id']];
+
                 $i++;
             };
-
         }
 
         // sending the event to data link layer
