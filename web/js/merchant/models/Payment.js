@@ -2,7 +2,6 @@ import GenericEntity from './GenericEntity';
 import Refund from './Refund';
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
-import User from 'merchant/models/User';
 
 export default class Payment extends GenericEntity {
   // listRouteName = 'payment_fetch_multiple';
@@ -78,11 +77,6 @@ export default class Payment extends GenericEntity {
     if (session.user.tags.indexOf('Feebearer') > -1) {
       this.capturableAmount = this.amount - this.fee;
     }
-  }
-
-  fetchInstantRefund() {
-    console.log('Fetch Instant Refund', this);
-    return true;
   }
 
   fetchInstantRefundFee(id, amount) {

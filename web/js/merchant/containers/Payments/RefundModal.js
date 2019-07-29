@@ -349,37 +349,35 @@ export default class RefundModal extends Component {
                 class="form-control"
               />
             </div>
-            {refunds.isInstantRefund && (
-              <div>
-                <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
-                  <label>
-                    <Field
-                      name="instant_refund"
-                      component="input"
-                      type="checkbox"
-                      disabled={isInstantDisabled}
-                    />
-                    <b>Refund Instantly</b>
-                  </label>
-                  <span
-                    data-tooltip="You can refund this payment instantly for a small fee"
-                    data-tooltip-position="top"
-                  >
-                    <i class="i i-help" />
-                  </span>
-                </div>
-                {isInstantDisabled ? (
-                  <div class="low-funds">
-                    Your account does not have sufficient balance to instantly
-                    refund this payment.
-                    <Link to={'/addfunds'} target="_blank">
-                      Add Funds
-                      <i class="i i-external-link" />
-                    </Link>
-                  </div>
-                ) : null}
+            <div>
+              <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
+                <label>
+                  <Field
+                    name="instant_refund"
+                    component="input"
+                    type="checkbox"
+                    disabled={isInstantDisabled}
+                  />
+                  <b>Refund Instantly</b>
+                </label>
+                <span
+                  data-tooltip="You can refund this payment instantly for a small fee"
+                  data-tooltip-position="top"
+                >
+                  <i class="i i-help" />
+                </span>
               </div>
-            )}
+              {isInstantDisabled ? (
+                <div class="low-funds">
+                  Your account does not have sufficient balance to instantly
+                  refund this payment.
+                  <Link to={'/addfunds'} target="_blank">
+                    Add Funds
+                    <i class="i i-external-link" />
+                  </Link>
+                </div>
+              ) : null}
+            </div>
             <div class="Modal__actions">
               <button class="btn btn-primary btn-block">
                 Issue <RefundType partial={partial} isTitleCase={true} /> refund
