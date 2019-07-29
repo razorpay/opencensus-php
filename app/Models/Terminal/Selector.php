@@ -270,7 +270,7 @@ class Selector extends Base\Core
         }
 
         // sending the event to data link layer
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_SORTED_TERMINAL_RESPONSE_RECEIVED, $payment, null,
+        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
             [
                 'sorted_terminalIds' => $terminalIds,
             ]

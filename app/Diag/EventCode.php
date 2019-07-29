@@ -71,9 +71,9 @@ class EventCode
         'name'  => 'payment.terminal.selection.processed'
     ];
 
-    const PAYMENT_SORTED_TERMINAL_RESPONSE_RECEIVED    = [
+    const PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING    = [
         'group' => 'internal_checks',
-        'name'  => 'payment.sorted.terminal.response.received'
+        'name'  => 'payment.sorted.terminals.received.from.smart.routing'
     ];
 
     const PAYMENT_CREATION_PROCESSED                    = [
