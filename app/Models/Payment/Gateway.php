@@ -1241,6 +1241,7 @@ class Gateway
         Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
         Gateway::UPI_AIRTEL,
+        Gateway::WALLET_PHONEPE,
     ];
 
     /**
