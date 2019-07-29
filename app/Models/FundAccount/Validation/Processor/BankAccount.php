@@ -47,7 +47,7 @@ class BankAccount extends Base
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
         }
 
         $notFailedFTAs = $this->repo->fund_transfer_attempt->getAttemptBySourceIdAndNotFailed($this->validation->getId(), Table::FUND_ACCOUNT_VALIDATION);
@@ -60,7 +60,7 @@ class BankAccount extends Base
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
         }
     }
 

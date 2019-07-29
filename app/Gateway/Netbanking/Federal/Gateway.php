@@ -178,15 +178,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $response->body,
-                'payment_id' => $verify->input['payment']['id'],
-            ]
-        );
-
         $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
     }
 
@@ -438,11 +429,6 @@ class Gateway extends Base\Gateway
             'payment_id'     => $this->input['payment']['id'],
             'gateway'        => $this->gateway,
         ];
-
-        //
-        // We log that we have multiple tables in the verify response
-        //
-        $this->trace->info(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
 
         //
         // Initialize number of success chunks to 0 and

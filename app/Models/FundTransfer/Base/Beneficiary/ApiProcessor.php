@@ -20,10 +20,30 @@ abstract class ApiProcessor extends Beneficiary
      */
     public function registerBeneficiary(PublicCollection $bankAccounts): array
     {
-        $this->process($bankAccounts);
+        $this->process($bankAccounts, 'REGISTER');
 
         $response = [
             'body'           => 'Beneficiaries registration request sent to ' . ucfirst($this->channel),
+            'channel'        => $this->channel,
+            'register_count' => $bankAccounts->count(),
+            'total_count'    => $bankAccounts->count(),
+        ];
+
+        return $response;
+    }
+
+    /**
+     * Queues the bank account which has to be registered with the given channel
+     *
+     * @param PublicCollection $bankAccounts
+     * @return array
+     */
+    public function verifyBeneficiary(PublicCollection $bankAccounts): array
+    {
+        $this->process($bankAccounts, 'VERIFY');
+
+        $response = [
+            'body'           => 'Beneficiaries verification request sent to ' . ucfirst($this->channel),
             'channel'        => $this->channel,
             'register_count' => $bankAccounts->count(),
             'total_count'    => $bankAccounts->count(),
@@ -52,5 +72,5 @@ abstract class ApiProcessor extends Beneficiary
             $data);
     }
 
-    abstract public function process(PublicCollection $bankAccounts);
+    abstract public function process(PublicCollection $bankAccounts, $action);
 }

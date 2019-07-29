@@ -23,6 +23,27 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
         $this->assertEquals('1', '1');
     }
 
+    public function testCustomCheckoutPayment()
+    {
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+
+        unset($payment['emi_duration']);
+
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->checkAccount($payment);
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPaymentFlexMoney');
+
+        $cardlessEmiEntity = $this->getLastEntity('cardless_emi', true);
+
+        $this->assertTestResponse($cardlessEmiEntity, 'testPaymentCardlessEmiEntity');
+    }
+
     public function testPayment()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);

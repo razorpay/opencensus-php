@@ -87,6 +87,18 @@ class Entity extends Base\PublicEntity
     // indicates refund is processed via scrooge service or not.
     const IS_SCROOGE             = 'is_scrooge';
 
+    // Table Attributes created for Instant refunds
+    const SPEED_REQUESTED        = 'speed_requested';
+    const SPEED_PROCESSED        = 'speed_processed';
+    const SPEED_DECISIONED       = 'speed_decisioned';
+    const FEE                    = 'fee';
+    const TAX                    = 'tax';
+
+    const MODE                   = 'mode';
+    const SPEED                  = 'speed';
+
+    const PUBLIC_STATUS = 'public_status';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';
@@ -107,6 +119,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::STATUS,
+        self::FEE,
+        self::TAX,
         self::REFERENCE1,
     ];
 
@@ -130,6 +144,11 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
+        self::SPEED_REQUESTED,
+        self::SPEED_DECISIONED,
+        self::SPEED_PROCESSED,
+        self::FEE,
+        self::TAX,
         self::LAST_ATTEMPTED_AT,
         self::PROCESSED_AT,
         self::BALANCE_ID,
@@ -168,18 +187,25 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::NOTES             => [],
         self::STATUS            => Status::CREATED,
+        self::SPEED_REQUESTED   => Speed::NORMAL,
+        self::SPEED_DECISIONED  => Speed::NORMAL,
+        self::SPEED_PROCESSED   => null,
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
         self::PROCESSED_AT      => null,
         self::IS_SCROOGE        => 0,
         self::RECEIPT           => null,
+        self::FEE               => 0,
+        self::TAX               => 0,
     ];
 
     protected $casts = [
         self::AMOUNT           => 'int',
         self::BASE_AMOUNT      => 'int',
         self::GATEWAY_REFUNDED => 'bool',
+        self::FEE              => 'int',
+        self::TAX              => 'int',
         self::IS_SCROOGE       => 'bool',
     ];
 
@@ -187,12 +213,14 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
-        self::ACQUIRER_DATA
+        self::ACQUIRER_DATA,
     ];
 
     protected $amounts = [
         self::AMOUNT,
         self::BASE_AMOUNT,
+        self::FEE,
+        self::TAX,
     ];
 
     protected $dates = [
@@ -312,6 +340,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BASE_AMOUNT);
     }
 
+    /**
+     * Returns base amount + applicable fee
+     */
+    public function getNetAmount()
+    {
+        return $this->getBaseAmount() + $this->getFee();
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
@@ -392,6 +428,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
+    public function getSpeedRequested()
+    {
+        return $this->getAttribute(self::SPEED_REQUESTED);
+    }
+
+    public function getSpeedDecisioned()
+    {
+        return $this->getAttribute(self::SPEED_DECISIONED);
+    }
+
+    public function getSpeedProcessed()
+    {
+        return $this->getAttribute(self::SPEED_PROCESSED);
+    }
+
     public function getReference1()
     {
         return $this->getAttribute(self::REFERENCE1);
@@ -436,12 +487,27 @@ class Entity extends Base\PublicEntity
 
     public function getFees()
     {
-        return 0;
+        return $this->getFee();
+    }
+
+    public function getFee()
+    {
+        return $this->getAttribute(self::FEE);
     }
 
     public function getTax()
     {
-        return 0;
+        return $this->getAttribute(self::TAX);
+    }
+
+    public function getPricingFeatures()
+    {
+        return [];
+    }
+
+    public function getMethod()
+    {
+        return $this->payment->getMethod();
     }
 
     protected function getAcquirerDataAttribute()
@@ -467,6 +533,18 @@ class Entity extends Base\PublicEntity
             case Payment\Method::EMANDATE:
                 $acquirerData = [
                     self::UTR   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::CARDLESS_EMI:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::PAYLATER:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
         }
@@ -512,6 +590,21 @@ class Entity extends Base\PublicEntity
         $this->pushStatusChangeMetrics($status);
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setSpeedRequested(string $speedRequested)
+    {
+        $this->setAttribute(self::SPEED_REQUESTED, $speedRequested);
+    }
+
+    public function setSpeedDecisioned(string $speedDecisioned)
+    {
+        $this->setAttribute(self::SPEED_DECISIONED, $speedDecisioned);
+    }
+
+    public function setSpeedProcessed(string $speedProcessed)
+    {
+        $this->setAttribute(self::SPEED_PROCESSED, $speedProcessed);
     }
 
     public function setSettledBy($settledBy)
@@ -590,6 +683,20 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($timestamp)
     {
         $this->setAttribute(self::PROCESSED_AT, $timestamp);
+    }
+
+    public function setFee(int $fee)
+    {
+        assertTrue($fee >= 0);
+
+        $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setTax(int $tax)
+    {
+        assertTrue($tax >= 0);
+
+        $this->setAttribute(self::TAX, $tax);
     }
 
     public function setBaseAmount()
@@ -701,6 +808,26 @@ class Entity extends Base\PublicEntity
     public function isStatusReversed()
     {
         return ($this->getStatus() === Status::REVERSED);
+    }
+
+    /**
+     * This is required for checking if a refund's requested speed is an instant (that is charged) speed
+     *
+     * @return bool
+     */
+    public function isRefundRequestedSpeedInstant(): bool
+    {
+        return (in_array($this->getSpeedRequested(), Speed::REFUND_INSTANT_SPEEDS, true) === true);
+    }
+
+    /**
+     * This is required for checking if a refund is being processed with instant (that is charged) speed
+     *
+     * @return bool
+     */
+    public function isRefundSpeedInstant(): bool
+    {
+        return (in_array($this->getSpeedDecisioned(), Speed::REFUND_INSTANT_SPEEDS, true) === true);
     }
 
     public function getGateway()
@@ -829,7 +956,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function getPublicStatus($response)
+    protected function getPublicStatus($response, $publicStatusFeatureEnabled = false, $cardTransferFeatureEnabled = false)
     {
         $refundStatus = $this->getStatus();
 
@@ -840,28 +967,64 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
+        $callScroogeForSpeed = true;
+
+        if ($cardTransferFeatureEnabled === true)
+        {
+            if (empty($this->getSpeedProcessed()) === false)
+            {
+                $response[self::SPEED_PROCESSED] = $this->getSpeedProcessed();
+                $callScroogeForSpeed = false;
+            }
+            else  if ($this->isRefundSpeedInstant() === true)
+            {
+                $response[self::SPEED_PROCESSED] = Speed::INSTANT;
+            }
+            else
+            {
+                $response[self::SPEED_PROCESSED] = Speed::NORMAL;
+            }
+
+            $response[self::SPEED_REQUESTED] = $this->getSpeedRequested();
+        }
+
         $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
-        if (($response[self::STATUS] === Status::PENDING) and
-            ($isScrooge === true) and
-            (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true))
+        $eligbleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($isScrooge === true);
+
+        $callScroogeForStatus = ((Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true) or
+                                 ($publicStatusFeatureEnabled === true));
+
+        if (($eligbleForScroogeCall === true) and
+            (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
 
+            $queryParams = [
+                self::SPEED  => (int) $callScroogeForSpeed,
+                self::STATUS => (int) $callScroogeForStatus,
+            ];
+
             try
             {
-                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID]);
+                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID], $queryParams);
 
                 $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
                     $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
+                    $scroogeSpeed = $scroogeResponse[self::RESPONSE_BODY]->speed;
 
                     if (empty($scroogeStatus) === false)
                     {
                         $response[self::STATUS] = $scroogeStatus;
+                    }
+
+                    if (empty($scroogeSpeed) === false)
+                    {
+                        $response[self::SPEED_PROCESSED] = $scroogeSpeed;
                     }
                 }
             }
@@ -875,6 +1038,12 @@ class Entity extends Base\PublicEntity
                         'refund_id' => $response[self::ID],
                     ]);
             }
+        }
+
+        if ((empty($response[self::SPEED_PROCESSED]) === false) and
+            ($response[self::SPEED_PROCESSED] === Speed::NORMAL))
+        {
+            $response[self::STATUS] = Status::PROCESSED;
         }
 
         return $response;
@@ -891,10 +1060,14 @@ class Entity extends Base\PublicEntity
 
         $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
+        $publicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
+        $cardTransferRefundFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND);
+
         if (($displayRefundPublicStatus === true) or
-            ($this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS) === true))
+            ($publicStatusFeatureEnabled === true) or
+            ($cardTransferRefundFeatureEnabled === true))
         {
-            $scroogeResponse = $this->getPublicStatus($response);
+            $scroogeResponse = $this->getPublicStatus($response, $publicStatusFeatureEnabled, $cardTransferRefundFeatureEnabled);
 
             return $scroogeResponse;
         }

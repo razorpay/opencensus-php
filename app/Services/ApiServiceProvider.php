@@ -23,6 +23,7 @@ use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\External;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
@@ -126,6 +127,11 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('razorx', function($app)
         {
             return new RazorXClient($app);
+        });
+
+        $this->app->singleton('hubspot', function($app)
+        {
+            return new HubspotClient($app);
         });
 
         $this->app->singleton('card.cardVault', function($app)
@@ -303,6 +309,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerFTSRegisterAccount();
 
         $this->registerFTSFundTransfer();
+
+        $this->registerMozart();
     }
 
     /**
@@ -345,6 +353,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'nonBlockingHttp',
             'smartRouting',
             'diag',
+            'mozart',
+            'hubspot',
         ];
     }
 
@@ -503,6 +513,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerMozart()
+    {
+        $this->app->bind('mozart', function($app)
+        {
+            $mock = $app['config']->get('applications.mozart.mock');
+
+            $implementation = $mock ? Mock\Mozart::class : Mozart::class;
+
+            return new $implementation($app);
+        });
+    }
+
     protected function registerMorphRelationMaps()
     {
         Relation::morphMap([
@@ -541,6 +563,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'transaction'               => Transaction\Entity::class,
             'fund_account_validation'   => FundAccount\Validation\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
+            'external'                  => External\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
             'vpa'                       => Vpa\Entity::class,

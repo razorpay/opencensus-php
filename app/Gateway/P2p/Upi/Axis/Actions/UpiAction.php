@@ -10,5 +10,9 @@ class UpiAction extends Action
 
     const CUSTOMER_CREDITED_VIA_PAY                 = 'CUSTOMER_CREDITED_VIA_PAY';
 
+    const CUSTOMER_DEBITED_VIA_PAY                  = 'CUSTOMER_DEBITED_VIA_PAY';
+
     const CUSTOMER_CREDITED_VIA_COLLECT             = 'CUSTOMER_CREDITED_VIA_COLLECT';
+
+    const CUSTOMER_DEBITED_VIA_COLLECT              = 'CUSTOMER_DEBITED_VIA_COLLECT';
 }

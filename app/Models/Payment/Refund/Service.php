@@ -21,6 +21,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Jobs\BulkRefund as BulkRefundJob;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Service extends Base\Service
@@ -1192,44 +1193,113 @@ class Service extends Base\Service
             TraceCode::REFUND_UPDATE_STATUS_REQUEST,
             [
                 'refund_id' => $refundId,
-                'status'    => $input['status'] ?? '',
+                'event'     => $input['event'] ?? '',
             ]);
 
         try
         {
-            $refund = $this->repo->refund->findOrFailPublic($refundId);
-
-            $gateway = $refund->getGateway();
-
-            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
-            {
-                $refund->getValidator()->validateUpdateScroogeRefundStatus($input);
-
-                if ($input['status'] === Status::PROCESSED)
+            $refund = $this->repo->transaction(
+                function()
+                use ($refundId, $input)
                 {
-                    $this->updateRefund($refund, $input);
+                    $refund = $this->repo->refund->findOrFailPublic($refundId);
 
-                    $refund->setStatusProcessed();
-                    $refund->setGatewayRefunded(true);
-                }
-                else if ($input['status'] === Status::FAILED)
-                {
-                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
-                }
+                    $gateway = $refund->getGateway();
 
-                $this->repo->saveOrFail($refund);
+                    if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
+                    {
+                        $refund->getValidator()->validateUpdateScroogeRefundStatus($input);
 
-                $refund = $refund->toArrayPublic();
-            }
-            else
-            {
-                $this->trace->error(
-                    TraceCode::REFUND_UPDATE_STATUS_NON_SCROOGE_GATEWAY,
-                    [
-                        'refund_id' => $refund->getId(),
-                        'status'    => $refund->getStatus(),
-                    ]);
-            }
+                        $processor = $this->getNewProcessor($refund->merchant);
+
+                        switch ($input['event'])
+                        {
+                            case 'processed_event':
+
+                                $this->updateRefund($refund, $input);
+
+                                $refund->setStatusProcessed();
+
+                                $refund->setSpeedProcessed(RefundSpeed::NORMAL);
+
+                                if (isset($input[RefundEntity::SPEED_PROCESSED]) === true)
+                                {
+                                    $refund->setSpeedProcessed($input[RefundEntity::SPEED_PROCESSED]);
+                                }
+
+                                $refund->setGatewayRefunded(true);
+
+                                if ($refund->getSpeedProcessed($refund) !== RefundSpeed::NORMAL)
+                                {
+                                    $processor->eventRefundProcessed($refund);
+                                }
+
+                                break;
+
+                            case 'failed_event':
+
+                                $processor->reverseRefund($refund);
+
+                                if ($refund->payment->hasBeenCaptured() === true)
+                                {
+                                    $this->trace->info(
+                                        TraceCode::PAYMENT_STATUS_UPDATE_REQUEST,
+                                        [
+                                            'refund_id'                    => $refundId,
+                                            'payment_id'                   => $refund->payment->getId(),
+                                            'payment_status'               => $refund->payment->getStatus(),
+                                            'payment_refund_status'        => $refund->payment->getRefundStatus(),
+                                            'payment_amount_refunded'      => $refund->payment->getAmountRefunded(),
+                                            'payment_base_amount_refunded' => $refund->payment->getBaseAmountRefunded(),
+                                        ]);
+
+                                    $processor->revertPaymentToRefundableState($refund);
+                                }
+
+                                $processor->eventRefundFailed($refund);
+
+                                break;
+
+                            case 'fee_only_reversal_event':
+
+                                //
+                                // In optimum flow - we would have debit amount + fees in the transaction,
+                                // on failure - we have to reverse the whole amount since, gateway will directly settle
+                                // in case of DirectSettlementRefund - but the refund status will remain as is and not change
+                                //
+                                if ($refund->isDirectSettlementRefund() === true)
+                                {
+                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
+                                }
+                                else
+                                {
+                                    $feeOnlyReversal = true;
+
+                                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund, $feeOnlyReversal);
+                                }
+
+                                $refund->setSpeedProcessed(RefundSpeed::NORMAL);
+
+                                $processor->eventRefundSpeedChanged($refund);
+                                $processor->eventRefundProcessed($refund);
+                        }
+
+                        $this->repo->saveOrFail($refund);
+
+                        $refund = $refund->toArrayPublic();
+                    }
+                    else
+                    {
+                        $this->trace->error(
+                            TraceCode::REFUND_UPDATE_STATUS_NON_SCROOGE_GATEWAY,
+                            [
+                                'refund_id' => $refund->getId(),
+                                'status'    => $refund->getStatus(),
+                            ]);
+                    }
+
+                    return $refund;
+                });
         }
         catch (\Exception $ex)
         {
@@ -1321,7 +1391,8 @@ class Service extends Base\Service
                     [
                         Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? '',
                         Entity::REFERENCE2 => $input[Entity::REFERENCE2] ?? '',
-                    ]
+                    ],
+                    'processed_source' => $input[Entity::MODE] ?? '',
                 ]
             ],
 

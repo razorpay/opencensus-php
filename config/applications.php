@@ -67,6 +67,7 @@ return [
     ],
 
     'mozart' => [
+        'mock'      => env('MOZART_MOCK', false),
         'url'       => env('MOZART_URL'),
         'password'  => env('MOZART_PASSWORD'),
     ],
@@ -134,6 +135,10 @@ return [
     ],
     VirtualAccount\Provider::YESBANK => [
         'secret'    => env('YESBANK_SECRET'),
+    ],
+
+    'rbl' => [
+        'secret' => env('RBL_SECRET'),
     ],
 
     'bharatqr' => [
@@ -330,5 +335,11 @@ return [
 
     'non_blocking_http' => [
         'timeout'       => env('NON_BLOCKING_HTTP_TIMEOUT')
+    ],
+
+    'hubspot' => [
+        'mock'     => env('HUBSPOT_MOCK', false),
+        'url'      => env('HUBSPOT_URL'),
+        'secret'   => env('HUBSPOT_SECRET'),
     ],
 ];

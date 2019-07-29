@@ -59,16 +59,25 @@ class Validator extends Base\Validator
         ConfigKey::SETTLEMENT_TRANSACTION_LIMIT       => 'filled|integer',
         ConfigKey::FTS_ROUTE_PERCENTAGE               => 'filled|integer',
         ConfigKey::ENABLE_PAYMENT_DOWNTIMES           => 'filled|boolean',
-        ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string|size:14',
+        ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string',
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [
-        ConfigKey::FTS_CHANNELS      => 'filled|array',
-        ConfigKey::HEARTBEAT_ROUTES  => 'filled|array',
-        ConfigKey::DOWNTIME_THROTTLE => 'filled|array',
+        ConfigKey::FTS_CHANNELS                     => 'filled|array',
+        ConfigKey::HEARTBEAT_ROUTES                 => 'filled|array',
+        ConfigKey::DOWNTIME_THROTTLE                => 'filled|array',
+        ConfigKey::DOWNTIME_DETECTION_CONFIGURATION => 'filled|array',
+    ];
+
+    protected static $setGatewayDowntimeRedisKeysRules = [
+        'config:downtime:detection:configuration'             => 'required|array',
+        'config:downtime:detection:configuration.*.key'       => 'required|string',
+        'config:downtime:detection:configuration.*.value'     => 'required|array',
+        'config:downtime:detection:configuration.*.value.*'   => 'required|array|size:4',
+        'config:downtime:detection:configuration.*.value.*.*' => 'required|string',
     ];
 
     protected static $updateRedisKeysRules = [

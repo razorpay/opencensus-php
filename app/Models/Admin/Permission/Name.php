@@ -40,6 +40,7 @@ class Name
     const EDIT_MERCHANT_COMMENTS              = 'edit_merchant_comments';
     const EDIT_MERCHANT_BANK_DETAIL           = 'edit_merchant_bank_detail';
     const EDIT_IIN_RULE                       = 'edit_iin_rule';
+    const EDIT_IIN_RULE_BULK                  = 'edit_iin_rule_bulk';
     const EDIT_ACTIVATE_MERCHANT              = 'edit_activate_merchant';
     const EDIT_MERCHANT_KEY_ACCESS            = 'edit_merchant_key_access';
     const EDIT_MERCHANT_ENABLE_LIVE           = 'edit_merchant_enable_live';
@@ -233,9 +234,14 @@ class Name
     const BATCH_API_CALL                      = 'batch_api_call';
     const EDIT_SCROOGE_REDIS_CONFIG           = 'edit_scrooge_redis_config';
     const EDIT_THROTTLE_SETTINGS              = 'edit_throttle_settings';
+    const CANCEL_BATCH                        = 'cancel_batch';
+    const PAYMENT_CAPTURE_BULK                = 'payment_capture_bulk';
 
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
+
+    //Permissions for enabling maker/checker for payouts
+    const CREATE_PAYOUT                       = 'create_payout';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
@@ -253,4 +259,18 @@ class Name
         Merchant\Action::DISABLE_INTERNATIONAL  => self::EDIT_MERCHANT_DISABLE_INTERNATIONAL,
         Merchant\Action::FORCE_ACTIVATE         => self::EDIT_MERCHANT_FORCE_ACTIVATION,
     ];
+
+    /**
+     * Permissions that are exposed on the merchant side.
+     *
+     * @var array
+     */
+    public static $merchantPermissions = [
+        self::CREATE_PAYOUT,
+    ];
+
+    public static function isMerchantPermission(string $name): bool
+    {
+        return (in_array($name, self::$merchantPermissions, true) === true);
+    }
 }

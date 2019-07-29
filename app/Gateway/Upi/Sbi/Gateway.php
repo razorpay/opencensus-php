@@ -8,8 +8,10 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Verify;
 use RZP\Exception\BaseException;
+use RZP\Encryption\PGPEncryption;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\AssertionException;
@@ -48,6 +50,8 @@ class Gateway extends Base\Gateway
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
     ];
 
+    protected $sortRequestContent = false;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -61,11 +65,7 @@ class Gateway extends Base\Gateway
         // this is handled in base/gateway. but since base gateway's sendGatewayRequest is mocked,
         // base/gateway's retry handler cannot be tested. so adding retry handler here to have
         // atleast one gateway which can test this flow.
-        $response = $this->retryHandler(
-            [$this, 'sendGatewayRequest'],
-            [$request],
-            [$this, 'shouldRetry'],
-            [$this, 'getMaxRetryCount']);
+        $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
@@ -325,26 +325,50 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    public function encrypt(array $content): string
+    public function getEncryptedPayload(array $content): string
     {
-        $json = utf8_json_encode($content);
+        $json = json_encode($content);
 
-        return $this->getAesCrypto()->encryptString($json);
+        $hash = $this->getHashOfString($json);
+
+        $pgp = $this->getPgpInstance();
+
+        $encryptedHash = $pgp->encrypt($hash);
+
+        $contentWithHash = $encryptedHash . '|' . $json;
+
+        return base64_encode($pgp->encryptSign($contentWithHash));
     }
 
-    public function decrypt(string $encryptedResponse): array
+    public function getDecryptedPayload(string $encryptedResponse): array
     {
-        $decryptedString = $this->getAesCrypto()->decryptString($encryptedResponse);
+        $pgp = $this->getPgpInstance();
 
-        return $this->jsonToArray($decryptedString);
+        $decryptedString = $pgp->decryptVerify(base64_decode($encryptedResponse));
+
+        $encHashResponsePair = explode('|', $decryptedString);
+
+        $hash = $pgp->decrypt($encHashResponsePair[0]);
+
+        $this->verifyHash($encHashResponsePair[1], $hash);
+
+        return $this->jsonToArray($encHashResponsePair[1]);
     }
 
     /**
      * @return Crypto
      */
-    public function getAesCrypto(): Crypto
+    public function getPgpInstance(): PGPEncryption
     {
-        return (new Crypto($this->getSecret()));
+        $pgpConfig = [
+        'public_key'  => trim(str_replace('\n', "\n", $this->config['public_key'])),
+        'private_key' => trim(str_replace('\n', "\n", $this->config['private_key'])),
+        'passphrase'  => $this->config['passphrase']
+        ];
+
+        $pgp = new PGPEncryption($pgpConfig);
+
+        return $pgp;
     }
 
     /**
@@ -363,7 +387,7 @@ class Gateway extends Base\Gateway
 
         $encryptedResponse = $this->jsonToArray($body)[ResponseFields::RESPONSE];
 
-        $response = $this->decrypt($encryptedResponse);
+        $response = $this->getDecryptedPayload($encryptedResponse);
 
         $this->trace->info($traceCode,
             [
@@ -405,7 +429,7 @@ class Gateway extends Base\Gateway
                 'content'    => $content
             ]);
 
-        $requestMsg = $this->encrypt($content);
+        $requestMsg = $this->getEncryptedPayload($content);
 
         $json = [
             RequestFields::REQUEST_MESSAGE => $requestMsg,
@@ -416,14 +440,22 @@ class Gateway extends Base\Gateway
 
         $request = parent::getStandardRequestArray($content, $method, $type);
 
+        $token = $this->fetchOauthToken();
+
+        $request['url'] = $request['url'] . '?access_token=' . $token;
+
         $request['headers']['Content-Type'] = 'application/json';
+
+        $traceReq = $request;
+
+        unset($traceReq['url']);
 
         $this->trace->info(
             $traceCode,
             [
                 'encrypted'  => true,
                 'gateway'    => $this->gateway,
-                'request'    => $request
+                'request'    => $traceReq,
             ]);
 
         return $request;
@@ -462,9 +494,7 @@ class Gateway extends Base\Gateway
     {
         $response = $this->jsonToArray($input[ResponseFields::MESSAGE])[ResponseFields::RESPONSE];
 
-        $json = $this->getAesCrypto()->decryptString($response);
-
-        $callback = $this->jsonToArray($json);
+        $callback = $this->getDecryptedPayload($response);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -523,14 +553,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @return string
-     */
-    public function getSecret(): string
-    {
-        return $this->config['hash_secret'];
-    }
-
-    /**
      * This function authorize the payment forcefully when verify api is not supported
      * or not giving correct response.
      *
@@ -541,7 +563,6 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
                                                                       Action::AUTHORIZE);
-
 
         // If it's already authorized on gateway side, there's nothing to do here. We just return back.
         if ($gatewayPayment[Base\Entity::STATUS_CODE] === Status::SUCCESS)
@@ -567,5 +588,56 @@ class Gateway extends Base\Gateway
         {
             return $response[ResponseFields::PAYEE_TYPE][ResponseFields::NAME];
         }
+    }
+
+    protected function fetchOauthToken()
+    {
+        $content = [
+            'grant_type'    => 'password',
+            'client_id'     => $this->config['client_id'],
+            'client_secret' => $this->config['client_secret'],
+            'username'      => 'oauth2-api-merweb-' . $this->config['username'],
+            'password'      => $this->config['password'],
+        ];
+
+        $request = $traceRequest = parent::getStandardRequestArray($content, 'get', 'oauth_token');
+
+        unset($traceRequest['content']);
+
+        $this->trace->info(TraceCode::FETCH_TOKEN_REQUEST, $traceRequest);
+
+        $response = $this->retryHandler(
+            [$this, 'sendGatewayRequest'],
+            [$request],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
+
+        $responseArray = $this->jsonToArray($response->body);
+
+        $this->trace->info(TraceCode::FETCH_TOKEN_RESPONSE,
+            [
+                'action'        => 'fetch_outh_token',
+                'token_type'    => $responseArray['token_type'] ?? ' ',
+                'expires_in'    => $responseArray['expires_in'] ?? ' ',
+            ]);
+
+        return $responseArray['access_token'];
+    }
+
+    protected function getHashOfString($string)
+    {
+        return hash(HashAlgo::SHA256, $string);
+    }
+
+    protected function getStringToHash($content, $glue = '')
+    {
+        return $content;
+    }
+
+    public function verifyHash($content, $actual)
+    {
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
     }
 }

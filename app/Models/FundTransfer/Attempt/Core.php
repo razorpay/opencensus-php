@@ -51,14 +51,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if ($instantDispatch === true)
-        {
-            $this->dispatchForTransfer($fundTransferAttempt);
-        }
-        else if ($fundTransferAttempt->getIsFTS() === true)
+        if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
+
 
         return $fundTransferAttempt;
     }
@@ -204,8 +205,9 @@ class Core extends Base\Core
      * @param CardEntity|null   $card
      * @return array
      *
-     * TODO: refactor this section so that we dont have to use `shouldUseGateway` and `getChannelForTransfer`
+     * TODO: refactor this section so that we don't have to use `shouldUseGateway` and `getChannelForTransfer`
      * for different reasons. A single method should give us which path should be chosen
+     * use RazorX here for easy config
      */
     protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, CardEntity $card = null): array
     {
@@ -213,12 +215,18 @@ class Core extends Base\Core
         {
             $srcMerchantId = $source->getMerchantId();
 
-            $merchantId = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
+            $merchantList = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
 
-            if ((empty($merchantId) === false) and
-                ($srcMerchantId !== $merchantId))
+            $merchantIds = (empty($merchantList) === false) ? explode(',', $merchantList) : [];
+
+            if (in_array($srcMerchantId, $merchantIds, true) === false)
             {
                 return [false, Settlement\Channel::YESBANK];
+            }
+
+            if ($sourceType === EntityConstant::FUND_ACCOUNT_VALIDATION)
+            {
+                return [true, Settlement\Channel::ICICI];
             }
 
             $amount = $source->getAmount();
@@ -400,7 +408,6 @@ class Core extends Base\Core
 
     /**
      * @param Entity $fta
-     * @param string $accountType
      * @param bool   $isRegistered
      */
     public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false)
@@ -492,20 +499,9 @@ class Core extends Base\Core
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
             }
 
-            if (empty($input[Entity::UTR]) === false)
-            {
-                $fta->setUtr($input[Entity::UTR]);
-            }
+            $fta = $this->updateFtaWithInput($input, $fta);
 
-            if (empty($input[Entity::MODE]) === false)
-            {
-                $fta->setMode($input[Entity::MODE]);
-            }
-
-            if (empty($input[AttemptConstants::BANK_PROCESSED_TIME]) === false)
-            {
-                $fta->setDateTime($input[AttemptConstants::BANK_PROCESSED_TIME]);
-            }
+            list($beneficiaryName, $internalError) = $this->getDataToUpdateFromInput($input);
 
             $fta->fill($input);
 
@@ -516,12 +512,12 @@ class Core extends Base\Core
 
             $this->repo->fund_transfer_attempt->saveOrFail($fta);
 
-            $this->updateSourceEntity($fta);
+            $this->updateSourceEntityByFta($fta, $beneficiaryName, $internalError);
 
             $this->updateMerchantEntity($fta);
 
             return [
-              'message' => 'FTA and source updated succesfully',
+                'message' => 'FTA and source updated successfully',
             ];
         }
         catch (\Throwable $e)
@@ -645,6 +641,66 @@ class Core extends Base\Core
         }
     }
 
+    public function updateSourceEntityByFta(Entity $fta, $beneficiaryName, bool $internalError)
+    {
+        $ftaData = [
+            'bank_account_id'   => $fta->getBankAccountId(),
+            'vpa_id'            => $fta->getVpaId(),
+            'merchant_id'       => $fta->getMerchantId(),
+            'fta_id'            => $fta->getId(),
+            'source_id'         => $fta->source->getId(),
+            'beneficiary_name'  => $beneficiaryName,
+            'utr'               => $fta->getUtr(),
+            'mode'              => $fta->getMode(),
+            'remarks'           => $fta->getRemarks(),
+            'fta_status'        => $fta->getStatus(),
+            'is_fts'            => $fta->getIsFTS(),
+            'bank_status_code'  => $fta->getBankStatusCode(),
+            'internal_error'    => $internalError,
+            'failure_reason'    => $fta->getFailureReason(),
+        ];
+
+        $this->sourceReconByFta($fta->source, $ftaData);
+
+        $this->updateTransactionEntity($fta->source);
+    }
+
+    protected function sourceReconByFta($source, array $ftaData)
+    {
+        $this->trace->info(
+            TraceCode::FTA_SOURCE_PROCESSING_DATA,
+            $ftaData);
+
+        try
+        {
+            $entityType = $source->getEntity();
+
+            $sourceCoreClass = EntityConstant::getEntityNamespace($entityType) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateWithDetailsBeforeFtaRecon') === true)
+            {
+                $sourceCore->updateWithDetailsBeforeFtaRecon($source, $ftaData);
+            }
+
+            if (method_exists($sourceCore, 'updateStatusAfterFtaRecon') === true)
+            {
+                $sourceCore->updateStatusAfterFtaRecon($source, $ftaData);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
+                $ftaData
+            );
+        }
+    }
+
+
     /**
      * @param string $channel
      * @param array  $input
@@ -665,5 +721,52 @@ class Core extends Base\Core
         $response = (new $nodalAccountClass)->healthCheck($input);
 
         return $response;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function getDataToUpdateFromInput(array $input)
+    {
+        $beneficiaryName = null;
+
+        $extraInfo = $input['extra_info'] ?? [];
+
+        if (empty($extraInfo[BankAccountEntity::BENEFICIARY_NAME]) === false)
+        {
+            $beneficiaryName = $extraInfo[BankAccountEntity::BENEFICIARY_NAME];
+        }
+
+        $internalError = false;
+
+        if (empty($extraInfo[AttemptConstants::INTERNAL_ERROR]) === false)
+        {
+            $internalError = $extraInfo[AttemptConstants::INTERNAL_ERROR];
+        }
+
+        return array($beneficiaryName, $internalError);
+    }
+
+    /**
+     * @param array $input
+     * @param Entity $fta
+     * @return Entity
+     */
+    public function updateFtaWithInput(array $input, Entity $fta)
+    {
+        if (empty($input[Entity::UTR]) === false) {
+            $fta->setUtr($input[Entity::UTR]);
+        }
+
+        if (empty($input[Entity::MODE]) === false) {
+            $fta->setMode($input[Entity::MODE]);
+        }
+
+        if (empty($input[AttemptConstants::BANK_PROCESSED_TIME]) === false) {
+            $fta->setDateTime($input[AttemptConstants::BANK_PROCESSED_TIME]);
+        }
+
+        return $fta;
     }
 }

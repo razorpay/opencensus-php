@@ -111,6 +111,13 @@ class Base extends BaseModel\Core
      */
     protected $scroogeDispatchData;
 
+    /**
+     * Holds Recon batch output data, which it is used to
+     * generate the output file
+     * @var
+     */
+    protected $reconBatchOutputData;
+
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -169,7 +176,8 @@ class Base extends BaseModel\Core
         // gets associated with this batch
         list($ufhFile, $entries) = $this->saveInputFileAndValidateEntries($input);
 
-        // if type is payment_link just return the ufhFile and do not save batches and files entity.
+        // if batch is migrated to new batch service
+        // just return the ufhFile and do not save batches and files entity.
         if ($this->shouldSendToBatchService())
         {
             return $ufhFile;
@@ -205,7 +213,15 @@ class Base extends BaseModel\Core
         $validatedUfhFile = $this->createSetOutputFileAndSave($entries, FileStore\Type::BATCH_VALIDATED);
 
         $response = $this->getValidatedEntriesStatsAndPreview($entries);
-        $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
+
+        if ($this->shouldSkipValidateInputFile())
+        {
+            $response += $this->getFileIdAndSignedUrlFromFileEntity($inputUfhFile);
+        }
+        else
+        {
+            $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
+        }
 
         $this->deleteLocalFiles();
 
@@ -213,6 +229,13 @@ class Base extends BaseModel\Core
     }
 
     public function setScroogeDispatchData(array $data)
+    {
+        // Do nothing from Base class. This is handled in Reconciliation.php
+
+        return;
+    }
+
+    public function setReconBatchOutputData(array $data)
     {
         // Do nothing from Base class. This is handled in Reconciliation.php
 
@@ -1060,6 +1083,19 @@ class Base extends BaseModel\Core
     }
 
     /**
+     * @param FileStore\Entity $ufh
+     *
+     * @return array
+     */
+    public function getFileIdAndSignedUrlFromFileEntity(FileStore\Entity $ufh): array
+    {
+        return [
+            self::FILE_ID    => 'file_' . $ufh->getId(),
+            self::SIGNED_URL => $ufh->getFullFilePath(),
+        ];
+    }
+
+    /**
      * @param string $filePath
      * @param string $type
      * @param bool   $associateBatch - Ref: saveInputFile() for usage
@@ -1404,10 +1440,23 @@ class Base extends BaseModel\Core
     {
         $result = false;
 
-        if ($this->app->batchService->isMigratedBatchType($this->batch->getType()) === true)
+        if ($this->app->batchService->isCompletelyMigratedBatchType($this->batch->getType()) === true)
         {
+            // not required to call razorx.
+            return true;
+        }
+
+        if ($this->app->batchService->isMigratingBatchType($this->batch->getType()) === true)
+        {
+            //
+            // Get the RazorxTreatment based on batch Type:
+            // BATCH_SERVICE_<BATCH_TYPE>_MIGRATION
+            // Eg: for payment_link, RazorxTreatment will be batch_service_payment_link_migration
+            //
+            $razorxTreatment = 'batch_service_' . $this->batch->getType() . '_migration';
+
             $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        Merchant\RazorxTreatment::BATCH_SERVICE_PAYMENT_LINK,
+                                                        $razorxTreatment,
                                                         $this->mode
                                                         );
 
@@ -1420,5 +1469,28 @@ class Base extends BaseModel\Core
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
     {
         return;
+    }
+
+
+    /**
+     *  Checks whether validation needs to be skipped using razorx.
+     *
+     * @return bool
+     */
+    protected function shouldSkipValidateInputFile(): bool
+    {
+        $result = false;
+
+        if ($this->app->batchService->isMigratingBatchType($this->batch->getType()) === true)
+        {
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        Merchant\RazorxTreatment::BATCH_SERVICE_SKIP_VALIDATION,
+                                                        $this->mode
+            );
+
+            $result = (strtolower($variant) === 'on');
+        }
+
+        return $result;
     }
 }

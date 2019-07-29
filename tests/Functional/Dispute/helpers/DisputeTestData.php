@@ -1290,4 +1290,53 @@ return [
             'status_code'   => 200,
         ],
     ],
+
+    'testDisputeEditLostWithoutDeductionEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.lost',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 1000000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 1000000,
+                    'amount_deducted'    => 0,
+                    'currency'           => 'INR',
+                    'status'             => 'lost',
+                    'reason_code'        => 'SOMETHING_BAD',
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeEditLostWithoutDeduction' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status'         => 'lost',
+                'skip_deduction' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'          => 1000000,
+                'amount_deducted' => 0,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'lost'
+            ],
+        ],
+    ],
 ];

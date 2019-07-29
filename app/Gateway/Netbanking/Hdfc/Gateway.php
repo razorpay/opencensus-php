@@ -51,6 +51,8 @@ class Gateway extends Base\Gateway
         'Date'          => 'date',
     ];
 
+    const DISPLAY_DETAILS = 'Y';
+
     /**
      * @param  array $input
      *
@@ -218,24 +220,24 @@ class Gateway extends Base\Gateway
 
             $emData = Fields::getEmandateRegistrationData($token, $input['payment']['id'], $input['merchant']);
 
-            $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST)
-                               ->format('dmY');
+            $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST);
 
-            $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST)
-                             ->format('dmY');
+            $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST);
+
+            $amount = number_format($token->getMaxAmount() / 100, 2, '.', '');
 
             $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
             $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
             $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
-            $data[Fields::REF4]                  = number_format($token->getMaxAmount() / 100, 2, '.', '');
+            $data[Fields::REF4]                  = $amount;
             $data[Fields::REF5]                  = $emData[RHeadings::FREQUENCY];
             $data[Fields::REF6]                  = $emData[RHeadings::MANDATE_SERIAL_NUMBER];
             $data[Fields::REF7]                  = $emData[RHeadings::MANDATE_ID];
             $data[Fields::REF8]                  = $emData[RHeadings::MERCHANT_REQUEST_NO];
             $data[Fields::REF9]                  = $emData[RHeadings::AMOUNT_TYPE];
             $data[Fields::REF10]                 = $emData[RHeadings::CLIENT_NAME];
-            $data[Fields::DATE1]                 = $startDate;
-            $data[Fields::DATE2]                 = $endDate;
+            $data[Fields::DATE1]                 = $startDate->format('dmY');
+            $data[Fields::DATE2]                 = $endDate->format('dmY');
 
             //
             // For emandate registration payments, we need to hard-code the amount to Rs 1
@@ -245,6 +247,23 @@ class Gateway extends Base\Gateway
             $data['TxnAmount']                   = Fields::INIT_AMOUNT;
 
             $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
+
+            $data[Fields::DISPLAY_DETAILS]       = self::DISPLAY_DETAILS;
+
+            $data[Fields::DETAILS1]              = Fields::DISPLAY_DEBIT_START_DATE . '~' .
+                                                   $startDate->format('d-m-Y') . '|' .
+                                                   Fields::DISPLAY_DEBIT_END_DATE . '~' .
+                                                   $endDate->format('d-m-Y');
+
+            $data[Fields::DETAILS2]              = Fields::DISPLAY_FREQUENCY . '~' .
+                                                   $emData[RHeadings::FREQUENCY] . '|' .
+                                                   Fields::DISPLAY_MANDATE_AMOUNT . '~' .
+                                                   $amount;
+
+            $data[Fields::DETAILS3]              = Fields::DISPLAY_CUSTOMER_NAME .'~' .
+                                                   $emData[RHeadings::CUSTOMER_NAME] . '|' .
+                                                   Fields::DISPLAY_MANDATE_ID . '~' .
+                                                   $emData[RHeadings::MANDATE_ID];
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to

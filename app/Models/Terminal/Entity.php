@@ -791,7 +791,7 @@ class Entity extends Base\PublicEntity
 
     protected function modifyInternational(& $input)
     {
-        if (empty($input[self::INTERNATIONAL]) === true)
+        if (isset($input[self::INTERNATIONAL]) === false)
         {
             $gateway = $input[self::GATEWAY];
 
@@ -934,7 +934,11 @@ class Entity extends Base\PublicEntity
 
         $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
 
-        $this->setAttribute(self::ENABLED_BANKS, $supportedBanks);
+        $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
+
+        $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+        $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);
     }
 
     public function edit(array $input = [], $operation = 'edit')

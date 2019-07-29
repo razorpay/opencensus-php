@@ -3,6 +3,7 @@
 namespace RZP\Http;
 
 use RZP\Models\User\Role;
+use RZP\Models\User\BankingRole;
 
 class UserRolesScope
 {
@@ -62,7 +63,7 @@ class UserRolesScope
             'balance_fetch'                       => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_balance_fetch'              => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'bank_account_fetch'                  => Role::allExceptPaymentLinkRoles(),
-            'merchant_activation_details'         => [
+            'merchant_activation_details'         => array_merge([
                 Role::OWNER,
                 Role::MANAGER,
                 Role::ADMIN,
@@ -71,7 +72,7 @@ class UserRolesScope
                 Role::LINKED_ACCOUNT_OWNER,
                 Role::LINKED_ACCOUNT_ADMIN,
                 Role::SUPPORT,
-            ],
+            ], BankingRole::getAllRoles()),
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
             'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN, Role::SELLERAPP],

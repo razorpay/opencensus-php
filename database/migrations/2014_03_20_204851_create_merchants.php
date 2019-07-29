@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Merchant\FeeModel;
 use RZP\Models\Merchant\RefundSource;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 
 class CreateMerchants extends Migration
 {
@@ -51,8 +52,14 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::LIVE)
                   ->default(0);
 
+            $table->string(Merchant::LIVE_DISABLE_REASON)
+                  ->nullable();
+
             $table->tinyInteger(Merchant::HOLD_FUNDS)
                   ->default(0);
+
+            $table->string(Merchant::HOLD_FUNDS_REASON)
+                  ->nullable();
 
             $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
                   ->nullable();
@@ -114,6 +121,9 @@ class CreateMerchants extends Migration
             $table->text(Merchant::LOGO_URL)
                   ->nullable();
 
+            $table->text(Merchant::ICON_URL)
+                  ->nullable();
+
             $table->string(Merchant::INVOICE_LABEL_FIELD, 50)
                   ->nullable();
 
@@ -133,6 +143,9 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::AUTO_REFUND_DELAY)
                   ->nullable()
                   ->default(null);
+
+            $table->enum(Merchant::DEFAULT_REFUND_SPEED, [RefundSpeed::NORMAL, RefundSpeed::OPTIMUM, RefundSpeed::INSTANT])
+                  ->default(RefundSpeed::NORMAL);
 
             $table->tinyInteger(Merchant::AUTO_CAPTURE_LATE_AUTH)
                   ->default(0);

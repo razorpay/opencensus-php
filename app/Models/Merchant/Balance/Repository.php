@@ -200,7 +200,7 @@ class Repository extends Base\Repository
      */
     public function getMerchantsIdsForEsSync(int $minUpdatedAtTimeStamp): array
     {
-        $merchantIds = $this->newQuery()
+        $merchantIds = $this->newQueryWithConnection($this->getSlaveConnection())
                             ->where(Entity::TYPE, '=', Type::PRIMARY)
                             ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
                             ->groupBy(Entity::MERCHANT_ID)
@@ -236,6 +236,19 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function getMerchantBalanceByTypeAndAccountType(
+        string $merchantId,
+        string $balanceType,
+        string $accType,
+        string $connection = null)
+    {
+        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->merchantIdAndType($merchantId, $balanceType)
+                     ->where(Entity::ACCOUNT_TYPE, $accType)
+                     ->first();
+    }
+
     public function getBalanceIdByAccountNumberOrFail(string $accountNumber): string
     {
         return $this->getBalanceByAccountNumberOrFail($accountNumber)->getId();
@@ -252,6 +265,18 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->merchantIdAndType($merchantId, Type::BANKING)
+                    ->firstOrFailPublic();
+    }
+
+    public function getBalanceByMerchantIdAccountNumberAndChannelOrFail(
+        string $merchantId,
+        string $accountNumber,
+        string $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
                     ->merchantIdAndType($merchantId, Type::BANKING)
                     ->firstOrFailPublic();
     }

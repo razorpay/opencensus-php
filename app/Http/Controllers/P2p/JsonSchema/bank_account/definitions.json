@@ -47,16 +47,43 @@
                 ],
                  "properties": {
                      "upipin" : {
-                         "type" : "boolean",
-                         "description": "Whether UPI PIN is set or not"
+                         "type": "object",
+                         "properties": {
+                             "set" : {
+                                 "type" : "boolean",
+                                 "description": "Whether cred is set or not"
+                             },
+                             "length" : {
+                                 "type" : "integer",
+                                 "description": "Length for the cred"
+                             }
+                         }
                      },
                      "sms" : {
-                         "type" : "boolean",
-                         "description": "Whether UPI PIN is set or not"
+                         "type": "object",
+                         "properties": {
+                             "set" : {
+                                 "type" : "boolean",
+                                 "description": "Whether cred is set or not"
+                             },
+                             "length" : {
+                                 "type" : "integer",
+                                 "description": "Length for the cred"
+                             }
+                         }
                      },
                      "atmpin" : {
-                         "type" : "boolean",
-                         "description": "Whether UPI PIN is set or not"
+                         "type": "object",
+                         "properties": {
+                             "set" : {
+                                 "type" : "boolean",
+                                 "description": "Whether cred is set or not"
+                             },
+                             "length" : {
+                                 "type" : "integer",
+                                 "description": "Length for the cred"
+                             }
+                         }
                      }
                  }
             },

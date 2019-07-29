@@ -68,6 +68,11 @@ class Server extends Base\Core
         $this->route = $this->app['api.route'];
     }
 
+    public function authenticate($input)
+    {
+        return $this->authorize($input);
+    }
+
     protected function authorize($input)
     {
         $this->action = Action::AUTHORIZE;

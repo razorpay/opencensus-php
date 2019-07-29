@@ -2,6 +2,7 @@
 <html lang='en' style='background: #f3f3f3; color: #333; height: 100%;font-size: 16px;font-family:ubuntu,helvetica,sans-serif;text-align:center'>
   <head>
     <title>Fees Breakup</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset='utf-8'>
     <meta http-equiv='pragma' content='no-cache'>
     <meta http-equiv='cache-control' content='no-cache'>

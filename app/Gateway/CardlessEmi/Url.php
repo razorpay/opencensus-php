@@ -35,12 +35,12 @@ class Url
     const CAPTURE_FLEXMONEY          = '/payments/capture';
     const VERIFY_FLEXMONEY           = '/payments/verify';
     const REFUND_FLEXMONEY           = '/payments/refund';
-    const VERIFY_REFUND              = '/refunds/verify';
+    const VERIFY_REFUND_FLEXMONEY    = '/refunds/verify';
 
     //ePayLater Urls
 
     const TEST_DOMAIN_EPAYLATER     = 'https://hodor.epaylater.in:8095';
-    const LIVE_DOMAIN_EPAYLATER     = ''; // TODO: fill this later.
+    const LIVE_DOMAIN_EPAYLATER     = 'https://api1.epaylater.in';
 
     const CHECK_ACCOUNT_EPAYLATER   = '/user/v1/checkaccount';
     const FETCH_TOKEN_EPAYLATER     = '/user/v1/token';

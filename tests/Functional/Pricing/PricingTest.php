@@ -1239,4 +1239,98 @@ class PricingTest extends TestCase
             return true;
         });
     }
+
+    public function testAddPricingPlanRuleWithFeatureRefund()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testCreatePaymentCardTypePrepaidWithPrepaidPricing()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin' => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'prepaid'
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'prepaid',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'payment_network'     => 'VISA',
+            'payment_issuer'      => 'SBI',
+            'org_id'              => '10000000000000',
+            'type'                => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('5000', $paymentObj['fee']);
+
+    }
+
+    public function testCreatePaymentCardTypePrepaidWithNoPrepaidPricing()
+    {
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4573921038488884';
+
+        $this->fixtures->iin->create([
+            'iin' => '457392',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type'    => 'prepaid'
+        ]);
+
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'percent_rate'        => 2000,
+            'fixed_rate'          => 0,
+            'payment_network'     => 'VISA',
+            'payment_issuer'      => 'SBI',
+            'org_id'              => '10000000000000',
+            'type'                => 'pricing',
+        ];
+
+        $plan = $this->createPricingPlan($defaultPricingPlan);
+
+        $this->setDefaultMerchantMethods();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $plan['id']]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentObj = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('10000', $paymentObj['fee']);
+
+    }
+
 }

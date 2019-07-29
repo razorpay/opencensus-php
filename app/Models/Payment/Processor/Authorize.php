@@ -13,7 +13,6 @@ use Lib\PhoneBook;
 
 use RZP\Jobs;
 use RZP\Exception;
-use RZP\Diag\EventCode;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -22,6 +21,7 @@ use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
+use RZP\Diag\EventCode;
 use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
@@ -252,17 +252,6 @@ trait Authorize
 
             $payment->associateTerminal($currentTerminal);
 
-            $this->app['diag']->trackPaymentEvent(
-                EventCode::PAYMENT_AUTHENTICATION_INITIATED,
-                $payment,
-                null,
-                [
-                    'attempt'     => $retryAttempts,
-                    'terminal_id' => $payment->getTerminalId(),
-                    'gateway'     => $payment->getGateway(),
-                    'shared'      => $currentTerminal->isShared()
-                ]);
-
             $terminalGatewayInput = $gatewayInput;
 
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
@@ -282,6 +271,17 @@ trait Authorize
                 'start'         => microtime(true),
             ];
 
+            $this->app['diag']->trackPaymentEvent(
+                EventCode::PAYMENT_AUTHENTICATION_INITIATED,
+                $payment,
+                null,
+                [
+                    'attempt'     => $retryAttempts,
+                    'terminal_id' => $payment->getTerminalId(),
+                    'gateway'     => $payment->getGateway(),
+                    'shared'      => $currentTerminal->isShared()
+                ] + ($gatewayInput['authenticate'] ?? []));
+
             try
             {
                 if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
@@ -292,6 +292,14 @@ trait Authorize
                 {
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
+
+                $this->app['diag']->trackPaymentEvent(
+                    EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
+                    $payment,
+                    null,
+                    [
+                        'url' => $request['url'] ?? ''
+                    ]);
 
                 $retry = false;
 
@@ -346,27 +354,9 @@ trait Authorize
 
     protected function runOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput)
     {
-        try
-        {
-            $this->app['diag']->trackPaymentEvent(
-                EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_INITIATED,
-                $payment,
-                null,
-                $gatewayInput['authenticate'] ?? []
-            );
+        $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
 
-            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $gatewayInput);
-
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED, $payment);
-
-            return $request;
-        }
-        catch (\Throwable $ex)
-        {
-            $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHENTICATION_OTP_GENERATE_PROCESSED, $payment, $ex);
-
-            throw $ex;
-        }
+        return $request;
     }
 
     protected function preProcessAuthBeforeRetry($payment)
@@ -1618,9 +1608,23 @@ trait Authorize
         // Adding fee calculation as part of gateway input only if applicable
         $this->addFeeIfApplicable($payment, $gatewayInput);
 
-        if ($payment->hasOrder())
+        if ($payment->hasOrder() === true)
         {
             $gatewayInput['order'] = $payment->order->toArray();
+            $orderBankAccount = $payment->order->bankAccount;
+
+            if ($orderBankAccount !== null)
+            {
+                $gatewayInput['order']['bank_account'] = $orderBankAccount->toArray();
+            }
+        }
+
+        // modify account number in gateway input for some banks
+        // to be called only in case of upi tpv transactions
+        if (($payment->getMethod() == Method::UPI) and
+            ($payment->merchant->isTPVRequired() === true))
+        {
+            $this->modifyAccountNumberForSpecificBanks($payment, $gatewayInput);
         }
 
         // set token for local card saving in gateway input
@@ -1861,15 +1865,24 @@ trait Authorize
         }
     }
 
+    /*
+     * function gets called processAndReturnTerminal and processAndReturnFees, in this flow
+     * runPaymentMethodRelatedPreProcessing creates cards and tokens which is not used at all.
+     * to avoid this we run the flow in beginTransactionAndRollback
+     */
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
-        $gatewayInput = [];
+        $this->repo->beginTransactionAndRollback(
+            function() use ($payment, $input)
+            {
+                $gatewayInput = [];
 
-        $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+                $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-        $this->processCurrencyConversions($payment);
+                $this->processCurrencyConversions($payment);
 
-        $this->attachEntityOrigin($payment);
+                $this->attachEntityOrigin($payment);
+            });
     }
 
     /**
@@ -1900,6 +1913,7 @@ trait Authorize
                     'message'     => $e->getMessage(),
                     'entity_type' => $payment->getEntity(),
                     'entity_id'   => $payment->getId(),
+                    'stack_trace' => $e->getTraceAsString(),
                 ]);
         }
     }
@@ -4465,17 +4479,7 @@ trait Authorize
 
     protected function callGatewayAuthorize(Payment\Entity $payment, array $data)
     {
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_AUTHORIZATION_INITIATED, $payment);
-
         $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
-
-        $this->app['diag']->trackPaymentEvent(
-            EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
-            $payment,
-            null,
-            [
-                'url' => $response['url'] ?? ''
-            ]);
 
         return $response;
     }
@@ -4777,11 +4781,14 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
+        $iin = $this->app['repo']->iin->find($card['iin']);
+
         return array_merge(
                 $card->toArray(),
                 [
                     'number' => $cardNumber,
-                    'cvv' => $cvv
+                    'cvv' => $cvv,
+                    'message_type' => $iin['message_type'],
                 ]);
     }
 
@@ -4813,13 +4820,16 @@ trait Authorize
 
         $card = $cardCore->createDuplicateCard($savedCard, $this->merchant);
 
+        $iin = $this->app['repo']->iin->find($card['iin']);
+
         $this->payment->card()->associate($card);
 
         return array_merge(
             $card->toArray(),
             [
-                'number' => $cardNumber,
-                'cvv' => $cvv
+                'number'       => $cardNumber,
+                'cvv'          => $cvv,
+                'message_type' => $iin['message_type'],
             ]);
     }
 
@@ -5226,6 +5236,21 @@ trait Authorize
             return false;
         }
 
+        $gateway = $payment->getGateway();
+
+        $cardId = $payment->getCardId();
+        // We handle dual and null terminal mode as the default case
+        // In the default case, we check if the card network supports
+        // purchase or auth+capture. Example. FSS uses Auth and capture
+        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
+        $networkCode = null;
+
+        // If payment method is wallet or net banking.
+        if ($cardId !== null)
+        {
+            $networkCode = $payment->card->getNetworkCode();
+        }
+
         $terminalMode = $payment->terminal->getMode();
 
         if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
@@ -5234,13 +5259,10 @@ trait Authorize
         }
         else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
-            return false;
+            return (Payment\Gateway::supportsPurchase($gateway, $networkCode) === false);
         }
 
-        $gateway = $payment->getGateway();
-
         // Additional check for ICICI debit cards on First data terminal
-        $cardId = $payment->getCardId();
 
         if (($cardId !== null) and
             ($gateway === Payment\Gateway::FIRST_DATA))
@@ -5256,18 +5278,6 @@ trait Authorize
             {
                 return false;
             }
-        }
-
-        // We handle dual and null terminal mode as the default case
-        // In the default case, we check if the card network supports
-        // purchase or auth+capture. Example. FSS uses Auth and capture
-        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
-        $networkCode = null;
-
-        // If payment method is wallet or net banking.
-        if ($cardId !== null)
-        {
-            $networkCode = $payment->card->getNetworkCode();
         }
 
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
@@ -5418,7 +5428,8 @@ trait Authorize
             $input['gateway_input'] = $gatewayInput;
         }
 
-        if (empty($input[Payment\Entity::TOKEN]) === true)
+        if (($payment->isMethodCardOrEmi() === true) and
+            (empty($input[Payment\Entity::TOKEN]) === true))
         {
             /*
              * In Maestro card sometimes cvv will be null and
@@ -5438,26 +5449,43 @@ trait Authorize
         $this->cache->put($key, $input, $ttl);
     }
 
-    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    protected function shouldRedirect(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
-
         if ($this->app['basicauth']->isPrivateAuth() === false)
         {
-            return null;
+            return false;
+        }
+
+        if (($payment->isEmandate() === true) and
+            ($payment->getBank() === IFSC::UTIB) and
+            ($payment->isRecurringTypeInitial() === true))
+        {
+                return true;
         }
 
         if (($payment->isMethodCardOrEmi() === false) or
             ($payment->isRecurring() === true) or
             ($payment->isPushPaymentMethod() === true))
         {
-            return null;
+            return false;
         }
 
         $authType = $payment->getAuthType();
 
         if (($authType !== null) and
             ($authType !== Payment\AuthType::_3DS))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
+    {
+        $merchant = $payment->merchant;
+
+        if ($this->shouldRedirect($payment) === false)
         {
             return null;
         }
@@ -5613,7 +5641,7 @@ trait Authorize
             );
         }
 
-        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
+        if (($payment->isMethodCardOrEmi() === true) and (empty($inputDetails[Payment\Entity::TOKEN]) === true))
         {
             $this->setCardNumberAndCvv($inputDetails);
         }
@@ -5677,5 +5705,31 @@ trait Authorize
         });
 
         $gatewayInput['payment_fee'] = $fee;
+    }
+
+    protected function modifyAccountNumberForSpecificBanks($payment, array & $gatewayInput)
+    {
+        $accountNumber = $gatewayInput['order']['account_number'];
+
+        // prepend required zeroes in the account number based on bank
+        switch ($payment->getBank())
+        {
+            case IFSC::SBIN:
+                $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
+                break;
+
+            case IFSC::KKBK:
+                $accountNumber = str_pad($accountNumber, 14, '0', STR_PAD_LEFT );
+                break;
+
+            case IFSC::CBIN:
+                $accountNumber = str_pad($accountNumber, 10, '0', STR_PAD_LEFT );
+                break;
+
+            default:
+                break;
+        }
+
+        $gatewayInput['order']['account_number'] = $accountNumber;
     }
 }

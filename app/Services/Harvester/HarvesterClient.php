@@ -217,6 +217,7 @@ class HarvesterClient extends AbstractEventClient
 
             throw new IntegrationException(
                 ErrorCode::SERVER_ERROR_HARVESTER_INVALID_RESPONSE,
+                null,
                 [
                     'url'       => $urlPath,
                     'data'      => $data,

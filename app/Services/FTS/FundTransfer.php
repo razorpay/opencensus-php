@@ -31,6 +31,10 @@ class FundTransfer extends Base
         Constants::FUND_ACCOUNT_VALIDATION,
     ];
 
+    const PAYOUT_REFUND = 'payout_refund';
+
+    const PENNY_TESTING = 'penny_testing';
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -104,7 +108,11 @@ class FundTransfer extends Base
         if (($sourceType === Constants::PAYOUT) and
             ($this->fta->isRefund() === true))
         {
-            $product .= '_refund';
+            $product = self::PAYOUT_REFUND;
+        }
+        else if ($sourceType === Constants::FUND_ACCOUNT_VALIDATION)
+        {
+            $product = self::PENNY_TESTING;
         }
 
         $request = [
@@ -159,7 +167,7 @@ class FundTransfer extends Base
         }
 
         $request[Constants::TRANSFER] = [
-            Constants::MODE              => $mode,
+            Constants::PREFERRED_MODE    => $mode,
             Constants::AMOUNT            => $this->source->getAmount(),
             Constants::NARRATION         => $this->fta->getNarration(),
             Constants::SOURCE_ID         => $this->fta->getSourceId(),

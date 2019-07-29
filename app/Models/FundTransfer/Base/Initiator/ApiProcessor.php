@@ -163,6 +163,41 @@ abstract class ApiProcessor extends NodalAccount
         return $parsedResponse;
     }
 
+    public function captureBankStatusMetric(
+        string $channel,
+        string $product,
+        bool $isFailure,
+        bool $isSuccess,
+        $mode,
+        $statusCode,
+        $bankSubStatus)
+    {
+        $status = Metric::CATEGORY_PENDING;
+
+        switch (true)
+        {
+            case $isSuccess === true:
+                $status = Metric::CATEGORY_SUCCESS;
+                break;
+
+            case $isFailure === true:
+                $status = Metric::CATEGORY_FAILED;
+                break;
+
+            default:
+                $status = Metric::CATEGORY_PENDING;
+        }
+
+        $this->trace->count(Metric::NODAL_RESPONSE_COUNT, [
+            Metric::MODE               => $mode,
+            Metric::CHANNEL            => $channel,
+            Metric::PRODUCT            => $product,
+            Metric::STATUS_CODE        => $statusCode,
+            Metric::BANK_FAILURE_CODE  => $bankSubStatus,
+            Metric::STATUS             => $status,
+        ]);
+    }
+
     /**
      * @return array
      */

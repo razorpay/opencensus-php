@@ -80,6 +80,9 @@ class CreateSubscription extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->string(Entity::SOURCE, 32)
+                  ->nullable();
+
             $table->text(Entity::NOTES);
 
             $table->integer(Entity::CANCEL_AT)

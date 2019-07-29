@@ -24,16 +24,21 @@ class Entity extends Base\PublicEntity
     const CONTACT_LANDLINE                   = 'contact_landline';
     const BUSINESS_TYPE                      = 'business_type';
     const BUSINESS_NAME                      = 'business_name';
+    const BUSINESS_DESCRIPTION               = 'business_description';
     const BUSINESS_DBA                       = 'business_dba';
     const BUSINESS_WEBSITE                   = 'business_website';
     const BUSINESS_INTERNATIONAL             = 'business_international';
     const BUSINESS_PAYMENTDETAILS            = 'business_paymentdetails';
     const BUSINESS_MODEL                     = 'business_model';
     const BUSINESS_REGISTERED_ADDRESS        = 'business_registered_address';
+    const BUSINESS_REGISTERED_ADDRESS_L2     = 'business_registered_address_l2';
+    const BUSINESS_REGISTERED_COUNTRY        = 'business_registered_country';
     const BUSINESS_REGISTERED_STATE          = 'business_registered_state';
     const BUSINESS_REGISTERED_CITY           = 'business_registered_city';
     const BUSINESS_REGISTERED_PIN            = 'business_registered_pin';
     const BUSINESS_OPERATION_ADDRESS         = 'business_operation_address';
+    const BUSINESS_OPERATION_ADDRESS_L2      = 'business_operation_address_l2';
+    const BUSINESS_OPERATION_COUNTRY         = 'business_operation_country';
     const BUSINESS_OPERATION_STATE           = 'business_operation_state';
     const BUSINESS_OPERATION_CITY            = 'business_operation_city';
     const BUSINESS_OPERATION_PIN             = 'business_operation_pin';
@@ -91,6 +96,7 @@ class Entity extends Base\PublicEntity
     const ISSUE_FIELDS                       = 'issue_fields';
     const ISSUE_FIELDS_REASON                = 'issue_fields_reason';
     const INTERNAL_NOTES                     = 'internal_notes';
+    const CUSTOM_FIELDS                      = 'custom_fields';
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
@@ -140,16 +146,21 @@ class Entity extends Base\PublicEntity
         self::CONTACT_LANDLINE,
         self::BUSINESS_TYPE,
         self::BUSINESS_NAME,
+        self::BUSINESS_DESCRIPTION,
         self::BUSINESS_DBA,
         self::BUSINESS_WEBSITE,
         self::BUSINESS_INTERNATIONAL,
         self::BUSINESS_PAYMENTDETAILS,
         self::BUSINESS_MODEL,
         self::BUSINESS_REGISTERED_ADDRESS,
+        self::BUSINESS_REGISTERED_ADDRESS_L2,
+        self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
+        self::BUSINESS_OPERATION_ADDRESS_L2,
+        self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
         self::BUSINESS_OPERATION_PIN,
@@ -210,6 +221,8 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
         self::SUBMITTED,
         self::SUBMITTED_AT,
+        self::INTERNATIONAL_ACTIVATION_FLOW,
+        self::CUSTOM_FIELDS,
     ];
 
     protected $public = [
@@ -219,15 +232,20 @@ class Entity extends Base\PublicEntity
         self::CONTACT_LANDLINE,
         self::BUSINESS_TYPE,
         self::BUSINESS_NAME,
+        self::BUSINESS_DESCRIPTION,
         self::BUSINESS_DBA,
         self::BUSINESS_WEBSITE,
         self::BUSINESS_INTERNATIONAL,
         self::BUSINESS_PAYMENTDETAILS,
         self::BUSINESS_REGISTERED_ADDRESS,
+        self::BUSINESS_REGISTERED_ADDRESS_L2,
+        self::BUSINESS_REGISTERED_COUNTRY,
         self::BUSINESS_REGISTERED_STATE,
         self::BUSINESS_REGISTERED_CITY,
         self::BUSINESS_REGISTERED_PIN,
         self::BUSINESS_OPERATION_ADDRESS,
+        self::BUSINESS_OPERATION_ADDRESS_L2,
+        self::BUSINESS_OPERATION_COUNTRY,
         self::BUSINESS_OPERATION_STATE,
         self::BUSINESS_OPERATION_CITY,
         self::BUSINESS_OPERATION_PIN,
@@ -481,6 +499,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
 
+    public function getBusinessRegisteredAddressLine2()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS_L2);
+    }
+
     public function getBusinessRegisteredAddressAsText(string $delimiter = PHP_EOL)
     {
         return Address\Utility::formatAddressAsText(
@@ -504,6 +527,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
     }
 
+    public function getBusinessRegisteredCountry()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_COUNTRY);
+    }
+
     public function getBusinessRegisteredStateName()
     {
         $state     = $this->getBusinessRegisteredState();
@@ -522,6 +550,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_OPERATION_ADDRESS);
     }
 
+    public function getBusinessOperationAddressLine2()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_ADDRESS_L2);
+    }
+
     public function getBusinessOperationCity()
     {
         return $this->getAttribute(self::BUSINESS_OPERATION_CITY);
@@ -530,6 +563,11 @@ class Entity extends Base\PublicEntity
     public function getBusinessOperationState()
     {
         return $this->getAttribute(self::BUSINESS_OPERATION_STATE);
+    }
+
+    public function getBusinessOperationCountry()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_COUNTRY);
     }
 
     public function getBusinessOperationPin()
@@ -679,6 +717,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_VOLUME);
     }
 
+    public function getBusinessDescription()
+    {
+        return $this->getAttribute(self::BUSINESS_DESCRIPTION);
+    }
+
     public function getTransactionValue()
     {
         return $this->getAttribute(self::TRANSACTION_VALUE);
@@ -747,5 +790,32 @@ class Entity extends Base\PublicEntity
         $adminId = $this->getAttribute(Entity::REVIEWER_ID);
 
         $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
+    }
+
+    protected function getCustomFieldsAttribute($customFields): array
+    {
+        $customFields = json_decode($customFields, true);
+
+        if (empty($customFields) === true)
+        {
+            return [];
+        }
+
+        return $customFields;
+    }
+
+    public function getCustomFields(): array
+    {
+        return $this->getAttribute(self::CUSTOM_FIELDS);
+    }
+
+    protected function setCustomFieldsAttribute(array $customFields)
+    {
+        $this->attributes[self::CUSTOM_FIELDS] = json_encode($customFields);
+    }
+
+    public function setCustomFields(array $customFields)
+    {
+        $this->setAttribute(self::CUSTOM_FIELDS, $customFields);
     }
 }

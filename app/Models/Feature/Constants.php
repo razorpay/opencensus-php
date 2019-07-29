@@ -103,6 +103,7 @@ class Constants
     const IRCTC_METHODS                   = 'irctc_methods';
     const SKIP_CVV                        = 'skip_cvv';
     const BLOCK_SETTLEMENTS               = 'block_settlements';
+    const TEST_MODE_SETTLEMENT            = 'test_mode_settlement';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
     const IIN_LISTING                     = 'iin_listing';
@@ -118,8 +119,12 @@ class Constants
     const DOWNTIME_ROUTING                = 'downtime_routing';
     const PAYOUT_TO_CARDS                 = 'payout_to_cards';
     const PAYMENT_ONHOLD                  = 'payment_onhold';
+    const GOOGLE_PAY_OMNICHANNEL          = 'google_pay_omnichannel';
+    const VIJAYA_MERCHANT                 = 'vijaya_merchant';
+    const HIDE_VA_PAYER_BANK_DETAIL       = 'hide_va_payer_bank_detail';
+    const ASYNC_BALANCE_UPDATE            = 'async_balance_update';
 
-    /**
+  /**
      * This will control if the bank details will be returned in the fetch token response.
      * Bank details will contain beneficiary_name, account_number, ifsc and account_type
      */
@@ -181,6 +186,11 @@ class Constants
      */
     const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
 
+    /**
+     * Enables workflow feature on Payout for Business Banking (RazorpayX)
+     */
+    const PAYOUT_WORKFLOWS              = 'payout_workflows';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -213,6 +223,7 @@ class Constants
         self::GOOGLE_PAY,
         self::CUSTOMER_ADDRESS,
         self::IRCTC_METHODS,
+        self::GOOGLE_PAY_OMNICHANNEL,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -356,6 +367,11 @@ class Constants
         self::PAYOUT_TO_CARDS                 => true,
         self::PAYMENT_ONHOLD                  => true,
         self::X_PRO_INVITE                    => true,
+        self::GOOGLE_PAY_OMNICHANNEL          => true,
+        self::TEST_MODE_SETTLEMENT            => true,
+        self::VIJAYA_MERCHANT                 => true,
+        self::PAYOUT_WORKFLOWS                => true,
+        self::ASYNC_BALANCE_UPDATE            => true,
     ];
 
     // Entity type constants
@@ -420,6 +436,11 @@ class Constants
             'display_name'  => 'Smart Collect',
             'documentation' => 'smart-collect',
         ],
+        self::PAYOUT    => [
+            'feature'       => self::PAYOUT,
+            'display_name'  => 'Payouts',
+            'documentation' => 'payouts',
+        ],
         self::REPORT_V2 => [
             'feature'       => self::REPORT_V2,
             'display_name'  => 'Report V2',
@@ -473,6 +494,11 @@ class Constants
         self::X_PRO_INVITE              => [
             'feature'       => self::X_PRO_INVITE,
             'display_name'  => 'Razorpay X Pro Invite',
+            'documentation' => '',
+        ],
+        self::PAYOUT_WORKFLOWS          => [
+            'feature'       => self::PAYOUT_WORKFLOWS,
+            'display_name'  => 'Razorpay X - Workflows',
             'documentation' => '',
         ],
     ];

@@ -93,14 +93,14 @@ class Repository extends Base\Repository
       int $skip,
       int $end,
       array $merchantIds = [],
-      array $merchantIdsExcluded = []): Base\PublicCollection
+      array $merchantIdsExcluded = []): array
     {
         $query = $this->newQuery()
+                    ->select(Entity::ID)
                     ->where(Entity::ACTIVATED, '=', 1)
                     ->where(Entity::ACTIVATED_AT, '<=', $end)
                     ->take($limit)
-                    ->skip($skip)
-                    ->with('merchantDetail');
+                    ->skip($skip);
 
         if (empty($merchantIds) === false)
         {
@@ -112,7 +112,9 @@ class Repository extends Base\Repository
             $query = $query->whereNotIn(Entity::ID, $merchantIdsExcluded);
         }
 
-        return $query->get();
+        return $query->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
     }
 
     public function getSharedAccount()
@@ -584,11 +586,13 @@ class Repository extends Base\Repository
      * @param array $applicationIds
      * @param array $params
      *
+     * @param array $relations
+     *
      * @return Base\PublicCollection
      */
-    public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = []): Base\PublicCollection
+    public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = [], array $relations = []): Base\PublicCollection
     {
-        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds);
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds, $relations);
 
         $this->buildQueryWithParams($query, $params);
 
@@ -618,9 +622,11 @@ class Repository extends Base\Repository
     /**
      * @param array $applicationIds
      *
+     * @param array $relations
+     *
      * @return Base\BuilderEx
      */
-    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds)
+    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds, array $relations = [])
     {
         $accessMapRepo       = $this->repo->merchant_access_map;
         $merchantDetailsRepo = $this->repo->merchant_detail;
@@ -641,12 +647,14 @@ class Repository extends Base\Repository
             $accessMapsEntityId . ' as ' . Constants::APPLICATION_ID,
         ];
 
+        $relations = array_unique(array_merge(['users', 'owners'], $relations));
+
         //
         // merchantDetail is not fetched as a relation below because
         // a filter has to be added for merchantDetail.activation_status in the query
         //
         $query = $this->newQuery()
-                      ->with(['users', 'owners'])
+                      ->with($relations)
                       ->select($attributes)
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
                       ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)

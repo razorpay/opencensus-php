@@ -24,8 +24,11 @@ class Fields
     const VERIFY_AMOUNT             = 'amount';
     const PAYER_AMOUNT              = 'PayerAmount';
     const PAYER_MOBILE              = 'PayerMobile';
+    const PAYER_ACCOUNT             = 'payerAccount';
+    const PAYER_IFSC                = 'payerIFSC';
     const PAYER_NAME                = 'PayerName';
     const PAYER_VA                  = 'PayerVA';
+    const VALIDATE_PAYER_ACCOUNT    = 'ValidatePayerAccFlag';
     const VERIFY_PAYER_VA           = 'payerVA';
     const PAYER_VA_REQ              = 'payerVa';
     const REFUND_ID                 = 'refund_id';

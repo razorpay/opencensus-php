@@ -10,22 +10,25 @@ class Entity extends Base\PublicEntity
     const TYPE       = 'type';
     const EMAIL      = 'email';
     const VERIFIED   = 'verified';
+    const PHONE      = 'phone';
+    const POLICY     = 'policy';
+    const URL        = 'url';
 
     protected $entity = 'merchant_email';
 
     protected $fillable = [
         self::TYPE,
         self::EMAIL,
+        self::PHONE,
+        self::POLICY,
+        self::URL,
     ];
 
-    protected $visible = [
-        self::ID,
-        self::TYPE,
+    protected $public = [
         self::EMAIL,
-        self::VERIFIED,
-        self::CREATED_AT,
-        self::UPDATED_AT,
-        self::MERCHANT_ID,
+        self::PHONE,
+        self::POLICY,
+        self::URL,
     ];
 
     protected $dates = [
@@ -42,5 +45,10 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 }

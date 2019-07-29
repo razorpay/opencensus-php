@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Exception\EarlyWorkflowResponse;
@@ -264,8 +265,19 @@ class Service
             return false;
         }
 
+        $merchantId = null;
+
+        //
+        // For merchant app permissions, maker=merchant, we send the merchant ID for fetching
+        // only workflows defined for the merchant
+        //
+        if (Permission\Name::isMerchantPermission($permission) === true)
+        {
+            $merchantId = $maker->getId();
+        }
+
         $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-            $permission, $maker->getOrgId());
+            $permission, $maker->getOrgId(), $merchantId);
 
         return $permissionHasWorkflow;
     }
@@ -387,7 +399,7 @@ class Service
 
         $this->setDiff($diff);
 
-        // Trigger the entite maker/checker (workflow) flow
+        // Trigger the entity maker/checker (workflow) flow
         $workflowAction = $this->trigger();
 
         $workflowAction = json_encode($workflowAction);

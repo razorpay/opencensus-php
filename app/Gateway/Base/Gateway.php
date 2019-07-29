@@ -81,6 +81,15 @@ class Gateway
     const LIBRESSL_READ_ERROR_STRING = 'cURL error 56: LibreSSL SSL_read: SSL_ERROR_SYSCALL';
 
     /**
+     * Actions for which gateway action can be retried on next terminal safely.
+     */
+    const RETRIABLE_ACTIONS = [
+        Action::AUTHENTICATE,
+        Action::OTP_GENERATE,
+        Action::VALIDATE_VPA,
+    ];
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -240,22 +249,23 @@ class Gateway
         {
             $previousExc = $exc->getPrevious();
 
-            if (($previousExc instanceof \Requests_Exception) and
-                ($previousExc->getType() === 'curlerror') and
-                (property_exists($exc, 'isPropagatedException') === false))
+            if (property_exists($exc, 'isPropagatedException') === false)
             {
-                $excData = curl_errno($previousExc->getData());
+                if (($previousExc instanceof \Requests_Exception) and
+                    ($previousExc->getType() === 'curlerror'))
+                {
+                    $excData = curl_errno($previousExc->getData());
 
-                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+                    $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
 
-                $exc->isPropagatedException = true;
-            }
+                    $exc->isPropagatedException = true;
+                }
+                else
+                {
+                    $this->pushDimensions($action, $input, Metric::FAILED);
 
-            else if (property_exists($exc, 'isPropagatedException') === false)
-            {
-                $this->pushDimensions($action, $input, Metric::FAILED);
-
-                $exc->isPropagatedException = true;
+                    $exc->isPropagatedException = true;
+                }
             }
 
             throw $exc;
@@ -291,6 +301,18 @@ class Gateway
     public function callbackOtpSubmit(array $input)
     {
         $this->input = $input;
+    }
+
+    public function omniPay(array $input)
+    {
+        if (empty($input['gateway']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT);
+        }
+
+        $this->input = $input;
+        $this->action = Action::OMNI_PAY;
     }
 
     public function debit(array $input)
@@ -671,12 +693,24 @@ class Gateway
             //
             if (Utility::checkTimeout($e))
             {
-                throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+                $ex = new Exception\GatewayTimeoutException($e->getMessage(), $e);
+
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
+                {
+                    $ex->markSafeRetryTrue();
+                }
             }
             else
             {
-                throw new Exception\GatewayRequestException($e->getMessage(), $e);
+                $ex = new Exception\GatewayRequestException($e->getMessage(), $e);
+
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
+                {
+                    $ex->markSafeRetryTrue();
+                }
             }
+
+            throw $ex;
         }
 
         $this->validateResponse($response);
@@ -780,6 +814,11 @@ class Gateway
             $data = ['status_code' => $response->status_code, 'body' => $response->body];
             $e->setData($data);
 
+            if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
+            {
+                $e->markSafeRetryTrue();
+            }
+
             throw $e;
         }
         else if ($response->status_code >= 300)
@@ -823,7 +862,7 @@ class Gateway
             /**
              * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
              */
-            $metricsDriver->histogram('gateway_request_total_time_ms',
+            $metricsDriver->histogram(Metric::GATEWAY_REQUEST_TIME,
                 $info['total_time'] * 1000,
                 [
                     'gateway' => $this->gateway ?? 'none',
@@ -1370,7 +1409,9 @@ class Gateway
 
         foreach ($attributes as $key => $value)
         {
-            if (isset($map[$key]))
+            if ((isset($value) === true) and
+                ($value !== '') and
+                (isset($map[$key])))
             {
                 $newKey = $map[$key];
                 $attr[$newKey] = $value;
@@ -1487,10 +1528,6 @@ class Gateway
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
     }
-
-    //
-    // This is a temporary function for debugging the curl issue
-    //
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {

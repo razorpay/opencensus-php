@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Validator;
 
-
 class CardVault
 {
     const TOKEN             = 'token';

@@ -30,6 +30,7 @@ use RZP\Constants\MailTags;
 use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Models\Transfer\Metric as TransferMetric;
 
 class Service extends Base\Service
 {
@@ -659,9 +660,18 @@ class Service extends Base\Service
      */
     public function transfer(string $id, array $input) : array
     {
-        $transfers = $this->getNewProcessor()->transfer($id, $input);
+        try
+        {
+            $transfers = $this->getNewProcessor()->transfer($id, $input);
 
-        return $transfers->toArrayPublic();
+            return $transfers->toArrayPublic();
+        }
+        catch (\Exception $e)
+        {
+            (new TransferMetric)->pushCreateFailedMetrics($e);
+
+            throw $e;
+        }
     }
 
     /**
@@ -1589,11 +1599,6 @@ class Service extends Base\Service
         return $this->core->updateReceiverData();
     }
 
-    public function updateBankTransferTerminal($input)
-    {
-        return $this->core->updateBankTransferTerminal($input);
-    }
-
     public function validateVpa($input)
     {
         $data = $this->getNewProcessor()->validateVpa($input);
@@ -1781,6 +1786,20 @@ class Service extends Base\Service
         }
 
         return $updated;
+    }
+
+    public function updateMerchantBalance(string $paymentId)
+    {
+        $payment = $this->repo->payment->find($paymentId);
+        $transaction = $payment->transaction;
+
+        if (($transaction === null) or
+            ($transaction->isBalanceUpdated() === true))
+        {
+            return;
+        }
+
+        $this->getNewProcessor($payment->merchant)->updateMerchantBalance($payment, $transaction);
     }
 
     public function fetchForSubscription(string $paymentId, string $subscriptionId): array

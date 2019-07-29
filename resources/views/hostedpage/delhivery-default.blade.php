@@ -22,6 +22,7 @@
 <html lang="en">
     <head>
         <title>Delhivery Cross Border Payments Platform</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">

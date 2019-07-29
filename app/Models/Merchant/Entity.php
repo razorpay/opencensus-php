@@ -28,6 +28,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
@@ -35,6 +36,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 
 /**
  * @property Org\Entity         $org
@@ -58,7 +60,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATED                = 'activated';
     const ACTIVATED_AT             = 'activated_at';
     const LIVE                     = 'live';
+    const LIVE_DISABLE_REASON      = 'live_disable_reason';
     const HOLD_FUNDS               = 'hold_funds';
+    const HOLD_FUNDS_REASON        = 'hold_funds_reason';
     const PRICING_PLAN_ID          = 'pricing_plan_id';
     const INTERNATIONAL            = 'international';
     const BILLING_LABEL            = 'billing_label';
@@ -83,6 +87,7 @@ class Entity extends Base\PublicEntity
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
     const RISK_THRESHOLD           = 'risk_threshold';
+    const ICON_URL                 = 'icon_url';
     const LOGO_URL                 = 'logo_url';
     const INVOICE_LABEL_FIELD      = 'invoice_label_field';
     const AWS_LOGO_URL             = 'aws_logo_url';
@@ -95,6 +100,7 @@ class Entity extends Base\PublicEntity
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
     const PRODUCT                  = 'product';
+    const DEFAULT_REFUND_SPEED     = 'default_refund_speed';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -183,6 +189,7 @@ class Entity extends Base\PublicEntity
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
     const PARTNER_ID                = 'partner_id';
     const BANKING_ACCOUNT           = 'banking_account';
+    const ACCOUNTS                  = 'accounts';
 
     protected $entity = 'merchant';
 
@@ -241,6 +248,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::DEFAULT_REFUND_SPEED,
     ];
 
     const CONFIG_LIST = [
@@ -305,6 +313,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::SUSPENDED_AT,
         self::ARCHIVED_AT,
+        self::ICON_URL,
         self::LOGO_URL,
         self::ORG_ID,
         self::GROUPS,
@@ -317,6 +326,7 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_NAME,
         self::ACTIVATION_SOURCE,
         self::BUSINESS_BANKING,
+        self::DEFAULT_REFUND_SPEED,
      ];
 
     protected $defaults = [
@@ -353,6 +363,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY               => 0,
         self::WEBSITE                => null,
         self::INTERNATIONAL          => 0,
+        self::DEFAULT_REFUND_SPEED   => RefundSpeed::NORMAL,
     ];
 
     protected $publicSetters = [
@@ -487,6 +498,11 @@ class Entity extends Base\PublicEntity
     public function isAxisExpressPayEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
+    }
+
+    public function isGooglePayOmnichannelEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::GOOGLE_PAY_OMNICHANNEL);
     }
 
     public function canHoldPayment(): bool
@@ -926,6 +942,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
+    public function setBrandColor($brandColor)
+    {
+        $this->setAttribute(self::BRAND_COLOR, $brandColor);
+    }
+
     protected function setBrandColorAttribute($brandColor)
     {
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
@@ -944,6 +965,11 @@ class Entity extends Base\PublicEntity
     public function setLogoUrl($logoUrl)
     {
         $this->setAttribute(self::LOGO_URL, $logoUrl);
+    }
+
+    public function setIconUrl($iconUrl)
+    {
+        $this->setAttribute(self::ICON_URL, $iconUrl);
     }
 
     public function setCategory2($category)
@@ -983,6 +1009,11 @@ class Entity extends Base\PublicEntity
     public function offers()
     {
         return $this->hasMany('RZP\Models\Offer\Entity');
+    }
+
+    public function bankingAccounts()
+    {
+        return $this->hasMany(BankingAccount\Entity::class);
     }
 
     protected function getMaxPaymentAmountAttribute()
@@ -1095,6 +1126,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $autoRefundDelay;
+    }
+
+    public function getDefaultRefundSpeed()
+    {
+        return $this->getAttribute(self::DEFAULT_REFUND_SPEED);
     }
 
     /**
@@ -1215,6 +1251,21 @@ class Entity extends Base\PublicEntity
     public function getLogoUrl()
     {
         return $this->getAttribute(self::LOGO_URL);
+    }
+
+    public function getIconUrl()
+    {
+        return $this->getAttribute(self::ICON_URL);
+    }
+
+    public function getDisplayName()
+    {
+        return $this->getAttribute(self::DISPLAY_NAME);
+    }
+
+    public function setDisplayName($displayName)
+    {
+        $this->setAttribute(self::DISPLAY_NAME, $displayName);
     }
 
     public function getFeeBearer()
@@ -1828,6 +1879,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $config;
+    }
+
+    public function getAccountStatus()
+    {
+        return ($this->isSuspended() === true) ? AccountStatus::SUSPENDED : $this->merchantDetail->getActivationStatus();
     }
 
     public function getPaymentFlows(IIN\Entity $iin = null)

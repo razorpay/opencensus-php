@@ -66,17 +66,17 @@ class SmartRouting
         return $this->sendRequest(self::SEND_PAYMENT_DATA, $data);
     }
 
-    public function createGateway($data)
+    public function createGatewayRule($data)
     {
         return $this->sendRequest(self::CREATE_GATEWAY_RULE, $data);
     }
 
-    public function updateGateway($data)
+    public function updateGatewayRule($data)
     {
         return $this->sendRequest(self::UPDATE_GATEWAY_RULE, $data);
     }
 
-    public function deleteGateway($id, $group)
+    public function deleteGatewayRule($id, $group)
     {
         $params = null;
 

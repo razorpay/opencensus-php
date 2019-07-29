@@ -39,15 +39,13 @@ class CreateTransactions extends Migration
             $table->bigInteger(Transaction::AMOUNT)
                   ->unsigned();
 
-            $table->integer(Transaction::FEE)
-                  ->unsigned();
+            $table->integer(Transaction::FEE);
 
             $table->integer(Transaction::MDR)
                   ->unsigned()
                   ->nullable();
 
             $table->integer(Transaction::TAX)
-                  ->unsigned()
                   ->nullable();
 
             $table->char(Transaction::PRICING_RULE_ID, Transaction::ID_LENGTH)
@@ -82,8 +80,7 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
-            $table->integer(Transaction::CREDITS)
-                  ->unsigned()
+            $table->bigInteger(Transaction::CREDITS)
                   ->default(0);
 
             $table->bigInteger(Transaction::ESCROW_BALANCE)
@@ -132,7 +129,7 @@ class CreateTransactions extends Migration
             $table->char(Transaction::REFERENCE4, Transaction::ID_LENGTH)
                   ->nullable();
 
-            $table->tinyInteger(Transaction::REFERENCE5)
+            $table->tinyInteger(Transaction::BALANCE_UPDATED)
                   ->nullable();
 
             $table->tinyInteger(Transaction::REFERENCE6)

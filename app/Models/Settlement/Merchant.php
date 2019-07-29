@@ -14,8 +14,8 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Constants\Environment;
 use RZP\Models\Settlement\Details as SetlDetails;
-use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
@@ -37,6 +37,8 @@ class Merchant
     protected $setlDetailAmounts;
     protected $scheduleTasks;
     protected $logging;
+    protected $mode;
+    protected $env;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -61,6 +63,10 @@ class Merchant
         $this->attachMerchantBankAccount();
 
         $this->logging = $logging;
+
+        $this->mode = $app['rzp.mode'];
+
+        $this->env = $app['env'];
     }
 
     public function retryFailedSettlement(Settlement\Entity $setl)
@@ -325,6 +331,12 @@ class Merchant
 
         $setl->bankAccount()->associate($this->bankAccount);
 
+        // in case of test mode set settlement status to initiated
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $setl->setStatus(Status::INITIATED);
+        }
+
         $this->setl = $setl;
     }
 
@@ -356,9 +368,83 @@ class Merchant
         $this->payout->batchFundTransfer()->dissociate();
     }
 
+    /**
+     * creates attempt for the settlement
+     * if its run on test mode on prod then it'll also mock the bank response
+     * for success condition
+     *
+     * @param int|null $initiateAt
+     */
     protected function createSettlementAttemptEntity(int $initiateAt = null)
     {
-        $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt);
+        $fta = $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt);
+
+        if ($this->doMockAttemptProcessed() === true)
+        {
+            $this->updateMockResponse($fta);
+        }
+    }
+
+    /**
+     * It'll check the condition for mocking FTA
+     * It depends on request mode and env
+     * currently we are also considering dev for testing purpose
+     *
+     * @return bool
+     */
+    protected function doMockAttemptProcessed(): bool
+    {
+        // adding dev for local testing purpose
+        // and enabling mocking attempt on on prod
+        if (($this->mode === Mode::TEST) and (in_array($this->env, [Environment::PRODUCTION], true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * It'll set the mock data required for the FTA to get processed
+     * bank status code been set based on the channel used
+     * utr will be a random string
+     *
+     * @param FundTransferAttempt\Entity $fta
+     */
+    protected function updateMockResponse(FundTransferAttempt\Entity $fta)
+    {
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $channel = $fta->getChannel();
+
+        $status = $this->getStatusInstanceByChannel($channel);
+
+        // set the fist successful status
+        // in case of mock we have to set the only the success response
+        $bankStatusCode = array_keys($status::getSuccessfulStatus())[0];
+
+        $fta->setUtr($currentTimestamp . random_alphanum_string(6));
+
+        $fta->setStatus(FundTransferAttempt\Status::INITIATED);
+
+        $fta->setBankStatusCode($bankStatusCode);
+
+        $this->repo->saveOrFail($fta);
+    }
+
+    /**
+     * It'll return the status object back to the caller
+     *
+     * @param string $channel
+     * @return mixed
+     */
+    protected function getStatusInstanceByChannel(string $channel)
+    {
+        $class = 'RZP\\Models\\FundTransfer\\'
+        . ucfirst($channel)
+        . '\\Reconciliation\\Status';
+
+        return new $class();
     }
 
     protected function createPayoutAttemptEntity(int $initiateAt = null)
@@ -400,6 +486,7 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
+        return $fundTransferAttempt;
         //TODO:: disabled fts flow for settlement
         //(new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, true);
     }

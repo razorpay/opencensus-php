@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use App;
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class NonBlockingHttp
@@ -47,6 +48,15 @@ class NonBlockingHttp
             }
 
             curl_exec($curl_handler);
+
+            if (curl_errno($curl_handler) !== 0)
+            {
+                $error = curl_error($curl_handler);
+
+                curl_close($curl_handler);
+
+                throw new Exception\RuntimeException($error);
+            }
 
             curl_close($curl_handler);
         }

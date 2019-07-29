@@ -226,7 +226,7 @@ abstract class Base extends ApiProcessor
         $failedStatus = Status::getFailureStatus();
 
         if ((isset($responseBody['Header']['Status']) === false) or
-            (in_array($responseBody['Header']['Status'], $failedStatus, true) === true))
+            (Status::inStatus($failedStatus, $responseBody['Header']['Status']) === true))
         {
             return false;
         }

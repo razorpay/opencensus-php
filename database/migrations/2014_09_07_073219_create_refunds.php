@@ -9,6 +9,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Reversal\Entity as Reversal;
 use RZP\Models\Payment\Refund\Entity as Refund;
+use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Transaction\Entity as Transaction;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 
@@ -76,6 +77,23 @@ class CreateRefunds extends Migration
             $table->tinyInteger(Refund::ATTEMPTS)
                   ->nullable();
 
+            $table->string(Refund::SPEED_REQUESTED)
+                  ->default(RefundSpeed::NORMAL);
+
+            $table->enum(Refund::SPEED_DECISIONED, [RefundSpeed::NORMAL, RefundSpeed::OPTIMUM, RefundSpeed::INSTANT])
+                  ->default(RefundSpeed::NORMAL);
+
+            $table->string(Refund::SPEED_PROCESSED)
+                  ->nullable();
+
+            $table->integer(Refund::FEE)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Refund::TAX)
+                  ->unsigned()
+                  ->default(0);
+
             $table->integer(Refund::LAST_ATTEMPTED_AT)
                   ->nullable();
 
@@ -135,6 +153,8 @@ class CreateRefunds extends Migration
             $table->index([Refund::MERCHANT_ID, Refund::CREATED_AT]);
             $table->index(Refund::FTS_TRANSFER_ID);
             $table->index(Refund::IS_SCROOGE);
+            $table->index(Refund::SPEED_REQUESTED);
+            $table->index(Refund::SPEED_PROCESSED);
 
             $table->unique([Refund::MERCHANT_ID, Refund::RECEIPT]);
 

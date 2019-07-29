@@ -1476,10 +1476,10 @@ class Repository extends Base\Repository
     }
 
     /**
-     * calcualtes the sum of `fee` and `tax` for the payments
+     * calculates the sum of `fee` and `tax` for the payments
      *  - captured for a merchant in a given time frame
      *  - based on filter type passed OTHER, CARD_LT_2K, CARD_GT_2K
-     *  - When correction flag is true the adds conition where created in given time frame
+     *  - When correction flag is true the adds condition where created in given time frame
      *
      * - Here cut off amount is checked on base_amount to handle multiple currencies
      *   In payments table base_amount field will hold the amount in
@@ -1502,8 +1502,7 @@ class Repository extends Base\Repository
         bool $isCorrection = false)
     {
         $query = $this->newQuery()
-                      ->selectRaw(
-                          'SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                      ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
                       ->whereNotNull(Entity::TRANSACTION_ID);
 

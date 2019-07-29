@@ -19,8 +19,10 @@ use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -129,13 +131,21 @@ class Core extends Base\Core
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
         $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
+        $activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getActivationFlow());
+        $this->trace->count(
+            Metric::MERCHANT_ACTIVATION,
+            $activation_metric_dimensions);
 
-        $isExperimentEnabled = (new Merchant\Core)->isInternationalActivationsExperimentEnabled($this->merchant);
+        $autoEnableInternational = (new Merchant\Core)->autoEnableInternational($this->merchant);
 
-        if ($isExperimentEnabled === true)
+        if ($autoEnableInternational === true)
         {
             $merchantDetails->setInternationalActivationFlow(
                 $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
+            $international_activation_metric_dimensions = $this->fetchActivationMetricDimensions($merchantDetails->getInternationalActivationFlow());
+            $this->trace->count(
+                Metric::INTERNATIONAL_MERCHANT_ACTIVATION,
+                $international_activation_metric_dimensions);
         }
     }
 
@@ -253,10 +263,12 @@ class Core extends Base\Core
 
     /**
      * This function is used to patch merchant details fields
+     *
      * @param Entity $merchantDetails
-     * @param array $input
+     * @param array  $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function patchMerchantDetails(Entity $merchantDetails, array $input): Entity
     {
@@ -264,7 +276,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input, 'patchMerchantDetails');
 
-       $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchantDetails->merchant);
+        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchantDetails->merchant);
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -531,7 +543,7 @@ class Core extends Base\Core
      *
      * @param Entity $merchantDetails
      */
-    protected function markSubmittedAndLock(Entity $merchantDetails)
+    public function markSubmittedAndLock(Entity $merchantDetails)
     {
         $submittedAt = Carbon::now()->getTimestamp();
 
@@ -668,6 +680,12 @@ class Core extends Base\Core
                 (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
             }
         });
+
+        $this->trace->count(
+            Metric::MERCHANT_ACTIVATION_STATE_TRANSITION,
+            $this->fetchActivationStatusTransitionMetricDimensions(
+                $merchantDetails->getActivationStatus(),
+                $currentActivationStatus));
 
         return $merchantDetails;
     }
@@ -933,7 +951,10 @@ class Core extends Base\Core
 
     private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
     {
-        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Product::BANKING);
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+            $merchant->getId(),
+            Product::BANKING,
+            Merchant\Balance\AccountType::SHARED);
 
         if (empty($balance) === false)
         {
@@ -1005,4 +1026,41 @@ class Core extends Base\Core
 
         return $response;
     }
+
+      /**
+       * This function is used for creating activation flow metric dimensions
+       *
+       * @param string(activation flow)
+       * @param array  $extra
+       *
+       * @return array
+       *
+      */
+
+    protected function fetchActivationMetricDimensions(string $label, array $extra = []): array
+    {
+        return $extra + [
+                Metric::ACTIVATION_FLOW => $label
+            ];
+    }
+
+    /**
+     * This function is used for creating metric dimensions for activation status transitions
+     *
+     * @param string $previous_status
+     * @param string $updated_status
+     * @param array  $extra
+     *
+     * @return array
+     *
+     */
+
+    protected function fetchActivationStatusTransitionMetricDimensions(string $updated_status,string $previous_status = null, array $extra = []): array
+    {
+        return $extra + [
+                Metric::PREVIOUS_ACTIVATION_STATUS => $previous_status,
+                Metric::UPDATED_ACTIVATION_STATUS  => $updated_status
+            ];
+    }
+
 }

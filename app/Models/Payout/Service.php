@@ -11,6 +11,12 @@ use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Feature\Constants as Features;
+
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -34,6 +40,122 @@ class Service extends Base\Service
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
 
         return $payout->toArrayPublic();
+    }
+
+    public function approveFundAccountPayout(string $id, array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_APPROVE_REQUEST, ['id' => $id, 'input' => $input]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
+
+        $payout = (new Core)->approvePayout($payout);
+
+        return $payout->toArrayPublic();
+    }
+
+    public function bulkApproveFundAccountPayouts(array $input)
+    {
+        $this->trace->info(TraceCode::PAYOUT_BULK_APPROVE_REQUEST, ['input' => $input]);
+
+        (new Validator)->validateInput('bulk_approve', $input);
+
+        $this->user->validateInput('verify_otp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout_bulk'], $this->merchant, $this->user);
+
+        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+
+        foreach ($payouts as $payout)
+        {
+            $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+        }
+
+        $failedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                $payout = (new Core)->approvePayout($payout);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
+                    ['payout_id' => $payout->getId()]);
+
+                $failedIds[] = $payout->getId();
+            }
+        }
+
+        return [
+            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'failed_ids'  => $failedIds,
+        ];
+    }
+
+    public function rejectFundAccountPayout(string $id): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+
+        $payout = (new Core)->rejectPayout($payout);
+
+        return $payout->toArrayPublic();
+    }
+
+    public function bulkRejectFundAccountPayout(array $input)
+    {
+        $this->trace->info(TraceCode::PAYOUT_BULK_REJECT_REQUEST, ['input' => $input]);
+
+        (new Validator)->validateInput('bulk_reject', $input);
+
+        $payouts = $this->repo->payout->findManyByPublicIdsAndMerchant($input[Entity::PAYOUT_IDS], $this->merchant);
+
+        foreach ($payouts as $payout)
+        {
+            $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+        }
+
+        $failedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                $payout = (new Core)->rejectPayout($payout);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_APPROVE_REJECT_EXCEPTION,
+                    [
+                        'payout_id' => $payout->getId(),
+                    ]);
+
+                $failedIds[] = $payout->getId();
+            }
+        }
+
+        return [
+            'total_count' => count($input[Entity::PAYOUT_IDS]),
+            'failed_ids'  => $failedIds,
+        ];
     }
 
     /**
@@ -175,6 +297,62 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * Return a summary of workflows for RazorpayX dashboard consumption.
+     *
+     * Works ONLY for create_payout workflows right now.
+     *
+     * @return array
+     */
+    public function getWorkflowSummary(): array
+    {
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
+                             ->first();
+
+        $workflowRules = $this->repo
+                              ->workflow_payout_amount_rules
+                              ->fetchBankingWorkflowSummaryForPermissionId($permissionId, $this->merchant->getId());
+
+        $data = [];
+
+        foreach ($workflowRules as $wfRule)
+        {
+            $wfRuleData = $wfRule->toArray();
+
+            $hasWorkflow = (empty($wfRuleData['workflow_id']) === false);
+
+            $data[] = array_only($wfRuleData, ['min_amount', 'max_amount', 'workflow_id']) + [
+                    'has_workflow' => $hasWorkflow,
+                    'steps'        => Entity::serializeWorkflowSteps($wfRuleData['workflow']['steps'] ?? []),
+                ];
+        }
+
+        return $data;
+    }
+
+    public function getDashboardSummary(): array
+    {
+        $queued = $this->getQueuedPayoutsSummary();
+
+        $pending   = [];
+        $scheduled = [];
+
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS) === true)
+        {
+            $user = $this->auth->getUser();
+
+            $pending = $this->repo->payout->fetchSummaryOfPayoutsPendingOnUser($user);
+        }
+
+        return [
+            'queued'    => $queued,
+            'pending'   => $pending,
+            'scheduled' => $scheduled,
+        ];
+    }
+
     public function processDispatchForQueuedPayouts(array $input)
     {
         $merchantIdsWhitelist = $input['merchant_ids'] ?? [];
@@ -194,6 +372,7 @@ class Service extends Base\Service
 
     public function cancelPayout(string $payoutId)
     {
+        /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
 
         $payout = $this->core->cancelPayout($payout);
@@ -206,6 +385,8 @@ class Service extends Base\Service
      * In RX, we always mandate account number.
      *
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
      */
     protected function processAccountNumber(array & $input)
     {

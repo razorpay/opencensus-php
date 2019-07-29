@@ -153,8 +153,7 @@ class Repository extends Base\Repository
 
         $cacheTag = Entity::getCacheTag($merchant->getId());
 
-        $query = $this->newQuery()
-                      ->enabled();
+        $query = $this->newQuery();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
@@ -437,6 +436,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+
     public function getTerminalsByIds(array $terminalIds)
     {
         $query = $this->newQuery();
@@ -444,5 +444,13 @@ class Repository extends Base\Repository
         $terminals = $query->findOrFail($terminalIds);
 
         return $terminals;
+    }
+
+    public function findManyEnabledByIds($ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
+                    ->enabled()
+                    ->get();
     }
 }

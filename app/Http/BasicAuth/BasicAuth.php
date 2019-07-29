@@ -1712,7 +1712,7 @@ class BasicAuth
 
         $partnerId = $this->getPartnerMerchantId();
 
-        if ((new Merchant\Service)->isPartnerMerchantMapped($merchantId, $partnerId) === false)
+        if ((new Merchant\Core)->isMerchantMappedToNonPurePlatformPartner($merchantId, $partnerId) === false)
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
@@ -1928,6 +1928,13 @@ class BasicAuth
     public function setOrgId($orgId)
     {
         $this->orgId = $orgId;
+    }
+
+    public function setOrgDetails(Org\Entity $org)
+    {
+        $this->setOrgId($org->getPublicId());
+
+        $this->setOrgType($org->getType());
     }
 
     /**

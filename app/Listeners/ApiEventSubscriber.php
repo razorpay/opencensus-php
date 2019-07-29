@@ -16,8 +16,10 @@ use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Payment\Downtime;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
@@ -199,8 +201,6 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        $merchant = $this->getMerchantFromEntity($payment);
-
         if ($payment->hasSubscription() === true)
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
@@ -214,8 +214,6 @@ class ApiEventSubscriber extends Base\Core
     protected function onPaymentFailed($payment)
     {
         $payload = $this->getPaymentPayload($payment);
-
-        $merchant = $this->getMerchantFromEntity($payment);
 
         if ($payment->hasSubscription() === true)
         {
@@ -284,6 +282,13 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onVirtualAccountCreated(VirtualAccount\Entity $virtualAccount)
+    {
+        $payload = $this->getVirtualAccountPayload($virtualAccount);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onVirtualAccountClosed(VirtualAccount\Entity $virtualAccount)
     {
         $payload = $this->getVirtualAccountPayload($virtualAccount);
 
@@ -438,6 +443,27 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onRefundProcessed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onRefundFailed(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onRefundSpeedChanged(RefundEntity $refund)
+    {
+        $payload = $this->getRefundPayload($refund);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onPayoutProcessed(Payout\Entity $payout)
     {
         if ($payout->isOfMerchantTransaction() === true)
@@ -487,6 +513,20 @@ class ApiEventSubscriber extends Base\Core
 
             $this->prepareAndDispatchWebhook($payload);
         }
+    }
+
+    protected function onPaymentDowntimeStarted(Downtime\Entity $downtime)
+    {
+        $payload = $this->getPaymentDowntimePayload($downtime);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentDowntimeResolved(Downtime\Entity $downtime)
+    {
+        $payload = $this->getPaymentDowntimePayload($downtime);
+
+        $this->prepareAndDispatchWebhook($payload);
     }
 
     protected function getP2pPayload($p2p)
@@ -667,6 +707,17 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
+    protected function getRefundPayload(RefundEntity $refund)
+    {
+        $payload = [
+            Constants\Entity::REFUND => [
+                'entity' => $refund->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
     protected function getSettlementPayload($settlement)
     {
         $payload = [
@@ -710,6 +761,17 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getPaymentDowntimePayload(Downtime\Entity $downtime): array
+    {
+        $payload = [
+            Constants\Entity::PAYMENT_DOWNTIME => [
+                'entity' => $downtime->toArrayPublic(),
+            ]
+        ];
+
+        return $payload;
+    }
+
     protected function prepareAndDispatchWebhook(array $payload)
     {
         $merchantWebhook = $this->activeMerchantWebhook;
@@ -737,7 +799,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $this->trace->info(TraceCode::WEBHOOK_DISPATCH, $data);
 
-        Webhook::dispatch($data)->using([$this->event]);
+        WebHook::dispatch($data)->using([$this->event]);
     }
 
     protected function getWebhookData(array $payload, WebhookEntity $webhook): array
@@ -750,7 +812,7 @@ class ApiEventSubscriber extends Base\Core
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
         //
-        $signedAccountId = Merchant\Account\Entity::getSignedId($entity->merchant->getId());
+        $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
@@ -836,7 +898,7 @@ class ApiEventSubscriber extends Base\Core
 
     protected function checkAndSetWebhooksEnabledForEventForAnyApp(): bool
     {
-        $merchantId = $this->mainEntity->merchant->getId();
+        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
 
         $activeEnabledAppWebhooks = $this->getActiveWebhooksForConnectedApps($merchantId);
 

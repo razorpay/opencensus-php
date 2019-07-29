@@ -24,11 +24,33 @@ abstract class Beneficiary extends BaseCore
     {
         $response = $this->registerBeneficiary($bankAccounts);
 
+        if ((array_key_exists('send_email', $input) === true) and
+            ((bool)$input['send_email'] === false))
+        {
+            return $response;
+        }
+
         $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
 
         $mailData = array_merge($response, [BankAccount::RECIPIENT_EMAILS => $recipientEmails]);
 
         $this->sendEmail($mailData);
+
+        return $response;
+    }
+
+    /**
+     * @param $bankAccounts
+     * @param array $input
+     *
+     * @return array
+     * @return array with keys 'signed_url'
+     *                         'local_file_path'
+     *                         'file_name'
+     */
+    public function verify(PublicCollection $bankAccounts): array
+    {
+        $response = $this->verifyBeneficiary($bankAccounts);
 
         return $response;
     }
@@ -70,4 +92,6 @@ abstract class Beneficiary extends BaseCore
     }
 
     abstract public function registerBeneficiary(PublicCollection $bankAccounts): array;
+
+    abstract public function verifyBeneficiary(PublicCollection $bankAccounts): array;
 }

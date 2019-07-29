@@ -25,22 +25,22 @@ class Status extends BaseStatus
     public static function getSuccessfulStatus(): array
     {
         return [
-            self::SETTLED
+            self::SETTLED => [],
         ];
     }
 
     public static function getFailureStatus(): array
     {
         return [
-            self::CANCELLED,
-            self::FILE_ERROR,
+            self::CANCELLED  => [],
+            self::FILE_ERROR => [],
         ];
     }
 
     public static function getCriticalErrorStatus(): array
     {
         return [
-            self::FILE_ERROR
+            self::FILE_ERROR => [],
         ];
     }
 

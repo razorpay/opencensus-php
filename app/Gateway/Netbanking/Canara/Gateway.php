@@ -81,6 +81,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->saveCallbackResponse($content, $input['payment']);
 
+        $this->verifyCallback($input, $gatewayPayment);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input,$acquirerData);
@@ -239,6 +241,25 @@ class Gateway extends Base\Gateway
 
     // -------------------------- Verify helper methods ------------------------------
 
+    protected function verifyCallback($input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+    }
+
     protected function sendPaymentVerifyRequest($verify)
     {
         $request = $this->getVerifyRequest($verify);
@@ -246,6 +267,16 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'          => $this->gateway,
+                'raw_response'     => $response->body,
+                'decoded_response' => $verify->verifyResponseContent,
+                'payment_id'       => $verify->input['payment']['id'],
+            ]
+        );
     }
 
     protected function getVerifyRequest($verify)

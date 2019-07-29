@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
     // For expands
     const PAYMENT                 = 'payment';
 
+    const SKIP_DEDUCTION          = 'skip_deduction';
+
     protected static $sign = 'disp';
 
     protected $entity = 'dispute';

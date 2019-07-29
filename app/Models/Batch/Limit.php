@@ -15,8 +15,9 @@ class Limit
      */
     const HEADER_MAP = [
         Type::REFUND                                => 1000,
-        Type::PAYMENT_LINK                          => 500000,
+        Type::PAYMENT_LINK                          => 500100,
         Type::IRCTC_REFUND                          => 100000,
+        Type::IRCTC_DELTA_REFUND                    => 100000,
         Type::IRCTC_SETTLEMENT                      => 100000,
         Type::VIRTUAL_BANK_ACCOUNT                  => 50000,
         Type::PAYOUT                                => 50000,
@@ -33,6 +34,7 @@ class Limit
         Type::AUTH_LINK                             => 10000,
         Type::RECURRING_CHARGE                      => 10000,
         Type::SUB_MERCHANT                          => 5000,
+        Type::SUBMERCHANT_ASSIGN                    => 50000,
     ];
 
     /**

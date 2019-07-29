@@ -44,7 +44,7 @@ class Core extends Base\Core
 
         $ufhFile = $processor->storeInputFileAndSaveBatchWithSettings($input);
 
-        // Get the type. If type is payment link redirect to Batch MicroService.
+        // Get the type. If type is migrated redirect to Batch MicroService.
 
         if ($processor->shouldSendToBatchService())
         {
@@ -202,7 +202,7 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-        BatchJob::dispatch($this->mode, $batch->getId(), $input);
+        BatchJob::dispatch($this->mode, $batch->getId(), $batch->getType(), $input);
 
         return $batch;
     }
@@ -246,7 +246,7 @@ class Core extends Base\Core
         {
             unset($input[Entity::FILE]);
 
-            BatchJob::dispatch($this->mode, $batch->getId(), $input);
+            BatchJob::dispatch($this->mode, $batch->getId(), $batch->getType(), $input);
         }
     }
 
@@ -299,7 +299,7 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return array
-     * @throws Exception\ServerNotFoundException
+     * @throws \Exception
      */
     public function sendMail(array $input): array
     {

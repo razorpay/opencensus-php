@@ -151,6 +151,7 @@ class Core extends Base\Core
             Payment\Method::CARD         => true,
             Entity::DEBIT_CARD           => true,
             Entity::CREDIT_CARD          => true,
+            Entity::PREPAID_CARD         => true,
             Entity::CARD_NETWORKS        => [],
             Payment\Gateway::AMEX        => false,
             Payment\Method::NETBANKING   => [],
@@ -166,6 +167,7 @@ class Core extends Base\Core
         $data[Payment\Method::CARD]  = $methods->isCardEnabled();
         $data[Entity::DEBIT_CARD]    = $methods->isDebitCardEnabled();
         $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
+        $data[Entity::PREPAID_CARD]  = $methods->isPrepaidCardEnabled();
         $data[Entity::CARD_NETWORKS] = $methods->getCardNetworks();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
@@ -312,15 +314,6 @@ class Core extends Base\Core
         }
     }
 
-    public function validatePricingForInternational($merchant, $plan)
-    {
-        if ($plan->hasInternationalPricing() === false)
-        {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Pricing not present for international.');
-        }
-    }
-
     public function setDefaultMethods($merchant)
     {
         $methods = (new Methods\Entity)->build();
@@ -332,6 +325,7 @@ class Core extends Base\Core
         {
             $methods->setCreditCard(true);
             $methods->setDebitCard(true);
+            $methods->setPrepaidCard(true);
             $methods->setMobikwik(false);
             $methods->setPayzapp(true);
             $methods->setPayumoney(true);
@@ -352,6 +346,7 @@ class Core extends Base\Core
             $methods->setNetbanking(false);
             $methods->setCreditCard(false);
             $methods->setDebitCard(false);
+            $methods->setPrepaidCard(false);
             $methods->setUpi(false);
         }
 

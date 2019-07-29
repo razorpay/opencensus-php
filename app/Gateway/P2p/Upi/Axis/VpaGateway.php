@@ -66,7 +66,28 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
     public function assignBankAccount(Response $response)
     {
+        $vpa         = $this->input->get(Entity::VPA);
+        $bankAccount = $this->input->get(Entity::BANK_ACCOUNT);
+        $accRefId    = $bankAccount[Entity::GATEWAY_DATA][Fields::REFERENCE_ID];
 
+        $request = $this->initiateS2sRequest(VpaAction::ADD_BANK_ACCOUNT);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+            Fields::ACCOUNT_REFERENCE_ID    => $accRefId,
+            Fields::CUSTOMER_VPA            => $vpa[Entity::ADDRESS],
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $response->setData([
+            Entity::VPA => [
+                Entity::ID  => $vpa[Entity::ID],
+            ],
+            Entity::BANK_ACCOUNT => [
+                Entity::ID  => $bankAccount[Entity::ID],
+            ],
+        ]);
     }
 
     public function initiateCheckAvailability(Response $response)
@@ -111,7 +132,48 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
     public function delete(Response $response)
     {
+        $vpa         = $this->input->get(Entity::VPA);
+        $defaultVpa  = $this->input->get(Entity::DEFAULT);
 
+        $request = $this->initiateS2sRequest(VpaAction::DELETE_VPA);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+            Fields::CUSTOMER_VPA            => $vpa[Entity::ADDRESS],
+            Fields::CUSTOMER_PRIMARY_VPA    => $defaultVpa[Entity::ADDRESS],
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $response->setData([
+            Entity::VPA => [
+                Entity::ID  => $vpa[Entity::ID],
+            ],
+            Entity::SUCCESS => true,
+        ]);
+    }
+
+    public function setDefault(Response $response)
+    {
+        $vpa         = $this->input->get(Entity::VPA);
+        $defaultVpa  = $this->input->get(Entity::DEFAULT);
+
+        $request = $this->initiateS2sRequest(VpaAction::ADD_DEFAULT);
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
+            Fields::CUSTOMER_VPA            => $vpa[Entity::ADDRESS],
+            Fields::CUSTOMER_PRIMARY_VPA    => $defaultVpa[Entity::ADDRESS],
+        ]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $response->setData([
+            Entity::VPA => [
+                Entity::ID  => $vpa[Entity::ID],
+            ],
+            Entity::SUCCESS => true,
+        ]);
     }
 
     public function validate(Response $response)

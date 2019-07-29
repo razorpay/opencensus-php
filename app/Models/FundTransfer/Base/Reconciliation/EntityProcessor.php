@@ -175,30 +175,11 @@ abstract class EntityProcessor extends Base\Core
 
         $bankStatusCode = $this->fta->getBankStatusCode();
 
+        $bankResponseCode = $this->fta->getBankResponseCode();
+
         $utr = $this->fta->getUtr();
 
         $failureReason  = null;
-
-        //
-        // For Yesbank VPA, we want to reconcile only if the status_code
-        // is either success or failure. Many times, we get `pending` or `timeout`.
-        // In these cases, since we anyway don't know the status, it does not make
-        // sense for us to reconcile these, or check the error codes and stuff.
-        //
-        // 21-May 2019 : Allowing timeout cases as well for reconcillation since
-        // we have added, BT_TCC, BT_RET, BT_RRC as final status
-        if (($this->fta->getChannel() === Channel::YESBANK) and
-            ($this->fta->shouldUseGateway() === true))
-        {
-            $statusCode = $this->fta->getBankResponseCode();
-
-            if (($statusCode !== GatewayStatus::STATUS_CODE_SUCCESS) and
-                ($statusCode !== GatewayStatus::STATUS_CODE_FAILURE) and
-                ($statusCode !== GatewayStatus::STATUS_CODE_TIMEOUT))
-            {
-                return [$status, $failureReason];
-            }
-        }
 
         $statusNamespace = $this->core->getStatusClass($this->fta);
 
@@ -208,21 +189,16 @@ abstract class EntityProcessor extends Base\Core
 
         $failureStatuses = $statusClass::getFailureStatus();
 
-        $bankStatusFailedCode = $bankStatusCode;
+        $isSuccess = $statusClass::inStatus($successStatuses, $bankStatusCode, $bankResponseCode);
 
-        //Converting status code to integer in case if it is numeric
-        //Since array keys of success and failure statuses get set as int if they are numeric
-        if (is_numeric($bankStatusFailedCode) === true)
-        {
-            $bankStatusFailedCode = (int)$bankStatusFailedCode;
-        }
+        $isFailure = $statusClass::inStatus($failureStatuses, $bankStatusCode, $bankResponseCode);
 
-        if ((in_array($bankStatusCode, $successStatuses, true) === true) and
+        if (($isSuccess === true) and
             (empty($utr) === false))
         {
             $status = Attempt\Status::PROCESSED;
         }
-        else if (in_array($bankStatusFailedCode, $failureStatuses, true) === true)
+        else if ($isFailure === true)
         {
             $status = Attempt\Status::FAILED;
 

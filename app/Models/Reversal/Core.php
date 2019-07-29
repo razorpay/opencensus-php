@@ -132,6 +132,8 @@ class Core extends Base\Core
 
                     $this->customerRefundIfApplicable($transfer, $input, $reversal);
 
+                    (new Transfer\Metric)->pushReversalSuccessMetrics();
+
                     return $reversal;
                 });
             });
@@ -301,13 +303,18 @@ class Core extends Base\Core
 
     /**
      * Create a full reversal for a refund
-     **
+     *
+     * @param Refund\Entity $refund
+     * @param bool $feeOnlyReversal
+     *
      * @return Entity
      */
-    public function reverseForRefund(Payment\Refund\Entity $refund): Entity
+    public function reverseForRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal): Entity
     {
         $reversalInput = [
-            Entity::AMOUNT   => $refund->getAmount() + $refund->getFees(),
+            Entity::AMOUNT   => ($feeOnlyReversal === false) ? $refund->getAmount() : 0,
+            Entity::FEE      => $refund->getFees(),
+            Entity::TAX      => $refund->getTax(),
             Entity::CURRENCY => $refund->getCurrency(),
         ];
 
@@ -323,11 +330,15 @@ class Core extends Base\Core
 
         $reversal = $this->repo->transaction(function() use ($reversal)
         {
-            $txn = (new Transaction\Core)->createFromRefundReversal($reversal);
+            $txnCore = new Transaction\Core;
+
+            list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
 
             $this->repo->saveOrFail($txn);
 
             $this->repo->saveOrFail($reversal);
+
+            $txnCore->saveFeeDetails($txn, $feesSplit);
 
             return $reversal;
         });

@@ -1025,7 +1025,7 @@ class BusinessSubCategoryMetaData
      *
      * @return array
      */
-    private static function getMetaDataForOthersCategory(): array
+    public static function getMetaDataForOthersCategory(): array
     {
         return [
             Merchant::CATEGORY              => 5399,
@@ -1087,4 +1087,36 @@ class BusinessSubCategoryMetaData
         return ActivationFlow::BLACKLIST;
     }
 
+    public static function fetchCategoryAndSubCategoryByMccCode($mccCode)
+    {
+        $othersCategoryMetaData = self::getMetaDataForOthersCategory();
+
+        if ($othersCategoryMetaData[Merchant::CATEGORY] === $mccCode)
+        {
+            return [
+                Entity::BUSINESS_CATEGORY    => BusinessCategory::OTHERS,
+                Entity::BUSINESS_SUBCATEGORY => null,
+            ];
+        }
+
+        $subCategoriesMetaData = self::SUB_CATEGORY_METADATA;
+
+        foreach ($subCategoriesMetaData as $subCategory => $subCategoryMetaData)
+        {
+            if ($subCategoryMetaData[Merchant::CATEGORY] === $mccCode)
+            {
+                return [
+                    Entity::BUSINESS_CATEGORY    => BusinessCategory::getCategoryFromSubCategory($subCategory),
+                    Entity::BUSINESS_SUBCATEGORY => $subCategory,
+                ];
+            }
+        }
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_INVALID_MCC_CODE,
+            null,
+            [
+                'mcc_code' => $mccCode,
+            ]);
+    }
 }

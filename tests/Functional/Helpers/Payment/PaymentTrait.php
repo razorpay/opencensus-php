@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use App;
 use Mockery;
 use Requests;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use RZP\Models\Payment\Verify\Action;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
@@ -891,7 +893,7 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $amount = null, $reversals = [], $reverseAll = false)
+    protected function refundPayment($id, $amount = null, $data = [], $reversals = [], $reverseAll = false)
     {
         $this->ba->privateAuth();
 
@@ -900,6 +902,11 @@ trait PaymentTrait
         if ($amount !== null)
         {
             $content = array('amount' => $amount);
+        }
+
+        if (empty($data['speed']) === false)
+        {
+            $content['speed'] = $data['speed'];
         }
 
         if (empty($reversals) === false)
@@ -930,7 +937,7 @@ trait PaymentTrait
         //TODO: remove merchant id check
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
-            $this->scroogeRefund($refund);
+            $this->scroogeRefund($refund, $data);
         }
 
         return $refund;
@@ -946,10 +953,12 @@ trait PaymentTrait
         $input['attempts'] = $refund['attempts'] ?? 0;
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
+        $input['is_fta'] = $data['is_fta'] ?? false;
 
         if (isset($data['bank_account']) === true)
         {
             $input['fta_data'] = $data;
+            $input['is_fta'] = true;
         }
 
         $this->ba->scroogeAuth();
@@ -975,13 +984,34 @@ trait PaymentTrait
 
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeUpdateRefundStatus($refund, 'processed');
+            $this->scroogeUpdateRefundStatus($refund, 'processed_event');
         }
         // Adding specific amount check - this is meant to test failed refunds on scrooge -
         // in which case we have reversal of refund transactions as well
-        else if ((isset($refund['amount']) === true) and ($refund['amount'] === 3459))
+        else if (isset($refund['amount']) === true)
         {
-            $this->scroogeUpdateRefundStatus($refund, 'failed');
+            $event = '';
+
+            switch ($refund['amount'])
+            {
+                case 3459:
+                    $event = 'failed_event';
+                    break;
+
+                case 3470:
+                    $event = 'fee_only_reversal_event';
+                    break;
+
+                case 3471:
+                    $event = 'processed_event';
+                    $refund[RefundEntity::SPEED_PROCESSED] = 'instant';
+                    break;
+            }
+
+            if ($event !== '')
+            {
+                $this->scroogeUpdateRefundStatus($refund, $event);
+            }
         }
 
         return $response;
@@ -1005,7 +1035,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeUpdateRefundStatus(array $refund, $status)
+    protected function scroogeUpdateRefundStatus(array $refund, $event)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1016,7 +1046,12 @@ trait PaymentTrait
             $input['reference_no'] = random_integer(12);
         }
 
-        $input['status'] = $status;
+        if (empty($refund[RefundEntity::SPEED_PROCESSED]) === false)
+        {
+            $input[RefundEntity::SPEED_PROCESSED] = $refund[RefundEntity::SPEED_PROCESSED];
+        }
+
+        $input['event'] = $event;
 
         $this->ba->scroogeAuth();
 
@@ -1634,6 +1669,27 @@ trait PaymentTrait
         return false;
     }
 
+    protected function getMetaRefreshUrl($response)
+    {
+        $crawler = new Crawler($response->getContent());
+
+        $contents = $crawler->filterXpath("//meta[@http-equiv='refresh']")->extract(array('content'));
+
+        if (count($contents) === 0)
+        {
+            return '';
+        }
+
+        preg_match('/0;url=(.*)/', $contents[0], $matches);
+
+        if (count($matches) !== 2)
+        {
+            return '';
+        }
+
+        return $matches[1];
+    }
+
     protected function getDataForGatewayRequest($response, &$callback = null)
     {
         $url = $values = $method = null;
@@ -1978,7 +2034,9 @@ trait PaymentTrait
 
     protected function mockCardVault($callable = null)
     {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 
@@ -2108,5 +2166,43 @@ trait PaymentTrait
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;
+    }
+
+    protected function mockFundAccountService($callable = null)
+    {
+        $fts = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
+
+        $callable = $callable ?: function ($endpoint, $method, $data = [])
+        {
+            switch ($endpoint)
+            {
+                case '/account':
+
+                    $response = [
+                        'body' => [
+                            'fund_account_id' => random_integer(2),
+                        ],
+                        'code' => 201
+                    ];
+
+                    return $response;
+
+                case '/source_account':
+
+                    $response = [
+                            'message' => 'source account registered',
+                        ];
+
+                    return $response;
+
+                default:
+                    return null;
+            }
+        };
+
+        $fts->shouldReceive('createAndSendRequest')
+            ->andReturnUsing($callable);
+
+        $this->app->instance('fts_create_account', $fts);
     }
 }

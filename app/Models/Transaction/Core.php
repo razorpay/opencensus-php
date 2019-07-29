@@ -597,7 +597,7 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
@@ -959,6 +959,7 @@ class Core extends Base\Core
         $txn->accountBalance()->associate($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
+
         $this->repo->balance->updateBalance($merchantBalance);
 
         $txn->setBalance($merchantBalance->getBalance());
@@ -1117,7 +1118,8 @@ class Core extends Base\Core
     public function updateRefundCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if (($txn->isTypeRefund() === false) or
+        if ((($txn->isTypeRefund() === false) and
+            ($txn->isTypeReversal() === false)) or
             ($txn->isRefundCredits() === false))
         {
             return;
@@ -1342,7 +1344,7 @@ class Core extends Base\Core
     {
         try
         {
-            (new Credits\Transaction\Core)->create($amount, $txn, $creditType);
+            (new Credits\Transaction\Core)->createCreditTransaction($amount, $txn, $creditType);
         }
         catch (\Throwable $e)
         {
@@ -1522,5 +1524,26 @@ class Core extends Base\Core
                     'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
         }
+    }
+
+
+    //Async Update Merchant Balance
+    public function asyncUpdateMerchantBalance($payment, $txn)
+    {
+        $processor = $this->getFactory($payment);
+
+        $processor->setTransaction($txn);
+
+        $processor->setMerchantBalanceLockForUpdate();
+
+        $processor->updateCredits();
+
+        $processor->updateBalances();
+
+        $txn->setBalance(null);
+
+        $txn->setBalanceUpdated(true);
+
+        $this->repo->saveOrFail($txn);
     }
 }

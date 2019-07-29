@@ -4,8 +4,10 @@ namespace RZP\Models\FundTransfer\Rbl;
 
 use App;
 use Config;
+use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
@@ -27,6 +29,13 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->channel = Channel::RBL;
 
         $this->initStats();
+
+        $this->bankingEndTimeRtgs = Carbon::createFromTime(
+                                                self::RTGS_CUTOFF_HOUR_MAX,
+                                                self::RTGS_CUTOFF_MINUTE_MAX,
+                                                0,
+                                                Timezone::IST)
+                                            ->getTimestamp();
     }
 
     public function addBeneficiary(array $input): array

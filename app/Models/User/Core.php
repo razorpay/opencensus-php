@@ -13,6 +13,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
@@ -133,7 +134,7 @@ class Core extends Base\Core
     {
         $response = $user->toArrayPublic();
 
-        $merchantEntities = $user->merchants->where(Merchant\Entity::SUSPENDED_AT, null);
+        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
 
         $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 
@@ -184,9 +185,13 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
-                $balance = $this->repo->balance->getMerchantBalanceByType($merchant[Entity::ID], Product::BANKING);
+                $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                    $merchant['id'],
+                    Merchant\Balance\Type::BANKING,
+                    Merchant\Balance\AccountType::SHARED);
 
-                // We hit this flow during /login too where merchant even though of X, doesn't have balance etc created yet.
+                // We hit this flow during /login too where merchant even though of X,
+                // doesn't have balance etc created yet.
                 if ($balance === null)
                 {
                     return $merchant;
@@ -198,9 +203,28 @@ class Core extends Base\Core
                     [
                         Merchant\Entity::BANKING_BALANCE => $balance->only([Merchant\Balance\Entity::BALANCE, Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT => $bankAccount->toArrayHosted(),
+                        Merchant\Entity::ACCOUNTS        => $this->fetchBankingAccountWithBalance($merchant['id']),
                     ];
             },
             $merchants);
+    }
+
+    protected function fetchBankingAccountWithBalance($merchantId)
+    {
+        $bankingAccounts = $this->repo->banking_account->getBankingAccountsWithBalance($merchantId);
+
+        $result = [];
+
+        foreach ($bankingAccounts as $bankingAccount)
+        {
+            $bankingAccountArray = $bankingAccount->toArrayPublic();
+
+            $bankingAccountArray['banking_balance'] = $bankingAccount->balance;
+
+            $result[] = $bankingAccountArray;
+        }
+
+        return $result;
     }
 
     /**
@@ -217,8 +241,10 @@ class Core extends Base\Core
     {
         $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $role = $input[Entity::ROLE];
+
         $mappingParams = [
-             'role'       => $input[Entity::ROLE],
+             'role'       => $role,
              'product'    => $input[Merchant\Entity::PRODUCT],
              'created_at' => $currentTimestamp,
              'updated_at' => $currentTimestamp
@@ -230,7 +256,7 @@ class Core extends Base\Core
 
         $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
                                                                  $user->getId(),
-                                                                 $input[Entity::ROLE],
+                                                                 $role,
                                                                  $input[Merchant\Entity::PRODUCT]);
 
         if (empty($mapping) === false)
@@ -239,6 +265,19 @@ class Core extends Base\Core
         }
 
         $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
+
+        if (BankingRole::isWorkflowRole($role) === true)
+        {
+            $role = $this->repo->role->findByOrgIdAndName(
+                Org\Entity::RAZORPAY_ORG_ID,
+                BankingRole::getNameForWorkflowRole($role));
+
+            $roleMapParams = [
+                'role_id' => $role->getId()
+            ];
+
+            $this->repo->attach($user, 'roles', $roleMapParams); // check detaching argument
+        }
 
         return $user->toArrayPublic();
     }
@@ -252,9 +291,13 @@ class Core extends Base\Core
      */
     protected function detach(Entity $user, array $input)
     {
-        $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+        $merchantId = $input[Entity::MERCHANT_ID];
 
-        $this->repo->detach($user, Entity::MERCHANTS, $input[Entity::MERCHANT_ID]);
+        $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->repo->detach($user, Entity::MERCHANTS, $merchantId);
+
+        // TODO: detach roles() for RX banking workflows
 
         return $user->toArrayPublic();
     }
@@ -272,8 +315,10 @@ class Core extends Base\Core
     {
         $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $role = $input[Entity::ROLE];
+
         $mappingParams = [
-            'role'       => $input[Entity::ROLE],
+            'role'       => $role,
             'created_at' => $currentTimestamp,
             'updated_at' => $currentTimestamp
         ];
@@ -283,6 +328,19 @@ class Core extends Base\Core
         $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
 
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
+
+        if (BankingRole::isWorkflowRole($role) === true)
+        {
+            $role = $this->repo->role->findByOrgIdAndName(
+                Org\Entity::RAZORPAY_ORG_ID,
+                BankingRole::getNameForWorkflowRole($role));
+
+            $roleMapParams = [
+                'role_id' => $role->getId()
+            ];
+
+            $this->repo->sync($user, 'roles', $roleMapParams); // check detaching argument
+        }
 
         return $user->toArrayPublic();
     }
@@ -341,10 +399,10 @@ class Core extends Base\Core
      *     - action - E.g. create_payout, verify_contact
      *     - medium - sms|email, when empty does both sms & email
      *
-     * @param  array           $input
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Entity          $user
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param Entity          $user
+     *
      * @return array
      */
     public function sendOtp(array $input, Merchant\Entity $merchant, Entity $user): array
@@ -519,7 +577,7 @@ class Core extends Base\Core
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
         $receiver = $user->getContactMobile();
         // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
-        $source   = "api";
+        $source   = 'api';
 
         return compact(
             'token',
@@ -550,7 +608,9 @@ class Core extends Base\Core
 
         // Note: Existence of various key in $input is(and must be) ensured at validation layer.
 
-        if ($input[Entity::ACTION] === 'create_payout')
+        $action = $input[Entity::ACTION];
+
+        if ($action === 'create_payout')
         {
             $payload += [
                 'amount'         => amount_format_IN($input['amount']),
@@ -566,10 +626,26 @@ class Core extends Base\Core
                 'account_type'        => $fa->getAccountTypeAsText(),
             ];
         }
-        else if ($input[Entity::ACTION] === 'create_payout_batch')
+        else if ($action === 'create_payout_batch')
         {
             $payload += [
                 'account_number' => mask_except_last4($input['account_number']),
+            ];
+        }
+        else if ($action === 'approve_payout')
+        {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['account_number']),
+                'payout_id'      => $input['payout_id'],
+            ];
+        }
+        else if ($action === 'approve_payout_bulk')
+        {
+            $payload += [
+                'payout_total_amount' => amount_format_IN($input['payout_total_amount']),
+                'payout_count'        => $input['payout_count'],
+                'account_number'      => mask_except_last4($input['account_number']),
             ];
         }
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Paysecure;
 
+use Illuminate\Support\Facades\Redis;
 use Mail;
 use Queue;
 
@@ -98,7 +99,78 @@ class PaysecureGatewayTest extends TestCase
             }
         );
 
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_message_type')
+                {
+                    $this->assertEquals('SMS', $content);
+                }
+            }
+        );
+
         $authResponse = $this->doAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+
+        return $authResponse;
+    }
+
+    public function testStanIncrementAndTtl()
+    {
+        $redis = Redis::connection()->client();
+
+        $this->testPaymentAuthViaRedirect();
+
+        $counter = $redis->get(Gateway::GATEWAY_PAYSECURE_STAN);
+
+        $this->assertEquals(1, $counter);
+
+        $this->testPaymentAuthViaRedirect();
+
+        $counter = $redis->get(Gateway::GATEWAY_PAYSECURE_STAN);
+        $ttl = $redis->ttl(Gateway::GATEWAY_PAYSECURE_STAN);
+
+        // Assert that the counter is increased and that the ttl is set for the same.
+        // We can't check the value of ttl, since it depends on the current time and it changes every second
+        $this->assertEquals(2, $counter);
+        $this->assertGreaterThan(0, $ttl);
+
+        $redis->set(Gateway::GATEWAY_PAYSECURE_STAN, 999999);
+
+        $this->testPaymentAuthViaRedirect();
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_stan')
+                {
+                    // Assert that the stan gets resetted to 0 once it reaches 999999
+                    $this->assertEquals('000000', $content);
+                }
+            }
+        );
+    }
+
+    public function testLocalCustomersPaymentAuthViaRedirect()
+    {
+        $this->fixtures->iin->edit('607384', ['message_type' => 'DMS']);
+        // Create token and card
+        $payment = $this->payment;
+
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['token'] = '10002cardtoken';
+
+        $this->mockServerContentFunction(
+            function (&$content, $action = null)
+            {
+                if ($action === 'validate_message_type')
+                {
+                    $this->assertEquals('DMS', $content);
+                }
+            }
+        );
+
+        $authResponse = $this->doAuthPayment($payment);
 
         $this->assertSuccess($authResponse, 'redirect');
 
@@ -303,9 +375,9 @@ class PaysecureGatewayTest extends TestCase
 
                     $content['status'] = 'failure';
 
-                    $content['errorcode'] = '57';
+                    $content['errorcode'] = 'CA';
 
-                    $content['errormsg'] = 'DECLINED (cardholder not allowed)';
+                    $content['errormsg'] = 'Compliance error code for acquirer';
                 }
             }
         );
@@ -799,7 +871,7 @@ class PaysecureGatewayTest extends TestCase
                 'status'                 => 'success',
                 'gateway_transaction_id' => '100000000000000000000000025236',
                 'error_code'             => '00',
-                'error_message'          => '',
+                'error_message'          => null,
                 'flow'                   => $flow,
                 'apprcode'               => '183217',
             ],

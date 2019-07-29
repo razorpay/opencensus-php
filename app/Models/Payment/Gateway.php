@@ -78,6 +78,7 @@ class Gateway
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
+    const WORLDLINE              = 'worldline';
 
     const CARD_FSS               = 'card_fss';
 
@@ -118,6 +119,8 @@ class Gateway
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
     const BAJAJFINSERV       = 'bajajfinserv';
+    const GOOGLE_PAY         = 'google_pay';
+
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -188,14 +191,20 @@ class Gateway
         self::BILLDESK,
     ];
 
+    // TODO: Add gateway and gateway_acquirer map to fix
+    // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
-        self::NETBANKING_HDFC   => self::HDFC,
-        self::NETBANKING_KOTAK  => self::KOTAK,
-        self::NETBANKING_ICICI  => self::ICICI,
-        self::NETBANKING_RBL    => self::RBL,
-        self::NETBANKING_AXIS   => self::AXIS,
-        self::PAYTM             => self::PAYTM,
         self::AMEX              => self::AMEX,
+        self::HDFC              => self::HDFC,
+        self::ISG               => self::HDFC,
+        self::NETBANKING_AXIS   => self::AXIS,
+        self::NETBANKING_HDFC   => self::HDFC,
+        self::NETBANKING_ICICI  => self::ICICI,
+        self::NETBANKING_KOTAK  => self::KOTAK,
+        self::NETBANKING_RBL    => self::RBL,
+        self::PAYTM             => self::PAYTM,
+        self::UPI_AXIS          => self::AXIS,
+        self::UPI_MINDGATE      => self::HDFC,
     ];
 
     /**
@@ -279,6 +288,7 @@ class Gateway
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::CARDLESS_EMI,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -297,8 +307,14 @@ class Gateway
         IFSC::ICIC,
         IFSC::USFB,
         IFSC::IBKL,
+        IFSC::HDFC,
+        IFSC::TMBL,
+        IFSC::IOBA,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
+        IFSC::RATN,
+        IFSC::MAHB,
+        IFSC::DEUT,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -545,6 +561,7 @@ class Gateway
         Payment\Gateway::WALLET_JIOMONEY,
         Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PHONEPE,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -744,6 +761,18 @@ class Gateway
         self::HITACHI               => [],
     ];
 
+    /**
+     * Card gateways which support purchase mechanism for at
+     * least one card network.
+     *
+     * @var array
+     */
+    public static $gatewayNetworkPurchaseSupport = [
+        self::HITACHI               => [
+            self::NOT_SUPPORTED     => [Network::RUPAY]
+        ],
+    ];
+
     public static $bankTransferProviderGateway = [
         Provider::YESBANK   => self::BT_YESBANK,
         Provider::KOTAK     => self::BT_KOTAK,
@@ -807,8 +836,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
-            Network::DICL,
-            Network::RUPAY,
+            Network::DICL
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -899,6 +927,11 @@ class Gateway
             Network::RUPAY,
         ],
         self::ISG => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+        ],
+        self::WORLDLINE => [
             Network::VISA,
             Network::MC,
             Network::RUPAY,
@@ -1014,6 +1047,12 @@ class Gateway
         self::ISG,
     ];
 
+    // We do not report capture verify for some gateway even if they fail, as there are integration issues currently
+    public static $captureVerifyReportDisabledGateways = [
+        self::UPI_AXIS,
+        self::UPI_ICICI,
+    ];
+
     public static $captureVerifyQREnabledGateways = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
@@ -1065,6 +1104,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_MINDGATE,
         self::ISG,
+        self::WORLDLINE,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
@@ -1701,6 +1741,29 @@ class Gateway
         }
     }
 
+    /**
+     * If network code is null, the function returns back whether the
+     * given gateway has support for Purchase or not.
+     * If network code is not null, the functions returns back whether
+     * the given gateway has support for Purchase for the given
+     * network.
+     *
+     * @param string $gateway
+     * @param string $networkCode
+     * @return bool
+     */
+    public static function supportsPurchase($gateway, $networkCode = null): bool
+    {
+        $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
+
+        if ($supportsPurchase === true)
+        {
+            return self::isNetworkSupportedForPurchase($gateway, $networkCode);
+        }
+
+        return true;
+    }
+
     public static function supportsReverse($gateway)
     {
         return in_array($gateway, self::$reverse, true);
@@ -1746,6 +1809,23 @@ class Gateway
         }
 
         return true;
+    }
+
+    public static function isNetworkSupportedForPurchase($gateway, $networkCode)
+    {
+        // This means that all the networks are supported by the gateway for Purchase.
+        if ((isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false) or
+            ($networkCode === null))
+        {
+            return true;
+        }
+
+        // Get all the networks which are NOT supported by the gateway for Purchase.
+        $notSupportedNetworks = self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED];
+
+        // If a given network is in the list of notSupportedNetworks, it means that the network
+        // is not supported by the gateway for Purchase.
+        return (in_array($networkCode, $notSupportedNetworks, true) === false);
     }
 
     public static function isPowerWallet($wallet)
@@ -1914,4 +1994,21 @@ class Gateway
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }
+
+    public static function isCaptureVerifyEnabledGateway($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true);
+    }
+
+    public static function isCaptureVerifyQREnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyQREnabledGateways, true) === true);
+    }
+
+    public static function isCaptureVerifyReportEnabledGateways($gateway)
+    {
+        return (in_array($gateway, Payment\Gateway::$captureVerifyReportDisabledGateways, true) === false);
+    }
+
+
 }
