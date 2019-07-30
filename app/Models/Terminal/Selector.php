@@ -259,28 +259,35 @@ class Selector extends Base\Core
         }
 
         // calling the smart routing service for sorted terminals set
-        $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment, $this->input['merchant'],
-            $allTerminals, $sortedTerminals, $filteredTerminals);
+        $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
+            $this->input['merchant'], $allTerminals, $sortedTerminals, $filteredTerminals);
 
         $terminalIds = [];
 
-        $i = 0;
+        $newSortedTerminals = [];
 
-        if (($terminalSetReceivedFromSmartRouting !== null) and
-            (count($terminalSetSentToSmartRouting) === count($terminalSetReceivedFromSmartRouting)))
+        if ($terminalSetReceivedFromSmartRouting !== null)
         {
             foreach ($terminalSetReceivedFromSmartRouting as $terminal)
             {
+                // populating terminalIds array for data link layer
                 array_push($terminalIds, $terminal['id']);
 
-                $sortedTerminals[$i] = $terminalSetSentToSmartRouting[$terminal['id']];
+                // populating newSortedTerminals array for the payment process
+                array_push($newSortedTerminals,$terminalSetSentToSmartRouting[$terminal['id']]);
 
-                $i++;
             };
+
+        }
+
+        if (count($sortedTerminals) === count($newSortedTerminals))
+        {
+            $sortedTerminals = $newSortedTerminals;
         }
 
         // sending the event to data link layer
-        $this->app['diag']->trackPaymentEvent(EventCode::PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
+        $this->app['diag']->trackPaymentEvent(
+            EventCode::PAYMENT_SORTED_TERMINALS_RECEIVED_FROM_SMART_ROUTING, $payment, null,
             [
                 'sorted_terminalIds' => $terminalIds,
             ]
