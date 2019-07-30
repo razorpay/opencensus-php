@@ -21,6 +21,7 @@ import {
   fetchTransfers,
 } from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
 export const isPartialPayment = props => {
   const refundableAmount = props.payment.amount - props.payment.amount_refunded,
@@ -121,6 +122,7 @@ export default class RefundModal extends Component {
   componentDidMount() {
     this.props.onMount && this.props.onMount(this.props.payment);
     this.props.fetchMerchantBalance();
+    console.log(showWhenUtil({ featureEnabled: 'card_transfer_refund' }));
   }
 
   componentWillUnmount() {
