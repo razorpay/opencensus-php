@@ -92,6 +92,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::UPI)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::OMNICHANNEL)
+                  ->default(0);
+
             $table->tinyInteger(Terminal::BANK_TRANSFER)
                   ->default(0);
 

@@ -9,14 +9,15 @@ use RZP\Gateway\Base\Entity as E;
 
 class CorePaymentServiceSync extends Job
 {
-    const REDIS_KEY_PREFIX = 'cps_sync_timestamp';
-    const REDIS_KEY_TTL    = 30; // Minutes
-    const MUTEX_KEY_PREFIX = 'cps_sync:';
-    const MUTEX_TIMEOUT    = 30;
-    const RETRY_COUNT      = 10;
-    const MIN_RETRY_DELAY  = 200;
-    const MAX_RETRY_DELAY  = 400;
-    const INPUT            = 'input';
+    const REDIS_KEY_PREFIX       = 'cps_sync_timestamp';
+    const REDIS_KEY_TTL          = 30; // Minutes
+    const MUTEX_KEY_PREFIX       = 'cps_sync:';
+    const MUTEX_TIMEOUT          = 30;
+    const RETRY_COUNT            = 10;
+    const MIN_RETRY_DELAY        = 200;
+    const MAX_RETRY_DELAY        = 400;
+    const INPUT                  = 'input';
+    const DEFAULT_GATEWAY_ENTITY = 'mozart';
 
     /**
      * @var string
@@ -93,9 +94,11 @@ class CorePaymentServiceSync extends Job
 
         $gatewaySync = 'RZP\Gateway\\' . studly_case($gateway) . '\\CpsGatewayEntitySync';
 
-        if ((class_exists($gatewaySync) === false) or (empty($this->data[E::PAYMENT_ID]) === true))
+        if (class_exists($gatewaySync) === false)
         {
-            return;
+            // We are storing all gateway entities in mozart table for now
+            // This is temporary and all this will be part of payment container
+            $gatewaySync = 'RZP\Gateway\\' . studly_case(self::DEFAULT_GATEWAY_ENTITY) . '\\Gateway';
         }
 
         $app['api.mutex']->acquireAndRelease(

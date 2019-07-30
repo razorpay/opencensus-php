@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
     const UPI                           = 'upi';
+    const OMNICHANNEL                   = 'omnichannel';
     const BANK_TRANSFER                 = 'bank_transfer';
     const AEPS                          = 'aeps';
     const EMANDATE                      = 'emandate';
@@ -124,6 +125,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
+        self::OMNICHANNEL,
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
@@ -171,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
+        self::OMNICHANNEL,
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
@@ -261,6 +264,8 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION             => null,
         self::CARDLESS_EMI               => 0,
         self::PAYLATER                   => 0,
+        self::OMNICHANNEL                => 0,
+        self::VPA                        => null,
     ];
 
     protected $casts = [
@@ -269,6 +274,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING                => 'boolean',
         self::INTERNATIONAL             => 'boolean',
         self::UPI                       => 'boolean',
+        self::OMNICHANNEL               => 'boolean',
         self::BANK_TRANSFER             => 'boolean',
         self::AEPS                      => 'boolean',
         self::EMANDATE                  => 'boolean',
@@ -450,6 +456,11 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function isOmnichannelEnabled()
+    {
+        return $this->getAttribute(self::OMNICHANNEL);
     }
 
     public function isBankTransferEnabled()
@@ -789,6 +800,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VPA);
     }
 
+    // returns vpa for terminal by first checking vpa attribute and if not present then returns gatewayMerchantId2 value
+    // for some gateways like upi_mindgate vpa is stored in gatewayMerchantId2, and not in vpa
+    public function getVpaForTerminal()
+    {
+        if (($this->isUpiEnabled() === false) and ($this->isOmnichannelEnabled() === false))
+        {
+            return null;
+        }
+
+        return $this->getVpa() ?: $this->getGatewayMerchantId2();
+    }
+
     protected function modifyInternational(& $input)
     {
         if (isset($input[self::INTERNATIONAL]) === false)
@@ -934,7 +957,11 @@ class Entity extends Base\PublicEntity
 
         $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
 
-        $this->setAttribute(self::ENABLED_BANKS, $supportedBanks);
+        $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
+
+        $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+        $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);
     }
 
     public function edit(array $input = [], $operation = 'edit')

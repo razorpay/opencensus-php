@@ -175,7 +175,6 @@ class Repository extends Base\Repository
         $query->join($paymentTable, $paymentId, '=', $refundPaymentId);
     }
 
-
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
         $query = $this->newQuery()->where(Refund\Entity::MERCHANT_ID, '=', $merchantId);

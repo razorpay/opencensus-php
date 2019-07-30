@@ -1145,7 +1145,7 @@ return [
         ],
     ],
 
-    'testRefundProcessedWebhookEventData' => [
+    'testRefundProcessedInstantWebhookEventData' => [
         'mode' => 'test',
         'event' => [
             'entity' => 'event',
@@ -1154,18 +1154,46 @@ return [
             'payload' => [
                 'refund' => [
                     'entity' => [
-                        'entity'        => 'refund',
-                        'amount'        => 50000,
-                        'currency'      => 'INR',
-                        'notes'         => [],
-                        'receipt'       => null,
-                        'status'        => 'processed',
-                        'acquirer_data' => [
+                        'entity'          => 'refund',
+                        'amount'          => 3471,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'status'          => 'processed',
+                        'speed_requested' => 'optimum',
+                        'speed_processed' => 'instant',
+                        'acquirer_data'   => [
                             'arn' => null,
                         ],
                     ],
                 ],
             ],
         ],
-    ]
+    ],
+
+    'testRefundProcessedNormalWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'refund.processed',
+            'contains' => ['refund'],
+            'payload' => [
+                'refund' => [
+                    'entity' => [
+                        'entity'          => 'refund',
+                        'amount'          => 50000,
+                        'currency'        => 'INR',
+                        'notes'           => [],
+                        'receipt'         => null,
+                        'status'          => 'processed',
+                        'speed_requested' => 'normal',
+                        'speed_processed' => 'normal',
+                        'acquirer_data'   => [
+                            'arn' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

@@ -58,7 +58,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $transactions = $mockedResponse['data']['Acc_Stmt_DtRng_Res']['Body']['transactionDetails'];
+        $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
 
         $txn = last($transactions);
 
@@ -216,7 +216,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $response = [
             'data' => [
-                'Acc_Stmt_DtRng_Res' => [
+                'PayGenRes' => [
                     'Body' => [
                         'hasMoreData' => 'N',
                         'transactionDetails' => [
@@ -291,7 +291,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $response = [
             'data' => [
-                'Acc_Stmt_DtRng_Res' => [
+                'PayGenRes' => [
                     'Body' => [
                         'hasMoreData' => 'N'
                     ],
@@ -339,7 +339,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $response = [
             'data' => [
-                'Acc_Stmt_DtRng_Res' => [
+                'PayGenRes' => [
                     'Header' => [
                         'Approver_ID' => '',
                         'Corp_ID' => 'RAZORPAY',
@@ -373,7 +373,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $response = [
             'data' => [
-                'Acc_Stmt_DtRng_Res' => [
+                'PayGenRes' => [
                     'Header' => [
                         'Approver_ID' => '',
                         'Corp_ID' => 'RAZORPAY',
@@ -407,7 +407,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $response = $this->getRblDataResponse();
 
-        unset($response['data']['Acc_Stmt_DtRng_Res']['Body']['transactionDetails'][0]['pstdDate']);
+        unset($response['data']['PayGenRes']['Body']['transactionDetails'][0]['pstdDate']);
 
         return $response;
     }
@@ -416,7 +416,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $response = $this->getRblDataResponse();
 
-        $response['data']['Acc_Stmt_DtRng_Res']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '20.00';
+        $response['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '20.00';
 
         return $response;
     }
@@ -425,12 +425,12 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $response = $this->getRblDataResponse();
 
-        $txn = $response['data']['Acc_Stmt_DtRng_Res']['Body']['transactionDetails'][1];
+        $txn = $response['data']['PayGenRes']['Body']['transactionDetails'][1];
 
         $txn['transactionSummary']['txnAmt']['amountValue'] = '221.00';
         $txn['txnBalance']['amountValue'] = '-3.50';
 
-        $response['data']['Acc_Stmt_DtRng_Res']['Body']['transactionDetails'][1] = $txn;
+        $response['data']['PayGenRes']['Body']['transactionDetails'][1] = $txn;
 
         return $response;
     }

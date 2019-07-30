@@ -4,11 +4,33 @@ namespace RZP\Reconciliator\Base;
 
 class InfoCode
 {
+    const RECONCILED                                    = 'RECONCILED';
+
+    const ALREADY_RECONCILED                            = 'ALREADY_RECONCILED';
+
+    const RECON_FAILED                                  = 'RECON_FAILED';
+
+    const RECON_UNPROCESSED_SUCCESS                     = 'RECON_UNPROCESSED_SUCCESS';
+
     const AMOUNT_MISMATCH                               = 'AMOUNT_MISMATCH';
+
+    const GATEWAY_FEE_MISMATCH                          = 'GATEWAY_FEE_MISMATCH';
+
+    const GATEWAY_SERVICE_TAX_MISMATCH                  = 'GATEWAY_SERVICE_TAX_MISMATCH';
 
     const PAYMENT_ABSENT                                = 'PAYMENT_ABSENT';
 
     const PAYMENT_TRANSACTION_ABSENT                    = 'PAYMENT_TRANSACTION_ABSENT';
+
+    const REFUND_TRANSACTION_ABSENT                     = 'REFUND_TRANSACTION_ABSENT';
+
+    const REFUND_PAYMENT_ABSENT                         = 'REFUND_PAYMENT_ABSENT';
+
+    const PAYMENT_ID_NOT_FOUND                          = 'PAYMENT_ID_NOT_FOUND';
+
+    const REFUND_ID_NOT_FOUND                           = 'REFUND_ID_NOT_FOUND';
+
+    const REFUND_ID_NOT_AS_EXPECTED                     = 'REFUND_ID_NULL';
 
     const REFUND_ABSENT                                 = 'REFUND_ABSENT';
 
@@ -48,11 +70,19 @@ class InfoCode
 
     const MIS_FILE_REFUND_FAILED                        = 'MIS_FILE_REFUND_FAILED';
 
+    const MIS_FILE_PAYMENT_FAILED                       = 'MIS_FILE_PAYMENT_FAILED';
+
+    const REFUND_PAYMENT_FAILED                         = 'REFUND_PAYMENT_FAILED';
+
     const INCORRECT_DATE_FORMAT                         = 'INCORRECT_DATE_FORMAT';
 
     const PAYMENT_FORCE_AUTHORIZED                      = 'PAYMENT_FORCE_AUTHORIZED';
 
     const PAYMENT_FORCE_AUTHORIZE_FAILED                = 'PAYMENT_FORCE_AUTHORIZE_FAILED';
+
+    const RECON_RECORD_GATEWAY_FEE_FAILED               = 'RECON_RECORD_GATEWAY_FEE_FAILED';
+
+    const RECON_GATEWAY_FEE_OR_TAX_IS_EMPTY             = 'RECON_GATEWAY_FEE_OR_TAX_IS_EMPTY';
 
     const RECON_BATCH_MARK_PROCESSED                    = 'RECON_BATCH_MARK_PROCESSED';
 
@@ -83,6 +113,10 @@ class InfoCode
     const UNEXPECTED_PAYMENT_ALREADY_EXISTS             = 'UNEXPECTED_PAYMENT_ALREADY_EXISTS';
 
     const RECON_UNEXPECTED_PAYMENT_CREATED              = 'RECON_UNEXPECTED_PAYMENT_CREATED';
+
+    const RECON_RECORD_GATEWAY_FEE_TRANSACTION_ABSENT   = 'RECON_RECORD_GATEWAY_FEE_TRANSACTION_ABSENT';
+
+    const RECON_AUTHORIZE_FAILED_PAYMENT_UNSUCCESSFUL   = 'RECON_AUTHORIZE_FAILED_PAYMENT_UNSUCCESSFUL';
 
     const RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED     = 'RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED';
 

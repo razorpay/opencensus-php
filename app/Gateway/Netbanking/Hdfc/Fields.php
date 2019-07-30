@@ -76,7 +76,7 @@ class Fields
 
         $merchantName = $merchant->getFilteredDba();
 
-        $customerName = $token->customer->getName();
+        $customerName = $token['beneficiary_name'] ?? $token->customer->getName();
 
         return [
             EMandateRegisterFileHeadings::MERCHANT_UNIQUE_REFERENCE_NO  => $paymentId,

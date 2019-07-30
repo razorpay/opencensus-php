@@ -190,9 +190,11 @@ class Core extends Merchant\Core
 
         $merchantDetailCore->updateActivationSource($subMerchant, Product::PRIMARY);
 
-        $merchantDetailCore->setBankAccountForMerchant($subMerchantDetails);
-
-        $subMerchant->getValidator()->validateHasBankAccount();
+        // bank account can be optional in cases where submerchant payments can get settled to partner
+        if ($subMerchantDetails->hasBankAccountDetails() === true)
+        {
+            $merchantDetailCore->setBankAccountForMerchant($subMerchantDetails);
+        }
 
         $subMerchantDetails->edit([Detail\Entity::ACTIVATION_STATUS => Detail\Status::ACTIVATED]);
 
@@ -402,7 +404,13 @@ class Core extends Merchant\Core
 
     protected function getBankAccountFromInput(array $input): array
     {
-        $bankAccount = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNTS][0];
+        if ((isset($input[Constants::SETTLEMENT]) === false) or
+            (isset($input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNT])) === false)
+        {
+            return [];
+        }
+
+        $bankAccount = $input[Constants::SETTLEMENT][Constants::FUND_ACCOUNTS][0][Constants::BANK_ACCOUNT];
 
         return [
             Detail\Entity::BANK_ACCOUNT_NAME           => $bankAccount[Constants::NAME],

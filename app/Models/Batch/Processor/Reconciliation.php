@@ -77,6 +77,16 @@ class Reconciliation extends Base
         }
     }
 
+    public function setReconBatchOutputData(array $data)
+    {
+        $this->reconBatchOutputData = $data;
+    }
+
+    public function getReconBatchOutputData()
+    {
+        return $this->reconBatchOutputData;
+    }
+
     public function setStatusAfterSuccessfulProcessing()
     {
         // Update status only if there are no scrooge refunds in the batch
