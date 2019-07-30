@@ -120,8 +120,7 @@ class PayInitData extends Base\Mock\Server
             'mozart_id' => '',
             'next' => [
                 'redirect' => [
-                    'content' => $output,
-                    'method' => 'post',
+                    'method' => 'GET',
                     'url' => $url,
                 ]
             ],

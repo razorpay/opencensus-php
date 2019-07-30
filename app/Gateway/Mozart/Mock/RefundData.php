@@ -68,19 +68,9 @@ class RefundData extends Base\Mock\Server
         $response = [
             'data' => [
                 '_raw' => '',
-                'code' => 'PAYMENT_SUCCESS',
-                'data' => [
-                    'amount'                => $entities['refund']['amount'],
-                    'merchantId'            => 'abc',
-                    'payResponseCode'       => 'PAYMENT_SUCCESS',
-                    'providerReferenceId'   => 'paypalProviderRefId',
-                    'status'                => 'SUCCESS',
-                    'transactionId'         => $entities['refund']['id'],
-                ],
-                'message' => 'Payment succeded',
-                'received' => true,
+                'id' => 'rtyuiuhgfghjuy',
+                'links' => [],
                 'status' => 'refund_successfull',
-                'success' => false
             ],
             'error' => null,
             'external_trace_id' => '',
