@@ -15,6 +15,12 @@ return [
         'issuer'      => 'ALL',
     ],
 
+    'hdfcUnkownIssuerNetworkData' => [
+        'gateway'     => 'hdfc',
+        'reason_code' => 'ISSUER_DOWN',
+        'source'      => 'STATUSCAKE',
+    ],
+
     'allGatewayIssuerHdfcNetworkVisaData' => [
         'gateway'     => 'ALL',
         'reason_code' => 'ISSUER_DOWN',
