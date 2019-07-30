@@ -922,15 +922,18 @@ class Entity extends Base\PublicEntity
 
     public function setPublicBankingAccountIdAttribute(array & $attributes)
     {
-        $isBanking      = optional($this->balance)->isTypeBanking() ?? false;
-        $bankingAccount = optional($this->balance)->bankingAccount;
+        $isBankingPayout = optional($this->balance)->isTypeBanking() ?? false;
+        $bankingAccount  = optional($this->balance)->bankingAccount;
 
-        if ($isBanking === false)
+        if ((app('basicauth')->isProxyOrPrivilegeAuth() === true) and
+            ($isBankingPayout === true))
         {
-            unset($attributes[self::BANKING_ACCOUNT_ID]);
+            $attributes[self::BANKING_ACCOUNT_ID] = $bankingAccount->getPublicId();
+
+            return;
         }
 
-        $attributes[self::BANKING_ACCOUNT_ID] = optional($bankingAccount)->getPublicId();
+        unset($attributes[self::BANKING_ACCOUNT_ID]);
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
