@@ -133,8 +133,8 @@ class Service extends Base\Service
     {
         if (empty($error) === false)
         {
-            if (isset($error['data'][\App\Admin\ApiRequestAny::IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD]) and
-                ($error['data'][\App\Admin\ApiRequestAny::IS_ERROR_DATA_VISIBLE_TO_FE_DASHBOARD] === true))
+            if ((array_key_exists('data', $error) === true) and
+                (empty($error['data']) === false))
             {
                 return [['Email or password is invalid.', ['internal_error' => $error]], null];
             }

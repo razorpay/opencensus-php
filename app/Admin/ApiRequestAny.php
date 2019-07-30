@@ -42,12 +42,22 @@ class ApiRequestAny
 
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
 
-    // is the login error visible to the front end dashboard. Controlling
-    // whether the data passed in the error data should be explicitly shown
-    // to the front end dashboard. 
-    // This flag will/should be passed by backend only when the username password
-    // is correct but due to some condition, user unable to login.
-    const IS_LOGIN_ERROR_VISIBLE_TO_FE = 'is_login_error_visible_to_fe';
+    // field passed by the API in case of 2fa errors.
+    // dashboard handles these error in a custom way
+    // by passing the data to the frontend
+    const SECOND_FACTOR_ERROR_CODE = '2fa_error_code';
+
+    const SECOND_FACTOR_ERROR_CODES = [
+        'BAD_REQUEST_LOCKED_USER_LOGIN',
+        'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED',
+        'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP',
+        'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED',
+        'BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED',
+        'BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED',
+        'BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA',
+        'BAD_REQUEST_USER_2FA_ALREADY_SETUP',
+        'BAD_REQUEST_2FA_SETUP_INCORRECT_OTP',
+    ];
 
     /**
      * Construct a RawApiRequest instance
@@ -401,8 +411,8 @@ class ApiRequestAny
             // even if username and password is correct we can have failures, if otp was not passed.
             // dashboard needs to explicitly handle these issues.
             if ((empty($json['error']['data']) === false) and
-                (empty($json['error']['data'][self::IS_LOGIN_ERROR_VISIBLE_TO_FE]) === false) and
-                ($json['error']['data'][self::IS_LOGIN_ERROR_VISIBLE_TO_FE] === true))
+                (empty($json['error']['data'][self::SECOND_FACTOR_ERROR_CODE]) === false) and
+                (in_array($json['error']['data'][self::SECOND_FACTOR_ERROR_CODE], self::SECOND_FACTOR_ERROR_CODES) === true))
             {
                 $errors['data'] = $json['error']['data'];
             }
