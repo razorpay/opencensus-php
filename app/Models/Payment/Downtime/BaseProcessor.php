@@ -67,6 +67,38 @@ class BaseProcessor extends Base\Core
         return $this->getRepo()->getDuplicate($input);
     }
 
+    protected function getOverlappingDowntimePeriod(Collection $gatewayDowntimes)
+    {
+        $gatewayDowntimes = $gatewayDowntimes->sortBy(GatewayDowntime::BEGIN);
+
+        $gatewayDowntimes = $gatewayDowntimes->unique(GatewayDowntime::GATEWAY);
+
+        $gatewayDowntimes = array_values($gatewayDowntimes->toArray());
+
+        $beginTime = $gatewayDowntimes[0][GatewayDowntime::BEGIN];
+
+        $endTime = $gatewayDowntimes[0][GatewayDowntime::END];
+
+        for ($idx = 1; $idx < count($gatewayDowntimes); $idx++)
+        {
+            if (($endTime === null) or
+                ($endTime > $gatewayDowntimes[$idx][GatewayDowntime::BEGIN]))
+            {
+                $beginTime = $gatewayDowntimes[$idx][GatewayDowntime::BEGIN];
+
+                $endTime = min($endTime, $gatewayDowntimes[$idx][GatewayDowntime::END]);
+            }
+            else
+            {
+                $beginTime = null;
+
+                break;
+            }
+        }
+
+        return [$beginTime, $endTime];
+    }
+
     protected function getRepo()
     {
         return $this->repo->getCustomDriver(EntityConstants::PAYMENT_DOWNTIME);

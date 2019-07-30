@@ -150,6 +150,137 @@ class PaymentDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentDowntimeForAllGatewayAndSingleGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'issuer'      => 'SVCB',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'billdesk';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testPaymentDowntimeForSingleGatewayAndAllGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'issuer'      => 'SVCB',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'ALL';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testPaymentDowntimeForFewSupportingGateways()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'issuer'      => 'SBIN',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+                'end'       => strval(Carbon::now()->addMinutes(60)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'atom';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
+    public function testPaymentDowntimeForAllSupportingGateways()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'billdesk',
+                'issuer'      => 'SBIN',
+                'method'      => 'netbanking',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => strval(Carbon::now()->timestamp),
+                'end'       => strval(Carbon::now()->addMinutes(60)->timestamp),
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'atom';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(30)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        $request['content']['gateway'] = 'netbanking_sbi';
+        $request['content']['begin'] = strval(Carbon::now()->addMinutes(40)->timestamp);
+        $request['content']['end'] = strval(Carbon::now()->addMinutes(90)->timestamp);
+
+        $this->updateSignature($request);
+        $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(45));
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
     public function testActivateDowntimes()
     {
         $this->testGetUpiDowntimeForAllGateways();
