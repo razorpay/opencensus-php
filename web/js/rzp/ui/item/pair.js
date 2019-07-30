@@ -58,11 +58,11 @@ export const rzpOrderId = { title: 'Razorpay Order Id', value: id.rzpOrder };
 export const refundId = { title: 'Refund Id', value: id.refund };
 export const refundMode = {
   title: 'Mode',
-  value: item => item.speed,
+  value: item => item.mode,
 };
 export const refundStatus = {
   title: 'Status',
-  value: item => <PaymentStatusLabel status={item.status} />,
+  value: item => <RefundStatusLabel status={item.status} />,
 };
 export const customerRefundId = {
   title: 'Refund Id',

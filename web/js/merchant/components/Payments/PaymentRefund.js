@@ -13,7 +13,7 @@ import {
   refundMode,
   refundStatus,
 } from 'rzp/ui/item/pair';
-
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 /*
@@ -45,11 +45,11 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 };
 
 const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
-  // const refundsHeading = {
-  //   title: 'Refund Details',
-  //   amount:'Amount',
-  //   subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
-  // };
+  const columns = [refundId, amount];
+  if (showWhenUtil({ featureEnabled: 'card_transfer_refund' })) {
+    columns.splice(1, 0, refundMode);
+    columns.push(refundStatus);
+  }
 
   return (
     <ContentToggler onToggleClick={onToggleClick}>
@@ -59,12 +59,11 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
           customClass="refunds-table"
           progressLoader={true}
           title="Refunds"
-          columns={[refundId, refundMode, amount, refundStatus]}
+          columns={columns}
           items={refunds.items}
           loading={refunds.loading}
           showHeaders={true}
           noStripe={true}
-          // panelHeading={refundsHeading}
         />
       </div>
     </ContentToggler>
