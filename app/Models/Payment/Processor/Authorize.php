@@ -519,6 +519,7 @@ trait Authorize
                 'issuer'     => $card->getIssuer(),
                 'network'    => $card->getNetworkCode(),
                 'last4'      => $card->getLast4(),
+                'iin'        => $card->getIin(),
             ];
 
             $response['metadata'] = $metaData;
