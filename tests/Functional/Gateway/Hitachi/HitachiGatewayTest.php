@@ -150,6 +150,12 @@ class HitachiGatewayTest extends TestCase
 
         $payment['card']['number'] = CardNumber::VALID_NOT_ENROLL_NUMBER;
 
+        $this->mockServerRequestFunction(
+            function(& $request)
+            {
+                $this->assertNotNull($request['pMCProtocolVersion']);
+            });
+
         $response = $this->doAuthPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
