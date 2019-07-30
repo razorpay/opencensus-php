@@ -923,12 +923,18 @@ class Entity extends Base\PublicEntity
     public function setPublicBankingAccountIdAttribute(array & $attributes)
     {
         $isBankingPayout = optional($this->balance)->isTypeBanking() ?? false;
-        $bankingAccount  = optional($this->balance)->bankingAccount;
 
         if ((app('basicauth')->isProxyOrPrivilegeAuth() === true) and
             ($isBankingPayout === true))
         {
-            $attributes[self::BANKING_ACCOUNT_ID] = $bankingAccount->getPublicId();
+            //
+            // Ideally for a banking payout, banking account will always be present,
+            // but adding optional here for backward compatibility
+            // This can be removed once the migration is run
+            //
+            $bankingAccount = optional($this->balance)->bankingAccount;
+
+            $attributes[self::BANKING_ACCOUNT_ID] = optional($bankingAccount)->getPublicId();
 
             return;
         }
