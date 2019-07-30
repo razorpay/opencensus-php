@@ -44,10 +44,13 @@ class Status
     ];
 
     /**
-     * @var array
      * This contains a status map that keeps mapping of a status
      * to next possible statuses. This is to ensure the status
      * change on Payout Entity happens in an order.
+     *
+     * TODO: Complete this and use it before setting status in payout entity.
+     *
+     * @var array
      */
     protected static $fromToStatusMap = [
         self::CREATED => [
@@ -166,17 +169,17 @@ class Status
     public static function getPayoutStatusFromFtaStatus(Entity $payout, string $ftaStatus)
     {
         $channel     = $payout->getChannel();
-        $accountType = optional($payout->balance)->getAccountType() ?? Entity::DEFAULT;
+        $accountType = optional($payout->balance)->getAccountType();
 
         return Status::$ftaToPayoutStatusMap[$accountType][$channel][$ftaStatus] ??
-               Status::$ftaToPayoutStatusMap[$accountType][Entity::DEFAULT][$ftaStatus];
+               Status::$ftaToPayoutStatusMap[Entity::DEFAULT][Entity::DEFAULT][$ftaStatus];
     }
 
     public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
-        if (in_array($currentStatus, $nextStatusList, true) !== true)
+        if (in_array($currentStatus, $nextStatusList, true) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Status change not permitted',
