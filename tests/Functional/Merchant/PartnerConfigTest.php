@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Merchant;
+use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -340,6 +341,31 @@ class PartnerConfigTest extends OAuthTestCase
         $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
 
         $this->startTest($testData);
+    }
+
+    public function testSettleToPartner()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $attributes = [
+            Entity::SETTLE_TO_PARTNER => true,
+        ];
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            null,
+            $attributes);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            $attributes);
+
+        $merchantIds = [Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID];
+
+        $results = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        $this->assertEquals(1, count($results));
     }
 
     public function testEditingConfigToSubventionModel()
