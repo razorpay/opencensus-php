@@ -1146,7 +1146,6 @@ final class Route
     ];
 
     public static $public = [
-        'payment_verify',
         'refund_verify',
         'checkout',
         'payment_create',
@@ -1908,7 +1907,7 @@ final class Route
         'pricing_add_plan_rule',
         'pricing_get_plan',
         'pricing_delete_plan_rule',
-
+        'payment_verify',
         'payment_verify_bulk',
         'payment_authorize_failed',
         'iin_add',

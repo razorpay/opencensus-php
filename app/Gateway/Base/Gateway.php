@@ -241,7 +241,6 @@ class Gateway
         {
             $response = $this->$action($input);
 
-            //reached till here paypal
             $this->pushDimensions($action, $input, Metric::SUCCESS);
 
             return $response;
@@ -1490,8 +1489,7 @@ class Gateway
     protected function updateGatewayPaymentEntity(
         Entity $gatewayPayment,
         array $attributes,
-        bool $mapped = true
-    )
+        bool $mapped = true)
     {
         if ($mapped === true)
         {

@@ -91,7 +91,6 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
-        //reached till here paypal
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
     }
 
@@ -207,7 +206,6 @@ trait Authorize
             );
         }
 
-        //reached here paypal
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
         $this->runShieldCheck($payment);
@@ -250,7 +248,7 @@ trait Authorize
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             // Uncomment this to test with Sharp or any other terminal locally.
-             $currentTerminal = Terminal\Entity::findOrFail('1n25f6uN5S1Zak');
+             //$currentTerminal = Terminal\Entity::findOrFail('1n25f6uN5S1Zak');
 
             $payment->associateTerminal($currentTerminal);
 
@@ -292,7 +290,6 @@ trait Authorize
                 }
                 else
                 {
-                    // reached till here paypal
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
 
@@ -4482,7 +4479,6 @@ trait Authorize
 
     protected function callGatewayAuthorize(Payment\Entity $payment, array $data)
     {
-        // reached till here paypal
         $response = $this->callGatewayFunction(Action::AUTHORIZE, $data);
 
         return $response;

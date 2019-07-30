@@ -352,7 +352,6 @@ class Generator extends Base\Core
 
     protected function checkDuplicateInternalRef(array $input)
     {
-
         if ($this->invoice->getInternalRef() === null)
         {
             return;
