@@ -201,11 +201,12 @@ class PayVerifyData extends Base\Mock\Server
             $response = [
                 'data' => [
                     '_raw' => '',
-                    'amount' => intval($entities['gateway']['redirect']['amount']),
-                    'code' => $entities['gateway']['redirect']['code'],
-                    'merchantId' => $entities['gateway']['redirect']['merchantId'],
-                    'paymentId' => $entities['gateway']['redirect']['paymentId'],
-                    'status' => 'callback_successfull'
+                    'amount' => intval($entities['payment']['amount']),
+                    'created_at' => $entities['merchant']['created_at'],
+                    'gateway_terminal_id' => $entities['terminal']['gateway_terminal_id'],
+                    'token' => $entities['gateway']['redirect']['token'],
+                    'paymentId' => $entities['payment']['id'],
+                    'status' => 'callback_successful'
                 ],
                 'error' => null,
                 'external_trace_id' => '',

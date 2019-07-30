@@ -103,7 +103,7 @@ class PayInitData extends Base\Mock\Server
             'merchantId' => 'abc',
             'transactionId' => $entities['payment']['id'],
             'amount' => $entities['payment']['amount'],
-            'providerReferenceId' => 'phonepeProviderRefId',
+            'providerReferenceId' => 'paypalProviderRefId',
         ];
 
         $response = [

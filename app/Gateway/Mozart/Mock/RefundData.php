@@ -73,7 +73,7 @@ class RefundData extends Base\Mock\Server
                     'amount'                => $entities['refund']['amount'],
                     'merchantId'            => 'abc',
                     'payResponseCode'       => 'PAYMENT_SUCCESS',
-                    'providerReferenceId'   => 'phonepeProviderRefId',
+                    'providerReferenceId'   => 'paypalProviderRefId',
                     'status'                => 'SUCCESS',
                     'transactionId'         => $entities['refund']['id'],
                 ],

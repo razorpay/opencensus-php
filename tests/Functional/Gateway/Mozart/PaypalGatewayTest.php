@@ -119,10 +119,11 @@ class PaypalGatewayTest extends TestCase
             PaymentEntity::AMOUNT       => 50000,
             PaymentEntity::CONTACT      => '+919918899029',
             PaymentEntity::METHOD       => 'wallet',
+            PaymentEntity::CURRENCY     => 'USD',
             PaymentEntity::WALLET       => 'paypal',
             PaymentEntity::GATEWAY      => 'wallet_paypal',
             PaymentEntity::CARD_ID      => null,
-            PaymentEntity::TERMINAL_ID  => '1ShrdPhnepeTrm',
+            PaymentEntity::TERMINAL_ID  => '1n25f6uN5S1Zak',
         ]);
 
         $id = $payment->getPublicId();
