@@ -27,6 +27,9 @@ class EntityMapping extends Base
         // we need to sync to ES to update on ES document
         $this->repo->$fromEntityType->syncToEs($fromEntity, EsRepository::UPDATE);
 
+        // We don't need entityType in plural after this
+        $toEntityType = $this->settingsAccessor->get(Header::ENTITY_TO_TYPE);
+
         $toEntities = $this->repo->$toEntityType->findMany($entry[Header::ENTITY_TO_IDS]);
 
         if (empty($toEntities) === false) 
