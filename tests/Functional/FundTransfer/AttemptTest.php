@@ -375,8 +375,8 @@ class AttemptTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(1, $content[$channel]['count']);
-        $this->assertEquals(1, $content[$channel]['success']);
-        $this->assertEquals(0, $content[$channel]['failed']);
+        $this->assertEquals(0, $content[$channel]['success']);
+        $this->assertEquals(1, $content[$channel]['failed']);
         $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
     }
 }
