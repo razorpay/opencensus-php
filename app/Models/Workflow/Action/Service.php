@@ -230,9 +230,6 @@ class Service extends Base\Service
      */
     public function getActionsByOrg(array $input)
     {
-        // Only superadmin can access maker.all and maker.open
-        $this->app['basicauth']->validateSuperAdminAccess();
-
         $input[Entity::ORG_ID] = $this->maker->getOrgId();
 
         $input[Constants::EXPAND] = [Entity::MAKER];
