@@ -180,7 +180,7 @@ class Core extends Base\Core
         $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         //
-        // Once basic fill by edit call on entity is done, Based on invoice status,
+        // Once basic fill by edit call on entity is done, based on invoice status,
         // it calls either updateDraftInvoice|updateIssuedInvoice.
         //
         // This was done to maintain flow clean. Because if not now, there are chances
