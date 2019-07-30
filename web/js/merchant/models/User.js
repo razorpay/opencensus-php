@@ -347,9 +347,9 @@ export default class User {
   get toShowExtraFieldsInPP() {
     return this.getExpStatus('show_extra_fields_in_pp');
   }
-  
+
   get isEnhancedEPOSEnabled() {
-    return this.isFeatureEnabled('sellerapp_plus');
+    return this.getExpStatus('sellerapp_plus');
   }
 }
 
