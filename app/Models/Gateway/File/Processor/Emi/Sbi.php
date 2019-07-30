@@ -30,6 +30,7 @@ class Sbi extends Base
     const BANK_CODE         = IFSC::SBIN;
     const EXTENSION         = FileStore\Format::TXT;
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
+    const FILE_TYPE_OUTPUT  = FileStore\Type::SBI_EMI_OUTPUT_FILE;
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
 
@@ -139,6 +140,22 @@ class Sbi extends Base
             $this->gatewayFile->setFileGeneratedAt($this->file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+
+            // Create output file by masking the card numbers in the data
+            $dataForOutputFile = $this->replaceCardNumbers($fileData);
+
+            $fileName = $this->getFileToWriteName();
+
+            $creator = new FileStore\Creator;
+
+            $creator->extension(static::EXTENSION)
+                    ->content($dataForOutputFile)
+                    ->name($fileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(static::FILE_TYPE_OUTPUT)
+                    ->entity($this->gatewayFile)
+                    ->metadata($metadata)
+                    ->save();
         }
         catch (\Throwable $e)
         {
@@ -452,6 +469,23 @@ class Sbi extends Base
         $den = $expression - 1;
 
         return (round($num / $den));
+    }
+
+    protected function replaceCardNumbers($data)
+    {
+        $delimiter = "\r\n";
+
+        $data = explode($delimiter, $data);
+
+        $out = [$data[0]];
+
+        // Replace characters from 57 till 76 which represents card numbers
+        for ($i = 1; $i < sizeof($data); $i++)
+        {
+            $out[] = substr_replace($data[$i], '0000000000000000000', 57, 19);
+        }
+
+        return implode($delimiter, $out);
     }
 
     //-------------------------- Helpers ------------------------------------//

@@ -38,6 +38,11 @@ class Entity extends Base\PublicEntity
     const EXPIRE_AT         = 'expire_at';
     const DELETED_AT        = 'deleted_at';
 
+    const STATUS            = 'status';
+    const AMOUNT            = 'amount';
+    const ATTEMPTS          = 'attempts';
+    const CURRENCY          = 'currency';
+
     const METHOD_TYPE_CARD      = 'card';
     const METHOD_TYPE_EMANDATE  = 'emandate';
 

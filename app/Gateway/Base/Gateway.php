@@ -695,7 +695,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayTimeoutException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -704,7 +704,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayRequestException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -814,7 +814,7 @@ class Gateway
             $data = ['status_code' => $response->status_code, 'body' => $response->body];
             $e->setData($data);
 
-            if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+            if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
             {
                 $e->markSafeRetryTrue();
             }
@@ -1593,11 +1593,23 @@ class Gateway
         return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
     }
 
-    protected function sendMozartRequest(array $input)
+    protected function getMozartApiUrl($input)
     {
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
-        $url =  $baseUrl . 'payments/' . $this->gateway. '/v1/' . $this->action;
+        $version = $this->getVersionForAction($input, $this->action);
+
+        return $baseUrl . 'payments/' . $this->gateway . '/' . $version . '/' . snake_case($this->action);
+    }
+
+    protected function getVersionForAction($input, $action)
+    {
+        return 'v1';
+    }
+
+    protected function sendMozartRequest(array $input, $removeRaw = true)
+    {
+        $url = $this->getMozartApiUrl($input);
 
         $authentication = [
             'api',
@@ -1627,7 +1639,10 @@ class Gateway
 
         $this->traceGatewayPaymentResponseForMozart($responseBody ?? '', $requestBody);
 
-        unset($responseBody['data']['_raw']);
+        if ($removeRaw === true)
+        {
+            unset($responseBody['data']['_raw']);
+        }
 
         if (in_array($this->action, ['pay_init', 'authenticate_init', 'authenticate_verify'], true) === true)
         {
@@ -1636,7 +1651,7 @@ class Gateway
 
         $attributes = $this->getMappedAttributes($responseBody['data']);
 
-        if ($this->action === Action::VERIFY)
+        if (in_array(snake_case($this->action), [Action::VERIFY, Action::VERIFY_REFUND]) === true)
         {
             return $responseBody;
         }
@@ -1653,9 +1668,9 @@ class Gateway
             }
         }
 
-       $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
 
-       return $responseBody['next']['redirect'] ?? null;
+        return $responseBody['next']['redirect'] ?? null;
     }
 
     protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)

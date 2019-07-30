@@ -4,8 +4,8 @@ namespace RZP\Models\BankingAccount;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Exception\LogicException;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -34,10 +34,8 @@ class Service extends Base\Service
     /**
      * This function to be used only for admin or internal routes since
      * we are not fetching banking_account by merchant_id.
-     *
      * @param string $id
-     * @param array  $input
-     *
+     * @param array $input
      * @return array
      */
     public function update(string $id, array $input): array
@@ -45,66 +43,48 @@ class Service extends Base\Service
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
+            ]);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
+
         $account = $this->core->updateBankingAccount($bankingAccount, $input);
 
         return $account->toArrayPublic();
     }
 
-    public function storeCredentials(string $id, array $input)
+    public function storeCredentialsAndActivateAccount(string $id, array $input)
     {
-        $bankingAccount = $this->repo->banking_account->findByIdAndMerchant($id, $this->merchant);
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
+            ['id'=> $id]);
 
-        $channel = $bankingAccount->getChannel();
+        /** @var Entity $bankingAccount */
+        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $this->trace->info(
-            TraceCode::BANKING_ACCOUNT_SAVE_MERCHANT_CREDENTIALS_REQUEST,
-            [
-                'id'        => $id,
-                'channel'   => $channel
-            ]);
+        // validating if user tries to add/change credentials
+        // after his account gets activated successfully
 
-        switch ($channel)
-        {
-            case Channel::RBL:
-                // Here 3 API calls are being made, if any of the call fails or for some reason we are
-                // not able to persist the response, we will ask the merchant to enter his credentials
-                // again and make the 3 calls. Later we can separate these calls and have some retry logic
-                // at our end.
+        $this->checkIfAccountAlreadyActivated($bankingAccount);
 
-                try
-                {
-                    $this->core->createMerchantTokenForRbl($bankingAccount, $input);
+        $this->core->storeCredentialsAndActivateAccount($bankingAccount, $input);
 
-                    $fundAccountId = $this->core->createOrFetchFtsFundAccountForMerchant($bankingAccount);
+        $this->core->createAccountMappingForFts($bankingAccount);
 
-                    $this->core->createMerchantSourceAccountForRbl($bankingAccount, $fundAccountId);
-
-                    $this->core->updateAccountToProcessed($bankingAccount);
-
-                    $success = true;
-                }
-                catch (\Throwable $ex)
-                {
-                    $success = false;
-
-                    $this->trace->traceException($ex, Trace::CRITICAL);
-                }
-
-                break;
-
-            default:
-                $this->throwUnhandledChannelException($channel, $input);
-
-        }
-
-        return ['success' => $success];
+        return $bankingAccount->toArrayPublic();
     }
 
     public function addOrRemoveServiceablePincodes(array $input, $channel)
     {
         $input[Entity::CHANNEL] = $channel;
 
-        (new Validator)->validateInput('serviceable_pincode', $input);
+        (new Validator)->validateInput(Validator::SERVICEABLE_PINCODE, $input);
 
         $coreMethod = $input[Entity::ACTION] . 'ServiceablePincodes';
 
@@ -120,25 +100,27 @@ class Service extends Base\Service
 
     public function processAccountInfoWebhook(string $channel, array $input)
     {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_INFO_WEBHOOK_REQUEST,
+            [
+                'input'   => $input,
+                'gateway' => $channel,
+            ]);
+
         $response = $this->core->processAccountInfoWebhook($channel, $input);
 
         return $response;
     }
 
-    /**
-     * @param string $channel
-     * @param array  $input
-     *
-     * @throws LogicException
-     */
-    protected function throwUnhandledChannelException(string $channel, array $input)
+    protected function checkIfAccountAlreadyActivated(Entity $bankingAccount)
     {
-        throw new LogicException(
-            'Banking Account logic undefined for channel',
-            null,
-            [
-                'input'     => $input,
-                'channel'   => $channel
-            ]);
+        if ($bankingAccount->getStatus() === Status::ACTIVATED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED,
+                null,
+                ['id' => $bankingAccount->getId()]
+            );
+        }
     }
 }

@@ -471,9 +471,14 @@ class BatchMicroService
         return $response;
     }
 
-    public function isMigratedBatchType(string $type): bool
+    public function isMigratingBatchType(string $type): bool
     {
-        return in_array($type, Batch\Type::$batchTypeMigrated, true);
+        return in_array($type, Batch\Type::$batchTypeMigrating, true);
+    }
+
+    public function isCompletelyMigratedBatchType(string $type): bool
+    {
+        return in_array($type, Batch\Type::$batchTypeMigrationCompleted, true);
     }
 
     /**

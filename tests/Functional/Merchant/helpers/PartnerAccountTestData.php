@@ -100,12 +100,10 @@ return [
                     'fund_accounts'    => [
                         [
                             'contact_id'    => 'cont00011',
-                            'bank_accounts' => [
-                                [
-                                    'name'           => 'Ratnalal Account Name',
-                                    'account_number' => '1200012391',
-                                    'ifsc'           => 'ICIC0000031',
-                                ],
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
                             ],
                         ],
                     ],
@@ -211,8 +209,8 @@ return [
                 ],
                 'settlement' => [
                     'fund_accounts' => [
-                        'bank_accounts' => [
-                            [
+                        [
+                            'bank_account' => [
                                 'ifsc'           => 'ICIC0000031',
                                 'bank_name'      => 'ICICI Bank',
                                 'name'           => 'Ratnalal Account Name',
@@ -254,19 +252,6 @@ return [
                     ],
                     'name'              => 'Ratnalal Jewellers',
                     'mcc'               => 7011,
-                ],
-                'settlement' => [
-                    'fund_accounts'    => [
-                        [
-                            'bank_accounts' => [
-                                [
-                                    'name'           => 'Ratnalal Account Name',
-                                    'account_number' => '1200012391',
-                                    'ifsc'           => 'ICIC0000031',
-                                ],
-                            ],
-                        ],
-                    ],
                 ],
             ],
         ],
@@ -316,18 +301,6 @@ return [
                 'payment'    => [
                     'flash_checkout' => true,
                     'international'  => false,
-                ],
-                'settlement' => [
-                    'fund_accounts' => [
-                        'bank_accounts' => [
-                            [
-                                'ifsc'           => 'ICIC0000031',
-                                'bank_name'      => 'ICICI Bank',
-                                'name'           => 'Ratnalal Account Name',
-                                'account_number' => '1200012391',
-                            ],
-                        ],
-                    ],
                 ],
             ],
         ],
@@ -391,12 +364,10 @@ return [
                 'settlement' => [
                     'fund_accounts'    => [
                         [
-                            'bank_accounts' => [
-                                [
-                                    'name'           => 'Ratnalal Account Name',
-                                    'account_number' => '1200012391',
-                                    'ifsc'           => 'ICIC0000031',
-                                ],
+                            'bank_account' => [
+                                'name'           => 'Ratnalal Account Name',
+                                'account_number' => '1200012391',
+                                'ifsc'           => 'ICIC0000031',
                             ],
                         ],
                     ],
@@ -453,18 +424,6 @@ return [
                 'payment'    => [
                     'flash_checkout' => true,
                     'international'  => false,
-                ],
-                'settlement' => [
-                    'fund_accounts' => [
-                        'bank_accounts' => [
-                            [
-                                'ifsc'           => 'ICIC0000031',
-                                'bank_name'      => 'ICICI Bank',
-                                'name'           => 'Ratnalal Account Name',
-                                'account_number' => '1200012391',
-                            ],
-                        ],
-                    ],
                 ],
             ],
         ],

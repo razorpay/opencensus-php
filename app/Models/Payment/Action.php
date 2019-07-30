@@ -45,6 +45,7 @@ class Action
     const PAYOUT_VERIFY                 = 'payout_verify';
     const CHECK_ACCOUNT                 = 'check_account';
     const FETCH_TOKEN                   = 'fetch_token';
+    const OMNI_PAY                      = 'omni_pay';
 
     protected $merchant;
 

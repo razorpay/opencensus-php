@@ -48,6 +48,10 @@ return [
                 'dispute' => [
                     'created'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 ],
+                'downtime' => [
+                    'started'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                    'resolved'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                ],
             ],
             'order' => [
                 'paid'              => env('AWS_WEBHOOKS_TEST_QUEUE'),
@@ -92,6 +96,11 @@ return [
                 'initiated'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'failed'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
+            'refund' => [
+                'processed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'speed_changed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'failed'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
         ],
         'live' => [
             'payment' => [
@@ -100,6 +109,10 @@ return [
                 'failed'            => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
                 'dispute' => [
                     'created'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                ],
+                'downtime' => [
+                    'started'       => env('AWS_PAYMENT_DOWNTIME_WEBHOOK_QUEUE'),
+                    'resolved'      => env('AWS_PAYMENT_DOWNTIME_WEBHOOK_QUEUE'),
                 ],
             ],
             'order' => [
@@ -145,6 +158,11 @@ return [
                 'initiated'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'failed'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
+            'refund' => [
+                'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'speed_changed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'failed'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
         ],
     ],
     'dashboard' => [
@@ -179,9 +197,13 @@ return [
         'test'       => env('AWS_IRCTC_BATCH_QUEUE'),
         'live'       => env('AWS_IRCTC_BATCH_QUEUE'),
     ],
+    'emandate_batch' => [
+        'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+        'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+    ],
     'capture' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'       => env('AWS_CAPTURE_TEST_QUEUE'),
+        'live'       => env('AWS_CAPTURE_LIVE_QUEUE'),
     ],
     'bulk_refund' => [
         'test'       => env('AWS_REFUND_QUEUE'),

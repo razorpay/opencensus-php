@@ -195,6 +195,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
     const HOSTED_TIME_FORMAT                = 'j M Y';
 
+    const UPI_PROVIDER                      = 'upi_provider';
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
@@ -556,6 +558,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected function modifyContact(& $input)
     {
+        if (isset($input[Entity::UPI_PROVIDER]) === true)
+        {
+            return null;
+        }
+
         if (empty($input['contact']) === true)
         {
             $isPhoneOptional = $this->merchant->isPhoneOptional();
@@ -752,6 +759,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             (isset($this->metadata['referer']) === false))
         {
             $this->metadata['referer'] = $input['referer'];
+        }
+
+        if (isset($input[Entity::UPI_PROVIDER]) === true)
+        {
+            $this->metadata[Entity::UPI_PROVIDER] = $input[Entity::UPI_PROVIDER];
         }
     }
 
@@ -2516,6 +2528,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $gateway = $this->getGateway();
 
             $settledBy = Payment\Gateway::DIRECT_SETTLEMENT_GATEWAYS[$gateway];
+
             $this->setSettledBy($settledBy);
         }
 
