@@ -17,6 +17,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -2126,6 +2127,47 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    public function getPartnerBankAccountIdsForSubmerchants(array $merchantIds): array
+    {
+        $merchants = $this->repo->merchant->getAllPartnerBankAccountsForSubmerchants($merchantIds);
+
+        $merchantIdToPartnerBankAccountMap = [];
+
+        // Attributes
+        $partnerConfigSettleToPartner = PartnerConfig\Entity::SETTLE_TO_PARTNER;
+        $partnerConfigOriginId        = PartnerConfig\Entity::ORIGIN_ID;
+        $partnerBankAccountId         = Table::BANK_ACCOUNT . '.' . BankAccount\Entity::ID;
+
+        foreach ($merchants as $merchant)
+        {
+            $merchantId = $merchant->getId();
+
+            if (array_key_exists($merchantId, $merchantIdToPartnerBankAccountMap) === true)
+            {
+                if (empty($merchant->getAttribute($partnerConfigOriginId)) === false)
+                {
+                    // App config was applied to the map but now we have a submerchant config, so unset the app config
+                    unset($merchantIdToPartnerBankAccountMap[$merchantId]);
+                }
+                else
+                {
+                    // Submerchant config has been applied to the map. Do nothing for the app config
+                    continue;
+                }
+            }
+
+            // Add to the map only if the config has settle to partner set to true
+            if ((bool) ($merchant->getAttribute($partnerConfigSettleToPartner)) === true)
+            {
+                $merchantIdToPartnerBankAccountMap[$merchantId] = $merchant->getAttribute($partnerBankAccountId);
+            }
+        }
+
+        $this->trace->info(TraceCode::PARTNER_BANK_ACCOUNT_MAP, $merchantIdToPartnerBankAccountMap);
+
+        return $merchantIdToPartnerBankAccountMap;
     }
 
     protected function internationalEnable(Entity $merchant)

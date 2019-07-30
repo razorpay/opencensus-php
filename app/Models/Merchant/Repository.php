@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use DB;
 use Closure;
 
 use RZP\Exception;
@@ -715,13 +716,17 @@ class Repository extends Base\Repository
         $partnersPartnerType = $partnerTable . '.' . Entity::PARTNER_TYPE;
 
         // Bank account columns
+        $bankAccountId          = $bankAccountRepo->dbColumn(BankAccount\Entity::ID);
         $bankAccountsType       = $bankAccountRepo->dbColumn(BankAccount\Entity::TYPE);
         $bankAccountsMerchantId = $bankAccountRepo->dbColumn(BankAccount\Entity::MERCHANT_ID);
         $bankAccountsDeletedAt  = $bankAccountRepo->dbColumn(BankAccount\Entity::DELETED_AT);
 
+        $partnerConfigSettleToPartner = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::SETTLE_TO_PARTNER);
+
         $attributes = [
             $this->dbColumn('*'),
-            $partnerConfigRepo->dbColumn('*'),
+            $partnerConfigSettleToPartner . ' as settle_to_partner',
+            $bankAccountId . ' as partner_bank_account_id',
         ];
 
         $appConfig = $this->newQuery()
@@ -751,9 +756,7 @@ class Repository extends Base\Repository
 
         $this->joinPartnerConfigForSubmerchant($submerchantConfig);
 
-        $results = $appConfig
-            ->union($submerchantConfig)
-            ->get();
+        $results = $submerchantConfig->union($appConfig)->get();
 
         return $results;
     }
