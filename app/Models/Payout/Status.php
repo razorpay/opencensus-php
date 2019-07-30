@@ -44,6 +44,21 @@ class Status
     ];
 
     /**
+     * @var array
+     * This contains a status map that keeps mapping of a status
+     * to next possible statuses. This is to ensure the status
+     * change on Payout Entity happens in an order.
+     */
+    protected static $fromToStatusMap = [
+        self::CREATED => [
+            self::REVERSED,
+        ],
+        self::INITIATED => [
+            self::REVERSED,
+        ],
+    ];
+
+    /**
      * These statuses have corresponding timestamps column in payout
      *
      * @var array
@@ -102,7 +117,10 @@ class Status
         ],
         // Eg: Current Accounts
         AccountType::DIRECT => [
-            Entity::DEFAULT => [],
+            Entity::DEFAULT => [
+                // Don't set default in case of direct because an explicit mapping
+                // should be added for each gateway, if not we expect failures here
+            ],
             Channel::RBL => [
                 Attempt\Status::CREATED   => Status::CREATED,
                 Attempt\Status::INITIATED => Status::INITIATED,
@@ -150,8 +168,23 @@ class Status
         $channel     = $payout->getChannel();
         $accountType = optional($payout->balance)->getAccountType() ?? Entity::DEFAULT;
 
-        $defaultValue = Status::$ftaToPayoutStatusMap[$accountType][Entity::DEFAULT][$ftaStatus];
+        return Status::$ftaToPayoutStatusMap[$accountType][$channel][$ftaStatus] ??
+               Status::$ftaToPayoutStatusMap[$accountType][Entity::DEFAULT][$ftaStatus];
+    }
 
-        return Status::$ftaToPayoutStatusMap[$accountType][$channel][$ftaStatus] ?? $defaultValue;
+    public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
+    {
+        $nextStatusList = self::$fromToStatusMap[$previousStatus];
+
+        if (in_array($currentStatus, $nextStatusList, true) !== true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Status change not permitted',
+                Entity::STATUS,
+                [
+                    'current_status'  => $currentStatus,
+                    'previous_status' => $previousStatus,
+                ]);
+        }
     }
 }

@@ -678,28 +678,20 @@ class Core extends Base\Core
 
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
     {
+        $currentStatus = $payout->getStatus();
+
         //
         // Payout can go to failed state from initiated or created state only
         //
-        if (($payout->isStatusInitiated() === true) or ($payout->isStatusCreated()))
-        {
-            $payout->setStatus(Status::FAILED);
+        Status::validatePreviousToCurrentMapping($currentStatus, Status::REVERSED);
 
-            $payout->setFailureReason($ftaFailureReason);
+        $payout->setStatus(Status::FAILED);
 
-            $this->repo->saveOrFail($payout);
+        $payout->setFailureReason($ftaFailureReason);
 
-            $this->app->events->fire('api.payout.failed', [$payout]);
+        $this->repo->saveOrFail($payout);
 
-            return;
-        }
-
-        throw new Exception\LogicException(
-            'Attempted to fail a '. $payout->getStatus() . ' payout',
-            null,
-            [
-                'payout_id' => $payout->getId(),
-            ]);
+        $this->app->events->fire('api.payout.failed', [$payout]);
     }
 
     protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
