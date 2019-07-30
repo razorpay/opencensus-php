@@ -5149,8 +5149,8 @@ ALTER TABLE gateway_rules
     ADD INDEX gateway_rules_category_index (category);
 
 ALTER TABLE banking_accounts
-        CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL;
-        ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
+    CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL,
+    ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
 
 ALTER TABLE `transactions`
     MODIFY COLUMN `fee_credits` BIGINT NOT NULL DEFAULT 0;
@@ -5169,5 +5169,5 @@ ALTER TABLE gateway_rules
     ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER merchant_id;
 
 ALTER TABLE pricing
-    ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway;
+    ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway,
     ADD INDEX pricing_procurer_index (procurer);

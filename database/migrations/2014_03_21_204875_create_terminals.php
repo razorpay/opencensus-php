@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Constants\Procurer;
 use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Terminal\Mode;
 
@@ -27,7 +28,7 @@ class CreateTerminals extends Migration
             $table->char(Terminal::MERCHANT_ID, Terminal::ID_LENGTH);
 
             $table->string(Terminal::PROCURER)
-                  ->default('razorpay');
+                  ->default(Procurer::RAZORPAY);
 
             $table->integer(Terminal::USED_COUNT)
                   ->unsigned()
