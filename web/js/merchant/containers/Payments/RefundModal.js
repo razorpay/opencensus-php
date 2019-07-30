@@ -122,7 +122,6 @@ export default class RefundModal extends Component {
   componentDidMount() {
     this.props.onMount && this.props.onMount(this.props.payment);
     this.props.fetchMerchantBalance();
-    console.log(showWhenUtil({ featureEnabled: 'card_transfer_refund' }));
   }
 
   componentWillUnmount() {
@@ -263,6 +262,46 @@ export default class RefundModal extends Component {
     }
   };
 
+  showInstantRefund = (payment, isInstantDisabled) => {
+    if (
+      showWhenUtil({ featureEnabled: 'card_transfer_refund' }) &&
+      payment.instant_refund_support &&
+      payment.instant_refund_support === true
+    ) {
+      return (
+        <div>
+          <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
+            <label>
+              <Field
+                name="instant_refund"
+                component="input"
+                type="checkbox"
+                disabled={isInstantDisabled}
+              />
+              <b>Refund Instantly</b>
+            </label>
+            <span
+              data-tooltip="You can refund this payment instantly for a small fee"
+              data-tooltip-position="top"
+            >
+              <i class="i i-help" />
+            </span>
+          </div>
+          {isInstantDisabled ? (
+            <div class="low-funds">
+              Your account does not have sufficient balance to instantly refund
+              this payment.
+              <Link to={'/addfunds'} target="_blank">
+                Add Funds
+                <i class="i i-external-link" />
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      );
+    } else return null;
+  };
+
   render() {
     const { handleSubmit, payment, transfers, refunds } = this.props;
     const amountError = amountValidation(this.props),
@@ -351,35 +390,7 @@ export default class RefundModal extends Component {
                 class="form-control"
               />
             </div>
-            <div>
-              <div class={this.getInstantRefundClassNames(isInstantDisabled)}>
-                <label>
-                  <Field
-                    name="instant_refund"
-                    component="input"
-                    type="checkbox"
-                    disabled={isInstantDisabled}
-                  />
-                  <b>Refund Instantly</b>
-                </label>
-                <span
-                  data-tooltip="You can refund this payment instantly for a small fee"
-                  data-tooltip-position="top"
-                >
-                  <i class="i i-help" />
-                </span>
-              </div>
-              {isInstantDisabled ? (
-                <div class="low-funds">
-                  Your account does not have sufficient balance to instantly
-                  refund this payment.
-                  <Link to={'/addfunds'} target="_blank">
-                    Add Funds
-                    <i class="i i-external-link" />
-                  </Link>
-                </div>
-              ) : null}
-            </div>
+            {this.showInstantRefund(payment, isInstantDisabled)}
             <div class="Modal__actions">
               <button class="btn btn-primary btn-block">
                 Issue <RefundType partial={partial} isTitleCase={true} /> refund
