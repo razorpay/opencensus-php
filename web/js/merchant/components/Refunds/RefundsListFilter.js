@@ -1,6 +1,6 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
-
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 export default props => {
   return (
     <ListFilter {...props}>
@@ -17,19 +17,20 @@ export default props => {
           class="form-control input-sm"
         />
       </div>
-
-      <div class="form-group list-filter-item">
-        <label>Status</label>
-        <Field
-          name="public_status"
-          component="select"
-          class="form-control input-sm"
-        >
-          <option value="">All</option>
-          <option value="processed">Processed</option>
-          <option value="processing">Processing</option>
-        </Field>
-      </div>
+      {showWhenUtil({ featureEnabled: 'card_transfer_refund' }) ? (
+        <div class="form-group list-filter-item">
+          <label>Status</label>
+          <Field
+            name="public_status"
+            component="select"
+            class="form-control input-sm"
+          >
+            <option value="">All</option>
+            <option value="processed">Processed</option>
+            <option value="processing">Processing</option>
+          </Field>
+        </div>
+      ) : null}
 
       <div class="form-group list-filter-item">
         <label>Notes</label>

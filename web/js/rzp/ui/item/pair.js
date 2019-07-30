@@ -3,7 +3,7 @@ import * as id from './id';
 import { getAmount, getTime } from 'rzp/ui/item';
 import { makeIdLink } from 'rzp/ui/item/id';
 import { getIntervalCycle, subString } from 'rzp/utils/rzp-utils';
-import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
+import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = onClick => ({ value, ...rest }) => {
   return {
@@ -34,6 +34,10 @@ export const email = { title: 'Email', value: item => item.email };
 export const contact = { title: 'Contact', value: item => item.contact };
 export const currency = { title: 'Currency', value: item => item.currency };
 export const status = { title: 'Status', value: items.status };
+export const public_status = {
+  title: 'Status',
+  value: item => <RefundStatusLabel status={item.public_status} />,
+};
 export const paidCount = {
   title: 'Paid Count',
   value: item => item.paid_count,
