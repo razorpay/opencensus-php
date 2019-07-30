@@ -115,6 +115,7 @@ class Type
     const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
     const BATCH_SERVICE                     = 'batch_service';
+    const RECONCILIATION_BATCH_OUTPUT       = 'reconciliation_batch_output';
 
     const BLANK                             = 'blank';
 
@@ -252,6 +253,7 @@ class Type
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
+            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -289,6 +291,7 @@ class Type
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
         self::RECONCILIATION_BATCH_INPUT,
+        self::RECONCILIATION_BATCH_OUTPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
         self::AXIS_EMI_FILE,

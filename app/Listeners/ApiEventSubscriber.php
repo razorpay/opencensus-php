@@ -288,6 +288,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onVirtualAccountClosed(VirtualAccount\Entity $virtualAccount)
+    {
+        $payload = $this->getVirtualAccountPayload($virtualAccount);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onInvoicePartiallyPaid($payment)
     {
         //

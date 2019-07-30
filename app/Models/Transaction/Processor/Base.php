@@ -417,7 +417,18 @@ abstract class Base extends BaseCore
     {
         try
         {
-            (new Credits\Transaction\Core)->create($amount, $this->txn, $creditType);
+            // We are doing reversal only for Refund credits
+            if (($this->txn->isTypeReversal() === true) and ($this->txn->isRefundCredits()))
+            {
+                $refundTransactionId = $this->source->entity->getTransactionId();
+
+                (new Credits\Transaction\Core)
+                    ->createCreditReversalTransaction($amount, $this->txn, $refundTransactionId);
+            }
+            else
+            {
+                (new Credits\Transaction\Core)->createCreditTransaction($amount, $this->txn, $creditType);
+            }
         }
         catch (\Throwable $e)
         {
@@ -523,8 +534,9 @@ abstract class Base extends BaseCore
     public function updateRefundCredits()
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if (($this->txn->isTypeRefund() === false) or
-            ($this->txn->isRefundCredits() === false))
+        if ((($this->txn->isTypeRefund() === false) and
+             ($this->txn->isTypeReversal() === false)) or
+             ($this->txn->isRefundCredits() === false))
         {
             return;
         }

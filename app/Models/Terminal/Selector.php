@@ -12,12 +12,20 @@ use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
+use RZP\Services\SmartRouting;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Gateway\Downtime;
+use RZP\Models\Card\NetworkName;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Preferences;
 use RZP\Constants\Entity as Constants;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 
@@ -248,6 +256,8 @@ class Selector extends Base\Core
             }
         }
 
+        $this->sendParametersToSmartRoutingService($this->input['payment'], $this->input['merchant'],
+                                                    $allTerminals, $sortedTerminals, $filteredTerminals);
         return $sortedTerminals;
     }
 
@@ -446,6 +456,161 @@ class Selector extends Base\Core
 
     }
 
+    private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals, $filteredTerminals)
+    {
+        try
+        {
+            if ($this->shouldHitRoutingService($merchant->getId()) === false)
+            {
+                return;
+            }
+
+            $paymentData = $payment->toArray();
+
+            if ($payment->hasCard() === true)
+            {
+                $paymentData['card'] = $this->repo->card->findOrFail($payment->getCardId())->toArray();
+            }
+
+            if ($payment->getEmiPlanId() !== null)
+            {
+                $paymentData['emi'] = $payment->emiPlan();
+            }
+
+            if (isset($paymentData['vpa']) === true)
+            {
+                $paymentData['vpa'] = $payment->getPspFromVpa();
+            }
+
+            $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
+
+            $downtimes = $this->repo->useSlave(function () use ($filteredTerminals)
+            {
+                return (new Downtime\Core)->getApplicableDowntimesForPayment($filteredTerminals, $this->input);
+            });
+
+            $failedTerminalIds = $this->options->getFailedTerminals();
+
+            $merchantData = $this->getMerchantData($merchant);
+
+            $data = [
+                'payment'             => $paymentData,
+                'merchant'            => $merchantData,
+                'terminals'           => array_values($allTerminals),
+                'filtered_terminals'  => array_values($sortedTerminals),
+                'gateway_downtime'    => $downtimes,
+                'failed_terminals'    => array_values($failedTerminalIds),
+                'gateway_tokens'      => $this->input['gateway_tokens'],
+                'gateway_config'      => $this->getGatewayConfig(),
+                'chance'              => $this->options->getChance(),
+            ];
+
+            $this->app->smartRouting->sendPaymentData($data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
+                [
+                    'error'     => $e->getMessage(),
+                ]);
+        }
+    }
+
+    protected function shouldHitRoutingService(string $merchantId)
+    {
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+        if ($isProduction === false)
+        {
+            return false;
+        }
+
+        if ($this->isTestMode() === true)
+        {
+            return false;
+        }
+
+        $response = $this->app->razorx->getTreatment($merchantId, 'payments_hit_routing_service', $this->mode);
+
+        if (($response === 'on'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getGatewayConfig()
+    {
+        return [
+            'cybersource_merchant_whitelist'      => Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+            'mcc_filter_gateways'                 => Gateway::MCC_FILTER_GATEWAYS,
+            'only_authorization_gateway'          => Gateway::$onlyAuthorizationGateway,
+            'bit_position'                        => Terminal\Type::getBitPositions(),
+            'gateway_acquirer_ifsc_mapping'       => Gateway::$gatewayAcquirerIfscMapping,
+            'bharat_qr_card_network'              => Gateway::$bharatQrCardNetwork,
+            'card_network_map'                    => Gateway::$cardNetworkMap,
+            'card_network_recurring_map'          => Gateway::$cardNetworkRecurringMap,
+            'netbanking_gateways'                 => Gateway::$netbankingGateways,
+            'auth_type_to_emandate_gateway_map'   => Gateway::$authTypeToEmandateGatewayMap,
+            'recurring_gateways'                  => Gateway::$recurringGateways,
+            'upi_intent_gateways'                 => Gateway::$upiIntentGateways,
+            'subscription_over_one_year_gateways' => Gateway::$subscriptionOverOneYearGateways,
+            'headless'                            => Gateway::$headless,
+            'emi_bank_to_gateway_map'             => Gateway::$emiBankToGatewayMap,
+            'netbanking_to_gateway_map'           => Gateway::$netbankingToGatewayMap,
+            'gateways_emandate_banks_map'         => Gateway::$gatewaysEmandateBanksMap,
+            'emi_banks_card_terminals'            => Gateway::$emiBanksUsingCardTerminals,
+            'gateway_supported_banks'             => Netbanking::getGatewaySupportedBankList(),
+            'network_codes'                       => NetworkName::$codes
+        ];
+    }
+
+    protected function getPaymentMetadataArray($payment)
+    {
+        $metadata = $payment->getMetadata();
+
+        if ( (isset ($metadata['payment_analytics']) === true) and
+            ($metadata['payment_analytics'] !== null ))
+        {
+            $metadata['payment_analytics'] = $metadata['payment_analytics']->toArray();
+        }
+
+        return $metadata;
+    }
+
+    protected function getMerchantData($merchant)
+    {
+        $merchantData = [];
+
+        $merchantData['id']                = $merchant->getId();
+        $merchantData['entity']            = 'Merchant';
+        $merchantData['live']              = $merchant->isLive();
+        $merchantData['hold_funds']        = $merchant->getHoldFunds();
+        $merchantData['pricing_plan_id']   = $merchant->getPricingPlanId();
+        $merchantData['category']          = $merchant->getCategory();
+        $merchantData['category_2']        = $merchant->getCategory2();
+        $merchantData['international']     = $merchant->isInternational();
+        $merchantData['has_key_access']    = $merchant->getHasKeyAccess();
+        $merchantData['features']          = $merchant->getEnabledFeatures();
+
+        $subMerchantIds = [];
+
+        if ($merchant->isPartner() === true)
+        {
+            $subMerchants = (new MerchantCore())->listSubmerchants($merchant, []);
+
+            foreach ($subMerchants as $subMerchant)
+            {
+                $subMerchantIds[] = $subMerchant->getId();
+            }
+        }
+        $merchantData['sub_merchants_ids']  = $subMerchantIds;
+
+        return $merchantData;
+    }
+
     protected function alertNetbankingTerminalNotFound(Merchant\Entity $merchant, $payment)
     {
         $alertArray = [
@@ -468,7 +633,5 @@ class Selector extends Base\Core
                 'icon'                  => ':x:'
             ]
         );
-
     }
-
 }

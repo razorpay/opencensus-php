@@ -356,7 +356,26 @@ class TransactionFilter extends Terminal\Filter
                 if ((Gateway::isUpiIntentFlowSupported($gateway) === true) and
                     ($terminal->isPay() === true))
                 {
-                    return true;
+                    $upiProvider = $payment->getMetadata(Payment\Entity::UPI_PROVIDER);
+
+                    // if $upiprovider is set, it's omnichannel flow. We need to select only those terminal for which
+                    // corresponsing omnichannel terminal exist otherwise it's normal intent flow and we return true.
+                    if (empty($upiProvider))
+                    {
+                        return true;
+                    }
+
+                    $upiProviderGateway = Payment\UpiProvider::$upiProvidersToGatewayMap[$upiProvider];
+
+                    $vpa = $terminal->getVpaForTerminal();
+
+                    $terminal = $this->repo->terminal->findByGatewayAndTerminalData($upiProviderGateway, ['vpa' => $vpa]);
+
+                    if (($terminal !== null) and
+                        ($terminal->isEnabled() === true))
+                    {
+                        return true;
+                    }
                 }
 
                 return false;

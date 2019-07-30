@@ -292,6 +292,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
     }
 
+    public function setAccountType(string $type)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $type);
+    }
+
+    public function setChannel(string $channel = null)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
     public function save(array $options = array())
     {
         $this->validateBalance();

@@ -422,6 +422,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ARCHIVED_AT, $archived_at);
     }
 
+    public function hasBankAccountDetails(): bool
+    {
+        $ifscCode      = $this->getAttribute(self::BANK_BRANCH_IFSC);
+        $accountNumber = $this->getAttribute(self::BANK_ACCOUNT_NUMBER);
+
+        return ((empty($accountNumber) === false) and (empty($ifscCode) === false));
+    }
+
     protected function setPublicArchivedAtAttribute(array & $array)
     {
         $array[self::ARCHIVED] = (isset($array[self::ARCHIVED_AT]) === true) ? 1 : 0;

@@ -111,6 +111,13 @@ class Base extends BaseModel\Core
      */
     protected $scroogeDispatchData;
 
+    /**
+     * Holds Recon batch output data, which it is used to
+     * generate the output file
+     * @var
+     */
+    protected $reconBatchOutputData;
+
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -222,6 +229,13 @@ class Base extends BaseModel\Core
     }
 
     public function setScroogeDispatchData(array $data)
+    {
+        // Do nothing from Base class. This is handled in Reconciliation.php
+
+        return;
+    }
+
+    public function setReconBatchOutputData(array $data)
     {
         // Do nothing from Base class. This is handled in Reconciliation.php
 

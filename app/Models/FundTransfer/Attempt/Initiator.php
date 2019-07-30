@@ -139,9 +139,9 @@ class Initiator extends Base\Core
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_ENTITIES_FETCHED);
 
-            $data[$channel] = 0;
+            $data[$channel] = [];
 
-            if ($channel === Channel::YESBANK)
+            if (($channel === Channel::YESBANK) and ($sourceType == Type::PAYOUT))
             {
                 $response = $this->dispatchTransfers($channel, $attempts);
             }
@@ -468,11 +468,20 @@ class Initiator extends Base\Core
         return [true, null];
     }
 
-    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts)
+    /**
+     * Takes a list of attempt ids and dispatches to the queue
+     * @param string $channel
+     * @param PublicCollection $attempts
+     * @return array
+     */
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts): array
     {
         $attemptIds = $attempts->pluck(Entity::ID);
 
-        $info = ['channel' => $channel, 'count' => $attempts->count()];
+        $info = [
+            'channel' => $channel,
+            'count' => $attempts->count()
+        ];
 
         $successCount = 0;
 

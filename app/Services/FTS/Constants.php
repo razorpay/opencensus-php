@@ -113,4 +113,6 @@ final class Constants
     const INTERNAL_ERROR                = 'internal_error';
 
     const CODE                          = 'code';
+
+    const CHANNEL                       = 'channel';
 }
