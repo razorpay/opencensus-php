@@ -20,6 +20,7 @@ use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
+use RZP\Models\BankingAccount;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -30,11 +31,12 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Feature\Constants as Features;
 
 /**
- * @property Customer\Entity    $customer
- * @property Merchant\Entity    $merchant
- * @property User\Entity        $user
- * @property FundAccount\Entity $fundAccount
- * @property Transaction\Entity $transaction
+ * @property Customer\Entity        $customer
+ * @property Merchant\Entity        $merchant
+ * @property User\Entity            $user
+ * @property FundAccount\Entity     $fundAccount
+ * @property Transaction\Entity     $transaction
+ * @property BankingAccount\Entity  $bankingAccount
  */
 class Entity extends Base\PublicEntity
 {
@@ -373,6 +375,15 @@ class Entity extends Base\PublicEntity
     public function reversal()
     {
         return $this->belongsTo(Reversal\Entity::class, self::ID, Reversal\Entity::ENTITY_ID);
+    }
+
+    public function bankingAccount()
+    {
+        //
+        // This defines payout's relation to banking_account
+        // via balance's relation to banking_account.
+        //
+        return $this->balance->bankingAccount();
     }
 
     public function workflowActions()
@@ -922,24 +933,14 @@ class Entity extends Base\PublicEntity
 
     public function setPublicBankingAccountIdAttribute(array & $attributes)
     {
-        $isBankingPayout = optional($this->balance)->isTypeBanking() ?? false;
-
-        if ((app('basicauth')->isProxyOrPrivilegeAuth() === true) and
-            ($isBankingPayout === true))
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
         {
-            //
-            // Ideally for a banking payout, banking account will always be present,
-            // but adding optional here for backward compatibility
-            // This can be removed once the migration is run
-            //
-            $bankingAccount = optional($this->balance)->bankingAccount;
-
-            $attributes[self::BANKING_ACCOUNT_ID] = optional($bankingAccount)->getPublicId();
+            unset ($attributes[self::BANKING_ACCOUNT_ID]);
 
             return;
         }
 
-        unset($attributes[self::BANKING_ACCOUNT_ID]);
+        $attributes[self::BANKING_ACCOUNT_ID] = optional($this->bankingAccount)->getPublicId();
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
