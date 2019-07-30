@@ -267,7 +267,7 @@ class Core extends Base\Core
     {
         $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS];
 
-        $status = $this->getPayoutStatusFromFtaStatus($payout, $ftaStatus);
+        $status = Status::getPayoutStatusFromFtaStatus($payout, $ftaStatus);
 
         switch ($status)
         {
@@ -678,23 +678,28 @@ class Core extends Base\Core
 
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
     {
-        if ($payout->isStatusReversed() === true)
+        //
+        // Payout can go to failed state from initiated or created state only
+        //
+        if (($payout->isStatusInitiated() === true) or ($payout->isStatusCreated()))
         {
-            throw new Exception\LogicException(
-                'Attempted to fail a reversed payout',
-                null,
-                [
-                    'payout_id' => $payout->getId(),
-                ]);
+            $payout->setStatus(Status::FAILED);
+
+            $payout->setFailureReason($ftaFailureReason);
+
+            $this->repo->saveOrFail($payout);
+
+            $this->app->events->fire('api.payout.failed', [$payout]);
+
+            return;
         }
 
-        $payout->setStatus(Status::FAILED);
-
-        $payout->setFailureReason($ftaFailureReason);
-
-        $this->repo->saveOrFail($payout);
-
-        $this->app->events->fire('api.payout.failed', [$payout]);
+        throw new Exception\LogicException(
+            'Attempted to fail a '. $payout->getStatus() . ' payout',
+            null,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
     }
 
     protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
@@ -917,15 +922,5 @@ class Core extends Base\Core
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
-    }
-
-    protected function getPayoutStatusFromFtaStatus(Entity $payout, string $ftaStatus)
-    {
-        $channel     = $payout->getChannel();
-        $accountType = optional($payout->balance)->getAccountType() ?? Entity::DEFAULT;
-
-        $defaultValue = Status::$ftaToPayoutStatusMap[$accountType][Entity::DEFAULT][$ftaStatus] ?? $ftaStatus;
-
-        return Status::$ftaToPayoutStatusMap[$accountType][$channel][$ftaStatus] ?? $defaultValue;
     }
 }

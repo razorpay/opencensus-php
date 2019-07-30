@@ -14,15 +14,14 @@ class Status
     // FTA module to update the source status. Things will
     // get wrecked if these are removed.
     //
-    const PROCESSED     = Attempt\Status::PROCESSED;
+    const PROCESSED     = 'processed';
     const INITIATED     = Attempt\Status::INITIATED;
-    const REVERSED      = Attempt\Status::REVERSED;
-    const FAILED        = Attempt\Status::FAILED;
+    const REVERSED      = 'reversed';
+    const FAILED        = 'failed';
 
     const CREATED       = 'created';
     const PENDING       = 'pending';
     const REJECTED      = 'rejected';
-//    const REVERSED      = 'reversed';
     const QUEUED        = 'queued';
     const CANCELLED     = 'cancelled';
 
@@ -85,6 +84,7 @@ class Status
                 Attempt\Status::INITIATED => Status::INITIATED,
                 Attempt\Status::REVERSED  => Status::REVERSED,
                 Attempt\Status::FAILED    => Status::REVERSED,
+                Attempt\Status::PROCESSED => Status::PROCESSED,
             ],
             Channel::AXIS2   => [],
             Channel::ICICI   => [],
@@ -96,18 +96,20 @@ class Status
                 Attempt\Status::INITIATED => Status::INITIATED,
                 Attempt\Status::REVERSED  => Status::REVERSED,
                 Attempt\Status::FAILED    => Status::REVERSED,
+                Attempt\Status::PROCESSED => Status::PROCESSED,
             ],
             Channel::YESBANK => [],
         ],
         // Eg: Current Accounts
         AccountType::DIRECT => [
-            Entity::DEFAULT => [
+            Entity::DEFAULT => [],
+            Channel::RBL => [
                 Attempt\Status::CREATED   => Status::CREATED,
                 Attempt\Status::INITIATED => Status::INITIATED,
                 Attempt\Status::REVERSED  => Status::REVERSED,
                 Attempt\Status::FAILED    => Status::FAILED,
+                Attempt\Status::PROCESSED => Status::PROCESSED,
             ],
-            Channel::RBL => [],
         ],
     ];
 
@@ -141,5 +143,15 @@ class Status
         {
             throw new BadRequestValidationFailureException('Not a valid payout status: ' . $status);
         }
+    }
+
+    public static function getPayoutStatusFromFtaStatus(Entity $payout, string $ftaStatus)
+    {
+        $channel     = $payout->getChannel();
+        $accountType = optional($payout->balance)->getAccountType() ?? Entity::DEFAULT;
+
+        $defaultValue = Status::$ftaToPayoutStatusMap[$accountType][Entity::DEFAULT][$ftaStatus];
+
+        return Status::$ftaToPayoutStatusMap[$accountType][$channel][$ftaStatus] ?? $defaultValue;
     }
 }
