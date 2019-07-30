@@ -107,10 +107,6 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = ['plan_id', 'org_id'];
 
-    protected $hidden = [
-        self::PROCURER,
-    ];
-
     protected $defaults = [
         self::PROCURER            => null,
         self::PRODUCT             => Product::PRIMARY,
