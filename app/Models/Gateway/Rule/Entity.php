@@ -150,6 +150,7 @@ class Entity extends Base\PublicEntity
     const DEFAULT_SEARCH_ATTRIBUTES = [
         self::ID,
         self::MERCHANT_ID,
+        self::PROCURER,
         self::TYPE,
         self::GROUP,
         self::METHOD,

@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
-use RZP\Constants\Procurer;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity

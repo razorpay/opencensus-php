@@ -25,6 +25,9 @@ class CreateGatewayRules extends Migration
 
             $table->string(Rule::MERCHANT_ID, Merchant::ID_LENGTH);
 
+            $table->string(Rule::PROCURER)
+                  ->nullable();
+
             $table->string(Rule::GATEWAY, 50)
                   ->nullable();
 
