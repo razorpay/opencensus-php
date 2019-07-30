@@ -1120,9 +1120,20 @@ class WebhookTest extends TestCase
 
         $this->createWebhook(['events' => ['refund.processed' => '1']]);
 
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
         $this->gateway = 'hdfc';
 
         $this->mockServerContentFunction(function (& $content, $action = null)

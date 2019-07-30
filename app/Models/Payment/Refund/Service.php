@@ -1220,9 +1220,8 @@ class Service extends Base\Service
 
                                 $refund->setStatusProcessed();
 
-                                $refund->setSpeedProcessed(RefundSpeed::NORMAL);
-
-                                if (isset($input[RefundEntity::SPEED_PROCESSED]) === true)
+                                if ((isset($input[RefundEntity::SPEED_PROCESSED]) === true) and
+                                    ($refund->getSpeedProcessed() === null))
                                 {
                                     $refund->setSpeedProcessed($input[RefundEntity::SPEED_PROCESSED]);
                                 }

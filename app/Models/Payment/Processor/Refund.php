@@ -89,7 +89,7 @@ trait Refund
 
         $this->pushMetrics();
 
-        if ($refund->getSpeedDecisioned() === RefundSpeed::NORMAL)
+        if ($this->refund->isRefundSpeedInstant() === false)
         {
             $this->eventRefundProcessed($this->refund);
         }
@@ -1349,6 +1349,11 @@ trait Refund
             {
                 $refund->setSpeedDecisioned($refund->getSpeedRequested());
             }
+        }
+
+        if ($refund->isRefundSpeedInstant() === false)
+        {
+            $refund->setSpeedProcessed(RefundSpeed::NORMAL);
         }
 
         $refund->merchant()->associate($this->merchant);
