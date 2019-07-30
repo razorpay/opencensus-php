@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const PLAN_ID              = 'plan_id';
     const PLAN_NAME            = 'plan_name';
     const PRODUCT              = 'product';
+    const PROCURER             = 'procurer';
     const FEATURE              = 'feature';
     const GATEWAY              = 'gateway';
     const PAYMENT_METHOD       = 'payment_method';
@@ -104,6 +105,10 @@ class Entity extends Base\PublicEntity
     protected static $modifiers = ['inputRemoveBlanks', 'inputProvideDefaults'];
 
     protected static $generators = ['plan_id', 'org_id'];
+
+    protected $hidden = [
+        self::PROCURER,
+    ];
 
     protected $defaults = [
         self::PRODUCT             => Product::PRIMARY,
