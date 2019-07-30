@@ -28,6 +28,11 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::PAY_INIT);
 
+        if (($this->getGateway($input) === 'wallet_phonepe') and ($input['wallet']['flow'] == 'intent'))
+        {
+            parent::action($input, Action::INTENT);
+        }
+
         $request = $this->getMozartRequestArray($input);
 
         $traceReq = [
@@ -48,6 +53,15 @@ class Gateway extends Base\Gateway
         $attributes = $this->getMappedAttributes($response);
 
         $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
+
+        if ($this->action === Action::INTENT)
+        {
+            $data = [
+                'intent_url' => $response['next']['redirect']['url'],
+            ];
+
+            return ['data' => $data];
+        }
 
         if ($input['payment']['method'] === 'upi')
         {
@@ -161,6 +175,8 @@ class Gateway extends Base\Gateway
                 return json_decode($input[0], true);
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
+            case Payment\Gateway::WALLET_PHONEPE:
+                return json_decode(base64_decode($input['response'], true), true);
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for prcessing S2S callback');
@@ -175,6 +191,8 @@ class Gateway extends Base\Gateway
                 return $response[UpiAirtelResponseFields::PAYMENT_ID];
             case Payment\Gateway::NETBANKING_YESB:
                 return $response['data']['paymentId'];
+            case Payment\Gateway::WALLET_PHONEPE:
+                return $response['data']['transactionId'];
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');
@@ -426,8 +444,9 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => Action::PAY_VERIFY,
             ],
             Payment\Gateway::WALLET_PHONEPE => [
+                Action::INTENT => null,
                 Action::PAY_INIT => null,
-                Action::PAY_VERIFY => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,
@@ -470,8 +489,9 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::WALLET_PHONEPE => [
+                Action::INTENT => null,
                 Action::PAY_INIT => null,
-                Action::PAY_VERIFY => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY => null,
                 Action::REFUND => null,
                 Action::VERIFY_REFUND => null,

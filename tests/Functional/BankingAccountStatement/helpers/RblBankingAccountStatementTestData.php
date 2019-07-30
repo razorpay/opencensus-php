@@ -102,7 +102,7 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            'message'             => 'The Acc_Stmt_DtRng_Res.Body.transactionDetails.0.pstdDate field is required.'
+            'message'             => 'The PayGenRes.Body.transactionDetails.0.pstdDate field is required.'
         ],
     ],
 
@@ -150,7 +150,7 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            'message'             => 'The Acc_Stmt_DtRng_Res.Body.transactionDetails.1.txnBalance.amountValue must be at least 0.'
+            'message'             => 'The PayGenRes.Body.transactionDetails.1.txnBalance.amountValue must be at least 0.'
         ],
     ],
 ];

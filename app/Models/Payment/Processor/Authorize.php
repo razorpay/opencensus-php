@@ -2419,6 +2419,11 @@ trait Authorize
             }
         }
 
+        if ($payment->isWallet() === true)
+        {
+            $gatewayInput['wallet']['flow'] = $input['_']['flow'] ?? null;
+        }
+
         if ($payment->isAeps() === true)
         {
             $this->setGatewayInputForAeps($input, $gatewayInput);
@@ -4671,9 +4676,32 @@ trait Authorize
 
     protected function canRunAsyncIntentPaymentFlow($payment)
     {
+        if (($this->canRunAsyncIntentPaymentFlowUpi($payment) === true) or
+            ($this->canRunAsyncPaymentFlowWallet($payment) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAsyncIntentPaymentFlowUpi($payment)
+    {
         if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
             (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
-            ($payment->getMetadata('flow') == 'intent'))
+            ($payment->getMetadata('flow') === 'intent'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAsyncPaymentFlowWallet($payment)
+    {
+        if (($payment->getMethod() === Payment\Method::WALLET) and
+            ($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and
+            ($payment->getMetadata('flow') === 'intent'))
         {
             return true;
         }

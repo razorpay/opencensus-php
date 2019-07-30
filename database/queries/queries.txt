@@ -5159,6 +5159,13 @@ ALTER TABLE banking_accounts
 ALTER TABLE `transactions`
     MODIFY COLUMN `fee_credits` BIGINT NOT NULL DEFAULT 0;
 
+ALTER TABLE subscription_registrations
+    ADD COLUMN status varchar(16) COLLATE utf8_bin DEFAULT NULL AFTER entity_id,
+    ADD COLUMN amount bigint(20) unsigned DEFAULT 0 AFTER failure_reason,
+    ADD COLUMN attempts int(11) NOT NULL DEFAULT '0' AFTER amount,
+    ADD COLUMN currency char(3) DEFAULT 'INR' AFTER attempts,
+    ADD INDEX subscription_registrations_status_attempts_index (status, attempts);
+
 ALTER TABLE reversals
     ADD COLUMN utr VARCHAR(255) DEFAULT NULL AFTER channel,
     ADD INDEX reversals_utr_index (utr);

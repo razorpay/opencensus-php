@@ -522,16 +522,16 @@ class Reconciliate extends Base\Core
         //
         $outputFileIds = [];
 
-        if (count($outputFiles) > 1)
+        if (count($outputFiles) === 1)
+        {
+            $outputFileIds = $outputFiles->first()->id;
+        }
+        else if (count($outputFiles) > 1)
         {
             foreach ($outputFiles as $file)
             {
                 $outputFileIds[] = $file->id;
             }
-        }
-        else
-        {
-            $outputFileIds = $outputFiles->first()->id;
         }
 
         $summary = [

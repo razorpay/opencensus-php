@@ -741,6 +741,8 @@ class Service extends Base\Service
             $input
         );
 
+        $limit = $input['limit'] ?? 100;
+
         if (isset($input['payment_ids']) === true)
         {
             (new Payment\Validator)->validateInput('bulk_capture', $input);
@@ -753,10 +755,10 @@ class Service extends Base\Service
         }
         else
         {
-            $from = Carbon::today(Timezone::IST)->subDays(8);
-            $to = Carbon::today(Timezone::IST)->subDays(3);
+            $from = Carbon::today(Timezone::IST)->subDays(8)->getTimestamp();
+            $to = Carbon::today(Timezone::IST)->subDays(3)->getTimestamp();
 
-            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to);
+            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit);
         }
 
         $total = $payments->count();
