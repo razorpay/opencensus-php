@@ -82,7 +82,7 @@ class VerifyRefundData extends Base\Mock\Server
                         'merchantId'=> 'abc',
                         'payResponseCode'=> 'SUCCESS',
                         'paymentState'=> 'COMPLETED',
-                        'providerReferenceId'=> 'phonepeProviderRefId',
+                        'providerReferenceId'=> 'paypalProviderRefId',
                         'transactionId'=> $entities['refund']['id'],
                     ],
                     'message'=> 'Your payment is successful.',

@@ -165,7 +165,7 @@ class VerifyData extends Base\Mock\Server
                         'merchantId' => 'abc',
                         'payResponseCode' => 'SUCCESS',
                         'paymentState' => 'COMPLETED',
-                        'providerReferenceId' => 'phonepeProviderRefId',
+                        'providerReferenceId' => 'paypalProviderRefId',
                         'transactionId' => $entities['payment']['id'],
                     ],
                     'message' => 'Your payment is successful.',
