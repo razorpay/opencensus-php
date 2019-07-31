@@ -330,10 +330,17 @@ class Gateway
         $this->input = $input;
         $this->action = Action::CAPTURE;
 
-        if ($input['payment']['status'] !== Status::AUTHORIZED)
+        if (($input['payment'][Payment\Entity::STATUS] === Status::AUTHORIZED) or
+            (($input['payment'][Payment\Entity::STATUS] === Status::CAPTURED) and
+            (array_key_exists(Payment\Entity::GATEWAY_CAPTURED, $input['payment']) === true) and
+            ($input['payment'][Payment\Entity::GATEWAY_CAPTURED] === null)))
+        {
+            return;
+        }
+        else
         {
             throw new Exception\RuntimeException(
-                'Payment status should be authorized',
+                'Payment status should be authorized or if captured, gateway captured should not be set',
                 ['payment_id' => $input['payment']['id']]);
         }
     }
