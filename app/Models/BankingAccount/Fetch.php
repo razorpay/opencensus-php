@@ -36,6 +36,7 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID,
             Entity::BANK_REFERENCE_NUMBER,
             Entity::FTS_FUND_ACCOUNT_ID,
+            Entity::ACCOUNT_TYPE ,
             self::EXPAND_EACH,
         ],
     ];
@@ -49,6 +50,7 @@ class Fetch extends BaseFetch
         Entity::BALANCE_ID,
         Entity::BANK_REFERENCE_NUMBER,
         Entity::FTS_FUND_ACCOUNT_ID,
+        Entity::ACCOUNT_TYPE,
     ];
 
     public function validateStatus(string $attribute, string $status)
