@@ -1843,6 +1843,7 @@ trait Refund
             'payment_created_at'        => $payment->getCreatedAt(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
             'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
+            'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
         ];
 
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
