@@ -7,15 +7,15 @@ use RZP\Models\BankingAccountStatement\Processor\Rbl\RequestResponseFields as F;
 
 class Validator extends Base\Validator
 {
-    const HEADER    = F::ACC_STMT_DATE_RANGE_RESPONSE . '.' . F::HEADER;
-    const BODY      = F::ACC_STMT_DATE_RANGE_RESPONSE . '.' . F::BODY;
+    const HEADER    = F::PAYMENT_GENERIC_RESPONSE . '.' . F::HEADER;
+    const BODY      = F::PAYMENT_GENERIC_RESPONSE . '.' . F::BODY;
     const FIELDS    = self::BODY . '.' . F::TRANSACTION_DETAILS;
     const BALANCE   = self::FIELDS . '.*.' . F::TRANSACTION_BALANCE;
     const SUMMARY   = self::FIELDS . '.*.' . F::TRANSACTION_SUMMARY;
     const AMOUNT    = self::SUMMARY . '.' . F::TRANSACTION_AMOUNT;
 
     protected static $rblResponseRules = [
-        F::ACC_STMT_DATE_RANGE_RESPONSE                     => 'required|array',
+        F::PAYMENT_GENERIC_RESPONSE                         => 'required|array',
 
         self::HEADER                                        => 'required|array',
         self::HEADER . '.' . F::STATUS                      => 'required|string|in:SUCCESS',

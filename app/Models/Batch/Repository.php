@@ -179,7 +179,7 @@ class Repository extends Base\Repository
     {
         return (($this->auth->isAdminAuth() === false)
                 && (isset($params['type']))
-                && ($this->app->batchService->isMigratedBatchType($params['type']) === true)
+                && ($this->app->batchService->isMigratingBatchType($params['type']) === true)
                 && ($this->app->batchService->shouldBatchServiceBeCalled()));
     }
 }

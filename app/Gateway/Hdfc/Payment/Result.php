@@ -131,6 +131,24 @@ final class Result
         return [$result, $success];
     }
 
+    public static function getEnrollmentStatus($result)
+    {
+        switch ($result)
+        {
+            case self::ENROLLED:
+                return 'Y';
+
+            case self::NOT_ENROLLED:
+                return 'N';
+
+            case self::INITIALIZED:
+                return 'Y';
+
+            default:
+                return 'F';
+        }
+    }
+
     public static function getPreAuthResultCode($result)
     {
         $success = true;

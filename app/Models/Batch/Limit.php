@@ -17,6 +17,7 @@ class Limit
         Type::REFUND                                => 1000,
         Type::PAYMENT_LINK                          => 500100,
         Type::IRCTC_REFUND                          => 100000,
+        Type::IRCTC_DELTA_REFUND                    => 100000,
         Type::IRCTC_SETTLEMENT                      => 100000,
         Type::VIRTUAL_BANK_ACCOUNT                  => 50000,
         Type::PAYOUT                                => 50000,

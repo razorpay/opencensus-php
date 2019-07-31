@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Merchant\Account;
 
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Constants\Mode;
+use RZP\Models\User\Role;
 use RZP\Models\Merchant\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Merchant\CommissionTrait;
@@ -13,6 +15,8 @@ class PartnerAccountTest extends TestCase
 {
     use PaymentTrait;
     use CommissionTrait;
+
+    const RZP_ORG   = '100000razorpay';
 
     public function setUp()
     {
@@ -29,27 +33,21 @@ class PartnerAccountTest extends TestCase
 
     public function testCreateAccountForCompletelyFilledRequest()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
-
-        $this->ba->privateAuth();
+        $this->setUpNonPurePlatformPartner();
 
         $this->startTest();
     }
 
     public function testCreateAccountForThinRequest()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
-
-        $this->ba->privateAuth();
+        $this->setUpNonPurePlatformPartner();
 
         $this->startTest();
     }
 
     public function testCreateAccountWithDuplicateEmail()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
-
-        $this->ba->privateAuth();
+        $this->setUpNonPurePlatformPartner();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -61,9 +59,7 @@ class PartnerAccountTest extends TestCase
 
     public function testCreateAccountWithInvalidMCCCode()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
-
-        $this->ba->privateAuth();
+        $this->setUpNonPurePlatformPartner();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -84,9 +80,7 @@ class PartnerAccountTest extends TestCase
 
     public function testFetchAccount()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
-
-        $this->ba->privateAuth();
+        $this->setUpNonPurePlatformPartner();
 
         $testData = $this->testData['testCreateAccountForThinRequest'];
 
@@ -101,9 +95,7 @@ class PartnerAccountTest extends TestCase
 
     public function testFetchAllAccounts()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
-
-        $this->ba->privateAuth();
+        $this->setUpNonPurePlatformPartner();
 
         $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
 
@@ -128,9 +120,7 @@ class PartnerAccountTest extends TestCase
 
     public function testEnableAccountAction()
     {
-        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
-
-        $this->ba->privateAuth();
+        $this->setUpNonPurePlatformPartner();
 
         // creating account
         $testData = $this->testData['testCreateAccountForThinRequest'];
@@ -150,5 +140,24 @@ class PartnerAccountTest extends TestCase
         $testData['request']['url'] = '/accounts/'. $result['id'] . '/enable';
 
         $this->startTest($testData);
+    }
+
+    protected function setUpNonPurePlatformPartner()
+    {
+        $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::AGGREGATOR);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::OWNER, Mode::LIVE);
+
+        $orgHostName = $this->fixtures->org->build('org_hostname', [
+            'org_id'    => self::RZP_ORG,
+            'hostname'  => 'dashboard.razorpay.in'
+        ]);
+
+        $orgHostName->setConnection('live')->saveOrFail();
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
     }
 }

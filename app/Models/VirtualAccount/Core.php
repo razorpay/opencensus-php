@@ -157,6 +157,8 @@ class Core extends Base\Core
             return $virtualAccount;
         });
 
+        $this->repo->reload($virtualAccount);
+
         $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
@@ -331,6 +333,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($virtualAccount);
 
+        $this->eventVirtualAccountClosed($virtualAccount);
+
         return $virtualAccount;
     }
 
@@ -390,5 +394,14 @@ class Core extends Base\Core
         }
 
         return $defaultMerchantId;
+    }
+
+    public function eventVirtualAccountClosed(Entity $virtualAccount)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $virtualAccount
+        ];
+
+        $this->app['events']->fire('api.virtual_account.closed', $eventPayload);
     }
 }

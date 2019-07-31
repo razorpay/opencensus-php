@@ -5,10 +5,20 @@ namespace RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Axis;
+use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
     const ACQUIRER = null;
+
+    const RETRIABLE_ACTIONS = [
+        Action::AUTHENTICATE,
+        Action::VALIDATE_VPA,
+        Axis\Action::FETCH_TOKEN,
+        Axis\Action::COLLECT,
+        Action::AUTHORIZE,
+    ];
 
     /**
      * Used in Mock\GatewayTrait, but defined here because
@@ -63,6 +73,11 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($entity);
 
         return $entity;
+    }
+
+    protected function getActionsToRetry()
+    {
+        return self::RETRIABLE_ACTIONS;
     }
 
     protected function getNewGatewayPaymentEntity()

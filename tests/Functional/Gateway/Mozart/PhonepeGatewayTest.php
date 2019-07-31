@@ -52,6 +52,71 @@ class PhonepeGatewayTest extends TestCase
         $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
     }
 
+    public function testIntentPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $content = $this->getMockServer()->getAsyncCallbackContentWalletPhonepe($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'wallet_phonepe');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testIntentFailedPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('created', $payment['status']);
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'callback')
+            {
+                $content['code'] = 'PAYMENT_FAILED';
+
+                $content['success'] = false;
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $content = $this->getMockServer()->getAsyncCallbackContentWalletPhonepe($payment);
+
+        $this->runRequestResponseFlow($data, function() use ($content)
+        {
+            $response = $this->makeS2SCallbackAndGetContent($content, 'wallet_phonepe');
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     public function testRequestTampering()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);

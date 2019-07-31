@@ -21,6 +21,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         Entity::GATEWAY                     => 'required',
+        Entity::PROCURER                    => 'sometimes|in:razorpay,merchant',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
@@ -41,6 +42,7 @@ class Validator extends Base\Validator
         Entity::EMANDATE                    => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
+        Entity::OMNICHANNEL                 => 'sometimes|boolean',
         Entity::BANK_TRANSFER               => 'sometimes|boolean',
         Entity::AEPS                        => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
@@ -260,8 +262,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:cybersource',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
@@ -370,6 +374,8 @@ class Validator extends Base\Validator
     protected static $cybersourceEditTerminalRules = [
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY                    => 'sometimes|in:cybersource',
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
@@ -898,6 +904,15 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
     ];
 
+    protected static $googlePayTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:google_pay',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::VPA                        => 'required|string',
+        Entity::OMNICHANNEL                => 'required|boolean|in:1',
+        Entity::CAPABILITY                 => 'required|in:1'
+    ];
+
     protected static $worldlineTerminalRules = [
         Entity::GATEWAY                    => 'required|in:worldline',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -931,6 +946,8 @@ class Validator extends Base\Validator
         Entity::CATEGORY,
         Entity::EMI_SUBVENTION,
         Entity::INTERNATIONAL,
+        Entity::VPA,
+        Entity::PROCURER,
     ];
 
     public function validateType()

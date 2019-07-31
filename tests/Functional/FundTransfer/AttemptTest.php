@@ -220,16 +220,18 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
         $this->markTestSkipped();
 
-        // Yesbank now uses api based channels
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::YESBANK, 2, Attempt\Type::PAYOUT);
     }
 
     public function testPayoutFileCreationYesbankRtgsSuccess()
     {
-        // Yesbank using api based channels
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
         $this->markTestSkipped();
 
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
@@ -242,6 +244,11 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankRtgsFailed()
     {
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
+
+        $this->markTestSkipped();
+
         $channel = Channel::YESBANK;
 
         $purpose = Attempt\Purpose::SETTLEMENT;
@@ -276,6 +283,8 @@ class AttemptTest extends TestCase
         $content = $this->initiateTransfer($channel, $purpose, false);
 
         $this->assertEquals(1, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['success']);
+        $this->assertEquals(1, $content[$channel]['failed']);
     }
 
     public function testYesbankRefundToCreditCard()
@@ -373,6 +382,8 @@ class AttemptTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(1, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['success']);
+        $this->assertEquals(1, $content[$channel]['failed']);
         $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
     }
 
