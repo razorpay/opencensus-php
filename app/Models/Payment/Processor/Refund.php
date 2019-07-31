@@ -1383,6 +1383,19 @@ trait Refund
         return $refund;
     }
 
+    public function fetchFeeForRefundAmount($payment, $input)
+    {
+        // We are just building refund Entity to return fee and not saving the entity
+        $refund = $this->buildRefundEntity($payment, $input);
+
+        $refundFees = [
+            RefundEntity::FEE => $refund->getFee(),
+            RefundEntity::TAX => $refund->getTax(),
+        ];
+
+        return $refundFees;
+    }
+
     protected function processRefund()
     {
         $payment = $this->refund->payment;

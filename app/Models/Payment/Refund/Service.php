@@ -505,6 +505,25 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
+    public function fetchRefundFee(array $input)
+    {
+        (new Validator)->validateInput('get_fee', $input);
+
+        $paymentId = $input[Entity::PAYMENT_ID];
+
+        unset($input[Entity::PAYMENT_ID]);
+
+        Payment\Entity::verifyIdAndStripSign($paymentId);
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $input[Entity::SPEED] = RefundSpeed::OPTIMUM;
+
+        $refundFee = $this->getNewProcessor($this->merchant)->fetchFeeForRefundAmount($payment, $input);
+
+        return $refundFee;
+    }
+
     public function verifyMultiple($ids)
     {
         $refundIds = explode(',', $ids);
