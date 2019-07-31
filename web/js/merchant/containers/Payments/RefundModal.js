@@ -300,10 +300,9 @@ export default class RefundModal extends Component {
 
   showInstantRefund = (payment, isInstantDisabled) => {
     if (
-      true
-      // showWhenUtil({ featureEnabled: 'card_transfer_refund' }) &&
-      // payment.instant_refund_support &&
-      // payment.instant_refund_support === true
+      showWhenUtil({ featureEnabled: 'card_transfer_refund' }) &&
+      payment.instant_refund_support &&
+      payment.instant_refund_support === true
     ) {
       return (
         <div>
