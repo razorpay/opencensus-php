@@ -197,6 +197,7 @@ class Gateway
         self::AMEX              => self::AMEX,
         self::HDFC              => self::HDFC,
         self::ISG               => self::HDFC,
+        self::BILLDESK          => self::BILLDESK,
         self::NETBANKING_AXIS   => self::AXIS,
         self::NETBANKING_HDFC   => self::HDFC,
         self::NETBANKING_ICICI  => self::ICICI,
@@ -314,7 +315,7 @@ class Gateway
         IFSC::TMBL,
         IFSC::USFB,
         IFSC::UTIB,
-        IFSC::YESB,        
+        IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
     ];
