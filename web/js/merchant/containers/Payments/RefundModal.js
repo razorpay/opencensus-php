@@ -285,6 +285,7 @@ export default class RefundModal extends Component {
             <span
               data-tooltip="You can refund this payment instantly for a small fee"
               data-tooltip-position="top"
+              onMouseEnter={this.onInstantRefundTooltipHover}
             >
               <i class="i i-help" />
             </span>
@@ -310,6 +311,14 @@ export default class RefundModal extends Component {
       eventAction: e.target.value
         ? 'Unchecked - Instant Refund'
         : 'Checked - Instant Refund',
+      eventLabel: `payment_id=${this.props.payment.id}`,
+    });
+  };
+
+  onInstantRefundTooltipHover = e => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'Hover - Instant Refund Tooltip',
       eventLabel: `payment_id=${this.props.payment.id}`,
     });
   };
