@@ -37,6 +37,18 @@ class KubernetesClient
      */
     protected $trace;
 
+    protected $razorx;
+
+    protected $merchant;
+
+    const NODE_SELECTOR_HITACHI = 'node-role.kubernetes.io/worker-hitachi-queue';
+
+    protected $batchNodePreference = [
+        BatchModel\Type::RECURRING_CHARGE => self::NODE_SELECTOR_HITACHI,
+    ];
+
+    const RAZORX_NODE_SELECTOR_FEATURE = 'RAZORX_NODE_SELECTOR_FEATURE';
+
     public function __construct($app)
     {
         $this->trace        = $app['trace'];
@@ -54,6 +66,8 @@ class KubernetesClient
         $this->gitCommitHash    = $this->config['git_commit_hash'];
         $this->appMode          = $this->config['app_mode'];
         $this->appEnv           = $this->config['app_env'];
+        $this->razorx           = $app['razorx'];
+        $this->merchant         = $app['basicauth']->getMerchant();
 
         $this->commitFilePath = public_path($this->commitFilePath);
 
@@ -80,7 +94,7 @@ class KubernetesClient
 
     }
 
-    public function createJob(string $mode, string $batchId, array $params)
+    public function createJob(string $mode, string $batchId, array $params, string $batchType = null)
     {
         try
         {
@@ -94,6 +108,20 @@ class KubernetesClient
                 return;
             }
 
+            // Selecting node selector
+
+            if (($batchType !== null) and (array_key_exists($batchType, $this->batchNodePreference) === true))
+            {
+                $response = $this->razorx->getTreatment(
+                    $this->merchant->getId(),
+                    self::RAZORX_NODE_SELECTOR_FEATURE,
+                    $mode);
+
+                if($response === 'on')
+                {
+                    $this->nodeSelector = $this->batchNodePreference[$batchType];
+                }
+            }
             // Create Job Spec
             $jobSpec = $this->generateJobSpec($mode, $batchId, $params);
 
