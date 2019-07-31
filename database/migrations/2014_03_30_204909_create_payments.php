@@ -288,7 +288,7 @@ class CreatePayments extends Migration
             $table->string(Payment::REFERENCE16, 255)
                   ->nullable();
 
-            $table->text(Payment::REFERENCE17)
+            $table->text(Payment::AUTHENTICATION_GATEWAY)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

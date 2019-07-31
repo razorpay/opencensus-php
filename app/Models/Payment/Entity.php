@@ -119,7 +119,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
     const REFERENCE16           = 'reference16';
-    const REFERENCE17           = 'reference17';
+
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -180,6 +180,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const OFFER_ID              = 'offer_id';
     const SETTLED_BY            = 'settled_by';
+
+    // was reference17. now used by card payments to store authentication gateway name.
+    const AUTHENTICATION_GATEWAY  = 'authentication_gateway';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -274,6 +277,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
+        self::AUTHENTICATION_GATEWAY,
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
@@ -474,6 +478,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ACKNOWLEDGED_AT      => null,
         self::REFUND_AT            => null,
         self::CPS_ROUTE            => false,
+        self::AUTHENTICATION_GATEWAY => null,
     ];
 
     protected $amounts = [
@@ -900,6 +905,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setAmountPaidout(int $amount)
     {
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
+    }
+
+    public function setAuthenticationGateway($authenticationGateway)
+    {
+        $this->setAttribute(self::AUTHENTICATION_GATEWAY, $authenticationGateway);
     }
 
     /**
@@ -1884,6 +1894,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getAuthenticationGateway()
+    {
+        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
 
     public function getMethod()
