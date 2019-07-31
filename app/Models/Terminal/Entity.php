@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
+    const PROCURER                      = 'procurer';
     const USED_COUNT                    = 'used_count';
     const USED                          = 'used';
     const CATEGORY                      = 'category';
@@ -120,6 +121,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::GATEWAY,
+        self::PROCURER,
         self::CARD,
         self::CATEGORY,
         self::NETWORK_CATEGORY,
@@ -167,6 +169,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::MERCHANT_ID,
+        self::PROCURER,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
@@ -235,6 +238,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::PROCURER                   => 'razorpay',
         self::CATEGORY                   => null,
         self::NETWORK_CATEGORY           => null,
         self::GATEWAY_MERCHANT_ID        => null,
@@ -344,6 +348,11 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getProcurer()
+    {
+        return $this->getAttribute(self::PROCURER);
     }
 
     public function getGatewayAcquirer()

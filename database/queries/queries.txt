@@ -4941,10 +4941,6 @@ ALTER TABLE refunds
 ALTER TABLE merchant_banks
     ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
 
-ALTER TABLE terminals
-    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
-    ADD INDEX `terminals_paylater_index` (paylater);
-
 ALTER TABLE fund_account_validations
     ADD COLUMN attempts TINYINT(1) DEFAULT 1 after batch_fund_transfer_id,
     ADD COLUMN retry_at INTEGER UNSIGNED DEFAULT NULL after batch_fund_transfer_id,
@@ -5153,9 +5149,9 @@ ALTER TABLE gateway_rules
     ADD INDEX gateway_rules_category_index (category);
 
 ALTER TABLE banking_accounts
-        CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL;
-        ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
-    
+    CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL,
+    ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
+
 ALTER TABLE `transactions`
     MODIFY COLUMN `fee_credits` BIGINT NOT NULL DEFAULT 0;
 
@@ -5165,3 +5161,13 @@ ALTER TABLE subscription_registrations
     ADD COLUMN attempts int(11) NOT NULL DEFAULT '0' AFTER amount,
     ADD COLUMN currency char(3) DEFAULT 'INR' AFTER attempts,
     ADD INDEX subscription_registrations_status_attempts_index (status, attempts);
+
+ALTER TABLE terminals
+    ADD COLUMN procurer VARCHAR(255) DEFAULT 'razorpay' AFTER merchant_id;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER merchant_id;
+
+ALTER TABLE pricing
+    ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway,
+    ADD INDEX pricing_procurer_index (procurer);

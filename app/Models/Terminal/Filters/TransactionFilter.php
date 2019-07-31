@@ -40,6 +40,7 @@ class TransactionFilter extends Terminal\Filter
         'auth_type',
         'bharat_qr',
         'direct_settlement',
+        'fee_bearer',
         'bank_account_type',
         'hitachi_shared_terminal',
         'capability',
@@ -778,6 +779,16 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return false;
+    }
+
+    public function feeBearerFilter($terminal, $applicableTerminals)
+    {
+        if ($this->input['merchant']->isFeeBearerCustomer() === true)
+        {
+            return ($terminal->isDirectSettlement() === false);
+        }
+
+        return true;
     }
 
     public function hitachiSharedTerminalFilter($terminal, $applicableTerminals)
