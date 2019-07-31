@@ -275,11 +275,12 @@ export default class PaymentDetailsContainer extends Component {
     });
   };
 
-  onRefundDetailsToggleClick = payment => {
+  onRefundDetailsToggleClick = (payment, speed_requested) => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'See - Payment Refund Details',
       eventLabel: `payment_id=${payment.id}`,
+      speed_requested: speed_requested,
     });
   };
 

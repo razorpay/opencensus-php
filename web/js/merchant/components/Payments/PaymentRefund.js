@@ -52,7 +52,11 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   }
 
   return (
-    <ContentToggler onToggleClick={onToggleClick}>
+    <ContentToggler
+      onToggleClick={() => {
+        onToggleClick(refunds.items[0].speed_requested);
+      }}
+    >
       <span>Refund Details</span>
       <div className="full-width-item sub-entity-list">
         <DataTable
@@ -196,8 +200,8 @@ export default ({
           {
             <RefundsList
               refunds={refunds}
-              onToggleClick={() => {
-                onToggleClick(payment);
+              onToggleClick={sr => {
+                onToggleClick(payment, sr);
               }}
             />
           }
