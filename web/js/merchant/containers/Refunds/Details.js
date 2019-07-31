@@ -14,17 +14,16 @@ export default class RefundDetailsContainer extends Component {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id);
     }
-  }
 
-  componentDidMount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
-    eventCategory &&
+    if (nextProps.refund) {
+      const { id } = nextProps;
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory: 'Dashboard - Refunds',
         eventAction: 'Open Details - Refunds',
         eventLabel: `refund_id=${id}`,
+        speed_requested: nextProps.refund.speed_requested,
       });
+    }
   }
 
   componentWillUnmount() {
