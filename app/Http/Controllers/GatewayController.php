@@ -57,11 +57,6 @@ class GatewayController extends Controller
         return ApiResponse::json($response, $response['http_status']);
     }
 
-    public function callbackAxis()
-    {
-        $this->callbackGateway('axis');
-    }
-
     public function callbackUpiAirtel()
     {
         $this->callbackGateway('upi_airtel');

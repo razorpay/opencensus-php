@@ -433,7 +433,6 @@ final class Route
         'admin_get_file'                           => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                       ],
         'send_test_newsletter'                     => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                          => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
-        'gateway_payment_callback_axis'            => ['post',     'callback/axis',                                  'GatewayController@callbackAxis'                                    ],
         'gateway_payment_callback_get'             => ['get',      'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_post'            => ['post',     'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'           => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
