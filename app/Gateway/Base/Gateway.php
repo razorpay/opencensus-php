@@ -73,12 +73,14 @@ class Gateway
     const MAX_RETRY_COUNT = 2;
 
     /**
-     *  strings to check for LibreSSL errors. Gateway requests are retried in case
-     *  this string is received.
+     *  curl error numbers for SSL errors. Gateway requests are retried in case
+     *  this curl error number is received.
      */
-    const LIBRESSL_CONNECT_ERROR_STRING = 'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL';
-
-    const LIBRESSL_READ_ERROR_STRING = 'cURL error 56: LibreSSL SSL_read: SSL_ERROR_SYSCALL';
+    const RETRIABLE_CURL_ERRORS = [
+        35, // cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL
+        52, // cURL error 52: Empty reply from server
+        56, // cURL error 56: LibreSSL SSL_read: SSL_ERROR_SYSCALL
+    ];
 
     /**
      * Actions for which gateway action can be retried on next terminal safely.
@@ -785,14 +787,18 @@ class Gateway
             return false;
         }
 
-        $exceptionData = $e->getDataAsString();
+        $previousExc = $e->getPrevious();
 
-        if ((get_class($e) === Exception\GatewayRequestException::class) and
-            ((stripos($exceptionData, self::LIBRESSL_CONNECT_ERROR_STRING) !== false) or
-             (stripos($exceptionData, self::LIBRESSL_READ_ERROR_STRING) !== false)))
-        {
-            return true;
-        }
+        if (($previousExc instanceof \Requests_Exception) and
+                ($previousExc->getType() === 'curlerror'))
+            {
+                $errorNumber = curl_errno($previousExc->getData());
+
+                if (in_array($errorNumber, static::RETRIABLE_CURL_ERRORS, true) === true)
+                {
+                    return true;
+                }
+            }
 
         return false;
     }
@@ -804,7 +810,7 @@ class Gateway
 
     protected function getMaxRetryCount()
     {
-        return self::MAX_RETRY_COUNT;
+        return static::MAX_RETRY_COUNT;
     }
 
     protected function validateResponse(\Requests_Response $response)

@@ -31,7 +31,7 @@ class Gateway extends Base\Gateway
 
     const TIMEOUT       = 20;
 
-    const EMPTY_RESPONSE_CURL_ERROR_STRING = 'cURL error 52: Empty reply from server';
+    const MAX_RETRY_COUNT = 5;
 
     /**
      * @var AESCrypto
@@ -151,27 +151,6 @@ class Gateway extends Base\Gateway
             null,
             Action::AUTHENTICATE,
             true);
-    }
-
-    protected function shouldRetry($e)
-    {
-        if ((empty($this->action) === true) or
-            (in_array($this->action, $this->getActionsToRetry(), true) === false))
-        {
-            return false;
-        }
-
-        $exceptionData = $e->getDataAsString();
-
-        if ((get_class($e) === Exception\GatewayRequestException::class) and
-            ((stripos($exceptionData, self::LIBRESSL_CONNECT_ERROR_STRING) !== false) or
-             (stripos($exceptionData, self::EMPTY_RESPONSE_CURL_ERROR_STRING) !== false) or
-             (stripos($exceptionData, self::LIBRESSL_READ_ERROR_STRING) !== false)))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /*
