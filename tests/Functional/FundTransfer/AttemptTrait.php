@@ -294,8 +294,9 @@ trait AttemptTrait
         $payouts = $this->fixtures->times($sourceCount)->create(
             'payout',
             [
-               'channel' => $channel,
-               'amount' => 1000,
+               'channel'     => $channel,
+               'amount'      => 1000,
+                'balance_id' => '10000000000000',
             ]);
 
         if ($sourceCount === 1)
@@ -330,6 +331,7 @@ trait AttemptTrait
                 'amount'            => 1000,
                 'destination_id'    => '1000000lcustba',
                 'destination_type'  => 'vpa',
+                'balance_id'        => '10000000000000',
             ]);
 
         if ($sourceCount === 1)
