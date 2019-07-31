@@ -112,7 +112,11 @@ let initialState = {
     loading: false,
     items: [],
     error: null,
-    refundFee: null,
+  },
+  refundFee: {
+    loading: true,
+    data: {},
+    error: null,
   },
   current_balance: {
     loading: true,
@@ -219,22 +223,24 @@ export default function(state = initialState, action) {
       });
 
     case `${FETCH_REFUND_FEE}::PENDING`:
-      return set(state, 'refunds', {
+      return set(state, 'refundFee', {
         loading: true,
-        refundFee: null,
+        data: [],
+        error: null,
       });
 
     case `${FETCH_REFUND_FEE}::SUCCESS`:
-      return set(state, 'refunds', {
+      return set(state, 'refundFee', {
+        data: action.payload.data,
         loading: false,
-        refundFee: action.payload,
+        error: null,
       });
 
     case `${FETCH_REFUND_FEE}::ERROR`:
-      return set(state, 'refunds', {
+      return set(state, 'refundFee', {
         loading: false,
-        refundFee: null,
         error: action.payload.errors,
+        data: {},
       });
 
     case `${PAYMENT_FETCH_TRANSFERS}::PENDING`:

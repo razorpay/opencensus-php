@@ -135,6 +135,7 @@ export default class RefundModal extends Component {
     if (hasAmountErrors) {
       return;
     }
+    this.props.fetchRefundFee(this.props.payment, props.amount);
 
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
     if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
@@ -149,8 +150,8 @@ export default class RefundModal extends Component {
       return;
     }
 
+    // If instant_refund is checked
     if (props.instant_refund) {
-      this.props.fetchRefundFee(this.props.payment, props.amount);
       this.context
         .confirm({
           header: 'Do you want to refund this payment?',
@@ -159,8 +160,8 @@ export default class RefundModal extends Component {
               <div class="text-semi-muted">
                 <p>
                   This payment will be instantly refunded to the customer. A fee
-                  of &#8377; {this.props.refunds.refundFee} will be charged from
-                  your unsettled balance.
+                  of &#8377; {this.props.refundFee.data.fee} will be charged
+                  from your unsettled balance.
                 </p>
               </div>
               <div class="confirm-note">
@@ -303,6 +304,7 @@ export default class RefundModal extends Component {
   };
 
   render() {
+    console.log('**', this.props.refundFee);
     const { handleSubmit, payment, transfers, refunds } = this.props;
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
