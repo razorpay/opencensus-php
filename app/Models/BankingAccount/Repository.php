@@ -50,6 +50,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)
+                    ->whereNotNull(Entity::BANK_REFERENCE_NUMBER)
                     ->latest(Entity::CREATED_AT)
                     ->first();
     }

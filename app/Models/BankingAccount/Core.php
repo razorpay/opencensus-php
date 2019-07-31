@@ -210,7 +210,7 @@ class Core extends Base\Core
 
         $bankingAccount->edit($input);
 
-        if (isset($input[Entity::STATUS]) === true)
+        if (empty($input[Entity::STATUS]) === false)
         {
             $bankingAccount->setStatus($input[Entity::STATUS]);
         }
