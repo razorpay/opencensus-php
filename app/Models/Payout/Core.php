@@ -271,20 +271,20 @@ class Core extends Base\Core
 
         switch ($status)
         {
-            case Attempt\Status::PROCESSED:
-                $this->handleFtaProcessed($payout);
+            case Status::PROCESSED:
+                $this->handlePayoutProcessed($payout);
                 break;
 
-            case Attempt\Status::REVERSED:
-                $this->handleFtaReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+            case Status::REVERSED:
+                $this->handlePayoutReversed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
-            case Attempt\Status::FAILED:
-                $this->handleFtaFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+            case Status::FAILED:
+                $this->handlePayoutFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
-            case Attempt\Status::CREATED:
-            case Attempt\Status::INITIATED:
+            case Status::CREATED:
+            case Status::INITIATED:
                 break;
 
             default:
@@ -650,7 +650,7 @@ class Core extends Base\Core
         return $payoutInput;
     }
 
-    protected function handleFtaProcessed(Entity $payout)
+    protected function handlePayoutProcessed(Entity $payout)
     {
         if ($payout->isStatusReversed() === true)
         {
@@ -669,15 +669,26 @@ class Core extends Base\Core
         $this->app->events->fire('api.payout.processed', [$payout]);
     }
 
-    protected function handleFtaReversed(Entity $payout, string $ftaFailureReason = null)
+    protected function handlePayoutReversed(Entity $payout, string $ftaFailureReason = null)
     {
         $this->reversePayout($payout, $ftaFailureReason);
 
         $this->app->events->fire('api.payout.reversed', [$payout]);
     }
 
-    protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
+    protected function handlePayoutFailed(Entity $payout, string $ftaFailureReason = null)
     {
+        if (empty($payout->transaction) === false)
+        {
+            throw new Exception\LogicException(
+                'A Payout with transaction can not be moved to failed state, it should be reversed',
+                null,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'failure_reason' => $ftaFailureReason,
+                ]);
+        }
+
         $currentStatus = $payout->getStatus();
 
         //
