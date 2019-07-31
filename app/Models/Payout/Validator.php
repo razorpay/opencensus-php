@@ -54,7 +54,7 @@ class Validator extends Base\Validator
         Entity::MODE                 => 'sometimes|nullable|string',
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean|custom',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $customerWalletPayoutRules = [
