@@ -506,4 +506,49 @@ return [
             ],
         ],
     ],
+
+    'testBankingAccountFetchForCurrentAccount' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'account_type'  => 'current',
+                        'merchant'      => [
+                            'merchant_detail' => [
+                                'contact_email' => 'test@razorpay.com'
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchForCurrentAccountFailure' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand'       => ['merchant','merchant.merchantDetail'],
+                'account_type' => 'current',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'admin'  => true,
+                'items'  => [],
+            ],
+        ],
+    ]
 ];

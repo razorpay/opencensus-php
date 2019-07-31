@@ -444,6 +444,15 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankingAccountFetchForCurrentAccount()
+    {
+        $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchBankingAccountRequests()
     {
         $this->createBankingAccount();
@@ -451,6 +460,20 @@ class BankingAccountTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testBankingAccountFetchForCurrentAccountFailure()
+    {
+        $response = $this->createBankingAccount();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->edit('banking_account',
+            $response['id'],
+            [
+                'account_type' => 'virtual',
+            ]);
+
     }
 
     public function testFetchBankingAccountsOfCreatedStatus()
