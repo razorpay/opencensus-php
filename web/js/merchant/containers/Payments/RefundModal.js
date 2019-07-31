@@ -279,6 +279,10 @@ export default class RefundModal extends Component {
     let amount = payment.amount;
     let balance = data.balance;
 
+    if (this.props.current_balance.loading === true) {
+      return true;
+    }
+
     if (balance) {
       if (amount > balance) {
         return false;
@@ -293,7 +297,10 @@ export default class RefundModal extends Component {
   getInstantRefundClassNames = boolVal => {
     if (boolVal) {
       return 'checkbox instant-refund-disable';
-    } else {
+    } else if (
+      this.props.current_balance.loading === true ||
+      boolVal === false
+    ) {
       return 'checkbox';
     }
   };
@@ -325,7 +332,9 @@ export default class RefundModal extends Component {
               <i class="i i-help" />
             </span>
           </div>
-          {isInstantDisabled ? (
+          {this.props.current_balance.loading ? (
+            <div>Loading...</div>
+          ) : isInstantDisabled ? (
             <div class="low-funds">
               Your account does not have sufficient balance to instantly refund
               this payment.
