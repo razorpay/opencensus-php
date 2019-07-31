@@ -722,6 +722,15 @@ class PaymentDowntimeTest extends TestCase
         $this->activateDowntimes('resolved');
     }
 
+    public function testGetCheckoutPreferencesWithPaymentDowntime()
+    {
+        $this->createNetbankingAllGatewayDowntime();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     protected function createUpiAllGatewayDowntime()
     {
         foreach (Gateway::$methodMap['upi'] as $gateway)
