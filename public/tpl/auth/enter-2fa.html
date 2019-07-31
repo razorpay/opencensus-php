@@ -6,18 +6,19 @@
     An SMS with 6-digit OTP has been sent to &lt;PhoneNumber&gt;. OTP will expire in 5 mins.
   </div>
 
-  <form class="auth-form" name="2faForm">
+  <form class="auth-form" name="loginForm" ng-submit="sendLoginCredentials(loginForm.$valid)">
     <label class="form-label auth-subheading" for="otp">Enter the OTP</label>
+    <div ng-include="'tpl/auth/components/otp-input.html'" ></div>
+
+    <div class="auth-text">
+      Didn't receive an SMS?&nbsp;
+      <span class="highlight-clickable-text">
+        Resend
+      </span>
+    </div>
+
+    <button ng-disable="otpSendingInProgress" class="btn btn-primary form-control m-t" type="submit" >
+      Confirm
+    </button>
   </form>
-
-  <div class="auth-text">
-    Didn't receive an SMS?&nbsp;
-    <span class="highlight-clickable-text">
-      Resend
-    </span>
-  </div>
-
-  <button ng-disable="otpSendingInProgress" class="btn btn-primary form-control m-t" type="submit" >
-    Confirm
-  </button>
 </div>
