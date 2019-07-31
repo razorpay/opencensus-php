@@ -55,7 +55,7 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
-
+        Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile');
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user']);
     });
 

@@ -106,14 +106,39 @@ class Service extends Base\Service
      *
      * @return array
      */
+    public function postSetup2faVerifyMobile(array $input)
+    {
+        $res = null;
+
+        list($error, $genericUser) = $this->loginOnApiBy2faSetupSuccessful($input);
+
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    /**
+     * @param  array  $input [description]
+     *
+     * @return array
+     */
     public function login(array $input)
     {
         $res = null;
 
         list($error, $genericUser) = $this->loginOnApi($input);
 
+        return $this->handleLoginResponse($error, $genericUser);
+    }
+
+    protected function handleLoginResponse($error, $genericUser)
+    {
         if (empty($error) === false)
         {
+            if ((array_key_exists('data', $error) === true) and
+                (empty($error['data']) === false))
+            {
+                return [['Email or password is invalid.', ['internal_error' => $error]], null];
+            }
+
             return [['Email or password is invalid.'], null];
         }
 
@@ -121,18 +146,15 @@ class Service extends Base\Service
 
         $this->app['session']->put('dashboard_user_payload', $genericUser);
 
-        if (empty($error))
+        $res = [
+            'id' => $genericUser->id,
+        ];
+        $merchantIds = [];
+        foreach ($genericUser->merchants as $merchant)
         {
-            $res = [
-                'id' => $genericUser->id,
-            ];
-            $merchantIds = [];
-            foreach ($genericUser->merchants as $merchant)
-            {
-                $merchantIds[] = $merchant->id;
-            }
-            $res['merchantIds'] = $merchantIds;
+            $merchantIds[] = $merchant->id;
         }
+        $res['merchantIds'] = $merchantIds;
 
         $user = Auth::user();
 
@@ -569,11 +591,11 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function loginOnApi(array $input)
+    public function loginOnApiOnRoute(array $input, string $route, string $httpVerb)
     {
         $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $request->processInput($input)->send('users/login', 'POST');
+        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
 
         $genericUser = null;
 
@@ -591,6 +613,19 @@ class Service extends Base\Service
 
 
         return [$error, $genericUser];
+    }
+
+    public function loginOnApi(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/login', 'POST');
+    }
+
+    // Another route for a successful login. If a uses 2fa is not setup
+    // this will allow to set up 2fa while logging in. And if setup is success
+    // api returns user object. And dashboard needs to start the session.
+    public function loginOnApiBy2faSetupSuccessful(array $input)
+    {
+        return $this->loginOnApiOnRoute($input,'users/2fa_setup/verify-mobile', 'POST');
     }
 
     public function getUserFromApi($userId)
