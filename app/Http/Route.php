@@ -632,6 +632,7 @@ final class Route
         'subscription_update'                      => ['patch',    'subscriptions/{id}',                             'SubscriptionController@updateSubscription'                         ],
         'subscription_fetch_changes'               => ['get',      'subscriptions/{id}/retrieve_scheduled_changes',  'SubscriptionController@getFetchScheduledChanges'                   ],
         'subscription_cancel_changes'              => ['post',     'subscriptions/{id}/cancel_scheduled_changes',    'SubscriptionController@getCancelScheduledChanges'                  ],
+        'subscription_fetch_hosted'                => ['get',      'subscriptions/{id}/hosted',                      'SubscriptionController@getSubscriptionForHosted'                   ],
         'upi_fill_bank'                            => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                          => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'setcronjob_webhook'                       => ['post',     'setcronjob/callback',                            'AdminController@postSetCronJobCallback'                            ],
@@ -1214,6 +1215,7 @@ final class Route
         'payment_validate_account',
         'fund_account_create_public',
         'contact_get_public',
+        'subscription_fetch_hosted',
     ];
 
     public static $device = [
@@ -3152,6 +3154,7 @@ final class Route
         'subscription_update',
         'subscription_fetch_changes',
         'subscription_cancel_changes',
+        'subscription_fetch_hosted'
     ];
 
     // These routes are redirected after a feature check
