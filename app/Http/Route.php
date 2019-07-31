@@ -3144,6 +3144,8 @@ final class Route
         'subscription_payment_process',
         'subscription_view_live',
         'subscription_view_test',
+        'subscription_view_test_post',
+        'subscription_view_live_post',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
         'subscription_item_create',
