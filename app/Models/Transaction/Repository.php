@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction;
 use DB;
 use Cache;
 use Carbon\Carbon;
+use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -19,7 +20,9 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Pricing\Calculator;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
@@ -154,6 +157,82 @@ class Repository extends Base\Repository
         $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
 
         return $results;
+    }
+
+    /**
+     * calculates the sum of `fee` and `tax` for the instant speed refunds
+     *  - captured for a merchant in a given time frame
+     *  - based on filter type passed REFUND_LTE_1K, REFUND_GT_1K_LTE_10K, REFUND_GT_10K
+     *  - When correction flag is true the adds condition where created in given time frame
+     *
+     * @param string $merchantId
+     * @param int $start
+     * @param int $end
+     * @param string $filterType
+     *
+     * @return mixed
+     * @throws Exception\LogicException
+     */
+    public function fetchFeesAndTaxForRefundByType(
+        string $merchantId,
+        int $start,
+        int $end,
+        string $filterType)
+    {
+        /*
+            SELECT Sum(transactions.tax) AS tax,
+                   Sum(transactions.fee) AS fee
+            FROM   `transactions`
+                   INNER JOIN `refunds`
+                           ON `transactions`.`entity_id` = `refunds`.`id`
+            WHERE  `transactions`.`type` = ?
+                   AND `transactions`.`created_at` BETWEEN ? AND ?
+                   AND `transactions`.`merchant_id` = ?
+                   AND `refunds`.`base_amount` <= ?
+            LIMIT  1
+         */
+        $query = $this->newQuery()
+            ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
+            ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
+            ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
+
+        $query->join(
+            $this->repo->refund->getTableName(),
+            function(JoinClause $join)
+            {
+                $refundIdAttr = $this->repo->refund->dbColumn(Entity::ID);
+                $entityIdAttr = $this->dbColumn(Entity::ENTITY_ID);
+
+                $join->on($entityIdAttr, $refundIdAttr);
+            });
+
+        $query->merchantId($merchantId);
+
+        $refundBaseAmountColumn = $this->repo->refund->dbColumn(Refund\Entity::BASE_AMOUNT);
+
+        switch ($filterType)
+        {
+            case InvoiceType::REFUND_LTE_1K:
+                $query = $query->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF);
+
+                break;
+
+            case InvoiceType::REFUND_GT_1K_LTE_10K:
+                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB1_TAX_CUT_OFF)
+                    ->where($refundBaseAmountColumn, '<=', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
+
+                break;
+
+            case InvoiceType::REFUND_GT_10K:
+                $query = $query->where($refundBaseAmountColumn, '>', Calculator\Base::REFUND_SLAB2_TAX_CUT_OFF);
+
+                break;
+
+            default:
+                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
+        }
+
+        return $query->first();
     }
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
@@ -594,7 +673,7 @@ class Repository extends Base\Repository
                     ->update($attributes);
     }
 
-    public function getCancelledBilldeskTransactions()
+    public function getCancelledBilldeskPaymentTransactions(int $limit = 200)
     {
         $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
@@ -614,6 +693,47 @@ class Repository extends Base\Repository
                     ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
                     ->where($paymentStatus, '=', Payment\Status::REFUNDED)
                     ->whereNull($transactionReconciledAt)
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
+     * select `transactions`.* from `transactions`
+     * inner join `refunds` on `refunds`.`id` = `transactions`.`entity_id`
+     * inner join `payments` on `refunds`.`payment_id` = `payments`.`id`
+     * inner join `billdesk` on `billdesk`.`payment_id` = `payments`.`id`
+     * where `billdesk`.`RefStatus` = '0699'
+     * and `payments`.`status` = 'refunded'
+     * and `transactions`.`reconciled_at` is null
+     *
+     * @param $limit
+     * @return mixed
+     */
+    public function getCancelledBilldeskPaymentRefundTransactions(int $limit = 200)
+    {
+        $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
+        $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+
+        $refundId = $this->repo->refund->dbColumn(Refund\Entity::ID);
+        $refundPaymentId = $this->repo->refund->dbColumn(Refund\Entity::PAYMENT_ID);
+
+        $transactionEntityId = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->dbColumn(Entity::RECONCILED_AT);
+
+        $transactionData = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::REFUND, $refundId, '=', $transactionEntityId)
+                    ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
+                    ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
+                    ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
+                    ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+                    ->whereNull($transactionReconciledAt)
+                    ->limit($limit)
                     ->get();
     }
 

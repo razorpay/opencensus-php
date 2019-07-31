@@ -25,6 +25,9 @@ class CreateGatewayRules extends Migration
 
             $table->string(Rule::MERCHANT_ID, Merchant::ID_LENGTH);
 
+            $table->string(Rule::PROCURER)
+                  ->nullable();
+
             $table->string(Rule::GATEWAY, 50)
                   ->nullable();
 
@@ -91,6 +94,9 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::EMI_SUBVENTION, 20)
                   ->nullable();
 
+            $table->string(Rule::CATEGORY)
+                  ->nullable();
+
             $table->string(Rule::CATEGORY2)
                   ->nullable();
 
@@ -125,6 +131,7 @@ class CreateGatewayRules extends Migration
             $table->index(Rule::INTERNATIONAL);
             $table->index(Rule::SHARED_TERMINAL);
             $table->index(Rule::NETWORK_CATEGORY);
+            $table->index(Rule::CATEGORY);
             $table->index(Rule::CATEGORY2);
             $table->index(Rule::NETWORK);
             $table->index(Rule::METHOD);

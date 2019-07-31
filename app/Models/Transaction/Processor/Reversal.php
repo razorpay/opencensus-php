@@ -71,19 +71,18 @@ class Reversal extends Base
     {
         $this->credit = $this->source->getAmount() + $this->source->getFee();
 
-        // Deducting only refund's debit amount in the forward transaction
-        // case 1: when we are reversing the refund amount + fees -> here we credit only what has been debited
-        // case 2: when we are reversing only the refund fees -> here we credit only the fees that has been debited
         if ($this->source->getEntityType() === 'refund')
         {
-            if ($this->source->getAmount() === $this->source->entity->getAmount())
+            $debitAmount = $this->source->entity->getAmount() + $this->source->entity->getFee();
+
+            if (($this->source->entity->transaction->getDebit() === 0) and
+                ($this->source->entity->transaction->getCredits() === $debitAmount))
             {
-                $this->credit = $this->source->entity->transaction->getDebit();
-            }
-            else if (($this->source->getAmount() === 0) and
-                     ($this->source->getFee() === $this->source->entity->getFee()))
-            {
-                $this->credit = $this->source->entity->transaction->getFee();
+                $this->txn->setCredits(-1 * $this->credit);
+
+                $this->txn->setCreditType(Transaction\CreditType::REFUND);
+
+                $this->credit = 0;
             }
         }
 
@@ -149,6 +148,9 @@ class Reversal extends Base
         }
 
         $this->txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+
+        // Save is necessary here to create CreditReversalTransaction
+        $this->repo->saveOrFail($this->txn);
     }
 
     public function setMerchantBalanceLockForUpdate()

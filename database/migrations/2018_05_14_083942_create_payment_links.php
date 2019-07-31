@@ -81,11 +81,15 @@ class CreatePaymentLinks extends Migration
             $table->text(Entity::TERMS)
                   ->nullable();
 
+            $table->string(Entity::TYPE, 30)
+                  ->default('payment');
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
+            $table->index(Entity::TYPE);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::RECEIPT);

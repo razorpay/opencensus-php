@@ -178,6 +178,10 @@ class Entity extends Base\PublicEntity
         self::TRIVIA         => null,
     ];
 
+    protected $casts = [
+        self::IIN            => 'string'
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -693,6 +697,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::DEBIT);
     }
 
+    public function isPrepaid()
+    {
+        return ($this->getType() === Type::PREPAID);
+    }
+
     public function isRecurringSupported()
     {
         $iin = $this->iinRelation;
@@ -757,6 +766,15 @@ class Entity extends Base\PublicEntity
             return true;
         }
 
+        return false;
+    }
+
+    public function isHeadLessOtp()
+    {
+        if ($this->iinRelation !== null)
+        {
+            return $this->iinRelation->isHeadLessOtp();
+        }
         return false;
     }
 

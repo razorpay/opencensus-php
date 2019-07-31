@@ -541,25 +541,11 @@ class Core extends Base\Core
         }
     }
 
-    public function action($merchant, $input)
+    public function action($merchant, $input, bool $useWorkflows = true)
     {
         $merchant->getValidator()->validateInput('action', $input);
 
-        $admin = $this->app['basicauth']->getAdmin();
-
         $action = $input['action'];
-
-        // Check for admin permissions
-        $admin->hasMerchantActionPermissionOrFail($action);
-
-        if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
-        {
-            $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
-
-            (new Methods\Core)->validatePricingForInternational($merchant, $plan);
-        }
-
-        $routePermission = Permission\Name::$actionMap[$action];
 
         $originalMerchant = clone $merchant;
 
@@ -567,8 +553,10 @@ class Core extends Base\Core
 
         $merchant->$function();
 
-        $this->app['workflow']->setPermission($routePermission)->handle(
-            $originalMerchant, $merchant);
+        if ($useWorkflows === true)
+        {
+            $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
+        }
 
         $this->repo->saveOrFail($merchant);
 
@@ -579,6 +567,23 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /**
+     * @param Entity $oldMerchant
+     * @param Entity $newMerchant
+     * @param string $action
+     */
+    protected function triggerWorkFlowForMerchantEditAction(Entity $oldMerchant, Entity $newMerchant, string $action)
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        // Check for admin permissions
+        $admin->hasMerchantActionPermissionOrFail($action);
+
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        $this->app['workflow']->setPermission($routePermission)->handle($oldMerchant, $newMerchant);
     }
 
     /**
@@ -983,7 +988,7 @@ class Core extends Base\Core
 
         try
         {
-            $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+            $app = $this->getPartnerAppByMerchantId($merchant->getId());
         }
         catch (DBQueryException $ex)
         {
@@ -1410,6 +1415,36 @@ class Core extends Base\Core
     }
 
     /**
+     * This function checks for a mapping between the partner merchant's dummy app from
+     * auth database and the submerchant. This is stored in the `merchant_access_map` table
+     * on API side.
+     *
+     * @param  string $merchantId
+     * @param  string $partnerId
+     *
+     * @return bool
+     */
+    public function isMerchantMappedToNonPurePlatformPartner(string $merchantId, string $partnerId): bool
+    {
+        $app = $this->getPartnerAppByMerchantId($partnerId);
+
+        $mapping = (new AccessMap\Repository)
+            ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+
+        return (empty($mapping) === false);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return OAuthApp\Entity|null
+     */
+    public function getPartnerAppByMerchantId(string $merchantId)
+    {
+        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
+    }
+
+    /**
      * @param Entity $partner
      * @param array  $params
      *
@@ -1662,7 +1697,13 @@ class Core extends Base\Core
     {
         $partnerUsers = $partner->users()->get();
 
-        $submerchantIds = $submerchants->pluck(Entity::ID)->toArray();
+        //
+        // if partner added himself as a submerchant which used to happen before but not anymore
+        // then we should not remove his own user
+        //
+        $submerchantIds = $submerchants->reject(function($subMerchant) use ($partner) {
+            return ($subMerchant->getId() === $partner->getId());
+        })->pluck(Entity::ID)->toArray();
 
         foreach ($partnerUsers as $partnerUser)
         {

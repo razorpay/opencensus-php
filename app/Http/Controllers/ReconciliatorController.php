@@ -22,7 +22,9 @@ class ReconciliatorController extends Controller
 
     public function postReconciliateCancelledTransactions($gateway)
     {
-        $response = $this->service()->reconciliateCancelledTransactions($gateway);
+        $input = Request::all();
+
+        $response = $this->service()->reconciliateCancelledTransactions($gateway, $input);
 
         return ApiResponse::generateResponse($response);
     }

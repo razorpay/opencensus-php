@@ -249,22 +249,23 @@ class Gateway
         {
             $previousExc = $exc->getPrevious();
 
-            if (($previousExc instanceof \Requests_Exception) and
-                ($previousExc->getType() === 'curlerror') and
-                (property_exists($exc, 'isPropagatedException') === false))
+            if (property_exists($exc, 'isPropagatedException') === false)
             {
-                $excData = curl_errno($previousExc->getData());
+                if (($previousExc instanceof \Requests_Exception) and
+                    ($previousExc->getType() === 'curlerror'))
+                {
+                    $excData = curl_errno($previousExc->getData());
 
-                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+                    $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
 
-                $exc->isPropagatedException = true;
-            }
+                    $exc->isPropagatedException = true;
+                }
+                else
+                {
+                    $this->pushDimensions($action, $input, Metric::FAILED);
 
-            else if (property_exists($exc, 'isPropagatedException') === false)
-            {
-                $this->pushDimensions($action, $input, Metric::FAILED);
-
-                $exc->isPropagatedException = true;
+                    $exc->isPropagatedException = true;
+                }
             }
 
             throw $exc;
@@ -329,10 +330,17 @@ class Gateway
         $this->input = $input;
         $this->action = Action::CAPTURE;
 
-        if ($input['payment']['status'] !== Status::AUTHORIZED)
+        if (($input['payment'][Payment\Entity::STATUS] === Status::AUTHORIZED) or
+            (($input['payment'][Payment\Entity::STATUS] === Status::CAPTURED) and
+            (array_key_exists(Payment\Entity::GATEWAY_CAPTURED, $input['payment']) === true) and
+            ($input['payment'][Payment\Entity::GATEWAY_CAPTURED] === null)))
+        {
+            return;
+        }
+        else
         {
             throw new Exception\RuntimeException(
-                'Payment status should be authorized',
+                'Payment status should be authorized or if captured, gateway captured should not be set',
                 ['payment_id' => $input['payment']['id']]);
         }
     }
@@ -694,7 +702,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayTimeoutException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -703,7 +711,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayRequestException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -813,7 +821,7 @@ class Gateway
             $data = ['status_code' => $response->status_code, 'body' => $response->body];
             $e->setData($data);
 
-            if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+            if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
             {
                 $e->markSafeRetryTrue();
             }
@@ -861,7 +869,7 @@ class Gateway
             /**
              * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
              */
-            $metricsDriver->histogram('gateway_request_total_time_ms',
+            $metricsDriver->histogram(Metric::GATEWAY_REQUEST_TIME,
                 $info['total_time'] * 1000,
                 [
                     'gateway' => $this->gateway ?? 'none',
@@ -1528,10 +1536,6 @@ class Gateway
         $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
     }
 
-    //
-    // This is a temporary function for debugging the curl issue
-    //
-
     protected function isDuplicateUnexpectedPayment($callbackData)
     {
         throw new Exception\LogicException(
@@ -1596,11 +1600,23 @@ class Gateway
         return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
     }
 
-    protected function sendMozartRequest(array $input)
+    protected function getMozartApiUrl($input)
     {
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
-        $url =  $baseUrl . 'payments/' . $this->gateway. '/v1/' . $this->action;
+        $version = $this->getVersionForAction($input, $this->action);
+
+        return $baseUrl . 'payments/' . $this->gateway . '/' . $version . '/' . snake_case($this->action);
+    }
+
+    protected function getVersionForAction($input, $action)
+    {
+        return 'v1';
+    }
+
+    protected function sendMozartRequest(array $input, $removeRaw = true)
+    {
+        $url = $this->getMozartApiUrl($input);
 
         $authentication = [
             'api',
@@ -1630,7 +1646,10 @@ class Gateway
 
         $this->traceGatewayPaymentResponseForMozart($responseBody ?? '', $requestBody);
 
-        unset($responseBody['data']['_raw']);
+        if ($removeRaw === true)
+        {
+            unset($responseBody['data']['_raw']);
+        }
 
         if (in_array($this->action, ['pay_init', 'authenticate_init', 'authenticate_verify'], true) === true)
         {
@@ -1639,7 +1658,7 @@ class Gateway
 
         $attributes = $this->getMappedAttributes($responseBody['data']);
 
-        if ($this->action === Action::VERIFY)
+        if (in_array(snake_case($this->action), [Action::VERIFY, Action::VERIFY_REFUND]) === true)
         {
             return $responseBody;
         }
@@ -1656,9 +1675,9 @@ class Gateway
             }
         }
 
-       $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
 
-       return $responseBody['next']['redirect'] ?? null;
+        return $responseBody['next']['redirect'] ?? null;
     }
 
     protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)

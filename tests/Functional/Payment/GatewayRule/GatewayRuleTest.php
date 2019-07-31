@@ -141,13 +141,13 @@ class GatewayRuleTest extends TestCase
         $this->fixtures->gateway_rule->delete($rules);
     }
 
-    protected function createRules(array $ruleParams): array
+    protected function createRules(array $ruleParams, $step = 'authorization'): array
     {
         $ruleIds = [];
 
         foreach ($ruleParams as $params)
         {
-            $params['step'] = 'authorization';
+            $params['step'] = $step;
 
             $rule = $this->fixtures->create('gateway_rule', $params);
 
@@ -177,7 +177,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -199,7 +199,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -221,7 +221,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[
+                    'content' => [
                         'error' => [
                             'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                             'description' => 'Load across all gateway rules must be less than 100 percent',
@@ -234,7 +234,6 @@ class GatewayRuleTest extends TestCase
                     'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
                 ],
         ];
-
 
         $this->runRequestResponseFlow($testDataRule3);
     }
@@ -260,7 +259,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -282,7 +281,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -305,7 +304,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                  'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 

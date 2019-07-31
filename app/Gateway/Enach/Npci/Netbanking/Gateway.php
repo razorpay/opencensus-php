@@ -69,8 +69,8 @@ class Gateway extends Base\Gateway
                 [
                     'payment_id'            => $input['payment']['id'],
                     'gateway'               => $this->gateway,
-                    'decrypted checksum'    => $decryptedChecksum,
-                    'mandate response data' => $xmlData,
+                    'decrypted_checksum'    => $decryptedChecksum,
+                    'mandate_response_data' => $xmlData,
                 ]);
 
             $this->validateCallbackChecksum(
@@ -90,7 +90,7 @@ class Gateway extends Base\Gateway
                 [
                     'payment_id'            => $input['payment']['id'],
                     'gateway'               => $this->gateway,
-                    'mandate response data' => $xmlData,
+                    'mandate_response_data' => $xmlData,
                 ]);
 
             $attributes = $this->getErrorResponseGatewayAttributes($xmlData);

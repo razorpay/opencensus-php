@@ -43,7 +43,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testSettlementFileCreationKotak()
@@ -67,7 +67,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testInitiateAtCheckDuringFileCreation()
@@ -213,12 +213,20 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
+        $this->markTestSkipped();
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::YESBANK, 2, Attempt\Type::PAYOUT);
     }
 
     public function testPayoutFileCreationYesbankRtgsSuccess()
     {
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
+        $this->markTestSkipped();
+
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($now);
@@ -229,6 +237,11 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankRtgsFailed()
     {
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
+
+        $this->markTestSkipped();
+
         $channel = Channel::YESBANK;
 
         $purpose = Attempt\Purpose::SETTLEMENT;

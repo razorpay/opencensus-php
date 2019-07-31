@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const MERCHANT_ID      = 'merchant_id';
+    const PROCURER         = 'procurer';
     const GATEWAY          = 'gateway';
     const TYPE             = 'type';
     const GROUP            = 'group';
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY         = 'currency';
 
     // Merchant properties
+    const CATEGORY         = 'category';
     const CATEGORY2        = 'category2';
 
     const COMMENTS         = 'comments';
@@ -84,6 +86,7 @@ class Entity extends Base\PublicEntity
      */
     const COMPARISON_ATTRIBUTES = [
         self::METHOD,
+        self::PROCURER,
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
@@ -94,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECURRING_TYPE,
         self::CAPABILITY,
+        self::CATEGORY,
     ];
 
     const AUTHENTICATION_COMPARISION_ATTRIBUTES = [
@@ -109,12 +113,14 @@ class Entity extends Base\PublicEntity
         self::GROUP,
         self::FILTER_TYPE,
         self::GATEWAY,
+        self::PROCURER,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
         self::MAX_AMOUNT,
         self::GATEWAY_ACQUIRER,
         self::NETWORK_CATEGORY,
+        self::CATEGORY,
         self::CATEGORY2,
         self::SHARED_TERMINAL,
         self::INTERNATIONAL,
@@ -144,6 +150,7 @@ class Entity extends Base\PublicEntity
     const DEFAULT_SEARCH_ATTRIBUTES = [
         self::ID,
         self::MERCHANT_ID,
+        self::PROCURER,
         self::TYPE,
         self::GROUP,
         self::METHOD,
@@ -167,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::SHARED_TERMINAL,
         self::NETWORK_CATEGORY,
         self::GATEWAY_ACQUIRER,
+        self::CATEGORY,
         self::CATEGORY2,
     ];
 
@@ -198,8 +206,9 @@ class Entity extends Base\PublicEntity
         self::ISSUER        => 16,
         self::IINS          => 32,
         self::AMOUNT_RANGE  => 64,
-        self::CATEGORY2     => 128,
-        self::MERCHANT_ID   => 256,
+        self::CATEGORY      => 128,
+        self::CATEGORY2     => 256,
+        self::MERCHANT_ID   => 512,
     ];
 
     /**
@@ -233,6 +242,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
+        self::PROCURER,
         self::GATEWAY,
         self::TYPE,
         self::GROUP,
@@ -242,6 +252,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::NETWORK_CATEGORY,
         self::SHARED_TERMINAL,
+        self::CATEGORY,
         self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
@@ -265,6 +276,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
+        self::PROCURER,
         self::GATEWAY,
         self::TYPE,
         self::GROUP,
@@ -274,6 +286,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::NETWORK_CATEGORY,
         self::SHARED_TERMINAL,
+        self::CATEGORY,
         self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
@@ -405,6 +418,11 @@ class Entity extends Base\PublicEntity
     public function getStep()
     {
         return $this->getAttribute(self::STEP);
+    }
+
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
     }
 
     public function isAuthentication()
@@ -895,6 +913,18 @@ class Entity extends Base\PublicEntity
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
         return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant()) ? true : false;
+    }
+
+    /**
+     * Compare the merchants category code against the rule
+     *
+     * @param Terminal\Entity $terminal
+     * @param Merchant\Entity $merchant Merchant whose category has to be checked against
+     * @return bool
+     */
+    protected function compareCategory(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
+    {
+            return ($this->getCategory() === $merchant->getCategory()) ? true : false;
     }
 
     /**

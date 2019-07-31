@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     const SUPPORT_CONTACT    = 'support_contact';
     const SUPPORT_EMAIL      = 'support_email';
     const TERMS              = 'terms';
+    const TYPE               = 'type';
 
     /**
      * Optional attribute: allows a custom view template ID to be defined
@@ -116,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_CONTACT,
         self::SUPPORT_EMAIL,
         self::TERMS,
+        self::TYPE,
     ];
 
     protected $visible = [
@@ -139,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_CONTACT,
         self::SUPPORT_EMAIL,
         self::TERMS,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -169,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_CONTACT,
         self::SUPPORT_EMAIL,
         self::TERMS,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -190,6 +194,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_CONTACT,
         self::SUPPORT_EMAIL,
         self::TERMS,
+        self::TYPE,
     ];
 
     protected $casts = [
@@ -222,6 +227,7 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_CONTACT    => null,
         self::SUPPORT_EMAIL      => null,
         self::TERMS              => null,
+        self::TYPE               => 'payment',
     ];
 
     protected $publicSetters = [

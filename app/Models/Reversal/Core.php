@@ -134,6 +134,8 @@ class Core extends Base\Core
 
                     $this->customerRefundIfApplicable($transfer, $input, $reversal);
 
+                    (new Transfer\Metric)->pushReversalSuccessMetrics();
+
                     return $reversal;
                 });
             });

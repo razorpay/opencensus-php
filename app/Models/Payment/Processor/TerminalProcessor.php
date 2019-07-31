@@ -37,7 +37,7 @@ class TerminalProcessor extends Base\Core
         $options = $this->getTerminalSelectionOptions();
 
         $input = [
-            'payment' => $this->payment,
+            'payment'  => $this->payment,
             'merchant' => $this->payment->merchant,
         ];
 
