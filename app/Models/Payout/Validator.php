@@ -185,27 +185,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateQueueIfLowBalance($attribute, $value)
-    {
-        if (boolval($value) === false)
-        {
-            return;
-        }
-
-        /** @var Entity $payout */
-        $payout = $this->entity;
-
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::QUEUED_PAYOUTS) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Queued payouts not available for the merchant',
-                null,
-                [
-                    'value' => $value
-                ]);
-        }
-    }
-
     public function validatePayoutAmount($input, $payment)
     {
         if (isset($input[Entity::AMOUNT]) === false)
