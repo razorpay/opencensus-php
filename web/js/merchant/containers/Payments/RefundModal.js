@@ -384,7 +384,11 @@ export default class RefundModal extends Component {
               before initiating a refund.
             </div>
           ) : null}
-          <form onSubmit={handleSubmit(this.save)}>
+          <form
+            onSubmit={handleSubmit(props => {
+              this.save(props);
+            })}
+          >
             <div class="form-group">
               <label class="label-required">Refund Amount</label>
               <div class="input-group">
