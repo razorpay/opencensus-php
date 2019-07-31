@@ -117,7 +117,7 @@ export default class NewInvitation extends Component {
             <div class="form-group">
               <AsyncButton
                 class="btn btn-primary"
-                text="Send Invitation"
+                text="+ Add team member"
                 pendingText="Sending Invitation..."
                 onClick={handleSubmit(this.save)}
               />

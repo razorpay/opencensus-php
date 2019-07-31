@@ -9,6 +9,8 @@ import NewInvitation from './NewInvitation';
 import Invitation from './Invitation';
 import User from './User';
 import ShowWhen from 'merchant/components/ShowWhen';
+import Toggle2FA from './Toggle2FA';
+import DataTable from 'rzp/ui/Table/DataTable';
 
 @connect(
   state => {
@@ -55,15 +57,21 @@ export default class TeamContainer extends Component {
             </ShowWhen>
           </div>
         </HeaderAction>
-
-        <div class="content-wrapper content-sm">
+        <div class="content-wrapper content-sm content-sm-900">
+          <Toggle2FA />
           <NewInvitation />
-
           {otherUsers.length ? (
             <div>
               <div class="panel-heading">
                 <b>Team Members</b>
               </div>
+              {/* <DataTable
+              title="Disputes"
+              columns={[
+                email,
+              ]}
+              {...this.props}
+            /> */}
               <table class="table table-noborder" style={{ margin: '0 12px' }}>
                 <tbody>
                   {otherUsers.map(user => (
