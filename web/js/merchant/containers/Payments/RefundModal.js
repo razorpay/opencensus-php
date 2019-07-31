@@ -150,6 +150,13 @@ export default class RefundModal extends Component {
       return;
     }
 
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'Click - Issue Refund',
+      eventLabel: `payment_id=${this.props.payment.id}`,
+      speed_requested: props.instant_refund ? 'optimum' : 'normal',
+    });
+
     // If instant_refund is checked
     if (props.instant_refund) {
       this.context
@@ -176,9 +183,23 @@ export default class RefundModal extends Component {
           affirmativeLabel: 'Yes, Refund',
           affirmativePendingLabel: 'Refunding...',
           abortLabel: "No, don't!",
-          action: () => {},
+          action: () => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payments',
+              eventAction: 'Refund - Payment',
+              eventLabel: `payment_id=${this.props.payment.id}`,
+              speed_requested: 'optimum',
+            });
+          },
         })
-        .catch(() => {});
+        .catch(() => {
+          window.rzpAnalytics({
+            eventCategory: 'Dashboard - Payments',
+            eventAction: 'Click - Cancel Refund',
+            eventLabel: `payment_id=${this.props.payment.id}`,
+            speed_requested: 'optimum',
+          });
+        });
     } else {
       this.context
         .confirm({
@@ -190,6 +211,13 @@ export default class RefundModal extends Component {
           affirmativePendingLabel: 'Refunding...',
           abortLabel: "No, don't!",
           action: () => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payments',
+              eventAction: 'Refund - Payment',
+              eventLabel: `payment_id=${this.props.payment.id}`,
+              speed_requested: 'normal',
+            });
+
             let payment = this.props.payment;
             let data = {
               amount: rupeesToPaise(props.amount),
@@ -233,7 +261,14 @@ export default class RefundModal extends Component {
               });
           },
         })
-        .catch(() => {});
+        .catch(() => {
+          window.rzpAnalytics({
+            eventCategory: 'Dashboard - Payments',
+            eventAction: 'Click - Cancel Refund',
+            eventLabel: `payment_id=${this.props.payment.id}`,
+            speed_requested: 'normal',
+          });
+        });
     }
   };
 
@@ -265,9 +300,10 @@ export default class RefundModal extends Component {
 
   showInstantRefund = (payment, isInstantDisabled) => {
     if (
-      showWhenUtil({ featureEnabled: 'card_transfer_refund' }) &&
-      payment.instant_refund_support &&
-      payment.instant_refund_support === true
+      true
+      // showWhenUtil({ featureEnabled: 'card_transfer_refund' }) &&
+      // payment.instant_refund_support &&
+      // payment.instant_refund_support === true
     ) {
       return (
         <div>
@@ -324,7 +360,6 @@ export default class RefundModal extends Component {
   };
 
   render() {
-    console.log('**', this.props.refundFee);
     const { handleSubmit, payment, transfers, refunds } = this.props;
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
