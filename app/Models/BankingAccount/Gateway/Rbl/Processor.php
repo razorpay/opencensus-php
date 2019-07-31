@@ -51,7 +51,9 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
-        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $input);
+        $content = $this->modifyWebhookInput($input);
+
+        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $content);
     }
 
     public function processAccountInfoNotification(array $input): array
@@ -476,5 +478,18 @@ class Processor extends BankingAccount\Gateway\Processor
                    [Fields::BODY][Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
 
         return $this->getFormattedAmount($balance);
+    }
+
+    protected function modifyWebhookInput(array $input)
+    {
+        $input[Fields::ACCOUNT_NO] = $input[Fields::ACCOUNT_NUMBER];
+
+        $input[Fields::PHONE_NO] = $input[Fields::PHONE_NUM];
+
+        unset($input[Fields::ACCOUNT_NUMBER]);
+
+        unset($input[Fields::PHONE_NUM]);
+
+        return $input;
     }
 }

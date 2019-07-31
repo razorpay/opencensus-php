@@ -11,15 +11,16 @@ use RZP\Models\BankingAccount\Entity;
  */
 class Fields
 {
-    const ACCOUNT_NUMBER                    = 'Account No';
+    const ACCOUNT_NUMBER                    = 'Account No.';
+    const ACCOUNT_NO                        = 'Account No';
     const CUSTOMER_NAME                     = 'Customer Name';
     const CUSTOMER_ID                       = 'Customer ID';
     const ACTIVATION_DATE                   = 'Account Open Date';
     const IFSC                              = 'IFSC';
     const RZP_REFERENCE_NUMBER              = 'RZP_Ref No';
-    const ADDR_1                            = 'ADDR_1';
-    const ADDR_2                            = 'ADDR_2';
-    const ADDR_3                            = 'ADDR_3';
+    const ADDR_1                            = 'Address1';
+    const ADDR_2                            = 'Address2';
+    const ADDR_3                            = 'Address3';
     const CITY                              = 'CITY';
     const STATE                             = 'STATE';
     const COUNTRY                           = 'COUNTRY';
@@ -28,7 +29,8 @@ class Fields
     const HEADER                            = 'Header';
     const TRAN_ID                           = 'TranID';
     const STATUS                            = 'Status';
-    const PHONE_NUM                         = 'Phone no';
+    const PHONE_NUM                         = 'Phone no.';
+    const PHONE_NO                          = 'Phone no';
     const EMAIL_ID                          = 'Email Id';
     const RZP_ALERT_NOTIFICATION_REQUEST    = 'RZPAlertNotiReq';
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
