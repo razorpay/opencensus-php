@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use RZP\Exception\BadRequestException;
 use RZP\Models\Payout;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class FundAccountPayout extends Base
 {
@@ -29,8 +30,8 @@ class FundAccountPayout extends Base
             // payout creation flow fails for any reason after downstream processor runs.
             //
 
-            //Todo: To be refactored accordingly once rbl specific changes in payout module is being done
-            if ($payout->getChannel() === Settlement\Channel::YESBANK)
+            if (($payout->isStatusBeforeCreate() === false) and
+                ($payout->balance->getAccountType() !== AccountType::DIRECT))
             {
                 (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
             }
