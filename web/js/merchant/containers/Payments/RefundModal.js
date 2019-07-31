@@ -278,6 +278,7 @@ export default class RefundModal extends Component {
                 component="input"
                 type="checkbox"
                 disabled={isInstantDisabled}
+                onChange={this.onInstantRefundCheckboxClick}
               />
               <b>Refund Instantly</b>
             </label>
@@ -301,6 +302,16 @@ export default class RefundModal extends Component {
         </div>
       );
     } else return null;
+  };
+
+  onInstantRefundCheckboxClick = e => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: e.target.value
+        ? 'Unchecked - Instant Refund'
+        : 'Checked - Instant Refund',
+      eventLabel: `payment_id=${this.props.payment.id}`,
+    });
   };
 
   render() {
