@@ -37,6 +37,15 @@ export default class RefundDetailsContainer extends Component {
       });
   }
 
+  viewRefundHistory = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Refunds',
+      eventAction: 'Open History - Refunds',
+      eventLabel: `refund_id=${this.props.refund.id}`,
+      speed_requested: this.props.refund.speed_requested,
+    });
+  };
+
   render() {
     let { loading, error, refund, payments } = this.props;
     let statusMsg = {};
@@ -53,6 +62,7 @@ export default class RefundDetailsContainer extends Component {
         refund={refund}
         isLoading={loading}
         statusMsg={statusMsg}
+        viewRefundHistory={this.viewRefundHistory}
       />
     );
   }

@@ -10,7 +10,7 @@ import RefundStatusTimeline from 'merchant/components/Refunds/RefundTimeline';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import RefundUpdate from 'merchant/components/Refunds/RefundUpdate';
 
-export default ({ refund, isLoading, statusMsg }) => {
+export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -39,7 +39,7 @@ export default ({ refund, isLoading, statusMsg }) => {
                 <EntityDetailRow
                   label="Status"
                   value={() => (
-                    <ContentToggler onToggleClick={() => {}}>
+                    <ContentToggler onToggleClick={viewRefundHistory}>
                       <span>View History</span>
                       <RefundStatusTimeline />
                     </ContentToggler>
