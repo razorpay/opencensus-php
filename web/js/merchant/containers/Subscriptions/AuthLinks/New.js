@@ -171,9 +171,8 @@ export default class CreateNewAuthLinkContainer extends Component {
     };
 
     if (data.mandateMethod === 'emandate') {
-      payload.subscription_registration.first_amount = rupeesToPaise(
-        data.first_amount
-      );
+      payload.subscription_registration.first_payment_amount =
+        rupeesToPaise(data.first_payment_amount) || 0;
     }
 
     return this.props
@@ -374,7 +373,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 </Input.Group>
 
                 <Input
-                  name="first_amount"
+                  name="first_payment_amount"
                   type="number"
                   placeholder="0"
                   size="half_big"
