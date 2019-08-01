@@ -109,8 +109,6 @@ export default class CreateNewAuthLinkContainer extends Component {
     const value = target.value;
     const name = target.name || target.getAttribute('data-name');
 
-    console.log(value);
-
     this.setState({ [name]: value });
   };
 
@@ -211,8 +209,6 @@ export default class CreateNewAuthLinkContainer extends Component {
   renderForm = ({ isModalView }) => {
     const { mandateMethod: method, avlblMethods, loading } = this.state;
     const skipBankDetails = !!Number(this.state.skipBankDetails);
-
-    const showAmount = ['card'].includes(method);
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -378,7 +374,6 @@ export default class CreateNewAuthLinkContainer extends Component {
                 </Input.Group>
 
                 <Input
-                  autoRender
                   name="first_amount"
                   type="number"
                   placeholder="0"
@@ -401,7 +396,6 @@ export default class CreateNewAuthLinkContainer extends Component {
                 />
 
                 <Input
-                  autoRender
                   name="mandateMaxAmount"
                   placeholder="100000"
                   label="Token Max Amount"
@@ -419,7 +413,7 @@ export default class CreateNewAuthLinkContainer extends Component {
               </Fragment>
             )}
 
-            {showAmount && (
+            {method === 'card' && (
               <Input.Group class="InputGroup--inline" label="Amount">
                 <div class="Input-content">
                   <Input.CurrencySelect name="currency" />
