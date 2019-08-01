@@ -2873,7 +2873,7 @@ class Terminal extends Base
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
         $defaultValues = [
-            'id'                        => '1ShrdPhnepeTrm',
+            'id'                        => '1ShrdPaypalTrm',
             'merchant_id'               => $sharedMerchantAccount,
             'gateway'                   => 'wallet_paypal',
             'card'                      => 0,

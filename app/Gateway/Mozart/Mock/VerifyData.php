@@ -159,19 +159,14 @@ class VerifyData extends Base\Mock\Server
             'data' =>
                 [
                     '_raw ' => '',
-                    'code' => 'PAYMENT_SUCCESS',
-                    'data' => [
-                        'amount' => $entities['payment']['amount'],
-                        'merchantId' => 'abc',
-                        'payResponseCode' => 'SUCCESS',
-                        'paymentState' => 'COMPLETED',
-                        'providerReferenceId' => 'paypalProviderRefId',
-                        'transactionId' => $entities['payment']['id'],
+                    "amount"=> [
+                        "currency_code" => $entities['payment']['currency'],
+                        "value" => $entities['payment']['amount'],
                     ],
-                    'message' => 'Your payment is successful.',
-                    'received' => true,
+                    'final_capture' => 'true',
+                    'transactionId' => $entities['payment']['id'],
+                    'disbursement_mode' => 'INSTANT',
                     'status' => 'verification_successful',
-                    'success' => true
                 ],
             'error' => null,
             'external_trace_id' => '',

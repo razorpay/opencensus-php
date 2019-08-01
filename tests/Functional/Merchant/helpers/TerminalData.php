@@ -1909,7 +1909,7 @@ return [
                 'gateway'                   => 'wallet_paypal',
                 'gateway_merchant_id'       => 'merchant_id',
                 'gateway_secure_secret'     => 'secure_secret',
-                'gateway_access_code'       => 'access_code',
+                'gateway_terminal_password' => 'terminal_password',
             ],
             'method' => 'POST'
         ],

@@ -21,7 +21,7 @@ class Wallet
     const OPENWALLET  = 'openwallet';
     const MPESA       = 'mpesa';
     const PHONEPE     = 'phonepe';
-    const PAYPAL     = 'paypal';
+    const PAYPAL      = 'paypal';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',

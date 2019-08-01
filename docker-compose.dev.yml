@@ -92,7 +92,3 @@ services:
       - 29102:9102
       - 29125:9125/udp
     command: ["--statsd.mapping-config=/tmp/statsd_mapping.yml"]
-networks:
-  default:
-    external:
-      name: mozart_default

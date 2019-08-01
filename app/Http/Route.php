@@ -1146,7 +1146,6 @@ final class Route
     ];
 
     public static $public = [
-        'refund_verify',
         'checkout',
         'payment_create',
         'payment_create_checkout',
@@ -1924,6 +1923,7 @@ final class Route
         'merchant_edit_email',
         'dispute_reason_create',
         'merchant_tags_bulk',
+        'refund_verify',
         'refund_verify_bulk',
         'merchant_edit',
         'adj_add_bulk',

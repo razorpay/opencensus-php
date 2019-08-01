@@ -277,7 +277,6 @@ abstract class Base extends BaseModel\Core
 
     protected function applyAmountRangeFilterAndReturnOneRule($rules)
     {
-
         $payment = $this->entity;
 
         $amount = $this->amount;
@@ -302,7 +301,6 @@ abstract class Base extends BaseModel\Core
         $subventionType = $payment->merchant->getSubventionType();
 
         $rule = $this->chooseRuleWithAmount($rules, $amount, $subventionType);
-
 
         if ($rule === null)
         {

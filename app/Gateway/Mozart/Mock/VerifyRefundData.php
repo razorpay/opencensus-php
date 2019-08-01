@@ -75,20 +75,12 @@ class VerifyRefundData extends Base\Mock\Server
         $response = [
             'data'=>
                 [
-                    '_raw'=> '',
-                    'code'=> 'PAYMENT_SUCCESS',
-                    'data'=> [
-                        'amount'=> $entities['payment']['amount'],
-                        'merchantId'=> 'abc',
-                        'payResponseCode'=> 'SUCCESS',
-                        'paymentState'=> 'COMPLETED',
-                        'providerReferenceId'=> 'paypalProviderRefId',
-                        'transactionId'=> $entities['refund']['id'],
+                    "_raw"=> "{\"header\":{\"Date\":[\"Tue, 30 Jul 2019 12:22:02 GMT\"],\"Set-Cookie\":[\"X-PP-SILOVER=name%3DSANDBOX3.API.1%26silo_version%3D1880%26app%3Dapiplatformproxyserv%26TIME%3D1781940317%26HTTP_X_PP_AZ_LOCATOR%3Dsandbox.slc; Expires=Tue, 30 Jul 2019 12:52:03 GMT; domain=.paypal.com; path=/; Secure; HttpOnly\",\"X-PP-SILOVER=; Expires=Thu, 01 Jan 1970 00:00:01 GMT\"],\"Content-Type\":[\"application/json\"],\"Server\":[\"Apache\"],\"Paypal-Debug-Id\":[\"1035ec70c6c6c\",\"1035ec70c6c6c\"],\"Http_x_pp_az_locator\":[\"sandbox.slc\"],\"Vary\":[\"Authorization\"],\"Content-Length\":[\"701\"]},\"status\":200,\"body\":\"{\\\"id\\\":\\\"78027727TF804050W\\\",\\\"amount\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"1.00\\\"},\\\"seller_payable_breakdown\\\":{\\\"gross_amount\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"1.00\\\"},\\\"paypal_fee\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"0.04\\\"},\\\"net_amount\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"0.96\\\"},\\\"total_refunded_amount\\\":{\\\"currency_code\\\":\\\"USD\\\",\\\"value\\\":\\\"1.00\\\"}},\\\"invoice_id\\\":\\\"nj8yy7gy\\\",\\\"custom_id\\\":\\\"nj8yy7gy\\\",\\\"status\\\":\\\"COMPLETED\\\",\\\"create_time\\\":\\\"2019-07-30T05:21:16-07:00\\\",\\\"update_time\\\":\\\"2019-07-30T05:21:16-07:00\\\",\\\"links\\\":[{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/payments/refunds/78027727TF804050W\\\",\\\"rel\\\":\\\"self\\\",\\\"method\\\":\\\"GET\\\"},{\\\"href\\\":\\\"https://api.sandbox.paypal.com/v2/payments/captures/8DS61651XA862144J\\\",\\\"rel\\\":\\\"up\\\",\\\"method\\\":\\\"GET\\\"}]}\"}",
+                    "id"=> "78027727TF804050W",
+                    'amount'=>[
+                      'value'=> $entities['payment']['amount'],
                     ],
-                    'message'=> 'Your payment is successful.',
-                    'received'=> true,
                     'status'=> 'verification_successful',
-                    'success'=> true
                 ],
             'error'=> null,
             'external_trace_id'=> '',
