@@ -207,4 +207,22 @@ class Channel
             throw new Exception\BadRequestValidationFailureException('Invalid channel name: ' . $channel);
         }
     }
+
+    /**
+     * Supported FTS channels for payouts
+     * @return array
+     */
+    public static function getFtsSupportedPayoutChannels()
+    {
+        return [
+            self::RBL,
+        ];
+    }
+
+    public static function getNonTransactionChannels()
+    {
+        return [
+            self::RBL,
+        ];
+    }
 }

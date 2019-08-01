@@ -10,9 +10,9 @@ use RZP\Exception;
 use RZP\Models\Payout;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Batch;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -28,10 +28,10 @@ trait AttemptTrait
         $request = [
             'url'       => '/fund_transfer_attempts/initiate/'.$channel,
             'method'    => 'POST',
-            'content'   => [
+            'content'   =>  [
                 Attempt\Entity::PURPOSE => $purpose,
                 'failed_response'       => (int) $failureTest,
-            ],
+            ]
         ];
 
         $this->ba->cronAuth();
@@ -363,5 +363,27 @@ trait AttemptTrait
         $this->createRefundFromPayments($payments);
 
         $this->initiateSettlements($channel);
+    }
+
+    protected function updateFta( $ftsId, string $sourceId, string $sourceType, string $status)
+    {
+        $content = [
+            Attempt\Entity::STATUS           => $status,
+            Attempt\Entity::SOURCE_ID        => $sourceId,
+            Attempt\Entity::SOURCE_TYPE      => $sourceType,
+            Attempt\Entity::FUND_TRANSFER_ID => $ftsId
+        ];
+
+        $request = [
+            'url'       => '/update_fts_fund_transfer',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->ba->ftsAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }

@@ -98,7 +98,11 @@ class DailyFiles extends Base\DailyFiles
 
         $gateway = $terminal->getGateway();
 
-        return $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
+        $refundsResult =$this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
+
+        $this->refundCore->reconcileNetbankingRefunds($data);
+
+        return $refundsResult;
     }
 
     protected function getClaimsDataForTpv($from, $to, $tpvEnabled = false)

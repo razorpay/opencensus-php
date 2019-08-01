@@ -122,11 +122,11 @@ class UpiMindgateBulkTerminalTest extends TestCase
                 Batch\Header::UPI_MINDGATE_COLLECT               =>  '0',
                 Batch\Header::UPI_MINDGATE_PAY                   =>  1,
             ],
-            // this will fail, as one merchant should not have two terminals of same gateway, mcc and currency
+            // this will fail, as one merchant should not have two terminals of same gateway, mcc, vpa and currency
             [
                 Batch\Header::UPI_MINDGATE_MERCHANT_ID          => '10NodalAccount',
                 Batch\Header::UPI_MINDGATE_GATEWAY_MERCHANT_ID  => 'HDFC000011670817',
-                Batch\Header::UPI_MINDGATE_VPA                  => 'pqr.razorpay@hdfcbank',
+                Batch\Header::UPI_MINDGATE_VPA                  => 'abc.razorpay@hdfcbank',
                 Batch\Header::UPI_MINDGATE_TERMINAL_PASSWORD    => 'terminalPassword',
             ],
         ];

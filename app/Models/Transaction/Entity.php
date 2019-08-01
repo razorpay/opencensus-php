@@ -641,6 +641,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::REFUND);
     }
 
+    public function isTypeReversal()
+    {
+        return ($this->getType() === Type::REVERSAL);
+    }
+
     public function isTypeSettlement()
     {
         return ($this->getType() === Type::SETTLEMENT);

@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Credits;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Credits;
 
 class Repository extends Base\Repository
 {
@@ -80,6 +79,19 @@ class Repository extends Base\Repository
                     )
                     // This is done because we want to keep the null EXPIRED at the bottom
                     ->orderBy(\DB::raw('-`expired_at`'), 'desc')
+                    ->get();
+    }
+
+    /**
+     * Returns Credit entities
+     *
+     * @param array $creditIds
+     * @return mixed
+     */
+    public function getCreditEntities(array $creditIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $creditIds)
                     ->get();
     }
 

@@ -644,6 +644,32 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+        Type::IRCTC_DELTA_REFUND => [
+
+            self::INPUT => [
+                self::MERCHANT_REFERENCE,
+                self::REFUND_TYPE,
+                self::REFUND_AMOUNT,
+                self::PAYMENT_ID,
+                self::CANCELLATION_DATE,
+                self::PAYMENT_AMOUNT,
+                self::CANCELLATION_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_REFERENCE,
+                self::REFUND_TYPE,
+                self::REFUND_AMOUNT,
+                self::PAYMENT_ID,
+                self::STATUS,
+                self::REFUND_DATE,
+                self::REFUND_ID,
+                self::CANCELLATION_DATE,
+                self::PAYMENT_AMOUNT,
+                self::CANCELLATION_ID,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
 
         Type::IRCTC_SETTLEMENT => [
 

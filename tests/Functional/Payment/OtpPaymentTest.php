@@ -355,7 +355,7 @@ class OtpPaymentTest extends TestCase
             'iin'     => '556763',
             'country' => 'IN',
             'issuer'  => 'UTIB',
-            'network' => 'Maestro',
+            'network' => 'MasterCard',
             'flows'   => [
                 '3ds'    => '1',
                 'headless_otp' => '1',

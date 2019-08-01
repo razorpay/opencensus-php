@@ -7,8 +7,9 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Account;
+use RZP\Services\SmartRouting;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
@@ -29,6 +30,16 @@ class Core extends Base\Core
         $this->$validatorMethod($rule, $matchingRules);
 
         $this->repo->saveOrFail($rule);
+
+        // try catch added temporarily
+        try
+        {
+            $this->app->smartRouting->createGatewayRule($rule->toArray());
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
+        }
 
         return $rule;
     }
@@ -53,6 +64,16 @@ class Core extends Base\Core
         $this->$validatorMethod($rule, $matchingRules);
 
         $this->repo->saveOrFail($rule);
+
+        // try catch added temporarily
+        try
+        {
+            $this->app->smartRouting->updateGatewayRule($rule->toArray());
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
+        }
 
         return $rule;
     }
@@ -185,6 +206,7 @@ class Core extends Base\Core
             Entity::MERCHANT_ID   => $merchant->getId(),
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
+            Entity::CATEGORY      => $merchant->getCategory(),
             Entity::CATEGORY2     => $merchant->getCategory2(),
             Entity::CURRENCY      => $currency,
             // Here min_amount and max_amount are both set to payment_amount

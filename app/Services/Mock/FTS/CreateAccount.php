@@ -23,7 +23,10 @@ class CreateAccount extends BaseCreateAccount
     {
         return
             [
-                Constants::MESSAGE => 'source account registered',
+                'body' => [
+                    Constants::MESSAGE => 'source account registered',
+                    ],
+                'code' => 200,
             ];
     }
 }

@@ -28,6 +28,8 @@ class Gateway extends Base\Gateway
 
     protected $gateway = Payment\Gateway::UPI_MINDGATE;
 
+    const MAX_RETRY_COUNT = 5;
+
     protected $response;
 
     const BANK = 'hdfc';
@@ -72,11 +74,6 @@ class Gateway extends Base\Gateway
         ResponseFields::IFSC_CODE         => Entity::IFSC,
         Entity::MERCHANT_REFERENCE        => Entity::MERCHANT_REFERENCE,
     ];
-
-    protected function getMaxRetryCount()
-    {
-        return 5;
-    }
 
     /**
      * Authorizes a payment using UPI Gateway

@@ -663,6 +663,10 @@ return [
 
         // Aditiya birla direct settlement TID
         'live_merchant_id2_aditiya_birla_direct' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_AB_DIRECT'),
+
+        //Cred direct Settlement TID
+        'live_hash_secret_cred'   => env('NETBANKING_ICICI_LIVE_HASH_SECRET_CRED'),
+        'live_merchant_id2_cred'  => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_CRED'),
     ],
 
     'netbanking_axis' => [
@@ -763,6 +767,7 @@ return [
                     'auth_password' => env('BANKING_ACCOUNT_RBL_PASSWORD'),
                     'client_id'     => env('BANKING_ACCOUNT_RBL_CLIENT_ID'),
                     'client_secret' => env('BANKING_ACCOUNT_RBL_CLIENT_SECRET'),
+                    'mozart_identifier' => env('BANKING_ACCOUNT_RBL_MOZART_IDENTIFIER'),
                 ],
             ]
         ],

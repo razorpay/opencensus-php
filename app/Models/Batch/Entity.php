@@ -311,6 +311,34 @@ class Entity extends Base\PublicEntity
         return $this->files()->latest()->first();
     }
 
+    /**
+     * Returns the latest file (of the given type) associated with this batch.
+     *
+     * @param string $type
+     * @return FileStore\Entity
+     */
+    public function latestFileByType(string $type)
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, $type)
+                    ->latest()
+                    ->first();
+    }
+
+    /**
+     * Returns all the files (of the given type) associated with this batch.
+     *
+     * @param string $type
+     * @return FileStore\Entity
+     */
+    public function filesByType(string $type)
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, $type)
+                    ->latest()
+                    ->get();
+    }
+
     // ----------------------- Getters -------------------------------
 
     public function getName()
