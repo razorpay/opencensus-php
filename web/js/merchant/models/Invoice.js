@@ -4,15 +4,15 @@ import { getFixedINRAmount, isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
 import Payment from 'merchant/models/Payment';
 
 const createFields = [
-  'id',
-  'amount',
+  // 'id',
+  // 'amount',
   'currency',
   'partial_payment',
   'date',
   'expire_by',
   'draft',
   'customer',
-  'customer_id',
+  // 'customer_id',
   'supply_state_code',
   'customer',
   'sms_notify',
@@ -86,6 +86,8 @@ export default class Invoice extends GenericEntity {
   }
 
   serializeProperty(prop) {
+    // console.log('serializeProperty......', prop);
+
     if (
       prop === 'sms_notify' ||
       prop === 'email_notify' ||
@@ -240,5 +242,9 @@ export default class Invoice extends GenericEntity {
     }
 
     return super.deserializeProperty(prop, value);
+  }
+
+  clearStash() {
+    // this.
   }
 }

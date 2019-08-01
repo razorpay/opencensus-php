@@ -4,7 +4,7 @@ import Button from 'component/Button';
 import EditLayer from '../EditLayer';
 import { classList, getValueOfKeyAtLevel } from 'common/util';
 import {
-  FIELD_TYPES,
+  getFieldTypes,
   mapFieldToIndex,
   getFieldFromIndices,
 } from './Fields/helpers';
@@ -74,24 +74,28 @@ export class GenericCreator extends React.PureComponent {
     }
   })();
 
-  typeOptions = [{ label: '--Select--', value: '' }].concat(
-    FIELD_TYPES.map((FIELD_OPTION, idx) => {
-      return {
-        value: String(idx + 1), // +1 is to adjust --select--
-        options: !FIELD_OPTION.options
-          ? undefined
-          : FIELD_OPTION.options.map((SUB_OPTION, jdx) => {
-              return {
-                value: Number(idx + 1) + ' ' + jdx, // Space separate tree.
-                label: SUB_OPTION.label,
-                icon: SUB_OPTION.icon,
-              };
-            }),
-        label: FIELD_OPTION.label,
-        icon: FIELD_OPTION.icon,
-      };
-    })
-  );
+  typeOptions = (() => {
+    const FIELD_TYPES = getFieldTypes();
+
+    return [{ label: '--Select--', value: '' }].concat(
+      FIELD_TYPES.map((FIELD_OPTION, idx) => {
+        return {
+          value: String(idx + 1), // +1 is to adjust --select--
+          options: !FIELD_OPTION.options
+            ? undefined
+            : FIELD_OPTION.options.map((SUB_OPTION, jdx) => {
+                return {
+                  value: Number(idx + 1) + ' ' + jdx, // Space separate tree.
+                  label: SUB_OPTION.label,
+                  icon: SUB_OPTION.icon,
+                };
+              }),
+          label: FIELD_OPTION.label,
+          icon: FIELD_OPTION.icon,
+        };
+      })
+    );
+  })();
 
   onChange = ({ target }) => {
     const { name, value } = target;
