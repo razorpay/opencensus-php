@@ -1179,6 +1179,28 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentFlowWithSyncCallToSmartRouting()
     {
+        // creating a downtime
+        $this->ba->adminAuth();
+
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'card',
+                'issuer'      => 'HDFC',
+                'source'      => 'other',
+                'acquirer'    => 'ALL'
+                  ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        // making a card payment here
+        $this->ba->publicAuth();
+
         $payment = $this->getDefaultPaymentArray();
 
         $this->fixtures->create('order', ['id' => '100000000order']);

@@ -148,9 +148,6 @@ class SmartRouting
                 'content' => $data
             ];
 
-            // for testing
-            $request['url'] = "http://localhost:8085/v1/route";
-
             $response = $this->sendSmartRoutingRequest($request);
 
             $this->checkErrors($response);
