@@ -343,29 +343,69 @@ class PartnerConfigTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    /**
+     * Unit test - Merchant\Core::getPartnerBankAccountIdsForSubmerchants()
+     *
+     * Asserts that the function returns the expected array when -
+     *
+     * 1. Partner config is defined only for an application
+     * 2. Partner configs are defined for both - application and submerchant
+     * 3. Partner configs are defined for both - application and submerchant and the submerchant config has
+     * settle_to_flag set to false
+     */
     public function testSettleToPartner()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
-        $attributes = [
-            Entity::SETTLE_TO_PARTNER => true,
-        ];
+        $partnerBankAccount = $this->getDbEntity(
+            'bank_account',
+            [
+                'merchant_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            ]);
+
+        $this->assertNotNull($partnerBankAccount);
+
+        $merchantCore = (new Merchant\Core);
 
         $this->createConfigForPartnerApp(
             Constants::DEFAULT_NON_PLATFORM_APP_ID,
             null,
-            $attributes);
+            [Entity::SETTLE_TO_PARTNER => true]);
 
+        $merchantIds = [
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+        ];
+
+        $results = $merchantCore->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+
+        $expectedResult = [
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID   => $partnerBankAccount->getId(),
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2 => $partnerBankAccount->getId(),
+        ];
+
+        $this->assertEquals($expectedResult, $results);
+
+        // Overridden config with settle to partner as true
         $this->createConfigForPartnerApp(
             Constants::DEFAULT_NON_PLATFORM_APP_ID,
             Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
-            $attributes);
+            [Entity::SETTLE_TO_PARTNER => true]);
 
-        $merchantIds = [Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID];
+        // Overridden config with settle to partner as false
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+            [Entity::SETTLE_TO_PARTNER => false]);
 
-        $results = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants($merchantIds);
+        $results = $merchantCore->getPartnerBankAccountIdsForSubmerchants($merchantIds);
 
-        $this->assertEquals(1, count($results));
+        $expectedResult = [
+            Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID => $partnerBankAccount->getId(),
+        ];
+
+        $this->assertEquals($expectedResult, $results);
     }
 
     public function testEditingConfigToSubventionModel()
@@ -404,6 +444,7 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID);
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2);
 
         $this->fixtures->merchant->edit(
             Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
@@ -424,6 +465,16 @@ class PartnerConfigTest extends OAuthTestCase
             'merchant_access_map',
             [
                 'merchant_id'     => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'       => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            ]
+        );
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
                 'entity_id'       => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'entity_type'     => 'application',
                 'entity_owner_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
