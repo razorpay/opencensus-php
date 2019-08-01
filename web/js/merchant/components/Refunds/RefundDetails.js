@@ -55,13 +55,17 @@ export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
 
                 <EntityDetailRow
                   label="Refund Mode"
-                  value={() => (
-                    <RefundUpdate
-                      strikeThroughContent="Instant"
-                      updatedContent="Normal"
-                      description="Refund mode updated to normal as this refund was not able to be processed instantly."
-                    />
-                  )}
+                  value={() =>
+                    refund.speed_change_time ? (
+                      <RefundUpdate
+                        strikeThroughContent="Instant"
+                        updatedContent="Normal"
+                        description="Refund mode updated to normal as this refund was not able to be processed instantly."
+                      />
+                    ) : (
+                      <span>{refund.speed_processed}</span>
+                    )
+                  }
                 />
 
                 <EntityDetailRow label="Currency" value={refund.currency} />
