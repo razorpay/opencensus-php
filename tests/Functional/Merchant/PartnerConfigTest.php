@@ -67,6 +67,14 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        // Resellers cannot set settle_to_partner attribute sent in the request
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
         $this->startTest();
     }
 
@@ -272,6 +280,14 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        // Resellers cannot set settle_to_partner attribute sent in the request
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
         $this->fixtures->create(
             'partner_config',
             [
@@ -329,6 +345,14 @@ class PartnerConfigTest extends OAuthTestCase
     public function testEditingConfigToSubventionModel()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        // Resellers cannot set settle_to_partner attribute sent in the request
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
 
         $this->fixtures->create(
             'partner_config',
