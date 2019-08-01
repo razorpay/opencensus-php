@@ -22,7 +22,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     const CREDENTIALS_VAULT_NAMESPACE   = 'banking_account_creds';
 
-    const DATE_FORMAT = 'd-M-Y';
+    const DATE_FORMAT = 'd-m-Y';
 
     const MAX_MOZART_RETRIES            = 1;
 
