@@ -199,6 +199,10 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
+    'bank_transfer_batch' => [
+        'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+        'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
+    ],
     'capture' => [
         'test'       => env('AWS_CAPTURE_TEST_QUEUE'),
         'live'       => env('AWS_CAPTURE_LIVE_QUEUE'),
