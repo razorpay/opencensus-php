@@ -783,8 +783,8 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VERIFY_REFUND);
 
-        if ((empty($input['terminal']['gateway_secure_secret2']) === false) and
-            (empty($input['terminal']['gateway_access_code']) === false))
+        if ((empty(trim($input['terminal']['gateway_secure_secret2'])) === false) and
+            (empty(trim($input['terminal']['gateway_access_code'])) === false))
         {
             return $this->verifyRefundMozart($input);
         }
