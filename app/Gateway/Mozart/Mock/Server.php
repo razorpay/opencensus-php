@@ -164,14 +164,17 @@ class Server extends Base\Mock\Server
 
     protected function wallet_paypal($input)
     {
-        $content = [
-            'ENC_STR' => 'random_encrypted_string'
-        ];
+        $url = $this->route->getUrlWithPublicAuth(
+            'gateway_payment_callback_paypal',
+            [
+                'paymentId' => $input['paymentId'],
+                'amount'    => $input['amount'] / 100,
+            ]);
 
         $request = [
-            'url'          => $input['callbackUrl'],
-            'content'      => $content,
-            'method'       => 'post',
+            'url'     => $url,
+            'content' => ['click to pay' => 'Pay Now'],
+            'method'  => 'post',
         ];
 
         return $this->makePostResponse($request);
