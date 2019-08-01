@@ -115,7 +115,8 @@ abstract class Controller extends BaseController
         {
             $class = $this->service;
         }
-        else {
+        else
+        {
             $controllerClassFQN = explode('\\', static::class);
 
             $controllerClass = end($controllerClassFQN);
