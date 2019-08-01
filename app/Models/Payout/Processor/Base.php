@@ -384,7 +384,6 @@ class Base extends BaseCore
      * @param array $input
      *
      * @return Payout\Entity
-     * @throws Exception\BadRequestValidationFailureException
      */
     protected function createPayoutEntity(array $input)
     {

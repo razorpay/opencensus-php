@@ -12,6 +12,8 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
 class Validator extends Base\Validator
@@ -154,12 +156,64 @@ class Validator extends Base\Validator
 
         Mode::validateModeOfAccountType($mode, $accountType);
 
+        $this->validateCardAccountType($payout);
+
+        $this->validateVpaAccountType($payout);
+
+        $this->validateModeAndAmount($input, $payout);
+    }
+
+    protected function validateCardAccountType(Entity $payout)
+    {
+        $fundAccount = $payout->fundAccount;
+
+        $mode = $payout->getMode();
+
+        $accountType = $fundAccount->getAccountType();
+
         if ($accountType === FundAccount\Type::CARD)
         {
             $cardIssuer = $fundAccount->account->getIssuer();
 
             Mode::validateModeOfIssuer($mode, $cardIssuer);
         }
+    }
+
+    protected function validateVpaAccountType(Entity $payout)
+    {
+        $fundAccount = $payout->fundAccount;
+
+        $mode = $payout->getMode();
+
+        $accountType = $fundAccount->getAccountType();
+
+        if (($accountType === FundAccount\Type::VPA) or
+            ($mode === Mode::UPI))
+        {
+            $balance = $payout->balance;
+
+            if (($balance->isTypeBanking() === true) and
+                ($balance->getAccountType() === AccountType::DIRECT) and
+                ($balance->getChannel() === Channel::RBL))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'UPI is not supported for RBL Banking Payouts currently',
+                    Entity::MODE,
+                    [
+                        'balance_id'    => $balance->getId(),
+                        'mode'          => $mode,
+                        'account_type'  => $accountType,
+                        'payout_id'     => $payout->getId(),
+                    ]);
+            }
+        }
+    }
+
+    protected function validateModeAndAmount(array $input, Entity $payout)
+    {
+        $fundAccount = $payout->fundAccount;
+
+        $mode = $payout->getMode();
 
         $amount = $input[Entity::AMOUNT];
 
@@ -179,8 +233,8 @@ class Validator extends Base\Validator
                     'mode'            => $mode,
                     'min_rtgs_amount' => $minRtgsAmount,
                     'max_imps_amount' => $maxImpsAmount,
-                    'fund_account_id' => $payout->fundAccount->getId(),
-                    'account_type'    => $accountType,
+                    'fund_account_id' => $fundAccount->getId(),
+                    'account_type'    => $fundAccount->getAccountType(),
                 ]);
         }
     }
