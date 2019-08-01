@@ -41,7 +41,7 @@ export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
                   value={() => (
                     <ContentToggler onToggleClick={viewRefundHistory}>
                       <span>View History</span>
-                      <RefundStatusTimeline />
+                      <RefundStatusTimeline refund={refund} />
                     </ContentToggler>
                   )}
                 />
@@ -60,27 +60,6 @@ export default ({ refund, isLoading, statusMsg, viewRefundHistory }) => {
                       strikeThroughContent="Instant"
                       updatedContent="Normal"
                       description="Refund mode updated to normal as this refund was not able to be processed instantly."
-                    />
-                  )}
-                />
-
-                <EntityDetailRow
-                  label="Total Fee"
-                  value={() => (
-                    <RefundUpdate
-                      strikeThroughContent={
-                        <Amount
-                          value={refund.amount}
-                          currency={refund.currency}
-                        />
-                      }
-                      updatedContent={
-                        <Amount
-                          value={refund.amount}
-                          currency={refund.currency}
-                        />
-                      }
-                      description="Previously charged fee has been reversed."
                     />
                   )}
                 />
