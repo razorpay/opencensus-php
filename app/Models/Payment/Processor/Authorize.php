@@ -248,7 +248,7 @@ trait Authorize
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             // Uncomment this to test with Sharp or any other terminal locally.
-             //$currentTerminal = Terminal\Entity::findOrFail('1n25f6uN5S1Zak');
+            // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
 
             $payment->associateTerminal($currentTerminal);
 
@@ -2202,7 +2202,7 @@ trait Authorize
             }
 
             // mcc is supported only for card payments
-            if ($payment->isCard() === false and $payment->isWallet() == false)
+            if ($payment->isCard() === false and $payment->getWallet() != 'paypal')
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -2219,10 +2219,10 @@ trait Authorize
             // else api should do currency conersion and use INR terminals
             $convertCurrency = $merchant->convertOnApi();
 
-//            if ($payment->isInternational() === false)
-//            {
-//                $convertCurrency = true;
-//            }
+            if ($payment->isInternational() === false)
+            {
+                $convertCurrency = true;
+            }
 
             $payment->setConvertCurrency($convertCurrency);
 
