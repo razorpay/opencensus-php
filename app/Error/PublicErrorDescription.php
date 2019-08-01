@@ -130,7 +130,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'Payment processing declined. The card issuing bank has prevented the payment from being authorized.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'The card number provided is not a legitimate one.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID                      = 'The payment failed most probably due to an invalid card number';
-    const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
+    const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_AMOUNT_LIMITS_EXCEEDED            = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
+    const BAD_REQUEST_PAYMENT_CARD_DAILY_WITHDRAWAL_FREQUENCY_LIMITS_EXCEEDED   = 'Payment processing failed because card\'s withdrawal frequency limit has exceeded.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT          = 'The bank has declined the payment as this card cannot be used for this type of payment. Please use an alternate credit card for the purpose.';
     const BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE                     = 'The card cvv length should only be 3 digits';
     const BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR                 = 'The American Express card cvv length must be 4 digits';
@@ -319,11 +320,15 @@ class PublicErrorDescription
     const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
     const BAD_REQUEST_REFUND_ALREADY_IN_UNPROCESSED_LIST                        = 'The refund is already present in the unprocessed list in cache';
     const BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET                                  = 'Business website is invalid or not set';
+    const BAD_REQUEST_CARD_PAYMENT_DECLINED_MODE_NOT_SUPPORTED                  = 'Payment declined by issuer. Issuer does not support this mode of transaction.';
+    const BAD_REQUEST_CARDHOLDER_STOPPED_WITHDRAWALS                            = 'Payments Blocked by cardholder on this card.';
+    const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED                   = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                      = 'Payment rejected by customer';
 
+    const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                             = 'Cashback request exceeds issuer limit';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                               = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                               = 'Payment declined';
