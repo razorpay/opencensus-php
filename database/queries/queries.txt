@@ -5171,3 +5171,6 @@ ALTER TABLE gateway_rules
 ALTER TABLE pricing
     ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway,
     ADD INDEX pricing_procurer_index (procurer);
+
+ALTER TABLE partner_configs
+    ADD COLUMN settle_to_partner TINYINT(1) NOT NULL DEFAULT 0 AFTER commission_model;
