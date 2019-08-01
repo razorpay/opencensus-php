@@ -109,6 +109,8 @@ export default class CreateNewAuthLinkContainer extends Component {
     const value = target.value;
     const name = target.name || target.getAttribute('data-name');
 
+    console.log(value);
+
     this.setState({ [name]: value });
   };
 
@@ -376,6 +378,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 </Input.Group>
 
                 <Input
+                  autoRender
                   name="first_amount"
                   type="number"
                   placeholder="0"
@@ -383,9 +386,12 @@ export default class CreateNewAuthLinkContainer extends Component {
                   label="Amount"
                   class="Input--Amount"
                   description="Amount of First Charge"
-                  validator={checkIfAmountForFirstCharge(
-                    this.state.mandateMaxAmount || 100000
-                  )}
+                  validator={value => {
+                    return checkIfAmountForFirstCharge(
+                      Number(this.state.mandateMaxAmount) || 100000,
+                      value
+                    );
+                  }}
                   addonBefore={
                     <AmountTooltip
                       currency={'INR'}
@@ -395,6 +401,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                 />
 
                 <Input
+                  autoRender
                   name="mandateMaxAmount"
                   placeholder="100000"
                   label="Token Max Amount"
@@ -501,7 +508,7 @@ function checkIfAmount(value) {
   return !isAmount(Number(value)) && 'Invalid Amount';
 }
 
-const checkIfAmountForFirstCharge = maxAmount => value => {
+const checkIfAmountForFirstCharge = (maxAmount, value) => {
   const amount = Number(value);
 
   if (amount === 0) {
@@ -509,7 +516,7 @@ const checkIfAmountForFirstCharge = maxAmount => value => {
   }
 
   if (amount > maxAmount) {
-    return 'Invalid Amount';
+    return 'Amount is should be less than or equal Token Max Amount';
   }
 
   return !isAmount(value) && 'Invalid Amount';
