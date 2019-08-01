@@ -646,4 +646,14 @@ class SubReconciliate extends Base\Core
                 'gateway'           => $this->gateway
             ]);
     }
+
+    /**
+     * @return array
+     * 1. Gateway should override this function to return list of black listed columns which should not
+     * be included in the output file.
+     */
+    public function getBlackListedColumnHeadersForOutputFile()
+    {
+        return [];
+    }
 }

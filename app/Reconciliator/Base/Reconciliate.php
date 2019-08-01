@@ -4,15 +4,18 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -92,6 +95,11 @@ class Reconciliate extends Base\Core
     const DEBIT         = 'debit';
     const DOMESTIC      = 'domestic';
     const INTERNATIONAL = 'international';
+
+
+    const S3_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
+        RequestProcessor\Base::NETBANKING_HDFC
+    ];
 
     /*********************
      * Instance objects
@@ -227,7 +235,7 @@ class Reconciliate extends Base\Core
      */
     protected function generateReconOutputFile(Batch\Processor\Reconciliation $batchProcessor, array $extraDetails)
     {
-        $data = $batchProcessor->getReconBatchOutputData();
+        $data = $this->getOutputWithRemovedBlackListedColumns($batchProcessor->getReconBatchOutputData());
 
         $batch = $batchProcessor->batch;
 
@@ -249,9 +257,9 @@ class Reconciliate extends Base\Core
 
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
 
-        $extension = FileStore\Format::XLSX;
+        $extension = FileStore\Format::CSV;
 
-        $filePath = $this->createExcelFile($data, $fileName, self::DIRECTORY_PATH);
+        $filePath = $this->createCsvFile($data, $fileName, null,self::DIRECTORY_PATH);
 
         $file = new UploadedFile($filePath, $fileName);
 
@@ -265,6 +273,17 @@ class Reconciliate extends Base\Core
                 ->entity($batch)
                 ->save();
 
+        if (in_array($this->gateway, self::S3_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
+        {
+            $creator->localFile($file)
+                ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                ->name($fileName)
+                ->extension($extension)
+                ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                ->entity($batch)
+                ->save();
+        }
+
         $fileStoreEntity = $creator->get();
 
         $traceData = [
@@ -276,6 +295,28 @@ class Reconciliate extends Base\Core
         ];
 
         $this->messenger->raiseReconInfo($traceData);
+    }
+
+    protected function getOutputWithRemovedBlackListedColumns($reconOutputData)
+    {
+        $blackListedColumns = $this->subReconciliator->getBlackListedColumnHeadersForOutputFile();
+
+        if (empty($blackListedColumns) === false)
+        {
+            $updatedData = [];
+
+            foreach ($reconOutputData as $row)
+            {
+                $row = array_diff_key($row, array_flip($blackListedColumns));
+
+                $row['updated_at'] = Carbon::now(Timezone::IST)->format('Y-m-d H:i:s');
+
+                array_push($updatedData, $row);
+            }
+
+            return $updatedData;
+        }
+        return $reconOutputData;
     }
 
     /**
