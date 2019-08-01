@@ -317,7 +317,11 @@ class Service extends Base\Service
     {
         $refundArray = $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
 
-        $this->addSpeedChangeTime($refundArray);
+        // Adding `processed_at` and `speed_change_time` params only for feature enabled dashboard merchants
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            $this->addParamsForDashboard($refundArray);
+        }
 
         return $refundArray;
     }
@@ -2074,14 +2078,32 @@ class Service extends Base\Service
         return $responseData;
     }
 
-    protected function addSpeedChangeTime(array &$refundArray)
+    protected function addParamsForDashboard(array &$refundArray)
     {
-        $id = $refundArray[Entity::ID];
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        {
+            $id = $refundArray[Entity::ID];
 
-        Entity::verifyIdAndStripSign($id);
+            Entity::verifyIdAndStripSign($id);
 
-        $refund = $this->repo->refund->find($id);
+            $refund = $this->repo->refund->find($id);
 
+            $this->addProcessedAtTime($refundArray, $refund);
+
+            $this->addSpeedChangeTime($refundArray, $refund);
+        }
+    }
+
+    protected function addProcessedAtTime(array &$refundArray, Entity $refund)
+    {
+        if ($refund->getSpeedProcessed() === RefundSpeed::INSTANT)
+        {
+            $refundArray[Entity::PROCESSED_AT] = $refund->getProcessedAt();
+        }
+    }
+
+    protected function addSpeedChangeTime(array &$refundArray, Entity $refund)
+    {
         if (($refund->getSpeedDecisioned() === RefundSpeed::OPTIMUM) and
             ($refund->getSpeedProcessed() !== RefundSpeed::INSTANT))
         {
