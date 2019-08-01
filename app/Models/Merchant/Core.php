@@ -2133,23 +2133,23 @@ class Core extends Base\Core
     {
         $merchants = $this->repo->merchant->getAllPartnerBankAccountsForSubmerchants($merchantIds);
 
-        $merchantIdToPartnerBankAccountMap = [];
+        $submerchants = [];
 
         // Attributes
-        $partnerConfigSettleToPartner = PartnerConfig\Entity::SETTLE_TO_PARTNER;
-        $partnerConfigOriginId        = PartnerConfig\Entity::ORIGIN_ID;
-        $partnerBankAccountId         = Table::BANK_ACCOUNT . '.' . BankAccount\Entity::ID;
+        $partnerBankAccountId         = 'partner_bank_account_id';
+        $partnerConfigOriginId        = 'partner_config_origin_id';
+        $partnerConfigSettleToPartner = 'partner_config_settle_to_partner';
 
         foreach ($merchants as $merchant)
         {
             $merchantId = $merchant->getId();
 
-            if (array_key_exists($merchantId, $merchantIdToPartnerBankAccountMap) === true)
+            if (array_key_exists($merchantId, $submerchants) === true)
             {
                 if (empty($merchant->getAttribute($partnerConfigOriginId)) === false)
                 {
                     // App config was applied to the map but now we have a submerchant config, so unset the app config
-                    unset($merchantIdToPartnerBankAccountMap[$merchantId]);
+                    unset($submerchants[$merchantId]);
                 }
                 else
                 {
@@ -2158,10 +2158,19 @@ class Core extends Base\Core
                 }
             }
 
-            // Add to the map only if the config has settle to partner set to true
-            if ((bool) ($merchant->getAttribute($partnerConfigSettleToPartner)) === true)
+            $submerchants[$merchantId] = [
+                $partnerBankAccountId         => $merchant->getAttribute($partnerBankAccountId),
+                $partnerConfigSettleToPartner => (bool) $merchant->getAttribute($partnerConfigSettleToPartner),
+            ];
+        }
+
+        $merchantIdToPartnerBankAccountMap = [];
+
+        foreach ($submerchants as $merchantId => $merchantObj)
+        {
+            if ($merchantObj[$partnerConfigSettleToPartner] === true)
             {
-                $merchantIdToPartnerBankAccountMap[$merchantId] = $merchant->getAttribute($partnerBankAccountId);
+                $merchantIdToPartnerBankAccountMap[$merchantId] = $merchantObj[$partnerBankAccountId];
             }
         }
 

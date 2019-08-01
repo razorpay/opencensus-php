@@ -721,12 +721,14 @@ class Repository extends Base\Repository
         $bankAccountsMerchantId = $bankAccountRepo->dbColumn(BankAccount\Entity::MERCHANT_ID);
         $bankAccountsDeletedAt  = $bankAccountRepo->dbColumn(BankAccount\Entity::DELETED_AT);
 
+        $partnerConfigOriginId        = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::ORIGIN_ID);
         $partnerConfigSettleToPartner = $partnerConfigRepo->dbColumn(PartnerConfig\Entity::SETTLE_TO_PARTNER);
 
         $attributes = [
             $this->dbColumn('*'),
-            $partnerConfigSettleToPartner . ' as settle_to_partner',
+            $partnerConfigSettleToPartner . ' as partner_config_settle_to_partner',
             $bankAccountId . ' as partner_bank_account_id',
+            $partnerConfigOriginId . ' as partner_config_origin_id',
         ];
 
         $appConfig = $this->newQuery()
