@@ -47,6 +47,7 @@ class Preferences
     const MID_RBLLENDING            = 'BOX702yaBbEfJo';
     const MID_APOLLO_MUNICH         = 'BYqeLRvN6FfCCY';
     const MID_SWIGGY_DROPPT         = 'CTwAEBRfwEjEme';
+    const MID_SURYODAY_BANK         = 'CxRu8Yxj1LgPnw';
     const MID_RELIANCE_AMC          = 'CR3D37POcSDpR3';
     const MID_KALMADI_HIGH_SCHOOL   = '7icgzKgnv7IMbP';
     const MID_RI_PARAMEDICAL        = '7icw1On5t9IXsB';
