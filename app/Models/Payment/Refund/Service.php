@@ -44,10 +44,13 @@ class Service extends Base\Service
     const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
 
     protected $mutex;
+    protected $core;
 
     public function __construct()
     {
         parent::__construct();
+
+        $this->core = new Refund\Core;
 
         $this->mutex = $this->app['api.mutex'];
     }
@@ -250,6 +253,8 @@ class Service extends Base\Service
         $gateway = $terminal->getGateway();
 
         $file = $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
+
+        $this->core->reconcileNetbankingRefunds($data);
 
         return ['file' => $file, 'count' => $count];
     }
