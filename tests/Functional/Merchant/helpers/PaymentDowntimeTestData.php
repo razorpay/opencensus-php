@@ -425,4 +425,23 @@ return [
             ],
         ],
     ],
+
+    'testGetCheckoutPreferencesWithPaymentDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'payment_downtime' => [
+                    'count' => 1,
+                    'items' => [
+                        [
+                            'method' => 'netbanking',
+                        ],
+                    ],
+                ],
+            ],
+        ]
+    ],
 ];

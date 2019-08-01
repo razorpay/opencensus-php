@@ -258,6 +258,15 @@ class Reconciliate extends Base\Core
         $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
 
         $extension = FileStore\Format::CSV;
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code' => InfoCode::RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE,
+                'batch_id'  => $batchId,
+                'row_count' => count($data),
+                'file_name' => $fileName,
+            ]
+        );
 
         $filePath = $this->createCsvFile($data, $fileName, null,self::DIRECTORY_PATH);
 

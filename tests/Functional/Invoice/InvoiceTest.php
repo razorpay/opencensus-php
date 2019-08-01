@@ -877,6 +877,50 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateDraftInvoiceExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceInvalidExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateIssuedInvoiceExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateIssuedInvoiceInvalidExpireBy()
+    {
+        $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
+
+        Carbon::setTestNow($past);
+
+        $this->createInvoice();
+
+        $this->startTest();
+    }
+
     public function testUpdatePartiallyPaidInvoiceExpireBy()
     {
         $past = Carbon::create(2018, 2, 1, 12, null, null, Timezone::IST);
