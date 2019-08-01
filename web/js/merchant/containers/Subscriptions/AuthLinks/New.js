@@ -137,7 +137,8 @@ export default class CreateNewAuthLinkContainer extends Component {
       receipt: data.receipt,
       expire_by: !Number(data.hasNoExpiry) ? data.expireAt : undefined,
       currency: data.currency,
-      amount: rupeesToPaise(data.amount),
+      amount:
+        data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
       email_notify: data.emailNotify,
       notes: notes || undefined,
@@ -168,6 +169,12 @@ export default class CreateNewAuthLinkContainer extends Component {
             : undefined,
       },
     };
+
+    if (data.mandateMethod === 'emandate') {
+      payload.subscription_registration.first_amount = rupeesToPaise(
+        data.first_amount
+      );
+    }
 
     return this.props
       .createAuthLink(payload)
@@ -203,7 +210,7 @@ export default class CreateNewAuthLinkContainer extends Component {
     const { mandateMethod: method, avlblMethods, loading } = this.state;
     const skipBankDetails = !!Number(this.state.skipBankDetails);
 
-    const showAmount = ['card', 'emandate'].includes(method);
+    const showAmount = ['card'].includes(method);
 
     return (
       <div class="PaymentLinks--Create Wizard">
@@ -367,6 +374,26 @@ export default class CreateNewAuthLinkContainer extends Component {
                     disabled={!!Number(this.state.tokenHasNoExpiry)}
                   />
                 </Input.Group>
+
+                <Input
+                  name="first_amount"
+                  type="number"
+                  placeholder="0"
+                  size="half_big"
+                  label="Amount"
+                  class="Input--Amount"
+                  description="Amount of First Charge"
+                  validator={checkIfAmountForFirstCharge(
+                    this.state.mandateMaxAmount || 100000
+                  )}
+                  addonBefore={
+                    <AmountTooltip
+                      currency={'INR'}
+                      parentQuerySelector=".Modal"
+                    />
+                  }
+                />
+
                 <Input
                   name="mandateMaxAmount"
                   placeholder="100000"
@@ -473,3 +500,17 @@ function PaymentMethodPlaceHolder({ content }) {
 function checkIfAmount(value) {
   return !isAmount(Number(value)) && 'Invalid Amount';
 }
+
+const checkIfAmountForFirstCharge = maxAmount => value => {
+  const amount = Number(value);
+
+  if (amount === 0) {
+    return null;
+  }
+
+  if (amount > maxAmount) {
+    return 'Invalid Amount';
+  }
+
+  return !isAmount(value) && 'Invalid Amount';
+};
