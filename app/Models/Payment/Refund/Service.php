@@ -2082,15 +2082,28 @@ class Service extends Base\Service
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
         {
-            $id = $refundArray[Entity::ID];
+            try
+            {
+                $id = $refundArray[Entity::ID];
 
-            Entity::verifyIdAndStripSign($id);
+                Entity::verifyIdAndStripSign($id);
 
-            $refund = $this->repo->refund->find($id);
+                $refund = $this->repo->refund->find($id);
 
-            $this->addProcessedAtTime($refundArray, $refund);
+                $this->addProcessedAtTime($refundArray, $refund);
 
-            $this->addSpeedChangeTime($refundArray, $refund);
+                $this->addSpeedChangeTime($refundArray, $refund);
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::REFUND_ADD_DASHBOARD_PARAMS_FAILED,
+                    [
+                        'refund_id' => $id,
+                    ]);
+            }
         }
     }
 
@@ -2111,30 +2124,17 @@ class Service extends Base\Service
                 self::SPEED_CHANGE_TIME => 1,
             ];
 
-            try
+            $scroogeResponse = $this->app['scrooge']->getPublicRefund($refundArray[Entity::ID], $queryParams);
+
+            $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
+
+            if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
             {
-                $scroogeResponse = $this->app['scrooge']->getPublicRefund($refundArray[Entity::ID], $queryParams);
-
-                $scroogeResponseCode = $scroogeResponse[RefundEntity::RESPONSE_CODE];
-
-                if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
+                if ((isset($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time) === true) and
+                    ($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time !== null))
                 {
-                    if ((isset($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time) === true) and
-                        ($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time !== null))
-                    {
-                        $refundArray[self::SPEED_CHANGE_TIME] = $scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time;
-                    }
+                    $refundArray[self::SPEED_CHANGE_TIME] = $scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time;
                 }
-            }
-            catch(\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::WARNING,
-                    TraceCode::SCROOGE_GET_REFUND_SPEED_CHANGE_TIME_FAILED,
-                    [
-                        'refund_id' => $refund[Entity::ID],
-                    ]);
             }
         }
     }
