@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Config;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Partner;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 
@@ -81,17 +82,16 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Blocks pure platform merchants (applications with type != partner) to set/update this attribute since pure
-     * platform partners should never have access to the merchant settlements
+     * Blocks non settlement partner types to set/update this attribute
      *
-     * @param Application\Entity   $application
+     * @param Merchant\Entity      $partner
      * @param array                $input
      * @param Merchant\Entity|null $subMerchant
      *
      * @throws Exception\BadRequestException
      */
     public function validateSettleToPartner(
-        Application\Entity $application,
+        Merchant\Entity $partner,
         array $input,
         Merchant\Entity $subMerchant = null)
     {
@@ -100,10 +100,12 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($application->getType() !== Merchant\Constants::PARTNER)
+        $partnerType = $partner->getPartnerType();
+
+        if (in_array($partnerType, Partner\Constants::$settlementPartnerTypes, true) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PURE_PLATFORM_INVALID_CONFIGURATION,
+                ErrorCode::BAD_REQUEST_PARTNER_CONFIGURATION_INVALID,
                 Entity::SETTLE_TO_PARTNER,
                 $input);
         }

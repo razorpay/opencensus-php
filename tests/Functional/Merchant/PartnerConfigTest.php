@@ -297,6 +297,13 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
         $this->fixtures->create(
             'partner_config',
             [

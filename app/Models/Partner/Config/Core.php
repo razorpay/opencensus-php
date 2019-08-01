@@ -22,7 +22,9 @@ class Core extends Base\Core
      */
     public function create(Application\Entity $application, array $input, Merchant\Entity $subMerchant = null) : Entity
     {
-        $this->validateCreate($application, $input, $subMerchant);
+        $partner = (new Merchant\Core)->getPartnerFromApp($application);
+
+        $this->validateCreate($partner, $application, $input, $subMerchant);
 
         $config = new Entity;
 
@@ -44,6 +46,7 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Merchant\Entity      $partner
      * @param Application\Entity   $application
      * @param array                $input
      * @param Merchant\Entity|null $subMerchant
@@ -51,6 +54,7 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      */
     protected function validateCreate(
+        Merchant\Entity $partner,
         Application\Entity $application,
         array $input,
         Merchant\Entity $subMerchant = null)
@@ -75,7 +79,7 @@ class Core extends Base\Core
 
         $this->validatePricingPlans($input);
 
-        (new Validator)->validateSettleToPartner($application, $input, $subMerchant);
+        (new Validator)->validateSettleToPartner($partner, $input, $subMerchant);
     }
 
     /**
@@ -136,7 +140,9 @@ class Core extends Base\Core
 
         $config->edit($input, 'edit');
 
-        (new Validator)->validateSettleToPartner($application, $input, $submerchant);
+        $partner = (new Merchant\Core)->getPartnerFromApp($application);
+
+        (new Validator)->validateSettleToPartner($partner, $input, $submerchant);
 
         $this->repo->saveOrFail($config);
 
