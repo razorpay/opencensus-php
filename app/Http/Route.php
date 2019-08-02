@@ -3367,6 +3367,15 @@ final class Route
         return [$schema, $host, $port];
     }
 
+    public function getHost()
+    {
+        $request = \Request::getFacadeRoot();
+
+        $host = $request->getHost();
+
+        return $host;
+    }
+
     // @codingStandardsIgnoreStart
     public function getDoNotLogURLs()
     {
