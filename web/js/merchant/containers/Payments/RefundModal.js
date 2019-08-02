@@ -128,6 +128,51 @@ export default class RefundModal extends Component {
     this.props.onUnmount && this.props.onUnmount(this.props.payment);
   }
 
+  refund(speedValue, props, partial) {
+    let payment = this.props.payment;
+    let data = {
+      amount: rupeesToPaise(props.amount),
+      comment: props.comment,
+      reverse_all: props.reverse_all ? '1' : '0',
+      speed: speedValue,
+    };
+
+    if (!partial) {
+      data.amount = payment.amount - payment.amount_refunded;
+    }
+
+    return this.props
+      .refundPayment(payment, data)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Payment refunded',
+          closeTimeout: 5000,
+        });
+
+        if (typeof this.props.onRefund === 'function') {
+          this.props.onRefund();
+        }
+
+        this.props.afterRefund &&
+          this.props.afterRefund({
+            amount: data.amount,
+            partial: partial,
+            payment: this.props.payment,
+          });
+
+        this.props.closeModal();
+      })
+      .catch(({ errors }) => {
+        errors &&
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+            closeTimeout: 5000,
+          });
+      });
+  }
+
   save = props => {
     const partial = isPartialPayment(this.props),
       hasAmountErrors = amountValidation(this.props);
@@ -190,6 +235,8 @@ export default class RefundModal extends Component {
               eventLabel: `payment_id=${this.props.payment.id}`,
               speed_requested: 'optimum',
             });
+
+            this.refund('optimum', props, partial);
           },
         })
         .catch(() => {
@@ -218,47 +265,7 @@ export default class RefundModal extends Component {
               speed_requested: 'normal',
             });
 
-            let payment = this.props.payment;
-            let data = {
-              amount: rupeesToPaise(props.amount),
-              comment: props.comment,
-              reverse_all: props.reverse_all ? '1' : '0',
-            };
-
-            if (!partial) {
-              data.amount = payment.amount - payment.amount_refunded;
-            }
-
-            return this.props
-              .refundPayment(payment, data)
-              .then(() => {
-                this.props.showNotification({
-                  type: 'success',
-                  message: 'Payment refunded',
-                  closeTimeout: 5000,
-                });
-
-                if (typeof this.props.onRefund === 'function') {
-                  this.props.onRefund();
-                }
-
-                this.props.afterRefund &&
-                  this.props.afterRefund({
-                    amount: data.amount,
-                    partial: partial,
-                    payment: this.props.payment,
-                  });
-
-                this.props.closeModal();
-              })
-              .catch(({ errors }) => {
-                errors &&
-                  this.props.showNotification({
-                    type: 'error',
-                    message: errors,
-                    closeTimeout: 5000,
-                  });
-              });
+            this.refund('normal', props, partial);
           },
         })
         .catch(() => {

@@ -41,6 +41,7 @@ export default class Payment extends GenericEntity {
       notes: {
         comment: params.comment,
       },
+      speed: params.speed,
     };
 
     return this.makeGenericAjaxCall({ method, data, url });
