@@ -54,10 +54,10 @@ class Status
      */
     protected static $fromToStatusMap = [
         self::CREATED => [
-            self::REVERSED,
+            self::FAILED,
         ],
         self::INITIATED => [
-            self::REVERSED,
+            self::FAILED,
         ],
     ];
 
