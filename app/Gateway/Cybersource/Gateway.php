@@ -82,7 +82,7 @@ class Gateway extends Base\Gateway
     ];
 
     protected $actionVersion = [
-        Action::VERIFY              => 'v2',
+        Action::VERIFY              => 'v1',
         Action::VERIFY_REFUND       => 'v2',
         Base\Action::VERIFY_REFUND  => 'v2',
     ];
