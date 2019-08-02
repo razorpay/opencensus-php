@@ -678,7 +678,7 @@ class Core extends Base\Core
 
     protected function handlePayoutFailed(Entity $payout, string $ftaFailureReason = null)
     {
-        if (empty($payout->transaction) === false)
+        if ($payout->hasTransaction() === true)
         {
             throw new Exception\LogicException(
                 'A Payout with transaction can not be moved to failed state, it should be reversed',
@@ -694,7 +694,7 @@ class Core extends Base\Core
         //
         // Payout can go to failed state from initiated or created state only
         //
-        Status::validatePreviousToCurrentMapping($currentStatus, Status::REVERSED);
+        Status::validatePreviousToCurrentMapping($currentStatus, Status::FAILED);
 
         $payout->setStatus(Status::FAILED);
 

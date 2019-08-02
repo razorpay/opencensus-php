@@ -263,7 +263,6 @@ class Core extends Base\Core
 
         $reversal = $this->repo->transaction(function() use ($reversal)
         {
-
             $skipTxn = $this->shouldSkipReversalTransaction($reversal);
 
             if ($skipTxn === false)
