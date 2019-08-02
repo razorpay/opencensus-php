@@ -977,11 +977,13 @@ app
               $scope.login.currentStep = 2;
             } else if (
               typeof data.errors[1] === 'object' &&
-              data.errors[1].internal_error_code ===
+              ((data.errors[1].internal_error || {}).data || {})
+                .internal_error_code ===
                 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED'
             ) {
+              $scope.goToLoginStep(4);
             } else {
-              angular.forEach(data.errors, function(value, key) {
+              angular.forEach(data.errors, function(value) {
                 if (typeof value === 'string') {
                   $scope.alerts.addAlert('danger', value);
                 }
