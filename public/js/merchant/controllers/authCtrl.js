@@ -1316,6 +1316,10 @@ app
             $scope.alerts.addAlert('danger', error.description, true);
             break;
           }
+
+          case 'BAD_REQUEST_LOCKED_USER_LOGIN': {
+            $scope.goToLoginStep(5);
+          }
         }
       };
 
