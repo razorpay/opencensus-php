@@ -48,9 +48,13 @@ angular
             .get('/user', { ignoreErrors: true })
             .success(function(data) {
               if (data.success) {
-                dataLayer.push({
-                  merchant_id: data.data.merchants[0].id,
-                });
+                try {
+                  dataLayer.push({
+                    merchant_id: data.data.merchants[0].id,
+                  });
+                } catch (e) {
+                  // no need of any action on error
+                }
                 _identity = data.data;
                 if (data.data.steps_finished) {
                   _identity.activation_progress = data.data.activation_progress;
