@@ -760,6 +760,12 @@ return [
         'netbanking_yesb' => [
             'gateway_secure_secret' => env('NETBANKING_YESB_GATEWAY_SECURE_SECRET')
         ],
+        'netbanking_cub' => [
+            'gateway_secure_secret'      => env('NETBANKING_CUB_GATEWAY_SECURE_SECRET'),
+            'gateway_secure_secret2'     => env('NETBANKING_CUB_GATEWAY_SECURE_SECRET2'),
+            'gateway_terminal_password'  => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD'),
+            'gateway_terminal_password2' => env('NETBANKING_CUB_GATEWAY_TERMINAL_PASSWORD2'),
+        ],
         'razorpayx' => [
             'direct' => [
                 'rbl' => [
