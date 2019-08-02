@@ -39,10 +39,6 @@ class PaypalGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
-        $authPayment = $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
         $this->assertTestResponse($payment, 'testPayment');
         $this->assertEquals('1ShrdPhnepeTrm', $payment['terminal_id']);
 

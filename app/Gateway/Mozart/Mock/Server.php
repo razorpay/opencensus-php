@@ -162,24 +162,6 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
-    protected function wallet_paypal($input)
-    {
-        $url = $this->route->getUrlWithPublicAuth(
-            'gateway_payment_callback_paypal',
-            [
-                'paymentId' => $input['paymentId'],
-                'amount'    => $input['amount'] / 100,
-            ]);
-
-        $request = [
-            'url'     => $url,
-            'content' => ['click to pay' => 'Pay Now'],
-            'method'  => 'post',
-        ];
-
-        return $this->makePostResponse($request);
-    }
-
     protected function netbanking_sib($input)
     {
         // this encrypted value is never used as the pay_verify response from mozart is mocked
