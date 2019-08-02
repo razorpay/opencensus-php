@@ -179,6 +179,7 @@ class PublicErrorDescription
     const BAD_REQUEST_AIRTEL_MONEY_RESET_MPIN                                   = 'Payment failed as airtel money mPIN has not been changed. Please call 121 to reset your mPIN.';
     const BAD_REQUEST_CONTACT_AIRTEL_MONEY_CUSTOMER_CARE_FOR_REFUND             = 'Refund failed. Please contact airtel money customer care.';
     const BAD_REQUEST_PAYMENT_TOPUP_INVALID_WALLET_TOKEN                        = 'Payment failed';
+    const BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN                      = 'Payment failed';
     const BAD_REQUEST_PAYMENT_UPI_INVALID_VPA                                   = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_UNMAPPED_VPA                                              = 'This VPA is not mapped to any bank account.';
     const BAD_REQUEST_INVALID_P2P                                               = 'P2p fields are invalid.';

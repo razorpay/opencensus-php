@@ -264,8 +264,6 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-
-        $this->action = Action::DEBIT_WALLET;
     }
 
     public function topup($input)
@@ -440,6 +438,20 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
+    }
+
+    public function autoDebit(array $input)
+    {
+        $this->input = $input;
+        // Create a gateway payment entity similar to otpGenerate
+        $contentToSave = [
+            RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
+            RequestFields::EMAIL         => $input['payment']['email'],
+            RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
+            RequestFields::AMOUNT        => $input['payment']['amount'],
+        ];
+        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
+        return $this->debit($input);
     }
 
     /**
@@ -972,15 +984,10 @@ class Gateway extends Base\Gateway
 
     protected function getValidWalletToken($input)
     {
-        $token = (New Token\Repository)->getByWalletTerminalAndCustomerId(
+        return (New Token\Core)->getValidWalletToken(
             $input['payment']['wallet'],
             $input['terminal']['id'],
             $input['customer']['id']);
-
-        if (($token !== null) and ($token->getExpiredAt() > time()))
-        {
-            return $token;
-        }
     }
 
     protected function getTopupWalletRedirectRequestArray($input)
