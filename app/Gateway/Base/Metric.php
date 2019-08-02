@@ -76,6 +76,8 @@ class Metric
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
     }
 
     public function getDimensions($action, $input, $gateway = 'none')
@@ -93,7 +95,7 @@ class Metric
 
         $authType = $this->getAuthType($input);
 
-        $instrumentType = $this->getInstrumentType($input, $method);
+        $instrumentType = $this->getInstrumentType($input, $method, $gateway);
 
         $tpv = $this->getTpv($method, $input);
 
@@ -134,10 +136,9 @@ class Metric
         return $dimensions;
     }
 
-    protected function getInstrumentType($input, $method)
+    protected function getInstrumentType($input, $method, $gateway)
     {
         $instrumentType = 'none';
-
         switch ($method)
         {
             case Payment\Method::NETBANKING:
@@ -153,16 +154,10 @@ class Metric
                 break;
 
             case Payment\Method::UPI:
-                if (isset($input[Payment\Method::UPI]['flow']))
-                {
-                    $instrumentType = $input[Payment\Method::UPI]['flow'];
-                    $instrumentType = $instrumentType === Upi\Base\Type::INTENT ? $instrumentType :
-                        Upi\Base\Type::COLLECT;
-                }
-                else
-                {
-                    $instrumentType = Upi\Base\Type::COLLECT;
-                }
+                $gatewayEntity = $this->repo->$gateway->
+                                findByPaymentIdAndAction($input[Entity::PAYMENT][Payment\Entity::ID], Action::AUTHORIZE);
+
+                $instrumentType = $gatewayEntity['type'] ?? 'collect';
                 break;
         }
 

@@ -75,6 +75,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID                 = 'entity_id';
     const STATUSES                  = 'statuses';
     const INTERNATIONAL             = 'international';
+    const SUBSCRIPTIONS             = 'subscriptions';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)

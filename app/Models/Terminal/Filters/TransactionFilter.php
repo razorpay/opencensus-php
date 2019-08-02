@@ -40,6 +40,7 @@ class TransactionFilter extends Terminal\Filter
         'auth_type',
         'bharat_qr',
         'direct_settlement',
+        'fee_bearer',
         'bank_account_type',
         'hitachi_shared_terminal',
         'capability',
@@ -356,7 +357,26 @@ class TransactionFilter extends Terminal\Filter
                 if ((Gateway::isUpiIntentFlowSupported($gateway) === true) and
                     ($terminal->isPay() === true))
                 {
-                    return true;
+                    $upiProvider = $payment->getMetadata(Payment\Entity::UPI_PROVIDER);
+
+                    // if $upiprovider is set, it's omnichannel flow. We need to select only those terminal for which
+                    // corresponsing omnichannel terminal exist otherwise it's normal intent flow and we return true.
+                    if (empty($upiProvider))
+                    {
+                        return true;
+                    }
+
+                    $upiProviderGateway = Payment\UpiProvider::$upiProvidersToGatewayMap[$upiProvider];
+
+                    $vpa = $terminal->getVpaForTerminal();
+
+                    $terminal = $this->repo->terminal->findByGatewayAndTerminalData($upiProviderGateway, ['vpa' => $vpa]);
+
+                    if (($terminal !== null) and
+                        ($terminal->isEnabled() === true))
+                    {
+                        return true;
+                    }
                 }
 
                 return false;
@@ -759,6 +779,16 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return false;
+    }
+
+    public function feeBearerFilter($terminal, $applicableTerminals)
+    {
+        if ($this->input['merchant']->isFeeBearerCustomer() === true)
+        {
+            return ($terminal->isDirectSettlement() === false);
+        }
+
+        return true;
     }
 
     public function hitachiSharedTerminalFilter($terminal, $applicableTerminals)

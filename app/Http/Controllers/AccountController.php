@@ -13,6 +13,15 @@ class AccountController extends Controller
 
     protected $service = Merchant\Account\Service::class;
 
+    public function createLinkedAccount()
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->createLinkedAccount($input);
+
+        return ApiResponse::json($entity);
+    }
+
     /**
      * Return all settlement destinations.
      * Currently, bank accounts are the only settlement destinations, later,
@@ -48,6 +57,44 @@ class AccountController extends Controller
         $input = Request::all();
 
         $response = $this->service()->listLinkedAccounts($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createAccount()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createAccount($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $accountId
+     * @param string $action
+     *
+     * @return mixed
+     */
+    public function performAction(string $accountId, string $action)
+    {
+        $response = $this->service()->performAction($accountId, $action);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchAccount(string $accountId)
+    {
+        $response = $this->service()->fetchAccount($accountId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listAccounts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->listAccounts($input);
 
         return ApiResponse::json($response);
     }

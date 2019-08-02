@@ -796,6 +796,14 @@ class Core extends Base\Core
             return;
         }
 
+        // After FTA creation the fund account source internally dispatches Fund transfer to FTS
+        $isFts = $payout->fundTransferAttempts->first()->getIsFts();
+
+        if ($isFts === true)
+        {
+            return;
+        }
+
         $ftaId = $payout->fundTransferAttempts->first()->getId();
 
         $info = [

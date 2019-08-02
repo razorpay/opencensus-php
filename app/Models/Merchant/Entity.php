@@ -942,6 +942,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
+    public function setBrandColor($brandColor)
+    {
+        $this->setAttribute(self::BRAND_COLOR, $brandColor);
+    }
+
     protected function setBrandColorAttribute($brandColor)
     {
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;
@@ -960,6 +965,11 @@ class Entity extends Base\PublicEntity
     public function setLogoUrl($logoUrl)
     {
         $this->setAttribute(self::LOGO_URL, $logoUrl);
+    }
+
+    public function setIconUrl($iconUrl)
+    {
+        $this->setAttribute(self::ICON_URL, $iconUrl);
     }
 
     public function setCategory2($category)
@@ -1241,6 +1251,21 @@ class Entity extends Base\PublicEntity
     public function getLogoUrl()
     {
         return $this->getAttribute(self::LOGO_URL);
+    }
+
+    public function getIconUrl()
+    {
+        return $this->getAttribute(self::ICON_URL);
+    }
+
+    public function getDisplayName()
+    {
+        return $this->getAttribute(self::DISPLAY_NAME);
+    }
+
+    public function setDisplayName($displayName)
+    {
+        $this->setAttribute(self::DISPLAY_NAME, $displayName);
     }
 
     public function getFeeBearer()
@@ -1854,6 +1879,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $config;
+    }
+
+    public function getAccountStatus()
+    {
+        return ($this->isSuspended() === true) ? AccountStatus::SUSPENDED : $this->merchantDetail->getActivationStatus();
     }
 
     public function getPaymentFlows(IIN\Entity $iin = null)

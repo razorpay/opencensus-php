@@ -70,15 +70,15 @@ class Service
     {
         $request = $this->getBeamRequest($pushData, $intervalInfo, $mailInfo);
 
-        $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
-
         // For some cases, we need to parse the response from beam and proceed
         if ($synchronous === true)
         {
+            $beam = new BeamJob($request, $intervalInfo, $mailInfo, $this->config['mock']);
+
             return dispatch_now($beam);
         }
 
-        dispatch($beam);
+        BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
 
         return [];
     }

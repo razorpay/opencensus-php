@@ -905,23 +905,21 @@ class Gateway extends Base\Gateway
             return $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
         }
 
+        if ($gateway == PaymentEntity\Gateway::FIRST_DATA)
+        {
+            // For Authenticating First Data requests we need to create merid by appending id provided from
+            // first data with the store id that is placed in gateway_merchant_id field in terminal
+            $envMerchantId = $this->config[$gateway]['live_merchant_id'];
+            $storeId = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+            return $envMerchantId . substr($storeId, -8);
+        }
+
         switch ($network)
         {
             case Card\Network::MC:
             case Card\Network::MAES:
-                if ($gateway == PaymentEntity\Gateway::FIRST_DATA)
-                {
-                    // For Authenticating First Data requests we need to create merid by appending id provided from
-                    // first data with the store id that is placed in gateway_merchant_id field in terminal
-                    $envMerchantId = $this->config[$gateway]['live_merchant_id'];
-                    $storeId = $input['terminal'][Terminal\Entity::GATEWAY_MERCHANT_ID];
-
-                    $merchantId = $envMerchantId . substr($storeId, -8);
-                }
-                else
-                {
-                    $merchantId = $this->config['live_mastercard_merchant_id'];
-                }
+                $merchantId = $this->config['live_mastercard_merchant_id'];
 
                 break;
 

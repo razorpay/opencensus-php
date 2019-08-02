@@ -92,6 +92,7 @@ class Inferno
         $this->mode = $data['mode'];
 
         $this->event = $data['event'];
+
         $this->setEventContainedIds();
 
         // TODO: Remove backward compatible code in few days having guaranteed

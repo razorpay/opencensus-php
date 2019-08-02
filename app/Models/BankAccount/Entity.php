@@ -278,13 +278,16 @@ class Entity extends Base\PublicEntity
 
         $accountNumber = $this->getAccountNumber();
 
-        if ($basicAuth->isPublicAuth() === true)
+        if (($basicAuth->isPublicAuth() === true) and
+            ($this->getType() !== Type::VIRTUAL_ACCOUNT))
         {
             //
             // Since we should not be exposing account_number in public auth ever.
+            // (Except virtual account numbers, of course)
+            //
             // Note that we should not use toArrayPublic internally to fetch
             // account_number via bank_account details. We should either directly
-            // fetch the account_number via `getAccountNumber()` or use `toArray`.
+            // fetch the account_number via `getAccountNumber()`, or use `toArray`.
             //
             $attributes[self::ACCOUNT_NUMBER] = mask_except_last4($accountNumber);
         }

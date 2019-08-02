@@ -35,5 +35,27 @@ return [
                 ],
             ]
         ]
-    ]
+    ],
+
+    'testGenerateNetbankingHdfcRefundFile' => [
+        'request' => [
+            'content' => [
+                'bank' => 'HDFC',
+                'method' => 'netbanking',
+                'mode' => 'test',
+                'from' => Carbon::today(Timezone::IST)->getTimestamp(),
+                'to'  => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/refunds/excel',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                    'netbanking_hdfc' => [
+                        'file' => storage_path('files/filestore/HDFC_Netbanking_Refunds_test_'.Carbon::today(Timezone::IST)->format('d-m-Y').'.xlsx'),
+                        'count' => 1
+                    ]
+            ]
+        ]
+    ],
 ];
