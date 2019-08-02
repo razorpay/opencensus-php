@@ -84,7 +84,7 @@ export default class Payment extends GenericEntity {
     const method = 'get';
     const url = `/refunds/fee/`;
     const data = {
-      payment_id: id.substring(4, id.length),
+      payment_id: id,
       amount: amount,
     };
 
