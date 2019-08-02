@@ -318,6 +318,31 @@ class SubMerchantBatchTest extends TestCase
         Mail::assertNotQueued(CreateSubMerchantAffiliate::class);
     }
 
+    public function testProcessSubMerchantBatchInstantActivation()
+    {
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch3@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchant);
+
+        $this->assertTrue($merchant->isActivated());
+
+        $this->assertNotNull($merchant->getActivatedAt());
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('instantly_activated', $merchantDetail->getActivationStatus());
+    }
+
     protected function getDefaultFileEntries(): array
     {
         return $this->testData['defaultEntries'];

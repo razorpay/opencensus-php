@@ -242,6 +242,32 @@ return [
         ],
     ],
 
+    'testProcessSubMerchantBatchInstantActivation' => [
+        'request' => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'               => 'sub_merchant',
+                'instantly_activate' => 1,
+                'partner_id'         => '10000000000000',
+                'use_email_as_dummy' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
     'defaultEntries' => [
         [
             Header::MERCHANT_NAME            => 'SubMerchantone',
@@ -328,8 +354,11 @@ return [
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
-            Header::BUSINESS_CATEGORY        => 'financial_services',
-            Header::BUSINESS_SUB_CATEGORY    => 'lending',
+
+            // whitelisted activation flow
+            Header::BUSINESS_CATEGORY        => 'education',
+            Header::BUSINESS_SUB_CATEGORY    => 'college',
+
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',
             Header::REGISTERED_STATE         => 'karnataka',
