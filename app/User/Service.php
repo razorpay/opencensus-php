@@ -133,10 +133,10 @@ class Service extends Base\Service
     {
         if (empty($error) === false)
         {
-            if ((array_key_exists('data', $error) === true) and
-                (empty($error['data']) === false))
+            if ((array_key_exists('internal_error_code', $error) === true) and
+                (empty($error['internal_error_code']) === false))
             {
-                return [['Email or password is invalid.', ['internal_error' => $error]], null];
+                return [[$error], null];
             }
 
             return [['Email or password is invalid.'], null];
