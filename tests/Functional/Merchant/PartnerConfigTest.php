@@ -364,6 +364,18 @@ class PartnerConfigTest extends OAuthTestCase
                 'entity_id'   => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
             ]);
 
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
+                'entity_id'       => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            ]
+        );
+
         $this->assertNotNull($partnerBankAccount);
 
         $merchantCore = (new Merchant\Core);
@@ -444,7 +456,6 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID);
-        $this->fixtures->merchant->createAccount(Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2);
 
         $this->fixtures->merchant->edit(
             Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
@@ -465,16 +476,6 @@ class PartnerConfigTest extends OAuthTestCase
             'merchant_access_map',
             [
                 'merchant_id'     => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
-                'entity_id'       => Constants::DEFAULT_NON_PLATFORM_APP_ID,
-                'entity_type'     => 'application',
-                'entity_owner_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
-            ]
-        );
-
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'merchant_id'     => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2,
                 'entity_id'       => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'entity_type'     => 'application',
                 'entity_owner_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
