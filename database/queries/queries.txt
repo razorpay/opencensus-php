@@ -5179,3 +5179,6 @@ ALTER TABLE pricing
 
 ALTER TABLE partner_configs
     ADD COLUMN settle_to_partner TINYINT(1) NOT NULL DEFAULT 0 AFTER commission_model;
+
+ALTER TABLE iins
+    MODIFY COLUMN iin CHAR(6) COLLATE utf8_bin;
