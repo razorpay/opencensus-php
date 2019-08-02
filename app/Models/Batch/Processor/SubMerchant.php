@@ -63,6 +63,13 @@ class SubMerchant extends Base
     protected $autoActivate = false;
 
     /**
+     * Used to check if the sub-merchants need to be instantly activated.
+     *
+     * @var bool
+     */
+    protected $instantlyActivate = false;
+
+    /**
      * Used to check if sub-merchant email needs to be treated as dummy
      * when provided in which case the submerchant email is same as the
      * partner email and the dummy is stored in the merchant_emails table
@@ -101,6 +108,8 @@ class SubMerchant extends Base
 
         $this->autoActivate = (empty($this->params[ME::AUTO_ACTIVATE]) === false);
 
+        $this->instantlyActivate = (empty($this->params[ME::INSTANTLY_ACTIVATE]) === false);
+
         //
         // This is true by default and needs to be overridden only when an input
         // is set to False explicitly, it should not be overridden by null. Hence
@@ -134,6 +143,13 @@ class SubMerchant extends Base
             Account::verifyIdAndStripSign($subMerchantArray[ME::ID]));
 
         $status = Status::SUCCESS;
+
+        if ($this->instantlyActivate === true)
+        {
+            $instantActivationInput = Helper::getInstantActivationInput($entry);
+
+            $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
+        }
 
         if ($this->autofillDetails === true)
         {
