@@ -971,23 +971,25 @@ app
             });
           } else {
             hideSpinner();
-            if (data.errors[0].includes('email not confirmed')) {
-              // go to email not verified screen
-              $scope.email_not_verified = true;
-              $scope.login.currentStep = 2;
+            const firstError = data.errors[0];
+            if (typeof firstError === 'string') {
+              // errors to be displayed directly
+              if (firstError.includes('email not confirmed')) {
+                // go to email not verified screen
+                $scope.email_not_verified = true;
+                $scope.login.currentStep = 2;
+              } else {
+                angular.forEach(data.errors, function(value) {
+                  if (typeof value === 'string') {
+                    $scope.alerts.addAlert('danger', value);
+                  }
+                });
+              }
             } else if (
-              typeof data.errors[1] === 'object' &&
-              ((data.errors[1].internal_error || {}).data || {})
-                .internal_error_code ===
-                'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED'
+              typeof firstError === 'object' &&
+              !!firstError.internal_error_code
             ) {
-              $scope.goToLoginStep(4);
-            } else {
-              angular.forEach(data.errors, function(value) {
-                if (typeof value === 'string') {
-                  $scope.alerts.addAlert('danger', value);
-                }
-              });
+              $scope.handleErrorsWithInternalCode(firstError);
             }
           }
         });
@@ -1300,6 +1302,21 @@ app
 
           $scope.coupon.status = status;
         });
+      };
+
+      $scope.handleErrorsWithInternalCode = function(error) {
+        switch (error.internal_error_code) {
+          case 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED': {
+            $scope.goToLoginStep(4);
+            break;
+          }
+
+          case 'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP': {
+            $scope.login.data.otp = '';
+            $scope.alerts.addAlert('danger', error.description, true);
+            break;
+          }
+        }
       };
 
       function shouldRenderCouponCode() {
