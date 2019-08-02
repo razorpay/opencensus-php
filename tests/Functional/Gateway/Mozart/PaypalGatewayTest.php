@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Gateway\Mozart\Paypal;
 
 use RZP\Gateway\Mozart;
-use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;

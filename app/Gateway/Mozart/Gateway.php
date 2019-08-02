@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Mozart;
 
-use Illuminate\Auth\Access\AuthorizationException;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;

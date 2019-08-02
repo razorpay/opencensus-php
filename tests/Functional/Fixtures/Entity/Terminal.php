@@ -2876,12 +2876,10 @@ class Terminal extends Base
             'id'                        => '1ShrdPaypalTrm',
             'merchant_id'               => $sharedMerchantAccount,
             'gateway'                   => 'wallet_paypal',
-            'card'                      => 0,
-            'netbanking'                => 0,
             'shared'                    => 0,
             'gateway_merchant_id'       => 'RazorpayPaypal',
-            'gateway_secure_secret'     => 'secure_secret',
-            'gateway_access_code'       => 'access_code',
+            'gateway_terminal_password' => 'terminal_password',
+            'gateway_terminal_password2'=> 'terminal_password2',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

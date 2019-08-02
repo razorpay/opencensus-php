@@ -460,8 +460,8 @@ class Validator extends Base\Validator
     protected static $walletPaypalTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_paypal',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
     ];
 
     protected static $walletPhonepeEditTerminalRules = [

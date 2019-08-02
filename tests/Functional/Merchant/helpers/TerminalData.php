@@ -1908,7 +1908,7 @@ return [
             'content' => [
                 'gateway'                   => 'wallet_paypal',
                 'gateway_merchant_id'       => 'merchant_id',
-                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_terminal_password2'=> 'terminal_password2',
                 'gateway_terminal_password' => 'terminal_password',
             ],
             'method' => 'POST'
