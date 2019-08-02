@@ -975,9 +975,16 @@ app
               // go to email not verified screen
               $scope.email_not_verified = true;
               $scope.login.currentStep = 2;
+            } else if (
+              typeof data.errors[1] === 'object' &&
+              data.errors[1].internal_error_code ===
+                'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED'
+            ) {
             } else {
               angular.forEach(data.errors, function(value, key) {
-                $scope.alerts.addAlert('danger', value);
+                if (typeof value === 'string') {
+                  $scope.alerts.addAlert('danger', value);
+                }
               });
             }
           }
