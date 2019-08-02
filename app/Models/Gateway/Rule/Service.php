@@ -11,6 +11,10 @@ class Service extends Base\Service
 {
     public function create(array $input)
     {
+        $ruleOrgId = $this->getRuleOrgId();
+
+        $input[Entity::ORG_ID] = $ruleOrgId;
+
         $rule = (new Core)->create($input);
 
         return $rule->toArrayAdmin();
@@ -46,5 +50,16 @@ class Service extends Base\Service
         $rule = (new Core)->update($id, $input);
 
         return $rule->toArrayAdmin();
+    }
+
+    private function getRuleOrgId()
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $crossOrgId = $this->auth->getCrossOrgId();
+
+        $ruleOrgId = $crossOrgId ?: $orgId;
+
+        return $ruleOrgId;
     }
 }
