@@ -229,6 +229,12 @@ class Validator extends Base\Validator
         Constants::SKIP                  => 'integer',
     ];
 
+    protected static $partnerSubmerchantMapRules = [
+        'partner_type'              => 'required|string',
+        'submerchant_id'            => 'required|string',
+        'partner_merchant_id'       => 'required|string',
+    ];
+
     protected static $merchantPartnerStatusRules = [
         'email' => 'required|email',
     ];
