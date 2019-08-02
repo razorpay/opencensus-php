@@ -22,8 +22,8 @@ class Status
         self::FAILED     => [ self::FAILED, self::PENDING, self::REGISTERED ],
         self::PENDING    => [ self::PENDING, self::FAILED, self::REGISTERED ],
         self::CREATED    => [ self::CREATED, self::PENDING, self::REGISTERED, self::FAILED ],
-        self::REGISTERED => [ self::REGISTERED, self::FAILED, self::VERIFIED ],
-        self::VERIFIED   => [ self::VERIFIED, self::FAILED]
+        self::REGISTERED => [ self::REGISTERED, self::VERIFIED ],
+        self::VERIFIED   => [ self::VERIFIED]
     ];
 
     /**

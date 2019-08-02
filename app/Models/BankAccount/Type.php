@@ -37,14 +37,6 @@ class Type
         ];
     }
 
-    public static function getBeneficiaryVerificationTypes()
-    {
-        return [
-            self::MERCHANT,
-            self::CONTACT,
-        ];
-    }
-
     public static function isValidBeneficiaryRegistrationType(string $type = null): bool
     {
         return (in_array($type, self::getBeneficiaryRegistrationTypes(), true) === true);

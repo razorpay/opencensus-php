@@ -71,7 +71,7 @@ class BeneficiaryVerification extends Job
 
             // Check to avoid unnecessary tries.
             // checks for the type and returns false for the bank account which are not `merchant` or `contact`
-            if (in_array($bankAccount->getType(), Type::getBeneficiaryVerificationTypes(), true) === false)
+            if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
             {
                 return;
             }
@@ -81,7 +81,8 @@ class BeneficiaryVerification extends Job
             $this->traceData(
                 TraceCode::BENEFICIARY_VERIFY_ATTEMPT_STATUS,
                 [
-                    'status'=> $status
+                    'status'          => $status,
+                    'bank_account_id' => $bankAccount->getId()
                 ]);
         }
         catch (LogicException $e)

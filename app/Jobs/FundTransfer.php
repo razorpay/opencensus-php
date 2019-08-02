@@ -122,7 +122,7 @@ class FundTransfer extends Job
             return false;
         }
 
-        $traceCode = TraceCode::FTA_BENEFICIARY_NOT_REGISTERED;
+        $traceCode = TraceCode::FTA_BENEFICIARY_NOT_REGISTERED_OR_VERIFIED;
 
         if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
         {

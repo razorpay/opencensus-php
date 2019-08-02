@@ -332,8 +332,7 @@ class Beneficiary extends Base\Core
         {
             $this->removeBeneficiaryRegistrationCacheKey($bankAccount->getId());
         }
-
-        if ($status === false)
+        else
         {
             throw new LogicException(
                 'Beneficiary registration failed',
@@ -377,8 +376,7 @@ class Beneficiary extends Base\Core
         {
             $this->removeBeneficiaryVerificationCacheKey($bankAccount->getId());
         }
-
-        if ($status === false)
+        else
         {
             throw new LogicException(
                 'Beneficiary verification failed',

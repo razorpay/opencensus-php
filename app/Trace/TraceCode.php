@@ -235,7 +235,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_INITIATE_TIMES                                    = 'FTA_INITIATE_TIMES';
     const FTA_NOT_FOUND                                         = 'FTA_NOT_FOUND';
     const FTA_CHANNEL_NOT_SUPPORTED                             = 'FTA_CHANNEL_NOT_SUPPORTED';
-    const FTA_BENEFICIARY_NOT_REGISTERED                        = 'FTA_BENEFICIARY_NOT_REGISTERED';
+    const FTA_BENEFICIARY_NOT_REGISTERED_OR_VERIFIED            = 'FTA_BENEFICIARY_NOT_REGISTERED_OR_VERIFIED';
     const FTA_TRANSFER_JOB_DELAYED                              = 'FTA_TRANSFER_JOB_DELAYED';
     const UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT                     = 'UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT';
     const UNKNOWN_FTA_STATUS_SENT_TO_REFUND                     = 'UNKNOWN_FTA_STATUS_SENT_TO_REFUND';

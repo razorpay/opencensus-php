@@ -90,7 +90,8 @@ class BeneficiaryRegistration extends Job
             $this->traceData(
                 TraceCode::BENEFICIARY_REGISTRATION_ATTEMPT_STATUS,
                 [
-                    'status'=> $status
+                    'status'          => $status,
+                    'bank_account_id' => $bankAccount->getId()
                 ]);
         }
         catch (LogicException $e)
