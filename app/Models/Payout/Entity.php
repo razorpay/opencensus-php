@@ -889,14 +889,16 @@ class Entity extends Base\PublicEntity
         /** @var RepositoryManager $repo */
         $repo = app('repo');
 
-        $userRoleIds = $basicAuth->getUser()->roles()->allRelatedIds()->toArray();
+        $user = $basicAuth->getUser();
+
+        $userRoleIds = $user->roles()->allRelatedIds()->toArray();
 
         $permissionId = $repo->permission
                              ->retrieveIdsByNamesAndOrg(Permission\Name::CREATE_PAYOUT, Org\Entity::RAZORPAY_ORG_ID)
                              ->first();
 
         $pendingActions = $repo->workflow_action
-                               ->getPendingActionsOnRoleIds($this, $permissionId, $userRoleIds);
+                               ->getPendingActionsOnRoleIds($user->getId(), $this, $permissionId, $userRoleIds);
 
         $attributes[self::PENDING_ON_USER] = ($pendingActions->count() > 0);
     }

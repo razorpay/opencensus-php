@@ -123,4 +123,14 @@ class InfoCode
     const RECON_UNEXPECTED_PAYMENT_CREATION_FAILED      = 'RECON_UNEXPECTED_PAYMENT_CREATION_FAILED';
 
     const RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE           = 'RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE';
+
+    const CARD_TYPE_UNKNOWN                             = 'CARD_TYPE_UNKNOWN';
+
+    const CARD_TYPE_MISMATCH                            = 'CARD_TYPE_MISMATCH';
+
+    const IIN_TRIVIA_ABSENT                             = 'IIN_TRIVIA_ABSENT';
+
+    const IIN_ISSUER_ABSENT                             = 'IIN_ISSUER_ABSENT';
+
+    const CARD_LOCALE_MISMATCH                          = 'CARD_LOCALE_MISMATCH';
 }

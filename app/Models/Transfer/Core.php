@@ -93,7 +93,7 @@ class Core extends Base\Core
 
         $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
-        (new Metric)->pushCreateSuccessMetrics($input[0]);
+        (new Metric)->pushCreateSuccessMetrics(current($input));
 
         return $transfers;
     }

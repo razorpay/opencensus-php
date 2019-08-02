@@ -291,7 +291,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::CAPABILITY                 => 'sometimes|boolean',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
     protected static $isgEditTerminalRules = [

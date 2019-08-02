@@ -142,8 +142,6 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($invoiceId);
     }
 
-
-
     protected function validateInvoicesCountParams(array $params)
     {
         $invoiceCountRules = $this->invoiceCountRules;
@@ -565,5 +563,22 @@ class Repository extends Base\Repository
         $operator = ($international === '1') ? '!=' : '=';
 
         $query->where($currencyAttribute, $operator, Currency::INR);
+    }
+
+    /**
+     * Filtering all the subscriptions invoices.
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function addQueryParamSubscriptions($query, $params)
+    {
+        $subscriptionsAttribute = $this->dbColumn(Entity::SUBSCRIPTION_ID);
+
+        $subscriptions = $params[Entity::SUBSCRIPTIONS];
+
+        $operator = ($subscriptions === '1') ? '!=' : '=';
+
+        $query->where($subscriptionsAttribute, $operator, null);
     }
 }

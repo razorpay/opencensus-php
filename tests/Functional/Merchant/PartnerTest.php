@@ -447,6 +447,19 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testPartnerSubmerchantMap()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->ba->batchAuth();
+
+        $this->startTest();
+    }
+
     public function testAddPartnerAccessMap()
     {
         $partner = $this->allowAdminToAccessPartnerMerchant();
