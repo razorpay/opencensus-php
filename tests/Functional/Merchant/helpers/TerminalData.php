@@ -896,6 +896,28 @@ return [
         ],
     ],
 
+    'testCreateTerminalWithMerchantProcurer' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_kotak',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'procurer'                  => 'merchant',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'procurer'             => 'merchant',
+            ]
+        ]
+    ],
+
     'testCreateCardlessEmiTerminal'  => [
         'request' => [
             'content' => [

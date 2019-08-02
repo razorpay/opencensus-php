@@ -297,6 +297,9 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
+            'type'                  => [
+                'non_recurring' => '1'
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1533,6 +1536,9 @@ class Terminal extends Base
             'visa_mpan'                 => '1234560000000001',
             'rupay_mpan'                => '1234560000000002',
             'vpa'                       => 'random@razorpay',
+            'type'                      => [
+                'non_recurring' => '1',
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

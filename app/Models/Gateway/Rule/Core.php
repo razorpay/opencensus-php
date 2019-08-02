@@ -206,6 +206,7 @@ class Core extends Base\Core
             Entity::MERCHANT_ID   => $merchant->getId(),
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
+            Entity::CATEGORY      => $merchant->getCategory(),
             Entity::CATEGORY2     => $merchant->getCategory2(),
             Entity::CURRENCY      => $currency,
             // Here min_amount and max_amount are both set to payment_amount

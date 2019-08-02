@@ -21,6 +21,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         Entity::GATEWAY                     => 'required',
+        Entity::PROCURER                    => 'sometimes|in:razorpay,merchant',
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
@@ -96,6 +97,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
+        Payment\Gateway::CARDLESS_EMI,
     ];
 
     protected static $createValidators = [
@@ -870,6 +872,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];
 
+    protected static $cardlessEmiEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:cardless_emi',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+    ];
+
     protected static $paylaterTerminalRules = [
         Entity::GATEWAY                     => 'required|in:paylater',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
@@ -946,6 +956,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION,
         Entity::INTERNATIONAL,
         Entity::VPA,
+        Entity::PROCURER,
     ];
 
     public function validateType()

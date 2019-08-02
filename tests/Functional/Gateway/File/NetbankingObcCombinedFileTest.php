@@ -98,6 +98,10 @@ class NetbankingObcCombinedFileTest extends TestCase
 
             $this->checkRefundsFile($mail->viewData['refundsFile']);
 
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
             return true;
         });
     }

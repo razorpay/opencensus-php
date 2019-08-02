@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const MERCHANT_ID      = 'merchant_id';
+    const PROCURER         = 'procurer';
     const GATEWAY          = 'gateway';
     const TYPE             = 'type';
     const GROUP            = 'group';
@@ -85,6 +86,7 @@ class Entity extends Base\PublicEntity
      */
     const COMPARISON_ATTRIBUTES = [
         self::METHOD,
+        self::PROCURER,
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
@@ -111,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::GROUP,
         self::FILTER_TYPE,
         self::GATEWAY,
+        self::PROCURER,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
@@ -147,6 +150,7 @@ class Entity extends Base\PublicEntity
     const DEFAULT_SEARCH_ATTRIBUTES = [
         self::ID,
         self::MERCHANT_ID,
+        self::PROCURER,
         self::TYPE,
         self::GROUP,
         self::METHOD,
@@ -238,6 +242,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
+        self::PROCURER,
         self::GATEWAY,
         self::TYPE,
         self::GROUP,
@@ -271,6 +276,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
+        self::PROCURER,
         self::GATEWAY,
         self::TYPE,
         self::GROUP,
