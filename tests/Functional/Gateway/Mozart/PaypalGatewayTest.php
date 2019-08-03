@@ -1,12 +1,9 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Mozart\Paypal;
+namespace RZP\Tests\Functional\Gateway\Mozart;
 
-use RZP\Gateway\Mozart;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PaypalGatewayTest extends TestCase
@@ -14,21 +11,15 @@ class PaypalGatewayTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    const WALLET = 'paypal';
-
-    protected $payment;
-
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/PaypalGatewayTestData.php';
+        $this->testDataFilePath = __DIR__.'/PaypalGatewayTestData.php';
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal');
-
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
         $this->gateway = 'mozart';
+
+        $this->payment = $this->getDefaultWalletPaymentArray('paypal');
 
         $this->setMockGatewayTrue();
 
@@ -37,125 +28,107 @@ class PaypalGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+        $this->getDefaultWalletPaymentArray('paypal');
 
-        $this->assertTestResponse($payment, 'testPayment');
-        $this->assertEquals('1ShrdPhnepeTrm', $payment['terminal_id']);
+        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
 
-        $mozartEntity = $this->getLastEntity('mozart', true);
+        $this->assertTestResponse($paymentEntity);
 
-        $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
+        $mozartEntity = $this->getDbLastEntityToArray('mozart', 'test');
+
+        $this->assertArraySelectiveEquals($this->testData['testPaymentMozartEntity'], $mozartEntity);
     }
 
-    public function testRequestTampering()
+    public function testPaymentIdMismatch()
     {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $this->mockServerContentFunction(function (& $content, $action)
+        $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'authorize')
+            if ($action === 'pay_verify')
             {
-                $content['amount'] = 100;
+                $content['data']['paymentId'] = 'svre5fdr54f'; //some random payment_id
+            }
+        });
+        $this->attributes['convert_currency'] = 0;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+
+        $paymentEntity = $this->getDbLastEntityToArray('payment', 'test');
+
+        $this->assertEquals('failed', $paymentEntity['status']);
+    }
+
+    public function testAuthFailed()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'pay_verify')
+            {
+                $content['success'] = false;
             }
         });
 
-        $data = $this->testData[__FUNCTION__];
+        $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
+        $this->runRequestResponseFlow($testData, function ()
         {
-            $this->doAuthPayment($payment);
+            $this->doNetbankingCubAuthAndCapturePayment();
         });
     }
 
-    public function testCallbackEmptyResponseBody()
+    public function testAuthFailedVerifySuccess()
     {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testAuthFailed();
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
+    }
+
+    public function testAuthSuccessVerifyFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testPayment();
+
+        $payment = $this->getLastEntity('payment');
+
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if ($action === 'authorize')
+            if ($action === 'verify')
             {
-                $content = [];
+                $content['success'] = false;
             }
         });
 
-        $data = $this->testData[__FUNCTION__];
-
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($payment);
+            $this->verifyPayment($payment['id']);
         });
-
-        $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertNull($wallet);
     }
 
-
-    public function testVerifyPayment()
+    public function testPaymentVerify()
     {
-        $payment = $this->getDefaultWalletPaymentArray('paypal');
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $authPayment = $this->doAuthPayment($payment);
+        $verify = $this->verifyPayment($payment['id']);
 
-        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
-
-        $this->assertSame($this->payment['payment']['verified'], 1);
+        assert($verify['payment']['verified'] === 1);
     }
 
-    public function testVerifyFailedPayment()
+    protected function doNetbankingCubAuthAndCapturePayment()
     {
-        $this->ba->publicAuth();
+        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
-        $data = $this->testData[__FUNCTION__];
-
-        $payment = $this->fixtures->create('payment:failed', [
-            PaymentEntity::EMAIL        => 'a@b.com',
-            PaymentEntity::AMOUNT       => 50000,
-            PaymentEntity::CONTACT      => '+919918899029',
-            PaymentEntity::METHOD       => 'wallet',
-            PaymentEntity::CURRENCY     => 'USD',
-            PaymentEntity::WALLET       => 'paypal',
-            PaymentEntity::GATEWAY      => 'wallet_paypal',
-            PaymentEntity::CARD_ID      => null,
-            PaymentEntity::TERMINAL_ID  => '1n25f6uN5S1Zak',
-        ]);
-
-        $id = $payment->getPublicId();
-
-        $gatewayPayment = $this->fixtures->create('mozart', [
-            Mozart\Entity::GATEWAY      => 'wallet_paypal',
-            Mozart\Entity::ACTION       => 'authorize',
-            Mozart\Entity::AMOUNT       => 50000,
-            Mozart\Entity::PAYMENT_ID   => substr($id,4),
-            Mozart\Entity::RAW          => '{}',
-        ]);
-
-        $this->runRequestResponseFlow($data, function() use ($id)
-        {
-            $this->verifyPayment($id);
-        });
-
-        $mozart = $this->getLastEntity('mozart', true);
-
-        $this->assertTestResponse($mozart, 'testPaymentMozartEntity');
-    }
-
-    protected function runPaymentCallbackFlowWalletPaypal($response, &$callback = null)
-    {
-        $mock = $this->isGatewayMocked();
-
-        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
-
-        $this->response = $response;
-
-        if ($mock)
-        {
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
-
-            return $this->submitPaymentCallbackData($request['url'],$request['method'],$request['content']);
-        }
-
-        return null;
+        $this->doAuthAndCapturePayment($payment);
     }
 }

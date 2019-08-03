@@ -1,23 +1,22 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\PaymentVerificationException;
 
 return [
-    'testPayment'               => [
+    'testPayment' => [
         'merchant_id'       => '10000000000000',
         'amount'            => 50000,
         'method'            => 'wallet',
-        'status'            => 'authorized',
+        'status'            => 'captured',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
         'currency'          => 'USD',
         'description'       => 'random description',
-        'bank'              => null,
-        'wallet'            => 'payapl',
+        'card_id'           => null,
         'error_code'        => null,
         'error_description' => null,
         'email'             => 'a@b.com',
@@ -26,66 +25,94 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'wallet_paypal',
-        'terminal_id'       => '1n25f6uN5S1Zak',
         'signed'            => false,
         'verified'          => null,
-        'entity'            => 'payment',
-        'otp_attempts'      => null
     ],
 
-    'testRequestTampering' => [
+    'testPaymentMozartEntity' => [
+        'action'            => 'authorize',
+        'gateway'           => 'wallet_paypal',
+        'amount'            => 50000,
+    ],
+
+
+    'testTamperedAmount' => [
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::SERVER_ERROR,
-                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                'error'         => [
+                    'code'              => PublicErrorCode::SERVER_ERROR,
+                    'description'       => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\LogicException',
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+            'class'                     => 'RZP\Exception\LogicException',
+            'internal_error_code'       => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
         ],
     ],
 
-    'testCallbackEmptyResponseBody' => [
+    'testPaymentIdMismatch' => [
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                'error'         => [
+                    'code'              => PublicErrorCode::SERVER_ERROR,
+                    'description'       => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                     => 'RZP\Exception\LogicException',
+            'internal_error_code'       => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+    ],
+
+    'testAuthFailed' => [
+        'response'  => [
+            'content'     => [
+                'error'         => [
+                    'code'              => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'       => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'                     => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
 
-    'testPaymentMozartEntity' => [
-        'action'                => 'authorize',
-        'amount'                => 50000,
-        'refund_id'             => null,
-        'gateway'               => 'wallet_paypal',
-        'entity'                => 'mozart',
-    ],
-
-    'testVerifyFailedPayment'   => [
+    'testAuthSuccessVerifyFailed' => [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\PaymentVerificationException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
-    ]
+    ],
+
+    'testAuthFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
 ];
