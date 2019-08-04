@@ -11,6 +11,7 @@ use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Admin\NotifyActivationSubmission as AdminSubmitMail;
@@ -322,9 +323,7 @@ class SubMerchantBatchTest extends TestCase
     {
         $this->setUpForProcessing(__FUNCTION__);
 
-        $this->fixtures->create('pricing:standard_plan');
-
-        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
 
         $this->startTest();
 
