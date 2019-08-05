@@ -1233,7 +1233,6 @@ final class Route
     ];
 
     public static $public = [
-        'virtual_account_create',
         'checkout',
         'payment_create',
         'payment_create_checkout',
@@ -1457,7 +1456,7 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
-        //'virtual_account_create',
+        'virtual_account_create',
         'virtual_account_edit',
         'virtual_account_close',
         'virtual_account_fetch',
@@ -2743,7 +2742,7 @@ final class Route
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
         'merchant_schedule_reset'                  => Permission::SCHEDULE_ASSIGN_BULK,
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
-        'virtual_account_create'                   => '*',
+        'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',
         'payment_page_items_migrate'               => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
