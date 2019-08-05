@@ -144,18 +144,18 @@ class SubMerchant extends Base
 
         $status = Status::SUCCESS;
 
-        if ($this->instantlyActivate === true)
-        {
-            $instantActivationInput = Helper::getInstantActivationInput($entry);
-
-            $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
-        }
-
         if ($this->autofillDetails === true)
         {
             // Fill in merchant details (activation form)
             $detailInput = Helper::getSubMerchantDetailInput($entry, $this->partner, $this->useMerchantEmailAsDummy);
             $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
+        }
+
+        if ($this->instantlyActivate === true)
+        {
+            $instantActivationInput = Helper::getInstantActivationInput($entry);
+
+            $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
         }
 
         if ($this->autoSubmit === true)
