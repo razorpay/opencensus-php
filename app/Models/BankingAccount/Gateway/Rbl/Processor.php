@@ -51,6 +51,11 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
+        // RBL sends Phone Number and Account Number fields in the below format
+        // Phone no. and Account No. This dot is replaced by Laravel to =>
+        // following array notation as a result of which the validations
+        // start failing. So we are modifying the input to convert above
+        // field to Account No and Phone no
         $content = $this->modifyWebhookInput($input);
 
         (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $content);

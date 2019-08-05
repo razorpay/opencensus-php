@@ -11,8 +11,6 @@ use RZP\Models\BankingAccount\Entity;
  */
 class Fields
 {
-    const ACCOUNT_NUMBER                    = 'Account No.';
-    const ACCOUNT_NO                        = 'Account No';
     const CUSTOMER_NAME                     = 'Customer Name';
     const CUSTOMER_ID                       = 'Customer ID';
     const ACTIVATION_DATE                   = 'Account Open Date';
@@ -29,8 +27,18 @@ class Fields
     const HEADER                            = 'Header';
     const TRAN_ID                           = 'TranID';
     const STATUS                            = 'Status';
+
+    // The RBL webhook fields contains Account No and Phone no in below format
     const PHONE_NUM                         = 'Phone no.';
+    const ACCOUNT_NUMBER                    = 'Account No.';
+
+    // We will convert these fields into below format. Since Laravel validator
+    // converts fields with dot into array notation and the validations failed
+    // for above formats.
+    // Slack - https://razorpay.slack.com/archives/C3L5D6DC2/p1564559938317300
+    const ACCOUNT_NO                        = 'Account No';
     const PHONE_NO                          = 'Phone no';
+
     const EMAIL_ID                          = 'Email Id';
     const RZP_ALERT_NOTIFICATION_REQUEST    = 'RZPAlertNotiReq';
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
