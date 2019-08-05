@@ -32,7 +32,7 @@ class RequestResponseFields
     const HEADER                            = 'Header';
     const BODY                              = 'Body';
     const STATUS                            = 'Status';
-    const ACC_STMT_DATE_RANGE_RESPONSE      = 'Acc_Stmt_DtRng_Res';
+    const PAYMENT_GENERIC_RESPONSE          = 'PayGenRes';
     const TRANSACTION_DETAILS               = 'transactionDetails';
     const HAS_MORE_DATA                     = 'hasMoreData';
     const TRANSACTION_ID_RESPONSE           = 'txnId';

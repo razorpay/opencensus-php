@@ -543,7 +543,7 @@ class Core extends Base\Core
      *
      * @param Entity $merchantDetails
      */
-    protected function markSubmittedAndLock(Entity $merchantDetails)
+    public function markSubmittedAndLock(Entity $merchantDetails)
     {
         $submittedAt = Carbon::now()->getTimestamp();
 

@@ -112,7 +112,12 @@ class Service extends Base\Service
 
         if ($isProduction === false)
         {
-            return true;
+            if ($this->mode === Mode::TEST)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         if ($this->mode === Mode::TEST)

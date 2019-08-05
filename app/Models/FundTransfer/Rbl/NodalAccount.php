@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
@@ -18,6 +19,8 @@ use RZP\Models\FundTransfer\Rbl\Reconciliation\StatusProcessor;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
+    const IFSC_IDENTIFIER = IFSC::RATN;
+
     protected $config;
 
     protected $transferStatus = [];

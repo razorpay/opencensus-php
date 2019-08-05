@@ -24,6 +24,13 @@ class Entity extends Base\PublicEntity
         self::URL,
     ];
 
+    protected $public = [
+        self::EMAIL,
+        self::PHONE,
+        self::POLICY,
+        self::URL,
+    ];
+
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -38,5 +45,10 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 }

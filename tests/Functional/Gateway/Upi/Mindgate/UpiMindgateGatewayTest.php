@@ -102,6 +102,7 @@ class UpiMindgateGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertNotNull($upiEntity['npci_reference_id']);
         $this->assertNotNull($payment['acquirer_data']['rrn']);
+        $this->assertNotNull($payment['acquirer_data']['upi_transaction_id']);
 
         $this->assertEquals($payment['reference16'], $upiEntity['npci_reference_id']);
         $this->assertNotNull($upiEntity['gateway_payment_id']);
@@ -180,13 +181,13 @@ class UpiMindgateGatewayTest extends TestCase
             [
                 Metric::DIMENSION_ACTION            => 'authorize',
                 Metric::DIMENSION_STATUS            => 'success',
-                Metric::DIMENSION_INSTRUMENT_TYPE   => 'intent',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'pay',
             ],
             [
                 Metric::DIMENSION_ACTION            => 'callback',
                 Metric::DIMENSION_STATUS            => 'success',
                 //TODO: This should be intent, fix this.
-                Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'pay',
             ],
         ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }

@@ -39,6 +39,7 @@ class Event
     const SETTLEMENT_PROCESSED              = 'settlement.processed';
     const VIRTUAL_ACCOUNT_CREDITED          = 'virtual_account.credited';
     const VIRTUAL_ACCOUNT_CREATED           = 'virtual_account.created';
+    const VIRTUAL_ACCOUNT_CLOSED            = 'virtual_account.closed';
     const PAYMENT_DISPUTE_WON               = 'payment.dispute.won';
     const PAYMENT_DISPUTE_LOST              = 'payment.dispute.lost';
     const PAYMENT_DISPUTE_CLOSED            = 'payment.dispute.closed';
@@ -46,6 +47,7 @@ class Event
     const PAYOUT_CREATED                    = 'payout.created';
     const PAYOUT_PROCESSED                  = 'payout.processed';
     const PAYOUT_REVERSED                   = 'payout.reversed';
+    const PAYOUT_FAILED                     = 'payout.failed';
     const FUND_ACCOUNT_VALIDATION_COMPLETED = 'fund_account.validation.completed';
     const PAYMENT_DOWNTIME_STARTED          = 'payment.downtime.started';
     const PAYMENT_DOWNTIME_RESOLVED         = 'payment.downtime.resolved';
@@ -80,6 +82,7 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::VIRTUAL_ACCOUNT_CLOSED,
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
@@ -87,6 +90,7 @@ class Event
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
+        self::PAYOUT_FAILED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
         self::PAYMENT_DOWNTIME_STARTED,
         self::PAYMENT_DOWNTIME_RESOLVED,
@@ -127,6 +131,7 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::VIRTUAL_ACCOUNT_CLOSED,
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
@@ -134,6 +139,7 @@ class Event
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
+        self::PAYOUT_FAILED,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
         self::PAYMENT_DOWNTIME_STARTED,
         self::PAYMENT_DOWNTIME_RESOLVED,
@@ -185,6 +191,8 @@ class Event
         self::REFUND_SPEED_CHANGED              => 38,
         self::REFUND_PROCESSED                  => 39,
         self::REFUND_FAILED                     => 40,
+        self::VIRTUAL_ACCOUNT_CLOSED            => 41,
+        self::PAYOUT_FAILED                     => 42,
     ];
 
     /**
@@ -213,6 +221,7 @@ class Event
         self::SETTLEMENT_PROCESSED              => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREDITED          => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREATED           => [Product::PRIMARY],
+        self::VIRTUAL_ACCOUNT_CLOSED            => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_WON               => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_LOST              => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
@@ -221,6 +230,7 @@ class Event
         self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_FAILED                     => [Product::BANKING],
         self::PAYMENT_DOWNTIME_STARTED          => [Product::PRIMARY],
         self::PAYMENT_DOWNTIME_RESOLVED         => [Product::PRIMARY],
         self::PAYOUT_QUEUED                     => [Product::BANKING],
@@ -243,6 +253,7 @@ class Event
         self::PAYMENT_DISPUTE_CREATED           => Entity::PAYMENT,
         self::VIRTUAL_ACCOUNT_CREDITED          => Entity::PAYMENT,
         self::VIRTUAL_ACCOUNT_CREATED           => Entity::VIRTUAL_ACCOUNT,
+        self::VIRTUAL_ACCOUNT_CLOSED            => Entity::VIRTUAL_ACCOUNT,
         self::INVOICE_PAID                      => Entity::INVOICE,
         self::INVOICE_PARTIALLY_PAID            => Entity::INVOICE,
         self::INVOICE_EXPIRED                   => Entity::INVOICE,
@@ -264,6 +275,7 @@ class Event
         self::PAYOUT_CREATED                    => Entity::PAYOUT,
         self::PAYOUT_PROCESSED                  => Entity::PAYOUT,
         self::PAYOUT_REVERSED                   => Entity::PAYOUT,
+        self::PAYOUT_FAILED                     => Entity::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => FundAccount\Validation\Entity::PUBLIC_ENTITY_NAME,
         self::PAYMENT_DOWNTIME_STARTED          => Entity::PAYMENT_DOWNTIME,
         self::PAYMENT_DOWNTIME_RESOLVED         => Entity::PAYMENT_DOWNTIME,
@@ -286,10 +298,12 @@ class Event
         self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED          => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED           => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::VIRTUAL_ACCOUNT_CLOSED            => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::SETTLEMENT_PROCESSED              => Feature\Constants::MARKETPLACE,
         self::PAYOUT_CREATED                    => Feature\Constants::PAYOUT,
         self::PAYOUT_PROCESSED                  => Feature\Constants::PAYOUT,
         self::PAYOUT_REVERSED                   => Feature\Constants::PAYOUT,
+        self::PAYOUT_FAILED                     => Feature\Constants::PAYOUT,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
         self::PAYOUT_QUEUED                     => Feature\Constants::PAYOUT,
         self::PAYOUT_INITIATED                  => Feature\Constants::PAYOUT,

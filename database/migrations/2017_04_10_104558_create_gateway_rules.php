@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use RZP\Constants\Table;
 use RZP\Models\Gateway\Rule\Entity as Rule;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateGatewayRules extends Migration
 {
@@ -23,7 +24,14 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::ID, Rule::ID_LENGTH)
                   ->primary();
 
-            $table->string(Rule::MERCHANT_ID, Merchant::ID_LENGTH);
+            $table->string(Rule::MERCHANT_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Rule::ORG_ID, Org::ID_LENGTH)
+                  ->default(Org::RAZORPAY_ORG_ID);
+
+            $table->string(Rule::PROCURER)
+                  ->nullable();
 
             $table->string(Rule::GATEWAY, 50)
                   ->nullable();
@@ -91,6 +99,9 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::EMI_SUBVENTION, 20)
                   ->nullable();
 
+            $table->string(Rule::CATEGORY)
+                  ->nullable();
+
             $table->string(Rule::CATEGORY2)
                   ->nullable();
 
@@ -125,6 +136,7 @@ class CreateGatewayRules extends Migration
             $table->index(Rule::INTERNATIONAL);
             $table->index(Rule::SHARED_TERMINAL);
             $table->index(Rule::NETWORK_CATEGORY);
+            $table->index(Rule::CATEGORY);
             $table->index(Rule::CATEGORY2);
             $table->index(Rule::NETWORK);
             $table->index(Rule::METHOD);

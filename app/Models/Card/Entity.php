@@ -769,6 +769,15 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isHeadLessOtp()
+    {
+        if ($this->iinRelation !== null)
+        {
+            return $this->iinRelation->isHeadLessOtp();
+        }
+        return false;
+    }
+
     protected function getTokenRelevantAttributes()
     {
         $attributes = [

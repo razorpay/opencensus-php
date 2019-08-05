@@ -179,7 +179,7 @@ class EMIPaymentTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 2);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     private function zipFileName($filePath)

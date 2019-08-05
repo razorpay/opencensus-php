@@ -6,6 +6,7 @@ use Requests;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Base
@@ -102,7 +103,7 @@ class Base
         {
             throw new Exception\RecordAlreadyExists(
                 'record already exists',
-                TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
+                ErrorCode::BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
                 'response' => $response->body,
             ]);
         }

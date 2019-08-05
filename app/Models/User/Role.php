@@ -21,6 +21,9 @@ class Role
     const RBL_SUPERVISOR        = 'rbl_supervisor';
     const RBL_AGENT             = 'rbl_agent';
 
+    // SELLERAPP and extra functionality (Reports) - not publicly available.
+    const SELLERAPP_PLUS        = 'sellerapp_plus';
+
     // Payment Link Agent - not publicly available
     const AGENT                 = 'agent';
 
@@ -33,6 +36,7 @@ class Role
         self::SELLERAPP,
         self::OWNER,
         self::AGENT,
+        self::SELLERAPP_PLUS,
     ];
 
     const WRITER_ROLES = [
@@ -54,6 +58,7 @@ class Role
     const PL_ROLES = [
         self::SELLERAPP,
         self::AGENT,
+        self::SELLERAPP_PLUS,
     ];
 
     const LINKED_ACCOUNT_ROLES = [

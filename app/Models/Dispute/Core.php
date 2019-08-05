@@ -352,7 +352,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payment);
 
-        if ($dispute->isLost() === true)
+        $skipDeduct = (isset($input[Entity::SKIP_DEDUCTION]))? boolval($input[Entity::SKIP_DEDUCTION]) : false;
+
+        if (($skipDeduct === false) and ($dispute->isLost() === true))
         {
             $this->handleLostDisputeAdjustments($dispute, $input);
         }

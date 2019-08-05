@@ -38,6 +38,8 @@ class Service extends Base\Service
 
         $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
 
+        $this->app->hubspot->trackSignupEvent($input);
+
         /*
          * If we have an invitation token, the user may have created an account
          * in the meantime. $user will be equal to the user with the same email

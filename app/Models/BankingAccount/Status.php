@@ -14,6 +14,11 @@ class Status
     const ACTIVATED         = 'activated';
     const UNSERVICEABLE     = 'unserviceable';
 
+    protected static $initialStatuses = [
+        Status::CREATED,
+        Status::UNSERVICEABLE,
+    ];
+
     protected static $statuses = [
         self::CREATED,
         self::INITIATED,
@@ -21,6 +26,44 @@ class Status
         self::CANCELLED,
         self::PROCESSED,
         self::UNSERVICEABLE,
+    ];
+
+    /**
+     * @var array
+     * This contains a status map that keeps mapping of a status
+     * to next possible statuses. This is to ensure the status
+     * change on Banking Account Entity happens in an order.
+     */
+    protected static $fromToStatusMap = [
+        self::CREATED => [
+            self::INITIATED,
+            self::UNSERVICEABLE,
+            self::CANCELLED
+        ],
+        self::INITIATED => [
+            self::PROCESSING,
+            self::PROCESSED,
+            self::UNSERVICEABLE,
+            self::CANCELLED
+        ],
+        self::PROCESSING => [
+            self::PROCESSED,
+            self::UNSERVICEABLE,
+            self::CANCELLED
+        ],
+        self::PROCESSED => [
+            self::ACTIVATED
+        ],
+        self::UNSERVICEABLE => [],
+        self::CANCELLED => [],
+    ];
+
+    public static $internallyEditStatuses = [
+      self::INITIATED,
+      self::PROCESSED,
+      self::CANCELLED,
+      self::PROCESSING,
+      self::UNSERVICEABLE,
     ];
 
     public static function isValidStatus(string $status = null)
@@ -43,8 +86,40 @@ class Status
         }
     }
 
+    public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus)
+    {
+        $nextStatusList = self::$fromToStatusMap[$previousStatus];
+
+        if (in_array($currentStatus, $nextStatusList, true) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Status change not permitted',
+                Entity::STATUS,
+                [
+                    'current_status'  => $currentStatus,
+                    'previous_status' => $previousStatus,
+
+                ]);
+        }
+    }
+
     public static function getAll(): array
     {
         return self::$statuses;
+    }
+
+    public static function validateInInitialStatuses(string $status)
+    {
+        $statusList = self::$initialStatuses;
+
+        if (in_array($status, $statusList, true) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'bank status' . $status. 'cannot be saved',
+                Entity::BANK_INTERNAL_STATUS,
+                [
+                    Entity::STATUS               => $status
+                ]);
+        }
     }
 }

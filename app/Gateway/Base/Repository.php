@@ -21,6 +21,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->firstOrFail();
     }
 
@@ -29,6 +30,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
     }
 

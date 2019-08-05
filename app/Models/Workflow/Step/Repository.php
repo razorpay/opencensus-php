@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->where(Entity::LEVEL, '=', $level)
-                    ->whereIN(Entity::ROLE_ID, $roleIds)
+                    ->whereIn(Entity::ROLE_ID, $roleIds)
                     ->get($columns);
     }
 

@@ -27,10 +27,11 @@ class Flexmoney extends BaseProcessor
 
     protected function processEntry(array &$entry)
     {
+        $gatewayTerminalPassword = $this->getGatewayPasswordFromEnv();
+
         $merchantId              = trim($entry[Batch\Header::FLEXMONEY_MERCHANT_ID]);
         $gatewayMerchantId       = trim($entry[Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID]);
         $gatewayMerchantId2      = trim($entry[Batch\Header::FLEXMONEY_GATEWAY_MERCHANT_ID2]);
-        $gatewayTerminalPassword = trim($entry[Batch\Header::FLEXMONEY_TERMINAL_PASSWORD]);
         $terminalCategory        = trim($entry[Batch\Header::FLEXMONEY_CATEGORY]);
 
         $createTerminalParams = [
@@ -63,6 +64,13 @@ class Flexmoney extends BaseProcessor
             $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
             $entry[Batch\Header::FAILURE_REASON]    = $error->getDescription();
         }
+    }
+
+    protected function getGatewayPasswordFromEnv(): string
+    {
+        $gatewayTerminalPassword = $this->app['config']->get('gateway.cardless_emi.live_flexmoney_terminal_password');
+
+        return $gatewayTerminalPassword;
     }
 
     public function getOutputFileHeadings(): array

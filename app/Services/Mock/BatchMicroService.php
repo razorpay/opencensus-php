@@ -214,4 +214,9 @@ class BatchMicroService extends BaseBatchMicroService
             'processed_amount' => 1155
         ];
     }
+
+    public function isCompletelyMigratedBatchType(string $type): bool
+    {
+        return false;
+    }
 }

@@ -8,6 +8,8 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class IrctcSettlement extends Base
 {
+    const IRCTC_PAYMENT_METHODS = ['NB', 'CC', 'DC', 'PPI', 'EMI', 'UPI', 'NA']; // list of payment methods required by IRCTC.
+
     protected function processEntry(array & $entry)
     {
         $paymentId = str_replace("\xEF\xBB\xBF", '',  $entry[Batch\Header::PAYMENT_ID]);
@@ -60,5 +62,27 @@ class IrctcSettlement extends Base
         }
 
         $this->batch->setProcessedAmount($processedAmount);
+    }
+
+    /**
+     * @param $headings
+     * @param $values
+     * @param $ix
+     * @return array|false|void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * Overriding this function because new Irctc settlement file contains additional column.
+     * To support old and new format, popping the additional column as it is not being used.
+     */
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        if ((count($values) > count($headings)) and ((count($values) - count($headings)) === 1))
+        {
+            if (in_array(end($values), self::IRCTC_PAYMENT_METHODS) === true)
+            {
+                array_pop($values);
+                return array_combine($headings, $values);
+            }
+        }
+        return parent::parseTextRowWithHeadingMismatch($headings, $values, $ix);
     }
 }

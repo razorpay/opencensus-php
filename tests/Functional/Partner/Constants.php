@@ -16,6 +16,8 @@ class Constants
     const DEFAULT_NON_PLATFORM_SUBMERCHANT_ID = '10submerchant1';
     const DEFAULT_NON_PLATFORM_MERCHANT_ID    = '100nonplatform';
 
+    const DEFAULT_NON_PLATFORM_SUBMERCHANT_ID_2 = '10submerchant2';
+
     const DEFAULT_IMPLICIT_PRICING_PLAN       = '10ImplicitPlan';
     const DEFAULT_SUBMERCHANT_PRICING_PLAN    = 'SubmerchantPln';
 
