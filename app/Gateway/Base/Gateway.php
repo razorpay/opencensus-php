@@ -19,12 +19,11 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Gateway\Netbanking;
-use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Status;
+use RZP\Services\DowntimeMetric;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
-use Illuminate\Support\Facades\Redis;
 
 class Gateway
 {
@@ -211,6 +210,16 @@ class Gateway
 
     protected $paymentId;
 
+    protected $wasGatewayHit = false;
+
+    /**
+     * @var $downtimeMetric DowntimeMetric Singleton for storing count of gateway
+     * requests data with success-failure count and error codes (if any)
+     * Used by Downtime Detectors in Payment processor to decide whether to mark the
+     * gateway as down or not.
+     */
+    protected $downtimeMetric;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -218,6 +227,8 @@ class Gateway
         $this->trace = $this->app['trace'];
 
         $this->env = $this->app['env'];
+
+        $this->downtimeMetric = $this->app['gateway_downtime_metric'];
 
         if ($this->env === 'testing')
         {
@@ -241,14 +252,35 @@ class Gateway
     {
         try
         {
+            $this->wasGatewayHit = false;
+
             $response = $this->$action($input);
 
             $this->pushDimensions($action, $input, Metric::SUCCESS);
+
+            if ($this->wasGatewayHit === true)
+            {
+                $this->downtimeMetric->setMetrics($this->gateway, DowntimeMetric::Success);
+            }
 
             return $response;
         }
         catch (\Throwable $exc)
         {
+            if ($this->wasGatewayHit === true)
+            {
+                if ($exc instanceof Exception\BaseException)
+                {
+                    $this->downtimeMetric->setMetrics($this->gateway, DowntimeMetric::Failure,
+                        $exc->getError()->getInternalErrorCode());
+                }
+                else
+                {
+                    $this->downtimeMetric->setMetrics($this->gateway, DowntimeMetric::Failure,
+                        ErrorCode::SERVER_ERROR);
+                }
+            }
+
             $previousExc = $exc->getPrevious();
 
             if (property_exists($exc, 'isPropagatedException') === false)
@@ -683,6 +715,8 @@ class Gateway
         try
         {
             $method = strtoupper($method);
+
+            $this->wasGatewayHit = true;
 
             $response = Requests::request(
                 $request['url'],
