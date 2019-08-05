@@ -100,6 +100,8 @@ class Validator extends Base\Validator
 
     public function validateModeIfSet()
     {
+        $preferredModeSupportedChannels = [Channel::YESBANK, Channel::RBL];
+
         /** @var Entity $attempt */
         $attempt = $this->entity;
 
@@ -125,11 +127,11 @@ class Validator extends Base\Validator
         // If we want to support for other channels, we need to make changes in the channel specific classes
         // for mode related initiations, allowed/not allowed, cron timings, settlement times, etc
         if (($destinationType === Constants\Entity::BANK_ACCOUNT) and
-            ($channel !== Channel::YESBANK))
+            (in_array($channel, $preferredModeSupportedChannels, true) === false))
         {
             throw new LogicException(
-                'Mode should be sent only for Yesbank',
-                ErrorCode::SERVER_ERROR_FTA_MODE_SENT_NON_YESBANK,
+                'Mode preference not allowed',
+                ErrorCode::SERVER_ERROR_FTA_PREFERRED_MODE_UNSUPPORTED,
                 [
                     'attempt_id'    => $attempt->getId(),
                     'mode'          => $mode,
@@ -141,7 +143,7 @@ class Validator extends Base\Validator
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
-        $maxUpiAmount = FundAccount\Validator::MAX_UPI_AMOUNT;
+        $maxUpiAmount  = FundAccount\Validator::MAX_UPI_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
             (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
