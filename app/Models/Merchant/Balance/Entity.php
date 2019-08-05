@@ -8,6 +8,11 @@ use RZP\Base\BuilderEx;
 use RZP\Models\BankingAccount;
 use RZP\Models\Currency\Currency;
 
+/**
+ * Class Entity
+ *
+ * @property BankingAccount\Entity $bankingAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const ID             = 'id';
@@ -64,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
         self::CHANNEL,
+        self::UPDATED_AT,
     ];
 
     protected $entity = 'balance';

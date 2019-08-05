@@ -81,7 +81,8 @@ class Core extends Base\Core
         Subscription\Entity $subscription = null,
         Batch\Entity $batch = null,
         Base\Entity $externalEntity = null,
-        string $batchId = null): Entity
+        string $batchId = null,
+        Order\Entity $order = null): Entity
     {
         $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
@@ -124,6 +125,7 @@ class Core extends Base\Core
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setExternalEntity($externalEntity)
+                        ->setOrder($order)
                         ->setBatch($batchIdOrBatch)
                         ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);

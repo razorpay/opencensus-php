@@ -918,6 +918,12 @@ class Entity extends Base\PublicEntity
                ($this->getRelation('entity') instanceof SubscriptionRegistration\Entity));
     }
 
+    public function isAuthlinkInvoice(): bool
+    {
+        return (($this->getEntityType() !== null) and
+            ($this->entity instanceof SubscriptionRegistration\Entity));
+    }
+
     /**
      * Returns the path component of Dashboard view url.
      *

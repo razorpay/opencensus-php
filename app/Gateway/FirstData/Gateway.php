@@ -98,7 +98,12 @@ class Gateway extends Base\Gateway
 
         if ($this->isSecondRecurringPayment($input) === true)
         {
-            return $this->secondRecurring($input);
+            return $this->secondRecurringOrMoto($input);
+        }
+
+        if ($this->isMotoTransactionRequest($input) === true)
+        {
+            return $this->secondRecurringOrMoto($input);
         }
 
         // this is a check to decide which flow to go from, once new s2s flow will be merged and tested
@@ -174,7 +179,7 @@ class Gateway extends Base\Gateway
         return $authenticationGateway;
     }
 
-    protected function secondRecurring(array $input)
+    protected function secondRecurringOrMoto(array $input)
     {
         parent::action($input, Action::PURCHASE);
 

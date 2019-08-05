@@ -8,13 +8,13 @@ use RZP\Constants\Mode;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Constants;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Merchant\CommissionTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class PartnerAccountTest extends TestCase
 {
-    use PaymentTrait;
-    use CommissionTrait;
+    use RequestResponseFlowTrait;
+    use PartnerTrait;
 
     const RZP_ORG   = '100000razorpay';
 
@@ -27,8 +27,6 @@ class PartnerAccountTest extends TestCase
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->app->make(Factory::class)->load($factoryPath);
-
-        $this->mockCardVault();
     }
 
     public function testCreateAccountForCompletelyFilledRequest()
@@ -69,6 +67,18 @@ class PartnerAccountTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testCreateAccountWithoutRegisteredAddress()
+    {
+        $this->setUpNonPurePlatformPartner();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request'] = $this->testData['testCreateAccountForThinRequest']['request'];
+        $testData['request']['content']['profile']['addresses'][0]['type'] = 'operation';
+
+        $this->startTest($testData);
+    }
+
     public function testCreateAccountForInvalidPartner()
     {
         $this->markMerchantAsNonPurePlatformPartner('10000000000000', Constants::RESELLER);
@@ -78,13 +88,49 @@ class PartnerAccountTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Test that changing all the attributes works
+     */
+    public function testEditAccount()
+    {
+        $this->setUpNonPurePlatformPartner();
+
+        $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/accounts/'. $result['id'];
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Test that un-setting all the non required attributes works
+     */
+    public function testEditThinAccount()
+    {
+        $this->setUpNonPurePlatformPartner();
+
+        $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/accounts/'. $result['id'];
+
+        $this->startTest($testData);
+    }
+
     public function testFetchAccount()
     {
         $this->setUpNonPurePlatformPartner();
 
         $testData = $this->testData['testCreateAccountForThinRequest'];
 
-        $result = $this->startTest($testData);
+        $result = $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -99,11 +145,11 @@ class PartnerAccountTest extends TestCase
 
         $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
 
-        $this->startTest($testData);
+        $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testCreateAccountForThinRequest'];
 
-        $this->startTest($testData);
+        $this->runRequestResponseFlow($testData);
 
         $result = $this->startTest();
 
@@ -125,14 +171,14 @@ class PartnerAccountTest extends TestCase
         // creating account
         $testData = $this->testData['testCreateAccountForThinRequest'];
 
-        $result = $this->startTest($testData);
+        $result = $this->runRequestResponseFlow($testData);
 
         // disable account
         $testData = $this->testData['testDisableAccountAction'];
 
         $testData['request']['url'] = '/accounts/'. $result['id'] . '/disable';
 
-        $this->startTest($testData);
+        $this->runRequestResponseFlow($testData);
 
         // enable account
         $testData = $this->testData[__FUNCTION__];

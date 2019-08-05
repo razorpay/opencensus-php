@@ -126,6 +126,17 @@ class Service extends Merchant\Service
         return $this->getResponseObject()->generateResponse($account);
     }
 
+    public function editAccount(string $accountId, array $input): array
+    {
+        $this->core()->validatePartnerAccess($this->merchant, $accountId);
+
+        Entity::verifyIdAndStripSign($accountId);
+
+        $account = $this->core()->editAccount($this->merchant, $accountId, $input);
+
+        return $this->getResponseObject()->generateResponse($account);
+    }
+
     public function listAccounts(array $input): array
     {
         $input[Merchant\Constants::COUNT] = $input[Merchant\Constants::COUNT] ?? Constants::DEFAULT_ACCOUNT_COUNT;

@@ -45,6 +45,8 @@ trait GatewayTrait
 
     protected function sendGatewayRequest($request)
     {
+        $this->wasGatewayHit = true;
+
         // Although we reset the url, it's not being used currently.
         // $request['url'] = $this->makeMockRequestUrl($request);
 

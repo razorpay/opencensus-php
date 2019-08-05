@@ -62,6 +62,18 @@ class AuthLink
 
         $mandateInput = self::getMandateEntityInput($entry);
 
+        $method = $entry[Batch\Header::AUTH_LINK_METHOD];
+
+        if ($method === SubscriptionRegistration\Method::EMANDATE)
+        {
+            if ($amount > 0)
+            {
+                $input[Invoice\Entity::AMOUNT] = 0;
+
+                $mandateInput[SubscriptionRegistration\Entity::FIRST_PAYMENT_AMOUNT] = $amount;
+            }
+        }
+
         $input[Entity::SUBSCRIPTION_REGISTRATION] = $mandateInput;
 
         return $input;
