@@ -777,6 +777,12 @@ class Reporting implements ExternalService
                 'condition' => $hasGenericNotesTag,
             ],
             [
+                'name'      => 'Custom Transfers with Notes',
+                'type'      => Table::TRANSFER,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $hasGenericNotesTag,
+            ],
+            [
                 'name'      => 'SubMerchant Report for Platform Partner',
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
