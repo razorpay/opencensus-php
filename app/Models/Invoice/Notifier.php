@@ -191,6 +191,8 @@ class Notifier extends Base\Core
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
+        sd($request);
+
         try
         {
             $response = $this->raven->sendSms($request, false);
@@ -469,6 +471,31 @@ class Notifier extends Base\Core
                     'amount'       => $this->invoice->getAmount() / 100,
                     'invoice_link' => $invoiceLink,
                 ];
+
+                break;
+
+            case Preferences::MID_INDIABULLS_FINANCE:
+                $template = 'sms.custom_invoice.indiabull_custom';
+                $params = [
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'invoice_link'  => $invoiceLink,
+                    'notes_charges' => $this->invoice->getNotes()->charges,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_PDD_CREDIT:
+            case Preferences::MID_RBL_PDD_BANK:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_pdd';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'recipt'         => $this->invoice->getReceipt(),
+                    'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
+                ];
+
+                break;
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
