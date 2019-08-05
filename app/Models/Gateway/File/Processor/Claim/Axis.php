@@ -38,16 +38,17 @@ class Axis extends Base
 
         $bankCode = (($corporate === true) ? Payment\Processor\Netbanking::UTIB_C : IFSC::UTIB);
 
-        $claims = $this->repo->payment->fetchCorporatePaymentsWithStatus(
+        $claims = $this->repo->payment->fetchCorporatePaymentsWithStatusAndRelations(
             $begin,
             $end,
             static::GATEWAY,
-            $bankCode
+            $bankCode,
+            ['terminal']
         );
 
         $claims = $claims->reject(function($claim)
         {
-            return ($claim->isEmandate() === true);
+            return (($claim->isEmandate() === true) or ($claim->terminal->isDirectSettlement() === true));
         });
 
         return $claims;
