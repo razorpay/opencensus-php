@@ -84,6 +84,24 @@ class PaypalGatewayTest extends TestCase
         $this->assertEquals('failed', $paymentEntity['status']);
     }
 
+    public function testAuthFailed()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'pay_verify')
+            {
+                $content['success'] = false;
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function ()
+        {
+            $this->doPaypalAuthAndCapturePayment();
+        });
+    }
+
     protected function runPaymentCallbackFlowWalletPaypal($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
@@ -97,5 +115,11 @@ class PaypalGatewayTest extends TestCase
         }
 
         return null;
+    }
+    protected function doPaypalAuthAndCapturePayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('paypal');
+        $payment['currency'] = "USD";
+        $this->doAuthAndCapturePayment($payment);
     }
 }
