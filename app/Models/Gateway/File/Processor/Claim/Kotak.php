@@ -31,8 +31,14 @@ class Kotak extends Base
             $end,
             static::GATEWAY,
             $statuses,
-            $tpv
+            $tpv,
+            ['terminal']
         );
+
+        $claims = $claims->reject(function($claim)
+        {
+            return ($claim->terminal->isDirectSettlement() === true);
+        });
 
         return $claims;
     }

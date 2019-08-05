@@ -19,12 +19,11 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Gateway\Netbanking;
-use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Status;
+use RZP\Services\DowntimeMetric;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
-use Illuminate\Support\Facades\Redis;
 
 class Gateway
 {
@@ -73,12 +72,14 @@ class Gateway
     const MAX_RETRY_COUNT = 2;
 
     /**
-     *  strings to check for LibreSSL errors. Gateway requests are retried in case
-     *  this string is received.
+     *  curl error numbers for SSL errors. Gateway requests are retried in case
+     *  this curl error number is received.
      */
-    const LIBRESSL_CONNECT_ERROR_STRING = 'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL';
-
-    const LIBRESSL_READ_ERROR_STRING = 'cURL error 56: LibreSSL SSL_read: SSL_ERROR_SYSCALL';
+    const RETRIABLE_CURL_ERRORS = [
+        35, // cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL
+        52, // cURL error 52: Empty reply from server
+        56, // cURL error 56: LibreSSL SSL_read: SSL_ERROR_SYSCALL
+    ];
 
     /**
      * Actions for which gateway action can be retried on next terminal safely.
@@ -209,6 +210,16 @@ class Gateway
 
     protected $paymentId;
 
+    protected $wasGatewayHit = false;
+
+    /**
+     * @var $downtimeMetric DowntimeMetric Singleton for storing count of gateway
+     * requests data with success-failure count and error codes (if any)
+     * Used by Downtime Detectors in Payment processor to decide whether to mark the
+     * gateway as down or not.
+     */
+    protected $downtimeMetric;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -216,6 +227,8 @@ class Gateway
         $this->trace = $this->app['trace'];
 
         $this->env = $this->app['env'];
+
+        $this->downtimeMetric = $this->app['gateway_downtime_metric'];
 
         if ($this->env === 'testing')
         {
@@ -239,14 +252,35 @@ class Gateway
     {
         try
         {
+            $this->wasGatewayHit = false;
+
             $response = $this->$action($input);
 
             $this->pushDimensions($action, $input, Metric::SUCCESS);
+
+            if ($this->wasGatewayHit === true)
+            {
+                $this->downtimeMetric->setMetrics($this->gateway, DowntimeMetric::Success);
+            }
 
             return $response;
         }
         catch (\Throwable $exc)
         {
+            if ($this->wasGatewayHit === true)
+            {
+                if ($exc instanceof Exception\BaseException)
+                {
+                    $this->downtimeMetric->setMetrics($this->gateway, DowntimeMetric::Failure,
+                        $exc->getError()->getInternalErrorCode());
+                }
+                else
+                {
+                    $this->downtimeMetric->setMetrics($this->gateway, DowntimeMetric::Failure,
+                        ErrorCode::SERVER_ERROR);
+                }
+            }
+
             $previousExc = $exc->getPrevious();
 
             if (property_exists($exc, 'isPropagatedException') === false)
@@ -330,10 +364,17 @@ class Gateway
         $this->input = $input;
         $this->action = Action::CAPTURE;
 
-        if ($input['payment']['status'] !== Status::AUTHORIZED)
+        if (($input['payment'][Payment\Entity::STATUS] === Status::AUTHORIZED) or
+            (($input['payment'][Payment\Entity::STATUS] === Status::CAPTURED) and
+            (array_key_exists(Payment\Entity::GATEWAY_CAPTURED, $input['payment']) === true) and
+            ($input['payment'][Payment\Entity::GATEWAY_CAPTURED] === null)))
+        {
+            return;
+        }
+        else
         {
             throw new Exception\RuntimeException(
-                'Payment status should be authorized',
+                'Payment status should be authorized or if captured, gateway captured should not be set',
                 ['payment_id' => $input['payment']['id']]);
         }
     }
@@ -675,6 +716,8 @@ class Gateway
         {
             $method = strtoupper($method);
 
+            $this->wasGatewayHit = true;
+
             $response = Requests::request(
                 $request['url'],
                 $request['headers'],
@@ -695,7 +738,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayTimeoutException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -704,7 +747,7 @@ class Gateway
             {
                 $ex = new Exception\GatewayRequestException($e->getMessage(), $e);
 
-                if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+                if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
                 {
                     $ex->markSafeRetryTrue();
                 }
@@ -778,14 +821,18 @@ class Gateway
             return false;
         }
 
-        $exceptionData = $e->getDataAsString();
+        $previousExc = $e->getPrevious();
 
-        if ((get_class($e) === Exception\GatewayRequestException::class) and
-            ((stripos($exceptionData, self::LIBRESSL_CONNECT_ERROR_STRING) !== false) or
-             (stripos($exceptionData, self::LIBRESSL_READ_ERROR_STRING) !== false)))
-        {
-            return true;
-        }
+        if (($previousExc instanceof \Requests_Exception) and
+                ($previousExc->getType() === 'curlerror'))
+            {
+                $errorNumber = curl_errno($previousExc->getData());
+
+                if (in_array($errorNumber, static::RETRIABLE_CURL_ERRORS, true) === true)
+                {
+                    return true;
+                }
+            }
 
         return false;
     }
@@ -797,7 +844,7 @@ class Gateway
 
     protected function getMaxRetryCount()
     {
-        return self::MAX_RETRY_COUNT;
+        return static::MAX_RETRY_COUNT;
     }
 
     protected function validateResponse(\Requests_Response $response)
@@ -814,7 +861,7 @@ class Gateway
             $data = ['status_code' => $response->status_code, 'body' => $response->body];
             $e->setData($data);
 
-            if (in_array($this->action, self::RETRIABLE_ACTIONS, true) === true)
+            if (in_array($this->action, static::RETRIABLE_ACTIONS, true) === true)
             {
                 $e->markSafeRetryTrue();
             }
@@ -1593,11 +1640,23 @@ class Gateway
         return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
     }
 
-    protected function sendMozartRequest(array $input)
+    protected function getMozartApiUrl($input)
     {
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
-        $url =  $baseUrl . 'payments/' . $this->gateway. '/v1/' . $this->action;
+        $version = $this->getVersionForAction($input, $this->action);
+
+        return $baseUrl . 'payments/' . $this->gateway . '/' . $version . '/' . snake_case($this->action);
+    }
+
+    protected function getVersionForAction($input, $action)
+    {
+        return 'v1';
+    }
+
+    protected function sendMozartRequest(array $input, $removeRaw = true)
+    {
+        $url = $this->getMozartApiUrl($input);
 
         $authentication = [
             'api',
@@ -1627,7 +1686,10 @@ class Gateway
 
         $this->traceGatewayPaymentResponseForMozart($responseBody ?? '', $requestBody);
 
-        unset($responseBody['data']['_raw']);
+        if ($removeRaw === true)
+        {
+            unset($responseBody['data']['_raw']);
+        }
 
         if (in_array($this->action, ['pay_init', 'authenticate_init', 'authenticate_verify'], true) === true)
         {
@@ -1636,7 +1698,7 @@ class Gateway
 
         $attributes = $this->getMappedAttributes($responseBody['data']);
 
-        if ($this->action === Action::VERIFY)
+        if (in_array(snake_case($this->action), [Action::VERIFY, Action::VERIFY_REFUND]) === true)
         {
             return $responseBody;
         }
@@ -1653,9 +1715,9 @@ class Gateway
             }
         }
 
-       $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
 
-       return $responseBody['next']['redirect'] ?? null;
+        return $responseBody['next']['redirect'] ?? null;
     }
 
     protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)

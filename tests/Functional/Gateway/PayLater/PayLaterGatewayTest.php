@@ -82,6 +82,10 @@ class PayLaterGatewayTest extends TestCase
         $this->assertNotNull($cardlessEmiEntity['refund_id']);
 
         $this->assertTestResponse($cardlessEmiEntity, 'testPaymentRefundEntity');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('1234567', $refund['acquirer_data']['arn']);
     }
 
     public function testAccountDoesNotExist()

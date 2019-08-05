@@ -101,11 +101,12 @@ class PaymentEvent extends Event
             $card = $payment->card;
 
             $properties['payment'] += [
-                'card_iin'      => $card->getIin(),
-                'card_network'  => $card->getNetwork(),
-                'card_type'     => $card->getType(),
-                'card_country'  => $card->getCountry(),
-                'international' => $payment->isInternational(),
+                'card_iin'          => $card->getIin(),
+                'card_iin_headless' => $card->isHeadLessOtp(),
+                'card_network'      => $card->getNetwork(),
+                'card_type'         => $card->getType(),
+                'card_country'      => $card->getCountry(),
+                'international'     => $payment->isInternational(),
             ];
         }
 

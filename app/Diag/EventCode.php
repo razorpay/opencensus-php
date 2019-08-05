@@ -222,4 +222,14 @@ class EventCode
         'name'  => 'payment.verification.processed'
     ];
 
+    const PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_INITIATED = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.omnichannel.request.initiated'
+    ];
+
+    const PAYMENT_AUTHENTICATION_OMNICHANNEL_REQUEST_PROCESSED = [
+        'group' => 'authentication',
+        'name'  => 'payment.authentication.omnichannel.request.processed'
+    ];
+
 }

@@ -96,6 +96,7 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::PAYMENT_FAILED,
         WebhookEvent::PAYOUT_PROCESSED,
         WebhookEvent::PAYOUT_REVERSED,
+        WebhookEvent::ORDER_PAID
     ];
 
     public function __construct()
@@ -282,6 +283,13 @@ class ApiEventSubscriber extends Base\Core
     }
 
     protected function onVirtualAccountCreated(VirtualAccount\Entity $virtualAccount)
+    {
+        $payload = $this->getVirtualAccountPayload($virtualAccount);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onVirtualAccountClosed(VirtualAccount\Entity $virtualAccount)
     {
         $payload = $this->getVirtualAccountPayload($virtualAccount);
 

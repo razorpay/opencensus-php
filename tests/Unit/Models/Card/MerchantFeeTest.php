@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -50,6 +51,8 @@ class MerchantFeeTest extends TestCase
         $this->fee->setPricingRepo($this->getMockPricingRepo());
 
         $this->qrCode = $this->fixtures->create('qr_code');
+
+        $this->sharpTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
     public function getMockPricingRepo($withCreditCardRule = false, $withReceiverRule = false, $withDefault = true, $pricingRules = [])
@@ -1116,6 +1119,8 @@ class MerchantFeeTest extends TestCase
 
             $payment->merchant()->associate($merchant);
 
+            $payment->associateTerminal($this->sharpTerminal);
+
             $payment->card = (new Card\Entity)->build($this->card);
 
             $payment->card->setNetwork('Visa');
@@ -1239,6 +1244,10 @@ class MerchantFeeTest extends TestCase
 
         $payment->merchant()->associate($merchant);
 
+        $terminal = Terminal\Entity::find('1n25f6uN5S1Z5a');
+
+        $payment->associateTerminal($terminal);
+
         $payment->setAuthType($authType);
 
         return $payment;
@@ -1261,6 +1270,8 @@ class MerchantFeeTest extends TestCase
         $merchant = Merchant\Entity::find('10000000000000');
 
         $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($this->sharpTerminal);
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -1285,6 +1296,8 @@ class MerchantFeeTest extends TestCase
 
         $payment->merchant()->associate($merchant);
 
+        $payment->associateTerminal($this->sharpTerminal);
+
         $payment->setBaseAmount($amount);
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
@@ -1303,13 +1316,17 @@ class MerchantFeeTest extends TestCase
 
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::UPI;
 
-        $payment = new Payment\Entity($paymentArray);
+        $payment = new Payment\Entity;
+        $payment->generate($paymentArray);
+        $payment->fill($paymentArray);
 
         $payment->setBaseAmount($amount);
 
         $merchant = Merchant\Entity::find('10000000000000');
 
         $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($this->sharpTerminal);
 
         if ($receiver == Receiver::QR_CODE)
         {
@@ -1340,6 +1357,8 @@ class MerchantFeeTest extends TestCase
 
         $payment->merchant()->associate($merchant);
 
+        $payment->associateTerminal($this->sharpTerminal);
+
         $payment->card = (new Card\Entity)->build($this->card);
 
         $payment->card->setNetwork($network);
@@ -1364,6 +1383,8 @@ class MerchantFeeTest extends TestCase
         $merchant = Merchant\Entity::find('10000000000000');
 
         $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($this->sharpTerminal);
 
         $payment->card = (new Card\Entity)->build($this->card);
 

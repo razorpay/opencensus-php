@@ -167,4 +167,9 @@ class Type
 
         return $hex;
     }
+
+    public static function getBitPositions()
+    {
+        return self::$bitPosition;
+    }
 }

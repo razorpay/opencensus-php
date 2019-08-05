@@ -11,18 +11,15 @@ use RZP\Models\Batch as BatchModel;
  * Different from other generic Jobs\Batch, reason to following: In case of IRCTC,
  * we are to execute 2 batches in sequence. And so from elsewhere we push a job
  * containing 2 batch ids in their order of execution which get processed here.
+ * processor for refund and delta_refund is same.
  */
 class IrctcBatch extends Job
 {
     const BATCH_ORDER = [
         BatchModel\Type::IRCTC_REFUND,
+        BatchModel\Type::IRCTC_DELTA_REFUND,
         BatchModel\Type::IRCTC_SETTLEMENT
     ];
-
-    /**
-     * {@inheritDoc}
-     */
-    protected $queueConfigKey = 'batch';
 
     /**
      * Associative array with key as batch type and value

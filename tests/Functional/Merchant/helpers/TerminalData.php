@@ -748,6 +748,28 @@ return [
         ],
     ],
 
+    'testCreateGooglePayTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'google_pay',
+                'omnichannel'          => 1,
+                'gateway_merchant_id'  => 'razorpay upi',
+                'gateway_merchant_id2' => 'abc@icici',
+                'vpa'                  => 'abc@icici',
+                'capability'           => 1,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'       => 'google_pay',
+                'upi'           => false,
+                'omnichannel'   => true,
+                'enabled'       => true,
+            ],
+        ],
+    ],
+
     'testCreateTpvTerminalWithInvalidMethod' => [
         'request' => [
             'content' => [
@@ -872,6 +894,28 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+
+    'testCreateTerminalWithMerchantProcurer' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_kotak',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'procurer'                  => 'merchant',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'procurer'             => 'merchant',
+            ]
+        ]
     ],
 
     'testCreateCardlessEmiTerminal'  => [
@@ -1160,6 +1204,8 @@ return [
                 'gateway_terminal_id'       => 'randommerchantid',
                 'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
                 'gateway_acquirer'          => 'hdfc',
                 'mode'                      => Terminal\Mode::DUAL,
                 'type'                      => [
@@ -1188,6 +1234,8 @@ return [
                 'gateway_terminal_id'       => 'randommerchantid',
                 'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
                 'gateway_secure_secret'     => 'secure_secret',
+                'gateway_secure_secret2'    => 'secure_secret2',
+                'gateway_access_code'       => 'access_code',
                 'gateway_acquirer'          => 'hdfc',
                 'mode'                      => Terminal\Mode::DUAL,
                 'type'                      => [
@@ -1439,6 +1487,55 @@ return [
                     'VIJB'   => 'Vijaya Bank',
                 ],
                 'disabled' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetTerminalBanksForBilldesk' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'ANDB'   => 'Andhra Bank',
+                    'BKID'   => 'Bank of India',
+                    'MAHB'   => 'Bank of Maharashtra',
+                    'CNRB'   => 'Canara Bank',
+                    'CBIN'   => 'Central Bank of India',
+                    'CIUB'   => 'City Union Bank',
+                    'DCBL'   => 'DCB Bank',
+                    'DEUT'   => 'Deutsche Bank',
+                    'DLXB'   => 'Dhanlaxmi Bank',
+                    'IBKL'   => 'IDBI',
+                    'IDIB'   => 'Indian Bank',
+                    'IOBA'   => 'Indian Overseas Bank',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'KVBL'   => 'Karur Vysya Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PMCB'   => 'Punjab & Maharashtra Co-operative Bank',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'SIBL'   => 'South Indian Bank',
+                    'SCBL'   => 'Standard Chartered Bank',
+                    'SBBJ'   => 'State Bank of Bikaner and Jaipur',
+                    'SBHY'   => 'State Bank of Hyderabad',
+                    'SBIN'   => 'State Bank of India',
+                    'SBMY'   => 'State Bank of Mysore',
+                    'STBP'   => 'State Bank of Patiala',
+                    'SBTR'   => 'State Bank of Travancore',
+                    'TMBL'   => 'Tamilnadu Mercantile Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'United Bank of India',
+                    'VIJB'   => 'Vijaya Bank',
+                ],
+                'disabled' => [
+                    'ESFB'   => 'Equitas Small Finance Bank',
+                    'FDRL'   => 'Federal Bank',
                 ],
             ],
         ],

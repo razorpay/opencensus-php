@@ -24,6 +24,7 @@ class Type
     // - Payment also a part of this list because payment fee is calculated from payments table in different query.
     //   so no need to consider payments here
     // - Fund Account Validation is also a part of this list because It is computed in different line item.
+    // - Refund is also a part of this list because instant refunds fee is computed in different query
     //
     const IGNORE_ENTITIES_FROM_MERCHANT_INVOICE = [
         self::PAYMENT,

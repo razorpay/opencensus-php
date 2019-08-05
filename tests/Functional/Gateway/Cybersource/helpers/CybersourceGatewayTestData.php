@@ -222,6 +222,13 @@ return [
         'admin'     => true,
     ],
 
+    'testAuthorizedPaymentRefundWithVerifyV2Disabled' => [
+        'amount'    => 50000,
+        'currency'  => 'INR',
+        'entity'    => 'refund',
+        'admin'     => true,
+    ],
+
     'testGatewayPaymentMismatchVerify' => [
         'response' => [
             'content' => [

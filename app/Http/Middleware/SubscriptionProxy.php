@@ -282,7 +282,9 @@ class SubscriptionProxy
         $currentRoute = $this->route->getCurrentRouteName();
 
         if (($currentRoute === 'subscription_view_test') or
-            ($currentRoute === 'subscription_view_live'))
+            ($currentRoute === 'subscription_view_live') or
+            ($currentRoute === 'subscription_view_test_post') or
+            ($currentRoute === 'subscription_view_live_post'))
         {
             return true;
         }

@@ -150,6 +150,28 @@ class PayVerifyData extends Base\Mock\Server
 
     public function wallet_phonepe($entities)
     {
+        if (isset($entities['gateway']['redirect']['data']) == true)
+        {
+            $response = [
+                'data' => [
+                    '_raw' => '',
+                    'amount' => intval($entities['gateway']['redirect']['data']['amount']),
+                    'code' => $entities['gateway']['redirect']['code'],
+                    'merchantId' => $entities['gateway']['redirect']['data']['merchantId'],
+                    'paymentId' => $entities['gateway']['redirect']['data']['transactionId'],
+                    'providerReferenceId' => $entities['gateway']['redirect']['data']['providerReferenceId'],
+                    'status' => 'callback_successfull'
+                ],
+                'error' => null,
+                'external_trace_id' => '',
+                'mozart_id' => '',
+                'next' => [],
+                'success' => $entities['gateway']['redirect']['success']
+            ];
+
+            return $response;
+        }
+
         try
         {
             $response = [

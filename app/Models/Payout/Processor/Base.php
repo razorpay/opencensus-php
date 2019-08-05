@@ -282,17 +282,15 @@ class Base extends BaseCore
         //
         app('basicauth')->setOrgDetails($this->merchant->org);
 
-        $payout = null;
+        //
+        // Call the create Payout callback that will return a base Payout entity,
+        // which we further work with.
+        //
+        /** @var Payout\Entity $payout */
+        $payout = $createPayoutCallback();
 
         try
         {
-            //
-            // Call the create Payout callback that will return a base Payout entity,
-            // which we further work with.
-            //
-            /** @var Payout\Entity $payout */
-            $payout = $createPayoutCallback();
-
             //
             // Initiate the workflow process. If a workflow is triggered successfully,
             // this function will thrown an EarlyWorkflowResponse exception.
@@ -325,10 +323,12 @@ class Base extends BaseCore
         }
         catch (\Throwable $t)
         {
+            $this->trace->traceException($t);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
                 null,
-                ['payout_id' => $payout->getId()]);
+                ['payout_id' => optional($payout)->getId()]);
         }
 
         return $payout;

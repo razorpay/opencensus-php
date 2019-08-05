@@ -138,14 +138,17 @@ class Repository extends Base\Repository
               ->whereIn('workflow_steps.role_id', $adminRoleIds);
     }
 
-    public function getPendingActionsOnRoleIds(PublicEntity $entity, string $permissionId, array $roleIds = [])
+    public function getPendingActionsOnRoleIds(string $userId, PublicEntity $entity, string $permissionId, array $roleIds = [])
     {
-        $workflowStepTable = Table::WORKFLOW_STEP;
+        $workflowStepTable  = $this->repo->workflow_step->getTableName();
+        $actionCheckerTable = $this->repo->action_checker->getTableName();
 
-        $stateColumn          = $this->dbColumn(Entity::STATE);
-        $workflowId           = $this->dbColumn(Entity::WORKFLOW_ID);
-        $currentLevel         = $this->dbColumn(Entity::CURRENT_LEVEL);
+        $idColumn     = $this->dbColumn(Entity::ID);
+        $stateColumn  = $this->dbColumn(Entity::STATE);
+        $workflowId   = $this->dbColumn(Entity::WORKFLOW_ID);
+        $currentLevel = $this->dbColumn(Entity::CURRENT_LEVEL);
 
+        $wfStepIdColumn         = $this->repo->workflow_step->dbColumn(Step\Entity::ID);
         $wfStepLevelColumn      = $this->repo->workflow_step->dbColumn(Step\Entity::LEVEL);
         $wfStepRoleIdColumn     = $this->repo->workflow_step->dbColumn(Step\Entity::ROLE_ID);
         $wfStepWorkflowIdColumn = $this->repo->workflow_step->dbColumn(Step\Entity::WORKFLOW_ID);
@@ -165,6 +168,23 @@ class Repository extends Base\Repository
                          ->on($currentLevel, '=', $wfStepLevelColumn);
                 })
               ->whereIn($wfStepRoleIdColumn, $roleIds);
+
+        $actionCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::ID);
+
+        $query->leftJoin(
+            $actionCheckerTable,
+            function (JoinClause $join) use ($idColumn, $wfStepIdColumn, $userId)
+            {
+                $actionCheckerStepId    = $this->repo->action_checker->dbColumn(Checker\Entity::STEP_ID);
+                $actionCheckerActionId  = $this->repo->action_checker->dbColumn(Checker\Entity::ACTION_ID);
+                $actionCheckerCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::CHECKER_ID);
+
+                $join->on($idColumn, '=', $actionCheckerActionId)
+                     ->on($wfStepIdColumn, '=', $actionCheckerStepId)
+                     ->where($actionCheckerCheckerId, '=', $userId);
+
+            })
+              ->whereNull($actionCheckerId);
 
         return $query->get();
     }
@@ -207,7 +227,6 @@ class Repository extends Base\Repository
 
                 $wfStepLevelColumn      = $this->repo->workflow_step->dbColumn(Step\Entity::LEVEL);
                 $wfStepWorkflowIdColumn = $this->repo->workflow_step->dbColumn(Step\Entity::WORKFLOW_ID);
-
 
                 $join->on($workflowId, '=', $wfStepWorkflowIdColumn)
                      ->on($currentLevel, '=', $wfStepLevelColumn);
