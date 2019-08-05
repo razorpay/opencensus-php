@@ -255,7 +255,7 @@ class Reconciliate extends Base\Core
             $sheetName = '_' . strtolower(str_replace(' ', '_', $sheetName));
         }
 
-        $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+        $outputFileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
 
         $extension = FileStore\Format::CSV;
         $this->trace->info(
@@ -264,19 +264,19 @@ class Reconciliate extends Base\Core
                 'info_code' => InfoCode::RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE,
                 'batch_id'  => $batchId,
                 'row_count' => count($data),
-                'file_name' => $fileName,
+                'file_name' => $outputFileName,
             ]
         );
 
-        $filePath = $this->createCsvFile($data, $fileName, null,self::DIRECTORY_PATH);
+        $outputFilePath = $this->createCsvFile($data, $outputFileName, null,self::DIRECTORY_PATH);
 
-        $file = new UploadedFile($filePath, $fileName);
+        $file = new UploadedFile($outputFilePath, $outputFileName);
 
         $creator = new FileStore\Creator;
 
         $creator->localFile($file)
                 ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                ->name($fileName)
+                ->name($outputFileName)
                 ->extension($extension)
                 ->type(FileStore\Type::RECONCILIATION_BATCH_OUTPUT)
                 ->entity($batch)
@@ -284,9 +284,17 @@ class Reconciliate extends Base\Core
 
         if (in_array($this->gateway, self::S3_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
         {
-            $creator->localFile($file)
+            $creator = new FileStore\Creator;
+
+            $analyticsOutputFileName = $batchId . $sheetName .'_analytics'. self::OUTPUT_FILE_SUFFIX;
+
+            $analyticsOutputFielPath = $this->createCsvFile($data, $analyticsOutputFileName, null,self::DIRECTORY_PATH);
+
+            $analyticsFile = new UploadedFile($analyticsOutputFielPath, $analyticsOutputFileName);
+
+            $creator->localFile($analyticsFile)
                 ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                ->name($fileName)
+                ->name($analyticsOutputFileName.'')
                 ->extension($extension)
                 ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
                 ->entity($batch)
