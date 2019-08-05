@@ -678,6 +678,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
+    }
+
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;

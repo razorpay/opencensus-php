@@ -5182,3 +5182,6 @@ ALTER TABLE partner_configs
 
 ALTER TABLE iins
     MODIFY COLUMN iin CHAR(6) COLLATE utf8_bin;
+
+ALTER TABLE `reversals`
+    MODIFY COLUMN `transaction_id` CHAR(14) DEFAULT NULL;
