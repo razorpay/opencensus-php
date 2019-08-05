@@ -726,8 +726,9 @@ class Reporting implements ExternalService
     {
         $features = $merchant->getEnabledFeatures();
 
-        $hasOfferTag        = in_array(Feature::OFFERS, $features, true);
-        $hasGenericNotesTag = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
+        $hasOfferTag              = in_array(Feature::OFFERS, $features, true);
+        $hasGenericNotesTag       = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
+        $hasCardTransferRefundTag = in_array(Feature::CARD_TRANSFER_REFUND, $features, true);
 
         $showTxnCommissionReport          = false;
         $showAggregateCommissionReport    = false;
@@ -858,6 +859,12 @@ class Reporting implements ExternalService
                 'report_type' => 'partner',
                 'consumer'    => Account::SHARED_ACCOUNT,
                 'condition'   => $showAggregateReports,
+            ],
+            [
+                'name'      => 'Instant Refunds',
+                'type'      => 'refunds',
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $hasCardTransferRefundTag,
             ],
         ];
 
