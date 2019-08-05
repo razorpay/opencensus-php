@@ -100,8 +100,6 @@ class Validator extends Base\Validator
 
     public function validateModeIfSet()
     {
-        $preferredModeSupportedChannels = [Channel::YESBANK, Channel::RBL];
-
         /** @var Entity $attempt */
         $attempt = $this->entity;
 
@@ -127,7 +125,7 @@ class Validator extends Base\Validator
         // If we want to support for other channels, we need to make changes in the channel specific classes
         // for mode related initiations, allowed/not allowed, cron timings, settlement times, etc
         if (($destinationType === Constants\Entity::BANK_ACCOUNT) and
-            (in_array($channel, $preferredModeSupportedChannels, true) === false))
+            (in_array($channel, Channel::getPreferredModeSupportedChannels(), true) === false))
         {
             throw new LogicException(
                 'Mode preference not allowed',
