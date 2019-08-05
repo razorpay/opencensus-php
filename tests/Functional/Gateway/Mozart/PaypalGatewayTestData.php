@@ -8,10 +8,10 @@ use RZP\Exception\PaymentVerificationException;
 return [
     'testPayment' => [
         'merchant_id'       => '10000000000000',
-        'amount'            => 50000,
+        'amount'            => 5000,
         'method'            => 'wallet',
         'status'            => 'captured',
-        'amount_authorized' => 50000,
+        'amount_authorized' => 5000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
         'currency'          => 'USD',
@@ -32,7 +32,7 @@ return [
     'testPaymentMozartEntity' => [
         'action'            => 'authorize',
         'gateway'           => 'wallet_paypal',
-        'amount'            => 50000,
+        'amount'            => 100,
     ],
 
 
