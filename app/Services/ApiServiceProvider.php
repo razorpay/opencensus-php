@@ -19,7 +19,6 @@ use RZP\Services\FTS;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
-use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
@@ -776,14 +775,7 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             $mock = $app['config']->get('applications.fts.mock');
 
-            $mode = $app['rzp.mode'];
-
             $implementation = $mock ? Mock\FTS\FundTransfer::class : FTS\FundTransfer::class;
-
-            if ($mode === Mode::TEST)
-            {
-                $implementation = Mock\FTS\FundTransfer::class;
-            }
 
             return new $implementation($app);
         });

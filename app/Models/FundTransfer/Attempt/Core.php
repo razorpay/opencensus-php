@@ -234,7 +234,14 @@ class Core extends Base\Core
 
             if ($sourceType === EntityConstant::FUND_ACCOUNT_VALIDATION)
             {
-                return [true, Settlement\Channel::ICICI];
+                if ($this->isTestMode() === true)
+                {
+                    return [true, Settlement\Channel::YESBANK];
+                }
+                else
+                {
+                    return [true, Settlement\Channel::ICICI];
+                }
             }
 
             $amount = $source->getAmount();
