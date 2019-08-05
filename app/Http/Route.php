@@ -998,6 +998,7 @@ final class Route
         'account_create'                           => ['post',     'accounts',                                       'AccountController@createAccount'                                   ],
         'account_list'                             => ['get',      'accounts',                                       'AccountController@listAccounts'                                    ],
         'account_fetch'                            => ['get',      'accounts/{id}',                                  'AccountController@fetchAccount'                                    ],
+        'account_edit'                             => ['patch',    'accounts/{id}',                                  'AccountController@editAccount'                                     ],
         'account_action'                           => ['patch',    'accounts/{id}/{action}',                         'AccountController@performAction'                                   ],
 
         // Pincode Service
@@ -1423,6 +1424,7 @@ final class Route
         'account_create',
         'account_list',
         'account_fetch',
+        'account_edit',
         'account_action',
     ];
 

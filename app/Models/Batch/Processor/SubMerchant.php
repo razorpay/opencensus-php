@@ -188,7 +188,7 @@ class SubMerchant extends Base
                 Email\Entity::TYPE  => Email\Type::PARTNER_DUMMY,
             ];
 
-            (new Email\Core)->create($subMerchant, $emailInput);
+            (new Email\Core)->upsert($subMerchant, $emailInput);
         }
 
         $entry[Header::STATUS]      = $status;

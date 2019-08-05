@@ -30,7 +30,7 @@ return [
                             'line1'   => 'registered',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'pin'     => '560032',
                             'country' => 'India',
                         ],
@@ -39,7 +39,7 @@ return [
                             'line1'   => 'operation',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'pin'     => '560032',
                             'country' => 'India',
                         ],
@@ -89,6 +89,12 @@ return [
                         'url'    => 'https://rtll.com/support/',
                     ],
                     'billing_label'     => 'Ratnalal',
+                    'identification'    => [
+                        [
+                            'type' => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
                 ],
                 'settlement' => [
                     'balance_reserved' => '100000',
@@ -143,7 +149,7 @@ return [
                             'line1'   => 'registered',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'country' => 'India',
                             'pin'     => '560032',
                         ],
@@ -152,7 +158,7 @@ return [
                             'line1'   => 'operation',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'country' => 'India',
                             'pin'     => '560032',
                         ],
@@ -202,6 +208,12 @@ return [
                         'policy' => '24x7 support',
                         'url'    => 'https://rtll.com/support/',
                     ],
+                    'identification'    => [
+                        [
+                            'type' => 'company_pan',
+                            'identification_number' => 'apsdf1234a',
+                        ],
+                    ],
                 ],
                 'payment'    => [
                     'flash_checkout' => true,
@@ -245,7 +257,7 @@ return [
                             'line1'   => 'registered',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'pin'     => '560032',
                             'country' => 'India',
                         ],
@@ -274,18 +286,9 @@ return [
                             'line1'   => 'registered',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'country' => 'India',
                             'pin'     => '560032',
-                        ],
-                        [
-                            'type'    => 'operation',
-                            'line1'   => null,
-                            'line2'   => null,
-                            'city'    => null,
-                            'state'   => null,
-                            'country' => null,
-                            'pin'     => null,
                         ],
                     ],
                     'name'           => 'Ratnalal Jewellers',
@@ -311,7 +314,8 @@ return [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
                 ]
             ],
             'status_code' => 400,
@@ -327,7 +331,8 @@ return [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_INVALID_MCC_CODE,
                 ]
             ],
             'status_code' => 400,
@@ -335,6 +340,22 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INVALID_MCC_CODE,
+        ],
+    ],
+
+    'testCreateAccountWithoutRegisteredAddress' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED,
         ],
     ],
 
@@ -353,7 +374,7 @@ return [
                             'line1'   => 'registered',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'pin'     => '560032',
                             'country' => 'India',
                         ],
@@ -389,6 +410,299 @@ return [
         ],
     ],
 
+    'testEditAccount' => [
+        'request'  => [
+            'url'     => '/accounts/{id}',
+            'method'  => 'PATCH',
+            'content' => [
+                'phone'           => '8888888888',
+                'notes'           => [
+                    'new_key' => 'new value',
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'    => 'registered',
+                            'line1'   => 'new registered',
+                            'line2'   => 'new near Jamnalal Police Stn',
+                            'city'    => 'new BENGALURU',
+                            'state'   => 'ANDHRA PRADESH',
+                            'pin'     => '560031',
+                            'country' => 'Malaysia',
+                        ],
+                        [
+                            'type'    => 'operation',
+                            'line1'   => 'new operation',
+                            'line2'   => 'new near Jamnalal Police Stn',
+                            'city'    => 'new BENGALURU',
+                            'state'   => 'ANDHRA PRADESH',
+                            'pin'     => '560031',
+                            'country' => 'Malaysia',
+                        ],
+                    ],
+                    'name'              => 'New Ratnalal Jewellers',
+                    'description'       => 'New This is a test business',
+                    'business_model'    => 'B2C',
+                    'mcc'               => 8931,
+                    'brand'             => [
+                        'icon'  => 'https://newrtll.com/file/icon.jpg',
+                        'logo'  => 'https://newrtll.com/file/logo.jpg',
+                        'color' => 'FF5734',
+                    ],
+                    'dashboard_display' => 'New Ratnalal',
+                    'website'           => 'https://Newmedium.com',
+                    'apps'              => [
+                        [
+                            'name'  => 'New Ratnalal Shopping App',
+                            'links' => [
+                                'android' => 'https://playstore.google.com/appId/123',
+                                'ios'     => 'https://appstore.com/appId/123',
+                            ],
+                        ],
+                    ],
+                    'support'           => [
+                        'email'  => 'newsupport@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'chargeback'        => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'refund'            => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'dispute'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'billing_label'     => 'New Ratnalal',
+                ],
+                'tnc' => [
+                    'accepted'   => 1,
+                    'ip_address' => '201.189.12.23',
+                    'time'       => 1561110415,
+                    'url'        => 'https://rtll.com/newtnc',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'managed' => 1,
+                'notes'           => [
+                    'new_key' => 'new value',
+                ],
+                'business_entity' => 'llp',
+                'email'           => 'testcreateaccountaaa@razorpay.com',
+                'phone'           => '8888888888',
+                'review_status'   => [
+                    'current_state' => [
+                        'status'             => 'activated',
+                        'payment_enabled'    => true,
+                        'settlement_enabled' => true,
+                    ],
+                ],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'    => 'registered',
+                            'line1'   => 'new registered',
+                            'line2'   => 'new near Jamnalal Police Stn',
+                            'city'    => 'new BENGALURU',
+                            'state'   => 'ANDHRA PRADESH',
+                            'pin'     => '560031',
+                            'country' => 'Malaysia',
+                        ],
+                        [
+                            'type'    => 'operation',
+                            'line1'   => 'new operation',
+                            'line2'   => 'new near Jamnalal Police Stn',
+                            'city'    => 'new BENGALURU',
+                            'state'   => 'ANDHRA PRADESH',
+                            'pin'     => '560031',
+                            'country' => 'Malaysia',
+                        ],
+                    ],
+                    'name'              => 'New Ratnalal Jewellers',
+                    'description'       => 'New This is a test business',
+                    'business_model'    => 'B2C',
+                    'mcc'               => 8931,
+                    'brand'             => [
+                        'icon'  => 'https://newrtll.com/file/icon.jpg',
+                        'logo'  => 'https://newrtll.com/file/logo.jpg',
+                        'color' => '#FF5734',
+                    ],
+                    'dashboard_display' => 'New Ratnalal',
+                    'website'           => 'https://Newmedium.com',
+                    'apps'              => [
+                        [
+                            'name'  => 'New Ratnalal Shopping App',
+                            'links' => [
+                                'android' => 'https://playstore.google.com/appId/123',
+                                'ios'     => 'https://appstore.com/appId/123',
+                            ],
+                        ],
+                    ],
+                    'support'           => [
+                        'email'  => 'newsupport@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'chargeback'        => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'refund'            => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'dispute'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '8888888888',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'billing_label'     => 'New Ratnalal',
+                ],
+                'payment'    => [
+                    'flash_checkout' => true,
+                    'international'  => false,
+                ],
+                'tnc'        => [
+                    'accepted'   => 1,
+                    'ip_address' => '201.189.12.23',
+                    'time'       => 1561110415,
+                    'url'        => 'https://rtll.com/newtnc',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+    ],
+
+    'testEditThinAccount' => [
+        'request'  => [
+            'url'     => '/accounts/{id}',
+            'method'  => 'PATCH',
+            'content' => [
+                'phone'           => '8888888888',
+                'notes'           => [],
+                'profile'         => [
+                    'addresses' => [
+                        [
+                            'type'    => 'registered',
+                            'city'    => 'Mangalore',
+                        ],
+                    ],
+                    'brand'             => [
+                        'icon'  => 'https://rtll.com/file/icon.jpg',
+                        'logo'  => 'https://rtll.com/file/logo.jpg',
+                        'color' => 'FF5733',
+                    ],
+                    'dashboard_display' => null,
+                    'website'           => 'https://www.freecharge.in',
+                    'apps'              => [],
+                    'support'           => [
+                        'phone'  => '9999999999',
+                        'policy' => null,
+                        'url'    => null,
+                    ],
+                ],
+                'tnc' => [
+                    'accepted'   => 1,
+                    'ip_address' => '201.189.12.23',
+                    'time'       => 1561110415,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'account',
+                'managed' => 1,
+                'phone'   => '8888888888',
+                'notes'   => [],
+                'profile' => [
+                    'addresses' => [
+                        [
+                            'type'    => 'registered',
+                            'line1'   => 'registered',
+                            'line2'   => 'near Jamnalal Police Stn',
+                            'city'    => 'Mangalore',
+                            'state'   => 'KARNATAKA',
+                            'country' => 'India',
+                            'pin'     => '560032',
+                        ],
+                        [
+                            'type'    => 'operation',
+                            'line1'   => 'operation',
+                            'line2'   => 'near Jamnalal Police Stn',
+                            'city'    => 'BENGALURU',
+                            'state'   => 'KARNATAKA',
+                            'country' => 'India',
+                            'pin'     => '560032',
+                        ],
+                    ],
+                    'name'              => 'Ratnalal Jewellers',
+                    'description'       => 'This is a test business',
+                    'business_model'    => 'B2B',
+                    'mcc'               => 7011,
+                    'brand'             => [
+                        'icon'  => 'https://rtll.com/file/icon.jpg',
+                        'logo'  => 'https://rtll.com/file/logo.jpg',
+                        'color' => '#FF5733',
+                    ],
+                    'dashboard_display' => null,
+                    'website'           => 'https://www.freecharge.in',
+                    'apps'              => [],
+                    'support'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => null,
+                        'url'    => null,
+                    ],
+                    'chargeback'        => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'refund'            => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'dispute'           => [
+                        'email'  => 'support@rtll.com',
+                        'phone'  => '9999999999',
+                        'policy' => '24x7 support',
+                        'url'    => 'https://rtll.com/support/',
+                    ],
+                    'billing_label'     => 'Ratnalal',
+                ],
+                'tnc' => [
+                    'accepted'   => 1,
+                    'ip_address' => '201.189.12.23',
+                    'time'       => 1561110415,
+                ],
+            ],
+        ],
+    ],
+
     'testFetchAccount' => [
         'request' => [
             'url'    => '/accounts/{accountId}',
@@ -413,7 +727,7 @@ return [
                             'line1'   => 'registered',
                             'line2'   => 'near Jamnalal Police Stn',
                             'city'    => 'BENGALURU',
-                            'state'   => 'Karnataka',
+                            'state'   => 'KARNATAKA',
                             'country' => 'India',
                             'pin'     => '560032',
                         ],
