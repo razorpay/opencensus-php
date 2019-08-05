@@ -2,11 +2,12 @@
 
 namespace RZP\Services;
 
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use Maclof\Kubernetes\Client;
 use Maclof\Kubernetes\Models\Job;
 use RZP\Models\Batch as BatchModel;
 use RZP\Services\Batch as BatchService;
-use RZP\Trace\TraceCode;
 
 class KubernetesClient
 {
@@ -47,8 +48,6 @@ class KubernetesClient
         BatchModel\Type::RECURRING_CHARGE => self::NODE_SELECTOR_HITACHI,
     ];
 
-    const RAZORX_NODE_SELECTOR_FEATURE = 'RAZORX_NODE_SELECTOR_FEATURE';
-
     public function __construct($app)
     {
         $this->trace        = $app['trace'];
@@ -66,8 +65,6 @@ class KubernetesClient
         $this->gitCommitHash    = $this->config['git_commit_hash'];
         $this->appMode          = $this->config['app_mode'];
         $this->appEnv           = $this->config['app_env'];
-        $this->razorx           = $app['razorx'];
-        $this->merchant         = $app['basicauth']->getMerchant();
 
         $this->commitFilePath = public_path($this->commitFilePath);
 
@@ -112,15 +109,7 @@ class KubernetesClient
 
             if (($batchType !== null) and (array_key_exists($batchType, $this->batchNodePreference) === true))
             {
-                $response = $this->razorx->getTreatment(
-                    $this->merchant->getId(),
-                    self::RAZORX_NODE_SELECTOR_FEATURE,
-                    $mode);
-
-                if($response === 'on')
-                {
-                    $this->nodeSelector = $this->batchNodePreference[$batchType];
-                }
+                $this->nodeSelector = $this->batchNodePreference[$batchType];
             }
             // Create Job Spec
             $jobSpec = $this->generateJobSpec($mode, $batchId, $params);
