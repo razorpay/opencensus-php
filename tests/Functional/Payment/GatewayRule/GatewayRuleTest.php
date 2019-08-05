@@ -4,7 +4,9 @@ namespace RZP\Functional\Payment\GatewayRule;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
@@ -141,13 +143,13 @@ class GatewayRuleTest extends TestCase
         $this->fixtures->gateway_rule->delete($rules);
     }
 
-    protected function createRules(array $ruleParams): array
+    protected function createRules(array $ruleParams, $step = 'authorization'): array
     {
         $ruleIds = [];
 
         foreach ($ruleParams as $params)
         {
-            $params['step'] = 'authorization';
+            $params['step'] = $step;
 
             $rule = $this->fixtures->create('gateway_rule', $params);
 
@@ -177,7 +179,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -199,7 +201,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -221,7 +223,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[
+                    'content' => [
                         'error' => [
                             'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                             'description' => 'Load across all gateway rules must be less than 100 percent',
@@ -234,7 +236,6 @@ class GatewayRuleTest extends TestCase
                     'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
                 ],
         ];
-
 
         $this->runRequestResponseFlow($testDataRule3);
     }
@@ -260,7 +261,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -282,7 +283,7 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                 'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
@@ -305,10 +306,84 @@ class GatewayRuleTest extends TestCase
                     'method' => 'POST',
                 ],
                  'response' => [
-                    'content' =>[]
+                    'content' => []
                 ],
         ];
 
         $this->runRequestResponseFlow($testDataRule3);
+    }
+
+    public function testAddGatewayRulesWithOrgId()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAdminToken', 'org_'.Org::RAZORPAY_ORG_ID, null,
+            $org->getPublicId());
+
+        $request = [
+            'request' => [
+                'content' => [
+                    'method'          => 'card',
+                    'gateway'         => 'hdfc',
+                    'type'            => 'filter',
+                    'filter_type'     => 'select',
+                    'group'           => 'direct_filter',
+                    'step'            => 'authorization',
+                    'shared_terminal' => 0,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' =>[
+                    'org_id'          => $org->getId(),
+                    'method'          => 'card',
+                    'gateway'         => 'hdfc',
+                    'type'            => 'filter',
+                    'filter_type'     => 'select',
+                    'group'           => 'direct_filter',
+                    'step'            => 'authorization',
+                    'shared_terminal' => false,
+                ]
+            ],
+        ];
+
+        $this->runRequestResponseFlow($request);
+    }
+
+    public function testAddGatewayRulesWithMerchantId()
+    {
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'request' => [
+                'content' => [
+                    'merchant_id'     => '10000000000000',
+                    'method'          => 'card',
+                    'gateway'         => 'hdfc',
+                    'type'            => 'filter',
+                    'filter_type'     => 'select',
+                    'group'           => 'direct_filter',
+                    'step'            => 'authorization',
+                    'shared_terminal' => 0,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' =>[
+                    'merchant_id'     => '10000000000000',
+                    'method'          => 'card',
+                    'gateway'         => 'hdfc',
+                    'type'            => 'filter',
+                    'filter_type'     => 'select',
+                    'group'           => 'direct_filter',
+                    'step'            => 'authorization',
+                    'shared_terminal' => false,
+                ]
+            ],
+        ];
+
+        $this->runRequestResponseFlow($request);
     }
 }

@@ -489,6 +489,7 @@ trait SettlementTrait
                     'balance'    => $balance,
                     'merchant'   => $merchant->getId(),
                     'setlAmount' => $setlAmount,
+                    'reason'     => 'settlement amount less than 1rs or greater than balance',
                 ]);
 
             return [null, null];
@@ -651,8 +652,9 @@ trait SettlementTrait
                 catch (\Exception $ex)
                 {
                     $traceData = [
-                        'merchant'      => $merchant->getId(),
+                        'merchant_id'   => $merchant->getId(),
                         'setlAmount'    => $setlAmount,
+                        'reason'        => $ex->getMessage(),
                     ];
 
                     if ($settlement !== null)

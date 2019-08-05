@@ -12,6 +12,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Mail\Reconciliation\DailyReconStatusSummary as ReconSummaryMail;
+use RZP\Trace\TraceCode;
 
 class DailyReconStatusSummary extends Base\Core
 {
@@ -152,7 +153,8 @@ class DailyReconStatusSummary extends Base\Core
 
             Constants::RECON_SUMMARY_FILE => boolval($input[Constants::RECON_SUMMARY_FILE] ?? true),
 
-            Constants::ADDITIONAL_GATEWAYS => $input[Constants::ADDITIONAL_GATEWAYS] ?? [],
+            Constants::ADDITIONAL_GATEWAYS => (empty($input[Constants::ADDITIONAL_GATEWAYS]) === false) ?
+                                    explode(',', $input[Constants::ADDITIONAL_GATEWAYS]) : [],
 
             Constants::MAX_ALLOWED_UNRECON_COUNT => $input[Constants::MAX_ALLOWED_UNRECON_COUNT] ?? 0,
         ];
@@ -207,27 +209,47 @@ class DailyReconStatusSummary extends Base\Core
             }
         }
 
-        return $gatewayUnreconCache;
+        return $this->trimUnusedKeysFromCache($gatewayUnreconCache);
     }
 
 
     private function removeDateFromGateway(array $gatewayCache, string $gateway, int $date): array
     {
-        $gatewayData = $gatewayCache[$gateway];
-
-        $index = array_search($date, $gatewayData);
-
-        unset($gatewayData[$index]);
-
-        if (empty($gatewayData) === true)
+        if (array_key_exists($gateway, $gatewayCache) === true)
         {
-            unset($gatewayCache[$gateway]);
-        }
-        else
-        {
-            $gatewayCache[$gateway] = $gatewayData;
+            $gatewayData = $gatewayCache[$gateway];
+
+            $index = array_search($date, $gatewayData);
+
+            if ($index !== false)
+            {
+                unset($gatewayData[$index]);
+            }
+
+            if (empty($gatewayData) === true)
+            {
+                unset($gatewayCache[$gateway]);
+            }
+            else
+            {
+                $gatewayCache[$gateway] = $gatewayData;
+            }
         }
 
+        return $gatewayCache;
+    }
+
+    private function trimUnusedKeysFromCache($gatewayCache)
+    {
+        $availableGateways = config('gateway.available');
+
+        foreach($gatewayCache as $gateway => $dates)
+        {
+            if (in_array($gateway, $availableGateways) === false)
+            {
+                unset($gatewayCache[$gateway]);
+            }
+        }
         return $gatewayCache;
     }
 
@@ -273,9 +295,12 @@ class DailyReconStatusSummary extends Base\Core
             }
         }
 
-        $formattedSummary['headLine'] = self::UNRECONCILED_TRANSACTIONS_SUMMARY;
+        if (empty($formattedSummary) === false)
+        {
+            $formattedSummary['headLine'] = self::UNRECONCILED_TRANSACTIONS_SUMMARY;
 
-        $this->messenger->raiseReconWarn($formattedSummary);
+            $this->messenger->raiseReconWarn($formattedSummary);
+        }
 
         $this->setUnreconciledGatewayCache($unreconciledGatewaysData);
     }

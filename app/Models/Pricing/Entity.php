@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const PLAN_ID              = 'plan_id';
     const PLAN_NAME            = 'plan_name';
     const PRODUCT              = 'product';
+    const PROCURER             = 'procurer';
     const FEATURE              = 'feature';
     const GATEWAY              = 'gateway';
     const PAYMENT_METHOD       = 'payment_method';
@@ -70,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::PLAN_NAME,
         self::PRODUCT,
         self::FEATURE,
+        self::PROCURER,
         self::GATEWAY,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
@@ -106,6 +108,7 @@ class Entity extends Base\PublicEntity
     protected static $generators = ['plan_id', 'org_id'];
 
     protected $defaults = [
+        self::PROCURER            => null,
         self::PRODUCT             => Product::PRIMARY,
         self::FEATURE             => Feature::PAYMENT,
         self::PAYMENT_METHOD_TYPE => null,
@@ -128,6 +131,7 @@ class Entity extends Base\PublicEntity
      * @var array
      */
     protected $casts = [
+        self::PROCURER            => 'string',
         self::INTERNATIONAL       => 'bool',
         self::AMOUNT_RANGE_ACTIVE => 'bool',
         self::PERCENT_RATE        => 'int',

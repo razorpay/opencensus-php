@@ -18,7 +18,7 @@ class CreateIins extends Migration
     {
         Schema::create(Table::IIN, function(Blueprint $table)
         {
-            $table->integer(IIN\Entity::IIN)->primary();
+            $table->char(IIN\Entity::IIN, 6)->primary();
 
             $table->string(IIN\Entity::CATEGORY)
                   ->nullable();

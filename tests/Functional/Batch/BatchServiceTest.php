@@ -85,7 +85,7 @@ class BatchServiceTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
-        $this->mockRazorX(__FUNCTION__,  'batch_service_payment_link_updated', "on");
+        $this->mockRazorX(__FUNCTION__,  'batch_service_payment_link_migration', "on");
 
         $this->ba->proxyAuth();
 

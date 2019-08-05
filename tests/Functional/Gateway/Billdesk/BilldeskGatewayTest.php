@@ -68,6 +68,8 @@ class BilldeskGatewayTest extends TestCase
 
     public function testPayment()
     {
+        $this->assertRequestSecurityId('random');
+
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment = $this->doAuthPayment($payment);
 
@@ -92,6 +94,32 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentBilldeskEntity'], $payment);
+    }
+
+    // Test to check if gateway access code and secret is picked from terminal
+    // instead of config
+    public function testPaymentWithCredsFromTerminal()
+    {
+        $addtionalTerminalData = [
+            'id'                    => '100BdeskTrmnl2',
+            'gateway_access_code'   => 'access_code',
+        ];
+
+        $terminalWithAdditionalData = $this->fixtures
+                                           ->on('live')
+                                           ->create('terminal:shared_billdesk_terminal', $addtionalTerminalData);
+
+        $this->assertRequestSecurityId('access_code');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->doAuthPayment($payment, null, 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->terminal->disableTerminal($terminalWithAdditionalData['id']);
     }
 
     public function testMakerCheckerPaymentNormalCallbackForFailed()
@@ -563,5 +591,42 @@ class BilldeskGatewayTest extends TestCase
         $msg = $gateway->getMessageStringWithHash($overridden);
 
         return $msg;
+    }
+
+    protected function assertRequestSecurityId($id)
+    {
+        $this->mockServerRequestFunction(function (&$content, $action = null) use ($id)
+        {
+            $requestFields = [
+                'MerchantID',
+                'CustomerID',
+                'AccountNumber',
+                'TxnAmount',
+                'BankID',
+                'Unknown2',
+                'Unknown3',
+                'CurrencyType',
+                'ItemCode',
+                'TypeField1',
+                'SecurityID',
+                'Unknown4',
+                'Unknown5',
+                'TypeField2',
+                'AdditionalInfo1',
+                'Unknown6',
+                'Unknown7',
+                'Unknown8',
+                'Unknown9',
+                'Unknown10',
+                'Unknown11',
+                'RU',
+                'Checksum'];
+
+            $requestContent = explode('|', $content['content']['msg']);
+
+            $input = array_combine($requestFields, $requestContent);
+
+            $this->assertEquals($id, $input['SecurityID']);
+        });
     }
 }

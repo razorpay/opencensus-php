@@ -38,6 +38,9 @@ abstract class Base extends BaseModel\Core
 
     const CARD_TAX_CUT_OFF = 200000;
 
+    const REFUND_SLAB1_TAX_CUT_OFF = 100000;
+    const REFUND_SLAB2_TAX_CUT_OFF = 1000000;
+
     /**
      * For which fees needs to be calculated.
      */
@@ -170,7 +173,6 @@ abstract class Base extends BaseModel\Core
             return;
         }
 
-
         list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
 
         if (($totalFees > $amount) and
@@ -233,14 +235,14 @@ abstract class Base extends BaseModel\Core
 
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
-        $method  = $this->entity->getMethod();
-        $orgId   = $this->entity->merchant->org->getId();
-        $product = $this->product;
+        $method   = $this->entity->getMethod();
+        $orgId    = $this->entity->merchant->org->getId();
+        $product  = $this->product;
 
         $filters = [
-            [Pricing\Entity::PRODUCT,        $product, false, null],
-            [Pricing\Entity::FEATURE,        $feature, false, null],
-            [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
+            [Pricing\Entity::PRODUCT,        $product,   false, null],
+            [Pricing\Entity::FEATURE,        $feature,   false, null],
+            [Pricing\Entity::PAYMENT_METHOD, $method,    false, null],
         ];
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);

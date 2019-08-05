@@ -3,6 +3,7 @@
 namespace RZP\Models\Card;
 
 use RZP\Exception;
+use RZP\Models\Card;
 
 class Network
 {
@@ -110,11 +111,26 @@ class Network
         self::AMEX => 4
     ];
 
-    /**
-     * Detects network on basis of iin.
-     *
-     */
-    public static function detectNetwork($iin)
+    private static function detectNetworkFromDatabase($iin)
+    {
+        $iinDetails = (new Card\Repository)->retrieveIinDetails($iin);
+
+        if ($iinDetails === null)
+        {
+            return null;
+        }
+
+        $cardNetwork = $iinDetails->getNetworkCode();
+
+        if (strtoupper($cardNetwork) === self::UNKNOWN)
+        {
+            return null;
+        }
+
+        return $cardNetwork;
+    }
+
+    private static function detectNetworkFromRegex($iin)
     {
         $cardNetwork = null;
 
@@ -133,6 +149,19 @@ class Network
         }
 
         return $cardNetwork;
+    }
+
+    /**
+     * The source of truth regarding card network is as follows
+     * First, we try to detect network from the iin table in database.
+     * If not found in above step, we fall back on regex based matching of networks
+     * If network detection fails in both the steps, we return UNKNOWN network
+     *
+     * @iin Detects network code on basis of iin.
+     */
+    public static function detectNetwork($iin)
+    {
+        return static::detectNetworkFromDatabase($iin) ?? static::detectNetworkFromRegex($iin) ?? self::UNKNOWN;
     }
 
     public static function checkNetwork($iin, $network)

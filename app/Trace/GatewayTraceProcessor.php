@@ -94,6 +94,7 @@ class GatewayTraceProcessor
         {
             $record['payment']['card']['network'] = $this->input['card']['network'];
             $record['payment']['card']['issuer'] = $this->input['card']['issuer'];
+            $record['payment']['card']['iin'] = $this->input['card']['iin'] ?? null;
         }
     }
 

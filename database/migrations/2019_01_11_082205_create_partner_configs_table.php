@@ -55,6 +55,9 @@ class CreatePartnerConfigsTable extends Migration
             $table->string(Entity::COMMISSION_MODEL)
                   ->default(CommissionModel::COMMISSION);
 
+            $table->tinyInteger(Entity::SETTLE_TO_PARTNER)
+                  ->default(0);
+
             $table->integer(Entity::REVISIT_AT);
 
             $table->integer(Entity::CREATED_AT);

@@ -89,4 +89,58 @@ class NetbankingHdfcRefundFileTest extends TestCase
                     ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_HDFC])));
         });
     }
+
+    public function testGenerateNetbankingHdfcRefundFile()
+    {
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $expectedFileContent = [
+            'name' => 'HDFC_Netbanking_Refunds_test_'.$today,
+            'location' => 'HDFC_Netbanking_Refunds_test_'.$today.'.xlsx'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($file)
+        {
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP[Gateway::NETBANKING_HDFC] . $today;
+
+            $this->assertEquals($expectedSubject, $mail->subject);
+
+            $testData = [
+                'body'        => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_HDFC],
+                'file_name'   => "HDFC_Netbanking_Refunds_test_$today.xlsx",
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
+            return ($mail->hasFrom('refunds@razorpay.com') and
+                ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_HDFC])));
+        });
+    }
 }

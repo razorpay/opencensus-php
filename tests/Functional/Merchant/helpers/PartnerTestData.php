@@ -411,6 +411,28 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantMap' => [
+        'request'   => [
+            'url'     => '/partner_submerchant_map',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'partner_merchant_id'   => '10000000000000',
+                'partner_type'          => 'reseller',
+                'submerchant_id'        => '10000000000009',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'merchant_id'     => '10000000000009',
+                'entity_type'     => 'application',
+                'entity_owner_id' => '10000000000000',
+            ],
+        ],
+    ],
+
     'testPartnerLinkItselfAsSubmerchant' => [
         'request'   => [
             'url'     => '/merchants/10000000000000/access_maps',

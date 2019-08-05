@@ -459,6 +459,16 @@ class Notifier extends Base\Core
                     'amount'       => $this->invoice->getAmount() / 100,
                     'invoice_link' => $invoiceLink,
                 ];
+
+                break;
+
+            case Preferences::MID_SURYODAY_BANK:
+                $sender = 'SSFBNK';
+                $template = 'sms.custom_invoice.suryoday_bank';
+                $params = [
+                    'amount'       => $this->invoice->getAmount() / 100,
+                    'invoice_link' => $invoiceLink,
+                ];
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
