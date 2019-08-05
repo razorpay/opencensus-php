@@ -64,6 +64,7 @@ class Shared
     const FREECHARGE_RAZORPAY_TERMINAL       = '100FrchrgeTmnl';
     const SHARP_RAZORPAY_TERMINAL            = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL          = '1000CybrsTrmnl';
+    const CYBERSOURCE_HDFC_TERMINAL_WITHOUT_SECRET2  = '1000CybesTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL          = '1000CybAxTrmnl';
     const HITACHI_TERMINAL                   = '100HitachiTmnl';
     const HITACHI_DIRECT_TERMINAL            = '100HitaDirTmnl';

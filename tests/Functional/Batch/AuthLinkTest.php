@@ -87,9 +87,12 @@ class AuthLinkTest extends TestCase
         // Gets last entity (Post queue processing) and asserts attributes
         $entity = $this->getDbLastEntity('batch');
 
-        $this->assertEquals(2, $entity['success_count']);
+        // changed from successCount 2, failure count 2
+        // to successCount 3 and failure count 1 since we support emandate
+        // authlink amount to be non-zero
+        $this->assertEquals(3, $entity['success_count']);
 
-        $this->assertEquals(2, $entity['failure_count']);
+        $this->assertEquals(1, $entity['failure_count']);
 
         // Processing should have happened immediately in tests as
         // queue are sync basically.

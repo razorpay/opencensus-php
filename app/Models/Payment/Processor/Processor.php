@@ -29,6 +29,7 @@ use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Flow;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Constants\Entity as E;
@@ -55,6 +56,7 @@ class Processor
     use Topup;
     use FraudDetector;
     use HeadlessOtp;
+    use Omnichannel;
     use Payout;
     use Reversal;
     use Transfer;
@@ -546,6 +548,28 @@ class Processor
 
         $gateway = Payment\Gateway::PAYLATER;
 
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
+        {
+            $coproto = [
+                'type'    => 'respawn',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
+                ],
+                'method' => 'paylater',
+                'version' => '1',
+                'provider' => $input['provider'],
+            ];
+
+            $coproto['missing'][] = 'contact';
+
+            unset($coproto['request']['content']['contact']);
+
+            return $coproto;
+        }
+
         $terminal = $this->repo
                          ->terminal
                          ->getByMerchantProviderAndMethod($input[Payment\Entity::PROVIDER],
@@ -751,17 +775,37 @@ class Processor
     {
         $coproto = null;
 
+        $missing = [];
+
         if ($payment->isUpi() === false)
         {
             return;
         }
 
-        if ((empty($input[Payment\Entity::VPA]) === false) or
-            (empty($input['_']['flow']) === false))
+        if (empty($input[Payment\Entity::VPA]) === false)
         {
             return;
         }
 
+        if ((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+        {
+            $missing[] = 'vpa';
+        }
+        else if (isset($input[Payment\Entity::UPI_PROVIDER]) === false)
+        {
+            return;
+        }
+        else if (isset($input[Payment\Entity::CONTACT]) === true)
+        {
+            return;
+        }
+        else
+        {
+            $missing[] = 'contact';
+        }
+
+        $host = $this->route->getHost();
+        
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -773,6 +817,8 @@ class Processor
             'theme'     => $payment->merchant->getBrandColorElseDefault(),
             'method'    => 'upi',
             'version'   => '1',
+            'missing'   => $missing,
+            'base'      => $host,
         ];
 
         return $coproto;
@@ -939,8 +985,11 @@ class Processor
     protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
         // Check if AuthN gateway is not the AuthZ gateway, then disable cps route
-        if ((empty($gatewayInput['authenticate']['gateway']) === false) and
-            ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
+        // Adding cybersource check until cybersource emi payments are fixed
+        if (((empty($gatewayInput['authenticate']['gateway']) === false) and
+             ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway())) or
+            (($payment->getGateway() === E::CYBERSOURCE) and
+             ($payment->isMethod(Payment\Method::CARD) === false)))
         {
             $payment->disableCpsRoute();
 
@@ -1656,7 +1705,11 @@ class Processor
             // If CPS service is enabled then route this payment via CPS
             if ((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true)
             {
-                $this->persistCardDetails($gateway, $action, $gatewayData);
+                // Persist card details only when payment method is card or emi
+                if ($this->payment->isMethodCardOrEmi() === true)
+                {
+                    $this->persistCardDetails($gateway, $action, $gatewayData);
+                }
 
                 $gatewayData['cps_route'] = true;
             }
@@ -1697,15 +1750,7 @@ class Processor
         {
             $error = $ex->getError();
 
-            /*
-             * If error is because of invalid terminal and terminal
-             * used is direct, we can disable the terminal
-             */
-            if (($error->isInvalidTerminalError() === true) and
-                ($terminal->isShared() === false))
-            {
-                $this->disableTerminal($terminal);
-            }
+            $this->disableTerminalIfApplicable($terminal, $error);
 
             /*
              * Because error indicates gateway downtime, we might act on it later
@@ -2690,6 +2735,19 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function disableTerminalIfApplicable($terminal, $error)
+    {
+        /*
+         * If error is because of invalid terminal and terminal
+         * used is direct, we can disable the terminal
+         */
+        if (($error->isInvalidTerminalError() === true) and
+            ($terminal->isShared() === false))
+        {
+            $this->disableTerminal($terminal);
+        }
     }
 
     protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)

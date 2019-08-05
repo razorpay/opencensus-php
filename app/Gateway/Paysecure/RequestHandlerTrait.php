@@ -38,7 +38,7 @@ trait RequestHandlerTrait
             $this->input,
             null,
             [
-                'enrolled' => $response[Fields::STATUS] ?? ''
+                'enrolled' => ($response[Fields::STATUS] === StatusCode::SUCCESS) ? 'Y' : 'F',
             ]);
 
         return $response;

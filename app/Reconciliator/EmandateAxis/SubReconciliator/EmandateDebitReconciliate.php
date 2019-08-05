@@ -124,7 +124,7 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
         return StatusCode::getEmandateDebitErrorDesc($errorDescription);
     }
 
-    protected function getReconPaymentAmount($row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
     }

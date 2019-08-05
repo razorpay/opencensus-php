@@ -1114,7 +1114,59 @@ class WebhookTest extends TestCase
         $this->assertNotNull($reversal['balance_id']);
     }
 
-    public function testRefundProcessedWebhookEventData()
+    public function testRefundProcessedInstantWebhookEventData()
+    {
+        $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
+
+        $this->createWebhook(['events' => ['refund.processed' => '1']]);
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+
+            return true;
+        });
+
+        // Adding specific amount to refund - this is meant to test processed instant refunds on scrooge -
+        $this->refundPayment($payment['id'], 3471, ['speed' => 'optimum', 'is_fta' => true]);
+    }
+
+    public function testRefundProcessedNormalWebhookEventData()
     {
         $this->fixtures->merchant->addFeatures(['card_transfer_refund']);
 

@@ -47,6 +47,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
         Entity::BANK_INTERNAL_STATUS            => 'sometimes|string',
         Entity::STATUS                          => 'filled|string|custom',
+        Entity::BANK_REFERENCE_NUMBER           => 'filled|string',
         Entity::BANK_INTERNAL_REFERENCE_NUMBER  => 'filled|string',
         Entity::BENEFICIARY_PIN                 => 'filled|string',
         Entity::BENEFICIARY_CITY                => 'filled|string',
@@ -107,13 +108,6 @@ class Validator extends Base\Validator
         Entity::CHANNEL         => 'required|string|custom',
         Entity::ACTION          => 'required|string|in:add,delete',
         Entity::PINCODES        => 'required|array|filled',
-    ];
-
-    // TODO: Need to make the rules stricter
-    protected static $rblCreateMerchantTokenRules = [
-        RblFields::SUBCORP_ID               => 'required|string',
-        RblFields::SUBCORP_USER_ID          => 'required|string',
-        RblFields::SUBCORP_USER_PASSWORD    => 'required|string',
     ];
 
     protected static $serviceablePincodeValidators = [

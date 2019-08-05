@@ -166,7 +166,6 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_IFSC,
         self::BANK_INTERNAL_STATUS,
-        self::USERNAME,
         self::REFERENCE1,
         self::ACCOUNT_TYPE,
         self::ACCOUNT_CURRENCY,
@@ -174,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_MOBILE,
         self::BENEFICIARY_NAME,
         self::BANK_REFERENCE_NUMBER,
+        self::USERNAME,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -226,6 +226,11 @@ class Entity extends Base\PublicEntity
     public function setFtsFundAccountId(string $fundAccountId)
     {
         $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $fundAccountId);
+    }
+
+    public function setPassword(string $password)
+    {
+        $this->setAttribute(self::PASSWORD, $password);
     }
 
     // -------------------------- Getters ------------------------------------ //
@@ -333,17 +338,6 @@ class Entity extends Base\PublicEntity
     public function isAlreadyActivated()
     {
         return ($this->isAttributeNotNull(self::ACCOUNT_ACTIVATION_DATE));
-    }
-
-    // --------------------------- Mutators ----------------------------------- //
-
-    public function setPasswordAttribute(string $password)
-    {
-        $bankingAccountCore = new Core();
-
-        $token = $bankingAccountCore->tokenizeBankingAccountCredentials($password);
-
-        $this->attributes[self::PASSWORD] = $token;
     }
 
     // --------------------------- Relations ---------------------------------- //

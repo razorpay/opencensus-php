@@ -17,6 +17,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -541,25 +542,11 @@ class Core extends Base\Core
         }
     }
 
-    public function action($merchant, $input)
+    public function action($merchant, $input, bool $useWorkflows = true)
     {
         $merchant->getValidator()->validateInput('action', $input);
 
-        $admin = $this->app['basicauth']->getAdmin();
-
         $action = $input['action'];
-
-        // Check for admin permissions
-        $admin->hasMerchantActionPermissionOrFail($action);
-
-        if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
-        {
-            $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
-
-            (new Methods\Core)->validatePricingForInternational($merchant, $plan);
-        }
-
-        $routePermission = Permission\Name::$actionMap[$action];
 
         $originalMerchant = clone $merchant;
 
@@ -567,8 +554,10 @@ class Core extends Base\Core
 
         $merchant->$function();
 
-        $this->app['workflow']->setPermission($routePermission)->handle(
-            $originalMerchant, $merchant);
+        if ($useWorkflows === true)
+        {
+            $this->triggerWorkFlowForMerchantEditAction($originalMerchant, $merchant, $action);
+        }
 
         $this->repo->saveOrFail($merchant);
 
@@ -579,6 +568,23 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    /**
+     * @param Entity $oldMerchant
+     * @param Entity $newMerchant
+     * @param string $action
+     */
+    protected function triggerWorkFlowForMerchantEditAction(Entity $oldMerchant, Entity $newMerchant, string $action)
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        // Check for admin permissions
+        $admin->hasMerchantActionPermissionOrFail($action);
+
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        $this->app['workflow']->setPermission($routePermission)->handle($oldMerchant, $newMerchant);
     }
 
     /**
@@ -983,7 +989,7 @@ class Core extends Base\Core
 
         try
         {
-            $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+            $app = $this->getPartnerAppByMerchantId($merchant->getId());
         }
         catch (DBQueryException $ex)
         {
@@ -1407,6 +1413,36 @@ class Core extends Base\Core
         $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser);
 
         return $merchant;
+    }
+
+    /**
+     * This function checks for a mapping between the partner merchant's dummy app from
+     * auth database and the submerchant. This is stored in the `merchant_access_map` table
+     * on API side.
+     *
+     * @param  string $merchantId
+     * @param  string $partnerId
+     *
+     * @return bool
+     */
+    public function isMerchantMappedToNonPurePlatformPartner(string $merchantId, string $partnerId): bool
+    {
+        $app = $this->getPartnerAppByMerchantId($partnerId);
+
+        $mapping = (new AccessMap\Repository)
+            ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+
+        return (empty($mapping) === false);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return OAuthApp\Entity|null
+     */
+    public function getPartnerAppByMerchantId(string $merchantId)
+    {
+        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
     }
 
     /**
@@ -2091,6 +2127,56 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    public function getPartnerBankAccountIdsForSubmerchants(array $merchantIds): array
+    {
+        $merchants = $this->repo->merchant->getAllPartnerBankAccountsForSubmerchants($merchantIds);
+
+        $submerchants = [];
+
+        // Attributes
+        $partnerBankAccountId         = 'partner_bank_account_id';
+        $partnerConfigOriginId        = 'partner_config_origin_id';
+        $partnerConfigSettleToPartner = 'partner_config_settle_to_partner';
+
+        foreach ($merchants as $merchant)
+        {
+            $merchantId = $merchant->getId();
+
+            if (array_key_exists($merchantId, $submerchants) === true)
+            {
+                if (empty($merchant->getAttribute($partnerConfigOriginId)) === false)
+                {
+                    // App config was applied to the map but now we have a submerchant config, so unset the app config
+                    unset($submerchants[$merchantId]);
+                }
+                else
+                {
+                    // Submerchant config has been applied to the map. Do nothing for the app config
+                    continue;
+                }
+            }
+
+            $submerchants[$merchantId] = [
+                $partnerBankAccountId         => $merchant->getAttribute($partnerBankAccountId),
+                $partnerConfigSettleToPartner => (bool) $merchant->getAttribute($partnerConfigSettleToPartner),
+            ];
+        }
+
+        $merchantIdToPartnerBankAccountMap = [];
+
+        foreach ($submerchants as $merchantId => $merchantObj)
+        {
+            if ($merchantObj[$partnerConfigSettleToPartner] === true)
+            {
+                $merchantIdToPartnerBankAccountMap[$merchantId] = $merchantObj[$partnerBankAccountId];
+            }
+        }
+
+        $this->trace->info(TraceCode::PARTNER_BANK_ACCOUNT_MAP, $merchantIdToPartnerBankAccountMap);
+
+        return $merchantIdToPartnerBankAccountMap;
     }
 
     protected function internationalEnable(Entity $merchant)

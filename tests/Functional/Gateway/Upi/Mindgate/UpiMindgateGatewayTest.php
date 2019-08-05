@@ -181,13 +181,13 @@ class UpiMindgateGatewayTest extends TestCase
             [
                 Metric::DIMENSION_ACTION            => 'authorize',
                 Metric::DIMENSION_STATUS            => 'success',
-                Metric::DIMENSION_INSTRUMENT_TYPE   => 'intent',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'pay',
             ],
             [
                 Metric::DIMENSION_ACTION            => 'callback',
                 Metric::DIMENSION_STATUS            => 'success',
                 //TODO: This should be intent, fix this.
-                Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'pay',
             ],
         ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT_V3));
     }

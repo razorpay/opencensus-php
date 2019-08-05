@@ -3,18 +3,25 @@
 namespace RZP\Tests\Functional\FundTransfer;
 
 use Queue;
+use Redis;
 use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
+use RZP\Models\Payout;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Account;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class AttemptTest extends TestCase
 {
     use AttemptTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -43,7 +50,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testSettlementFileCreationKotak()
@@ -67,7 +74,7 @@ class AttemptTest extends TestCase
 
         Queue::assertPushed(BeamJob::class, 1);
 
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testInitiateAtCheckDuringFileCreation()
@@ -213,16 +220,18 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankImps()
     {
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
         $this->markTestSkipped();
 
-        // Yesbank now uses api based channels
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::YESBANK, 2, Attempt\Type::PAYOUT);
     }
 
     public function testPayoutFileCreationYesbankRtgsSuccess()
     {
-        // Yesbank using api based channels
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
         $this->markTestSkipped();
 
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
@@ -235,6 +244,11 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationYesbankRtgsFailed()
     {
+        // Yesbank is now using api based channels.
+        // Hence, removing testcase
+
+        $this->markTestSkipped();
+
         $channel = Channel::YESBANK;
 
         $purpose = Attempt\Purpose::SETTLEMENT;
@@ -252,7 +266,6 @@ class AttemptTest extends TestCase
                 'amount' => 30000000,
             ]);
 
-
         $this->fixtures->create(
             'fund_transfer_attempt',
             [
@@ -269,6 +282,8 @@ class AttemptTest extends TestCase
         $content = $this->initiateTransfer($channel, $purpose, false);
 
         $this->assertEquals(1, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['success']);
+        $this->assertEquals(1, $content[$channel]['failed']);
     }
 
     public function testYesbankRefundToCreditCard()
@@ -366,6 +381,225 @@ class AttemptTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(1, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['success']);
+        $this->assertEquals(1, $content[$channel]['failed']);
         $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
+    }
+
+    public function testRblPayoutSuccess()
+    {
+        $channel = Channel::RBL;
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+              ->andReturn($redisMock);
+
+        $redisMock->method('hget')
+                  ->with('config:fts_channels', $channel)
+                  ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
+
+        $this->ba->privateAuth();
+
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            9000000,
+            AccountType::DIRECT,
+            $channel);
+
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 200000,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'notes'           => [
+                'abc' => 'xyz',
+                ],
+            ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($channel, $payout['channel']);
+        $this->assertEquals($channel, $attempt['channel']);
+        $this->assertEquals(1, $attempt['is_fts']);
+        $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $this->assertNull($payout['transaction_id']);
+    }
+
+
+    public function testRblPayoutFailed()
+    {
+        $channel = Channel::RBL;
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
+            ->getMock();
+
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
+
+        $redisMock->method('hget')
+            ->with('config:fts_channels', $channel)
+            ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
+
+        $this->ba->privateAuth();
+
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            9000000,
+            AccountType::DIRECT,
+            $channel);
+
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 200000,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($channel, $payout['channel']);
+        $this->assertEquals($channel, $attempt['channel']);
+        $this->assertEquals(1, $attempt['is_fts']);
+        $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+
+        $this->assertNull($payout['transaction_id']);
+    }
+
+    public function testRblPayoutReversed()
+    {
+        $channel = Channel::RBL;
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hget'])
+            ->getMock();
+
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
+
+        $redisMock->method('hget')
+            ->with('config:fts_channels', $channel)
+            ->will($this->returnValue(Mode::IMPS.','. Mode::IFT.','. Mode::NEFT.','. Mode::RTGS));
+
+        $this->ba->privateAuth();
+
+        $this->setUpMerchantForBusinessBanking(
+            false,
+            9000000,
+            AccountType::DIRECT,
+            $channel);
+
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 200000,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($channel, $payout['channel']);
+        $this->assertEquals($channel, $attempt['channel']);
+        $this->assertEquals(1, $attempt['is_fts']);
+        $this->assertEquals(Payout\Status::PROCESSING, $payout['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Payout\Status::REVERSED, $payout['status']);
+        $this->assertEquals(Attempt\Status::REVERSED, $attempt['status']);
+
+        $this->assertNull($payout['transaction_id']);
     }
 }

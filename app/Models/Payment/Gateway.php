@@ -191,17 +191,21 @@ class Gateway
         self::BILLDESK,
     ];
 
+    // TODO: Add gateway and gateway_acquirer map to fix
+    // this for other card gateways
     const DIRECT_SETTLEMENT_GATEWAYS = [
-        self::NETBANKING_HDFC   => self::HDFC,
-        self::NETBANKING_KOTAK  => self::KOTAK,
-        self::NETBANKING_ICICI  => self::ICICI,
-        self::NETBANKING_RBL    => self::RBL,
-        self::NETBANKING_AXIS   => self::AXIS,
-        self::PAYTM             => self::PAYTM,
         self::AMEX              => self::AMEX,
-        self::UPI_MINDGATE      => self::HDFC,
+        self::HDFC              => self::HDFC,
         self::ISG               => self::HDFC,
+        self::BILLDESK          => self::BILLDESK,
+        self::NETBANKING_AXIS   => self::AXIS,
+        self::NETBANKING_HDFC   => self::HDFC,
+        self::NETBANKING_ICICI  => self::ICICI,
+        self::NETBANKING_KOTAK  => self::KOTAK,
+        self::NETBANKING_RBL    => self::RBL,
+        self::PAYTM             => self::PAYTM,
         self::UPI_AXIS          => self::AXIS,
+        self::UPI_MINDGATE      => self::HDFC,
     ];
 
     /**
@@ -293,25 +297,27 @@ class Gateway
       Payment\Gateway::NETBANKING_CANARA
     ];
 
-    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates-new
+    // Please keep this list sorted. The list of Live Banks in API E-Mandate is available at https://www.npci.org.in/nach-e-mandates-new
     const ENACH_NPCI_NETBANKING_BANKS = [
-        IFSC::YESB,
-        IFSC::IDFB,
-        IFSC::UTIB,
         IFSC::CBIN,
-        IFSC::KKBK,
-        IFSC::INDB,
-        IFSC::ICIC,
-        IFSC::USFB,
-        IFSC::IBKL,
+        IFSC::CIUB,
+        IFSC::DEUT,
         IFSC::HDFC,
-        IFSC::TMBL,
+        IFSC::IBKL,
+        IFSC::ICIC,
+        IFSC::IDFB,
+        IFSC::INDB,
         IFSC::IOBA,
+        IFSC::KKBK,
+        IFSC::MAHB,
+        IFSC::PYTM,
+        IFSC::RATN,
+        IFSC::TMBL,
+        IFSC::USFB,
+        IFSC::UTIB,
+        IFSC::YESB,
         Netbanking::PUNB_R,
         Netbanking::BARB_R,
-        IFSC::RATN,
-        IFSC::MAHB,
-        IFSC::DEUT,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -1238,6 +1244,7 @@ class Gateway
         Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
         Gateway::UPI_AIRTEL,
+        Gateway::WALLET_PHONEPE,
     ];
 
     /**
@@ -1341,6 +1348,31 @@ class Gateway
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
+
+    /**
+     * @var array
+     * Refunds for the netbanking gateways in this list are reconciled automatically while generating the RefundsFile.
+     */
+    public static $refundsReconcileNetbankingGateways = [
+        IFSC::ICIC => Gateway::NETBANKING_ICICI,
+        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN => Gateway::NETBANKING_RBL,
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::ALLA => Gateway::NETBANKING_ALLAHABAD,
+        IFSC::CNRB => Gateway::NETBANKING_CANARA,
+        IFSC::IDFB => Gateway::NETBANKING_IDFC,
+        IFSC::ESFB => Gateway::NETBANKING_EQUITAS,
+        IFSC::VIJB => Gateway::NETBANKING_VIJAYA,
+        IFSC::ORBC => Gateway::NETBANKING_OBC,
+        IFSC::CSBK => Gateway::NETBANKING_CSB,
+        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
+    ];
+
 
     /**
      * List of gateways which support netbanking, either in test or live mode.

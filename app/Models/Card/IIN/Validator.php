@@ -10,7 +10,7 @@ use RZP\Models\Card;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN            => 'required|numeric|digits:6',
+        Entity::IIN            => 'required|digits:6',
         Entity::NETWORK        => 'required',
         Entity::TYPE           => 'required',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
@@ -79,10 +79,19 @@ class Validator extends Base\Validator
             return;
         }
 
-        $this->validateNetwork($input, $this->entity->getIin());
+        $this->validateNetwork($input, $this->entity->getIin(), true);
     }
 
-    protected function validateNetwork($input, $iin)
+    /**
+     * @param $input
+     * @param $iin
+     * @param bool $skipNetworkRegexValidation - This parameter is for the caller to decide whether an exception
+     *             should be raised in the following situation.
+     *             Situation is when network in input does not match with the network that corresponds to the regexes
+     *             defined in $networkRegexes in Models/Card/Network.php
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateNetwork($input, $iin, $skipNetworkRegexValidation = false)
     {
         $network = $input[Entity::NETWORK];
 
@@ -98,8 +107,12 @@ class Validator extends Base\Validator
         if (($fullName !== 'Unknown') and
             ($fullName !== $network))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Card network given does not match the regex one: ' . $fullName);
+            if ($skipNetworkRegexValidation === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Card network given does not match the regex one: ' . $fullName);
+            }
+
         }
     }
 

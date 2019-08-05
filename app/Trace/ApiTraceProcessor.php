@@ -4,7 +4,6 @@ namespace RZP\Trace;
 
 use App;
 use Request;
-use RZP\Exception;
 
 class ApiTraceProcessor
 {
@@ -28,6 +27,8 @@ class ApiTraceProcessor
         $this->addMerchantId($record);
 
         $this->addDashboardHeaders($record);
+
+        $this->addRouteNameForExceptions($record);
 
         return $record;
     }
@@ -64,12 +65,12 @@ class ApiTraceProcessor
         }
     }
 
-    protected function updateClientIp(&$record)
+    protected function updateClientIp(& $record)
     {
         $record['request']['client_ip'] = $this->app['request']->ip();
     }
 
-    protected function addMerchantId(&$record)
+    protected function addMerchantId(& $record)
     {
         $record['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
     }
@@ -79,6 +80,17 @@ class ApiTraceProcessor
         if ($this->app['basicauth']->isDashboardApp() === true)
         {
             $record['request'] += $this->app['basicauth']->getDashboardHeaders();
+        }
+    }
+
+    protected function addRouteNameForExceptions(& $record)
+    {
+        // If this is an exception, a stack key is present in the context array
+        $stackPresent = isset($record['context']['stack']);
+
+        if ($stackPresent === true)
+        {
+            $record['request']['route_name'] = optional($this->app['router'])->currentRouteName();
         }
     }
 }

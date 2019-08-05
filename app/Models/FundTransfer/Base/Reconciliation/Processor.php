@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Attempt\Entity;
 use RZP\Models\Settlement\SlackNotification;
@@ -144,7 +145,14 @@ abstract class Processor extends Base\Core
             return $summary;
         });
 
-        (new SlackNotification)->send('reconcile_file', $summary, null, $summary['unprocessed_count']);
+        $apiBasedChannels = Channel::getApiBasedChannels();
+
+        //reducing slack alerts for API based channels
+        if (in_array(static::$channel, $apiBasedChannels, true) === false)
+        {
+            (new SlackNotification)->send('reconcile_file', $summary, null, $summary['unprocessed_count']);
+
+        }
 
         return $summary;
     }

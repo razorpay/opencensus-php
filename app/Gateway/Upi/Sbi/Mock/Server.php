@@ -21,7 +21,14 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $request = $this->decrypt($input);
+        if (isset($input['grant_type']) === true)
+        {
+            return $this->getOauthToken();
+        }
+
+        $inputArray = json_decode($input, true);
+
+        $request = $this->decrypt($inputArray['requestMsg']);
 
         $this->validateAuthorizeInput($request);
 
@@ -39,9 +46,14 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    public function validateVpa(string $input)
+    public function validateVpa($input)
     {
-        $request = $this->decrypt($input);
+        if (isset($input['grant_type']) === true)
+        {
+            return $this->getOauthToken();
+        }
+
+        $request = $this->decrypt(json_decode($input, true)['requestMsg']);
 
         $this->validateActionInput($request, Action::VALIDATE_VPA);
 
@@ -75,7 +87,12 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $input = $this->decrypt($input);
+        if (isset($input['grant_type']) === true)
+        {
+            return $this->getOauthToken();
+        }
+
+        $input = $this->decrypt(json_decode($input, true)['requestMsg']);
 
         $this->validateActionInput($input, 'verify');
 
@@ -91,35 +108,38 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    /**
-     * Encrypts the decrypted array. This method needs to be public so that it can be used in the test cases.
-     * @param array $response
-     * @return mixed
-     */
-    public function encrypt(array $response)
+    protected function encrypt(array $content)
     {
-        $aes = $this->getGatewayInstance()->getAesCrypto();
+        $gateway = $this->getGatewayInstance();
 
-        $json = json_encode($response, JSON_FORCE_OBJECT);
+        $json = json_encode($content);
 
-        return $aes->encryptString($json);
+        $hash = $gateway->generateHash($json);
+
+        $pgp = $gateway->getPgpInstance();
+
+        $encryptedHash = $pgp->encrypt($hash);
+
+        $contentWithHash = $encryptedHash . '|' . $json;
+
+        return base64_encode($pgp->encryptSign($contentWithHash));
     }
 
-    /**
-     * Decrypts the encrypted json. This method needs to be public so that it can be used in the test cases.
-     * @param string $json
-     * @param string $messageKey
-     * @return mixed
-     */
-    public function decrypt(string $json, $messageKey = RequestFields::REQUEST_MESSAGE)
+    protected function decrypt($encrypted)
     {
-        $array = json_decode($json, true);
+        $gateway = $this->getGatewayInstance();
 
-        $aes = $this->getGatewayInstance()->getAesCrypto();
+        $pgp = $gateway->getPgpInstance();
 
-        $decryptedString = $aes->decryptString($array[$messageKey]);
+        $decryptedString = $pgp->decryptVerify(base64_decode($encrypted));
 
-        return json_decode($decryptedString, true);
+        $encHashResponsePair = explode('|', $decryptedString);
+
+        $hash = $pgp->decrypt($encHashResponsePair[0]);
+
+        $gateway->verifyHash($encHashResponsePair[1], $hash);
+
+        return json_decode($encHashResponsePair[1], true);
     }
 
     private function getValidateVpaResponseArray(array $input)
@@ -264,5 +284,30 @@ class Server extends Base\Mock\Server
         $class = 'RZP\Gateway\Upi\Base\Repository';
 
         return new $class;
+    }
+
+    protected function makeJsonResponse(array $content)
+    {
+        $json = json_encode($content);
+
+        $response = $this->makeResponse($json);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    protected function getOauthToken()
+    {
+        $content = [
+            'access_token'  => 'test_token',
+            'token_type'    => 'bearer',
+            'refresh_token' => 'test_refresh',
+            'expires_in'    => 179,
+        ];
+
+        $this->content($content, 'oauth');
+
+        return $this->makeJsonResponse($content);
     }
 }

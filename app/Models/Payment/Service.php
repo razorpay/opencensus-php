@@ -30,6 +30,7 @@ use RZP\Constants\MailTags;
 use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Models\Transfer\Metric as TransferMetric;
 
 class Service extends Base\Service
 {
@@ -659,9 +660,18 @@ class Service extends Base\Service
      */
     public function transfer(string $id, array $input) : array
     {
-        $transfers = $this->getNewProcessor()->transfer($id, $input);
+        try
+        {
+            $transfers = $this->getNewProcessor()->transfer($id, $input);
 
-        return $transfers->toArrayPublic();
+            return $transfers->toArrayPublic();
+        }
+        catch (\Exception $e)
+        {
+            (new TransferMetric)->pushCreateFailedMetrics($e);
+
+            throw $e;
+        }
     }
 
     /**
@@ -731,6 +741,8 @@ class Service extends Base\Service
             $input
         );
 
+        $limit = $input['limit'] ?? 100;
+
         if (isset($input['payment_ids']) === true)
         {
             (new Payment\Validator)->validateInput('bulk_capture', $input);
@@ -743,10 +755,10 @@ class Service extends Base\Service
         }
         else
         {
-            $from = Carbon::today(Timezone::IST)->subDays(8);
-            $to = Carbon::today(Timezone::IST)->subDays(3);
+            $from = Carbon::today(Timezone::IST)->subDays(8)->getTimestamp();
+            $to = Carbon::today(Timezone::IST)->subDays(3)->getTimestamp();
 
-            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to);
+            $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit);
         }
 
         $total = $payments->count();

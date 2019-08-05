@@ -4,11 +4,17 @@ namespace RZP\Models\Gateway\Rule;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Services\SmartRouting;
 
 class Service extends Base\Service
 {
     public function create(array $input)
     {
+        $ruleOrgId = $this->getRuleOrgId();
+
+        $input[Entity::ORG_ID] = $ruleOrgId;
+
         $rule = (new Core)->create($input);
 
         return $rule->toArrayAdmin();
@@ -26,6 +32,16 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($rule);
 
+        // try catch added temporarily
+        try
+        {
+            $this->app->smartRouting->deleteGatewayRule($id, $rule->getGroup());
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SMART_ROUTING_SERVICE_ERROR);
+        }
+
         return $rule->toArrayDeleted();
     }
 
@@ -34,5 +50,16 @@ class Service extends Base\Service
         $rule = (new Core)->update($id, $input);
 
         return $rule->toArrayAdmin();
+    }
+
+    private function getRuleOrgId()
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $crossOrgId = $this->auth->getCrossOrgId();
+
+        $ruleOrgId = $crossOrgId ?: $orgId;
+
+        return $ruleOrgId;
     }
 }
