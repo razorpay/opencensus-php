@@ -583,4 +583,15 @@ class Entity extends Base\PublicEntity
 
         return $data;
     }
+
+    public function getDataForCheckout()
+    {
+        $data = $this->toArrayHosted();
+
+        unset($data[self::ID]);
+
+        unset($data[self::ENTITY]);
+
+        return $data;
+    }
 }

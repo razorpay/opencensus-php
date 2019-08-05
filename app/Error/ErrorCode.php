@@ -1297,4 +1297,6 @@ class ErrorCode
     // OmniPay Error Codes
     const BAD_REQUEST_INVALID_UPI_PROVIDER                                          = 'BAD_REQUEST_INVALID_UPI_PROVIDER';
     const GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT                                         = 'GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT';
+
+    const BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS';
 }
