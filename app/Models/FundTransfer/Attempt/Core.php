@@ -236,7 +236,7 @@ class Core extends Base\Core
             {
                 if ($this->isTestMode() === true)
                 {
-                    return [true, Settlement\Channel::YESBANK];
+                    return [false, Settlement\Channel::YESBANK];
                 }
                 else
                 {
