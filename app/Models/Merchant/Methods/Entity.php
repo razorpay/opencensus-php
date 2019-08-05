@@ -7,7 +7,6 @@ use RZP\Models\Bank\Bank;
 use RZP\Models\Card\Network;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
-use RZP\Models\Payment\Processor\Wallet;
 
 class Entity extends Base\PublicEntity
 {
