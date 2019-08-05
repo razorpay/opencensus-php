@@ -105,6 +105,8 @@ class Preferences
     const MID_ARMY_PUBLIC_SCHOOL    = 'Coie6L2Dma3sI1';
     const MID_RBL_PDD_BANK          = 'Cya3FzbrKbxMGg';
     const MID_RBL_PDD_CREDIT        = 'Cya5vz9ti9rO25';
+    const MID_BFL_BANK              = 'CvUFJHEqgYwE85';
+    const MID_BFL_CARD              = 'Cya3FzbrKbxMGg';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
