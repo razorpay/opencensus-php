@@ -103,7 +103,7 @@ class Preferences
     const MID_PT_SENDERLAL_OPEN_UNI = 'CmOpbOIG251EkR';
     const MID_SDM_YOGA_AND_NATURE   = 'CoMA8GeyufpdOA';
     const MID_ARMY_PUBLIC_SCHOOL    = 'Coie6L2Dma3sI1';
-    const MID_RBL_PDD_BANK          = 'Cya3FzbrKbxMGg';
+    const MID_RBL_PDD_BANK          = 'CvUGpq6RlNHdQK';
     const MID_RBL_PDD_CREDIT        = 'Cya5vz9ti9rO25';
     const MID_BFL_BANK              = 'CvUFJHEqgYwE85';
     const MID_BFL_CARD              = 'Cya3FzbrKbxMGg';

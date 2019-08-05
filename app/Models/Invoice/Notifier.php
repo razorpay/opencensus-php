@@ -477,7 +477,7 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'        => $this->invoice->getAmount() / 100,
                     'invoice_link'  => $invoiceLink,
-                    'notes_charges' => $this->invoice->getNotes()->charges,
+                    'notes_charges' => $this->invoice->getNotes()->charges ?? 0,
                 ];
 
                 break;
@@ -488,8 +488,8 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'receipt'         => $this->invoice->getReceipt(),
-                    'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
+                    'receipt'        => $this->invoice->getReceipt(),
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
@@ -500,8 +500,8 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'receipt'         => $this->invoice->getReceipt(),
-                    'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
+                    'receipt'        => $this->invoice->getReceipt(),
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
@@ -512,8 +512,8 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'receipt'         => $this->invoice->getReceipt(),
-                    'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
+                    'receipt'        => $this->invoice->getReceipt(),
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
 
                 break;
@@ -524,8 +524,8 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'receipt'         => $this->invoice->getReceipt(),
-                    'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
+                    'receipt'        => $this->invoice->getReceipt(),
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
                 ];
         }
 
