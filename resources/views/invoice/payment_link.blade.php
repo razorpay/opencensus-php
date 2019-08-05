@@ -667,13 +667,14 @@ $custom_labels                  = $data['custom_labels'];
 
             var invoiceObj = data.invoice;
             var merchant = data.merchant;
+            var checkoutOptions = data.checkout_options;
 
             var options = {
                 key: data.key_id,
                 invoice_id: invoiceObj.id,
                 amount: invoiceObj.amount,
                 // parent: '#chkout-box',
-                description: '#' + invoiceObj.id,
+                description: checkoutOptions['description'],
                 handler: function(response) {
                     if (globalScope.hasRedirect()) {
 

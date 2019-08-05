@@ -191,8 +191,6 @@ class Notifier extends Base\Core
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
-        sd($request);
-
         try
         {
             $response = $this->raven->sendSms($request, false);
@@ -490,7 +488,7 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'recipt'         => $this->invoice->getReceipt(),
+                    'receipt'         => $this->invoice->getReceipt(),
                     'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
                 ];
 
@@ -502,7 +500,7 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'recipt'         => $this->invoice->getReceipt(),
+                    'receipt'         => $this->invoice->getReceipt(),
                     'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
                 ];
 
@@ -514,7 +512,7 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'recipt'         => $this->invoice->getReceipt(),
+                    'receipt'         => $this->invoice->getReceipt(),
                     'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
                 ];
 
@@ -526,7 +524,7 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'         => $this->invoice->getAmount() / 100,
                     'invoice_link'   => $invoiceLink,
-                    'recipt'         => $this->invoice->getReceipt(),
+                    'receipt'         => $this->invoice->getReceipt(),
                     'min_amount_due' => $this->invoice->getFirstPaymentMinAmount() / 100,
                 ];
         }
