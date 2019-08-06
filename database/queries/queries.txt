@@ -5186,7 +5186,6 @@ ALTER TABLE pricing
     ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway,
     ADD INDEX pricing_procurer_index (procurer);
 
-<<<<<<< HEAD
 ALTER TABLE partner_configs
     ADD COLUMN settle_to_partner TINYINT(1) NOT NULL DEFAULT 0 AFTER commission_model;
 
@@ -5225,6 +5224,6 @@ ALTER TABLE payouts
     ADD COLUMN failed_at INT(11) DEFAULT NULL AFTER `reversed_at`,
     ADD INDEX payouts_failed_at_index (failed_at);
 
-ALTER TABLE payments
-    CHANGE reference17 authentication_gateway TEXT DEFAULT NULL,
-    ALGORITHM=INPLACE, LOCK=NONE;
+    ALTER TABLE payments
+        CHANGE reference17 authentication_gateway TEXT DEFAULT NULL,
+        ALGORITHM=INPLACE, LOCK=NONE;

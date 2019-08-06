@@ -276,7 +276,7 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->char(Payment::REFERENCE13, Payment::ID_LENGTH)
+            $table->char(Payment::AUTHENTICATION_GATEWAY, Payment::ID_LENGTH)
                   ->nullable();
 
             $table->char(Payment::REFERENCE14, Payment::ID_LENGTH)
@@ -288,7 +288,7 @@ class CreatePayments extends Migration
             $table->string(Payment::REFERENCE16, 255)
                   ->nullable();
 
-            $table->text(Payment::AUTHENTICATION_GATEWAY)
+            $table->text(Payment::REFERENCE17)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

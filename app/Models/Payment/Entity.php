@@ -116,9 +116,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE9            = 'reference9';
     // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE12           = 'reference12';
-    const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
     const REFERENCE16           = 'reference16';
+    const REFERENCE17           = 'reference17';
 
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
@@ -181,8 +181,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const OFFER_ID              = 'offer_id';
     const SETTLED_BY            = 'settled_by';
 
-    // was reference17. now used by card payments to store authentication gateway name.
-    const AUTHENTICATION_GATEWAY  = 'authentication_gateway';
+    const AUTHENTICATION_GATEWAY    = 'reference13';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -236,6 +235,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTED,
         self::AUTH_TYPE,
         self::RECURRING_TYPE,
+        self::AUTHENTICATION_GATEWAY,
     ];
 
     protected $visible = [
@@ -1311,6 +1311,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $trimmedReference16 = (blank($reference16) === true) ? null : trim($reference16);
 
         $this->attributes[self::REFERENCE16] =  $trimmedReference16;
+    }
+
+    protected function setReference13Attribute($authenticationGateway)
+    {
+        if (empty($authenticationGateway) === true)
+        {
+            return;
+        }
+
+        $this->attributes[self::AUTHENTICATION_GATEWAY] = substr($authenticationGateway, 0, self::ID_LENGTH);
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
