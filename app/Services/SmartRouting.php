@@ -133,12 +133,6 @@ class SmartRouting
                 $this->app['config']->get('applications.smart_routing.password')
             ];
 
-            $this->trace->info(
-                TraceCode::SMART_ROUTING_RETRY,
-                [
-                    'test' => $authentication
-                ]);
-
             $options = [
                 'timeout' => self::REQUEST_TIMEOUT,
                 'auth'    => $authentication
