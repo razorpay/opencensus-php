@@ -209,6 +209,10 @@ class ApiServiceProvider extends BaseServiceProvider
             return new DiagClient($app);
         });
 
+        $this->app->singleton('gateway_downtime_metric', function($app)
+        {
+            return new DowntimeMetric();
+        });
 
         $this->app->singleton('eventManager', function($app)
         {

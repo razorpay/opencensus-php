@@ -54,6 +54,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 
 
@@ -3780,9 +3781,9 @@ trait Authorize
 
         $subscriptionRegistration = $invoice->entity;
 
-        $subscriptionRegistration->token()->associate($payment->getGlobalOrLocalTokenEntity());
+        $token = $payment->getGlobalOrLocalTokenEntity();
 
-        $this->repo->saveOrFail($subscriptionRegistration);
+        (new SubscriptionRegistration\Core)->authenticateWithToken($subscriptionRegistration, $token);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

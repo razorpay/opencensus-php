@@ -321,6 +321,39 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
+    public function testOrgDirectTerminalFilter()
+    {
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DrctNbKtkTrmnl']);
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+                                ['id' => 'SCorNbKtkTrmnl']);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
+    }
+
+    // Test to check weather gateway rules created for different org doesn't affect
+    // another one
+    public function testOrgDirectTerminalFilterWithDifferentOrg()
+    {
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DrctNbKtkTrmnl']);
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
+                                ['id' => 'SCorNbKtkTrmnl']);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        // Here both direct and shared terminal should get selected since
+        // gateway rule has been created for `HDFC org` and transacting merchant
+        // is in `Razorpay org`
+        $this->runTestCase($test, $merchant);
+    }
+
     public function testFeatureBasedMigrationPlan()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');

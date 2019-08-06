@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Method;
+use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
@@ -16,6 +17,7 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const MERCHANT_ID      = 'merchant_id';
+    const ORG_ID           = 'org_id';
     const PROCURER         = 'procurer';
     const GATEWAY          = 'gateway';
     const TYPE             = 'type';
@@ -209,6 +211,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY      => 128,
         self::CATEGORY2     => 256,
         self::MERCHANT_ID   => 512,
+        self::ORG_ID        => 1024,
     ];
 
     /**
@@ -276,6 +279,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
+        self::ORG_ID,
         self::PROCURER,
         self::GATEWAY,
         self::TYPE,
@@ -313,6 +317,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $modifiers = [
+        self::ORG_ID,
         self::NETWORK,
         self::ISSUER,
     ];
@@ -326,6 +331,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::ORG_ID     => Org::RAZORPAY_ORG_ID,
         self::MIN_AMOUNT => 0,
         self::STEP       => self::AUTHORIZATION,
         self::CAPABILITY => null,
@@ -553,11 +559,24 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function modifyOrgId(array & $input)
+    {
+        if (array_key_exists(self::ORG_ID, $input) === true)
+        {
+            $orgId = $input[self::ORG_ID];
+            if (empty($orgId) === false)
+            {
+                Org::verifyIdAndStripSign($orgId);
+                $this->attributes[self::ORG_ID] = $orgId;
+            }
+        }
+    }
+
     //----------------------------Modifiers End---------------------------------
 
     //---------------- Mutators-------------------------------------------------
 
-    public function setLoadAttribute($load)
+    protected function setLoadAttribute($load)
     {
         if ($load !== null)
         {

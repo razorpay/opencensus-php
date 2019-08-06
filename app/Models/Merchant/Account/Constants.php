@@ -75,6 +75,10 @@ class Constants
     const OPERATION          = 'operation';
     const REGISTERED         = 'registered';
 
+    const IDENTIFICATION        = 'identification';
+    const DOCUMENT              = 'document';
+    const IDENTIFICATION_NUMBER = 'identification_number';
+
     // defaults
     const DEFAULT_ACCOUNT_COUNT = 20;
 }

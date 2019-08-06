@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Error\ErrorCode;
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -138,16 +139,34 @@ class Core extends Base\Core
         // the level would have been updated and the other step would never
         // come into consideration because the same level will never again execute.
         //
+        /** @var Workflow\Step\Entity $step */
         foreach ($steps as $step)
         {
+            $stepId    = $step->getId();
+            $actionId  = $action->getId();
+            $checkerId = $checkerEntity->getId();
+
+            $alreadyReviewed = $this->repo
+                                    ->action_checker
+                                    ->hasCheckerAlreadyReviewedActionForStep($checkerId, $actionId, $stepId);
+
+            if ($alreadyReviewed === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL,
+                    null,
+                    ['step_id' => $stepId, 'action_id' => $actionId, 'checker_id' => $checkerId]);
+            }
+
+            //
             // Check if $step requires any check by matching
             // workflow_step.reviewer_count with count(action_checkers)
-
+            //
             $requiredReviews = $step->getReviewerCount();
 
             $reviewsDone = $this->repo
                                 ->action_checker
-                                ->fetchCountByActionIdForStep($action->getId(), $step->getId());
+                                ->fetchCountByActionIdForStep($actionId, $stepId);
 
             if ($reviewsDone >= $requiredReviews)
             {

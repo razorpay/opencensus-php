@@ -5148,6 +5148,11 @@ ALTER TABLE gateway_rules
     ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
     ADD INDEX gateway_rules_category_index (category);
 
+ALTER table `gateway_rules`
+    ADD COLUMN org_id VARCHAR(14) NOT NULL DEFAULT '100000razorpay' AFTER `merchant_id`,
+    MODIFY COLUMN merchant_id varchar(14) DEFAULT NULL,
+    ADD INDEX gateway_rules_org_id_merchant_id_index (`org_id`, `merchant_id`);
+    
 ALTER TABLE banking_accounts
     CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL,
     ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
@@ -5171,3 +5176,20 @@ ALTER TABLE gateway_rules
 ALTER TABLE pricing
     ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway,
     ADD INDEX pricing_procurer_index (procurer);
+
+ALTER TABLE partner_configs
+    ADD COLUMN settle_to_partner TINYINT(1) NOT NULL DEFAULT 0 AFTER commission_model;
+
+ALTER TABLE iins
+    MODIFY COLUMN iin CHAR(6) COLLATE utf8_bin;
+
+ALTER TABLE `reversals`
+    MODIFY COLUMN `transaction_id` CHAR(14) DEFAULT NULL;
+
+ALTER table terminals
+    ADD COLUMN `org_id` VARCHAR(14) NULL AFTER `merchant_id`,
+    ADD COLUMN `status` VARCHAR(255) NULL DEFAULT "activated" AFTER `enabled`,
+    ADD COLUMN `notes` TEXT DEFAULT NULL AFTER `ifsc_code`,
+    ADD INDEX terminals_org_id_index (`org_id`),
+    ADD INDEX terminals_status_index (`status`);
+

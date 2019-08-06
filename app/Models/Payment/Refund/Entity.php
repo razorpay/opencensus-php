@@ -1014,8 +1014,13 @@ class Entity extends Base\PublicEntity
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
-                    $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
-                    $scroogeSpeed = $scroogeResponse[self::RESPONSE_BODY]->speed;
+                    $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+
+                    $scroogeStatus =
+                        (empty($scroogeResponseBody[self::STATUS]) === false) ? $scroogeResponseBody[self::STATUS] : '';
+
+                    $scroogeSpeed =
+                        (empty($scroogeResponseBody[self::SPEED]) === false) ? $scroogeResponseBody[self::SPEED] : '';
 
                     if (empty($scroogeStatus) === false)
                     {

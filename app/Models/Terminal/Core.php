@@ -30,6 +30,8 @@ class Core extends Base\Core
 
         $terminal->merchant()->associate($merchant);
 
+        $terminal->org()->associate($merchant->org);
+
         $this->validateExistingTerminal($terminal);
 
         $this->validateDirectSettlementMapping($terminal);

@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use RZP\Services\SmartRouting;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Admin\Org\Entity as Org;
 use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
@@ -19,9 +20,16 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+        if (empty($input[Entity::MERCHANT_ID]) === false)
+        {
+            $merchantId = $input[Entity::MERCHANT_ID];
 
-        $rule->merchant()->associate($merchant);
+            $orgId = $input[Entity::ORG_ID];
+
+            $merchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $orgId);
+
+            $rule->merchant()->associate($merchant);
+        }
 
         $validatorMethod = $this->getValidatorMethod($rule);
 
@@ -204,6 +212,7 @@ class Core extends Base\Core
 
         $params = [
             Entity::MERCHANT_ID   => $merchant->getId(),
+            Entity::ORG_ID        => $merchant->getOrgId(),
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
             Entity::CATEGORY      => $merchant->getCategory(),

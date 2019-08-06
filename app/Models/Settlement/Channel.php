@@ -225,4 +225,12 @@ class Channel
             self::RBL,
         ];
     }
+
+    public static function getPreferredModeSupportedChannels()
+    {
+        return [
+            self::RBL,
+            self::YESBANK,
+        ];
+    }
 }

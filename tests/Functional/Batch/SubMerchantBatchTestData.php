@@ -9,7 +9,7 @@ return [
 
     'testCreateSubMerchantBatchAggregator' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
@@ -34,7 +34,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerNotDummyAllSteps' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'               => 'sub_merchant',
@@ -62,7 +62,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerNotDummySubmit' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'               => 'sub_merchant',
@@ -90,7 +90,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerDummyEmailAllSteps' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -116,7 +116,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerDummyEmailCreate' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -142,7 +142,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerInvalidFileEntriesForActivate' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -168,7 +168,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerInvalidInput' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -194,7 +194,7 @@ return [
 
     'testCreateSubMerchantBatchPartner' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
@@ -219,7 +219,7 @@ return [
 
     'testCreateSubMerchantBatchInvalidHeaders' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
@@ -239,6 +239,32 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+        ],
+    ],
+
+    'testProcessSubMerchantBatchInstantActivation' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'               => 'sub_merchant',
+                'instantly_activate' => 1,
+                'partner_id'         => '10000000000000',
+                'use_email_as_dummy' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'sub_merchant',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
         ],
     ],
 
@@ -328,8 +354,11 @@ return [
             Header::INTERNATIONAL            => 0,
             Header::PAYMENTS_FOR             => 'business',
             Header::BUSINESS_MODEL           => 'acme',
-            Header::BUSINESS_CATEGORY        => 'financial_services',
-            Header::BUSINESS_SUB_CATEGORY    => 'lending',
+
+            // whitelisted activation flow
+            Header::BUSINESS_CATEGORY        => 'education',
+            Header::BUSINESS_SUB_CATEGORY    => 'college',
+
             Header::REGISTERED_ADDRESS       => 'acme',
             Header::REGISTERED_CITY          => 'bangalore',
             Header::REGISTERED_STATE         => 'karnataka',

@@ -52,6 +52,8 @@ class Type
 
     const AXIS_EMANDATE_DEBIT               = 'axis_emandate_debit';
 
+    const SBI_EMANDATE_DEBIT                = 'sbi_emandate_debit';
+
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
     const CSB_NETBANKING_REFUND             = 'csb_netbanking_refund';
@@ -186,6 +188,7 @@ class Type
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
+            self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -321,6 +324,7 @@ class Type
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
+        self::SBI_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CANARA_NETBANKING_REFUND,
