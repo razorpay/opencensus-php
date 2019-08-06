@@ -678,7 +678,7 @@ $custom_labels                  = $data['custom_labels'];
                 invoice_id: invoiceObj.id,
                 amount: invoiceObj.amount,
                 // parent: '#chkout-box',
-                description: checkoutOptions['description'],
+                description: '#inv_'+checkoutOptions['description'],
                 handler: function(response) {
                     if (globalScope.hasRedirect()) {
 
