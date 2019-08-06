@@ -2130,10 +2130,11 @@ class Service extends Base\Service
 
             if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
             {
-                if ((isset($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time) === true) and
-                    ($scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time !== null))
+                $speedChangeTime = $scroogeResponse[RefundEntity::RESPONSE_BODY][self::SPEED_CHANGE_TIME];
+
+                if ($speedChangeTime !== null)
                 {
-                    $refundArray[self::SPEED_CHANGE_TIME] = $scroogeResponse[RefundEntity::RESPONSE_BODY]->speed_change_time;
+                    $refundArray[self::SPEED_CHANGE_TIME] = $speedChangeTime;
                 }
             }
         }
