@@ -115,6 +115,8 @@ class BeneficiaryRegistration extends Job
             else
             {
                 (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+
+                $this->delete();
             }
         }
         catch (\Throwable $e)
@@ -128,9 +130,9 @@ class BeneficiaryRegistration extends Job
                     'attempt_count'       => $this->attempts(),
                     'bank_account_id'     => $this->bankAccountId,
                 ]);
-        }
-        finally
-        {
+
+            (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+
             $this->delete();
         }
     }

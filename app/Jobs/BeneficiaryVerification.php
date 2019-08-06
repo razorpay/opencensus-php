@@ -106,6 +106,8 @@ class BeneficiaryVerification extends Job
             else
             {
                 (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+
+                $this->delete();
             }
         }
         catch (\Throwable $e)
@@ -119,9 +121,9 @@ class BeneficiaryVerification extends Job
                     'attempt_count'       => $this->attempts(),
                     'bank_account_id'     => $this->bankAccountId,
                 ]);
-        }
-        finally
-        {
+
+            (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+
             $this->delete();
         }
     }
