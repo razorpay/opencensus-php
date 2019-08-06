@@ -566,9 +566,27 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if ($this->refund->isScrooge() === true)
         {
-            // This will be unset if `validateRefundDetails` fails later in the flow.
-            // However, cannot remove it here as this variable is being used in between the flow
-            static::$scroogeReconciliate[$this->refund->getId()] = new Base\Foundation\ScroogeReconciliate;
+            //
+            // Check if this refund ID is already present in
+            // $scroogeReconciliate and avoid replacing it.
+            //
+            if (isset(static::$scroogeReconciliate[$this->refund->getId()]) === true)
+            {
+                //
+                // This refund is already being sent to scrooge and will be reconciled
+                // (as per API). This is a duplicate refund row, So we should increment
+                // the success count to account for this row.
+                // If we do not increment success count here, then processed_count will never be
+                // equal to success_count + failure_count, and batch will remain in `created` state.
+                //
+                $this->setSummaryCount(self::SUCCESSES_SUMMARY, $this->refund->getId());
+            }
+            else
+            {
+                // This will be unset if `validateRefundDetails` fails later in the flow.
+                // However, cannot remove it here as this variable is being used in between the flow
+                static::$scroogeReconciliate[$this->refund->getId()] = new Base\Foundation\ScroogeReconciliate;
+            }
         }
 
         return $this->refund;

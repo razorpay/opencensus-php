@@ -114,5 +114,7 @@ final class Constants
 
     const CODE                          = 'code';
 
-    const CHANNEL                       = 'channel';
+    const PREFERRED_SOURCE_ACCOUNT_ID   = 'preferred_source_account_id';
+
+  const CHANNEL                       = 'channel';
 }

@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
 
@@ -65,7 +66,7 @@ class Core extends Merchant\Core
                 true,
                 true);
 
-            (new Merchant\Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
+            (new Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
 
             return $account;
 
@@ -121,6 +122,23 @@ class Core extends Merchant\Core
                     ->findOrFailPublicWithRelations($accountId, $relations);
     }
 
+    public function editAccount(Merchant\Entity $partner, string $accountId, array $input)
+    {
+        (new Validator)->validateInput('edit_account', $input);
+
+        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId)
+        {
+            $subMerchant = $this->fillSubMerchant($accountId, $input);
+            $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+
+            $this->upsertMerchantEmails($subMerchant, $input);
+
+            return $subMerchant;
+        });
+
+        return $account;
+    }
+
     public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null)
     {
         $partner->getValidator()->validateIsAggregatorPartner($partner);
@@ -174,15 +192,13 @@ class Core extends Merchant\Core
         $this->repo->assertTransactionActive();
 
         $stateCore          = new State\Core;
-        $merchantDetailCore = new Merchant\Detail\Core;
+        $merchantDetailCore = new Detail\Core;
 
         $stateData = [
             State\Entity::NAME => Detail\Status::UNDER_REVIEW,
         ];
 
         $stateCore->createForMakerAndEntity($stateData, $subMerchant, $subMerchantDetails);
-
-        $merchantDetailCore->autoUpdateMerchantCategoryDetailsIfApplicable($subMerchantDetails, $subMerchant);
 
         $merchantDetailCore->checkAndMarkHasKeyAccess($subMerchantDetails, $subMerchant);
 
@@ -227,7 +243,7 @@ class Core extends Merchant\Core
         $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
         $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
 
-        $this->createMerchantEmails($subMerchant, $input);
+        $this->upsertMerchantEmails($subMerchant, $input);
 
         return $subMerchant;
     }
@@ -238,11 +254,14 @@ class Core extends Merchant\Core
 
         $subMerchant = $this->repo->merchant->findOrFailPublic($subMerchantId);
 
-        $subMerchant = $this->fillBrandData($subMerchant, $input);
-
-        if (isset($input[Constants::PROFILE][Constants::DASHBOARD_DISPLAY]) === true)
+        if (isset($input[Constants::PROFILE]) === true)
         {
-            $subMerchant->setDisplayName($input[Constants::PROFILE][Constants::DASHBOARD_DISPLAY]);
+            $subMerchant = $this->fillBrandData($subMerchant, $input);
+
+            if (array_key_exists(Constants::DASHBOARD_DISPLAY, $input[Constants::PROFILE]))
+            {
+                $subMerchant->setDisplayName($input[Constants::PROFILE][Constants::DASHBOARD_DISPLAY]);
+            }
         }
 
         if (isset($input[Constants::NOTES]) === true)
@@ -261,15 +280,33 @@ class Core extends Merchant\Core
 
         $detailInput = $this->getSubMerchantDetailInput($input);
 
-        $subMerchantDetails = (new Merchant\Detail\Core)->getMerchantDetails($subMerchant, $detailInput);
+        $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant, $detailInput);
 
         $subMerchantDetails->edit($detailInput);
+
+        (new Detail\Core)->autoUpdateMerchantCategoryDetailsIfApplicable($subMerchantDetails, $subMerchant);
+
+        $this->validateMerchantDetails($subMerchantDetails);
 
         $this->repo->saveOrFail($subMerchantDetails);
 
         $subMerchant = $this->syncMerchantEntityFields($subMerchant, $detailInput);
 
         return $subMerchant;
+    }
+
+    protected function validateMerchantDetails(Detail\Entity $subMerchantDetails)
+    {
+        // check that registered address is present
+        if ($subMerchantDetails->hasBusinessRegisteredAddress() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED,
+                Constants::ADDRESSES,
+                [
+                    'account_id' => $subMerchantDetails->getKey(),
+                ]);
+        }
     }
 
     protected function fillBrandData(Merchant\Entity $subMerchant, array $input): Merchant\Entity
@@ -297,7 +334,7 @@ class Core extends Merchant\Core
         return $subMerchant;
     }
 
-    protected function createMerchantEmails(Merchant\Entity $subMerchant, array $input)
+    protected function upsertMerchantEmails(Merchant\Entity $subMerchant, array $input)
     {
         $fieldNames = [
             Constants::SUPPORT,
@@ -310,13 +347,13 @@ class Core extends Merchant\Core
 
         foreach ($fieldNames as $fieldName)
         {
-            if (isset($input[Constants::PROFILE][$fieldName]) === true)
+            if (array_key_exists($fieldName, $input[Constants::PROFILE]) === true)
             {
                 $emailInput = $input[Constants::PROFILE][$fieldName];
 
                 $emailInput[Constants::TYPE] = $fieldName;
 
-                $emailCore->create($subMerchant, $emailInput);
+                $emailCore->upsert($subMerchant, $emailInput);
             }
         }
     }
@@ -333,18 +370,17 @@ class Core extends Merchant\Core
 
     protected function getSubMerchantDetailInput(array $input): array
     {
-        $detailInput = [
-            Detail\Entity::CONTACT_EMAIL            => $input[Constants::EMAIL],
-            Detail\Entity::TRANSACTION_REPORT_EMAIL => $input[Constants::EMAIL],
-            Detail\Entity::CONTACT_MOBILE           => $input[Constants::PHONE],
-            Detail\Entity::BUSINESS_NAME            => $input[Constants::PROFILE][Constants::NAME],
-        ];
+        $detailInput = [];
 
-        $customFields = $this->getCustomFieldsFromInput($input);
-
-        if (empty($customFields) === false)
+        if (isset($input[Constants::EMAIL]) === true)
         {
-            $detailInput[Detail\Entity::CUSTOM_FIELDS] = $customFields;
+            $detailInput[Detail\Entity::CONTACT_EMAIL]            = $input[Constants::EMAIL];
+            $detailInput[Detail\Entity::TRANSACTION_REPORT_EMAIL] = $input[Constants::EMAIL];
+        }
+
+        if (isset($input[Constants::PHONE]) === true)
+        {
+            $detailInput[Detail\Entity::CONTACT_MOBILE] = $input[Constants::PHONE];
         }
 
         if (isset($input[Constants::BUSINESS_ENTITY]) === true)
@@ -354,33 +390,51 @@ class Core extends Merchant\Core
             $detailInput[Detail\Entity::BUSINESS_TYPE] = $businessType;
         }
 
-        // fill profile data
-        $profileAttributesMapping = [
-            Constants::DESCRIPTION    => Detail\Entity::BUSINESS_DESCRIPTION,
-            Constants::BUSINESS_MODEL => Detail\Entity::BUSINESS_PAYMENTDETAILS,
-            Constants::BILLING_LABEL  => Detail\Entity::BUSINESS_DBA,
-            Constants::WEBSITE        => Detail\Entity::BUSINESS_WEBSITE,
-        ];
+        $customFields = $this->getCustomFieldsFromInput($input);
 
-        foreach ($profileAttributesMapping as $key => $value)
+        if (empty($customFields) === false)
         {
-            if (isset($input[Constants::PROFILE][$key]) === true)
-            {
-                $detailInput[$value] = $input[Constants::PROFILE][$key];
-            }
+            $detailInput[Detail\Entity::CUSTOM_FIELDS] = $customFields;
         }
 
-        $mccCode = $input[Constants::PROFILE][Constants::MCC];
+        if (isset($input[Constants::PROFILE]) === true)
+        {
+            // fill profile data
+            $profileAttributesMapping = [
+                Constants::DESCRIPTION    => Detail\Entity::BUSINESS_DESCRIPTION,
+                Constants::BUSINESS_MODEL => Detail\Entity::BUSINESS_PAYMENTDETAILS,
+                Constants::BILLING_LABEL  => Detail\Entity::BUSINESS_DBA,
+                Constants::WEBSITE        => Detail\Entity::BUSINESS_WEBSITE,
+                Constants::NAME           => Detail\Entity::BUSINESS_NAME,
+            ];
 
-        $categoryData = Detail\BusinessSubCategoryMetaData::fetchCategoryAndSubCategoryByMccCode($mccCode);
+            foreach ($profileAttributesMapping as $key => $value)
+            {
+                if (array_key_exists($key, $input[Constants::PROFILE]))
+                {
+                    $detailInput[$value] = $input[Constants::PROFILE][$key];
+                }
+            }
 
-        $detailInput = array_merge(
-            $detailInput,
-            $this->getRegisteredAddressFromInput($input),
-            $this->getOperationAddressFromInput($input),
-            $this->getBankAccountFromInput($input),
-            $categoryData
+            $categoryData = [];
+
+            if (isset($input[Constants::PROFILE][Constants::MCC]) === true)
+            {
+                $mccCode = $input[Constants::PROFILE][Constants::MCC];
+
+                $categoryData = Detail\BusinessSubCategoryMetaData::fetchCategoryAndSubCategoryByMccCode($mccCode);
+            }
+
+            $detailInput = array_merge(
+                $detailInput,
+                $this->getRegisteredAddressFromInput($input),
+                $this->getOperationAddressFromInput($input),
+                $this->getDocumentDetailsFromInput($input),
+                $categoryData
             );
+        }
+
+        $detailInput = array_merge($detailInput, $this->getBankAccountFromInput($input));
 
         return $detailInput;
     }
@@ -394,7 +448,8 @@ class Core extends Merchant\Core
             $customFields[Constants::TNC] = $input[Constants::TNC];
         }
 
-        if (isset($input[Constants::PROFILE][Constants::APPS]) === true)
+        if ((isset($input[Constants::PROFILE]) === true) and
+            (isset($input[Constants::PROFILE][Constants::APPS]) === true))
         {
             $customFields[Constants::APPS] = $input[Constants::PROFILE][Constants::APPS];
         }
@@ -419,6 +474,28 @@ class Core extends Merchant\Core
         ];
     }
 
+    protected function getDocumentDetailsFromInput(array $input): array
+    {
+        $details = [];
+
+        if (isset($input[Constants::PROFILE][Constants::IDENTIFICATION]) === false)
+        {
+            return $details;
+        }
+
+        foreach ($input[Constants::PROFILE][Constants::IDENTIFICATION] as $document)
+        {
+            switch ($document[Constants::TYPE])
+            {
+                case DocumentType::COMPANY_PAN:
+                    $details[Detail\Entity::COMPANY_PAN]      = $document[Constants::IDENTIFICATION_NUMBER];
+                    break;
+            }
+        }
+
+        return $details;
+    }
+
     protected function getRegisteredAddressFromInput(array $input): array
     {
         $registeredAddress = [];
@@ -427,12 +504,28 @@ class Core extends Merchant\Core
         {
             if ($address[Constants::TYPE] === Constants::REGISTERED)
             {
-                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_ADDRESS]    = $address[Constants::LINE1];
-                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2] = $address[Constants::LINE2];
-                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_CITY]       = $address[Constants::CITY];
-                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_STATE]      = $address[Constants::STATE];
-                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_PIN]        = $address[Constants::PIN];
-                $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_COUNTRY]    = $address[Constants::COUNTRY];
+                $mapping = [
+                    Constants::LINE1   => Detail\Entity::BUSINESS_REGISTERED_ADDRESS,
+                    Constants::LINE2   => Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2,
+                    Constants::CITY    => Detail\Entity::BUSINESS_REGISTERED_CITY,
+                    Constants::PIN     => Detail\Entity::BUSINESS_REGISTERED_PIN,
+                    Constants::COUNTRY => Detail\Entity::BUSINESS_REGISTERED_COUNTRY,
+                ];
+
+                foreach ($mapping as $key => $value)
+                {
+                    if (isset($address[$key]) === true)
+                    {
+                        $registeredAddress[$value] = $address[$key];
+                    }
+                }
+
+                if (isset($address[Constants::STATE]) === true)
+                {
+                    $stateCode  = IndianStates::getStateCode($address[Constants::STATE]);
+
+                    $registeredAddress[Detail\Entity::BUSINESS_REGISTERED_STATE] = $stateCode;
+                }
             }
         }
 
@@ -447,12 +540,28 @@ class Core extends Merchant\Core
         {
             if ($address[Constants::TYPE] === Constants::OPERATION)
             {
-                $operationAddress[Detail\Entity::BUSINESS_OPERATION_ADDRESS]    = $address[Constants::LINE1];
-                $operationAddress[Detail\Entity::BUSINESS_OPERATION_ADDRESS_L2] = $address[Constants::LINE2];
-                $operationAddress[Detail\Entity::BUSINESS_OPERATION_CITY]       = $address[Constants::CITY];
-                $operationAddress[Detail\Entity::BUSINESS_OPERATION_STATE]      = $address[Constants::STATE];
-                $operationAddress[Detail\Entity::BUSINESS_OPERATION_PIN]        = $address[Constants::PIN];
-                $operationAddress[Detail\Entity::BUSINESS_OPERATION_COUNTRY]    = $address[Constants::COUNTRY];
+                $mapping = [
+                    Constants::LINE1   => Detail\Entity::BUSINESS_OPERATION_ADDRESS,
+                    Constants::LINE2   => Detail\Entity::BUSINESS_OPERATION_ADDRESS_L2,
+                    Constants::CITY    => Detail\Entity::BUSINESS_OPERATION_CITY,
+                    Constants::PIN     => Detail\Entity::BUSINESS_OPERATION_PIN,
+                    Constants::COUNTRY => Detail\Entity::BUSINESS_OPERATION_COUNTRY,
+                ];
+
+                foreach ($mapping as $key => $value)
+                {
+                    if (isset($address[$key]) === true)
+                    {
+                        $operationAddress[$value] = $address[$key];
+                    }
+                }
+
+                if (isset($address[Constants::STATE]) === true)
+                {
+                    $stateCode = IndianStates::getStateCode($address[Constants::STATE]);
+
+                    $operationAddress[Detail\Entity::BUSINESS_OPERATION_STATE] = $stateCode;
+                }
             }
         }
 

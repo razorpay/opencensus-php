@@ -33,12 +33,14 @@ abstract class Base extends Core
      * @var $gatewayFile File\Entity
      */
     protected $gatewayFile;
+    protected $refundCore;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+        $this->refundCore = new Refund\Core;
     }
 
     /**
@@ -230,21 +232,6 @@ abstract class Base extends Core
      */
     protected function reconcileNetbankingRefunds(array $data)
     {
-        $refundIds = [];
-
-        foreach ($data as $refundData)
-        {
-            $gateway = $refundData[E::PAYMENT][Payment\Entity::GATEWAY] ?? null;
-
-            if (in_array($gateway, Gateway::$refundFileNetbankingGateways, true) === true)
-            {
-                $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
-            }
-        }
-
-        if (empty($refundIds) === false)
-        {
-            $this->repo->transaction->bulkReconciliationUpdate($refundIds);
-        }
+        $this->refundCore->reconcileNetbankingRefunds($data);
     }
 }

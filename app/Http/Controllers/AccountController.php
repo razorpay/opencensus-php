@@ -90,6 +90,15 @@ class AccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function editAccount(string $accountId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->editAccount($accountId, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function listAccounts()
     {
         $input = Request::all();

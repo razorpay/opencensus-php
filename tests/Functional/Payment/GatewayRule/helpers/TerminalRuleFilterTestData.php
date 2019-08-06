@@ -4,6 +4,7 @@ use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account as MerchantAccount;
 use RZP\Models\Payment\Method;
+use RZP\Models\Admin\Org\Entity as Org;
 
 return [
     'testRuleFilterCombinations' => [
@@ -1241,6 +1242,69 @@ return [
         ],
         'expected_terminal_ids' => [
             'DrctNbKtkTrmnl'
+        ]
+    ],
+
+    'testOrgDirectTerminalFilter' => [
+        'payment_options' => [
+            'method' => Method::NETBANKING,
+            'bank' => 'KKBK',
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::NETBANKING,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
+                'gateway'     => 'netbanking_kotak',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'           => Method::NETBANKING,
+                'org_id'           => Org::RAZORPAY_ORG_ID,
+                'step'             => 'authorization',
+                'gateway'          => 'netbanking_kotak',
+                'type'             => 'filter',
+                'filter_type'      => 'select',
+                'group'            => 'direct_filter',
+                'shared_terminal'  => 0,
+            ],
+        ],
+        'expected_terminal_ids' => [
+            'DrctNbKtkTrmnl'
+        ]
+    ],
+
+    'testOrgDirectTerminalFilterWithDifferentOrg' => [
+        'payment_options' => [
+            'method' => Method::NETBANKING,
+            'bank' => 'KKBK',
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::NETBANKING,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
+                'gateway'     => 'netbanking_kotak',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'           => Method::NETBANKING,
+                'org_id'           => Org::HDFC_ORG_ID,
+                'step'             => 'authorization',
+                'gateway'          => 'netbanking_kotak',
+                'type'             => 'filter',
+                'filter_type'      => 'select',
+                'group'            => 'direct_filter',
+                'shared_terminal'  => 0,
+            ],
+        ],
+        'expected_terminal_ids' => [
+            'DrctNbKtkTrmnl',
+            'SCorNbKtkTrmnl',
         ]
     ],
 

@@ -193,6 +193,164 @@ class NetbankingKotakCombinedFileTest extends TestCase
         });
     }
 
+
+    public function testGenerateTpvKotakRefundFile()
+    {
+        Mail::fake();
+
+        $terminalAttrs = [
+            'id'               => 'TpvNbKotakTmnl',
+            'network_category' => 'securities',
+            'tpv'              => 1,
+        ];
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_netbanking_kotak_terminal',
+            $terminalAttrs);
+
+        $payment = $this->makeTpvPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
+
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'kotak_netbanking_refund',
+                    'location' => 'Kotak_Netbanking_Refund_OTRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+                [
+                    'type' => 'kotak_netbanking_claim',
+                    'location' => 'Kotak_Netbanking_Claim_OTRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        Mail::assertQueued(DailyFileMail::class, function ($mail)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims' => 500,
+                    'refunds' => 500,
+                    'total' => 0
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->checkClaimsFile($mail->viewData['claimsFile']);
+
+            $this->checkRefundsFile($mail->viewData['refundsFile']);
+
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
+            return true;
+        });
+    }
+
+    public function testGenerateNonTpvKotakRefundFile()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal');
+
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
+
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'kotak_netbanking_refund',
+                    'location' => 'Kotak_Netbanking_Refund_OSRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+                [
+                    'type' => 'kotak_netbanking_claim',
+                    'location' => 'Kotak_Netbanking_Claim_OSRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        Mail::assertQueued(DailyFileMail::class, function ($mail)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims' => 500,
+                    'refunds' => 500,
+                    'total' => 0
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->checkClaimsFile($mail->viewData['claimsFile']);
+
+            $this->checkRefundsFile($mail->viewData['refundsFile']);
+
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
+            return true;
+        });
+
+    }
+
     protected function makeTpvPayment()
     {
         $this->fixtures->merchant->enableTPV();

@@ -130,11 +130,6 @@ class Core extends Base\Core
                 $bankingAccount->toArray(),
             ]);
 
-        // TODO: Fix this logic
-        $refNumber = substr(time(), 0, 5);
-
-        $bankingAccount->setBankReferenceNumber($refNumber);
-
         $this->repo->saveOrFail($bankingAccount);
 
         return $bankingAccount;
@@ -215,7 +210,10 @@ class Core extends Base\Core
 
         $bankingAccount->edit($input);
 
-        $bankingAccount->setStatus($input[Entity::STATUS]);
+        if (empty($input[Entity::STATUS]) === false)
+        {
+            $bankingAccount->setStatus($input[Entity::STATUS]);
+        }
 
         $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount, $input);
 

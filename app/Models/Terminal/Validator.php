@@ -97,6 +97,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
+        Payment\Gateway::CARDLESS_EMI,
     ];
 
     protected static $createValidators = [
@@ -290,7 +291,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
-        Entity::CAPABILITY                 => 'sometimes|boolean',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
     protected static $isgEditTerminalRules = [
@@ -867,6 +868,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::CARDLESS_EMI                => 'required|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+    ];
+
+    protected static $cardlessEmiEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:cardless_emi',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
     ];

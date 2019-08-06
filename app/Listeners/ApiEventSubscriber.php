@@ -96,6 +96,7 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::PAYMENT_FAILED,
         WebhookEvent::PAYOUT_PROCESSED,
         WebhookEvent::PAYOUT_REVERSED,
+        WebhookEvent::ORDER_PAID
     ];
 
     public function __construct()
