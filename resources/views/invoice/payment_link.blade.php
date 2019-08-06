@@ -368,7 +368,7 @@ $custom_labels                  = $data['custom_labels'];
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
                                         <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                                        @if($data['checkout_options']['description'] !== '')
+                                        @if(isset($data['checkout_options']['description']))
                                             <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
                                         @endif
                                     </div>
@@ -427,7 +427,7 @@ $custom_labels                  = $data['custom_labels'];
                     @if (isset($data['merchant']))
                         <div id="merchant">
                             <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                            @if($data['checkout_options']['description'] !== '')
+                            @if(isset($data['checkout_options']['description']))
                                 <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
                             @endif
                         </div>
@@ -678,7 +678,6 @@ $custom_labels                  = $data['custom_labels'];
                 invoice_id: invoiceObj.id,
                 amount: invoiceObj.amount,
                 // parent: '#chkout-box',
-                description: checkoutOptions['description'],
                 handler: function(response) {
                     if (globalScope.hasRedirect()) {
 
@@ -715,6 +714,10 @@ $custom_labels                  = $data['custom_labels'];
                     escape: false
                 }
             };
+
+            if (checkoutOptions['description']) {
+                options.description = checkoutOptions['description'];
+            }
 
             options.name = invoiceObj.merchant_label;
 

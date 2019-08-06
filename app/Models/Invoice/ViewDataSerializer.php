@@ -164,9 +164,7 @@ class ViewDataSerializer extends Base\Core
         switch ($merchantId)
         {
             case Preferences::MID_SURYODAY_BANK:
-                $checkoutOptions = [
-                    'description' => '',
-                ];
+                unset($checkoutOptions['description']);
         }
         return $checkoutOptions;
     }

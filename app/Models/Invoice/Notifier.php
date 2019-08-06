@@ -477,7 +477,7 @@ class Notifier extends Base\Core
                 $params = [
                     'amount'        => $this->invoice->getAmount() / 100,
                     'invoice_link'  => $invoiceLink,
-                    'notes_charges' => $this->invoice->getNotes()->charges ?? 0,
+                    'notes_charges' => $this->invoice->getNotes()->charges ?? '',
                 ];
 
                 break;
