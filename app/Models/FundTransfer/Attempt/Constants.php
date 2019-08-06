@@ -41,4 +41,6 @@ final class Constants
     const VIRTUAL_ACCOUNT_IFSC = [
         'YESB0CMSNOC'
     ];
+
+    const DISABLE              = 'disable';
 }

@@ -16,6 +16,8 @@ class SlackNotification extends Base\Core
 
     const GOOD = 'good';
 
+    const SETTLEMENT = 'settlements';
+
     protected $operations = array(
         'setl_initiate',
         'setl_reconciled');
