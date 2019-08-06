@@ -469,6 +469,64 @@ class Notifier extends Base\Core
                     'amount'       => $this->invoice->getAmount() / 100,
                     'invoice_link' => $invoiceLink,
                 ];
+
+                break;
+
+            case Preferences::MID_INDIABULLS_FINANCE:
+                $template = 'sms.custom_invoice.indiabull_custom';
+                $params = [
+                    'amount'        => $this->invoice->getAmount() / 100,
+                    'invoice_link'  => $invoiceLink,
+                    'notes_charges' => $this->invoice->getNotes()->charges ?? '',
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_PDD_BANK:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_pdd_bank';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_PDD_CREDIT:
+                $sender = 'RBLCRD';
+                $template = 'sms.custom_invoice.rbl_pdd_credit';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_BFL_BANK:
+                $sender = 'SPRCRD';
+                $template = 'sms.custom_invoice.bfl_bank';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_BFL_CARD:
+                $sender = 'SPRCRD';
+                $template = 'sms.custom_invoice.bfl_card';
+                $params = [
+                    'amount'         => $this->invoice->getAmount() / 100,
+                    'invoice_link'   => $invoiceLink,
+                    'receipt'        => $receipt,
+                    'min_amount_due' => ($this->invoice->getFirstPaymentMinAmount() ?? 0) / 100,
+                ];
         }
 
         // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
