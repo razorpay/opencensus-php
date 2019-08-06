@@ -9,7 +9,7 @@ return [
 
     'testCreateSubMerchantBatchAggregator' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
@@ -34,7 +34,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerNotDummyAllSteps' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'               => 'sub_merchant',
@@ -62,7 +62,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerNotDummySubmit' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'               => 'sub_merchant',
@@ -90,7 +90,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerDummyEmailAllSteps' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -116,7 +116,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerDummyEmailCreate' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -142,7 +142,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerInvalidFileEntriesForActivate' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -168,7 +168,7 @@ return [
 
     'testProcessSubMerchantBatchPartnerInvalidInput' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'             => 'sub_merchant',
@@ -194,7 +194,7 @@ return [
 
     'testCreateSubMerchantBatchPartner' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
@@ -219,7 +219,7 @@ return [
 
     'testCreateSubMerchantBatchInvalidHeaders' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'        => 'sub_merchant',
@@ -244,7 +244,7 @@ return [
 
     'testProcessSubMerchantBatchInstantActivation' => [
         'request' => [
-            'url'     => '/admin/batches',
+            'url'     => '/batches',
             'method'  => 'post',
             'content' => [
                 'type'               => 'sub_merchant',

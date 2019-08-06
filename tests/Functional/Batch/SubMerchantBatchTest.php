@@ -28,7 +28,7 @@ class SubMerchantBatchTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->adminAuth();
+        $this->ba->proxyAuth();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
