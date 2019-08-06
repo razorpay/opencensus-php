@@ -89,7 +89,7 @@ trait Refund
 
         $this->pushMetrics();
 
-        if ($refund->getSpeedDecisioned() === RefundSpeed::NORMAL)
+        if ($this->refund->isRefundSpeedInstant() === false)
         {
             $this->eventRefundProcessed($this->refund);
         }
@@ -1351,6 +1351,11 @@ trait Refund
             }
         }
 
+        if ($refund->isRefundSpeedInstant() === false)
+        {
+            $refund->setSpeedProcessed(RefundSpeed::NORMAL);
+        }
+
         $refund->merchant()->associate($this->merchant);
 
         $refund->setBaseAmount();
@@ -1376,6 +1381,19 @@ trait Refund
         $this->refund = $refund;
 
         return $refund;
+    }
+
+    public function fetchFeeForRefundAmount($payment, $input)
+    {
+        // We are just building refund Entity to return fee and not saving the entity
+        $refund = $this->buildRefundEntity($payment, $input);
+
+        $refundFees = [
+            RefundEntity::FEE => $refund->getFee(),
+            RefundEntity::TAX => $refund->getTax(),
+        ];
+
+        return $refundFees;
     }
 
     protected function processRefund()
@@ -1838,6 +1856,7 @@ trait Refund
             'payment_created_at'        => $payment->getCreatedAt(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
             'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
+            'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
         ];
 
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];

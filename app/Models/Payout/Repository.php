@@ -11,6 +11,7 @@ use RZP\Models\State;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Models\Merchant;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Models\FundAccount;
@@ -18,6 +19,7 @@ use RZP\Models\Workflow\Step;
 use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action;
 use RZP\Models\User\BankingRole;
+use RZP\Models\Workflow\Action\Checker;
 
 class Repository extends Base\Repository
 {
@@ -88,18 +90,21 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param User\Entity $user
+     * @param User\Entity     $user
+     * @param Merchant\Entity $merchant
      *
      * @return array
      */
-    public function fetchSummaryOfPayoutsPendingOnUser(User\Entity $user): array
+    public function fetchSummaryOfPayoutsPendingOnUser(User\Entity $user, Merchant\Entity $merchant): array
     {
         /** @var BuilderEx $query */
         $query = $this->newQuery();
 
         $userRoleIds = $user->roles()->allRelatedIds()->toArray();
 
-        $this->filterByRoleIds($query, $userRoleIds);
+        $this->filterByRoleIds($query, $userRoleIds, $user->getId());
+
+        $query->merchantId($merchant->getId());
 
         return [
             'count'        => $query->count(),
@@ -299,7 +304,7 @@ class Repository extends Base\Repository
         $this->filterByRoleIds($query, $userRoleIds);
     }
 
-    protected function filterByRoleIds(BuilderEx $query, array $roleIds)
+    protected function filterByRoleIds(BuilderEx $query, array $roleIds, string $userId = null)
     {
         $permissionId = ''; // Resolve from name
 
@@ -318,6 +323,36 @@ class Repository extends Base\Repository
               ->where($workflowMerchantIdColumn, $this->merchant->getId())
             //->where($wfActionPermissionIdColumn, $permissionId)
               ->whereIn($wfStepRoleIdColumn, $roleIds);
+
+        if ($userId !== null)
+        {
+            $this->filterCompletedCheckerId($query, $userId);
+        }
+    }
+
+    protected function filterCompletedCheckerId(BuilderEx $query, string $checkerId)
+    {
+        $actionCheckerTable = $this->repo->action_checker->getTableName();
+
+        $actionCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::ID);
+
+        $query->leftJoin(
+            $actionCheckerTable,
+            function(JoinClause $join) use ($checkerId)
+                {
+                    $wfActionIdColumn = $this->repo->workflow_action->dbColumn(Step\Entity::ID);
+                    $wfStepIdColumn   = $this->repo->workflow_step->dbColumn(Step\Entity::ID);
+
+                    $actionCheckerStepId    = $this->repo->action_checker->dbColumn(Checker\Entity::STEP_ID);
+                    $actionCheckerActionId  = $this->repo->action_checker->dbColumn(Checker\Entity::ACTION_ID);
+                    $actionCheckerCheckerId = $this->repo->action_checker->dbColumn(Checker\Entity::CHECKER_ID);
+
+                    $join->on($wfActionIdColumn, '=', $actionCheckerActionId)
+                         ->on($wfStepIdColumn, '=', $actionCheckerStepId)
+                         ->where($actionCheckerCheckerId, '=', $checkerId);
+
+                })
+              ->whereNull($actionCheckerId);
     }
 
     protected function joinQueryFundAccount(BuilderEx $query)
@@ -392,7 +427,7 @@ class Repository extends Base\Repository
             $workflowTable,
             function(JoinClause $join)
             {
-                $workflowIdColumn   = $this->repo->workflow->dbColumn(Workflow\Entity::ID);
+                $workflowIdColumn               = $this->repo->workflow->dbColumn(Workflow\Entity::ID);
                 $workflowActionWorkflowIdColumn = $this->repo->workflow_action->dbColumn(Action\Entity::WORKFLOW_ID);
 
                 $join->on($workflowIdColumn, $workflowActionWorkflowIdColumn);

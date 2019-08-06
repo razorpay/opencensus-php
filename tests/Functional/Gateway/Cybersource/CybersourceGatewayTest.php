@@ -182,6 +182,7 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals($paymentId, $cybersource['payment_id']);
 
         $this->assertNotNull($cybersource['refund_id']);
+
         $this->assertTestResponse($cybersource);
     }
 
@@ -213,13 +214,23 @@ class CybersourceGatewayTest extends TestCase
         $response = $this->doAuthPayment($payment);
 
         $paymentId = $response['razorpay_payment_id'];
+
         $input = ['amount' => $payment['amount']];
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'verify_reverse')
+            {
+                $content['data']['status'] = 'reversed';
+            }
+        });
 
         $this->refundAuthorizedPayment($paymentId, $input);
 
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertSame($paymentId, $refund['payment_id']);
+
         $this->assertTestResponse($refund);
 
         $cybersource = $this->getLastEntity('cybersource', true);
@@ -312,68 +323,11 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals(1, $refund['attempts']);
 
-        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
-        {
-            if ($action === 'verify_xml')
-            {
-                $xml = '<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
-<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="razorpaycybs" ReportStartDate="2017-04-20 11:33:58.208+05:30" ReportEndDate="2017-04-20 11:33:58.208+05:30">
-  <Requests>
-    <Request MerchantReferenceNumber="'.$refund['id'].'" RequestDate="2017-04-04T00:01:12+05:30" RequestID="4912442722396160004013" SubscriptionID="" Source="SOAP Toolkit API">
-      <BillTo>
-        <FirstName />
-        <LastName />
-        <City />
-        <Email />
-        <Country />
-        <Phone />
-      </BillTo>
-      <PaymentMethod>
-        <Card>
-          <AccountSuffix>8371</AccountSuffix>
-          <ExpirationMonth>4</ExpirationMonth>
-          <ExpirationYear>2018</ExpirationYear>
-          <CardType>MasterCard</CardType>
-        </Card>
-      </PaymentMethod>
-      <LineItems>
-        <LineItem Number="0">
-          <FulfillmentType />
-          <Quantity>1</Quantity>
-          <UnitPrice>2267.00</UnitPrice>
-          <TaxAmount>0.00</TaxAmount>
-          <ProductCode>default</ProductCode>
-        </LineItem>
-      </LineItems>
-      <ApplicationReplies>
-        <ApplicationReply Name="ics_credit">
-          <RCode>1</RCode>
-          <RFlag>SOK</RFlag>
-          <RMsg>Request was processed successfully.</RMsg>
-        </ApplicationReply>
-      </ApplicationReplies>
-      <PaymentData>
-        <PaymentRequestID>4912442722396160004013</PaymentRequestID>
-        <PaymentProcessor>vdcaxis</PaymentProcessor>
-        <Amount>'. $refund['amount'] / 100 .'</Amount>
-        <CurrencyCode>INR</CurrencyCode>
-        <TotalTaxAmount>0.00</TotalTaxAmount>
-        <AuthorizationCode>292540</AuthorizationCode>
-      </PaymentData>
-      <MerchantDefinedData>
-        <field1>1</field1>
-        <field2>'. $refund['payment_id'] .'</field2>
-      </MerchantDefinedData>
-    </Request>
-  </Requests>
-</Report>
-';
-            }
-        });
-
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
+
         Carbon::setTestNow($time);
+
+        $this->resetMockServer();
 
         $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
@@ -403,21 +357,13 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals(1, $refund['attempts']);
 
-        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
-        {
-            if ($action === 'refund')
-            {
-               throw new \SoapFault('HTTP', 'Random SoapFault Exception');
-            }
-        });
-
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->scroogeRefund($refund);
 
         $this->assertEquals(false, $response['success']);
-        $this->assertEquals('SERVER_ERROR_RUNTIME_ERROR', $response['status_code']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $response['status_code']);
 
         $id = explode('_', $refund['id'], 2)[1];
 
@@ -443,14 +389,6 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals('created', $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
-
-        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
-        {
-            if ($action === 'verify_xml')
-            {
-               throw new \SoapFault('HTTP', 'Random SoapFault Exception');
-            }
-        });
 
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
@@ -485,41 +423,21 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals(1, $refund['attempts']);
 
-        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        $this->mockServerContentFunction(function(&$content, $action) use ($refund)
         {
-            if ($action === 'verify_xml')
+            if ($action === 'verify_refund_fail')
             {
-                $xml = '<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
-<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="razorpaycybs" ReportStartDate="2017-04-20 11:33:58.208+05:30" ReportEndDate="2017-04-20 11:33:58.208+05:30">
-  <Requests>
-    <Request MerchantReferenceNumber="'.$refund['id'].'" RequestDate="2017-04-04T00:01:12+05:30" RequestID="4912442722396160004013" SubscriptionID="" Source="SOAP Toolkit API">
-      <ApplicationReplies>
-        <ApplicationReply Name="ics_credit">
-          <RCode>1</RCode>
-          <RFlag>SOK</RFlag>
-          <RMsg>Request was processed successfully.</RMsg>
-        </ApplicationReply>
-      </ApplicationReplies>
-      <PaymentData>
-        <PaymentRequestID>4912442722396160004013</PaymentRequestID>
-        <PaymentProcessor>vdcaxis</PaymentProcessor>
-        <Amount>'. $refund['amount'] / 100 .'</Amount>
-        <CurrencyCode>INR</CurrencyCode>
-        <TotalTaxAmount>0.00</TotalTaxAmount>
-        <AuthorizationCode>292540</AuthorizationCode>
-      </PaymentData>
-    </Request>
-  </Requests>
-</Report>
-';
+                $content['success'] = true;
+                $content['data']['reason_code'] = 100;
+                $content['data']['r_flag'] = 'SOK';
+                $content['data']['r_code'] = '1';
             }
         });
 
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
-        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $id = explode('_', $refund['id'], 2)[1];
 
@@ -547,11 +465,14 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
-        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        $this->mockServerContentFunction(function(&$content, $action) use ($refund)
         {
-            if ($action === 'verify_xml')
+            if ($action === 'verify_refund_fail')
             {
-               throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+                $content['success'] = false;
+                $content['data']['reason_code'] = 102;
+                $content['data']['r_flag'] = 'SNOTOK';
+                $content['data']['r_code'] = '0';
             }
         });
 
@@ -1335,6 +1256,19 @@ class CybersourceGatewayTest extends TestCase
                     unset($content['purchaseTotals']);
                 }
             }
+
+            if ($action === 'verify_refund_fail')
+            {
+                if ($type === 'processor')
+                {
+                    $content['success'] = false;
+                    $content['data']['reason_code'] = 102;
+                    $content['data']['r_flag'] = 'SNOTOK';
+                    $content['data']['r_code'] = '0';
+
+                    unset($content['purchaseTotals']);
+                }
+            }
         });
     }
 
@@ -1349,38 +1283,7 @@ class CybersourceGatewayTest extends TestCase
         {
             if ($action === 'verify_xml')
             {
-                $content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<html lang="en">
-    <head>
-        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-        <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-        <META HTTP-EQUIV="EXPIRES" CONTENT="0">
-
-        <title>Cybersource Business Center - System Error</title>
-        <link rel="shortcut icon" href="/ebc/images/favicon.ico;JSESSIONID=499B1A0350391B448EDE9BDC1A39DF8C.localhost_bc" type="image/x-icon" />
-        <link rel="STYLESHEET" type="text/css" href="/ebc/css/ubc_style.css.jsp;JSESSIONID=499B1A0350391B448EDE9BDC1A39DF8C.localhost_bc">
-    </head>
-
-    <body>
-
-<table width="95%" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td class="pagetitle" id="systemErrorPageTitle">System Error</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td id="systemErrorMessage">An error has occurred. Please try again. If you continue to receive an error, please contact Customer Support.</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-
-    </body>
-</html> ';
             }
         });
 
@@ -1390,5 +1293,190 @@ class CybersourceGatewayTest extends TestCase
                 $this->verifyPayment($payment['razorpay_payment_id']);
             },
             \RZP\Exception\GatewayTimeoutException::class);
+    }
+
+    public function testAuthorizedPaymentRefundWithVerifyV2Disabled()
+    {
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal_without_secret2');
+
+        $this->fixtures->merchant->addFeatures('reverse');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $input = ['amount' => $payment['amount']];
+
+        $this->refundAuthorizedPayment($paymentId, $input);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertSame($paymentId, $refund['payment_id']);
+
+        $this->assertTestResponse($refund);
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('reverse', $cybersource['action']);
+    }
+
+    public function testGatewayRefundVerifyMultipleFailedAttemptsWithV2Disabled()
+    {
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal_without_secret2');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'verify_xml')
+            {
+                $xml = '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
+<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="razorpaycybs" ReportStartDate="2017-04-20 11:33:58.208+05:30" ReportEndDate="2017-04-20 11:33:58.208+05:30">
+  <Requests>
+    <Request MerchantReferenceNumber="'.$refund['id'].'" RequestDate="2017-04-04T00:01:12+05:30" RequestID="4912442722396160004013" SubscriptionID="" Source="SOAP Toolkit API">
+      <ApplicationReplies>
+        <ApplicationReply Name="ics_credit">
+          <RCode>1</RCode>
+          <RFlag>SOK</RFlag>
+          <RMsg>Request was processed successfully.</RMsg>
+        </ApplicationReply>
+      </ApplicationReplies>
+      <PaymentData>
+        <PaymentRequestID>4912442722396160004013</PaymentRequestID>
+        <PaymentProcessor>vdcaxis</PaymentProcessor>
+        <Amount>'. $refund['amount'] / 100 .'</Amount>
+        <CurrencyCode>INR</CurrencyCode>
+        <TotalTaxAmount>0.00</TotalTaxAmount>
+        <AuthorizationCode>292540</AuthorizationCode>
+      </PaymentData>
+    </Request>
+  </Requests>
+</Report>
+';
+            }
+        });
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefunds();
+
+        $this->assertEquals($response['status'], []);
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('created', $actualRefund['status']);
+        $this->assertEquals(1, $actualRefund['attempts']);
+        $this->assertEquals(false, $actualRefund['gateway_refunded']);
+    }
+
+    public function testGatewayRefundVerifyWithV2Disabled()
+    {
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal_without_secret2');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->assertEquals(1, $refund['attempts']);
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'verify_xml')
+            {
+                $xml = '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Report SYSTEM "https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd">
+<Report xmlns="https://ebc.cybersource.com/ebc/reports/dtd/tdr_1_1.dtd" Name="Transaction Detail" Version="1.1" MerchantID="razorpaycybs" ReportStartDate="2017-04-20 11:33:58.208+05:30" ReportEndDate="2017-04-20 11:33:58.208+05:30">
+  <Requests>
+    <Request MerchantReferenceNumber="'.$refund['id'].'" RequestDate="2017-04-04T00:01:12+05:30" RequestID="4912442722396160004013" SubscriptionID="" Source="SOAP Toolkit API">
+      <BillTo>
+        <FirstName />
+        <LastName />
+        <City />
+        <Email />
+        <Country />
+        <Phone />
+      </BillTo>
+      <PaymentMethod>
+        <Card>
+          <AccountSuffix>8371</AccountSuffix>
+          <ExpirationMonth>4</ExpirationMonth>
+          <ExpirationYear>2018</ExpirationYear>
+          <CardType>MasterCard</CardType>
+        </Card>
+      </PaymentMethod>
+      <LineItems>
+        <LineItem Number="0">
+          <FulfillmentType />
+          <Quantity>1</Quantity>
+          <UnitPrice>2267.00</UnitPrice>
+          <TaxAmount>0.00</TaxAmount>
+          <ProductCode>default</ProductCode>
+        </LineItem>
+      </LineItems>
+      <ApplicationReplies>
+        <ApplicationReply Name="ics_credit">
+          <RCode>1</RCode>
+          <RFlag>SOK</RFlag>
+          <RMsg>Request was processed successfully.</RMsg>
+        </ApplicationReply>
+      </ApplicationReplies>
+      <PaymentData>
+        <PaymentRequestID>4912442722396160004013</PaymentRequestID>
+        <PaymentProcessor>vdcaxis</PaymentProcessor>
+        <Amount>'. $refund['amount'] / 100 .'</Amount>
+        <CurrencyCode>INR</CurrencyCode>
+        <TotalTaxAmount>0.00</TotalTaxAmount>
+        <AuthorizationCode>292540</AuthorizationCode>
+      </PaymentData>
+      <MerchantDefinedData>
+        <field1>1</field1>
+        <field2>'. $refund['payment_id'] .'</field2>
+      </MerchantDefinedData>
+    </Request>
+  </Requests>
+</Report>
+';
+            }
+        });
+
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $this->assertEquals('created', $response['status']);
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(1, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
     }
 }

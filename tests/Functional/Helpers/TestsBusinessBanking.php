@@ -3,7 +3,8 @@
 namespace RZP\Tests\Functional\Helpers;
 
 use RZP\Models\Payout;
-
+use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\Balance\AccountType;
 /**
  * Consists reusable methods to help with business banking related tests.
  */
@@ -43,16 +44,24 @@ trait TestsBusinessBanking
      * Setup merchant for business banking.
      *
      * @param bool $skipFeatureAddition
-     * @param int  $balance
+     * @param int $balance
+     * @param string $balanceType
+     * @param string $channel
      */
-    protected function setUpMerchantForBusinessBanking(bool $skipFeatureAddition = false, int $balance = 0)
+    protected function setUpMerchantForBusinessBanking(
+        bool $skipFeatureAddition = false,
+        int $balance = 0,
+        string $balanceType = AccountType::SHARED,
+        $channel = Channel::YESBANK)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
         $this->fixtures->merchant->activate();
 
         // Creates banking balance
-        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType($balance);
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balance, '10000000000000',$balanceType, $channel);
 
         // Creates virtual account, its bank account receiver on new banking balance.
         $virtualAccount = $this->fixtures->create('virtual_account');

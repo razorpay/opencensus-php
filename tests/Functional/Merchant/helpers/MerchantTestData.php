@@ -1212,7 +1212,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/1000InvalidMID/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1252,7 +1252,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/10000000000000/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -2898,16 +2898,6 @@ return [
                         [
                             'issuer'    => ['HDFC'],
                             'scheduled' => true,
-                            'severity'  => 'low',
-                        ],
-                    ],
-                ],
-                'payment_downtime' => [
-                    'entity' => 'collection',
-                    'count' => 1,
-                    'items' => [
-                        [
-                            'method'    => 'netbanking',
                             'severity'  => 'low',
                         ],
                     ],

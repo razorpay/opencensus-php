@@ -29,6 +29,7 @@ use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Flow;
 use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Constants\Entity as E;
@@ -55,6 +56,7 @@ class Processor
     use Topup;
     use FraudDetector;
     use HeadlessOtp;
+    use Omnichannel;
     use Payout;
     use Reversal;
     use Transfer;
@@ -773,17 +775,37 @@ class Processor
     {
         $coproto = null;
 
+        $missing = [];
+
         if ($payment->isUpi() === false)
         {
             return;
         }
 
-        if ((empty($input[Payment\Entity::VPA]) === false) or
-            (empty($input['_']['flow']) === false))
+        if (empty($input[Payment\Entity::VPA]) === false)
         {
             return;
         }
 
+        if ((isset($input['_']['flow']) === false) or ($input['_']['flow'] === Payment\Flow::COLLECT))
+        {
+            $missing[] = 'vpa';
+        }
+        else if (isset($input[Payment\Entity::UPI_PROVIDER]) === false)
+        {
+            return;
+        }
+        else if (isset($input[Payment\Entity::CONTACT]) === true)
+        {
+            return;
+        }
+        else
+        {
+            $missing[] = 'contact';
+        }
+
+        $host = $this->route->getHost();
+        
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -795,6 +817,8 @@ class Processor
             'theme'     => $payment->merchant->getBrandColorElseDefault(),
             'method'    => 'upi',
             'version'   => '1',
+            'missing'   => $missing,
+            'base'      => $host,
         ];
 
         return $coproto;
@@ -1681,7 +1705,11 @@ class Processor
             // If CPS service is enabled then route this payment via CPS
             if ((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true)
             {
-                $this->persistCardDetails($gateway, $action, $gatewayData);
+                // Persist card details only when payment method is card or emi
+                if ($this->payment->isMethodCardOrEmi() === true)
+                {
+                    $this->persistCardDetails($gateway, $action, $gatewayData);
+                }
 
                 $gatewayData['cps_route'] = true;
             }
@@ -1722,15 +1750,7 @@ class Processor
         {
             $error = $ex->getError();
 
-            /*
-             * If error is because of invalid terminal and terminal
-             * used is direct, we can disable the terminal
-             */
-            if (($error->isInvalidTerminalError() === true) and
-                ($terminal->isShared() === false))
-            {
-                $this->disableTerminal($terminal);
-            }
+            $this->disableTerminalIfApplicable($terminal, $error);
 
             /*
              * Because error indicates gateway downtime, we might act on it later
@@ -2715,6 +2735,19 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function disableTerminalIfApplicable($terminal, $error)
+    {
+        /*
+         * If error is because of invalid terminal and terminal
+         * used is direct, we can disable the terminal
+         */
+        if (($error->isInvalidTerminalError() === true) and
+            ($terminal->isShared() === false))
+        {
+            $this->disableTerminal($terminal);
+        }
     }
 
     protected function createGatewayDowntimeIfApplicable(string $gateway, array $gatewayData)

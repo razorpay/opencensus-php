@@ -5,9 +5,10 @@ namespace RZP\Jobs;
 use App;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundTransfer\Attempt\Status;
@@ -126,7 +127,7 @@ class FundTransfer extends Job
             // Because of this we are adding delay of 60 sec, in case we do bene registration in this flow.
             // TODO: remove this code once verify bene feature is in place
             //
-            if ($delayTransfer === true)
+            if (($delayTransfer === true) and ($this->mode !== Mode::TEST))
             {
                 $this->logAndDelete($data, TraceCode::FTA_TRANSFER_JOB_DELAYED, true);
 
