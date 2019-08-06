@@ -1299,5 +1299,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_UPI_PROVIDER                                          = 'BAD_REQUEST_INVALID_UPI_PROVIDER';
     const GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT                                         = 'GATEWAY_ERROR_OMNIPAY_EMPTY_INPUT';
 
+    const SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY                                     = 'SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY';
+
     const BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_TOKEN_REGISTRATION_OPERATION_IN_PROGRESS';
 }

@@ -65,6 +65,8 @@ trait Authorize
      */
     protected $type;
 
+    protected $headlessError = false;
+
     /**
      * @param Payment\Entity $payment
      * @param array          $input
@@ -318,7 +320,8 @@ trait Authorize
 
                 $retry = false;
 
-                if ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true)
+                if (($this->headlessError === false) and
+                    ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true))
                 {
                     $request = $this->runHeadlessOtpFlow($payment, $request);
                 }
@@ -332,7 +335,13 @@ trait Authorize
             }
             catch (Exception\BaseException $e)
             {
-                //
+                $retryOnSameGateway = $this->handleOtpElfFailureWithSameGatewayRetry($e, $payment);
+
+                if ($retryOnSameGateway === true)
+                {
+                    continue;
+                }
+
                 // An error occurred on gateway due to user or gateway.
                 // We need to record this and mark payment as failed.
                 //
@@ -3555,6 +3564,37 @@ trait Authorize
 
             $this->repo->saveOrFail($gatewayTokenToUpdate);
         }
+    }
+
+    protected function handleOtpElfFailureWithSameGatewayRetry($e, $payment): bool
+    {
+        if ($e->getCode() !== ErrorCode::SERVER_ERROR_OTP_ELF_FAILED_FOR_RUPAY)
+        {
+            return false;
+        }
+
+        $gateway = $payment->getGateway();
+
+        $this->headlessError = true;
+
+        $retryableGateway = [Payment\Gateway::HDFC, Payment\Gateway::HITACHI, Payment\Gateway::PAYSECURE];
+
+        $payment->setAuthType(Payment\AuthType::_3DS);
+
+        if (in_array($gateway, $retryableGateway) === false)
+        {
+            return false;
+        }
+
+        $traceData = array(
+            'payment_id'    => $payment->getId(),
+            'gateway'       => $gateway,
+            'terminal_id'   => $payment->terminal->getId()
+        );
+
+        $this->trace->info(TraceCode::PAYMENT_AUTH_RETRY_RUPAY_SAME_GATEWAY, $traceData);
+
+        return true;
     }
 
     protected function migrateCardDataIfApplicable($payment)

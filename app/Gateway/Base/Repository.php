@@ -34,6 +34,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByPaymentIdAndActionGetLast($paymentId, $action)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('action', '=', $action)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
     public function fetchByPaymentIdsAndAction($paymentIds, $action)
     {
         return $this->newQuery()
