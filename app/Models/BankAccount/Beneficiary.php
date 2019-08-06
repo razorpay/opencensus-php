@@ -82,10 +82,13 @@ class Beneficiary extends Base\Core
     {
         $cacheKey = ConfigKey::BENEFICIARY_REGISTRATION . $bankAccount->getId();
 
+        $verifyCacheKey = ConfigKey::BENEFICIARY_VERIFICATION . $bankAccount->getId();
+
         try
         {
             // Return if Already dispatched and in process.
-            if (Cache::has($cacheKey) === true)
+            if ((Cache::has($cacheKey) === true) or
+                (Cache::has($verifyCacheKey) === true))
             {
                 return;
             }
