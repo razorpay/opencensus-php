@@ -2310,6 +2310,28 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedEmandateSbiTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'               => '100000Razorpay',
+            'netbanking'                => 0,
+            'emandate'                  => 1,
+            'shared'                    => 1,
+        ];
+
+        // Recurring supports both 3ds and non3ds terminal;
+        $defaultValues['id'] = 'NSbRecurringTl';
+
+        $defaultValues['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+            Type::RECURRING_3DS     => '1'
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingSbiTerminal($attributes);
+    }
+
     public function createSharedNetbankingSibTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
