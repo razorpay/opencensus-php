@@ -186,6 +186,7 @@ class Entity extends Base\PublicEntity
     const AUTO_SUBMIT               = 'auto_submit';
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
+    const INSTANTLY_ACTIVATE        = 'instantly_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
     const PARTNER_ID                = 'partner_id';
     const BANKING_ACCOUNT           = 'banking_account';

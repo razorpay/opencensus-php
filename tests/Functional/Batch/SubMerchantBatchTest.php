@@ -11,6 +11,7 @@ use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Admin\NotifyActivationSubmission as AdminSubmitMail;
@@ -27,7 +28,7 @@ class SubMerchantBatchTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->adminAuth();
+        $this->ba->proxyAuth();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -316,6 +317,29 @@ class SubMerchantBatchTest extends TestCase
         Mail::assertNotQueued(MerchantSubmitMail::class);
         Mail::assertNotQueued(CreateSubMerchantPartner::class);
         Mail::assertNotQueued(CreateSubMerchantAffiliate::class);
+    }
+
+    public function testProcessSubMerchantBatchInstantActivation()
+    {
+        $this->setUpForProcessing(__FUNCTION__);
+
+        $this->fixtures->merchant->editPricingPlanId(Pricing::DEFAULT_PRICING_PLAN_ID);
+
+        $this->startTest();
+
+        $this->assertProcessedCounts(3, 3, 0);
+
+        $merchant = $this->getDbEntity('merchant', ['email' => 'merch3@razorpay.com'], 'test');
+
+        $this->assertNotNull($merchant);
+
+        $this->assertTrue($merchant->isActivated());
+
+        $this->assertNotNull($merchant->getActivatedAt());
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->assertEquals('instantly_activated', $merchantDetail->getActivationStatus());
     }
 
     protected function getDefaultFileEntries(): array

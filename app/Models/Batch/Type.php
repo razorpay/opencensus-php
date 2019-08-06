@@ -90,7 +90,6 @@ class Type
         self::TERMINAL,
         self::TERMINAL_CREATION,
         self::MERCHANT_ONBOARDING,
-        self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
     ];
 
