@@ -358,14 +358,6 @@ class Beneficiary extends Base\Core
      */
     public function verifyBeneficiaryThroughApi(Entity $bankAccount, string $channel)
     {
-        $status = $this->checkBeneficiaryRegistrationStatus($bankAccount, $channel);
-
-        // Beneficiary verification failed, since beneficiary is not registered yet
-        if ($status === false)
-        {
-            return $status;
-        }
-
         $bankAccounts = (new PublicCollection)->push($bankAccount);
 
         $this->verifyBeneficiary($bankAccounts, $channel);
