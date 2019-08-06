@@ -1592,9 +1592,11 @@ class Repository extends Base\Repository
 
         $results = $query->get();
 
-        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
-
-        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN,
+            [
+                'time_taken' => get_diff_in_millisecond($txnFetchStartTime),
+            ]);
 
         return $results;
     }

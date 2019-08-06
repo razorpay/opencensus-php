@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
@@ -19,6 +20,73 @@ use RZP\Models\Payout\Core as PayoutCore;
 
 trait SettlementTrait
 {
+    protected function filterMerchantTransactionsForSettlement($transactions): array
+    {
+        foreach ($transactions as $transaction)
+        {
+
+        }
+    }
+
+    protected function isMerchantSettlementAllowed(Merchant\Entity $merchant): bool
+    {
+        $merchantFeatures = $merchant->getEnabledFeatures();
+
+        // if early settlement is not enabled then continute with normal settlement cycle for the merchant
+        if (in_array(Feature\Constants::ES_AUTOMATIC, $merchantFeatures, true) === false)
+        {
+            return true;
+        }
+
+        // if the merchant has early settlement enabled then check the time
+        if ($this->isEarlySettlementTime() === true)
+        {
+            return true;
+        }
+
+        // if ES_AUTOMATIC_THREE_PM is enabled on merchant then do settlement only after 3PM
+        if (in_array(Feature\Constants::ES_AUTOMATIC_THREE_PM, $merchantFeatures, true) === false)
+        {
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+
+            if ($now > $threePm)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isEarlySettlementTime(): bool
+    {
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $fivePm = Carbon::today(Timezone::IST)->hour(17)->getTimestamp();
+
+        $sixPm = Carbon::today(Timezone::IST)->hour(18)->getTimestamp();
+
+        $nineAm = Carbon::today(Timezone::IST)->hour(9)->getTimestamp();
+
+        $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+
+        //
+        // Settle the transaction if time is between 9-10 am or 5-6pm
+        // This is the time window promised to the merchants on ES.
+        // For example, if a transaction's settled_at is 7 am, this
+        // condition ensures that it doesn't get settled in the 7 or 8 am
+        // batch but only in the 9 am batch.
+        //
+
+        if ((($now >= $nineAm) and ($now < $tenAm)) or
+            (($now >= $fivePm) and ($now < $sixPm)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * @param $txns
      *
@@ -220,6 +288,8 @@ trait SettlementTrait
         // the merchant's settlement window, because this transaction's
         // settlement should have been done at 9, and it's not delayed.
         //
+        // TODO: handle this my sending merchant ID in the settlement create
+        //  so the execution is overriden on these conditions
         if ((($txn->getSettledAt() <= $fivePm) and ($now > $fivePm)) or
             (($txn->getSettledAt() <= $nineAm) and ($now > $nineAm)))
         {
@@ -464,7 +534,7 @@ trait SettlementTrait
 
         $merchant = $this->merchants[$merchantId];
 
-        if ($this->isLogEnabled() === true)
+        if ($this->isDebugEnabled() === true)
         {
             $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchantId]);
         }
@@ -539,7 +609,7 @@ trait SettlementTrait
     {
         $filteredTxnIds = [];
 
-        if ($this->isLogEnabled() === true)
+        if ($this->isDebugEnabled() === true)
         {
             $startTime = microtime(true);
         }
@@ -558,7 +628,7 @@ trait SettlementTrait
 
         if (empty($filteredTxnIds) === true)
         {
-            if ($this->isLogEnabled() === true)
+            if ($this->isDebugEnabled() === true)
             {
                 $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_NO_TXNS_TO_UPDATE);
             }
@@ -588,7 +658,7 @@ trait SettlementTrait
                 $this->repo->saveOrFail($transfer);
             }
 
-            if ($this->isLogEnabled() === true)
+            if ($this->isDebugEnabled() === true)
             {
                 $timeTaken = microtime(true) - $startTime;
 
@@ -632,7 +702,7 @@ trait SettlementTrait
                 try
                 {
                     // create settlement and attempt
-                    $merchantSettler = new Merchant($merchant, $channel, $this->repo, $this->isLogEnabled());
+                    $merchantSettler = new Merchant($merchant, $channel, $this->repo, $this->isDebugEnabled());
 
                     $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
@@ -920,7 +990,7 @@ trait SettlementTrait
 
     protected function traceMemoryUsage(string $traceCode)
     {
-        if ($this->isLogEnabled() === true)
+        if ($this->isDebugEnabled() === true)
         {
             $memoryAllocated = get_human_readable_size(memory_get_usage(true));
             $memoryUsed = get_human_readable_size(memory_get_usage());

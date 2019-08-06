@@ -9,10 +9,6 @@ use RZP\Models\Settlement\Processor as SettlementProcessor;
 
 class SettlementJob extends Job
 {
-    const MAX_RETRY_ATTEMPTS   = 0;
-
-    const MAX_ALLOWED_ATTEMPTS = 1;
-
     /**
      * @var string
      */
@@ -56,13 +52,6 @@ class SettlementJob extends Job
     {
         try
         {
-            if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
-            {
-                $this->delete();
-
-                return;
-            }
-
             parent::handle();
 
             $this->trace->info(

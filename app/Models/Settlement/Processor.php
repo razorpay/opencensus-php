@@ -27,7 +27,7 @@ class Processor extends Base\Core
 
     protected $mutex;
 
-    protected $logging;
+    protected $debug;
 
     /**
      * Merchant keyed by ID for easy access later
@@ -50,7 +50,7 @@ class Processor extends Base\Core
 
         $this->mutex = $this->app['api.mutex'];
 
-        $this->logging = true;
+        $this->debug = true;
     }
 
     /**
@@ -65,7 +65,7 @@ class Processor extends Base\Core
     {
         $this->increaseAllowedSystemLimits();
 
-        $this->setTraceStatus($input);
+        $this->setDebugStatus($input);
 
         $mutexResource = sprintf(self::MUTEX_DAILY_RESOURCE, $this->mode);
 
@@ -116,13 +116,17 @@ class Processor extends Base\Core
 
     public function process(array $input, $channel)
     {
-        $this->setTraceStatus($input);
+        $this->setDebugStatus($input);
 
         $this->preSettlementProcessing($input);
 
         $useQueue = $this->shouldUseQueue($input);
 
+        $merchantIds = $input['merchant_ids'] ?? [];
+
         list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
+
+        $startTime = microtime(true);
 
         if ($shouldProcess === true)
         {
@@ -130,18 +134,31 @@ class Processor extends Base\Core
 
             $data = $this->mutex->acquireAndRelease(
                 $mutexResource,
-                function () use ($channel, $useQueue)
+                function () use ($channel, $useQueue, $merchantIds)
                 {
-                    return $this->processSettlements($channel, $useQueue);
+                    return $this->processSettlements($channel, $useQueue, $merchantIds);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
 
+        //
+        // tracing metric with details like
+        // - total number of merhcants involved in this process
+        // - time taken to complete the process
+        //
+        $this->trace->count(
+            Metric::SETTLEMENTS_INITIATE_RUNTIME,
+            [
+                Metric::CHANNEL                 => $channel,
+                Metric::TIME_TAKEN_IN_MILLI     => get_diff_in_millisecond($startTime),
+                Metric::TOTAL_MERCHANTS_COUNT   => $data[$channel]['count'],
+            ]);
+
         return $data;
     }
 
-    protected function processSettlements($channel, $useQueue)
+    protected function processSettlements($channel, bool $useQueue, array $merchantIds)
     {
         $response = [];
 
@@ -161,7 +178,7 @@ class Processor extends Base\Core
                 }
                 else
                 {
-                    $setlResponse = $this->createSettlements($channel, $useQueue);
+                    $setlResponse = $this->createSettlements($channel, $useQueue, $merchantIds);
                 }
 
                 if ($useQueue === true)
@@ -534,15 +551,16 @@ class Processor extends Base\Core
         return $mids;
     }
 
-    protected function createSettlements($channel, $useQueue): array
+    protected function createSettlements($channel, bool $useQueue, array $merchantIds = []): array
     {
         $skipMids = $this->getMerchantsToSkipForUsualSettlement();
 
         if ($useQueue === true)
         {
+            // TODO: refactor this. add merchant filter to ensure only required merchants are been pushed to the queue
             $activatedMerchants = $this->repo
                                        ->transaction
-                                       ->fetchUnsettledTransactions($this->setlTime, $channel, [], $skipMids, false);
+                                       ->fetchUnsettledTransactions($this->setlTime, $channel, $merchantIds, $skipMids, false);
 
             $activatedMerchants = array_keys($activatedMerchants->getStringAttributesByKey(Transaction\Entity::MERCHANT_ID));
 
@@ -676,27 +694,41 @@ class Processor extends Base\Core
     }
 
     /**
-     * @param array $merchants
+     * @param array  $merchantIds
      * @param string $channel
      * @return array
      */
-    protected function pushMerchantsToSettlementQueue(array $merchants, string $channel): array
+    protected function pushMerchantsToSettlementQueue(array $merchantIds, string $channel): array
     {
         $totalCount[$channel]['merchant_count']    = 0;
 
         $this->trace->info(
             TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_INIT,
             [
-                'channel' => $channel
+                'channel'           => $channel,
+                'merchant_count'    => count($merchantIds)
             ]);
 
-        foreach ($merchants as $merchantId)
+        foreach ($merchantIds as $merchantId)
         {
             try
             {
                 SettlementJob::dispatch($this->mode, $channel, $merchantId);
 
-                $this->trace->info(TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT_TO_QUEUE, ['channel' => $channel, 'merchant_id' => $merchantId]);
+                $this->trace->info(
+                    TraceCode::MERCHANT_DISPATCHED_FOR_SETTLEMENT,
+                    [
+                        'channel'     => $channel,
+                        'merchant_id' => $merchantId
+                    ]);
+
+                // todo: check the usage
+                $this->trace->gauge(
+                    Metric::NUMBER_OF_MERCHANTS_IN_QUEUE_FOR_SETTLEMENT,
+                    1,
+                    [
+                        'channel' => $channel,
+                    ]);
 
                 $totalCount[$channel]['merchant_count'] += 1;
             }
@@ -705,7 +737,7 @@ class Processor extends Base\Core
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
-                    TraceCode::UNSETTLED_MERCHANT_DISPATCH_FAILED,
+                    TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_FAILED,
                     [
                         'channel'     => $channel,
                         'merchant_id' => $merchantId
@@ -714,7 +746,9 @@ class Processor extends Base\Core
             }
         }
 
-        $this->trace->info(TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE, $totalCount);
+        $this->trace->info(
+            TraceCode::MERCHANT_DISPATCH_FOR_SETTLEMENT_QUEUE_COMPLETE,
+            $totalCount);
 
         return $totalCount;
     }
@@ -722,6 +756,14 @@ class Processor extends Base\Core
     public function fetchAndProcessTransactionsForSettlement(string $channel, string $merchantId)
     {
         $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        // get merchat details for further filtering
+        $this->merchant = $this->repo->merchant->find($merchantId);
+
+        if ($this->isMerchantSettlementAllowed($this->merchant) === false)
+        {
+            // dont proceed with the settlement
+        }
 
         $txns = $this->repo->transaction->fetchUnsettledTransactionsForProcessing($merchantId, $channel);
 
@@ -744,7 +786,7 @@ class Processor extends Base\Core
 
     protected function shouldUseQueue(array $input)
     {
-        return (bool)isset($input['use_queue']) ?? false;
+        return (bool) isset($input['use_queue']) ?? false;
     }
 
     public function processAdhocSettlements(array $input)
@@ -847,26 +889,26 @@ class Processor extends Base\Core
         return $mids;
     }
 
-    public function enableLogs()
+    public function enableDebug()
     {
-        $this->logging = true;
+        $this->debug = true;
     }
 
-    public function disableLogs()
+    public function disableDebug()
     {
-        $this->logging = false;
+        $this->debug = false;
     }
 
-    public function isLogEnabled()
+    public function isDebugEnabled()
     {
-        return $this->logging;
+        return $this->debug;
     }
 
-    protected function setTraceStatus(array $input)
+    protected function setDebugStatus(array $input)
     {
-        if (array_key_exists('logging', $input) === true)
+        if (array_key_exists('debug', $input) === true)
         {
-            $this->logging = (bool)$input['logging'];
+            $this->debug = (bool) $input['debug'];
         }
     }
 }
