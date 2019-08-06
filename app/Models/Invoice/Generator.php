@@ -76,6 +76,11 @@ class Generator extends Base\Core
      */
     protected $externalEntity;
 
+    /**
+     * @var Order\Entity
+     */
+    protected $order;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -123,6 +128,27 @@ class Generator extends Base\Core
 
         return $this;
     }
+
+    /**
+     * @param Order\Entity $order
+     *
+     * @return $this
+     */
+    public function setOrder($order)
+    {
+        $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * @return Order\Entity or null
+     */
+    public function getOrder()
+    {
+        return $this->order;
+    }
+
 
     /**
      * @param null $batch
@@ -285,7 +311,7 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function generateInvoiceSkeleton(array $input)
+    protected function  generateInvoiceSkeleton(array $input)
     {
         //
         // If draft=1 in input, validate against createDraftRules else createIssuedRules.
@@ -397,9 +423,66 @@ class Generator extends Base\Core
 
         $this->invoice->setStatus(Status::ISSUED);
 
-        $this->createAndAssociateOrderForInvoice();
+        $this->setOrderForInvoice();
+
+        $this->associateOrderForInvoice();
 
         $this->setShortUrl();
+    }
+
+    /**
+     * @return void
+     */
+    private function setOrderForInvoice()
+    {
+        $order = $this->getOrder();
+
+        if ($order === null)
+        {
+            $orderAmount    = $this->invoice->getAmount();
+            $orderCurrency  = $this->invoice->getCurrency();
+            $orderReceipt   = $this->invoice->getReceipt();
+            $firstMinAmount = $this->invoice->getFirstPaymentMinAmount();
+
+            $orderInput = [
+                Order\Entity::AMOUNT                   => $orderAmount,
+                Order\Entity::CURRENCY                 => $orderCurrency,
+                Order\Entity::RECEIPT                  => $orderReceipt,
+                Order\Entity::PAYMENT_CAPTURE          => true,
+                Order\Entity::FIRST_PAYMENT_MIN_AMOUNT => $firstMinAmount,
+            ];
+
+            if (($this->externalEntity !== null) and
+                ($this->invoice->isTypeOfSubscriptionRegistration() === true))
+            {
+                if ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
+                {
+                    $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
+                }
+
+                if ($this->externalEntity->getBank() !== null)
+                {
+                    $orderInput[Order\Entity::BANK] = $this->externalEntity->getBank();
+                }
+            }
+
+            $partialPayment = $this->invoice->isPartialPaymentAllowed();
+
+            $order = (new Order\Core)->create($orderInput, $this->merchant, $partialPayment);
+
+            $this->setOrder($order);
+        }
+
+        return;
+    }
+
+    protected function associateOrderForInvoice()
+    {
+        $order = $this->getOrder();
+
+        $this->invoice->order()->associate($order);
+
+        assertTrue($this->invoice->getAmount() === $order->getAmount());
     }
 
     protected function setInvoiceCreator(Entity $invoice)
@@ -448,44 +531,6 @@ class Generator extends Base\Core
             $input[Entity::LINE_ITEMS],
             $this->merchant,
             $this->invoice);
-    }
-
-    protected function createAndAssociateOrderForInvoice()
-    {
-        $orderAmount    = $this->invoice->getAmount();
-        $orderCurrency  = $this->invoice->getCurrency();
-        $orderReceipt   = $this->invoice->getReceipt();
-        $firstMinAmount = $this->invoice->getFirstPaymentMinAmount();
-
-        $orderInput = [
-            Order\Entity::AMOUNT                   => $orderAmount,
-            Order\Entity::CURRENCY                 => $orderCurrency,
-            Order\Entity::RECEIPT                  => $orderReceipt,
-            Order\Entity::PAYMENT_CAPTURE          => true,
-            Order\Entity::FIRST_PAYMENT_MIN_AMOUNT => $firstMinAmount,
-        ];
-
-        if (($this->externalEntity !== null) and
-            ($this->invoice->isTypeOfSubscriptionRegistration() === true))
-        {
-            if ($this->externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
-            {
-                $orderInput[Order\Entity::METHOD] = $this->externalEntity->getMethod();
-            }
-
-            if ($this->externalEntity->getBank() !== null)
-            {
-                $orderInput[Order\Entity::BANK] = $this->externalEntity->getBank();
-            }
-        }
-
-        $partialPayment = $this->invoice->isPartialPaymentAllowed();
-
-        $order = (new Order\Core)->create($orderInput, $this->merchant, $partialPayment);
-
-        $this->invoice->order()->associate($order);
-
-        assertTrue($this->invoice->getAmount() === $order->getAmount());
     }
 
     /**

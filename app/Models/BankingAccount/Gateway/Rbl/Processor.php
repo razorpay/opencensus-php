@@ -22,7 +22,7 @@ class Processor extends BankingAccount\Gateway\Processor
 
     const CREDENTIALS_VAULT_NAMESPACE   = 'banking_account_creds';
 
-    const DATE_FORMAT = 'd-M-Y';
+    const DATE_FORMAT = 'd-m-Y';
 
     const MAX_MOZART_RETRIES            = 1;
 
@@ -51,7 +51,14 @@ class Processor extends BankingAccount\Gateway\Processor
 
         $input = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY];
 
-        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $input);
+        // RBL sends Phone Number and Account Number fields in the below format
+        // Phone no. and Account No. This dot is replaced by Laravel to =>
+        // following array notation as a result of which the validations
+        // start failing. So we are modifying the input to convert above
+        // field to Account No and Phone no
+        $content = $this->modifyWebhookInput($input);
+
+        (new Validator)->validateInput(Validator::ACCOUNT_INFO_WEBHOOK, $content);
     }
 
     public function processAccountInfoNotification(array $input): array
@@ -476,5 +483,18 @@ class Processor extends BankingAccount\Gateway\Processor
                    [Fields::BODY][Fields::BAL_AMOUNT][Fields::AMOUNT_VALUE];
 
         return $this->getFormattedAmount($balance);
+    }
+
+    protected function modifyWebhookInput(array $input)
+    {
+        $input[Fields::ACCOUNT_NO] = $input[Fields::ACCOUNT_NUMBER];
+
+        $input[Fields::PHONE_NO] = $input[Fields::PHONE_NUM];
+
+        unset($input[Fields::ACCOUNT_NUMBER]);
+
+        unset($input[Fields::PHONE_NUM]);
+
+        return $input;
     }
 }

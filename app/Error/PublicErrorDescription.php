@@ -213,6 +213,9 @@ class PublicErrorDescription
     const BAD_REQUEST_ALL_FTA_NOT_FAILED                                        = 'All FTAs for the refund are not in failed state.';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
+    const BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS                             = 'Merchant email already exists';
+    const BAD_REQUEST_MERCHANT_INVALID_MCC_CODE                                 = 'Invalid mcc code';
+    const BAD_REQUEST_ACCOUNT_REGISTRATION_ADDRESS_REQUIRED                     = 'Registered address is required';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED                           = 'The merchant funds are already released';
     const BAD_REQUEST_RECEIPT_EMAILS_ALREADY_ENABLED                            = 'The merchant receipt emails are already enabled';
@@ -220,7 +223,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED                             = 'Merchant international is already enabled';
     const BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED                            = 'Merchant international is already disabled';
     const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
-    const BAD_REQUEST_MERCHANT_EMAIL_DUPLICATE_FOR_TYPE                         = 'Duplicate email for given type';
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
     const BAD_REQUEST_KEY_EXPIRED                                               = 'Key is expired';

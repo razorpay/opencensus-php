@@ -525,6 +525,22 @@ class Entity extends Base\PublicEntity
             $delimiter);
     }
 
+    public function hasBusinessRegisteredAddress(): bool
+    {
+        $city = $this->getBusinessRegisteredCity();
+        $state = $this->getBusinessRegisteredStateName();
+
+        return ((empty($city) === false) and (empty($state) === false));
+    }
+
+    public function hasBusinessOperationAddress(): bool
+    {
+        $city = $this->getBusinessOperationCity();
+        $state = $this->getBusinessOperationStateName();
+
+        return ((empty($city) === false) and (empty($state) === false));
+    }
+
     public function getBusinessRegisteredCity()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
@@ -543,6 +559,14 @@ class Entity extends Base\PublicEntity
     public function getBusinessRegisteredStateName()
     {
         $state     = $this->getBusinessRegisteredState();
+        $stateName = $state !== null ? IndianStates::getStateNameByCode($state) : null;
+
+        return $stateName !== null ? ucwords(strtolower($stateName)) : null;
+    }
+
+    public function getBusinessOperationStateName()
+    {
+        $state     = $this->getBusinessOperationState();
         $stateName = $state !== null ? IndianStates::getStateNameByCode($state) : null;
 
         return $stateName !== null ? ucwords(strtolower($stateName)) : null;

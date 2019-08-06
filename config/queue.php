@@ -94,6 +94,7 @@ return [
                 'reversed'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'queued'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'initiated'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'failed'            => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'refund' => [
                 'processed'         => env('AWS_WEBHOOKS_TEST_QUEUE'),
@@ -155,6 +156,7 @@ return [
                 'reversed'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'queued'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'initiated'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'failed'            => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
             'refund' => [
                 'processed'         => env('AWS_WEBHOOKS_LIVE_QUEUE'),

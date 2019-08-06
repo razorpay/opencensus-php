@@ -13,6 +13,7 @@ class ErrorCodeDescriptions extends Base\ErrorCodes\Cards\ErrorCodeDescriptions
         ErrorCodes::EC_400  => 'General Error',
         ErrorCodes::EC_401  => 'Command is Null or Empty',
         ErrorCodes::EC_402  => 'XML is Null or Empty',
+        ErrorCodes::EC_404  => 'SQL Exception',
         ErrorCodes::EC_406  => 'Not Authenticated',
         ErrorCodes::EC_407  => 'Not Authorized',
         ErrorCodes::EC_408  => 'XML Data Error',
@@ -34,6 +35,8 @@ class ErrorCodeDescriptions extends Base\ErrorCodes\Cards\ErrorCodeDescriptions
         ErrorCodes::EC_399  => 'SYSTEM UNAVAILABLE',
         ErrorCodes::EC_ED   => 'E-commerce decline',
         ErrorCodes::EC_CA   => 'Compliance error code for acquirer',
+        ErrorCodes::EC_CI   => 'Compliance error code for issuer',
+        ErrorCodes::EC_M6   => 'Compliance error code for LMM',
         ErrorCodes::FAILURE => 'Failure',
     ];
 }

@@ -21,6 +21,7 @@ class Header
     const NOTES             = 'notes';
     // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
     const NOTES_REGEX       = '/^notes\[(.*)]$/';
+    const TERMINAL_CREATION_TYPE_REGEX           = '/^type\[(.*)]$/';
 
     //
     // Refund Headers
@@ -557,6 +558,43 @@ class Header
     const REVERSAL_ID              = 'Reversal Id';
     const INITIATOR_ID             = 'Initiator Id';
 
+    // Bulk Terminal Creation Headers
+    const TERMINAL_CREATION_MERCHANT_ID          = 'Merchant Id';
+    const TERMINAL_CREATION_GATEWAY              = 'Gateway';
+    const TERMINAL_CREATION_GATEWAY_MERCHANT_ID  = 'Gateway Merchant Id';
+    const TERMINAL_CREATION_GATEWAY_MERCHANT_ID2 = 'Gateway Merchant Id2';
+    const TERMINAL_CREATION_GATEWAY_TERMINAL_ID  = 'Gateway Terminal Id';
+    const TERMINAL_CREATION_GATEWAY_ACCESS_CODE  = 'Gateway Access Code';
+    const TERMINAL_CREATION_MC_MPAN              = 'MC MPAN';
+    const TERMINAL_CREATION_VISA_MPAN            = 'VISA MPAN';
+    const TERMINAL_CREATION_RUPAY_MPAN           = 'RUPAY MPAN';
+    const TERMINAL_CREATION_VPA                  = 'VPA';
+    const TERMINAL_CREATION_CATEGORY             = 'Category';
+    const TERMINAL_CREATION_CARD                 = 'Card';
+    const TERMINAL_CREATION_NETBANKING           = 'Netbanking';
+    const TERMINAL_CREATION_EMANDATE             = 'Emandate';
+    const TERMINAL_CREATION_EMI                  = 'EMI';
+    const TERMINAL_CREATION_UPI                  = 'UPI';
+    const TERMINAL_CREATION_BANK_TRANSFER        = 'Bank Transfer';
+    const TERMINAL_CREATION_AEPS                 = 'AEPS';
+    const TERMINAL_CREATION_EMI_DURATION         = 'EMI_DURATION';
+    const TERMINAL_CREATION_TYPE                 = 'Type';
+    const TERMINAL_CREATION_MODE                 = 'Mode';
+    const TERMINAL_CREATION_TPV                  = 'TPV';
+    const TERMINAL_CREATION_INTERNATIONAL        = 'International';
+    const TERMINAL_CREATION_CORPORATE            = 'Corporate';
+    const TERMINAL_CREATION_EXPECTED             = 'Expected';
+    const TERMINAL_CREATION_EMI_SUBVENTION       = 'EMI Subvention';
+    const TERMINAL_CREATION_GATEWAY_ACQUIRER     = 'Gateway Acquirer';
+    const TERMINAL_CREATION_NETWORK_CATEGORY     = 'Network Category';
+    const TERMINAL_CREATION_CURRENCY             = 'Currency';
+    const TERMINAL_CREATION_ACCOUNT_NUMBER       = 'Account Number';
+    const TERMINAL_CREATION_IFSC_CODE            = 'IFSC Code';
+    const TERMINAL_CREATION_CARDLESS_EMI         = 'Cardless EMPI';
+    const TERMINAL_CREATION_PAYLATER             = 'Paylater';
+    const TERMINAL_CREATION_ENABLED              = 'Enabled';
+    const TERMINAL_CREATION_CAPABILITY           = 'Capability';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -565,6 +603,87 @@ class Header
      * @var array
      */
     const HEADER_MAP = [
+
+        Type::TERMINAL_CREATION => [
+            self::INPUT => [
+                self::TERMINAL_CREATION_MERCHANT_ID,
+                self::TERMINAL_CREATION_GATEWAY,
+                self::TERMINAL_CREATION_GATEWAY_MERCHANT_ID,
+                self::TERMINAL_CREATION_GATEWAY_MERCHANT_ID2,
+                self::TERMINAL_CREATION_GATEWAY_TERMINAL_ID,
+                self::TERMINAL_CREATION_GATEWAY_ACCESS_CODE,
+                self::TERMINAL_CREATION_MC_MPAN,
+                self::TERMINAL_CREATION_VISA_MPAN,
+                self::TERMINAL_CREATION_RUPAY_MPAN,
+                self::TERMINAL_CREATION_VPA,
+                self::TERMINAL_CREATION_CATEGORY,
+                self::TERMINAL_CREATION_CARD,
+                self::TERMINAL_CREATION_NETBANKING,
+                self::TERMINAL_CREATION_EMANDATE,
+                self::TERMINAL_CREATION_EMI,
+                self::TERMINAL_CREATION_UPI,
+                self::TERMINAL_CREATION_BANK_TRANSFER,
+                self::TERMINAL_CREATION_AEPS,
+                self::TERMINAL_CREATION_EMI_DURATION,
+                self::TERMINAL_CREATION_TYPE,
+                self::TERMINAL_CREATION_MODE,
+                self::TERMINAL_CREATION_TPV,
+                self::TERMINAL_CREATION_INTERNATIONAL,
+                self::TERMINAL_CREATION_CORPORATE,
+                self::TERMINAL_CREATION_EXPECTED,
+                self::TERMINAL_CREATION_EMI_SUBVENTION,
+                self::TERMINAL_CREATION_GATEWAY_ACQUIRER,
+                self::TERMINAL_CREATION_NETWORK_CATEGORY,
+                self::TERMINAL_CREATION_CURRENCY,
+                self::TERMINAL_CREATION_ACCOUNT_NUMBER,
+                self::TERMINAL_CREATION_IFSC_CODE,
+                self::TERMINAL_CREATION_CARDLESS_EMI,
+                self::TERMINAL_CREATION_PAYLATER,
+                self::TERMINAL_CREATION_ENABLED,
+                self::TERMINAL_CREATION_CAPABILITY,
+            ],
+            self::OUTPUT => [
+                self::TERMINAL_ID,
+                self::TERMINAL_CREATION_MERCHANT_ID,
+                self::TERMINAL_CREATION_GATEWAY,
+                self::TERMINAL_CREATION_GATEWAY_MERCHANT_ID,
+                self::TERMINAL_CREATION_GATEWAY_MERCHANT_ID2,
+                self::TERMINAL_CREATION_GATEWAY_TERMINAL_ID,
+                self::TERMINAL_CREATION_GATEWAY_ACCESS_CODE,
+                self::TERMINAL_CREATION_MC_MPAN,
+                self::TERMINAL_CREATION_VISA_MPAN,
+                self::TERMINAL_CREATION_RUPAY_MPAN,
+                self::TERMINAL_CREATION_VPA,
+                self::TERMINAL_CREATION_CATEGORY,
+                self::TERMINAL_CREATION_CARD,
+                self::TERMINAL_CREATION_NETBANKING,
+                self::TERMINAL_CREATION_EMANDATE,
+                self::TERMINAL_CREATION_EMI,
+                self::TERMINAL_CREATION_UPI,
+                self::TERMINAL_CREATION_BANK_TRANSFER,
+                self::TERMINAL_CREATION_AEPS,
+                self::TERMINAL_CREATION_EMI_DURATION,
+                self::TERMINAL_CREATION_TYPE,
+                self::TERMINAL_CREATION_MODE,
+                self::TERMINAL_CREATION_TPV,
+                self::TERMINAL_CREATION_INTERNATIONAL,
+                self::TERMINAL_CREATION_CORPORATE,
+                self::TERMINAL_CREATION_EXPECTED,
+                self::TERMINAL_CREATION_EMI_SUBVENTION,
+                self::TERMINAL_CREATION_GATEWAY_ACQUIRER,
+                self::TERMINAL_CREATION_NETWORK_CATEGORY,
+                self::TERMINAL_CREATION_CURRENCY,
+                self::TERMINAL_CREATION_ACCOUNT_NUMBER,
+                self::TERMINAL_CREATION_IFSC_CODE,
+                self::TERMINAL_CREATION_CARDLESS_EMI,
+                self::TERMINAL_CREATION_PAYLATER,
+                self::TERMINAL_CREATION_ENABLED,
+                self::TERMINAL_CREATION_CAPABILITY,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
 
         Type::REFUND => [
 

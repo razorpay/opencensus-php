@@ -998,6 +998,7 @@ final class Route
         'account_create'                           => ['post',     'accounts',                                       'AccountController@createAccount'                                   ],
         'account_list'                             => ['get',      'accounts',                                       'AccountController@listAccounts'                                    ],
         'account_fetch'                            => ['get',      'accounts/{id}',                                  'AccountController@fetchAccount'                                    ],
+        'account_edit'                             => ['patch',    'accounts/{id}',                                  'AccountController@editAccount'                                     ],
         'account_action'                           => ['patch',    'accounts/{id}/{action}',                         'AccountController@performAction'                                   ],
 
         // Pincode Service
@@ -1064,6 +1065,7 @@ final class Route
         'subscription_registration_fetch_token'    => ['get',      'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'   => ['delete',   'subscription_registration/tokens/{id}',          'SubscriptionRegistrationController@deleteToken'                    ],
         'subscription_registration_charge_token'   => ['post',     'subscription_registration/tokens/{id}/charge',   'SubscriptionRegistrationController@chargeToken'                    ],
+        'subscription_registration_auto_charge'    => ['post',     'subscription_registration/auto_charge',          'SubscriptionRegistrationController@postProcessAutoCharges'         ],
 
         'merchant_submit_support_call_request'     => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
 
@@ -1423,7 +1425,9 @@ final class Route
         'account_create',
         'account_list',
         'account_fetch',
+        'account_edit',
         'account_action',
+        'subscription_registration_auto_charge',
     ];
 
     // Only routes defined in internalApps go here
@@ -1561,6 +1565,7 @@ final class Route
         'gateway_downtime_detection_purge_keys',
         'merchant_get_org_details',
         'banking_account_statement_process',
+        'subscription_registration_auto_charge',
         'partner_submerchant_map',
     ];
 
@@ -2846,6 +2851,7 @@ final class Route
             'fund_account_validate_retry_all',
             'virtual_account_close_cron',
             'gateway_downtime_detection_purge_keys',
+            'subscription_registration_auto_charge',
         ],
 
         'subscriptions' => [
