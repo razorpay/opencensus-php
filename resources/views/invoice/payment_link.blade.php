@@ -368,8 +368,8 @@ $custom_labels                  = $data['custom_labels'];
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
                                         <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                                        @if(isset($data['checkout_options']['description']))
-                                            <div id="merchant-desc">Invoice #inv_{{$data['checkout_options']['description']}}</div>
+                                        @if($data['checkout_options']['description'] !== '')
+                                            <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
                                         @endif
                                     </div>
                                 @endif
@@ -427,8 +427,8 @@ $custom_labels                  = $data['custom_labels'];
                     @if (isset($data['merchant']))
                         <div id="merchant">
                             <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                            @if(isset($data['checkout_options']['description']))
-                                <div id="merchant-desc">Invoice #inv_{{$data['checkout_options']['description']}}</div>
+                            @if($data['checkout_options']['description'] !== '')
+                                <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
                             @endif
                         </div>
                     @endif
@@ -678,7 +678,7 @@ $custom_labels                  = $data['custom_labels'];
                 invoice_id: invoiceObj.id,
                 amount: invoiceObj.amount,
                 // parent: '#chkout-box',
-                description: '#inv_'+checkoutOptions['description'],
+                description: checkoutOptions['description'],
                 handler: function(response) {
                     if (globalScope.hasRedirect()) {
 

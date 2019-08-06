@@ -159,13 +159,13 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantId = $this->merchant->getId();
 
-        $checkoutOptions = ['description' => $this->invoice->getId()];
+        $checkoutOptions = ['description' => '#inv_'.$this->invoice->getId()];
 
         switch ($merchantId)
         {
             case Preferences::MID_SURYODAY_BANK:
                 $checkoutOptions = [
-                    'description' => null
+                    'description' => '',
                 ];
         }
         return $checkoutOptions;
