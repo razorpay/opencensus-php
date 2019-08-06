@@ -179,6 +179,13 @@ class Type
     public static $kubernetesJobGroup = [
         // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
         self::PAYMENT_LINK,
+        self::SUB_MERCHANT,
+        self::OAUTH_MIGRATION_TOKEN,
+        self::PARTNER_SUBMERCHANTS,
+        self::RECURRING_CHARGE,
+        self::AUTH_LINK,
+        self::VIRTUAL_BANK_ACCOUNT,
+        self::ENTITY_MAPPING,
     ];
 
     /**
