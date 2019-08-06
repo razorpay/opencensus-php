@@ -156,10 +156,9 @@ class Core extends Base\Core
 
         $response = $this->sendFile($filePath, $jobName, $fileType, $channel);
 
-        return [$response];
-//        return [
-//            'status' => 'Nodal file upload request sent to beam'
-//        ];
+        return [
+            'response' => $response
+        ];
     }
 
     /**
