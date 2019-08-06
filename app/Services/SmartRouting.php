@@ -140,6 +140,12 @@ class SmartRouting
 
             ];
 
+            $this->trace->info(
+                "Checking",
+                [
+                    'test'    => $authentication
+                ]);
+
             $request = [
                 'url'     => $url,
                 'method'  => $action['method'],
