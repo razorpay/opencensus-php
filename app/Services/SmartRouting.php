@@ -128,10 +128,20 @@ class SmartRouting
 
             $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
 
+            $username = $this->app['config']->get('applications.smart_routing.username');
+
+            $password = $this->app['config']->get('applications.smart_routing.password');
+
             $authentication = [
-                'api_user',
-                'password'
+                $username,
+                $password
             ];
+
+            $this->trace->info(
+                TraceCode::SMART_ROUTING_RETRY,
+                [
+                    'test' => $authentication
+                ]);
 
 
             $options = [
@@ -139,12 +149,6 @@ class SmartRouting
                 'auth'    => $authentication
 
             ];
-
-            $this->trace->info(
-                TraceCode::SMART_ROUTING_RETRY,
-                [
-                    'test'    => $authentication
-                ]);
 
             $request = [
                 'url'     => $url,
