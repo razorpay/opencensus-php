@@ -101,6 +101,19 @@ export const removeUser = userId => {
   };
 };
 
+export const toggle2FaEnforcement = (merchantId, twoFaFlag) => {
+  return {
+    type: USER_REMOVE,
+    payload: defaultAjax(` merchant/restrict`, {
+      method: 'post',
+      data: {
+        merchant_id: merchantId,
+        action: twoFaFlag,
+      },
+    }),
+  };
+};
+
 let initialState = {
   loading: true,
   invitations: [],

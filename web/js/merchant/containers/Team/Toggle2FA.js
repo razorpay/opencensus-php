@@ -2,17 +2,24 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
-import ShowWhen from 'merchant/components/ShowWhen';
+import { toggle2FaEnforcement } from 'merchant/modules/team';
+
+import { openModal, closeModal } from 'rzp/modules/modals';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
+import {
+  VerifyMobileNumber,
+  MissingNumbers,
+} from 'merchant/containers/Team/TwoFAModals';
 
 @connect(
   state => {
     return {
       user: state.session.user,
       features: state.config.features,
+      merchant: state.session.user,
     };
   },
-  { updateFeatures, showNotification }
+  { updateFeatures, showNotification, openModal, closeModal }
 )
 export default class Toggle2FA extends Component {
   constructor(props) {
@@ -48,55 +55,28 @@ export default class Toggle2FA extends Component {
     });
   };
 
-  toggleFc = (enableFC, cb) => {
-    let shouldSync = 1;
-    var data = {
-      features: {
-        noToggle2FA: enableFC ? 0 : 1,
-      },
-      should_sync: shouldSync,
-    };
-
-    return this.props
-      .updateFeatures(data, this.props.user.current)
-      .then(res => {
-        cb(true);
-
-        if (enableFC) {
-          this.analytics('Enable');
-        } else {
-          this.analytics('Disable');
-        }
-        this.props.showNotification({
-          type: 'success',
-          message: 'Your preference was saved',
-        });
-        this.setState({
-          fcEnabled: enableFC,
-        });
-      })
-      .catch(err => {
-        cb(false);
-
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
+  toggle2FA = e => {
+    this.props.openModal({
+      size: 'small',
+      component: <NewInvite mobile="9886495755" count={6} {...this.props} />,
+    });
   };
 
   render() {
+    // this.toggle2FA()
     let { fcEnabled } = this.state;
 
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span class="title">2-Step verification to the team</span>
-
+          <span class="title">
+            <i class="i i-phonelink-lock"></i> &nbsp; 2-Step verification to the
+            team
+          </span>
           <span class="toggler-btn">
             <SwitchField
               defaultChecked={!!fcEnabled}
-              onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
+              onChange={this.toggle2FA}
               type="prime"
             />
             {fcEnabled ? (

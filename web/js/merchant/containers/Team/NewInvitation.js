@@ -79,58 +79,68 @@ export default class NewInvitation extends Component {
 
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
-        <div class="row">
-          <div class="col-md-5">
-            <div class="form-group">
-              <Field
-                name="email"
-                component={InputField}
-                class="form-control"
-                placeholder="Email address of the user"
-                autoFocus={true}
-                validate={[
-                  required(),
-                  email('Invalid Email'),
-                  value => {
-                    if (value === this.props.user.user.email) {
-                      return "You can't invite yourself";
-                    }
-                  },
-                ]}
-              />
-            </div>
+        <div>
+          <div class="form-group">
+            <label>Member Details</label>
+            <Field
+              name="email"
+              component={InputField}
+              class="form-control"
+              placeholder="Email"
+              autoFocus={true}
+              validate={[
+                required(),
+                email('Invalid Email'),
+                value => {
+                  if (value === this.props.user.user.email) {
+                    return "You can't invite yourself";
+                  }
+                },
+              ]}
+            />
+            <Field
+              name="contact_mobile"
+              component={InputField}
+              class="form-control"
+              placeholder="Phone Number"
+              autoFocus={true}
+              validate={[
+                required(),
+                email('Invalid Mobile'),
+                value => {
+                  if (value === this.props.user.user.contact_mobile) {
+                    return "You can't invite yourself";
+                  }
+                },
+              ]}
+            />
           </div>
 
-          <div class="col-md-4">
-            <div class="form-group">
-              <Field name="role" component="select" class="form-control">
-                {Object.keys(ROLES).map(role => (
-                  <option key={role} value={role}>
-                    {ROLES[role].label}
-                  </option>
-                ))}
-              </Field>
-            </div>
+          <div class="form-group">
+            <label>Role</label>
+            <Field name="role" component="select" class="form-control">
+              {Object.keys(ROLES).map(role => (
+                <option key={role} value={role}>
+                  {ROLES[role].label}
+                </option>
+              ))}
+            </Field>
           </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-              <AsyncButton
-                class="btn btn-primary"
-                text="+ Add team member"
-                pendingText="Sending Invitation..."
-                onClick={handleSubmit(this.save)}
-              />
-            </div>
+          <div class="form-group">
+            {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
+              <div class="alert alert-info text-center">
+                {ROLES[selectedRole].desc}
+              </div>
+            ) : null}
           </div>
-        </div>
-
-        <div class="form-group">
-          {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
-            <div class="alert alert-info text-center">
-              {ROLES[selectedRole].desc}
-            </div>
-          ) : null}
+          <div class="form-group">
+            <AsyncButton
+              class="btn btn-primary btn-block"
+              text="Send Invitation"
+              pendingText="Sending Invitation..."
+              onClick={handleSubmit(this.save)}
+            />
+          </div>
         </div>
       </form>
     );

@@ -1,0 +1,52 @@
+.otp-input
+    display: flex
+    div
+        flex: 1
+        height: 42px
+        width: 42px
+        border: 1px solid #EBEBEB;
+        border-radius: 2px;
+    input
+        height:40px
+        width: 40px
+        border: none
+        border-radius:0px
+    .middle-man
+        border-radius:0px
+        border-left-width:0px
+        border-right-width:0px
+    .middle-man.active
+        border-left-width:1px
+        border-right-width:1px
+    .active
+        border-color: #518FF0;
+    .seprator
+        border:none
+        background-color: transparent
+        display:flex
+        ._dash
+            border-top: 1px solid #ebebeb
+            width: 8px
+            height: 1px
+            align-self: center
+            margin: 8px
+    .first
+        border-right-radius:0px
+    .last
+         border-left-radius:0px
+    .wrong
+        border-color:#F2C8C8
+.wrong-msg
+    color: #FF3E3E
+    font-size: 12px
+.2fa-modal
+    .error-msg
+        display: flex
+        align-items: center
+        border: 1px solid #FF6E6E
+        border-radius: 2px
+        background-color: #FFF1F1
+        padding:3px
+    .no-side-padding
+        padding-left: 0px
+        padding-right:0px

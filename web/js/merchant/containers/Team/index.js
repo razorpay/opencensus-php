@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
-import { Redirect } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -10,8 +8,8 @@ import Invitation from './Invitation';
 import User from './User';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Toggle2FA from './Toggle2FA';
-import DataTable from 'rzp/ui/Table/DataTable';
-
+import ModalHeader from 'rzp/ui/ModalHeader';
+import { openModal, closeModal } from 'rzp/modules/modals';
 @connect(
   state => {
     return {
@@ -23,20 +21,37 @@ import DataTable from 'rzp/ui/Table/DataTable';
   {
     fetchTeamDetails,
     ...NotificationsActions,
+    openModal,
+    closeModal,
   }
 )
 export default class TeamContainer extends Component {
   componentWillMount() {
     this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
   }
-
+  addNewMember = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <div>
+          <ModalHeader
+            title="Add Team Member"
+            onCloseClick={this.props.closeModal}
+          />
+          <div class="modal-body">
+            <NewInvitation />
+          </div>
+        </div>
+      ),
+    });
+  };
   render() {
     let invitations = this.props.invitations;
     let users = this.props.users;
     let otherUsers = users.filter(
       user => user.email !== this.props.merchant.user.email
     );
-
+    this.addNewMember();
     return (
       <div>
         <HeaderAction>
@@ -59,7 +74,7 @@ export default class TeamContainer extends Component {
         </HeaderAction>
         <div class="content-wrapper content-sm content-sm-900">
           <Toggle2FA />
-          <NewInvitation />
+          {/* <NewInvitation /> */}
           {otherUsers.length ? (
             <div>
               <div class="panel-heading">

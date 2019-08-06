@@ -100,6 +100,7 @@ export default class EditUser extends Component {
     return (
       <tr>
         <td>{user.email}</td>
+        <td>{user.mobile_number}</td>
         <td>{user.name}</td>
         <td>
           <Field
