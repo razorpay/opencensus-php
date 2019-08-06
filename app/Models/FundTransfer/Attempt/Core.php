@@ -135,8 +135,8 @@ class Core extends Base\Core
 
     /**
      * @param array $input
-     *
      * @return array
+     * @throws LogicException
      */
     public function nodalFileUploadThroughBeam(array $input): array
     {
@@ -154,11 +154,12 @@ class Core extends Base\Core
 
         $jobName  = $this->getJobNameForBeamPush($channel, $fileType);
 
-        $this->sendFile($filePath, $jobName, $fileType, $channel);
+        $response = $this->sendFile($filePath, $jobName, $fileType, $channel);
 
-        return [
-            'status' => 'Nodal file upload request sent to beam'
-        ];
+        return [$response];
+//        return [
+//            'status' => 'Nodal file upload request sent to beam'
+//        ];
     }
 
     /**
@@ -369,6 +370,9 @@ class Core extends Base\Core
                     case Settlement\Channel::ICICI:
                         return BeamConstants::ICICI_SETTLEMENT_JOB_NAME;
 
+                    case Settlement\Channel::AXIS2:
+                        return BeamConstants::AXIS2_SETTLEMENT_JOB_NAME;
+
                     default:
                         throw new LogicException('Invalid settlement channel', null, $channel);
                 }
@@ -378,6 +382,9 @@ class Core extends Base\Core
                 {
                     case Settlement\Channel::ICICI:
                         return BeamConstants::ICICI_BENEFICIARY_JOB_NAME;
+
+                    case Settlement\Channel::AXIS2:
+                        return BeamConstants::AXIS2_BENEFICIARY_JOB_NAME;
 
                     default:
                         throw new LogicException('Invalid Beneficiary channel', null, $channel);
@@ -395,6 +402,7 @@ class Core extends Base\Core
      * @param string $jobName
      * @param string $fileType
      * @param string $channel
+     * @return mixed
      */
     protected function sendFile(string $filename, string $jobName, string $fileType, string $channel)
     {
@@ -416,7 +424,7 @@ class Core extends Base\Core
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
         ];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        return $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
     }
 
     /**
