@@ -102,6 +102,8 @@ class BeneficiaryVerification extends Job
                 $this->traceData(TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY);
 
                 $this->release(self::RETRY_INTERVAL);
+
+                return;
             }
             else
             {

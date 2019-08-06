@@ -111,6 +111,8 @@ class BeneficiaryRegistration extends Job
                 $this->traceData(TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY);
 
                 $this->release(self::RETRY_INTERVAL);
+
+                return;
             }
             else
             {
