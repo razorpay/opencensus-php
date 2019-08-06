@@ -141,7 +141,7 @@ class SmartRouting
             ];
 
             $this->trace->info(
-                "Checking",
+                TraceCode::SMART_ROUTING_RETRY,
                 [
                     'test'    => $authentication
                 ]);
