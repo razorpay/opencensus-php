@@ -246,7 +246,7 @@ class Core extends Base\Core
             if (strtolower($variant) === 'on')
             {
                 unset($input[Entity::FILE]);
-                $this->app->k8s_client->createJob($this->mode, $batch->getId(), $input);
+                $this->app->k8s_client->createJob($this->mode, $batch->getId(), $input, $batch->getType());
 
                 return;
             }
@@ -301,7 +301,7 @@ class Core extends Base\Core
             throw new Exception\ServerNotFoundException("File Not Found",
                                                         ErrorCode::SERVER_ERROR_FILE_NOT_FOUND);
         }
-        
+
         return $filePath;
     }
 
