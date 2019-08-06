@@ -5185,3 +5185,11 @@ ALTER TABLE iins
 
 ALTER TABLE `reversals`
     MODIFY COLUMN `transaction_id` CHAR(14) DEFAULT NULL;
+
+ALTER table terminals
+    ADD COLUMN `org_id` VARCHAR(14) NULL AFTER `merchant_id`,
+    ADD COLUMN `status` VARCHAR(255) NULL DEFAULT "activated" AFTER `enabled`,
+    ADD COLUMN `notes` TEXT DEFAULT NULL AFTER `ifsc_code`,
+    ADD INDEX terminals_org_id_index (`org_id`),
+    ADD INDEX terminals_status_index (`status`);
+

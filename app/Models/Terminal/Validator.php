@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         Entity::PAYLATER                    => 'sometimes|boolean',
         Entity::ENABLED                     => 'sometimes|in:0,1',
         Entity::CAPABILITY                  => 'sometimes|in:0,1,2',
+        Entity::NOTES                       => 'sometimes',
     ];
 
     protected static $editTerminalGateways = [

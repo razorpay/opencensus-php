@@ -1143,6 +1143,12 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
+
     }
 
     public function testCreateWorldlineTerminal()
@@ -1152,5 +1158,10 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
     }
 }
