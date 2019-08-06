@@ -117,7 +117,7 @@ trait FileHandlerTrait
 
         if (file_exists($dir) === false)
         {
-            mkdir($dir);
+            mkdir($dir, 0777, true);
         }
 
         $fullpath = $dir . '/' . $name . '.csv';

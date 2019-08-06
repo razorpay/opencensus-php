@@ -311,52 +311,52 @@ class Base extends Core
             // Validations should take care of this.
             $file = $input['attachment-' . $attachmentNumber];
 
-            if ($this->fileProcessor->isZipFile($file, $fileLocationType) === true)
-            {
-                $zipFileDetails = [];
-
-                try
-                {
-                    // Gets the actual zip file's details first.
-                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $fileLocationType);
-
-                    // Gets all files details present in the zip file.
-                    $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
-
-                    // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
-                    if (empty($extractedFileDetails) === true)
-                    {
-                        // Exception instead of alert, to handle zip extraction exceptions also in the
-                        // same alert in the catch block. (Cleaner code).
-                        throw new Exception\ReconciliationException(
-                            'No files present in the zip file attachment.',
-                            ['file_name' => $file->getClientOriginalName()]
-                        );
-                    }
-
-                    // Checks whether all the extracted files are zips too.
-                    $multiLevelZip = $this->isTwoLevelZip($extractedFileDetails);
-
-                    if ($multiLevelZip === true)
-                    {
-                        $extractedFileDetails = $this->getFileDetailsFromAllZipFiles($extractedFileDetails);
-                    }
-
-                    // Using array merge since $extractedFileDetails contains an
-                    // array of file details of different files in the zip file.
-                    $allFilesDetails = array_merge($allFilesDetails, $extractedFileDetails);
-                }
-                catch (\Exception $ex)
-                {
-                    $this->handleZipProcessingException($ex, $zipFileDetails);
-                }
-            }
-            else
-            {
+//            if ($this->fileProcessor->isZipFile($file, $fileLocationType) === true)
+//            {
+//                $zipFileDetails = [];
+//
+//                try
+//                {
+//                    // Gets the actual zip file's details first.
+//                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $fileLocationType);
+//
+//                    // Gets all files details present in the zip file.
+//                    $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+//
+//                    // Throw an error if there's not even one file in the zip. Ideally, shouldn't happen.
+//                    if (empty($extractedFileDetails) === true)
+//                    {
+//                        // Exception instead of alert, to handle zip extraction exceptions also in the
+//                        // same alert in the catch block. (Cleaner code).
+//                        throw new Exception\ReconciliationException(
+//                            'No files present in the zip file attachment.',
+//                            ['file_name' => $file->getClientOriginalName()]
+//                        );
+//                    }
+//
+//                    // Checks whether all the extracted files are zips too.
+//                    $multiLevelZip = $this->isTwoLevelZip($extractedFileDetails);
+//
+//                    if ($multiLevelZip === true)
+//                    {
+//                        $extractedFileDetails = $this->getFileDetailsFromAllZipFiles($extractedFileDetails);
+//                    }
+//
+//                    // Using array merge since $extractedFileDetails contains an
+//                    // array of file details of different files in the zip file.
+//                    $allFilesDetails = array_merge($allFilesDetails, $extractedFileDetails);
+//                }
+//                catch (\Exception $ex)
+//                {
+//                    $this->handleZipProcessingException($ex, $zipFileDetails);
+//                }
+//            }
+//            else
+//            {
                 // Except zip, all other file types will return with a single element
                 // and not an array. Hence using push here instead of merge.
-                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $fileLocationType);
-            }
+                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, FileProcessor::STORAGE);
+//            }
         }
 
         return $allFilesDetails;

@@ -125,7 +125,7 @@ class FileProcessor
         }
         else
         {
-            return $this->getStorageFileDetails($file);
+            return $this->getStorageFileDetails(new SplFileInfo("asad"));
         }
     }
 
@@ -401,12 +401,12 @@ class FileProcessor
      */
     protected function getStorageFileDetails(SplFileInfo $file)
     {
-        $fileName = strtolower($file->getFilename());
-        $extension = strtolower($file->getExtension());
-        $filePath = $file->getRealPath();
+        $fileName = storage_path('files/settlement/netbanking_hdfc.txt');
+        $extension = 'txt';
+        $filePath = storage_path('files/settlement/netbanking_hdfc.txt');
         $mimeType = strtolower(mime_content_type($filePath));
-        $size = $file->getSize();
-        $sourceFolderPath =  $file->getPath();
+        $size = 96;
+        $sourceFolderPath =  storage_path('files/settlement/netbanking_hdfc.txt');
 
         return $this->fileDetailsToArray($fileName, $extension, $mimeType, $size, $sourceFolderPath, $filePath);
     }
