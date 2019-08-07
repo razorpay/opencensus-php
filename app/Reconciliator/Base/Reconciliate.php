@@ -300,6 +300,17 @@ class Reconciliate extends Base\Core
                 ->entity($batch)
                 ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
                 ->save();
+
+            $fileStoreEntity = $creator->get();
+
+            $traceData = [
+                'file_id'      => $fileStoreEntity['id'],
+                'file_name'    => $fileStoreEntity['name'],
+                'batch_id'     => $batchId,
+                'gateway'      => $this->gateway,
+            ];
+
+            $this->trace->info(TraceCode::RECON_BATCH_ANALYTICS_OUTPUT_FILE, $traceData);
         }
 
         $fileStoreEntity = $creator->get();
