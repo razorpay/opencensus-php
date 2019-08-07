@@ -289,6 +289,14 @@ return [
         'test'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
         'live'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
     ],
+    'beneficiary_registrations' => [
+        'test'       => env('AWS_BENEFICIARY_TEST_QUEUE'),
+        'live'       => env('AWS_BENEFICIARY_LIVE_QUEUE'),
+    ],
+    'beneficiary_verifications' => [
+        'test'       => env('AWS_BENEFICIARY_TEST_QUEUE'),
+        'live'       => env('AWS_BENEFICIARY_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

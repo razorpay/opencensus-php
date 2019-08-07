@@ -563,7 +563,8 @@ class Selector extends Base\Core
             'gateways_emandate_banks_map'         => Gateway::$gatewaysEmandateBanksMap,
             'emi_banks_card_terminals'            => Gateway::$emiBanksUsingCardTerminals,
             'gateway_supported_banks'             => Netbanking::getGatewaySupportedBankList(),
-            'network_codes'                       => NetworkName::$codes
+            'network_codes'                       => NetworkName::$codes,
+            'categories'                          => Terminal\Category::CATEGORIES
         ];
     }
 

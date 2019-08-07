@@ -190,6 +190,7 @@ class Entity
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const NETBANKING_SIB         = 'netbanking_sib';
+    const NETBANKING_CBI         = 'netbanking_cbi';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_CUB         = 'netbanking_cub';
     const NETBANKING_IDFC        = 'netbanking_idfc';
@@ -448,6 +449,7 @@ class Entity
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_SIB         => \RZP\Gateway\Mozart::class,
+        self::NETBANKING_CBI         => \RZP\Gateway\Mozart::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Idfc::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,

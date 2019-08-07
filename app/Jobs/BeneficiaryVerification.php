@@ -1,25 +1,25 @@
 <?php
 
-namespace RZP\Jobs;
 
-use Razorpay\Trace\Logger as Trace;
+namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Type;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
 
-class BeneficiaryRegistration extends Job
+class BeneficiaryVerification extends Job
 {
-    const MAX_ALLOWED_ATTEMPTS = 5;
+    const MAX_ALLOWED_ATTEMPTS = 45;
 
-    const RETRY_INTERVAL       = 60;
+    const RETRY_INTERVAL       = 4;
 
     /**
      * @var string
      */
-    protected $queueConfigKey = 'beneficiary_registrations';
+    protected $queueConfigKey = 'beneficiary_verifications';
 
     /**
      * @var array
@@ -49,12 +49,12 @@ class BeneficiaryRegistration extends Job
         {
             parent::handle();
 
-            if (in_array($this->channel, Channel::getChannelsWithOnlineBeneficiaryRegistration(), true) === false)
+            if (in_array($this->channel, Channel::getChannelsWithOnlineBeneficiaryVerification(), true) === false)
             {
                 return;
             }
 
-            $this->traceData(TraceCode::ATTEMPTING_BENEFICIARY_REGISTRATION);
+            $this->traceData(TraceCode::ATTEMPTING_BENEFICIARY_VERIFICATION);
 
             $bankAccount = $this->repoManager->bank_account->getBankAccountById($this->bankAccountId);
 
@@ -64,31 +64,22 @@ class BeneficiaryRegistration extends Job
             // No live bank account exists for the merchant: BcqrSKvM8bIq2g
             if (empty($bankAccount) === true)
             {
-                $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG);
+                $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_VERIFY);
 
                 return;
             }
 
             // Check to avoid unnecessary tries.
-            // As the `registerBeneficiaryThroughApi` checks for the type
-            // and returns false for the bank account which are not `merchant` or `contact`
+            // checks for the type and returns false for the bank account which are not `merchant` or `contact`
             if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
             {
                 return;
             }
 
-            $status = (new Beneficiary)->registerBeneficiaryThroughApi($bankAccount, $this->channel);
-
-            // If Beneficiary Registration is successful dispatch it for Verification
-            // Else Method registerBeneficiaryThroughApi throws a logic exception which
-            // gets handled by catch block below.
-            if ($status === true)
-            {
-                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $this->channel);
-            }
+            $status = (new Beneficiary)->verifyBeneficiaryThroughApi($bankAccount, $this->channel);
 
             $this->traceData(
-                TraceCode::BENEFICIARY_REGISTRATION_ATTEMPT_STATUS,
+                TraceCode::BENEFICIARY_VERIFY_ATTEMPT_STATUS,
                 [
                     'status'          => $status,
                     'bank_account_id' => $bankAccount->getId()
@@ -99,7 +90,7 @@ class BeneficiaryRegistration extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BENEFICIARY_REGISTRATION_ATTEMPT_FAILED,
+                TraceCode::BENEFICIARY_VERIFY_ATTEMPT_FAILED,
                 [
                     'channel'         => $this->channel,
                     'attempt_count'   => $this->attempts(),
@@ -108,7 +99,7 @@ class BeneficiaryRegistration extends Job
 
             if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
             {
-                $this->traceData(TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY);
+                $this->traceData(TraceCode::BENEFICIARY_VERIFY_PROCESS_RETRY);
 
                 $this->release(self::RETRY_INTERVAL);
 
@@ -116,7 +107,7 @@ class BeneficiaryRegistration extends Job
             }
             else
             {
-                (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
 
                 $this->delete();
             }
@@ -126,14 +117,14 @@ class BeneficiaryRegistration extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BENEFICIARY_REGISTRATION_PROCESS_FAILED,
+                TraceCode::BENEFICIARY_VERIFY_PROCESS_FAILED,
                 [
                     'channel'             => $this->channel,
                     'attempt_count'       => $this->attempts(),
                     'bank_account_id'     => $this->bankAccountId,
                 ]);
 
-            (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+            (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
 
             $this->delete();
         }

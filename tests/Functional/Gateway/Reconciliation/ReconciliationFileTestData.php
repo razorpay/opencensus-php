@@ -286,6 +286,30 @@ return [
             'tran_currency_code'    => '356',
         ],
 
+        'hitachi_unexpected_payment_create' => [
+            'pan'                   => '479947******7011',
+            'stan'                  => 579123,
+            'terminal_id'           => '38R00450',
+            'merchant_id'           => '38RR00000000450',
+            'merchant_name'         => 'RAZ*Razorpay, SJR CyberBengaluru    KAIN',
+            'amount'                => 500,
+            'retr_ref_nr'           => '123456789012',
+            'auth_id'               => 108418,
+            'interchange_type'      => 'VISA',
+            'fee_amount'            => 0.00,
+            'credit_debit'          => 'C',
+            'cardcountry'           => 'IN',
+            'arn'                   => 74110757361008597807228,
+            'response_code'         => '00',
+            'purchaseid'            => '0Abcdefghi111',
+            'issettled'             => 'S',
+            'message_type'          => '0200',
+            'transaction_type'      => '00',
+            'datetime'              => '2018-03-05 23:50:00',
+            'tran_currency_code'    => '356',
+            'unexpected_payment_rrn'=> '123456789012',
+        ],
+
         // Freecharge reconciliate has config of skipping 3 lines from bottom
         // Only first row will be read
         'freecharge' => [

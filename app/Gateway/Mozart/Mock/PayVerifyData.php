@@ -72,6 +72,26 @@ class PayVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function netbanking_cbi($entities)
+    {
+        $response = [
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true,
+            'error' => null,
+            'data' => [
+                'paymentId' => $entities['payment']['id'],
+                'amount' => $entities['payment']['amount'] / 100,
+                'bank_payment_id' => 999999,
+                'status' => 'callback_successful',
+                '_raw' => []
+            ],
+        ];
+
+        return $response;
+    }
+
     public function netbanking_cub($entities)
     {
         $response = [

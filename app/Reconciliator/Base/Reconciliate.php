@@ -112,6 +112,14 @@ class Reconciliate extends Base\Core
 
     protected $gateway;
 
+    /**
+     * This variable indicates if we are in reconciliation code flow.
+     * Currently this flag is being used to skip checksum validation
+     * while creating Hitachi Unexpected payment via recon.
+     * @var bool
+     */
+    public static $isReconRunning = false;
+
     public function __construct(string $gateway = null)
     {
         parent::__construct();
@@ -178,6 +186,8 @@ class Reconciliate extends Base\Core
 
         foreach ($allFilesContents as $fileContents)
         {
+            self::$isReconRunning = true;
+
             $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
 
             $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
@@ -212,6 +222,8 @@ class Reconciliate extends Base\Core
             {
                 // Create the output file
                 $this->generateReconOutputFile($batchProcessor, $extraDetails);
+
+                self::$isReconRunning = false;
             }
         }
 

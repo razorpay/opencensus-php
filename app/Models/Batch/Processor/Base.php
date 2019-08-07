@@ -1011,7 +1011,7 @@ class Base extends BaseModel\Core
 
         if ($this->batch->getType() === Batch\Type::TERMINAL_CREATION)
         {
-            $this->cleanTypeEntries($entries);
+            $entries = $this->cleanTypeEntries($entries);
         }
 
         $stats        = ['total_entries' => $totalEntries, 'total_cleaned_entries' => $totalEntries - count($entries)];

@@ -25,6 +25,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Reconciliator\Base\Reconciliate;
 
 class Gateway extends Base\Gateway
 {
@@ -371,13 +372,26 @@ class Gateway extends Base\Gateway
 
     protected function validateChecksumAndGetQrData($input)
     {
-        $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
+        //
+        // While trying to create unexpected Hitachi BQR payment
+        // via recon (dashboard file upload by FinOps), we don't
+        // have checksum. So we use this flag $isReconRunning to decide
+        // whether to skip or continue with the checksum validation.
+        //
+        // In normal flow when actual callback comes from outside,
+        // $isReconRunning will be false and checksum will be validated.
+        //
 
-        $hashString = $this->getStringToHashForBharatQr($input);
+        if (Reconciliate::$isReconRunning === false)
+        {
+            $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
 
-        $expectedChecksum = $this->getHashOfString($hashString);
+            $hashString = $this->getStringToHashForBharatQr($input);
 
-        $this->compareHashes($actualChecksum, $expectedChecksum);
+            $expectedChecksum = $this->getHashOfString($hashString);
+
+            $this->compareHashes($actualChecksum, $expectedChecksum);
+        }
 
         $this->checkForBharatQrFailure($input);
 
