@@ -66,11 +66,9 @@ export default class AddCustomer extends Component {
         billingAddressStates: Countries[this.DEFAULT_COUNTRY],
         shippingAddressStates: Countries[this.DEFAULT_COUNTRY],
         screenIndex: 0, // Start on screen 1.
-        errors: [],
       };
     } else {
       this.state = {
-        errors: [],
         screenIndex: 0, // Start on screen 1.
       };
     }
