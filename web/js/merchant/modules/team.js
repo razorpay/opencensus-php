@@ -101,14 +101,14 @@ export const removeUser = userId => {
   };
 };
 
-export const toggle2FaEnforcement = (merchantId, twoFaFlag) => {
+export const toggle2FaEnforcement = flag => {
   return {
-    type: USER_REMOVE,
-    payload: defaultAjax(` merchant/restrict`, {
-      method: 'post',
+    type: USER_UPDATE,
+    payload: defaultAjax(`/merchants/2fa`, {
+      method: 'patch',
+      appendModeInURL: false,
       data: {
-        merchant_id: merchantId,
-        action: twoFaFlag,
+        second_factor_auth: flag,
       },
     }),
   };

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
-import { required, email } from 'rzp/utils/validators';
+import { required, email, phone } from 'rzp/utils/validators';
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
@@ -69,51 +69,58 @@ export default class NewInvitation extends Component {
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
         <div>
-          <div class="form-group">
+          <div class="form-group Form--vertical">
             <label>Member Details</label>
-            <Field
-              name="email"
-              component={InputField}
-              class="form-control"
-              placeholder="Email"
-              autoFocus={true}
-              validate={[
-                required(),
-                email('Invalid Email'),
-                value => {
-                  if (value === this.props.user.user.email) {
-                    return "You can't invite yourself";
-                  }
-                },
-              ]}
-            />
-            <Field
-              name="contact_mobile"
-              component={InputField}
-              class="form-control"
-              placeholder="Phone Number"
-              autoFocus={true}
-              validate={[
-                required(),
-                email('Invalid Mobile'),
-                value => {
-                  if (value === this.props.user.user.contact_mobile) {
-                    return "You can't invite yourself";
-                  }
-                },
-              ]}
-            />
+            <div class="input-container top-rounded">
+              <i class="i i-email"></i>
+              <Field
+                name="email"
+                component={InputField}
+                class="form-control"
+                placeholder="Email"
+                autoFocus={true}
+                validate={[
+                  required(),
+                  email('Invalid Email'),
+                  value => {
+                    if (value === this.props.user.user.email) {
+                      return "You can't invite yourself";
+                    }
+                  },
+                ]}
+              />
+            </div>
+            <div class="input-container no-top-border bottom-rounded">
+              <i class="i i-phone"></i>
+              <Field
+                name="contact_mobile"
+                component={InputField}
+                class="form-control"
+                placeholder="Phone Number"
+                validate={[
+                  required(),
+                  phone('Invalid Mobile'),
+                  value => {
+                    if (value === this.props.user.user.contact_mobile) {
+                      return "You can't invite yourself";
+                    }
+                  },
+                ]}
+              />
+            </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group Form--vertical">
             <label>Role</label>
-            <Field name="role" component="select" class="form-control">
-              {Object.keys(ROLES).map(role => (
-                <option key={role} value={role}>
-                  {ROLES[role].label}
-                </option>
-              ))}
-            </Field>
+            <div class="input-container">
+              <Field name="role" component="select" class="form-control">
+                {Object.keys(ROLES).map(role => (
+                  <option key={role} value={role}>
+                    {ROLES[role].label}
+                  </option>
+                ))}
+              </Field>
+            </div>
           </div>
           <div class="form-group">
             {ROLES[selectedRole] && ROLES[selectedRole].desc ? (

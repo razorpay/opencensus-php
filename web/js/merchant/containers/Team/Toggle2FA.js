@@ -9,43 +9,39 @@ import SwitchField from 'rzp/ui/Forms/SwitchField';
 import {
   VerifyMobileNumber,
   MissingNumbers,
+  AskMobileNumber,
+  EnableAgreement,
+  DisableAgreement,
+  PasswordVerification,
 } from 'merchant/containers/Team/TwoFAModals';
 
 @connect(
   state => {
     return {
       user: state.session.user,
-      features: state.config.features,
-      merchant: state.session.user,
     };
   },
   { updateFeatures, showNotification, openModal, closeModal }
 )
 export default class Toggle2FA extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
+  // constructor(props) {
+  //   super(props);
+  //   this.state = this.props.state
 
-    if (props.features.length) {
-      const fcEnabled = this.getToggle2FAFlag(props.features);
-      this.state.fcEnabled = fcEnabled;
-    }
-  }
+  // }
 
   componentWillReceiveProps(nextProps) {
-    if (!this.props.features.length && nextProps.features.length) {
-      const fcEnabled = this.getToggle2FAFlag(nextProps.features);
-
-      this.setState({ fcEnabled });
-    }
+    // if (!this.props.features.length && nextProps.features.length) {
+    //   const twoFAEnabled = this.getToggle2FAFlag(nextProps.features);
+    //   this.setState({ twoFAEnabled });
+    // }
   }
 
   getToggle2FAFlag(features) {
-    let noToggle2FA =
-      features.find(feature => feature.feature === 'noToggle2FA') || {};
-
-    const fcEnabled = !noToggle2FA.value;
-    return fcEnabled;
+    // let noToggle2FA =
+    //   features.find(feature => feature.feature === 'noToggle2FA') || {};
+    // const twoFAEnabled = !noToggle2FA.value;
+    // return twoFAEnabled;
   }
 
   analytics = action => {
@@ -54,18 +50,55 @@ export default class Toggle2FA extends Component {
       eventAction: `${action} - Flash Checkout`,
     });
   };
-
-  toggle2FA = e => {
+  showModal = component => {
     this.props.openModal({
       size: 'small',
-      component: <NewInvite mobile="9886495755" count={6} {...this.props} />,
+      component: component,
     });
+  };
+  toggle2FA = flag => {
+    const verifyPassword = () => {
+      const title = (flag ? 'Enable' : 'Disable') + ' 2-step verification';
+      this.props.closeModal();
+      this.showModal(
+        <PasswordVerification
+          title={title}
+          {...this.props}
+          email={this.props.user.email}
+          onSuccess={() => toggle2FaEnforcement(flag)}
+        />
+      );
+    };
+    if (flag) {
+      //Step 1: Make initial check if everyone in team has mobile number, if not show missing mobile number
+      if (false)
+        this.showModal(
+          <MissingNumbers {...this.props} onAgree={verifyPassword} />
+        );
+      //Step 2: Show an agreement to enable the 2FA & verify Password after agreement
+      this.showModal(
+        <EnableAgreement {...this.props} onAgree={verifyPassword} />
+      );
+      //Step 3:Once Password is confimred, check if second_factor_auth_setup is true
+      if (false)
+        this.showModal(
+          <AskMobileNumber
+            {...this.props}
+            onComplete={() => VerifyMobileNumber}
+          />
+        );
+    } else {
+      //Step 1: Show an agreement to enable the 2FA & verify Password after agreement
+      this.showModal(
+        <DisableAgreement {...this.props} onAgree={verifyPassword} />
+      );
+    }
   };
 
   render() {
-    // this.toggle2FA()
-    let { fcEnabled } = this.state;
-
+    let {
+      user: { second_factor_auth: twoFAEnabled },
+    } = this.props.user;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -75,11 +108,11 @@ export default class Toggle2FA extends Component {
           </span>
           <span class="toggler-btn">
             <SwitchField
-              defaultChecked={!!fcEnabled}
-              onChange={this.toggle2FA}
+              defaultChecked={!!twoFAEnabled}
+              onChange={flag => this.toggle2FA(flag)}
               type="prime"
             />
-            {fcEnabled ? (
+            {true ? (
               <b class="text-primary">Enabled</b>
             ) : (
               <b className="text-faded">Disabled</b>

@@ -51,7 +51,6 @@ export default class TeamContainer extends Component {
     let otherUsers = users.filter(
       user => user.email !== this.props.merchant.user.email
     );
-    this.addNewMember();
     return (
       <div>
         <HeaderAction>
