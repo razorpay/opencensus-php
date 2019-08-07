@@ -33,10 +33,10 @@ class Bucket
             }
         }
 
-        if (($env !== 'production') and ($env !== 'testing'))
-        {
-            $bucketConfigName = static::TEST_BUCKET_NAME;
-        }
+//        if (($env !== 'production') and ($env !== 'testing'))
+//        {
+//            $bucketConfigName = static::TEST_BUCKET_NAME;
+//        }
 
         return $bucketConfigName;
     }
