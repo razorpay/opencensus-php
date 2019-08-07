@@ -5148,8 +5148,6 @@ ALTER TABLE gateway_rules
     ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
     ADD INDEX gateway_rules_category_index (category);
 
-<<<<<<< HEAD
-=======
 ALTER table `gateway_rules`
     ADD COLUMN org_id VARCHAR(14) NOT NULL DEFAULT '100000razorpay' AFTER `merchant_id`,
     MODIFY COLUMN merchant_id varchar(14) DEFAULT NULL,

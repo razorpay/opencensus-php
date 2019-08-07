@@ -176,6 +176,18 @@ class Core extends Base\Core
 
     public function createTransactionFromPayoutReversal(Entity $reversal): Entity
     {
+        if ($reversal->hasTransaction() === true)
+        {
+            throw new Exception\LogicException(
+                'Transaction has already been created for the reversal!',
+                ErrorCode::SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED,
+                [
+                    'reversal_id'       => $reversal->getId(),
+                    'transaction_id'    => $reversal->getTransactionId(),
+                    'transaction_type'  => $reversal->getTransactionType(),
+                ]);
+        }
+
         return $this->repo->transaction(function() use ($reversal)
         {
             $skipTxn = $this->shouldSkipReversalTransaction($reversal);

@@ -9,10 +9,10 @@ use RZP\Models\Transfer;
 use RZP\Models\Customer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
-use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
 {
@@ -217,6 +217,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getTransactionType()
+    {
+        return $this->getAttribute(self::TRANSACTION_TYPE);
+    }
+
     public function getCustomerRefundId()
     {
         return $this->getAttribute(self::CUSTOMER_REFUND_ID);
@@ -230,6 +240,11 @@ class Entity extends Base\PublicEntity
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
     }
 
     // -------------------- End Getters --------------------------
