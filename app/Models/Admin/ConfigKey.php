@@ -40,6 +40,7 @@ class ConfigKey
     const BLOCK_AADHAAR_REG                     = self::PREFIX . 'block_aadhaar_reg';
     const HITACHI_DYNAMIC_DESCR_ENABLED         = self::PREFIX . 'hitachi_dynamic_descr_enabled';
     const HITACHI_NEW_URL_ENABLED               = self::PREFIX . 'hitachi_new_url_enabled';
+    const FTA_CHANNELS                          = self::PREFIX . 'fta_channels';
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
     const FTS_TEST_MERCHANT                     = self::PREFIX . 'fts_test_merchant';
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';

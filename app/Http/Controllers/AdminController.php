@@ -2,13 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use App;
-use Redirect;
 use Request;
+use Redirect;
+use ApiResponse;
+
 use RZP\Models\Admin;
 use RZP\Models\Report;
-use RZP\Constants\Entity as E;
 
 class AdminController extends Controller
 {

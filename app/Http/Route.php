@@ -289,6 +289,8 @@ final class Route
         'fund_transfer_attempt_initiate_action'    => ['post',     'fund_transfer_attempts/initiate_action/{channel}','FundTransferAttemptController@initiateFundTransfers',        ],
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
+        'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
+        'get_channel_action'                       => ['get',      'get_channel_state',                              'FundTransferAttemptController@getChannelState',                    ],
         'gateway_payment_callback_bharatqr'        => ['post',     'payment/callback/bharatqr/{gateway}',            'BharatQrController@processBharatQrPayment'                         ],
         'bharat_qr_pay_test'                       => ['post',     'bharatqr/pay/test',                              'BharatQrController@processBharatQrTestPayment'                     ],
         'gateway_payment_validate_bharatqr'        => ['post',     'payment/validate/bharatqr/{gateway}',            'BharatQrController@processBharatQrValidatePayment'                 ],
@@ -2185,6 +2187,8 @@ final class Route
         'offer_create_bulk',
 
         // action on dashboard
+        'set_channel_action',
+        'get_channel_action',
         'setl_initiate_action',
         'fund_transfer_attempt_initiate_action',
     ];
@@ -2621,6 +2625,9 @@ final class Route
 
         'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
+
+        'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
+        'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
     ];
 
     public static $direct = [

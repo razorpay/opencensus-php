@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
@@ -172,7 +173,7 @@ class Gateway extends Base\Gateway
             EventCode::PAYMENT_AUTHENTICATION_PROCESSED,
             $input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionGetLastOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         // Guid would be sent back only for the redirect flow and not for the iframe flow
@@ -224,6 +225,16 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function getPaymentToVerify(Verify $verify)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionGetLast(
+            $verify->input['payment']['id'], Action::AUTHORIZE);
+
+        $verify->payment = $gatewayPayment;
+
+        return $gatewayPayment;
     }
 
     public function refund(array $input)
@@ -521,7 +532,7 @@ class Gateway extends Base\Gateway
 
     protected function callRefundGateway(array $input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionGetLastOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $input['paysecure'] = $gatewayPayment->toArray();

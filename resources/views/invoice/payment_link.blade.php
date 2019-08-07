@@ -368,7 +368,9 @@ $custom_labels                  = $data['custom_labels'];
                                 @if (isset($data['merchant']))
                                     <div id="merchant">
                                         <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                                        <div id="merchant-desc">Invoice #{{$invoice_data['id']}}</div>
+                                        @if(isset($data['checkout_options']['description']))
+                                            <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -425,7 +427,9 @@ $custom_labels                  = $data['custom_labels'];
                     @if (isset($data['merchant']))
                         <div id="merchant">
                             <div id="merchant-name">{{{ $invoice_data['merchant_label'] }}}</div>
-                            <div id="merchant-desc">Invoice #{{$invoice_data['id']}}</div>
+                            @if(isset($data['checkout_options']['description']))
+                                <div id="merchant-desc">Invoice {{$data['checkout_options']['description']}}</div>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -667,13 +671,13 @@ $custom_labels                  = $data['custom_labels'];
 
             var invoiceObj = data.invoice;
             var merchant = data.merchant;
+            var checkoutOptions = data.checkout_options;
 
             var options = {
                 key: data.key_id,
                 invoice_id: invoiceObj.id,
                 amount: invoiceObj.amount,
                 // parent: '#chkout-box',
-                description: '#' + invoiceObj.id,
                 handler: function(response) {
                     if (globalScope.hasRedirect()) {
 
@@ -710,6 +714,10 @@ $custom_labels                  = $data['custom_labels'];
                     escape: false
                 }
             };
+
+            if (checkoutOptions['description']) {
+                options.description = checkoutOptions['description'];
+            }
 
             options.name = invoiceObj.merchant_label;
 
