@@ -485,9 +485,9 @@ class Service extends Base\Service
 
         $traceData = [
             'skipped_refunds'   => $skippedRefunds,
-            'request_count'     => count($input[RefundConstants::REFUND_IDS] ?? []),
             'success_count'     => count($responseArray),
             'failure_count'     => count($skippedRefunds),
+            'request_count'     => count($input[RefundConstants::REFUND_IDS] ?? []),
         ];
 
         $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
@@ -1639,8 +1639,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_PROCESSED_AT_INITIATED,
             [
-                'start_time'         => $start,
-                'created_at'         => $createdAt,
+                'start_time'                    => $start,
+                Entity::CREATED_AT              => $createdAt,
                 RefundConstants::DB_FETCH_LIMIT => $limit
             ]);
 
@@ -1794,10 +1794,10 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_RRN_INITIATED,
             [
-                'start_time'         => $start,
-                'from'               => $from,
-                'to'                 => $to,
-                'delay'              => $delay,
+                'start_time'                    => $start,
+                'from'                          => $from,
+                'to'                            => $to,
+                'delay'                         => $delay,
                 RefundConstants::DB_FETCH_LIMIT => $limit
             ]);
 
@@ -1854,10 +1854,10 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_SCROOGE_VERIFY_INITIATED,
             [
-                'from'               => $from,
-                'to'                 => $to,
-                'gateways'           => $gateways,
-                'refunds'            => $scroogeRefunds,
+                'from'                          => $from,
+                'to'                            => $to,
+                'gateways'                      => $gateways,
+                'refunds'                       => $scroogeRefunds,
                 RefundConstants::DB_FETCH_LIMIT => $limit,
             ]);
 
@@ -2076,10 +2076,10 @@ class Service extends Base\Service
                           intval($gateways['to']) : RefundConstants::SCROOGE_TAGGING_LIVE_TIMESTAMP;
 
                 $data = [
-                    RefundEntity::GATEWAY    => $gateways[RefundEntity::GATEWAY],
+                    'to'                            => $toTime,
+                    'from'                          => $fromTime,
+                    RefundEntity::GATEWAY           => $gateways[RefundEntity::GATEWAY],
                     RefundConstants::DB_FETCH_LIMIT => $limit,
-                    'from'                   => $fromTime,
-                    'to'                     => $toTime
                 ];
 
                 $requestData[RefundConstants::ENTITIES][] = $data;
