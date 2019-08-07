@@ -973,6 +973,29 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('Razorpay', $payment['settled_by']);
     }
 
+    public function testPaymentS2SNpciEmandate()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->setupEmandateAndGetPaymentRequest(IFSC::YESB);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['id'], $response['razorpay_payment_id']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
     public function testPaymentS2SAxisEmandate()
     {
         $this->ba->privateAuth();
@@ -1432,5 +1455,65 @@ class PaymentCreateTest extends TestCase
         $res = $this->doAuthPayment($payment);
 
         $this->assertEquals($res['error']['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
+    }
+
+    public function testRupayPaymentFallbackTo3ds()
+    {
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $this->mockOtpElfForFailedRupayResponse();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '6075007194490126';
+
+        $this->fixtures->edit('iin', 607500, ['flows' => ['headless_otp' => '1']]);
+
+        $payment['preferred_auth'] = ['otp'];
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'card'                       => 1,
+            'gateway_merchant_id'       => 'HDFC000012340818',
+            'gateway_merchant_id2'      => '38R10000',
+            'type'                      => [
+                'non_recurring'  => '1',
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $res = $this->doAuthPayment($payment);
+
+        $payment_id = explode('_', $res['razorpay_payment_id'])[1];
+
+        $paySecureEntities = $this->getEntities('paysecure', ['payment_id' => $payment_id], true);
+
+        $this->assertEquals(2, count($paySecureEntities['items']));
+    }
+
+    protected function mockOtpElfForFailedRupayResponse()
+    {
+        $otpelf = Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function (array $input)
+            {
+                return [
+                    'success' => false,
+                    'data' => [
+
+                    ]
+                ];
+            });
+
+        $this->app->instance('card.otpelf', $otpelf);
     }
 }

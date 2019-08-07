@@ -246,6 +246,13 @@ class Service extends Base\Service
 
     public function cancel($id, $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_CANCELLED,
+            [
+                'payment_id' => $id,
+                'input'      => $input
+            ]);
+
         $data = $this->getNewProcessor()->cancel($id, $input);
 
         return $data;

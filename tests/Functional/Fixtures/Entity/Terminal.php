@@ -297,6 +297,9 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
+            'type'                  => [
+                'non_recurring' => '1'
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1533,6 +1536,9 @@ class Terminal extends Base
             'visa_mpan'                 => '1234560000000001',
             'rupay_mpan'                => '1234560000000002',
             'vpa'                       => 'random@razorpay',
+            'type'                      => [
+                'non_recurring' => '1',
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -2302,6 +2308,28 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
+    }
+
+    public function createSharedEmandateSbiTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'               => '100000Razorpay',
+            'netbanking'                => 0,
+            'emandate'                  => 1,
+            'shared'                    => 1,
+        ];
+
+        // Recurring supports both 3ds and non3ds terminal;
+        $defaultValues['id'] = 'NSbRecurringTl';
+
+        $defaultValues['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+            Type::RECURRING_3DS     => '1'
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingSbiTerminal($attributes);
     }
 
     public function createSharedNetbankingSibTerminal(array $attributes = [])

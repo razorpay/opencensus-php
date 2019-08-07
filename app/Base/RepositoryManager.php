@@ -45,6 +45,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Workflow\Action\Repository            $workflow_action
  * @property Models\Workflow\Step\Repository              $workflow_step
  * @property Models\Workflow\Repository                   $workflow
+ * @property Models\Workflow\Action\Checker\Repository    $action_checker
  * @property Models\Workflow\PayoutAmountRules\Repository $workflow_payout_amount_rules
  */
 class RepositoryManager extends Illuminate\Support\Manager

@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action\Checker;
 
 use DB;
+use RZP\Base\BuilderEx;
 use RZP\Models\Workflow\Base;
 
 class Repository extends Base\Repository
@@ -23,6 +24,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function hasCheckerAlreadyReviewedActionForStep(string $checkerId, string $actionId, string $stepId): bool
+    {
+        /** @var BuilderEx $query */
+        $query = $this->newQuery();
+
+        $reviewed = $query->where(Entity::CHECKER_ID, $checkerId)
+                          ->where(Entity::ACTION_ID, '=', $actionId)
+                          ->where(Entity::STEP_ID, '=', $stepId)
+                          ->exists();
+
+        return $reviewed;
+    }
+
     public function fetchCountByActionIdForStep($actionId, $stepId)
     {
         return $this->newQuery()
@@ -33,9 +47,7 @@ class Repository extends Base\Repository
                     ->count();
     }
 
-    public function fetchApprovedCountByActionIdAndStepIds(
-        string $actionId,
-        array $stepIds)
+    public function fetchApprovedCountByActionIdAndStepIds(string $actionId, array $stepIds)
     {
         $countRaw = DB::raw('count(*) as total');
 

@@ -14,10 +14,11 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      * @param  array $input
      *
-     * @throws BadRequestException
      */
-    public function create(Merchant\Entity $merchant, array $input)
+    protected function create(Merchant\Entity $merchant, array $input): Entity
     {
+        (new Validator)->validateInput('create', $input);
+
         $this->trace->info(
             TraceCode::MERCHANT_EMAIL_ADD_REQUEST,
             [
@@ -32,21 +33,42 @@ class Core extends Base\Core
 
         $newEmail->build($input);
 
-        $email = $this->repo->merchant_email->getByTypeEmailAndMerchantId(
-                                                                    $input[Entity::TYPE],
-                                                                    $input[Entity::EMAIL],
-                                                                    $merchant->getId());
-
-        if (empty($email) === false)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_DUPLICATE_FOR_TYPE);
-        }
-
         $newEmail->merchant()->associate($merchant);
+
+        //
+        // TODO: Send verification email if it's not a non-communication email id
+        // and add verification flow
+        //
 
         $this->repo->saveOrFail($newEmail);
 
-        // TODO: Send verification email if it's not a non-communication email id
-        // and add verification flow
+        return $newEmail;
+    }
+
+    protected function edit(Entity $email, array $input): Entity
+    {
+        $email->edit($input);
+
+        $email->saveOrFail();
+
+        return $email;
+    }
+
+    public function upsert(Merchant\Entity $merchant, array $input): Entity
+    {
+        (new Validator)->validateInput('edit', $input);
+
+        $email = $this->repo->merchant_email->getEmailByType($input[Entity::TYPE], $merchant->getId());
+
+        if (empty($email) === false)
+        {
+            $email = $this->edit($email, $input);
+        }
+        else
+        {
+            $email = $this->create($merchant, $input);
+        }
+
+        return $email;
     }
 }

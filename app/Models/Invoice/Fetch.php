@@ -29,6 +29,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_TYPE       => 'sometimes|string|nullable',
             Entity::STATUSES          => 'sometimes|sequential_array|min:1|max:6|custom',
             Entity::INTERNATIONAL     => 'filled|boolean',
+            Entity::SUBSCRIPTIONS     => 'filled|boolean',
             self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user',
         ],
     ];
@@ -55,6 +56,7 @@ class Fetch extends BaseFetch
             Entity::SUBSCRIPTION_ID,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
+            Entity::SUBSCRIPTIONS,
             self::EXPAND_EACH,
         ],
         AuthType::PRIVILEGE_AUTH => [
@@ -82,6 +84,7 @@ class Fetch extends BaseFetch
     ];
 
     const COMMON_FIELDS = [
+        Entity::SUBSCRIPTIONS,
         Entity::STATUS,
         Entity::STATUSES,
         Entity::INTERNATIONAL,

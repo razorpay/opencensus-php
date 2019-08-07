@@ -197,7 +197,11 @@ class Initiator extends Base\Core
 
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        (new SlackNotification)->send('setl_initiate', $slackData);
+        //reducing slack alerts for API based channels
+        if (in_array($channel, $allowedChannels, true) === false)
+        {
+            (new SlackNotification)->send('setl_initiate', $slackData);
+        }
 
         return $data;
     }

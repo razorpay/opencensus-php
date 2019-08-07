@@ -804,6 +804,8 @@ class Processor
             $missing[] = 'contact';
         }
 
+        $host = $this->route->getHost();
+        
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -816,6 +818,7 @@ class Processor
             'method'    => 'upi',
             'version'   => '1',
             'missing'   => $missing,
+            'base'      => $host,
         ];
 
         return $coproto;

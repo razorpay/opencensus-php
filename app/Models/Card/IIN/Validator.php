@@ -10,7 +10,7 @@ use RZP\Models\Card;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN            => 'required|numeric|digits:6',
+        Entity::IIN            => 'required|digits:6',
         Entity::NETWORK        => 'required',
         Entity::TYPE           => 'required',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',

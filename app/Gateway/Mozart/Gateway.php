@@ -378,6 +378,8 @@ class Gateway extends Base\Gateway
             $input['terminal'] = $input['terminal']->toArrayWithPassword();
         }
 
+        $input['terminal'] = $this->updateTerminalFromConfig($input);
+
         $gateway = $this->getGateway($input);
 
         $prevStepName = $this->getPreviousStepName($gateway);
@@ -421,6 +423,21 @@ class Gateway extends Base\Gateway
                 'auth' => $authentication
             ]
         ];
+    }
+
+    protected function updateTerminalFromConfig($input)
+    {
+        switch ($input['payment']['gateway'])
+        {
+            case Payment\Gateway::NETBANKING_CUB:
+                $input['terminal']['gateway_secure_secret']      = $this->config['netbanking_cub']['gateway_secure_secret'];
+                $input['terminal']['gateway_secure_secret2']     = $this->config['netbanking_cub']['gateway_secure_secret2'];
+                $input['terminal']['gateway_terminal_password']  = $this->config['netbanking_cub']['gateway_terminal_password'];
+                $input['terminal']['gateway_terminal_password2'] = $this->config['netbanking_cub']['gateway_terminal_password2'];
+                break;
+        }
+
+        return $input['terminal'];
     }
 
     protected function getPreviousStepName($gateway)

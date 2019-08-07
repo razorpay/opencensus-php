@@ -109,7 +109,7 @@ class TerminalTest extends TestCase
         $terminal   = $this->fixtures->create(
             'terminal:bank_account_terminal', $attributes);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];;
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];
 
         $this->startTest();
     }
@@ -126,7 +126,7 @@ class TerminalTest extends TestCase
         $terminal   = $this->fixtures->create(
             'terminal:bank_account_terminal', $attributes);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];;
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];
 
         $this->startTest();
     }
@@ -354,6 +354,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateDirectSettlemtTerminalFailure()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTerminalWithMerchantProcurer()
     {
         $url = '/merchants/100000Razorpay/terminals';
 
@@ -1134,6 +1143,12 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
+
     }
 
     public function testCreateWorldlineTerminal()
@@ -1143,5 +1158,10 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
     }
 }

@@ -72,13 +72,14 @@ class ViewDataSerializer extends Base\Core
     public function serializeForHosted(): array
     {
         return [
-            'environment'   => $this->app->environment(),
-            'is_test_mode'  => ($this->mode === Mode::TEST),
-            'invoicejs_url' => Config::get('app.cdn_v1_url') . '/invoice.js',
-            'key_id'        => $this->getMerchantKeyId(),
-            'merchant'      => $this->serializeMerchantForHosted(),
-            'invoice'       => $this->serializeInvoiceForHosted(),
-            'custom_labels' => $this->getCustomLabelValues(),
+            'environment'       => $this->app->environment(),
+            'is_test_mode'      => ($this->mode === Mode::TEST),
+            'invoicejs_url'     => Config::get('app.cdn_v1_url') . '/invoice.js',
+            'key_id'            => $this->getMerchantKeyId(),
+            'merchant'          => $this->serializeMerchantForHosted(),
+            'invoice'           => $this->serializeInvoiceForHosted(),
+            'custom_labels'     => $this->getCustomLabelValues(),
+            'checkout_options'  => $this->getCheckoutOptions(),
         ];
     }
 
@@ -143,9 +144,29 @@ class ViewDataSerializer extends Base\Core
                 ];
 
                 break;
+
+            case Preferences::MID_SURYODAY_BANK:
+                $customLabels = [
+                    'receipt_number' => 'ACCOUNT NO',
+                ];
+
         }
 
         return $customLabels;
+    }
+
+    protected function getCheckoutOptions(): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $checkoutOptions = ['description' => '#inv_'.$this->invoice->getId()];
+
+        switch ($merchantId)
+        {
+            case Preferences::MID_SURYODAY_BANK:
+                unset($checkoutOptions['description']);
+        }
+        return $checkoutOptions;
     }
 
     /**

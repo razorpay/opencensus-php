@@ -4,22 +4,22 @@ namespace RZP\Jobs;
 
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Exception\LogicException;
-use RZP\Models\BankAccount\Type;
-use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount\Type;
+use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\BankAccount\Beneficiary;
 
 class BeneficiaryRegistration extends Job
 {
     const MAX_ALLOWED_ATTEMPTS = 5;
 
-    const RETRY_INTERVAL       = 300;
+    const RETRY_INTERVAL       = 60;
 
     /**
      * @var string
      */
-    protected $queueConfigKey = 'settlement_transactions';
+    protected $queueConfigKey = 'beneficiary_registrations';
 
     /**
      * @var array
@@ -77,19 +77,21 @@ class BeneficiaryRegistration extends Job
                 return;
             }
 
-            if ($bankAccount === null)
-            {
-                $this->traceData(TraceCode::INVALID_BENEFICIARY_BANK_ACCOUNT_ID);
-
-                return;
-            }
-
             $status = (new Beneficiary)->registerBeneficiaryThroughApi($bankAccount, $this->channel);
+
+            // If Beneficiary Registration is successful dispatch it for Verification
+            // Else Method registerBeneficiaryThroughApi throws a logic exception which
+            // gets handled by catch block below.
+            if ($status === true)
+            {
+                (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $this->channel);
+            }
 
             $this->traceData(
                 TraceCode::BENEFICIARY_REGISTRATION_ATTEMPT_STATUS,
                 [
-                    'status'=> $status
+                    'status'          => $status,
+                    'bank_account_id' => $bankAccount->getId()
                 ]);
         }
         catch (LogicException $e)
@@ -109,6 +111,14 @@ class BeneficiaryRegistration extends Job
                 $this->traceData(TraceCode::BENEFICIARY_REGISTRATION_PROCESS_RETRY);
 
                 $this->release(self::RETRY_INTERVAL);
+
+                return;
+            }
+            else
+            {
+                (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+
+                $this->delete();
             }
         }
         catch (\Throwable $e)
@@ -122,9 +132,9 @@ class BeneficiaryRegistration extends Job
                     'attempt_count'       => $this->attempts(),
                     'bank_account_id'     => $this->bankAccountId,
                 ]);
-        }
-        finally
-        {
+
+            (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+
             $this->delete();
         }
     }
