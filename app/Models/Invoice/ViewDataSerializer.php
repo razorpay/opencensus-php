@@ -150,6 +150,18 @@ class ViewDataSerializer extends Base\Core
                     'receipt_number' => 'ACCOUNT NO',
                 ];
 
+                break;
+
+            case Preferences::MID_BFL_BANK:
+            case Preferences::MID_BFL_CARD:
+            case Preferences::MID_RBL_PDD_CREDIT:
+            case Preferences::MID_RBL_PDD_BANK:
+                $customLabels = [
+                    'receipt_number'            => 'CREDIT CARD NUMBER',
+                    'amount'                    => 'TOTAL AMOUNT DUE',
+                    'first_payment_min_amount'  => 'MAD', //I.e. Minimum Amount Due
+                ];
+
         }
 
         return $customLabels;
