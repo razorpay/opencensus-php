@@ -11,6 +11,7 @@ import Dispute from 'merchant/models/Dispute';
 import Submerchant from 'merchant/models/Submerchant';
 import Token from 'merchant/models/Token';
 import Commission from 'merchant/models/Commission';
+import Team from 'merchant/models/Team';
 
 import AuthLink from 'merchant/models/AuthLink';
 
@@ -173,3 +174,6 @@ export const commissionsReducer = makeActionCollectionReducer('COMMISSIONS');
 export const commissionsAggregateReducer = makeCollectionReducer(
   'COMMISSION_AGGREGATE'
 );
+
+export const fetchTeam = params => fetchAll(params, Team, 'TEAM_MEMBERS');
+export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS');
