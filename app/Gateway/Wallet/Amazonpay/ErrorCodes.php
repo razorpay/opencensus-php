@@ -23,6 +23,7 @@ final class ErrorCodes
         '310' => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
         '103' => ErrorCode::GATEWAY_ERROR_TERMINAL_NOT_ENABLED,
         '104' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+        '600' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_ACCOUNT_INACTIVE,
     ];
 
     public static function getInternalErrorCode(string $reasonCode)
