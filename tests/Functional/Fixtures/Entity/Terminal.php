@@ -2350,6 +2350,24 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedNetbankingCbiTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_CBI_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_CBI,
+            'gateway_merchant_id'   => 'netbanking_cbi_merchant_id',
+            'netbanking'            => 1,
+            'gateway_secure_secret' => 'random_secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedNetbankingSibTpvTerminal(array $attributes = [])
     {
         $attributes = [

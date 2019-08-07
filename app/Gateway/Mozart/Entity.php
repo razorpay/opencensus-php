@@ -13,6 +13,7 @@ class Entity extends Base\Entity
     const ACTION                = 'action';
     const GATEWAY               = 'gateway';
     const RAW                   = 'raw';
+    const DATA                  = 'data';
 
     protected $entity = 'mozart';
 
@@ -30,6 +31,10 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::RECEIVED,
         self::RAW,
+    ];
+
+    protected $appends = [
+        self::DATA,
     ];
 
     public function setAmount($amount)
@@ -55,5 +60,23 @@ class Entity extends Base\Entity
     public function getRaw()
     {
         return $this->getAttribute(self::RAW);
+    }
+
+    public function setAccountNumber($accountNumber)
+    {
+        $raw = $this->getAttribute(self::RAW);
+
+        $data = json_decode($raw, true);
+
+        $data['account_number'] = $accountNumber;
+
+        $raw = json_encode($data);
+
+        $this->setRaw($raw);
+    }
+
+    public function getDataAttribute()
+    {
+        return json_decode($this->getRaw(), true);
     }
 }

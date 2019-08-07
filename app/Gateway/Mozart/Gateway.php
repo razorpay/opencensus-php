@@ -161,6 +161,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::BAJAJFINSERV,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB
         ];
 
@@ -480,6 +481,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY => Action::PAY_INIT,
                 Action::VERIFY => Action::PAY_VERIFY,
             ],
+            Payment\Gateway::NETBANKING_CBI => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY     => Action::PAY_VERIFY,
+            ],
             Payment\Gateway::GOOGLE_PAY => [
                 Action::PAY_INIT => null,
             ],
@@ -523,6 +529,12 @@ class Gateway extends Base\Gateway
             ],
 
             Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
+
+            Payment\Gateway::NETBANKING_CBI => [
                 Action::PAY_INIT   => null,
                 Action::PAY_VERIFY => Action::AUTHORIZE,
                 Action::VERIFY     => Action::AUTHORIZE,
@@ -767,6 +779,7 @@ class Gateway extends Base\Gateway
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
         ];
 
@@ -787,6 +800,7 @@ class Gateway extends Base\Gateway
         $formattedAmountGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
             Payment\Gateway::UPI_AIRTEL,
         ];
@@ -845,6 +859,7 @@ class Gateway extends Base\Gateway
         $fileBasedGateways = [
             Payment\Gateway::NETBANKING_YESB,
             Payment\Gateway::NETBANKING_SIB,
+            Payment\Gateway::NETBANKING_CBI,
             Payment\Gateway::NETBANKING_CUB,
         ];
 
