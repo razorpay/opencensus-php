@@ -1593,31 +1593,6 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    // Overriding this, because for only rupay payments, we need to fetch this data from Paysecure gateway
-    protected function getCacheKey($paymentId)
-    {
-        $key = sprintf(static::CACHE_KEY, $paymentId);
-
-        if ($this->isRupayTransaction($this->input) === true)
-        {
-            $key = sprintf(Paysecure\Gateway::CACHE_KEY, $paymentId);
-        }
-
-        return $key;
-    }
-
-    // Overriding this from CardCacheTrait, since for Paysecure, we want to set the cache_ttl
-    // to the one mentioned in Paysecure gateway implementation
-    protected function getCardCacheTtl()
-    {
-        if ($this->isRupayTransaction($this->input) === true)
-        {
-            return Paysecure\Gateway::CARD_CACHE_TTL;
-        }
-
-        return static::CARD_CACHE_TTL;
-    }
-
     public function forceAuthorizeFailed(array $input)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);

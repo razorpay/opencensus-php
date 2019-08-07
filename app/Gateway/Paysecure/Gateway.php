@@ -20,16 +20,10 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
-    use Base\CardCacheTrait;
     use RequestHandlerTrait;
     use Base\AuthorizeFailed;
 
     protected $gateway = 'paysecure';
-
-    protected $secureCacheDriver;
-
-    const CACHE_KEY = 'paysecure_%s_card_details';
-    const CARD_CACHE_TTL = 14400;
 
     const GATEWAY_PAYSECURE_STAN = 'gateway_paysecure_stan';
 
@@ -67,8 +61,6 @@ class Gateway extends Base\Gateway
         parent::setGatewayParams($input, $mode, $terminal);
 
         $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
-
-        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     /**
@@ -519,15 +511,6 @@ class Gateway extends Base\Gateway
                 Action::AUTHENTICATE,
                 true);
         }
-    }
-
-    protected function callAdviceGateway(array $input)
-    {
-        $this->app['gateway']->call(
-            Payment\Gateway::HITACHI,
-            Action::ADVICE,
-            $input,
-            $this->mode);
     }
 
     protected function callRefundGateway(array $input)
