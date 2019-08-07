@@ -258,6 +258,7 @@ class Selector extends Base\Core
             $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
         }
 
+        // for testing
         $this->trace->info(
             TraceCode::TERMINALS_SENT_TO_SMART_ROUTING,
             ['terminalIds' => array_keys($terminalSetSentToSmartRouting)]
@@ -298,6 +299,7 @@ class Selector extends Base\Core
             ]
         );
 
+        // for testing
         $this->trace->info(
             TraceCode::TERMINALS_RECEIVED_FROM_SMART_ROUTING,
             ['terminalIds' => $terminalIds]
