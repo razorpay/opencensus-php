@@ -54,7 +54,7 @@ class Validator extends Base\Validator
         Entity::MODE                 => 'sometimes|nullable|string',
         Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Entity::NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean|custom',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -181,27 +181,6 @@ class Validator extends Base\Validator
                     'max_imps_amount' => $maxImpsAmount,
                     'fund_account_id' => $payout->fundAccount->getId(),
                     'account_type'    => $accountType,
-                ]);
-        }
-    }
-
-    protected function validateQueueIfLowBalance($attribute, $value)
-    {
-        if (boolval($value) === false)
-        {
-            return;
-        }
-
-        /** @var Entity $payout */
-        $payout = $this->entity;
-
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::QUEUED_PAYOUTS) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Queued payouts not available for the merchant',
-                null,
-                [
-                    'value' => $value
                 ]);
         }
     }

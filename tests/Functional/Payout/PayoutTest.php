@@ -249,8 +249,6 @@ class PayoutTest extends TestCase
 
     public function testCreateQueuedPayout()
     {
-        $this->fixtures->merchant->addFeatures([Constants::QUEUED_PAYOUTS]);
-
         $currentBalance = $this->getDbLastEntity('balance');
 
         $response = $this->startTest();
