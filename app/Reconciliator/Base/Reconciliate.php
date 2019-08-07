@@ -288,13 +288,13 @@ class Reconciliate extends Base\Core
 
             $analyticsOutputFileName = $batchId . $sheetName .'_analytics'. self::OUTPUT_FILE_SUFFIX;
 
-            $dirPath = 'reconciliation_output/'.$this->gateway.'/';
+            $dirPath = 'reconciliation_output/'.$this->gateway;
 
             $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH.'/'.$dirPath);
 
             $creator->localFilePath($analyticsOutputFilePath)
                 ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                ->name($dirPath.$analyticsOutputFileName)
+                ->name($dirPath.'/'.$analyticsOutputFileName)
                 ->extension($extension)
                 ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
                 ->entity($batch)
