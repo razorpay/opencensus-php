@@ -63,6 +63,13 @@ class SubMerchant extends Base
     protected $autoActivate = false;
 
     /**
+     * Used to check if the sub-merchants need to be instantly activated.
+     *
+     * @var bool
+     */
+    protected $instantlyActivate = false;
+
+    /**
      * Used to check if sub-merchant email needs to be treated as dummy
      * when provided in which case the submerchant email is same as the
      * partner email and the dummy is stored in the merchant_emails table
@@ -100,6 +107,8 @@ class SubMerchant extends Base
         $this->autofillDetails = (empty($this->params[ME::AUTOFILL_DETAILS]) === false);
 
         $this->autoActivate = (empty($this->params[ME::AUTO_ACTIVATE]) === false);
+
+        $this->instantlyActivate = (empty($this->params[ME::INSTANTLY_ACTIVATE]) === false);
 
         //
         // This is true by default and needs to be overridden only when an input
@@ -140,6 +149,13 @@ class SubMerchant extends Base
             // Fill in merchant details (activation form)
             $detailInput = Helper::getSubMerchantDetailInput($entry, $this->partner, $this->useMerchantEmailAsDummy);
             $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
+        }
+
+        if ($this->instantlyActivate === true)
+        {
+            $instantActivationInput = Helper::getInstantActivationInput($entry);
+
+            $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
         }
 
         if ($this->autoSubmit === true)
@@ -188,7 +204,7 @@ class SubMerchant extends Base
                 Email\Entity::TYPE  => Email\Type::PARTNER_DUMMY,
             ];
 
-            (new Email\Core)->create($subMerchant, $emailInput);
+            (new Email\Core)->upsert($subMerchant, $emailInput);
         }
 
         $entry[Header::STATUS]      = $status;

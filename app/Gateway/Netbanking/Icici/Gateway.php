@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -32,7 +33,8 @@ class Gateway extends Base\Gateway
     protected $bankingType = BankingType::RETAIL;
 
     protected $map = [
-        RequestFields::AMOUNT  => 'amount'
+        RequestFields::AMOUNT    => 'amount',
+        RequestFields::ITEM_CODE => 'client_code',
     ];
 
     // Payment type recurring
@@ -64,7 +66,10 @@ class Gateway extends Base\Gateway
 
         $requestData = $this->getAuthorizeRequestData($input);
 
-        $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
+        $entity = [
+            RequestFields::AMOUNT    => $input['payment'][Payment\Entity::AMOUNT] / 100,
+            RequestFields::ITEM_CODE => $this->getItc($input),
+        ];
 
         $this->createGatewayPaymentEntity($entity);
 
@@ -573,6 +578,7 @@ class Gateway extends Base\Gateway
         $data = $this->getPaymentReferenceData($input);
 
         $data[RequestFields::PAYMENT_DATE] = $gatewayPayment->getDate();
+        $data[RequestFields::ITEM_CODE]    = $gatewayPayment->getClientCode() ?: $data[RequestFields::ITEM_CODE];
 
         //
         // For payments that were done via the recurring flow, we
@@ -692,15 +698,7 @@ class Gateway extends Base\Gateway
     {
         $paymentId = $input['payment'][Payment\Entity::ID];
 
-        $itc = strtoupper($paymentId);
-
-        //
-        // ITC is always in upper case
-        //
-        if ($input['payment']['recurring'] === true)
-        {
-            $itc = strtoupper($input['token']->getId());
-        }
+        $itc = $this->getItc($input);
 
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
@@ -710,6 +708,32 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT        => $amount,
             RequestFields::CURRENCY_CODE => Currency::INR,
         ];
+    }
+
+    /**
+     * Returns ITC value
+     * We upper case it since verify only works with upper
+     * case ITC even if we pass lower case in the payment request.
+     * Ideally, we should only modify it for verify.
+     */
+    protected function getItc($input)
+    {
+        $itc = $input['payment']['id'];
+
+        if ($input['payment']['merchant_id'] === Merchant\Preferences::MID_RELIANCE_AMC)
+        {
+            $itc = $input['payment']['description'] . '/' . $input['payment']['id'];
+        }
+
+        //
+        // ITC is always in upper case
+        //
+        if ($input['payment']['recurring'] === true)
+        {
+            $itc = $input['token']->getId();
+        }
+
+        return strtoupper($itc);
     }
 
     protected function getBaseRequestData(string $mode)
@@ -1046,7 +1070,8 @@ class Gateway extends Base\Gateway
         {
             case $this->config['live_merchant_id2_tpv']:
                 return $this->config['live_hash_secret_tpv'];
-
+            case $this->config['live_merchant_id2_cred']:
+                return $this->config['live_hash_secret_cred'];
             case $this->config['live_merchant_id2_corp']:
             case $this->config['live_merchant_id2_corp_karvy']:
                 return $this->config['live_hash_secret_corp'];

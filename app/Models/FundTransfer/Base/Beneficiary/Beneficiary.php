@@ -39,6 +39,22 @@ abstract class Beneficiary extends BaseCore
         return $response;
     }
 
+    /**
+     * @param $bankAccounts
+     * @param array $input
+     *
+     * @return array
+     * @return array with keys 'signed_url'
+     *                         'local_file_path'
+     *                         'file_name'
+     */
+    public function verify(PublicCollection $bankAccounts): array
+    {
+        $response = $this->verifyBeneficiary($bankAccounts);
+
+        return $response;
+    }
+
     protected function sendEmail(array $data)
     {
         $beneficiaryFileMail = new BeneficiaryFileMail(
@@ -76,4 +92,6 @@ abstract class Beneficiary extends BaseCore
     }
 
     abstract public function registerBeneficiary(PublicCollection $bankAccounts): array;
+
+    abstract public function verifyBeneficiary(PublicCollection $bankAccounts): array;
 }

@@ -169,7 +169,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(4, $entities['count']);
+        $this->assertEquals(7, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -225,7 +225,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because other merchants are inactive during this $oldDateTime
-        $this->assertEquals(4, $entities['count']);
+        $this->assertEquals(7, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -280,7 +280,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(4, $entities['count']);
+        $this->assertEquals(7, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -443,7 +443,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because invoice are generated only for one merchant
-        $this->assertEquals(4, $entities['count']);
+        $this->assertEquals(7, $entities['count']);
 
         $entities = $entities['items'];
 

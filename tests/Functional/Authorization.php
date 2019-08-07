@@ -671,4 +671,13 @@ class Authorization
     {
         return $this->bearerHeaders;
     }
+
+    public function ftsAuth($mode = 'test')
+    {
+        $ftsConfig = \Config::get('applications.fts');
+
+        $pwd = $ftsConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
 }

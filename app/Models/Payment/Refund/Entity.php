@@ -97,6 +97,8 @@ class Entity extends Base\PublicEntity
     const MODE                   = 'mode';
     const SPEED                  = 'speed';
 
+    const PUBLIC_STATUS = 'public_status';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';
@@ -531,6 +533,18 @@ class Entity extends Base\PublicEntity
             case Payment\Method::EMANDATE:
                 $acquirerData = [
                     self::UTR   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::CARDLESS_EMI:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::PAYLATER:
+                $acquirerData = [
+                    self::ARN  => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
         }
@@ -1000,8 +1014,13 @@ class Entity extends Base\PublicEntity
 
                 if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
-                    $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
-                    $scroogeSpeed = $scroogeResponse[self::RESPONSE_BODY]->speed;
+                    $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+
+                    $scroogeStatus =
+                        (empty($scroogeResponseBody[self::STATUS]) === false) ? $scroogeResponseBody[self::STATUS] : '';
+
+                    $scroogeSpeed =
+                        (empty($scroogeResponseBody[self::SPEED]) === false) ? $scroogeResponseBody[self::SPEED] : '';
 
                     if (empty($scroogeStatus) === false)
                     {

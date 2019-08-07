@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -55,6 +56,51 @@ class Core extends Base\Core
             $input = [
                 Entity::TYPE     => $balanceType,
                 Entity::CURRENCY => Currency::INR,
+            ];
+
+            $balance = $this->create($merchant, $input, $mode);
+        }
+
+        return $balance;
+    }
+
+    public function createBalanceForCurrentAccount(Merchant\Entity $merchant, array $input, string $mode)
+    {
+        $content = [
+            Entity::TYPE     => Product::BANKING,
+            Entity::CURRENCY => Currency::INR,
+        ];
+
+        $input = array_merge($input, $content);
+
+        $balance = $this->create($merchant, $input, $mode);
+
+        return $balance;
+    }
+
+    /**
+     * Shared Banking balance is the first banking account created on business banking
+     * This is of account_type=shared, and only one of these can exist (currently)
+     *
+     * @param Merchant\Entity $merchant
+     * @param null            $mode
+     *
+     * @return Entity
+     */
+    public function createOrFetchSharedBankingBalance(Merchant\Entity $merchant, $mode = null)
+    {
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                                            $merchant->getId(),
+                                            Type::BANKING,
+                                            AccountType::SHARED,
+                                            $mode);
+
+        if ($balance === null)
+        {
+            $input = [
+                Entity::TYPE         => Type::BANKING,
+                Entity::ACCOUNT_TYPE => AccountType::SHARED,
+                Entity::CURRENCY     => Currency::INR,
             ];
 
             $balance = $this->create($merchant, $input, $mode);

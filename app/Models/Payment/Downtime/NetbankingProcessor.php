@@ -42,9 +42,14 @@ class NetbankingProcessor extends BaseProcessor
         return $mapping->getUnavailableBanks();
     }
 
-    protected function createPaymentDowntime(string $bank, Collection $gatewayDowntimes): Entity
+    protected function createPaymentDowntime(string $bank, Collection $gatewayDowntimes)
     {
         $input = $this->getPaymentDowntimeCreationArray($bank, $gatewayDowntimes);
+
+        if ($input === null)
+        {
+            return;
+        }
 
         $downtime = $this->getDuplicate($input);
 
@@ -56,13 +61,16 @@ class NetbankingProcessor extends BaseProcessor
         {
             $downtime = (new Core)->edit($downtime, $input);
         }
-
-        return $downtime;
     }
 
-    protected function getPaymentDowntimeCreationArray(string $bank, Collection $gatewayDowntimes): array
+    protected function getPaymentDowntimeCreationArray(string $bank, Collection $gatewayDowntimes)
     {
         list($begin, $end) = $this->calculateDowntimePeriodForBank($bank, $gatewayDowntimes);
+
+        if ($begin === null)
+        {
+            return null;
+        }
 
         $scheduled = $this->calculateDowntimeScheduled($gatewayDowntimes);
 
@@ -85,18 +93,37 @@ class NetbankingProcessor extends BaseProcessor
     {
         $supportingGateways = (new NetbankingIssuerMapping)->getGatewaysSupportingBank($bank);
 
-        // Gateway downtime can also be created as gateway = ALL which
-        // gets skipped while filtering affectingGatewayDowntimes
-        $supportingGateways = array_merge($supportingGateways, [GatewayDowntime::ALL]);
+        $allGatewayDowntime = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, GatewayDowntime::ALL);
 
-        $affectingGatewayDowntimes = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, $supportingGateways);
+        $allGatewayDowntime = $allGatewayDowntime->sortBy(GatewayDowntime::BEGIN);
 
-        $gatewayDowntimeMaxStart = $affectingGatewayDowntimes->max(GatewayDowntime::BEGIN);
+        // Filter for issuer and supporting gateways
+        // Issuer can be `ALL` if the whole gateway is down or `bank` if only one bank is facing issue
+        $affectingGatewayDowntimes = $gatewayDowntimes->whereIn(GatewayDowntime::GATEWAY, $supportingGateways)
+                                                      ->whereIn(GatewayDowntime::ISSUER, [GatewayDowntime::ALL, $bank]);
 
-        $gatewayDowntimeMinEnd = $affectingGatewayDowntimes->filter(function ($downtime) {
-            return ($downtime->getEnd() !== null);
-        })->min(GatewayDowntime::END);
+        $begin = $end = null;
 
-        return [$gatewayDowntimeMaxStart, $gatewayDowntimeMinEnd];
+        if ($affectingGatewayDowntimes->count() > 0)
+        {
+            list($begin, $end) = $this->getOverlappingDowntimePeriod($affectingGatewayDowntimes);
+        }
+
+        // If all gateways are down for that bank then we don't need
+        // to calculate for overlapping gateway downtime
+        if ($allGatewayDowntime->count() > 0)
+        {
+            $allDowntimeBegin = $allGatewayDowntime->first()[GatewayDowntime::BEGIN];
+
+            $allDowntimeEnd = $allGatewayDowntime->first()[GatewayDowntime::END];
+
+            if (($begin === null) or
+                ($begin > $allDowntimeBegin))
+            {
+                return [$allDowntimeBegin, $allDowntimeEnd];
+            }
+        }
+
+        return [$begin, $end];
     }
 }

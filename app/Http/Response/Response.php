@@ -353,6 +353,7 @@ class Response
             'get_merchant_partner_status',
             'payment_get_status',
             'fund_account_create_public',
+            'payment_validate_account',
         ];
 
         if (in_array($route, $routes, true) === true)

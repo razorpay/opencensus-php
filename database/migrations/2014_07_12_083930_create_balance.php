@@ -57,7 +57,7 @@ class CreateBalance extends Migration
             $table->string(Balance::ACCOUNT_TYPE, 255)
                   ->nullable();
 
-            $table->string(Balance::ACCOUNT_PROVIDER, 255)
+            $table->string(Balance::CHANNEL, 255)
                   ->nullable();
 
             $table->integer(Balance::CREATED_AT);
@@ -71,9 +71,8 @@ class CreateBalance extends Migration
             $table->index(Balance::CREATED_AT);
             $table->index(Balance::MERCHANT_ID);
             $table->index(Balance::ACCOUNT_NUMBER);
+            $table->index(Balance::CHANNEL);
             $table->index([Balance::MERCHANT_ID, Balance::TYPE, Balance::UPDATED_AT]);
-
-            $table->unique([Balance::MERCHANT_ID, Balance::TYPE]);
         });
     }
 

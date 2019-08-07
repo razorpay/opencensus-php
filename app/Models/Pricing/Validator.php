@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::PRODUCT             => 'sometimes|string|custom',
         Entity::FEATURE             => 'sometimes|alpha_dash',
         Entity::GATEWAY             => 'sometimes',
+        Entity::PROCURER            => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
@@ -203,12 +204,13 @@ class Validator extends Base\Validator
                 $validCardTypes = [
                     CardType::DEBIT,
                     CardType::CREDIT,
+                    CardType::PREPAID,
                 ];
 
                 if (in_array($cardType, $validCardTypes, true) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
-                        'Payment method type for card should be debit / credit');
+                        'Payment method type for card should be debit / credit / prepaid');
                 }
             }
         }
@@ -520,6 +522,7 @@ class Validator extends Base\Validator
         foreach ($rules as $rule)
         {
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
@@ -537,6 +540,7 @@ class Validator extends Base\Validator
             }
 
             if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PROCURER] === $newRule[Entity::PROCURER]) and
                 ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and

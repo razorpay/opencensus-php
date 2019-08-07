@@ -13,6 +13,8 @@ class Status
     const REVERSED  = 'reversed';
     // This is a derived status
     const PENDING   = 'pending';
+    // This is a public status shown for instant refunds dashboard merchants
+    const PROCESSING = 'processing';
 
     const REFUND_STATUS = [
         self::CREATED,

@@ -19,6 +19,7 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Gateway extends Base\Gateway
 {
+    use ErrorCodes;
     use Base\AuthorizeFailed;
 
     protected $gateway = Payment\Gateway::CARDLESS_EMI;
@@ -361,6 +362,23 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($responseArray);
 
         $this->checkRefundSuccess($responseArray);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => $response,
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($responseArray)
+        ];
+    }
+
+    protected function getGatewayData(array $response = [])
+    {
+        if (empty($response) === false)
+        {
+            return [
+                Refund\Entity::RRN => $response[ResponseFields::PROVIDER_REFUND_ID] ?? null
+            ];
+        }
+
+        return [];
     }
 
     public function reverse(array $input)
@@ -416,8 +434,14 @@ class Gateway extends Base\Gateway
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
             ($response[ResponseFields::ERROR_CODE] !== 'OK'))
         {
-            $errorCode = ErrorCodes::getInternalErrorCode($response[ResponseFields::ERROR_CODE],
-                ErrorCode::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST);
+            $defaultErrorCode = ErrorCode::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST;
+
+            if ($this->gateway === Payment\Gateway::PAYLATER)
+            {
+                    $defaultErrorCode = ErrorCode::BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST;
+            }
+
+            $errorCode = $this->getInternalErrorCode($response[ResponseFields::ERROR_CODE], $defaultErrorCode);
 
             throw new Exception\GatewayErrorException($errorCode, $response[ResponseFields::ERROR_CODE]);
         }
@@ -458,7 +482,7 @@ class Gateway extends Base\Gateway
         if ($response->status_code !== 200)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCodes::getInternalErrorCode($responseArray['errors'] ?? '',
+                $this->getInternalErrorCode($responseArray['errors'] ?? '',
                     ErrorCode::GATEWAY_ERROR_INTERNAL_SERVER_ERROR));
         }
 
@@ -714,11 +738,9 @@ class Gateway extends Base\Gateway
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
-        if ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false) or
-            ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true) and
-                ($this->action !== Action::AUTHORIZE)))
+        if ($this->shouldJsonEncode($content) === true)
         {
-            $content = json_encode($content);
+                $content = json_encode($content);
         }
 
         $request = parent::getStandardRequestArray($content, $method, $type);
@@ -732,6 +754,36 @@ class Gateway extends Base\Gateway
         $request['url'] = strtr($request['url'], $replacePairs);
 
         return $request;
+    }
+
+    protected function shouldJsonEncode($content)
+    {
+        if (($this->isGetByIdRequest() === false) and
+            (((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === false) or
+            ((in_array(strtolower($this->provider), Payment\Gateway::$cardlessEmiRedirectFlowProvider) === true) and
+                ($this->action !== Action::AUTHORIZE)))))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected function isGetByIdRequest()
+    {
+        if (($this->action === Action::VERIFY) or ($this->action === Action::VERIFY_REFUND))
+        {
+            switch ($this->gateway)
+            {
+                case Payment\Gateway::PAYLATER:
+                    switch ($this->terminal[Terminal\Entity::GATEWAY_ACQUIRER])
+                    {
+                        case PayLater::EPAYLATER:
+                            return true;
+                    }
+            }
+        }
+
+        return false;
     }
 
     protected function getRequestHeaders()
@@ -1039,7 +1091,7 @@ class Gateway extends Base\Gateway
 
                 $responseDescription = $response[ResponseFields::ERROR_DESCRIPTION];
 
-                $errorCode = ErrorCodes::getInternalErrorCode($responseCode,
+                $errorCode = $this->getInternalErrorCode($responseCode,
                     ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
 
             }
@@ -1113,7 +1165,7 @@ class Gateway extends Base\Gateway
         {
             if (isset($response[ResponseFields::ERROR_CODE]) === true)
             {
-                $errorCode = ErrorCodes::getInternalErrorCode(
+                $errorCode = $this->getInternalErrorCode(
                     $response[ResponseFields::ERROR_CODE],
                     ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED);
 

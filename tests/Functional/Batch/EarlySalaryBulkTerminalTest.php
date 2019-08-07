@@ -69,14 +69,12 @@ class EarlySalaryBulkTerminalTest extends TestCase
                 Batch\Header::EARLYSALARY_MERCHANT_ID          => '10NodalAccount',
                 Batch\Header::EARLYSALARY_GATEWAY_MERCHANT_ID  => '123',
                 Batch\Header::EARLYSALARY_GATEWAY_MERCHANT_ID2 => '123',
-                Batch\Header::EARLYSALARY_TERMINAL_PASSWORD    => 'password',
                 Batch\Header::EARLYSALARY_CATEGORY             => '1234',
             ],
             [
                 Batch\Header::EARLYSALARY_MERCHANT_ID          => '100000Razorpay',
                 Batch\Header::EARLYSALARY_GATEWAY_MERCHANT_ID  => '321',
                 Batch\Header::EARLYSALARY_GATEWAY_MERCHANT_ID2 => '321',
-                Batch\Header::EARLYSALARY_TERMINAL_PASSWORD    => 'password',
                 Batch\Header::EARLYSALARY_CATEGORY             => '1234',
 
             ],

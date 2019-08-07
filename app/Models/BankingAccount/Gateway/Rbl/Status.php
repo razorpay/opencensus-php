@@ -14,10 +14,13 @@ class Status
     const DISCREPANCY    = 'discrepancy';
     const CLOSED         = 'closed';
     const CANCELLED      = 'cancelled';
+    const HOLD           = 'hold';
 
+    //
     // RBL webhook wants the final status of processing from our end.
     // If the webhook is processed properly we send a Success status to them
     // else Failure Status is sent to them
+    //
     const SUCCESS           = 'Success';
     const FAILURE           = 'Failure';
 
@@ -27,7 +30,8 @@ class Status
             self::DRAFT,
             self::REWORK,
             self::VERIFIED,
-            self::DISCREPANCY
+            self::DISCREPANCY,
+            self::HOLD,
         ],
         BankingAccount\Status::PROCESSED      => [
             self::CLOSED
@@ -44,6 +48,16 @@ class Status
     protected static $internalToBankStatusForWebhookMap = [
         BankingAccount\Status::PROCESSED    => self::SUCCESS,
         BankingAccount\Status::CANCELLED    => self::FAILURE
+    ];
+
+    protected static $statuses = [
+        self::OPEN,
+        self::DRAFT,
+        self::REWORK,
+        self::VERIFIED,
+        self::DISCREPANCY,
+        self::CLOSED,
+        self::CANCELLED,
     ];
 
     public static function isValid(string $status): bool
@@ -91,5 +105,23 @@ class Status
         BankingAccount\Status::isValidStatus($status);
 
         return self::$internalToBankStatusForWebhookMap[$status];
+    }
+
+    public static function checkRblToInternalStatusMapping(array $input)
+    {
+        if ((isset($input[BankingAccount\Entity::BANK_INTERNAL_STATUS]) === true) and
+            (isset($input[BankingAccount\Entity::STATUS]) === true))
+        {
+            $bankInternalStatus = $input[BankingAccount\Entity::BANK_INTERNAL_STATUS];
+
+            $status = $input[BankingAccount\Entity::STATUS];
+
+            self::validateInternalBankStatusMappingToStatus($bankInternalStatus, $status);
+        }
+    }
+
+    public static function getAll(): array
+    {
+        return self::$statuses;
     }
 }

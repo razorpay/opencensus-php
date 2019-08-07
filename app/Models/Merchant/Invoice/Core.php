@@ -178,20 +178,20 @@ class Core extends Base\Core
 
         do
         {
-            $merchantIds = $this->repo
-                              ->merchant
-                              ->fetchActivatedMerchantsBeforeTimestamp(
-                                  $batch,
-                                  $skip,
-                                  $endTimestamp,
-                                  $merchantIds,
-                                  $merchantIdsExcluded);
+            $merchantIdsToEnqueue = $this->repo
+                                         ->merchant
+                                         ->fetchActivatedMerchantsBeforeTimestamp(
+                                              $batch,
+                                              $skip,
+                                              $endTimestamp,
+                                              $merchantIds,
+                                              $merchantIdsExcluded);
 
-            $count = count($merchantIds);
+            $count = count($merchantIdsToEnqueue);
 
             $skip += $count;
 
-            foreach ($merchantIds as $merchantId)
+            foreach ($merchantIdsToEnqueue as $merchantId)
             {
                 MerchantInvoiceJob::dispatch(
                                         $merchantId,
@@ -202,7 +202,6 @@ class Core extends Base\Core
                                   // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
                                   ->delay($i++ % 901);
             }
-
         } while($batch === $count);
 
         $this->trace->info(
@@ -210,7 +209,6 @@ class Core extends Base\Core
             [
                 'count' => $skip,
             ]);
-
     }
 
     public function createMulitpleInvoiceEntities(array $input)

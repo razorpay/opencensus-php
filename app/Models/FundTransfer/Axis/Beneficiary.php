@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
@@ -166,6 +167,20 @@ class Beneficiary extends FileProcessor
         $response = $this->makeResponse($file, $totalCount, $registerCount, $fileCreated);
 
         return $response;
+    }
+
+
+    /**
+     * Place holder method for verifyBeneficiary since parent abstract class has it.
+     * @param PublicCollection $bankAccounts
+     * @return array
+     * @throws Exception\LogicException
+     */
+    public function verifyBeneficiary(PublicCollection $bankAccounts): array
+    {
+        throw new Exception\LogicException('Beneficiary verification not supported for channel '.$this->channel);
+
+        return [];
     }
 
     /* Normalizes beneficiary name should have length of max 50

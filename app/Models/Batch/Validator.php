@@ -209,6 +209,7 @@ class Validator extends Base\Validator
         Entity::NAME           => 'filled|string|max:255',
         Entity::FILE           => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
         ME::AUTO_SUBMIT        => 'filled|boolean',
+        ME::INSTANTLY_ACTIVATE => 'filled|boolean',
         ME::AUTOFILL_DETAILS   => 'filled|boolean',
         ME::AUTO_ACTIVATE      => 'filled|boolean',
         ME::USE_EMAIL_AS_DUMMY => 'filled|boolean',

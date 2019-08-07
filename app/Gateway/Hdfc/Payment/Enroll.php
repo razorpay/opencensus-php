@@ -323,7 +323,7 @@ trait Enroll
             $this->input,
             null,
             [
-                'enrolled' => $this->model->enroll_result
+                'enrolled' => Result::getEnrollmentStatus($this->model->enroll_result),
             ]);
     }
 

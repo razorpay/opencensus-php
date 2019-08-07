@@ -9,6 +9,13 @@ class Repository extends Base\Repository
 {
     protected $entity = 'banking_account';
 
+    public function getFromBalanceId(string $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, '=', $balanceId)
+                    ->first();
+    }
+
     public function findByAccountNumberAndChannel(string $accountNumber, string $channel)
     {
         return $this->newQuery()
@@ -43,7 +50,16 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::CHANNEL, '=', $channel)
-                    ->latest(Entity::BANK_REFERENCE_NUMBER)
+                    ->whereNotNull(Entity::BANK_REFERENCE_NUMBER)
+                    ->latest(Entity::CREATED_AT)
                     ->first();
+    }
+
+    public function getBankingAccountsWithBalance($merchantId)
+    {
+        return $this->newQuery()
+                    ->with(['balance:id,balance,currency'])
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->get();
     }
 }

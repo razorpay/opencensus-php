@@ -8,6 +8,7 @@ use RZP\Models\Offer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\SubscriptionRegistration;
 
 /**
  * @property Offer\Entity    $offer
@@ -17,6 +18,9 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
+    /**
+     *
+     */
     const ID              = 'id';
     const MERCHANT_ID     = 'merchant_id';
     const OFFER_ID        = 'offer_id';
@@ -58,6 +62,13 @@ class Entity extends Base\PublicEntity
      * unique from the merchant side.
      */
     const RECEIPT           = 'receipt';
+
+
+    /**
+     * This is not the customer account token, this is merchant facing entity token.registration
+     * currently called subscription_registration. Merchant facing key will be token
+     */
+    const TOKEN             = 'token';
 
     /**
      * To Mark If a payment corresponding to this order is in authorized state.
@@ -160,6 +171,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::NOTES,
         self::CREATED_AT,
+        self::TOKEN
     ];
 
     protected $casts = [
@@ -246,7 +258,24 @@ class Entity extends Base\PublicEntity
             'RZP\Models\BankAccount\Entity', 'entity_id', self::ID);
     }
 
-    /** End Related Models */
+/** End Related Models */
+
+    /*
+     * We need to add the token if token is non-null
+     * */
+    public function toArrayPublic()
+    {
+        $arrayPublic = parent::toArrayPublic();
+
+        $token = $this->getTokenRegistration();
+
+        if ($token !== null)
+        {
+            $arrayPublic[self::TOKEN] = $token->toArrayTokenFields();
+        }
+
+        return $arrayPublic;
+    }
 
     /** Appends */
 
@@ -366,6 +395,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_CAPTURE);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
@@ -394,6 +428,23 @@ class Entity extends Base\PublicEntity
     public function getReceipt()
     {
         return $this->getAttribute(self::RECEIPT);
+    }
+
+    public function getTokenRegistration()
+    {
+        $invoice = $this->invoice;
+
+        if ( $invoice !== null)
+        {
+            $externalEntity = $invoice->entity;
+
+            if (($externalEntity instanceof SubscriptionRegistration\Entity) === true)
+            {
+                return $externalEntity;
+            }
+        }
+
+        return null;
     }
 
     /** End Setters And Getters */

@@ -40,7 +40,7 @@ class Url
     //ePayLater Urls
 
     const TEST_DOMAIN_EPAYLATER     = 'https://hodor.epaylater.in:8095';
-    const LIVE_DOMAIN_EPAYLATER     = ''; // TODO: fill this later.
+    const LIVE_DOMAIN_EPAYLATER     = 'https://api1.epaylater.in';
 
     const CHECK_ACCOUNT_EPAYLATER   = '/user/v1/checkaccount';
     const FETCH_TOKEN_EPAYLATER     = '/user/v1/token';

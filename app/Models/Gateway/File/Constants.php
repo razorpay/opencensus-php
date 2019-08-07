@@ -95,6 +95,7 @@ class Constants
             self::HDFC,
             self::AXIS,
             self::ENACH_RBL,
+            self::SBI,
             self::ENACH_NPCI_NETBANKING,
         ],
         Type::REFUND_FAILED => [
@@ -162,6 +163,7 @@ class Constants
             self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
             //TODO
             self::ENACH_NPCI_NETBANKING => [''],
+            self::SBI                   => [''],
         ],
 
         Type::EMI => [

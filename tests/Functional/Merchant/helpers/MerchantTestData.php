@@ -1212,7 +1212,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/1000InvalidMID/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1252,7 +1252,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/10000000000000/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -4332,6 +4332,23 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL,
+        ],
+    ],
+
+    'testInternationalEnableWhenInternationalActivationFlowIsAlreadySet' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'international'    => true,
+                'convert_currency' => false,
+            ],
+            'status_code' => 200,
         ],
     ],
 

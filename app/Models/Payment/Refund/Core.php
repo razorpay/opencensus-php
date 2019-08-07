@@ -5,9 +5,12 @@ namespace RZP\Models\Payment\Refund;
 use App;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\FundTransfer\Attempt;
 
 class Core extends Base\Core
 {
@@ -44,6 +47,7 @@ class Core extends Base\Core
         'CBcPtPwFgpjdUp' => false,
         'ByWbZS28NK9CeG' => false,
         'BREsAWr9hzga0n' => false,
+        'Ba2to8xoI5kO2x' => false,
     ];
 
     /**
@@ -187,5 +191,25 @@ class Core extends Base\Core
         }
 
         return $fetchPublicStatusFromScrooge;
+    }
+
+    public function reconcileNetbankingRefunds(array $data)
+    {
+        $refundIds = [];
+
+        foreach ($data as $refundData)
+        {
+            $gateway = $refundData[E::PAYMENT][Payment\Entity::GATEWAY] ?? null;
+
+            if (in_array($gateway, Gateway::$refundsReconcileNetbankingGateways, true) === true)
+            {
+                $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
+            }
+        }
+
+        if (empty($refundIds) === false)
+        {
+            $this->repo->transaction->bulkReconciliationUpdate($refundIds);
+        }
     }
 }

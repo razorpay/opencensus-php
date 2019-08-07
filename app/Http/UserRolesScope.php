@@ -121,14 +121,14 @@ class UserRolesScope
             'payment_link_slug_exists' => Role::WRITER_ROLES,
 
             // customer routes
-            'customer_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
+            'customer_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), [Role::SELLERAPP_PLUS, Role::SELLERAPP]),
             'customer_create'         => Role::WRITER_ROLES,
 
             // item routes
             'item_create'         => array_merge(Role::WRITER_ROLES, [Role::RBL_SUPERVISOR]),
             'item_delete'         => array_merge(Role::WRITER_ROLES, [Role::RBL_SUPERVISOR]),
             'item_update'         => array_merge(Role::WRITER_ROLES, [Role::RBL_SUPERVISOR]),
-            'item_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), [ROLE::RBL_SUPERVISOR]),
+            'item_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), [ROLE::RBL_SUPERVISOR, Role::SELLERAPP_PLUS, Role::SELLERAPP]),
 
             // marketplace
             'transfer_fetch_multiple'      => Role::READER_ROLES,

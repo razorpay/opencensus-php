@@ -139,16 +139,20 @@ class Processor extends Base\Core
 
         $paymentFeeAmount = [];
 
+        $refundFeeAmount = [];
+
+        $refundReversalFeeAmount = [];
+
         if ($this->isInvoiceTypeOfPayment($type) === true)
         {
             $paymentFeeAmount = $this->repo
-                ->payment
-                ->fetchFeesAndTaxForPaymentByType(
-                    $this->merchantId,
-                    $this->beginTimestamp,
-                    $this->endTimestamp,
-                    $type,
-                    $isCorrection);
+                                     ->payment
+                                     ->fetchFeesAndTaxForPaymentByType(
+                                         $this->merchantId,
+                                         $this->beginTimestamp,
+                                         $this->endTimestamp,
+                                         $type,
+                                         $isCorrection);
         }
 
         $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);
@@ -178,15 +182,49 @@ class Processor extends Base\Core
 
         $transactionAmounts = $this->formatFeesForInvoice($transactionFeeAmount);
 
+        if ($this->isInvoiceTypeOfRefund($type) === true)
+        {
+            $refundFeeAmount = $this->repo
+                                    ->transaction
+                                    ->fetchFeesAndTaxForRefundByType(
+                                        $this->merchantId,
+                                        $this->beginTimestamp,
+                                        $this->endTimestamp,
+                                        $type);
+        }
+
+        $refundFeeAmounts = $this->formatFeesForInvoice($refundFeeAmount);
+
+        // Get the reversals as well when generating refund invoice
+        // Reversals could have happened due to failure of instant flow, where we charge first and reverse the fee
+        // Hence, the cumulative tax value can be negative
+        if ($this->isInvoiceTypeOfRefund($type) === true)
+        {
+            $refundReversalFeeAmount = $this->repo
+                                            ->reversal
+                                            ->fetchFeesAndTaxForRefundByType(
+                                                $this->merchantId,
+                                                $this->beginTimestamp,
+                                                $this->endTimestamp,
+                                                $type);
+        }
+
+        $refundReversalFeeAmounts = $this->formatFeesForInvoice($refundReversalFeeAmount);
+
         return [
-            Entity::TAX     => $paymentAmounts[Entity::TAX] + $transactionAmounts[Entity::TAX] + $validationAmounts[Entity::TAX] ,
-            Entity::AMOUNT  => $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT] + $validationAmounts[Entity::AMOUNT],
+            Entity::TAX     => $paymentAmounts[Entity::TAX] + $transactionAmounts[Entity::TAX] + $validationAmounts[Entity::TAX] + $refundFeeAmounts[Entity::TAX] - $refundReversalFeeAmounts[Entity::TAX],
+            Entity::AMOUNT  => $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT] + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT] - $refundReversalFeeAmounts[Entity::AMOUNT],
         ];
     }
 
     protected function isInvoiceTypeOfPayment(string $type)
     {
         return (in_array($type, [Type::CARD_GT_2K, Type::CARD_LTE_2K, Type::OTHERS]) === true);
+    }
+
+    protected function isInvoiceTypeOfRefund(string $type)
+    {
+        return (in_array($type, [Type::REFUND_LTE_1K, Type::REFUND_GT_1K_LTE_10K, Type::REFUND_GT_10K]) === true);
     }
 
     /**
@@ -248,9 +286,13 @@ class Processor extends Base\Core
         $commissionTypes = Type::getAllTypes();
 
         // [
-        //    'card_lte_2k'   => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
-        //    'card_gt_2k'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
-        //    'others'        => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'card_lte_2k'             => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'card_gt_2k'              => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'refund_lte_1k'           => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'refund_gt_1k_lte_10k'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'refund_gt_10k'           => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'others'                  => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+        //    'validation'              => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         // ]
         foreach ($commissionTypes as $key)
         {

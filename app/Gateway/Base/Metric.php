@@ -21,8 +21,10 @@ class Metric
     const DOGSTATSD_DRIVER               = 'dogstatsd_gateway';
 
     // Counter type metric names only for gateway api calls
-    const GATEWAY_REQUEST_COUNT          = 'gateway_request_count_v2';
     const GATEWAY_REQUEST_COUNT_V3       = 'gateway_request_count_v3';
+
+    //histogram for gateway request time
+    const GATEWAY_REQUEST_TIME           = 'gateway_request_total_time_v2_ms';
 
     // class constants for usage in the class
     const SUCCESS                        = 'success';
@@ -74,6 +76,8 @@ class Metric
         $this->app = App::getFacadeRoot();
 
         $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
     }
 
     public function getDimensions($action, $input, $gateway = 'none')
@@ -91,7 +95,7 @@ class Metric
 
         $authType = $this->getAuthType($input);
 
-        $instrumentType = $this->getInstrumentType($input, $method);
+        $instrumentType = $this->getInstrumentType($input, $method, $gateway);
 
         $tpv = $this->getTpv($method, $input);
 
@@ -99,15 +103,9 @@ class Metric
 
         $cardNetwork = $this->getCardNetwork($method, $input);
 
-        $cardCountry = $this->getCardCountry($method, $input);
-
         $issuer = $this->getIssuer($method, $input);
 
-        $upiPsp = $this->getUpiPsp($input);
-
         $isBharatQr = $this->isBharatQrPayment($input);
-
-        $merchantCategory = 'none';
 
         return [
             Metric::DIMENSION_GATEWAY              => $gateway,
@@ -115,17 +113,17 @@ class Metric
             Metric::DIMENSION_ACTION               => $action,
             Metric::DIMENSION_CARD_TYPE            => $cardType,
             Metric::DIMENSION_CARD_NETWORK         => $cardNetwork,
-            Metric::DIMENSION_CARD_COUNTRY         => $cardCountry,
+            Metric::DIMENSION_CARD_COUNTRY         => 'none',
             Metric::DIMENSION_PAYMENT_RECURRING    => $isRecurringPayment,
             Metric::DIMENSION_INSTRUMENT_TYPE      => $instrumentType,
             Metric::DIMENSION_TPV                  => $tpv,
             Metric::DIMENSION_ISSUER               => $issuer,
-            Metric::DIMENSION_UPI_PSP              => $upiPsp,
+            Metric::DIMENSION_UPI_PSP              => 'none',
             Metric::DIMENSION_CARD_INTERNATIONAL   => $isInternationalPayment,
             Metric::DIMENSION_BHARAT_QR            => $isBharatQr,
             Metric::DIMENSION_AUTH_TYPE            => $authType,
             Metric::DIMENSION_TERMINAL_ID          => 'none',
-            Metric::DIMENSION_MERCHANT_CATEGORY    => $merchantCategory
+            Metric::DIMENSION_MERCHANT_CATEGORY    => 'none',
         ];
     }
 
@@ -138,10 +136,9 @@ class Metric
         return $dimensions;
     }
 
-    protected function getInstrumentType($input, $method)
+    protected function getInstrumentType($input, $method, $gateway)
     {
         $instrumentType = 'none';
-
         switch ($method)
         {
             case Payment\Method::NETBANKING:
@@ -157,16 +154,10 @@ class Metric
                 break;
 
             case Payment\Method::UPI:
-                if (isset($input[Payment\Method::UPI]['flow']))
-                {
-                    $instrumentType = $input[Payment\Method::UPI]['flow'];
-                    $instrumentType = $instrumentType === Upi\Base\Type::INTENT ? $instrumentType :
-                        Upi\Base\Type::COLLECT;
-                }
-                else
-                {
-                    $instrumentType = Upi\Base\Type::COLLECT;
-                }
+                $gatewayEntity = $this->repo->$gateway->
+                                findByPaymentIdAndAction($input[Entity::PAYMENT][Payment\Entity::ID], Action::AUTHORIZE);
+
+                $instrumentType = $gatewayEntity['type'] ?? 'collect';
                 break;
         }
 
@@ -223,14 +214,6 @@ class Metric
         return $network;
     }
 
-    protected function getCardCountry($method, $input)
-    {
-        $country = ($method === Payment\Method::CARD) ? $input[Payment\Method::CARD][Card\Entity::COUNTRY] :
-            'none';
-
-        return $country;
-    }
-
     protected function getIssuer($method, $input)
     {
         $issuer = 'none';
@@ -238,7 +221,7 @@ class Metric
         switch ($method)
         {
             case Payment\Method::CARD:
-                $issuer = $input[Payment\Method::CARD][Card\Entity::ISSUER];
+                $issuer = 'none';
                 break;
 
             case Payment\Method::WALLET:
@@ -297,11 +280,6 @@ class Metric
         return $upiPsp;
     }
 
-    protected function getMerchant($input)
-    {
-        return $input[Entity::PAYMENT][Payment\Entity::MERCHANT_ID];
-    }
-
     public function pushGatewayDimensions($action, $input, $status, $gateway = null, $excData = null)
     {
         try
@@ -310,25 +288,11 @@ class Metric
 
             if (in_array($action, self::ACTIONS_TO_ALLOW, true) === true)
             {
-                $dimensions = $this->getDimensions($action, $input, $gateway);
-
                 $dimensions2 = $this->getV2Dimensions($action, $input, $gateway, $excData);
 
                 $dimensions2[Metric::DIMENSION_STATUS] = $status;
 
-                /**
-                 * Not making any change to the old metric. Hence pushing status as failed and not curl error.
-                 */
-                if ($status === Metric::CURL_ERROR)
-                {
-                    $status = Metric::FAILED;
-                }
-
-                $dimensions[Metric::DIMENSION_STATUS] = $status;
-
                 $gatewayMetrics = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
-
-                $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT, 1, $dimensions);
 
                 $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT_V3, 1, $dimensions2);
             }

@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Processing, Please wait...</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width">
     <meta charset="utf-8">
     <style>
@@ -110,7 +111,7 @@
     @endforeach
     <header>
         <img src="https://cdn.razorpay.com/cardless_emi/{{ $data['provider'] }}.svg" style='float: left;height: 30px;margin: 17px 0;'>
-        <div>₹ {{ $data['request']['content']['amount']/100 }}</div>
+        <div>&#8377; {{ $data['request']['content']['amount']/100 }}</div>
     </header>
     <main>
         Please enter your contact details to proceed.

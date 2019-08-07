@@ -28,6 +28,10 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CREATE_REQUEST, $input);
 
+        $validator = new Validator();
+
+        $validator->validateMethodAndFirstPaymentAmount($input);
+
         $subscriptionRegistration = (new Entity)->build($input);
 
         $subscriptionRegistration->merchant()->associate($merchant);
@@ -42,21 +46,50 @@ class Core extends Base\Core
     public function createAuthLink(
         array $input,
         Merchant\Entity $merchant,
-        Batch\Entity $batch = null): Invoice\Entity
+        Batch\Entity $batch = null,
+        Order\Entity $order = null): Invoice\Entity
     {
         $invoice = $this->repo->transaction(
-            function() use ($input, $merchant, $batch)
+            function() use ($input, $merchant, $batch, $order)
             {
                 $customer = $this->createCustomer($input, $merchant);
 
                 $subscriptionRegistration = $this->createSubscriptionRegistration($input, $merchant, $customer);
 
-                $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch);
+                $invoice = $this->createInvoice($input, $merchant, $subscriptionRegistration, $batch, $order);
 
                 return $invoice;
             });
 
         return $invoice;
+    }
+
+    public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
+    {
+        $this->populateInvoiceParamsFromOrder($tokenRegistrationInput, $order);
+
+        $invoice = $this->repo->transaction(
+            function() use ($tokenRegistrationInput, $order, $customer)
+            {
+                $subscriptionRegistration = $this->createSubscriptionRegistration($tokenRegistrationInput, $this->merchant, $customer);
+
+                $invoice = $this->createInvoice($tokenRegistrationInput, $this->merchant, $subscriptionRegistration, null, $order);
+
+                return $invoice;
+            });
+
+        return $invoice;
+    }
+
+    private function populateInvoiceParamsFromOrder(array & $input, Order\Entity $order)
+    {
+        $input[Invoice\Entity::TYPE] = Invoice\Type::LINK;
+
+        $input[Invoice\Entity::DESCRIPTION] = "Created by order";
+
+        $input[Invoice\Entity::CURRENCY] = $order->getCurrency();
+
+        $input[Invoice\Entity::AMOUNT] = $order->getAmount();
     }
 
     public function createSubscriptionRegistration(array & $input, Merchant\Entity $merchant, Customer\Entity $customer)
@@ -118,7 +151,8 @@ class Core extends Base\Core
         array & $input,
         Merchant\Entity $merchant,
         Entity $subscriptionRegistration,
-        Batch\Entity $batch = null): Invoice\Entity
+        Batch\Entity $batch = null,
+        Order\Entity $order = null): Invoice\Entity
     {
         $invoiceCore = new Invoice\Core();
 
@@ -127,9 +161,36 @@ class Core extends Base\Core
             $merchant,
             null,
             $batch,
-            $subscriptionRegistration);
+            $subscriptionRegistration,
+            null,
+            $order);
 
         return $invoice;
+    }
+
+    // Associate
+    public function authenticateWithToken(Entity $subr,  Customer\Token\Entity $token)
+    {
+        $this->repo->reload($subr);
+
+        $subr->token()->associate($token);
+
+        if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
+        {
+            $subr->setStatus(Status::AUTHENTICATED);
+
+            // in case amount is zero, move it to completed
+            if ($subr->getAmount() === 0)
+            {
+                $subr->setStatus(Status::COMPLETED);
+            }
+        }
+        else if ($token->getRecurringStatus() === Customer\Token\RecurringStatus::CONFIRMED)
+        {
+            $subr->setStatus(Status::COMPLETED);
+        }
+
+        $this->repo->saveOrFail($subr);
     }
 
     public function chargeToken(string $id, array $input, Merchant\Entity $merchant)
@@ -195,6 +256,98 @@ class Core extends Base\Core
         return $paymentProcessor->process($paymentInput);
     }
 
+    private function isValidForAutoCharge(Entity $tokenRegistration)
+    {
+        $firstChargeNeeded    = ($tokenRegistration->getAmount() > 0 ) === true;
+
+        $authenticatedStatus  = ($tokenRegistration->getStatus() === Status::AUTHENTICATED);
+
+        $noAttempts  = ($tokenRegistration->getAttempts() === 0 );
+
+        return ($firstChargeNeeded and $authenticatedStatus and $noAttempts);
+
+    }
+
+    public function processAutoCharge(Entity $tokenRegistration)
+    {
+        if ($this->isValidForAutoCharge($tokenRegistration) === false)
+        {
+            $this->trace->info(TraceCode::TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE,
+                [
+                    'token.registration_id' =>$tokenRegistration->getId(),
+                    'amount'   => $tokenRegistration->getAmount(),
+                    'status'   => $tokenRegistration->getStatus(),
+                    'attempts' => $tokenRegistration->getAttempts()
+                ]);
+
+            return [];
+        }
+
+        $tokenRegistration->incrementAttempts();
+
+        $this->repo->saveOrFail($tokenRegistration);
+
+        $order = $this->createOrder($tokenRegistration);
+
+        $payment = $this->createPayment($tokenRegistration, $order);
+
+        $tokenRegistration->setStatus(Status::COMPLETED);
+
+        $this->repo->saveOrFail($tokenRegistration);
+    }
+
+    private function createPayment(Entity $tokenRegistration, Order\Entity $order)
+    {
+        $token = $tokenRegistration->token;
+
+        $customer =  $token->customer;
+
+        $paymentInput = [
+            Payment\Entity::TOKEN       => $token->getPublicId(),
+            Payment\Entity::AMOUNT      => $tokenRegistration->getAmount(),
+            Payment\Entity::CURRENCY    => $order->getCurrency(),
+            Payment\Entity::DESCRIPTION => "",
+            Payment\Entity::EMAIL       => $customer->getEmail(),
+            Payment\Entity::CONTACT     => $customer->getContact(),
+            Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
+            Payment\Entity::ORDER_ID    => $order->getPublicId(),
+            Payment\Entity::RECURRING   => '1',
+        ];
+
+        $paymentProcessor = new Payment\Processor\Processor($tokenRegistration->merchant);
+
+        $processedPayment = $paymentProcessor->process($paymentInput);
+
+        return $processedPayment;
+    }
+
+    private function createOrder(Entity $tokenRegistration)
+    {
+        $token = $tokenRegistration->token;
+
+        $orderInput = [
+            Order\Entity::AMOUNT           => $tokenRegistration->getAmount(),
+            Order\Entity::CURRENCY         => $tokenRegistration->getCurrency(),
+            Order\Entity::PAYMENT_CAPTURE  => true,
+            Order\Entity::METHOD           => $tokenRegistration->getMethod()
+        ];
+
+        $this->trace->info(
+            TraceCode::TOKEN_REGISTRATION_CREATE_ORDER_FOR_AUTO_CHARGE,
+            [
+                'token_id'    => $token->getId(),
+                'orderInput'  => $orderInput
+            ]
+        );
+
+        $orderCore = new Order\Core();
+
+        $order = $orderCore->create($orderInput, $tokenRegistration->merchant);
+
+        return $order;
+
+    }
+
     public function setBankAccountEntity(Entity $subscriptionRegistration, BankAccount\Entity $bankAccount)
     {
         $subscriptionRegistration->entity()->associate($bankAccount);
@@ -222,6 +375,15 @@ class Core extends Base\Core
         }
 
         return $token->toArrayPublic();
+    }
+
+    public function validateTokenInput(array $input)
+    {
+        $validator = new Validator();
+
+        $validator->setStrictFalse();
+
+        $validator->validateInput('create', $input);
     }
 
     protected function setDefaultValuesForBank(array & $bankInput, Customer\Entity $customer)

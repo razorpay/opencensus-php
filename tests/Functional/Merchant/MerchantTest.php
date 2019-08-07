@@ -20,6 +20,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
@@ -67,6 +68,8 @@ class MerchantTest extends TestCase
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->setupMockDns();
+
+        $this->fixtures->create('org:hdfc_org');
 
         $this->app->make(Factory::class)->load($factoryPath);
     }
@@ -1643,6 +1646,7 @@ class MerchantTest extends TestCase
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'ALL',]);
+
 
         $this->startTest();
     }
@@ -3989,6 +3993,33 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedBankingAccount = [
+            'channel'     => 'yesbank',
+            'merchant_id' => '10000000000000',
+            'status'      => 'activated',
+            'pincode'     => null
+        ];
+
+        $balanceId = $bankingAccount->getBalanceId();
+
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $bankingAccount->toArray());
+        $this->assertNotNull($balanceId);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $balance = $this->getDbEntityById('balance', $balanceId);
+
+        $expectedBalance = [
+            'type'             => 'banking',
+            'account_type'     => 'shared',
+            'channel'          =>  null,
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBalance, $balance->toArray());
+
         $merchants = DB::connection('test')->table('merchant_users')
                                            ->where('user_id', '=', $user['id'])
                                            ->pluck('merchant_id', 'product');
@@ -3996,6 +4027,10 @@ class MerchantTest extends TestCase
         $this->assertEquals(count($merchants), 2);
 
         $this->assertArrayHasKey('banking', $merchants);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
     }
 
     public function testBulkAssignPricing()
@@ -4234,6 +4269,40 @@ class MerchantTest extends TestCase
     public function testGetOrgDetails()
     {
         $this->ba->authServiceAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * When international activation flow is already set then use same
+     * instead of recalculating international activation flow from business category and subcategory again
+     */
+    public function testInternationalEnableWhenInternationalActivationFlowIsAlreadySet()
+    {
+
+        $merchantData = [
+            'international'    => 0,
+            'activated'        => 1,
+            'convert_currency' => null,
+            'website'          => 'abc@gmail.com'
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        //
+        // If international activation flow is recalculated from business category and subcategory
+        // then it points to blacklist category
+        //
+        $merchantDetailData = [
+            'business_category'             => 'healthcare',
+            'business_subcategory'          => 'pharmacy',
+            'international_activation_flow' => 'whitelist',
+            'merchant_id'                   => $merchant['id']
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
     }

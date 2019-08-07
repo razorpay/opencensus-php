@@ -22,7 +22,7 @@ class Service extends Base\Service
     {
         $fetchResult = $this->core()->fetchWithSettings($input, $this->merchant);
 
-        if (isset($input['type']) && ($this->app->batchService->isMigratedBatchType($input['type']) === true))
+        if (isset($input['type']) && ($this->app->batchService->isMigratingBatchType($input['type']) === true))
         {
             $fetchResult = $this->app->batchService->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $this->merchant);
         }

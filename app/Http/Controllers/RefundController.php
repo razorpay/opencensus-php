@@ -34,6 +34,15 @@ class RefundController extends Controller
         return ApiResponse::json($refunds);
     }
 
+    public function getRefundFee()
+    {
+        $input = Request::all();
+
+        $fee = $this->service()->fetchRefundFee($input);
+
+        return ApiResponse::json($fee);
+    }
+
     public function generateRefunds()
     {
         $input = Request::all();

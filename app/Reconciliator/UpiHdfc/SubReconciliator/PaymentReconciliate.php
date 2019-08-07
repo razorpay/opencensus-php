@@ -343,7 +343,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $gatewayPayment->setNpciReferenceId($referenceNumber);
     }
 
-    private function getReconPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
     }
