@@ -451,6 +451,7 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
+            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [
