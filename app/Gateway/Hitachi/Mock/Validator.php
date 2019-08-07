@@ -34,30 +34,6 @@ class Validator extends Base\Validator
         RequestFields::MC_DS_TRANSACTION_ID     => 'required_if:pMCProtocolVersion,2|string|max:36',
     ];
 
-    protected static $adviceRules = [
-        RequestFields::TRANSACTION_TYPE         => 'required|in:RU|string',
-        RequestFields::TRANSACTION_AMOUNT       => 'required|numeric',
-        RequestFields::TRANSACTION_TIME         => 'required|string|date_format:His',
-        RequestFields::TRANSACTION_DATE         => 'required|string|date_format:md',
-        RequestFields::CARD_NUMBER              => 'required|numeric',
-        RequestFields::EXPIRY_DATE              => 'required|numeric',
-        RequestFields::CVV2                     => 'required|numeric|in:000',
-        RequestFields::MERCHANT_ID              => 'required|string',
-        RequestFields::TERMINAL_ID              => 'required|string',
-        RequestFields::RETRIEVAL_REF_NUM        => 'required|string|size:12',
-        RequestFields::MERCHANT_REF_NUMBER      => 'required|alpha_num|size:14',
-        RequestFields::ECI                      => 'required|numeric|in:07',
-        RequestFields::CURRENCY_CODE            => 'required|string',
-        RequestFields::AUTH_ID                  => 'required|numeric',
-        RequestFields::MCC                      => 'required|numeric',
-        RequestFields::AUTH_STATUS              => 'sometimes|string',
-        RequestFields::XID                      => 'sometimes|string|in:""',
-        RequestFields::ALGORITHM                => 'sometimes|in:""',
-        RequestFields::CAVV2                    => 'sometimes|in:""',
-        RequestFields::UCAF                     => 'sometimes|in:""',
-
-    ];
-
     protected static $verifyRules = [
         RequestFields::TRANSACTION_TYPE    => 'required|in:TS',
         RequestFields::REQUEST_ID          => 'required|string',
