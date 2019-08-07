@@ -503,7 +503,7 @@ class Core extends Base\Core
 
             if (isset($metric[DowntimeMetric::Failure]) === true)
             {
-                $downtimeMetric = $metric[DowntimeMetric::Failure];
+                $downtimeMetric = array_merge($downtimeMetric, $metric[DowntimeMetric::Failure]);
             }
 
             foreach ($downtimeMetric as $errorCode => $count)
