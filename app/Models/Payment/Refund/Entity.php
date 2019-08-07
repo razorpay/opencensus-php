@@ -623,6 +623,17 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isDirectSettlementWithoutRefund(): bool
+    {
+        if (($this->payment->hasTerminal() === true) and
+            ($this->payment->terminal->isDirectSettlementWithoutRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function setFTSTransferId($ftsTransferId)
     {
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
