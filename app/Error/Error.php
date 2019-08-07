@@ -4,6 +4,7 @@ namespace RZP\Error;
 
 use RZP\Exception;
 use Illuminate\Support;
+use RZP\Services\DowntimeMetric;
 
 class Error extends Support\Fluent
 {
@@ -93,17 +94,15 @@ class Error extends Support\Fluent
         return in_array($internalCode, $terminalRelatedErrors, true);
     }
 
-    public function isGatewayDowntimeError()
+    public static function isGatewayDowntimeErrorCode(string $errorCode)
     {
-        $gatewayDowntimeRelatedErrors = [
-            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-            ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        ];
+        // NoError is set when there is no error code and that is a success case.
+        if ($errorCode === DowntimeMetric::NoError)
+        {
+            return false;
+        }
 
-        $internalCode = $this->getInternalErrorCode();
-
-        return in_array($internalCode, $gatewayDowntimeRelatedErrors, true);
+        return Error::getErrorClassFromErrorCode($errorCode) === ErrorClass::GATEWAY;
     }
 
     protected function setInternalErrorCode($code)

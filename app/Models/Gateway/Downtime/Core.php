@@ -488,27 +488,34 @@ class Core extends Base\Core
     {
         $metrics = $this->getGatewayDowntimeMetric()->getMetrics();
 
-        foreach ($metrics as $gateway => $metric) {
+        foreach ($metrics as $gateway => $metric)
+        {
+            $downtimeMetric = [];
+
             if (isset($metric[DowntimeMetric::Success]) === true)
             {
-                $count = $metric[DowntimeMetric::Success][DowntimeMetric::NoError];
-
-                (new GatewayDowntimeDetection($gateway))->incrementTotalAttempts($count);
+                $downtimeMetric = $metric[DowntimeMetric::Success];
             }
 
             if (isset($metric[DowntimeMetric::Failure]) === true)
             {
-                foreach ($metric[DowntimeMetric::Failure] as $errorCode => $count)
-                {
-                    if (Error::getErrorClassFromErrorCode($errorCode) === ErrorClass::GATEWAY)
-                    {
-                        $durations = (new GatewayDowntimeDetection($gateway))->gatewayDowntimeDurations($count);
+                $downtimeMetric = $metric[DowntimeMetric::Failure];
+            }
 
-                        foreach ($durations as $duration)
-                        {
-                            $this->attemptDowntimeCreation($gateway, $gatewayData, $duration);
-                        }
+            foreach ($downtimeMetric as $errorCode => $count)
+            {
+                if (Error::isGatewayDowntimeErrorCode($errorCode) === true)
+                {
+                    $durations = (new GatewayDowntimeDetection($gateway))->gatewayDowntimeDurations($count);
+
+                    foreach ($durations as $duration)
+                    {
+                        $this->attemptDowntimeCreation($gateway, $gatewayData, $duration);
                     }
+                }
+                else
+                {
+                    (new GatewayDowntimeDetection($gateway))->incrementTotalAttempts($count);
                 }
             }
         }
