@@ -102,7 +102,7 @@ class Error extends Support\Fluent
             return false;
         }
 
-        return in_array(Error::getErrorClassFromErrorCode($errorCode), [ErrorClass::GATEWAY, ErrorClass::SERVER]);
+        return (in_array(Error::getErrorClassFromErrorCode($errorCode), [ErrorClass::GATEWAY, ErrorClass::SERVER]) === true);
     }
 
     protected function setInternalErrorCode($code)
