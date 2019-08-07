@@ -1797,6 +1797,8 @@ class Processor
                 }
                 catch (\Throwable $e)
                 {
+                    // This can be removed later.
+                    // This is added for some time to test this feature.
                     $this->trace->traceException($e);
                 }
             }

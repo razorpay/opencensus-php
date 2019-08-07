@@ -103,6 +103,7 @@ class GatewayDowntimeDetectionTest extends TestCase
             $this->doAuthPayment();
         });
 
+        // This one just trace exception because duplicate downtime already exist.
         $this->runRequestResponseFlow($data, function () {
             $this->doAuthPayment();
         });
