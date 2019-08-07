@@ -91,9 +91,10 @@ class GatewayDowntimeDetection
      * for which respective downtime should be created.
      *
      * This also updates the total attempts and total failure in redis.
+     * @param int $count total failure count of a error code
      * @return array
      */
-    public function gatewayDowntimeDurations(): array
+    public function gatewayDowntimeDurations(int $count): array
     {
         if (empty($this->settings) === true)
         {
@@ -104,6 +105,7 @@ class GatewayDowntimeDetection
             file_get_contents(__DIR__ . '/LuaScripts/FailureCount.lua'),
             1,
             $this->getThrottleKey(),
+            $count,
         ];
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_EXECUTING_FAILURE_COUNT, [
@@ -140,8 +142,9 @@ class GatewayDowntimeDetection
     /**
      * This function increment the total attempts in redis.
      * which will be used for downtime detection.
+     * @param int $count
      */
-    public function incrementTotalAttempts()
+    public function incrementTotalAttempts(int $count)
     {
         if (empty($this->settings) === true)
         {
@@ -152,6 +155,7 @@ class GatewayDowntimeDetection
             file_get_contents(__DIR__ . '/LuaScripts/AllAttemptsCount.lua'),
             1,
             $this->getThrottleKey(),
+            $count
         ];
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_DETECTION_EXECUTING_ATTEMPTS_COUNT, [

@@ -115,7 +115,7 @@ class Error extends Support\Fluent
 
     protected function setClass($code)
     {
-        $class = $this->getErrorClassFromErrorCode($code);
+        $class = self::getErrorClassFromErrorCode($code);
 
         self::checkErrorClass($class);
 
@@ -395,7 +395,7 @@ class Error extends Support\Fluent
         return null;
     }
 
-    protected function getErrorClassFromErrorCode($code)
+    public static function getErrorClassFromErrorCode($code)
     {
         $pos = strpos($code, '_');
 

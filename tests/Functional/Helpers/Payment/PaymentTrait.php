@@ -1536,6 +1536,8 @@ trait PaymentTrait
 
         if ($this->isPaymentCreationUrl($url))
         {
+            $this->resetSingletons();
+
             $response = $this->handlePaymentCreationFlow($response, $request, $callback);
         }
 

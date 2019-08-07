@@ -1742,8 +1742,6 @@ class Processor
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
-            $gatewayDowntimeError = false;
-
             return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
         }
         catch (Exception\GatewayErrorException $ex)
@@ -1769,8 +1767,6 @@ class Processor
 
             $this->createGatewayDowntimeIfApplicable($gateway, $gatewayData);
 
-            $gatewayDowntimeError = true;
-
             throw $ex;
         }
         finally
@@ -1786,13 +1782,18 @@ class Processor
             // action individually, which we might do at later point of time.
             // For Example: Action AUTH and CALLBACK both need to succeed
             // for the payment to be successful. If one is working fine, then
-            // Downtime configuration might now work properly.
+            // Downtime configuration might not work properly.
+
+            // Also, though we are putting the check here that
+            // we only want these actions to succeed but inside
+            // $this->app['gateway']->call(), we might call other actions.
+            // Example: In case of international payments we call capture immediately.
             if ((strtolower($variant) === 'on') and
                 ($this->isGatewayDowntimeAction($action) == true))
             {
                 try
                 {
-                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gateway, $gatewayData, $gatewayDowntimeError);
+                    (new Gateway\Downtime\Core)->createDowntimeIfApplicable($gatewayData);
                 }
                 catch (\Throwable $e)
                 {

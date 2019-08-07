@@ -3,17 +3,19 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Redis;
+
 
 use RZP\Services;
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
+use RZP\Error\ErrorClass;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\DowntimeMetric as DowntimeMetric;
 
 class Core extends Base\Core
 {
@@ -469,30 +471,46 @@ class Core extends Base\Core
         return $mode;
     }
 
+    protected function getGatewayDowntimeMetric(): DowntimeMetric
+    {
+        return $this->app['gateway_downtime_metric'];
+    }
+
     /**
      * This function creates the downtime and
      * update the required metric for downtime detection,
      * if $gatewayDowntimeError is present. Otherwise
      * it just update the required metric for downtime detection.
-     * @param string $gateway
      * @param array $gatewayData
-     * @param bool $gatewayDowntimeError
      * @throws Exception\BadRequestException
      */
-    public function createDowntimeIfApplicable(string $gateway, array $gatewayData, bool $gatewayDowntimeError)
+    public function createDowntimeIfApplicable(array $gatewayData)
     {
-        if ($gatewayDowntimeError == true)
-        {
-            $durations = (new GatewayDowntimeDetection($gateway))->gatewayDowntimeDurations();
+        $metrics = $this->getGatewayDowntimeMetric()->getMetrics();
 
-            foreach ($durations as $duration)
+        foreach ($metrics as $gateway => $metric) {
+            if (isset($metric[DowntimeMetric::Success]) === true)
             {
-                $this->attemptDowntimeCreation($gateway, $gatewayData, $duration);
+                $count = $metric[DowntimeMetric::Success][DowntimeMetric::NoError];
+
+                (new GatewayDowntimeDetection($gateway))->incrementTotalAttempts($count);
             }
-        }
-        else
-        {
-            (new GatewayDowntimeDetection($gateway))->incrementTotalAttempts();
+
+            if (isset($metric[DowntimeMetric::Failure]) === true)
+            {
+                foreach ($metric[DowntimeMetric::Failure] as $errorCode => $count)
+                {
+                    if (Error::getErrorClassFromErrorCode($errorCode) === ErrorClass::GATEWAY)
+                    {
+                        $durations = (new GatewayDowntimeDetection($gateway))->gatewayDowntimeDurations($count);
+
+                        foreach ($durations as $duration)
+                        {
+                            $this->attemptDowntimeCreation($gateway, $gatewayData, $duration);
+                        }
+                    }
+                }
+            }
         }
     }
 }
