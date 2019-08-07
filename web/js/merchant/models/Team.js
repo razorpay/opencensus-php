@@ -3,12 +3,30 @@ import GenericEntity from './GenericEntity';
 export default class MerchantUser extends GenericEntity {
   resourceUrl = 'merchants-users';
 
-  fetchAll(params) {
-    return this.makeGenericAjaxCall({ data: params }).then(
-      ({ data, ...response }) => ({
-        ...response,
-        data: { items: data },
-      })
+  fetchTeamMembers() {
+    return this.makeGenericAjaxCall({
+      url: this.resourceUrl,
+    });
+  }
+
+  fetchInvitations() {
+    return this.makeGenericAjaxCall({
+      url: 'invitations',
+    });
+  }
+
+  fetchAll() {
+    return Promise.all([this.fetchInvitations(), this.fetchTeamMembers()]).then(
+      ([invitationResponse, teamMembersResponse]) => {
+        return {
+          data: {
+            items: [
+              ...[...invitationResponse.data],
+              ...[...teamMembersResponse.data],
+            ],
+          },
+        };
+      }
     );
   }
 

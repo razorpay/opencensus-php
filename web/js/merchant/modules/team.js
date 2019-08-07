@@ -1,6 +1,8 @@
 import { set, merge, unshift, remove } from 'rzp/utils/immutable';
 import defaultAjax, { merchantFetch } from 'merchant/utils/ajax';
 
+import Team from 'merchant/models/Team';
+
 export const TEAM_FETCH = 'TEAM_FETCH';
 export const INVITATION_SEND = 'INVITATION_SEND';
 export const INVITATION_RESEND = 'INVITATION_RESEND';
@@ -8,6 +10,8 @@ export const INVITATION_UPDATE = 'INVITATION_UPDATE';
 export const INVITATION_REMOVE = 'INVITATION_REMOVE';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
+
+const TEAM_MEMBER_DELETE = 'TEAM_MEMBER_DELETE';
 
 const fetchInvitations = _ =>
   merchantFetch({
@@ -93,11 +97,10 @@ export const updateUser = (userId, data) => {
 };
 
 export const removeUser = userId => {
+  const team = new Team();
   return {
-    type: USER_REMOVE,
-    payload: defaultAjax(`users/${userId}/detach`, {
-      method: 'put',
-    }),
+    type: TEAM_MEMBER_DELETE,
+    payload: team.deleteMember(userId),
   };
 };
 

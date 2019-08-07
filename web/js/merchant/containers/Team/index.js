@@ -1,40 +1,67 @@
-import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
-import { Redirect } from 'react-router-dom';
+
 import HeaderAction from 'rzp/ui/HeaderAction';
-import { fetchTeamDetails } from 'merchant/modules/team';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import NewInvitation from './NewInvitation';
-import Invitation from './Invitation';
-import User from './User';
+import DataTable from 'rzp/ui/Table/DataTable';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-@connect(
-  state => {
-    return {
-      invitations: state.team.invitations,
-      users: state.team.users,
-      merchant: state.session.user,
-    };
-  },
-  {
-    fetchTeamDetails,
-    ...NotificationsActions,
-  }
-)
-export default class TeamContainer extends Component {
-  componentWillMount() {
-    this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
-  }
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchTeam as fetchAll } from 'merchant/modules/collection';
+import { removeUser } from 'merchant/modules/team';
+import { showNotification } from 'rzp/modules/notifications';
+
+import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
+
+import Actions from './Actions';
+
+const allRoles = {
+  ...roles,
+  ...agentRole,
+  ...RBLRoles,
+};
+
+const name = {
+  title: 'Member',
+  value: user => (
+    <div>
+      <p>{user.name}</p>
+      <p className="text-muted">{user.email}</p>
+    </div>
+  ),
+};
+
+const contactPhone = {
+  title: 'Phone Number',
+  value: user => <p>{user.contact_mobile || '--'}</p>,
+};
+
+const userRole = {
+  title: 'Role',
+  value: user => <p>{(allRoles[user.role] || {}).label}</p>,
+};
+
+@connect(state => ({ ...state.team }), {
+  fetchAll,
+  removeUser,
+  showNotification,
+})
+export default class ManageTeamContainer extends ListContainer {
+  actions = {
+    title: '',
+    value: user => (
+      <Actions
+        user={user}
+        removeUser={this.props.removeUser}
+        onRemove={() => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Team member has been removed successfully',
+          });
+        }}
+      />
+    ),
+  };
 
   render() {
-    let invitations = this.props.invitations;
-    let users = this.props.users;
-    let otherUsers = users.filter(
-      user => user.email !== this.props.merchant.user.email
-    );
-
     return (
       <div>
         <HeaderAction>
@@ -55,49 +82,12 @@ export default class TeamContainer extends Component {
             </ShowWhen>
           </div>
         </HeaderAction>
-
-        <div class="content-wrapper content-sm">
-          <NewInvitation />
-
-          {otherUsers.length ? (
-            <div>
-              <div class="panel-heading">
-                <b>Team Members</b>
-              </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
-                <tbody>
-                  {otherUsers.map(user => (
-                    <User
-                      key={user.id}
-                      user={user}
-                      form={`editUser_${user.id}`}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
-
-          {!!otherUsers.length && <div class="section-divide" />}
-
-          {invitations.length ? (
-            <div>
-              <div class="panel-heading">
-                <b>Pending Invitations</b>
-              </div>
-              <table class="table table-noborder" style={{ margin: '0 12px' }}>
-                <tbody>
-                  {invitations.map(invite => (
-                    <Invitation
-                      key={invite.id}
-                      invite={invite}
-                      form={`editInvitation_${invite.id}`}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
+        <div class="content-wrapper">
+          <DataTable
+            title="Team Members"
+            columns={[name, contactPhone, userRole, this.actions]}
+            {...this.props}
+          />
         </div>
       </div>
     );
