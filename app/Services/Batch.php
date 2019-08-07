@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\Reconciliation;
 use RZP\Models\Batch as BatchModel;
 
 class Batch extends Job
@@ -101,6 +102,24 @@ class Batch extends Job
                 [
                     BatchModel\Entity::ID   => $this->id,
                 ]);
+        }
+        finally
+        {
+            //
+            // For reconciliation, maintaining a list of batches scheduled in redis, will delete the batch from list
+            // once batch is handled.
+            //
+            $app = App::getFacadeRoot();
+
+            $redis = $app['redis']->connection();
+
+            $this->trace->debug(
+                TraceCode::KUBERNETES_BATCH_JOB_DEBUG,
+                [
+                    BatchModel\Entity::ID   => $this->id,
+                ]);
+
+            $redis->HDEL(Reconciliation::KUBERNETES_RECON_JOB_LIST, $this->id);
         }
     }
 }

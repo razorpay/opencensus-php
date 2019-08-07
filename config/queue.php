@@ -201,6 +201,10 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
+    'recon_batch' => [
+        'test'       => env('AWS_RECON_QUEUE'),
+        'live'       => env('AWS_RECON_QUEUE'),
+    ],
     'direct_debit_batch' => [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
