@@ -1936,6 +1936,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';
     const NON_BLOCKING_HTTP_DATA                                = 'NON_BLOCKING_HTTP_DATA';
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
+    const TERMINALS_SENT_TO_SMART_ROUTING                       = 'TERMINALS_SENT_TO_SMART_ROUTING';
+    const TERMINALS_RECEIVED_FROM_SMART_ROUTING                 = 'TERMINALS_RECEIVED_FROM_SMART_ROUTING';
+
+
 
 
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';

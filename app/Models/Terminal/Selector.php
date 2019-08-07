@@ -258,6 +258,11 @@ class Selector extends Base\Core
             $terminalSetSentToSmartRouting[$terminal['id']] = $terminal;
         }
 
+        $this->trace->info(
+            TraceCode::TERMINALS_SENT_TO_SMART_ROUTING,
+            ['terminalIds' => array_keys($terminalSetSentToSmartRouting)]
+        );
+
         // calling the smart routing service for sorted terminals set
         $terminalSetReceivedFromSmartRouting = $this->sendParametersToSmartRoutingService($payment,
             $this->input['merchant'], $allTerminals, $sortedTerminals, $filteredTerminals);
@@ -291,6 +296,11 @@ class Selector extends Base\Core
             [
                 'sorted_terminalIds' => $terminalIds,
             ]
+        );
+
+        $this->trace->info(
+            TraceCode::TERMINALS_RECEIVED_FROM_SMART_ROUTING,
+            ['terminalIds' => $terminalIds]
         );
 
         return $sortedTerminals;
