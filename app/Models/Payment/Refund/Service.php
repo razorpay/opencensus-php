@@ -507,7 +507,15 @@ class Service extends Base\Service
     {
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
-        return $refunds->toArrayPublic();
+        $refundsArray = $refunds->toArrayPublic();
+
+        // Showing public_status only for `CARD_TRANSFER_REFUND` feature enabled dashboard merchants
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            $this->addPublicStatus($refundsArray, $refunds, $input);
+        }
+
+        return $refundsArray;
     }
 
     public function fetchRefundFee(array $input)
@@ -547,6 +555,52 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    protected function getPublicStatusForRefunds($refunds)
+    {
+        $refundStatus = [];
+
+        $refundsArray = $refunds->toArrayWithItems();
+
+        foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
+        {
+            $status = ($refundArray->getSpeedProcessed() === null)? Status::PROCESSING : Status::PROCESSED;
+
+            $refundId = $refundArray[Entity::ID];
+
+            $refundStatus[$refundId] = $status;
+        }
+
+        return $refundStatus;
+    }
+
+    protected function addPublicStatus(array &$refundsArray, $refunds, array $input = [])
+    {
+        // Public Status param will be added only for feature enabled merchants
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        {
+            if (isset($input[Entity::PUBLIC_STATUS]))
+            {
+                foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
+                {
+                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $input[Entity::PUBLIC_STATUS];
+                }
+            }
+            else
+            {
+                $refundStatus = $this->getPublicStatusForRefunds($refunds);
+
+                foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
+                {
+                    $refundId = $refundArray[Entity::ID];
+
+                    Entity::verifyIdAndSilentlyStripSign($refundId);
+
+                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+                }
+            }
+        }
     }
 
     public function makeGatewayRefundCall(string $refundId, array $input)
