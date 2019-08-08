@@ -326,6 +326,10 @@ class PaysecureGatewayTest extends TestCase
             ],
             $payment
         );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEquals($paysecure[Entity::ERROR_CODE], 'ACCU100');
     }
 
     public function testCallbackAutoCapture()
