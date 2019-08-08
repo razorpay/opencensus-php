@@ -32,4 +32,7 @@ final class RazorxTreatment
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
     const CHANGE_QUEUE_BATCH_INVOICE = 'change_queue_batch_invoice';
+
+    const SECOND_FACTOR_AUTH_PROJECT_EXP   = 'second_factor_auth_project';
+    const SECOND_FACTOR_AUTH_LOGIN_EXP     = 'second_factor_auth_login';
 }

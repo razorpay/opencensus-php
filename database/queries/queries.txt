@@ -5041,6 +5041,15 @@ ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
 
+ALTER TABLE `merchants`
+    ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
+    ADD COLUMN `restricted` BOOLEAN DEFAULT 0 NOT NULL AFTER `second_factor_auth`;
+
+ALTER TABLE `users`
+    ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `contact_mobile`,
+    ADD COLUMN `wrong_2fa_attempts` INT(2) DEFAULT 0 NOT NULL AFTER `second_factor_auth`,
+    ADD COLUMN `account_locked` BOOLEAN DEFAULT 0 NOT NULL AFTER `wrong_2fa_attempts`;
+
 ALTER TABLE `banking_account_statement`
   ADD UNIQUE INDEX `banking_account_statement_bank_transaction_id_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`);
 
@@ -5192,4 +5201,3 @@ ALTER table terminals
     ADD COLUMN `notes` TEXT DEFAULT NULL AFTER `ifsc_code`,
     ADD INDEX terminals_org_id_index (`org_id`),
     ADD INDEX terminals_status_index (`status`);
-

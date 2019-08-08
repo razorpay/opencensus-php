@@ -17,6 +17,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Admin\Admin;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
+use Illuminate\Hashing\BcryptHasher;
 
 class Service extends Base\Service
 {
@@ -298,6 +299,16 @@ class Service extends Base\Service
     public function login(array $input): array
     {
         return (new Core)->login($input);
+    }
+
+    public function setup2faMobileOnLogin(array $input): array
+    {
+        return (new Core)->setup2faMobileOnLogin($input);
+    }
+
+    public function setup2faVerifyMobileOnLogin(array $input): array
+    {
+        return (new Core)->setup2faVerifyMobileOnLogin($input);
     }
 
     public function get(string $id): array
@@ -662,6 +673,28 @@ class Service extends Base\Service
         $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
 
         return $this->user->toArrayPublic();
+    }
+
+    /**
+     * Change 2fa setting of user (enable/disable)
+     *
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function change2faSetting(array $input)
+    {
+        $this->user->getValidator()->validateInput('change2faSetting', $input);
+
+        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $this->user->getPassword());
+
+        if ($isPasswordEqual === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
+        }
+
+        return $this->core()->change2faSetting($this->user, $input);
     }
 
     /**
