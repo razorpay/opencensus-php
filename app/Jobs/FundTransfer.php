@@ -113,7 +113,7 @@ class FundTransfer extends Job
     /**
      * @param array $data
      */
-    public function checkRetryOrDelete(array $data)
+    public function checkRetryOrDelete(array $data, $traceCode)
     {
         // Functional test cases gets failed due to checkRetryOrDelete
         // gets called in sync hence returning false in test mode
@@ -121,8 +121,6 @@ class FundTransfer extends Job
         {
             return false;
         }
-
-        $traceCode = TraceCode::FTA_BENEFICIARY_NOT_REGISTERED_OR_VERIFIED;
 
         if ($this->attempts() < self::MAX_ALLOWED_ATTEMPTS)
         {
@@ -179,14 +177,14 @@ class FundTransfer extends Job
             {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryRegistration($bankAccount, $channel);
 
-                return $this->checkRetryOrDelete($data);
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_REGISTERED);
             }
 
             if ($beneficiaryStatus !== BeneficiaryStatus::VERIFIED)
             {
                 (new Beneficiary)->dispatchBankAccountForBeneficiaryVerification($bankAccount, $channel);
 
-                return $this->checkRetryOrDelete($data);
+                return $this->checkRetryOrDelete($data, TraceCode::FTA_BENEFICIARY_NOT_VERIFIED);
             }
         }
 
