@@ -162,7 +162,6 @@ class Creator extends Base\Core
      */
     protected $additionalParameters = null;
 
-
     protected $sheetName = 'Sheet 1';
 
     const DEFAULT_STORE    = 's3';

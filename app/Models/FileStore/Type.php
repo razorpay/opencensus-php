@@ -262,7 +262,7 @@ class Type
             self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
             self::RECONCILIATION_BATCH_OUTPUT,
-            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT
+            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -459,11 +459,11 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
-            self::RECONCILIATION_BATCH_OUTPUT
+            self::RECONCILIATION_BATCH_OUTPUT,
         ],
 
         self::ANALYTICS_BUCKET_CONFIG => [
-            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT
+            self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         ],
 
         self::H2H_DEFAULT_BUCKET_CONFIG => [

@@ -306,13 +306,13 @@ class Reconciliate extends Base\Core
             $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
 
             $creator->localFilePath($analyticsOutputFilePath)
-                ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                ->name($dirPath.'/'.$analyticsOutputFileName)
-                ->extension($extension)
-                ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
-                ->entity($batch)
-                ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
-                ->save();
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
+                    ->name($dirPath . '/' . $analyticsOutputFileName)
+                    ->extension($extension)
+                    ->type(FileStore\Type::RECONCILIATION_BATCH_ANALYTICS_OUTPUT)
+                    ->entity($batch)
+                    ->additionalParameters(['ACL' => 'bucket-owner-full-control'])
+                    ->save();
 
             $fileStoreEntity = $creator->get();
 
