@@ -1,8 +1,10 @@
 import { connect } from 'react-redux';
-
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ShowWhen from 'merchant/components/ShowWhen';
+import Toggle2FA from './Toggle2FA';
+import ModalHeader from 'rzp/ui/ModalHeader';
+import { openModal, closeModal } from 'rzp/modules/modals';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTeam as fetchAll } from 'merchant/modules/collection';
@@ -44,6 +46,8 @@ const userRole = {
   removeUser,
   cancelInvitation,
   showNotification,
+  openModal,
+  closeModal,
 })
 export default class ManageTeamContainer extends ListContainer {
   actions = {
@@ -64,9 +68,27 @@ export default class ManageTeamContainer extends ListContainer {
     ),
   };
 
+  addNewMember = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <div>
+          <ModalHeader
+            title="Add Team Member"
+            onCloseClick={this.props.closeModal}
+          />
+          <div class="modal-body">
+            <NewInvitation />
+          </div>
+        </div>
+      ),
+    });
+  };
+
   render() {
     return (
       <div class="content-wrapper content-sm">
+        <Toggle2FA />
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <ShowWhen

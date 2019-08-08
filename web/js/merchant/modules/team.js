@@ -101,6 +101,19 @@ export const removeUser = userId => {
   };
 };
 
+export const toggle2FaEnforcement = flag => {
+  return {
+    type: USER_UPDATE,
+    payload: defaultAjax(`/merchants/2fa`, {
+      method: 'patch',
+      appendModeInURL: false,
+      data: {
+        second_factor_auth: flag,
+      },
+    }),
+  };
+};
+
 let initialState = {
   loading: true,
   invitations: [],

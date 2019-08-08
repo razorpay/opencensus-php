@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
-import { required, email } from 'rzp/utils/validators';
+import { required, email, phone } from 'rzp/utils/validators';
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
@@ -79,14 +79,16 @@ export default class NewInvitation extends Component {
 
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
-        <div class="row">
-          <div class="col-md-5">
-            <div class="form-group">
+        <div>
+          <div class="form-group Form--vertical">
+            <label>Member Details</label>
+            <div class="input-container top-rounded">
+              <i class="i i-email" />
               <Field
                 name="email"
                 component={InputField}
                 class="form-control"
-                placeholder="Email address of the user"
+                placeholder="Email"
                 autoFocus={true}
                 validate={[
                   required(),
@@ -99,10 +101,29 @@ export default class NewInvitation extends Component {
                 ]}
               />
             </div>
+            <div class="input-container no-top-border bottom-rounded">
+              <i class="i i-phone" />
+              <Field
+                name="contact_mobile"
+                component={InputField}
+                class="form-control"
+                placeholder="Phone Number"
+                validate={[
+                  required(),
+                  phone('Invalid Mobile'),
+                  value => {
+                    if (value === this.props.user.user.contact_mobile) {
+                      return "You can't invite yourself";
+                    }
+                  },
+                ]}
+              />
+            </div>
           </div>
 
-          <div class="col-md-4">
-            <div class="form-group">
+          <div class="form-group Form--vertical">
+            <label>Role</label>
+            <div class="input-container">
               <Field name="role" component="select" class="form-control">
                 {Object.keys(ROLES).map(role => (
                   <option key={role} value={role}>
@@ -112,25 +133,21 @@ export default class NewInvitation extends Component {
               </Field>
             </div>
           </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-              <AsyncButton
-                class="btn btn-primary"
-                text="Send Invitation"
-                pendingText="Sending Invitation..."
-                onClick={handleSubmit(this.save)}
-              />
-            </div>
+          <div class="form-group">
+            {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
+              <div class="alert alert-info text-center">
+                {ROLES[selectedRole].desc}
+              </div>
+            ) : null}
           </div>
-        </div>
-
-        <div class="form-group">
-          {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
-            <div class="alert alert-info text-center">
-              {ROLES[selectedRole].desc}
-            </div>
-          ) : null}
+          <div class="form-group">
+            <AsyncButton
+              class="btn btn-primary btn-block"
+              text="Send Invitation"
+              pendingText="Sending Invitation..."
+              onClick={handleSubmit(this.save)}
+            />
+          </div>
         </div>
       </form>
     );
