@@ -4320,7 +4320,7 @@ trait Authorize
                                        ->fetchSubscriptionInfo(
                                            [
                                                 Payment\Entity::AMOUNT          => $payment->getAmount(),
-                                                Payment\Entity::SUBSCRIPTION_ID => $payment->getSubscriptionId(),
+                                                Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId()),
                                             ],
                                             $payment->merchant,
                                             $callback = true);
