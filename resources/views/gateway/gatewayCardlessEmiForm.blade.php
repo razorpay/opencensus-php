@@ -110,7 +110,7 @@
     @endif
     @endforeach
     <header>
-        <img src="https://cdn.razorpay.com/cardless_emi/{{ $data['provider'] }}.svg" style='float: left;height: 30px;margin: 17px 0;'>
+        <img src="https://cdn.razorpay.com/{{ $data['method'] }}/{{ $data['provider'] }}.svg" style='float: left;height: 30px;margin: 17px 0;'>
         <div>&#8377; {{ $data['request']['content']['amount']/100 }}</div>
     </header>
     <main>
