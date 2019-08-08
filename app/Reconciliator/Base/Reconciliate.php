@@ -267,7 +267,7 @@ class Reconciliate extends Base\Core
             $sheetName = '_' . strtolower(str_replace(' ', '_', $sheetName));
         }
 
-        $outputFileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
+        $fileName = $batchId . $sheetName . self::OUTPUT_FILE_SUFFIX;
 
         $extension = FileStore\Format::CSV;
         $this->trace->info(
@@ -276,19 +276,19 @@ class Reconciliate extends Base\Core
                 'info_code' => InfoCode::RECON_ATTEMPT_TO_CREATE_OUTPUT_FILE,
                 'batch_id'  => $batchId,
                 'row_count' => count($data),
-                'file_name' => $outputFileName,
+                'file_name' => $fileName,
             ]
         );
 
-        $outputFilePath = $this->createCsvFile($data, $outputFileName, null,self::DIRECTORY_PATH);
+        $filePath = $this->createCsvFile($data, $fileName, null,self::DIRECTORY_PATH);
 
-        $file = new UploadedFile($outputFilePath, $outputFileName);
+        $file = new UploadedFile($filePath, $fileName);
 
         $creator = new FileStore\Creator;
 
         $creator->localFile($file)
                 ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
-                ->name($outputFileName)
+                ->name($fileName)
                 ->extension($extension)
                 ->type(FileStore\Type::RECONCILIATION_BATCH_OUTPUT)
                 ->entity($batch)

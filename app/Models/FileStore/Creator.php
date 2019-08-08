@@ -694,10 +694,10 @@ class Creator extends Base\Core
         $fileName = $this->getFullFileName();
 
         $fileDetails = [
-            'key'                  => $fileName,
-            'path'                 => $this->filePath,
-            'mime'                 => $this->file->getMime(),
-            'metadata'             => $this->file->getMetadata(),
+            'key'       => $fileName,
+            'path'      => $this->filePath,
+            'mime'      => $this->file->getMime(),
+            'metadata'  => $this->file->getMetadata(),
         ];
 
         if (empty($this->additionalParameters) === false)

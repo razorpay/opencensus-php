@@ -239,7 +239,7 @@ class Handler extends BaseHandler
             'Metadata'    => $fileDetails['metadata'],
         ];
 
-        if (isset($fileDetails['additionalParameters']))
+        if (isset($fileDetails['additionalParameters']) === true)
         {
             foreach ($fileDetails['additionalParameters'] as $key => $value)
             {
