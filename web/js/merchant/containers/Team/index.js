@@ -6,7 +6,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTeam as fetchAll } from 'merchant/modules/collection';
-import { removeUser } from 'merchant/modules/team';
+import { removeUser, cancelInvitation } from 'merchant/modules/team';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
@@ -42,15 +42,18 @@ const userRole = {
 @connect(state => ({ ...state.team }), {
   fetchAll,
   removeUser,
+  cancelInvitation,
   showNotification,
 })
 export default class ManageTeamContainer extends ListContainer {
   actions = {
     title: '',
-    value: user => (
+    columnClass: 'text-right',
+    value: item => (
       <Actions
-        user={user}
+        item={item}
         removeUser={this.props.removeUser}
+        cancelInvitation={this.props.cancelInvitation}
         onRemove={() => {
           this.props.showNotification({
             type: 'success',
@@ -63,7 +66,7 @@ export default class ManageTeamContainer extends ListContainer {
 
   render() {
     return (
-      <div>
+      <div class="content-wrapper content-sm">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <ShowWhen
@@ -82,7 +85,7 @@ export default class ManageTeamContainer extends ListContainer {
             </ShowWhen>
           </div>
         </HeaderAction>
-        <div class="content-wrapper">
+        <div class="ManageTeam--list">
           <DataTable
             title="Team Members"
             columns={[name, contactPhone, userRole, this.actions]}

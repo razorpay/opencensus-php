@@ -73,17 +73,6 @@ export const updateInvitation = (inviteId, data) => {
   };
 };
 
-export const cancelInvitation = inviteId => {
-  return {
-    type: INVITATION_REMOVE,
-    payload: merchantFetch({
-      method: 'delete',
-      url: `invitations/${inviteId}`,
-      mode: 'live',
-    }),
-  };
-};
-
 export const updateUser = (userId, data) => {
   return {
     type: USER_UPDATE,
@@ -93,6 +82,14 @@ export const updateUser = (userId, data) => {
       data,
       mode: 'live',
     }),
+  };
+};
+
+export const cancelInvitation = inviteId => {
+  const team = new Team();
+  return {
+    type: TEAM_MEMBER_DELETE,
+    payload: team.cancelInvitation(inviteId),
   };
 };
 
