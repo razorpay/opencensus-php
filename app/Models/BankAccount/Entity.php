@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Payment\Processor\Netbanking;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -557,6 +558,11 @@ class Entity extends Base\PublicEntity
             ($code === false))
         {
             return null;
+        }
+
+        if (isset(Netbanking::$defaultInconsistentBankCodesMapping[$code]) === true)
+        {
+            $code = Netbanking::$defaultInconsistentBankCodesMapping[$code];
         }
 
         return $code;

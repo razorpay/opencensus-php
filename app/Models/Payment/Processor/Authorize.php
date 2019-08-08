@@ -5550,37 +5550,10 @@ trait Authorize
             return false;
         }
 
-        /*
-         * begin temporary hack
-         *
-         * this will be removed once flipkart confirms that the following type of payment works for s2s flow
-         *
-         * emandate AND npci based AND initial payment AND merchant is flipkart/test merchant
-         *
-         */
-        $redirectNpciEmandateForMerchantIdsArray = [
-            'CVoU9K3zrIekS7', // flipkart merchant id
-            '5ubLZpACTmD8D4', // test merchant id
-            '10000000000000', // testing merchant id
-        ];
-
         if (($payment->isEmandate() === true) and
-            ($payment->isRecurringTypeInitial() === true) and
-            (in_array($payment->getMerchantId(), $redirectNpciEmandateForMerchantIdsArray) === true) and
-            (in_array($payment->getBank(), Payment\Gateway::ENACH_NPCI_NETBANKING_BANKS) === true))
-        {
-            return true;
-        }
-
-        /*
-         * End temporary hack
-         */
-
-        if (($payment->isEmandate() === true) and
-            ($payment->getBank() === IFSC::UTIB) and
             ($payment->isRecurringTypeInitial() === true))
         {
-                return true;
+            return true;
         }
 
         if (($payment->isMethodCardOrEmi() === false) or

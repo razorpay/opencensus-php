@@ -141,7 +141,9 @@ class Initiator extends Base\Core
 
             $data[$channel] = [];
 
-            if (($channel === Channel::YESBANK) and ($sourceType == Type::PAYOUT))
+            // Since yesbank fund transfer with purpose settlement need Beneficiary
+            // Registration and verification, they will go via queue.
+            if (($channel === Channel::YESBANK) and ($purpose == Type::SETTLEMENT))
             {
                 $response = $this->dispatchTransfers($channel, $attempts);
             }

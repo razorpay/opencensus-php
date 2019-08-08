@@ -100,6 +100,7 @@ class Netbanking
         IFSC::CIUB,
         IFSC::ESFB,
         IFSC::SBIN,
+        IFSC::CBIN,
         IFSC::VIJB,
         IFSC::YESB,
         IFSC::SIBL,
@@ -128,6 +129,7 @@ class Netbanking
         IFSC::SIBL,
         IFSC::YESB,
         IFSC::CIUB,
+        IFSC::CBIN,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -434,6 +436,14 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::SIBL
+            ]
+        ],
+        Gateway::NETBANKING_CBI => [
+            'retail' => [
+                IFSC::CBIN
+            ],
+            'tpv' => [
+                IFSC::CBIN
             ]
         ],
         Gateway::NETBANKING_IDFC => [
