@@ -302,7 +302,7 @@ class Reconciliate extends Base\Core
 
             $dirPath = 'reconciliation_output/'.$this->gateway;
 
-            $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH.'/'.$dirPath);
+            $analyticsOutputFilePath = $this->createCsvFile($data, $analyticsOutputFileName, null, self::DIRECTORY_PATH);
 
             $creator->localFilePath($analyticsOutputFilePath)
                 ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
