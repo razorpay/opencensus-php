@@ -7,7 +7,7 @@ import { toggle2FaEnforcement } from 'merchant/modules/team';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import {
-  VerifyMobileNumber,
+  VerifyOtp,
   MissingNumbers,
   AskMobileNumber,
   EnableAgreement,
@@ -21,7 +21,13 @@ import {
       user: state.session.user,
     };
   },
-  { updateFeatures, showNotification, openModal, closeModal }
+  {
+    updateFeatures,
+    showNotification,
+    openModal,
+    closeModal,
+    toggle2FaEnforcement,
+  }
 )
 export default class Toggle2FA extends Component {
   // constructor(props) {
@@ -51,41 +57,78 @@ export default class Toggle2FA extends Component {
     });
   };
   showModal = component => {
+    //Close anyother open modal
+    this.props.closeModal();
     this.props.openModal({
       size: 'small',
       component: component,
     });
   };
   toggle2FA = flag => {
+    //Step
     const verifyPassword = () => {
       const title = (flag ? 'Enable' : 'Disable') + ' 2-step verification';
-      this.props.closeModal();
       this.showModal(
         <PasswordVerification
           title={title}
           {...this.props}
           email={this.props.user.email}
-          onSuccess={() => toggle2FaEnforcement(flag)}
+          onConfirm={password =>
+            this.props.toggle2FaEnforcement(flag, password)
+          }
+        />
+      );
+    };
+    const otpVerification = mobile => {
+      this.showModal(
+        <VerifyOtp
+          {...this.props}
+          mobile={mobile}
+          onConfirm={otp => {
+            //Verify Otp here
+            //On Success
+            verifyPassword();
+            //On failure
+            // otpVerification(false)
+          }}
+        />
+      );
+    };
+    const verifyMobile = () => {
+      this.showModal(
+        <AskMobileNumber
+          {...this.props}
+          onComplete={mobile => otpVerification(mobile)}
         />
       );
     };
     if (flag) {
-      //Step 1: Make initial check if everyone in team has mobile number, if not show missing mobile number
-      if (false)
+      //Step 1: check of user has mobile number verified for setup to continue, if yes ask for password after agreement
+      let {
+        user: { second_factor_auth },
+      } = this.props.user;
+      if (undefined !== second_factor_auth && second_factor_auth) {
         this.showModal(
-          <MissingNumbers {...this.props} onAgree={verifyPassword} />
+          <EnableAgreement {...this.props} onAgree={verifyPassword} />
         );
+      } else {
+        this.showModal(
+          <EnableAgreement {...this.props} onAgree={verifyMobile} />
+        );
+      }
+      // //Step 2: Make initial check if everyone in team has mobile number, if not show missing mobile number
+      // if (false)
+      //   this.showModal(
+      //     <MissingNumbers {...this.props} onAgree={verifyPassword} />
+      //   );
       //Step 2: Show an agreement to enable the 2FA & verify Password after agreement
-      this.showModal(
-        <EnableAgreement {...this.props} onAgree={verifyPassword} />
-      );
+      // this.showModal(
+      //   <EnableAgreement {...this.props} onAgree={verifyPassword} />
+      // );
       //Step 3:Once Password is confimred, check if second_factor_auth_setup is true
       if (false)
         this.showModal(
-          <AskMobileNumber
-            {...this.props}
-            onComplete={() => VerifyMobileNumber}
-          />
+          <AskMobileNumber {...this.props} onComplete={() => VerifyOtp} />
         );
     } else {
       //Step 1: Show an agreement to enable the 2FA & verify Password after agreement

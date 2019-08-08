@@ -7,14 +7,15 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { required, phone } from 'rzp/utils/validators';
 import AsyncButton from 'react-async-button';
 
-const VerifyMobileNumber = ({
+const VerifyOtp = ({
   mobile,
   closeModal,
   onConfirm,
-  wrong,
+  verified,
   onOtpEnter,
   changeMobile,
 }) => {
+  let otpValue = '';
   return (
     <div>
       <ModalHeader title="Verify Mobile Number" onCloseClick={closeModal} />
@@ -25,10 +26,19 @@ const VerifyMobileNumber = ({
         </p>
         <p>OTP will expire in 5mins. </p>
 
-        <OtpInput onComplete={otp => {}} wrong={wrong} />
+        <OtpInput
+          onComplete={otp => {
+            otpValue = otp;
+            onOtpEnter && onOtpEnter(otp);
+          }}
+          wrong={!verified}
+        />
         <p>Didn’t receive an SMS? Sending.</p>
         <div class="Modal__actions">
-          <button class="btn btn-primary btn-block" onClick={onConfirm}>
+          <button
+            class="btn btn-primary btn-block"
+            onClick={() => onConfirm(otpValue)}
+          >
             Confirm
           </button>
         </div>
@@ -129,13 +139,12 @@ const DisableAgreement = ({ closeModal, onAgree }) => {
 @reduxForm({
   form: 'askPhone',
   initialValues: {
-    phone: '',
+    contact_mobile: '',
   },
 })
 class AskMobileNumber extends Component {
-  handleSubmit = () => {};
   render() {
-    const { closeModal } = this.props;
+    const { closeModal, onComplete, handleSubmit } = this.props;
     return (
       <div class="2fa-modal">
         <ModalHeader
@@ -148,7 +157,7 @@ class AskMobileNumber extends Component {
             everytime you log in.
           </p>
           <form
-            onSubmit={this.handleSubmit(this.save)}
+            onSubmit={handleSubmit(values => onComplete(values.contact_mobile))}
             style={{ marginBottom: '35px' }}
           >
             <div class="form-group">
@@ -174,7 +183,9 @@ class AskMobileNumber extends Component {
                 class="btn btn-primary btn-block"
                 text="Send OTP"
                 pendingText="Sending OTP..."
-                onClick={this.handleSubmit(this.save)}
+                onClick={handleSubmit(values =>
+                  onComplete(values.contact_mobile)
+                )}
               />
             </div>
           </form>
@@ -184,18 +195,15 @@ class AskMobileNumber extends Component {
   }
 }
 @reduxForm({
-  form: 'askPhone',
+  form: 'confimrPassword',
   initialValues: {
-    phone: '',
+    password: '',
   },
 })
 class PasswordVerification extends Component {
-  handleSubmit = f => {
-    console.log(f);
-    this.props.onSuccess();
-  };
   render() {
-    const { closeModal, title, email } = this.props;
+    const { closeModal, title, email, handleSubmit, onConfirm } = this.props;
+    const confimrPassword = values => onConfirm(values.password);
 
     return (
       <div class="2fa-modal">
@@ -205,7 +213,7 @@ class PasswordVerification extends Component {
             To confirm please enter the password for <strong>{email}</strong>
           </p>
           <form
-            onSubmit={() => this.handleSubmit(this.save)}
+            onSubmit={handleSubmit(confimrPassword)}
             style={{ marginBottom: '35px' }}
           >
             <div class="form-group">
@@ -234,7 +242,7 @@ class PasswordVerification extends Component {
                 class="btn btn-primary btn-block"
                 text="Confirm"
                 pendingText="Please Wait..."
-                onClick={() => this.handleSubmit(this.save)}
+                onClick={handleSubmit(confimrPassword)}
               />
             </div>
           </form>
@@ -245,7 +253,7 @@ class PasswordVerification extends Component {
 }
 
 export {
-  VerifyMobileNumber,
+  VerifyOtp,
   MissingNumbers,
   EnableAgreement,
   DisableAgreement,

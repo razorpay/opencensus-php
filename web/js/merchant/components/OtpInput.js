@@ -20,7 +20,7 @@ const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput }) => {
 export class OtpInput extends Component {
   state = {
     currentIndex: 1,
-    wrong: this.props.wrong,
+    wrong: this.props.wrong || false,
     digit: {
       1: '',
       2: '',
