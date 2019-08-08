@@ -550,7 +550,14 @@ class Service extends Base\Service
 
         $refunds = $this->repo->refund->findForPaymentAndMerchant($payment, $this->merchant);
 
-        return $refunds->toArrayPublic();
+        $refundsArray = $refunds->toArrayPublic();
+
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray, $refunds);
+        }
+
+        return $refundsArray;
     }
 
     public function fetchTransactionByPaymentId($id)
