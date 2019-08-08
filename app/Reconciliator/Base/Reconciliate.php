@@ -97,7 +97,7 @@ class Reconciliate extends Base\Core
     const INTERNATIONAL = 'international';
 
 
-    const S3_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
+    const ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS = [
         RequestProcessor\Base::NETBANKING_HDFC
     ];
 
@@ -294,7 +294,7 @@ class Reconciliate extends Base\Core
                 ->entity($batch)
                 ->save();
 
-        if (in_array($this->gateway, self::S3_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
+        if (in_array($this->gateway, self::ANALYTICS_RECON_OUTPUT_FILE_ENABLED_GATEWAYS, true) === true)
         {
             $creator = new FileStore\Creator;
 
