@@ -141,7 +141,7 @@ class Initiator extends Base\Core
 
             $data[$channel] = [];
 
-            if (($channel === Channel::YESBANK) and ($sourceType == Type::PAYOUT))
+            if (($channel === Channel::YESBANK) and ($purpose == Type::SETTLEMENT))
             {
                 $response = $this->dispatchTransfers($channel, $attempts);
             }
