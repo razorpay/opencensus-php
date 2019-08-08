@@ -305,6 +305,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REQUESTS_JOB_RESPONSE                                 = 'REQUESTS_JOB_RESPONSE';
     const REQUESTS_JOB_ERROR                                    = 'REQUESTS_JOB_ERROR';
     const MOCK_DRIP_REQUEST                                     = 'MOCK_DRIP_REQUEST';
+    const HUBSPOT_JOB_REQUEST                                   = 'HUBSPOT_JOB_REQUEST';
 
     const DASHBOARD_JOB_ERROR                                   = 'DASHBOARD_JOB_ERROR';
 
