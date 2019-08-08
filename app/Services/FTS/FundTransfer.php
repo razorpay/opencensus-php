@@ -183,7 +183,7 @@ class FundTransfer extends Base
 
             if (method_exists($source, 'getSourceFtsFundAccountId'))
             {
-                $request[Constants::TRANSFER] = [
+                $request[Constants::TRANSFER] += [
                     Constants::PREFERRED_SOURCE_ACCOUNT_ID => $this->fta->source->getSourceFtsFundAccountId(),
                 ];
             }
