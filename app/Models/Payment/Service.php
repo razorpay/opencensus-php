@@ -31,6 +31,7 @@ use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Transfer\Metric as TransferMetric;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 class Service extends Base\Service
 {
@@ -867,7 +868,37 @@ class Service extends Base\Service
                         ->payment
                         ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
-        return $payment->toArrayPublic();
+        $entity = $payment->toArrayPublic();
+
+        // Adding support to add additional params to payment entity for frontend
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            $this->addDashboardFlags($entity, $payment, $input);
+        }
+
+        return $entity;
+    }
+
+    protected function addDashboardFlags(array &$entity, $payment, array $input = [])
+    {
+        if (isset($input['dashboard_flag']) === true)
+        {
+            foreach ($input['dashboard_flag'] as $key)
+            {
+                $func = 'addDashboardFlag' . studly_case($key);
+
+                if (method_exists($this, $func))
+                {
+                    $this->$func($entity, $payment);
+                }
+            }
+        }
+    }
+
+    protected function addDashboardFlagInstantRefundSupport(array &$entity, $payment)
+    {
+        $entity[RefundConstants::INSTANT_REFUND_SUPPORT] = $this->getNewProcessor($this->merchant)
+                                                                ->isCapturedPaymentAndFeatureEnabled($payment);
     }
 
     public function getPaymentFlows(array $input)

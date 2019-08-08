@@ -11,6 +11,7 @@ class Constants
     const GATEWAY_ENTITY                    = 'gateway_entity';
     const SPEED_CHANGE_TIME                 = 'speed_change_time';
     const REFUND_REFERENCE1                 = 'refund_reference1';
+    const INSTANT_REFUND_SUPPORT            = 'instant_refund_support';
     const MAX_REFUND_RETRY_ATTEMPTS         = 3;
     const MAX_REFUND_VERIFY_REQUESTS        = 20;
     const SCROOGE_TAGGING_LIVE_TIMESTAMP    = 1552646209;
