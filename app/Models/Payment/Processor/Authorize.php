@@ -300,7 +300,19 @@ trait Authorize
             {
                 if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
                 {
-                    $request = $this->runOtpPaymentFlow($payment, $terminalGatewayInput);
+                    // If the appToken and walletToken is set then for a power wallet, run the
+                    // power wallet flow. Run otp flow if appToken and walletToken are set
+                    // but the wallet is not a power wallet.
+                    if (($payment->getAppTokenId() !== null) and
+                        ($payment->getGlobalTokenId() !== null) and
+                        (Payment\Gateway::isPowerWalletSupported($payment) === true))
+                    {
+                        $request = $this->runPowerWalletFlow($terminalGatewayInput, $payment);
+                    }
+                    else
+                    {
+                        $request = $this->runOtpPaymentFlow($payment, $terminalGatewayInput);
+                    }
                 }
                 else
                 {
@@ -1592,6 +1604,10 @@ trait Authorize
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
 
+        // We are doing it in post processing because terminal id is required for
+        // fetching the wallet token as they are terminal specific
+        $this->associateWalletTokenIfApplicable($payment);
+
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
         $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
@@ -1646,6 +1662,22 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function associateWalletTokenIfApplicable(Payment\Entity $payment)
+    {
+        if (($payment->getGlobalCustomerId() !== null) and
+            (Payment\Gateway::isPowerWalletSupported($payment) === true))
+        {
+            $terminalId = $payment->terminal->getId();
+            $wallet = $payment->getWallet();
+            $token = (new Token\Core)->getValidWalletToken(
+                $wallet, $terminalId, $payment->globalCustomer->getId());
+            if ($token !== null)
+            {
+                $payment->globalToken()->associate($token);
+            }
+        }
     }
 
     /**
@@ -4709,6 +4741,113 @@ trait Authorize
         }
 
         return false;
+    }
+
+    protected function runPowerWalletFlow(array $gatewayInput, Payment\Entity $payment)
+    {
+        $gatewayInput['customer'] = $payment->globalCustomer;
+        $gatewayInput['token'] = $payment->globalToken;
+        $this->trace->info(
+            TraceCode::PAYMENT_POWER_WALLET_INITIATED,
+            [
+                'payment_id'  => $payment->getId(),
+                'gateway'     => $payment->getGateway(),
+                'terminal_id' => $payment->getTerminalId(),
+            ]);
+        try
+        {
+            $this->callGatewayFunction('checkBalance', $gatewayInput);
+        }
+        catch (Exception\GatewayErrorException $e)
+        {
+            $error = $e->getError();
+            //
+            // If the accessToken for the wallet is invalid, run the
+            // otpGenerate flow for it.
+            //
+            if ($this->isGatewayTokenInvalid($error) === true)
+            {
+                return $this->runOtpPaymentFlow($gatewayInput, $payment);
+            }
+            // @todo: Refactor it and move it to ApiResponse
+            // Return a co-proto request to add funds.
+            if ($this->shouldPowerWalletTopup($error) === true)
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_POWER_WALLET_TOPUP,
+                    [
+                        'gateway'     => $payment->getGateway(),
+                        'payment_id'  => $payment->getId(),
+                        'terminal_id' => $payment->getTerminalId(),
+                    ]);
+                return $this->getTopupCoProtoCall($payment);
+            }
+            throw $e;
+        }
+        $response = $this->callGatewayFunction('autoDebit', $gatewayInput);
+        return $this->processPowerWalletFlowResponse($response, $payment);
+    }
+
+    protected function processPowerWalletFlowResponse($request, $payment): array
+    {
+        if ($request !== null)
+        {
+            $payment->incrementOtpCount();
+            $payment->save();
+            $response = [
+                'type' => 'otp',
+                'request' => $request,
+                'version' => 1,
+                'payment_id' => $payment->getPublicId(),
+                'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+                // TODO: Return metadata in a better format
+                'contact' => $payment->getContact(),
+                'amount'  => number_format(($payment->getAmount() / 100), 2),
+                'wallet'  => $payment->getWallet()
+            ];
+            $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
+            return $response;
+        }
+        $this->updateAndNotifyPaymentAuthorized();
+        $this->updateTwoFactorAuthForOneStepPayment();
+        $payment = $this->payment;
+        return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function isGatewayTokenInvalid($error)
+    {
+        $errorCode = $error->getInternalErrorCode();
+        switch($errorCode)
+        {
+            case ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INVALID_GATEWAY_TOKEN:
+                return true;
+            default:
+                return false;
+        }
+    }
+    protected function getTopupCoProtoCall($payment)
+    {
+        return [
+            'type' => 'topup',
+            'version' => 1,
+            'request' => [
+                'url' => $this->getTopupUrl($payment),
+                'method' => 'post',
+            ],
+            'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+            'wallet'  => $payment->getWallet(),
+        ];
+    }
+    protected function shouldPowerWalletTopup(Error\Error $error)
+    {
+        $errorCode = $error->getInternalErrorCode();
+        switch($errorCode)
+        {
+            case ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     protected function callGatewayOtpGenerate(array $data, Payment\Entity $payment, $otpResend = false)

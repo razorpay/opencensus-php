@@ -1951,6 +1951,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
 
 
+    /*
+     * Trace codes for PowerWallet
+     */
+    const PAYMENT_POWER_WALLET_INITIATED            = 'PAYMENT_POWER_WALLET_INITIATED';
+    const PAYMENT_POWER_WALLET_TOPUP                = 'PAYMENT_POWER_WALLET_TOPUP';
+
+
     const HUBSPOT_EXTERNAL_SERVICE_REQUEST                      = 'HUBSPOT_EXTERNAL_SERVICE_REQUEST';
 
     protected static $messages = [

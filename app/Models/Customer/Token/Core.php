@@ -367,6 +367,16 @@ class Core extends Base\Core
         return $updated;
     }
 
+    public function getValidWalletToken($wallet, $terminalId, $customerId)
+    {
+        $token = $this->repo->token->getValidWalletToken(
+            $wallet, $terminalId, $customerId);
+        if (($token !== null) and ($token->getExpiredAt() > time()))
+        {
+            return $token;
+        }
+    }
+
     protected function getExistingTokens($token, $card, $payment, $customer)
     {
         $existingCards = (new Card\Core)->findAllExistingCards($card, $customer->merchant);

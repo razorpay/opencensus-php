@@ -551,6 +551,10 @@ class PaymentCreateController extends Controller
                                ->with('data', $templateData);
                 }
             }
+            else if ($data['type'] === 'topup')
+            {
+                return $data;
+            }
             else
             {
                 assertTrue(false, 'Should not reach here');
