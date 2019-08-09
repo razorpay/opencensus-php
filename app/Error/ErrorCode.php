@@ -853,6 +853,7 @@ class ErrorCode
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
 
+    const SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND                                       = 'SERVER_ERROR_TOO_MANY_PAYOUTS_FOUND';
     const SERVER_ERROR_MOZART_PARALLELIZER_ERROR                                    = 'SERVER_ERROR_MOZART_PARALLELIZER_ERROR';
     const SERVER_ERROR_GATEWAY_NOT_SET                                              = 'SERVER_ERROR_GATEWAY_NOT_SET';
     const SERVER_ERROR_GATEWAY_FIELD_MISMATCH                                       = 'SERVER_ERROR_GATEWAY_FIELD_MISMATCH';
@@ -1252,6 +1253,10 @@ class ErrorCode
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED';
     const SERVER_ERROR_VAULT_TOKENIZE_FAILED                                        = 'SERVER_ERROR_VAULT_TOKENIZE_FAILED';
     const SERVER_ERROR_BANKING_ACCOUNT_NUMBER_LIMIT_REACHED                         = 'SERVER_ERROR_BANKING_ACCOUNT_NUMBER_LIMIT_REACHED';
+
+    const SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR                                   = 'SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR';
+
+    const SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED                                 = 'SERVER_ERROR_REVERSAL_TXN_ALREADY_CREATED';
 
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                      = 'GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                           = 'GATEWAY_ERROR_UNEXPECTED_STATUS';
