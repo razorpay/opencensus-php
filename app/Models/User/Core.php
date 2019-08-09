@@ -190,21 +190,18 @@ class Core extends Base\Core
         return $this->get($user);
     }
 
-    public function checkUserAccess($id, $merchantId)
+    /**
+     * This method currently checks if given user has access to the merchant
+     * It checks if there is an entry in merchant_users table of the given userId and merchantId
+     */
+    public function checkUserAccess(string $userId, string $merchantId): array
     {
         $accessMaps = $this->repo->merchant_user->fetch([
-            'user_id'       => $id,
+            'user_id'       => $userId,
             'merchant_id'   => $merchantId,
         ]);
 
-        if($accessMaps->isEmpty() === false)
-        {
-            $access = true;
-        }
-        else
-        {
-            $access = false;
-        }
+        $access = ($accessMaps->isEmpty() === false);
 
         return [ 'access' => $access ];
     }

@@ -302,13 +302,11 @@ class Service extends Base\Service
         return (new Core)->login($input);
     }
 
-    public function checkUserAccess(string $id, array $input)
+    public function checkUserAccess(string $userId, array $input)
     {
-        $merchantId = Account\Entity::verifyIdAndSilentlyStripSign(
-            $input['merchant_id']
-        );
+        $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
 
-        return (new Core)->checkUserAccess($id, $merchantId);
+        return (new Core)->checkUserAccess($userId, $merchantId);
     }
 
     public function setup2faMobileOnLogin(array $input): array
