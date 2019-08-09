@@ -153,6 +153,22 @@ return [
         ],
     ],
 
+    'testUserAccess'    => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+            ],
+        ],
+    ],
+
+    'testFailedUserAccess'    => [
+        'response'      => [
+            'content'   => [
+                'access'    => false,
+            ],
+        ],
+    ],
+
     'testUserEnable2fa' => [
         'request' => [
             'url'     => '/users/2fa',

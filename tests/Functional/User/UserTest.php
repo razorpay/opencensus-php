@@ -167,6 +167,60 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testUserAccess()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/'.$user->getId().'/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedUserAccess()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/'.$user->getId().'/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testUserDisable2fa()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
