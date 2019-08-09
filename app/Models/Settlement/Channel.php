@@ -107,6 +107,18 @@ class Channel
     }
 
     /**
+     * Gives list of channels which support API based beneficiary verification
+     *
+     * @return array
+     */
+    public static function getChannelsWithOnlineBeneficiaryVerification()
+    {
+        return [
+            self::YESBANK
+        ];
+    }
+
+    /**
      * Gives list of channels which support file based settlement and recon
      *
      * @return array
@@ -206,5 +218,31 @@ class Channel
         {
             throw new Exception\BadRequestValidationFailureException('Invalid channel name: ' . $channel);
         }
+    }
+
+    /**
+     * Supported FTS channels for payouts
+     * @return array
+     */
+    public static function getFtsSupportedPayoutChannels()
+    {
+        return [
+            self::RBL,
+        ];
+    }
+
+    public static function getNonTransactionChannels()
+    {
+        return [
+            self::RBL,
+        ];
+    }
+
+    public static function getPreferredModeSupportedChannels()
+    {
+        return [
+            self::RBL,
+            self::YESBANK,
+        ];
     }
 }

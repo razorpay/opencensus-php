@@ -78,20 +78,20 @@ return [
             'content' => [
                 'RZPAlertNotiReq' => [
                     'Body' => [
-                        'Account No'        => '309002180853',
+                        'Account No.'       => '309002180853',
                         'Customer Name'     => 'INTERNET BANKING CA',
                         'Customer ID'       => 'Customer ID',
-                        'Account Open Date' => '22-MAY-2019',
+                        'Account Open Date' => '22-05-2019',
                         'RZP_Ref No'        => '15597',
                         'IFSC'              => 'HDFC0000090',
-                        'ADDR_1'            => 'RAM NAGAR',
-                        'ADDR_2'            => 'ADARSHA LANE',
-                        'ADDR_3'            => '.',
+                        'Address1'          => 'RAM NAGAR',
+                        'Address2'          => 'ADARSHA LANE',
+                        'Address3'          => '.',
                         'CITY'              => 'MUMBAI',
                         'STATE'             => 'MAHARASH',
                         'COUNTRY'           => 'INDIA',
                         'PINCODE'           => '123456',
-                        'Phone no'          => '9899807189',
+                        'Phone no.'         => '9899807189',
                         'Email Id'          => 'test@gmail.com'
                     ],
                     'Header' => [
@@ -138,20 +138,20 @@ return [
             'content' => [
                 'RZPAlertNotiReq' => [
                     'Body' => [
-                        'Account No'         => '309002180853',
+                        'Account No.'         => '309002180853',
                         'Customer Name'      => 'INTERNET BANKING CA',
                         'Customer ID'        => 'Customer ID',
-                        'Account Open Date'  => '22-MAY-2019',
+                        'Account Open Date'  => '22-05-2019',
                         'RZP_Ref No'         => '15597',
                         'IFSC'               => 'HDFC0000090',
-                        'ADDR_1'             => 'RAM NAGAR',
-                        'ADDR_2'             => 'ADARSHA LANE',
-                        'ADDR_3'             => '.',
+                        'Address1'             => 'RAM NAGAR',
+                        'Address2'             => 'ADARSHA LANE',
+                        'Address3'             => '.',
                         'CITY'               => 'MUMBAI',
                         'STATE'              => 'MAHARASH',
                         'COUNTRY'            => 'INDIA',
                         'PINCODE'            => '123456',
-                        'Phone no'           => '9899807189',
+                        'Phone no.'           => '9899807189',
                         'Email Id'           => 'test@gmail.com'
                     ],
                     'Header' => [
@@ -181,20 +181,20 @@ return [
             'content' => [
                 'RZPAlertNotiReq' => [
                     'Body' => [
-                        'Account No'        => '319002180853',
+                        'Account No.'       => '319002180853',
                         'Customer Name'     => 'INTERNET BANKING CA',
                         'Customer ID'       => 'Customer ID',
-                        'Account Open Date' => '22-MAY-2019',
+                        'Account Open Date' => '22-05-2019',
                         'RZP_Ref No'        => '15597',
                         'IFSC'              => 'HDFC0000090',
-                        'ADDR_1'            => 'RAM NAGAR',
-                        'ADDR_2'            => 'ADARSHA LANE',
-                        'ADDR_3'            => '.',
+                        'Address1'          => 'RAM NAGAR',
+                        'Address2'          => 'ADARSHA LANE',
+                        'Address3'          => '.',
                         'CITY'              => 'MUMBAI',
                         'STATE'             => 'MAHARASH',
                         'COUNTRY'           => 'INDIA',
                         'PINCODE'           => '123456',
-                        'Phone no'          => '9899807189',
+                        'Phone no.'         => '9899807189',
                         'Email Id'          => 'test@gmail.com'
                     ],
                     'Header' => [
@@ -222,14 +222,64 @@ return [
             'url'     => '/banking_accounts/{id}/credentials',
             'method'  => 'POST',
             'content' => [
-                'subcorp_id'            => 'MERCHANT_SUB_CORP',
-                'subcorp_user_id'       => 'MERCHANT_1234',
-                'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
+                'subcorp_id'              => 'MERCHANT_SUB_CORP',
+                'subcorp_user_name'       => 'MERCHANT_1234',
+                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
             ],
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'entity'        => 'banking_account',
+                'channel'       => 'rbl',
+                'status'        => 'activated',
+                'username'      => 'MERCHANT_1234',
+                'reference1'    => 'MERCHANT_SUB_CORP'
+            ]
+        ],
+    ],
+
+    'testStoreMerchantCredentialsFailedDueToVaultFailure' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'              => 'MERCHANT_SUB_CORP',
+                'subcorp_user_name'       => 'MERCHANT_1234',
+                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation could not be completed. Please try again',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_ACTIVATION_FAILED,
+        ],
+    ],
+
+    'testStoreMerchantCredentialsFailedDueToFTSFailure' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/credentials',
+            'method'  => 'POST',
+            'content' => [
+                'subcorp_id'              => 'MERCHANT_SUB_CORP',
+                'subcorp_user_name'       => 'MERCHANT_1234',
+                'subcorp_user_password'   => 'MERCHANT_TEST_PASSWORD'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'banking_account',
+                'channel'       => 'rbl',
+                'status'        => 'activated',
+                'username'      => 'MERCHANT_1234',
+                'reference1'    => 'MERCHANT_SUB_CORP'
             ]
         ],
     ],
@@ -241,20 +291,20 @@ return [
             'content' => [
                 'RZPAlertNotiReq' => [
                     'Body' => [
-                        'Account No'            => '309002180853',
+                        'Account No.'           => '309002180853',
                         'Customer Name'         => 'INTERNET BANKING CA',
                         'Customer ID'           => 'Customer ID',
-                        'Account Open Date'     => '22-MAY-2019',
+                        'Account Open Date'     => '22-05-2019',
                         'RZP_Ref No'            => '15597',
                         'IFSC'                  => 'HDFC0000090',
-                        'ADDR_1'                => 'RAM NAGAR',
-                        'ADDR_2'                => 'ADARSHA LANE',
-                        'ADDR_3'                => '.',
+                        'Address1'              => 'RAM NAGAR',
+                        'Address2'              => 'ADARSHA LANE',
+                        'Address3'              => '.',
                         'CITY'                  => 'MUMBAI',
                         'STATE'                 => 'MAHARASH',
                         'COUNTRY'               => 'INDIA',
                         'PINCODE'               => '123456',
-                        'Phone no'              => '9899807189',
+                        'Phone no.'             => '9899807189',
                         'Email Id'              => 'test@gmail.com'
                     ],
                 ],
@@ -329,7 +379,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'subcorp_id'            => 'MERCHANT_SUB_CORP',
-                'subcorp_user_id'       => 'MERCHANT_1234',
+                'subcorp_user_name'     => 'MERCHANT_1234',
                 'subcorp_user_password' => 'MERCHANT_TEST_PASSWORD'
             ],
         ],
@@ -385,6 +435,72 @@ return [
                 BankingAccount\Entity::STATUS => BankingAccount\Status::PROCESSED,
             ],
         ],
+    ],
+
+    'accountBalanceSuccess' => [
+        'data' => [
+            'PayGenRes' => [
+                'Body' => [
+                    'BalAmt' => [
+                        'amountValue'  => '0',
+                        'currencyCode' => '{}'
+                    ]
+                ],
+                'Header' => [
+                    'Approver_ID' => '',
+                    'Corp_ID'     => '',
+                    'Error_Cde'   => '',
+                    'Error_Desc'  => '',
+                    'Status'      => 'SUCCESS',
+                    'TranID'      => '1234'
+                ],
+                'Signature' => [
+                    'Signature' => 'Signature'
+                ],
+            ],
+
+            'error'             => null,
+            'external_trace_id' => '',
+            'mozart_id'         => 'bk5pjbrc1osidogfb7jg',
+            'next'              => '{}',
+            'success'           => true
+        ]
+    ],
+
+    'accountBalanceFailure' => [
+        'data' => [
+            'PayGenRes' => [
+                'Body' => [
+                    'BalAmt' => [
+                        'amountValue'  => '0',
+                        'currencyCode' => '{}'
+                    ]
+                ],
+                'Header' => [
+                    'Approver_ID' => '',
+                    'Corp_ID'     => '',
+                    'Error_Cde'   => 'ER022',
+                    'Error_Desc'  => 'Request not valid for the given AccountId',
+                    'Status'      => 'FAILED',
+                    'TranID'      => '1234'
+                ],
+                'Signature' => [
+                    'Signature' => 'Signature'
+                ],
+            ],
+
+            'error'             => [
+                'description'               => 'Request not valid for the given AccountId',
+                'gateway_error_code'        => 'ER022',
+                'gateway_error_description' => 'Request not valid for the given AccountId',
+                'gateway_status_code'       => 200,
+                'internal_error_code'       => 'TXN_NOT_ALLOWED'
+            ],
+            'external_trace_id' => '',
+            'mozart_id'         => 'bk5pjbrc1osidogfb7jg',
+            'next'              => '{}',
+            'success'           => false
+        ]
     ],
 
     'testUpdateBankingAccountStatusAsProcessedFailed' => [

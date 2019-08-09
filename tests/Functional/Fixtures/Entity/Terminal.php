@@ -297,6 +297,9 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
+            'type'                  => [
+                'non_recurring' => '1'
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -832,6 +835,33 @@ class Terminal extends Base
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'     => 'secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceHdfcTerminalWithoutSecret2(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL_WITHOUT_SECRET2;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -852,6 +882,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'     => 'secret',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -896,6 +927,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
+            'gateway_secure_secret2'    => 'secret',
         ];
 
         // Add recurring 3ds terminal;
@@ -1504,6 +1536,9 @@ class Terminal extends Base
             'visa_mpan'                 => '1234560000000001',
             'rupay_mpan'                => '1234560000000002',
             'vpa'                       => 'random@razorpay',
+            'type'                      => [
+                'non_recurring' => '1',
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -2275,6 +2310,28 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedEmandateSbiTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'               => '100000Razorpay',
+            'netbanking'                => 0,
+            'emandate'                  => 1,
+            'shared'                    => 1,
+        ];
+
+        // Recurring supports both 3ds and non3ds terminal;
+        $defaultValues['id'] = 'NSbRecurringTl';
+
+        $defaultValues['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+            Type::RECURRING_3DS     => '1'
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingSbiTerminal($attributes);
+    }
+
     public function createSharedNetbankingSibTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
@@ -2284,6 +2341,24 @@ class Terminal extends Base
             'merchant_id'           => $merchantId,
             'gateway'               => Gateway::NETBANKING_SIB,
             'gateway_merchant_id'   => 'netbanking_sib_merchant_id',
+            'netbanking'            => 1,
+            'gateway_secure_secret' => 'random_secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingCbiTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_CBI_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_CBI,
+            'gateway_merchant_id'   => 'netbanking_cbi_merchant_id',
             'netbanking'            => 1,
             'gateway_secure_secret' => 'random_secret',
         ];

@@ -806,7 +806,7 @@ class Checkout
         {
             if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
             {
-                $downtimeData = (new Downtime\Service)->getDowntimeDataForMerchant();
+                $downtimeData = (new Payment\Downtime\Service)->getMethodDowntimeDataForMerchant([]);
 
                 if (empty($downtimeData) === false)
                 {

@@ -105,11 +105,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to)
+    public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
         return $this->newQuery()
                     ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
                     ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
+                    ->limit($limit)
                     ->get();
     }
 
@@ -161,10 +162,12 @@ class Repository extends Base\Repository
 
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
 
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
         return $this->newQuery()
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where($paymentStatus, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->where($terminalEmi, '=', false)
@@ -188,10 +191,12 @@ class Repository extends Base\Repository
 
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
 
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
         return $this->newQuery()
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->where($paymentStatus, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->where($terminalEmi, '=', false)
@@ -637,11 +642,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCorporatePaymentsWithStatus(
+    public function fetchCorporatePaymentsWithStatusAndRelations(
         int $from,
         int $to,
         string $gateway,
-        string $bankCode)
+        string $bankCode,
+        $relations = [])
     {
         $paymentAttrs = $this->dbColumn('*');
 
@@ -667,10 +673,11 @@ class Repository extends Base\Repository
                     ->where($pGateway, $gateway)
                     ->whereNotNull($pAuthorizedAt)
                     ->where($pBankCode, $bankCode)
+                    ->with($relations)
                     ->get();
     }
 
-    public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false)
+    public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false, $relations = [])
     {
         // SELECT `payments`.*
         // FROM `payments`
@@ -709,6 +716,7 @@ class Repository extends Base\Repository
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn($paymentStatus, $status)
                     ->where($terminalTpv, '=', $tpvEnabled)
+                    ->with($relations)
                     ->get();
     }
 

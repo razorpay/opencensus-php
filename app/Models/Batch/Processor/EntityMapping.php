@@ -5,6 +5,7 @@ namespace RZP\Models\Batch\Processor;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
+use RZP\Models\Base\EsRepository;
 
 class EntityMapping extends Base
 {
@@ -22,6 +23,23 @@ class EntityMapping extends Base
         $fromEntity = $this->repo->$fromEntityType->findOrFailPublic($entry[Header::ENTITY_FROM_ID]);
 
         $this->repo->sync($fromEntity, $toEntityType, $entry[Header::ENTITY_TO_IDS]);
+
+        // we need to sync to ES to update on ES document
+        $this->repo->$fromEntityType->syncToEs($fromEntity, EsRepository::UPDATE);
+
+        // We don't need entityType in plural after this
+        $toEntityType = $this->settingsAccessor->get(Header::ENTITY_TO_TYPE);
+
+        $toEntities = $this->repo->$toEntityType->findMany($entry[Header::ENTITY_TO_IDS]);
+
+        if (empty($toEntities) === false) 
+        {
+            foreach ($toEntities as $toEntity) 
+            {
+                $this->repo->$toEntityType->syncToEs($toEntity, EsRepository::UPDATE);
+            }
+
+        }
 
         $entry[Header::ENTITY_TO_IDS] = implode(',', $entry[Header::ENTITY_TO_IDS]);
 

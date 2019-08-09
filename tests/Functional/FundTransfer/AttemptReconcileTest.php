@@ -3,8 +3,9 @@
 namespace RZP\Tests\Functional\FundTransfer;
 
 use Mail;
-use Carbon\Carbon;
+use Redis;
 
+use Carbon\Carbon;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
@@ -341,6 +342,46 @@ class AttemptReconcileTest extends TestCase
         $this->verifySettlementReconFileProcessForAxis2();
 
         $this->reconcileEntitiesForChannel(Channel::AXIS2);
+    }
+
+    public function testFundTransferInitiateEnableForAxis()
+    {
+        $this->createDataForChannel(Channel::AXIS, Attempt\Type::SETTLEMENT, 1, Attempt\Type::SETTLEMENT);
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll'])
+            ->getMock();
+
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
+
+        $redisMock->method('hGetAll')
+            ->will($this->returnValue(['axis' => 'enable']));
+
+        $content = $this->initiateTransfer(Channel::AXIS, Attempt\Type::SETTLEMENT);
+
+        $this->assertEquals(Channel::AXIS,$content[Channel::AXIS]['channel']);
+
+        return $content;
+    }
+
+    public function testFundTransferInitiateDisableForAxis()
+    {
+        $this->createDataForChannel(Channel::AXIS, Attempt\Type::SETTLEMENT, 1, Attempt\Type::SETTLEMENT);
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['hGetAll'])
+            ->getMock();
+
+        Redis::shouldReceive('connection')
+            ->andReturn($redisMock);
+
+        $redisMock->method('hGetAll')
+            ->will($this->returnValue(['axis' => 'disable']));
+
+        $content = $this->initiateTransfer(Channel::AXIS, Attempt\Type::SETTLEMENT);
+
+        $this->assertEquals('failed',$content['status']);
+
+        return $content;
     }
 
     public function testSettlementReconcileEntitiesSuccessForRbl()

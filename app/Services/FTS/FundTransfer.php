@@ -2,9 +2,13 @@
 
 namespace RZP\Services\FTS;
 
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
@@ -159,12 +163,9 @@ class FundTransfer extends Base
      */
     protected function addTransferBlock(array $request): array
     {
-        $mode = $this->fta->getMode();
+        $mode = $this->getFTSFundTransferMode();
 
-        if(empty($mode) === true)
-        {
-            $mode = Constants::MODE_IMPS;
-        }
+        $channel = $this->fta->getChannel();
 
         $request[Constants::TRANSFER] = [
             Constants::PREFERRED_MODE    => $mode,
@@ -173,8 +174,20 @@ class FundTransfer extends Base
             Constants::SOURCE_ID         => $this->fta->getSourceId(),
             Constants::SOURCE_TYPE       => $this->fta->getSourceType(),
             Constants::INITIATE_AT       => $this->fta->getInitiateAt(),
-            Constants::PREFERRED_CHANNEL => $this->fta->getChannel(),
+            Constants::PREFERRED_CHANNEL => $channel,
         ];
+
+        if (in_array($channel, Channel::getFtsSupportedPayoutChannels(), true) === true)
+        {
+            $source = $this->fta->source;
+
+            if (method_exists($source, 'getSourceFtsFundAccountId'))
+            {
+                $request[Constants::TRANSFER] += [
+                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => $this->fta->source->getSourceFtsFundAccountId(),
+                ];
+            }
+        }
 
         return $request;
     }
@@ -345,5 +358,67 @@ class FundTransfer extends Base
         }
 
         return $token;
+    }
+
+    /**
+     * This is a unified method for
+     * determining fund transfer mode for
+     * all FTS supported channels
+     *
+     * @return mixed|string
+     */
+    protected function getFTSFundTransferMode()
+    {
+        $channel = $this->fta->getChannel();
+
+        $amount  = $this->source->getAmount();
+
+        if ($this->fta->hasMode() === true)
+        {
+            return $this->fta->getMode();
+        }
+
+        if ($channel === Channel::ICICI)
+        {
+            return Mode::IMPS;
+        }
+
+        $ba = $this->fta->bankAccount;
+
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        $channelClass = '\RZP\\Models\\FundTransfer\\' . studly_case($channel) . '\\NodalAccount';
+
+        if (starts_with($ifscFirstFour, $channelClass::IFSC_IDENTIFIER) === true)
+        {
+            return Mode::IFT;
+        }
+
+        if ($amount < $channelClass::MAX_IMPS_AMOUNT)
+        {
+            return Mode::IMPS;
+        }
+
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $bankingStartTimeRtgs = Carbon::createFromTime($channelClass::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+                                      ->getTimestamp();
+
+        $bankingEndTimeRtgs = Carbon::createFromTime(
+                                        $channelClass::RTGS_REVISED_CUTOFF_HOUR_MAX,
+                                        $channelClass::RTGS_REVISED_CUTOFF_MINUTE_MAX,
+                                        0,
+                                        Timezone::IST)
+                                        ->getTimestamp();
+
+        if ((($now >= $bankingStartTimeRtgs) and ($now <= $bankingEndTimeRtgs)) and
+            ($amount >= $channelClass::MIN_RTGS_AMOUNT))
+        {
+            return Mode::RTGS;
+        }
+
+        return Mode::NEFT;
     }
 }

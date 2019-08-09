@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         RequestFields::ACCOUNT_NUMBER                 => 'required',
         RequestFields::MODE                           => 'required|in:P',
         RequestFields::DESCRIPTION                    => 'required|string',
-        RequestFields::CHECKSUM                       => 'required|numeric',
+        RequestFields::CHECKSUM                       => 'required',
     ];
 
     protected static $verifyRules = [
@@ -25,6 +25,6 @@ class Validator extends Base\Validator
         RequestFields::MODE                           => 'required|in:V',
         RequestFields::DESCRIPTION                    => 'sometimes|string',
         RequestFields::VERIFY_BANK_PAYMENT_ID         => 'sometimes',
-        RequestFields::CHECKSUM                       => 'required|numeric',
+        RequestFields::CHECKSUM                       => 'required',
     ];
 }

@@ -1009,10 +1009,41 @@ class Base extends BaseModel\Core
             }
         }
 
+        if ($this->batch->getType() === Batch\Type::TERMINAL_CREATION)
+        {
+            $entries = $this->cleanTypeEntries($entries);
+        }
+
         $stats        = ['total_entries' => $totalEntries, 'total_cleaned_entries' => $totalEntries - count($entries)];
         $tracePayload = $this->batch->toArrayTrace([], $stats);
 
         $this->trace->debug(TraceCode::BATCH_PROCESS_ENTRIES_CLEANED, $tracePayload);
+
+        return $entries;
+    }
+
+    protected function cleanTypeEntries(array $entries): array
+    {
+        // Type: Function to handle 'Type' for Generic Batch Terminal Creation. Similar to Notes.
+        foreach ($entries as & $entry)
+        {
+            $index = 0;
+
+            foreach ($entry as $key => $value)
+            {
+                // Excel: Empty trailing columns comes as sequentially indexed key and null values
+                if ((($key === $index++) or ($key === '')) and ($value === null))
+                {
+                    unset($entry[$key]);
+                }
+                // If key is of type pattern pushes the key value pair in a entry's type & unset current key
+                else if (preg_match(Batch\Header::TERMINAL_CREATION_TYPE_REGEX, $key, $matches) === 1)
+                {
+                    unset($entry[$key]);
+                    $entry[Batch\Header::TERMINAL_CREATION_TYPE][$matches[1]] = $value;
+                }
+            }
+        }
 
         return $entries;
     }
@@ -1296,7 +1327,8 @@ class Base extends BaseModel\Core
             {
                 $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE]        = ErrorCode::BAD_REQUEST_ERROR;
-                $entry[Batch\Header::ERROR_DESCRIPTION] = 'Something went wrong, Request you to please contact Razorpay for assistance.';
+                $entry[Batch\Header::ERROR_DESCRIPTION] =
+                    'Something went wrong, Request you to please contact Razorpay for assistance.';
             }
         }
 

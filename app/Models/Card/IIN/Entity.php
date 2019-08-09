@@ -109,6 +109,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
+        self::IIN         => 'string',
         self::ENABLED     => 'bool',
         self::LOCKED      => 'bool',
         self::RECURRING   => 'bool',

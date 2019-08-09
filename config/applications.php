@@ -260,6 +260,10 @@ return [
         'secret'   => env('RAZORX_SECRET'),
     ],
 
+    'user_2fa' => [
+        'max_incorrect_tries' => env('USER_2FA_MAX_INCORRECT_TRIES', 9),
+    ],
+
     'kubernetes_client' => [
         'mock'              => env('KUBERNETES_MOCK', false),
         'cluster_url'       => 'https://'.env('KUBERNETES_SERVICE_HOST').':'.env('KUBERNETES_PORT_443_TCP_PORT'),

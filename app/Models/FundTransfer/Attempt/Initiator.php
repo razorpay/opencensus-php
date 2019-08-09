@@ -3,12 +3,14 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
-
 use Monolog\Logger;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\FundTransfer;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
@@ -137,14 +139,27 @@ class Initiator extends Base\Core
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_ENTITIES_FETCHED);
 
-            $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
+            $data[$channel] = [];
+
+            // Since yesbank fund transfer with purpose settlement need Beneficiary
+            // Registration and verification, they will go via queue.
+            if (($channel === Channel::YESBANK) and ($purpose == Type::SETTLEMENT))
+            {
+                $response = $this->dispatchTransfers($channel, $attempts);
+            }
+            else
+            {
+                $response = $this->processFundTransferAttempts($channel, $attempts);
+            }
+
+            $data[$channel]  = $response;
 
             return $data;
         });
     }
 
     public function processFundTransferAttempts(
-        string $purpose, string $channel, Base\PublicCollection $attempts): array
+        string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
 
@@ -158,6 +173,8 @@ class Initiator extends Base\Core
 
             return $data;
         }
+
+        $purpose = $attempts->first()->getPurpose();
 
         list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
             $attempts,
@@ -182,7 +199,11 @@ class Initiator extends Base\Core
 
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        (new SlackNotification)->send('setl_initiate', $slackData);
+        //reducing slack alerts for API based channels
+        if (in_array($channel, $allowedChannels, true) === false)
+        {
+            (new SlackNotification)->send('setl_initiate', $slackData);
+        }
 
         return $data;
     }
@@ -401,7 +422,7 @@ class Initiator extends Base\Core
 
         $attempts = (new PublicCollection)->push($fta);
 
-        $response = $this->processFundTransferAttempts($fta->getPurpose(), $channel, $attempts);
+        $response = $this->processFundTransferAttempts($channel, $attempts);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }
@@ -451,5 +472,64 @@ class Initiator extends Base\Core
         }
 
         return [true, null];
+    }
+
+    /**
+     * Takes a list of attempt ids and dispatches to the queue
+     * @param string $channel
+     * @param PublicCollection $attempts
+     * @return array
+     */
+    protected function dispatchTransfers(string $channel, Base\PublicCollection $attempts): array
+    {
+        $attemptIds = $attempts->pluck(Entity::ID);
+
+        $info = [
+            'channel' => $channel,
+            'count' => $attempts->count()
+        ];
+
+        $successCount = 0;
+
+        $failureCount = 0;
+
+        foreach ($attemptIds as $id)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT,
+                    [
+                        'fta_id'  => $id,
+                        'data'    => $info
+                    ]);
+
+                FundTransfer::dispatch($this->mode, $id);
+
+                $successCount ++;
+
+                $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_DISPATCHED,
+                    [
+                        'fta_id'  => $id,
+                        'data'    => $info
+                    ]);
+            }
+            catch (\Exception $exception)
+            {
+                $failureCount++;
+
+                $this->trace->traceException(
+                    $exception,
+                    Trace::CRITICAL,
+                    TraceCode::FTA_TRANSFER_DISPATCH_FAILED
+                );
+            }
+        }
+
+        $info += [
+            "success" => $successCount,
+            "failed"  => $failureCount,
+        ];
+
+        return $info;
     }
 }

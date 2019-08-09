@@ -90,7 +90,7 @@ class Status
     {
         $nextStatusList = self::$fromToStatusMap[$previousStatus];
 
-        if (in_array($currentStatus, $nextStatusList, true) !== true)
+        if (in_array($currentStatus, $nextStatusList, true) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Status change not permitted',

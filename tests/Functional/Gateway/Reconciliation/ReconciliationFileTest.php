@@ -1546,6 +1546,60 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testHitachiUnexpectedPaymentCreateViaRecon()
+    {
+        // Using Live because by default mode is live (when gateway != sharp
+        // Refer :  function determineAndSetModeForQr()
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $reconRow = $this->testData['facades']['hitachi_unexpected_payment_create'];
+
+        $this->fixtures->on('live')->create('terminal', [
+            'gateway_merchant_id'   => $reconRow['merchant_id'],
+            'gateway'               => 'hitachi',
+        ]);
+
+        $this->fixtures->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'activated'         => 1,
+                'live'              => 1,
+                'pricing_plan_id'   => '1hDYlICobzOCYt'
+            ]);
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals($payment['id'], $bharatQr['payment_id']);
+
+        $this->assertEquals($reconRow['retr_ref_nr'], $bharatQr['provider_reference_id']);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $payment['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $payment['reference2']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction', 'live');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertTrue($payment['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testHitachiForceAuthorizeFailedPayment()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');

@@ -90,6 +90,65 @@ class NetbankingFederalCombinedFileTest extends TestCase
         });
     }
 
+
+    public function testGenerateFederalRefundFile() {
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('FDRL');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $date = Carbon::now(Timezone::IST)->format('d_m_Y');
+
+        $expectedFilesContent = [
+            'type' => 'federal_netbanking_refund',
+            'location' => 'FBK_REFUND_' . $date . '.txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $file);
+
+        Mail::assertQueued(DailyFileMail::class, function ($mail)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Federal Netbanking claims and refund files for '. $date,
+                'amount' => [
+                    'claims'  => 500,
+                    'refunds' => 500,
+                    'total'   => 0,
+                ],
+                'count'   => [
+                    'claims'  => 1,
+                    'refunds' => 1,
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->checkRefundsFile($mail->viewData['refundsFile']);
+
+            $this->assertCount(1, $mail->attachments);
+
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
+            return true;
+        });
+    }
+
     protected function checkRefundsFile(array $refundsFileData)
     {
         $this->assertFileExists($refundsFileData['url']);

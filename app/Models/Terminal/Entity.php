@@ -19,6 +19,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class Entity extends Base\PublicEntity
 {
@@ -27,6 +28,8 @@ class Entity extends Base\PublicEntity
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
+    const ORG_ID                        = 'org_id';
+    const PROCURER                      = 'procurer';
     const USED_COUNT                    = 'used_count';
     const USED                          = 'used';
     const CATEGORY                      = 'category';
@@ -52,6 +55,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
     const UPI                           = 'upi';
+    const OMNICHANNEL                   = 'omnichannel';
     const BANK_TRANSFER                 = 'bank_transfer';
     const AEPS                          = 'aeps';
     const EMANDATE                      = 'emandate';
@@ -70,6 +74,8 @@ class Entity extends Base\PublicEntity
     const TYPE                          = 'type';
     const MODE                          = 'mode';
     const DIRECT                        = 'direct';
+    const STATUS                        = 'status';
+    const NOTES                         = 'notes';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -119,11 +125,13 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::GATEWAY,
+        self::PROCURER,
         self::CARD,
         self::CATEGORY,
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
+        self::OMNICHANNEL,
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
@@ -135,6 +143,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CAPABILITY,
         self::MODE,
+        self::STATUS,
+        self::NOTES,
         self::CORPORATE,
         self::EXPECTED,
         self::CURRENCY,
@@ -165,12 +175,15 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::MERCHANT_ID,
+        self::ORG_ID,
+        self::PROCURER,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
+        self::OMNICHANNEL,
         self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
@@ -191,6 +204,8 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT,
         self::TYPE,
         self::MODE,
+        self::STATUS,
+        self::NOTES,
         self::CORPORATE,
         self::CAPABILITY,
         self::EXPECTED,
@@ -232,6 +247,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::PROCURER                   => 'razorpay',
         self::CATEGORY                   => null,
         self::NETWORK_CATEGORY           => null,
         self::GATEWAY_MERCHANT_ID        => null,
@@ -261,6 +277,10 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION             => null,
         self::CARDLESS_EMI               => 0,
         self::PAYLATER                   => 0,
+        self::STATUS                     => Status::ACTIVATED,
+        self::NOTES                      => null,
+        self::OMNICHANNEL                => 0,
+        self::VPA                        => null,
     ];
 
     protected $casts = [
@@ -269,6 +289,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING                => 'boolean',
         self::INTERNATIONAL             => 'boolean',
         self::UPI                       => 'boolean',
+        self::OMNICHANNEL               => 'boolean',
         self::BANK_TRANSFER             => 'boolean',
         self::AEPS                      => 'boolean',
         self::EMANDATE                  => 'boolean',
@@ -308,6 +329,11 @@ class Entity extends Base\PublicEntity
 
     // ---------------------- GETTERS ----------------------
 
+    public function getOrgId() : string
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
+
     public function getGatewayMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
@@ -338,6 +364,11 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getProcurer()
+    {
+        return $this->getAttribute(self::PROCURER);
     }
 
     public function getGatewayAcquirer()
@@ -373,6 +404,16 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
     }
 
     public function getEmiDuration()
@@ -450,6 +491,11 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function isOmnichannelEnabled()
+    {
+        return $this->getAttribute(self::OMNICHANNEL);
     }
 
     public function isBankTransferEnabled()
@@ -559,12 +605,17 @@ class Entity extends Base\PublicEntity
 
     public function setEnabledBanks(array $banksToEnable)
     {
-        $this->setAttribute(self::ENABLED_BANKS, array_values($banksToEnable));
+        $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
     }
 
     public function setCapability($capability)
     {
         $this->setAttribute(self::CAPABILITY, $capability);
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -789,6 +840,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VPA);
     }
 
+    // returns vpa for terminal by first checking vpa attribute and if not present then returns gatewayMerchantId2 value
+    // for some gateways like upi_mindgate vpa is stored in gatewayMerchantId2, and not in vpa
+    public function getVpaForTerminal()
+    {
+        if (($this->isUpiEnabled() === false) and ($this->isOmnichannelEnabled() === false))
+        {
+            return null;
+        }
+
+        return $this->getVpa() ?: $this->getGatewayMerchantId2();
+    }
+
     protected function modifyInternational(& $input)
     {
         if (isset($input[self::INTERNATIONAL]) === false)
@@ -928,7 +991,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $corporate = $input[self::CORPORATE] ?? BankingType::RETAIL_ONLY;
+        $corporate = $input[self::CORPORATE] ?? BankingTsetEnabledBanksype::RETAIL_ONLY;
 
         $tpv = $input[self::TPV] ?? TpvType::NON_TPV_ONLY;
 
@@ -937,6 +1000,8 @@ class Entity extends Base\PublicEntity
         $disabledBanks = Netbanking::getDefaultDisabledBanksForGateway($gateway, $corporate, $tpv);
 
         $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+        $enabledBanks = array_values($enabledBanks);
 
         $this->setAttribute(self::ENABLED_BANKS, $enabledBanks);
     }
@@ -968,6 +1033,12 @@ class Entity extends Base\PublicEntity
     public function merchants()
     {
         return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
+    }
+
+    public function org()
+    {
+        return $this->belongsTo(
+            'RZP\Models\Admin\Org\Entity');
     }
 
     public function toArrayWithPassword()

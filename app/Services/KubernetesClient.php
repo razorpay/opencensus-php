@@ -2,11 +2,12 @@
 
 namespace RZP\Services;
 
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use Maclof\Kubernetes\Client;
 use Maclof\Kubernetes\Models\Job;
 use RZP\Models\Batch as BatchModel;
 use RZP\Services\Batch as BatchService;
-use RZP\Trace\TraceCode;
 
 class KubernetesClient
 {
@@ -36,6 +37,16 @@ class KubernetesClient
      * @var Trace
      */
     protected $trace;
+
+    protected $razorx;
+
+    protected $merchant;
+
+    const NODE_SELECTOR_HITACHI = 'node-role.kubernetes.io/worker-hitachi-queue';
+
+    protected $batchNodePreference = [
+        BatchModel\Type::RECURRING_CHARGE => self::NODE_SELECTOR_HITACHI,
+    ];
 
     public function __construct($app)
     {
@@ -80,7 +91,7 @@ class KubernetesClient
 
     }
 
-    public function createJob(string $mode, string $batchId, array $params)
+    public function createJob(string $mode, string $batchId, array $params, string $batchType = null)
     {
         try
         {
@@ -94,8 +105,14 @@ class KubernetesClient
                 return;
             }
 
+            // Selecting node selector
+
+            if (($batchType !== null) and (array_key_exists($batchType, $this->batchNodePreference) === true))
+            {
+                $this->nodeSelector = $this->batchNodePreference[$batchType];
+            }
             // Create Job Spec
-            $jobSpec = $this->generateJobSpec($mode, $batchId, $params);
+            $jobSpec = $this->generateJobSpec($mode, $batchId, $params, $batchType);
 
             $job = new Job($jobSpec);
 
@@ -153,10 +170,13 @@ class KubernetesClient
 
     }
 
-    private function generateJobSpec(string $mode, string $batchId, array $params)
+    private function generateJobSpec(string $mode, string $batchId, array $params, string $batchType = null)
     {
-        $metaName = strtolower('batch-'.$batchId);
+        $metaName = strtolower('batch-' . $batchId);
+
         $dockerImage = $this->getDockerImage();
+
+        $this->nodeSelector = $params['node_selector'] ?? $this->nodeSelector;
 
         $jobSpec = [
             'metadata' => [
@@ -174,7 +194,8 @@ class KubernetesClient
                         'annotations' => [
                             'iam.amazonaws.com/role' => $this->iamRole,
                             'k8s.rzp.io/logger' => 'efk',
-                            'k8s.rzp.io/logs' => 'true'
+                            'k8s.rzp.io/logs' => 'true',
+                            'batch_job_type' => $batchType ?? '',
                         ]
                     ],
                     'spec' => [

@@ -4941,10 +4941,6 @@ ALTER TABLE refunds
 ALTER TABLE merchant_banks
     ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi;
 
-ALTER TABLE terminals
-    ADD COLUMN paylater TINYINT(1) NOT NULL DEFAULT 0 AFTER cardless_emi,
-    ADD INDEX `terminals_paylater_index` (paylater);
-
 ALTER TABLE fund_account_validations
     ADD COLUMN attempts TINYINT(1) DEFAULT 1 after batch_fund_transfer_id,
     ADD COLUMN retry_at INTEGER UNSIGNED DEFAULT NULL after batch_fund_transfer_id,
@@ -5026,6 +5022,13 @@ ALTER TABLE `reversals`
     ADD COLUMN `fee` INT(10) UNSIGNED DEFAULT 0 AFTER `amount`,
     ADD COLUMN `tax` INT(10) UNSIGNED DEFAULT 0 AFTER `fee`;
 
+-- OmniChannel
+
+ALTER TABLE terminals
+    ADD COLUMN omnichannel TINYINT(1) DEFAULT 0 AFTER upi;
+
+-- OmniChannel
+
 ALTER TABLE virtual_accounts
     ADD COLUMN close_by INT DEFAULT NULL AFTER balance_id,
     ADD COLUMN closed_at INT DEFAULT NULL AFTER close_by,
@@ -5037,6 +5040,15 @@ ALTER TABLE `merchant_banks`
 ALTER TABLE `roles`
     ADD COLUMN `product` VARCHAR(255) NOT NULL DEFAULT 'primary' AFTER `description`,
     ADD INDEX `roles_product_index` (`product`);
+
+ALTER TABLE `merchants`
+    ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `email`,
+    ADD COLUMN `restricted` BOOLEAN DEFAULT 0 NOT NULL AFTER `second_factor_auth`;
+
+ALTER TABLE `users`
+    ADD COLUMN `second_factor_auth` BOOLEAN DEFAULT 0 NOT NULL AFTER `contact_mobile`,
+    ADD COLUMN `wrong_2fa_attempts` INT(2) DEFAULT 0 NOT NULL AFTER `second_factor_auth`,
+    ADD COLUMN `account_locked` BOOLEAN DEFAULT 0 NOT NULL AFTER `wrong_2fa_attempts`;
 
 ALTER TABLE `banking_account_statement`
   ADD UNIQUE INDEX `banking_account_statement_bank_transaction_id_unique` (`bank_transaction_id`, `account_number`, `transaction_date`, `channel`);
@@ -5145,8 +5157,47 @@ ALTER TABLE gateway_rules
     ADD COLUMN category VARCHAR(255) DEFAULT NULL AFTER emi_subvention,
     ADD INDEX gateway_rules_category_index (category);
 
-ALTER TABLE banking_accounts
-    ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
+ALTER table `gateway_rules`
+    ADD COLUMN org_id VARCHAR(14) NOT NULL DEFAULT '100000razorpay' AFTER `merchant_id`,
+    MODIFY COLUMN merchant_id varchar(14) DEFAULT NULL,
+    ADD INDEX gateway_rules_org_id_merchant_id_index (`org_id`, `merchant_id`);
     
+ALTER TABLE banking_accounts
+    CHANGE COLUMN reference_1 reference1 varchar(255) DEFAULT NULL,
+    ADD COLUMN beneficiary_pin VARCHAR(255) DEFAULT NULL AFTER status;
+
 ALTER TABLE `transactions`
     MODIFY COLUMN `fee_credits` BIGINT NOT NULL DEFAULT 0;
+
+ALTER TABLE subscription_registrations
+    ADD COLUMN status varchar(16) COLLATE utf8_bin DEFAULT NULL AFTER entity_id,
+    ADD COLUMN amount bigint(20) unsigned DEFAULT 0 AFTER failure_reason,
+    ADD COLUMN attempts int(11) NOT NULL DEFAULT '0' AFTER amount,
+    ADD COLUMN currency char(3) DEFAULT 'INR' AFTER attempts,
+    ADD INDEX subscription_registrations_status_attempts_index (status, attempts);
+
+ALTER TABLE terminals
+    ADD COLUMN procurer VARCHAR(255) DEFAULT 'razorpay' AFTER merchant_id;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER merchant_id;
+
+ALTER TABLE pricing
+    ADD COLUMN procurer VARCHAR(255) DEFAULT NULL AFTER gateway,
+    ADD INDEX pricing_procurer_index (procurer);
+
+ALTER TABLE partner_configs
+    ADD COLUMN settle_to_partner TINYINT(1) NOT NULL DEFAULT 0 AFTER commission_model;
+
+ALTER TABLE iins
+    MODIFY COLUMN iin CHAR(6) COLLATE utf8_bin;
+
+ALTER TABLE `reversals`
+    MODIFY COLUMN `transaction_id` CHAR(14) DEFAULT NULL;
+
+ALTER table terminals
+    ADD COLUMN `org_id` VARCHAR(14) NULL AFTER `merchant_id`,
+    ADD COLUMN `status` VARCHAR(255) NULL DEFAULT "activated" AFTER `enabled`,
+    ADD COLUMN `notes` TEXT DEFAULT NULL AFTER `ifsc_code`,
+    ADD INDEX terminals_org_id_index (`org_id`),
+    ADD INDEX terminals_status_index (`status`);

@@ -14,8 +14,9 @@ final class Metric
 
     // ------------------------- dimensions ------------------------- //
 
-    const CONNECTION = 'connection';
-    const LAG        = 'lag';
+    const CONNECTION         = 'connection';
+    const LAG                = 'lag';
+    const DATABASE_RECONNECT = 'database_reconnect';
 
     // ------------------------- values ------------------------- //
     const MASTER                           = 'master';

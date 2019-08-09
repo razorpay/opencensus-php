@@ -60,7 +60,7 @@ class Constants
     const INTERVAL           = 'interval';
     const FUND_ACCOUNTS      = 'fund_accounts';
     const CONTACT_ID         = 'contact_id';
-    const BANK_ACCOUNTS      = 'bank_accounts';
+    const BANK_ACCOUNT       = 'bank_account';
     const ACCOUNT_NUMBER     = 'account_number';
     const IFSC               = 'ifsc';
     const TNC                = 'tnc';
@@ -74,6 +74,10 @@ class Constants
     const ACCOUNT            = 'account';
     const OPERATION          = 'operation';
     const REGISTERED         = 'registered';
+
+    const IDENTIFICATION        = 'identification';
+    const DOCUMENT              = 'document';
+    const IDENTIFICATION_NUMBER = 'identification_number';
 
     // defaults
     const DEFAULT_ACCOUNT_COUNT = 20;

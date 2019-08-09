@@ -33,6 +33,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CANARA,
         RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::NETBANKING_SIB,
+        RequestProcessor\Base::NETBANKING_CBI,
         RequestProcessor\Base::NETBANKING_YESB,
         RequestProcessor\Base::NETBANKING_CUB,
         RequestProcessor\Base::JIOMONEY,
@@ -932,6 +933,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $cardDetails = $rowDetails[BaseReconciliate::CARD_DETAILS];
 
         $this->paymentIin = $this->payment->card->iinRelation;
+        $gatewayFee = $rowDetails[BaseReconciliate::GATEWAY_FEE];
+        $gatewayServiceTax = $rowDetails[BaseReconciliate::GATEWAY_SERVICE_TAX];
 
         if ($this->paymentIin === null)
         {
@@ -949,22 +952,22 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if (empty($cardDetails[BaseReconciliate::CARD_TYPE]) === false)
         {
-            $this->persistCardType($cardDetails[BaseReconciliate::CARD_TYPE]);
+            $this->traceCardType($cardDetails[BaseReconciliate::CARD_TYPE], $gatewayFee, $gatewayServiceTax);
         }
 
         if (empty($cardDetails[BaseReconciliate::CARD_LOCALE]) === false)
         {
-            $this->persistCardLocale($cardDetails[BaseReconciliate::CARD_LOCALE]);
+            $this->traceCardLocale($cardDetails[BaseReconciliate::CARD_LOCALE], $gatewayFee, $gatewayServiceTax);
         }
 
         if (empty($cardDetails[BaseReconciliate::CARD_TRIVIA]) === false)
         {
-            $this->persistCardTrivia($cardDetails[BaseReconciliate::CARD_TRIVIA]);
+            $this->traceCardTrivia($cardDetails[BaseReconciliate::CARD_TRIVIA], $gatewayFee, $gatewayServiceTax);
         }
 
         if (empty($cardDetails[BaseReconciliate::ISSUER]) === false)
         {
-            $this->persistIssuer($cardDetails[BaseReconciliate::ISSUER]);
+            $this->traceIssuer($cardDetails[BaseReconciliate::ISSUER], $gatewayFee, $gatewayServiceTax);
         }
 
         $this->repo->saveOrFail($this->paymentIin);
@@ -1235,50 +1238,48 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $gatewayPayment->setCreditAccountNumber($accountNumber);
     }
 
-    protected function persistIssuer($reconIssuer)
+    protected function traceIssuer($reconIssuer, $gatewayFee, $gatewayServiceTax)
     {
         $iinIssuer = $this->paymentIin->getIssuer();
 
         if (empty($iinIssuer) === true)
         {
-            $this->paymentIin->setIssuer($reconIssuer);
-        }
-        else
-        {
             $this->trace->info(
                 TraceCode::RECON_INFO,
                 [
-                    'info_code'    => 'IIN_ISSUER_ALREADY_PRESENT',
-                    'message'      => 'IIN already contains issuer. Not updating it.',
-                    'payment_id'   => $this->payment->getId(),
-                    'iin_id'       => $this->paymentIin->getKey(),
-                    'recon_issuer' => $reconIssuer,
-                    'iin_issuer'   => $iinIssuer,
-                    'gateway'      => $this->gateway
+                    'info_code'           => Base\InfoCode::IIN_ISSUER_ABSENT,
+                    'message'             => 'IIN does not contain issuer.',
+                    'payment_id'          => $this->payment->getId(),
+                    'iin_id'              => $this->paymentIin->getKey(),
+                    'recon_issuer'        => $reconIssuer,
+                    'iin_issuer'          => $iinIssuer,
+                    'amount'              => $this->payment->getAmount(),
+                    'gateway_fee'         => $gatewayFee,
+                    'gateway_service_tax' => $gatewayServiceTax,
+                    'gateway'             => $this->gateway
                 ]);
         }
     }
 
-    protected function persistCardTrivia($reconCardTrivia)
+    protected function traceCardTrivia($reconCardTrivia, $gatewayFee, $gatewayServiceTax)
     {
         $iinTrivia = $this->paymentIin->getTrivia();
 
         if (empty($iinTrivia) === true)
         {
-            $this->paymentIin->setTrivia($reconCardTrivia);
-        }
-        else
-        {
             $this->trace->info(
                 TraceCode::RECON_INFO,
                 [
-                    'info_code'         => 'IIN_TRIVIA_ALREADY_PRESENT',
-                    'message'           => 'IIN already contains trivia. Not updating it.',
-                    'payment_id'        => $this->payment->getId(),
-                    'iin_id'            => $this->paymentIin->getKey(),
-                    'recon_card_trivia' => $reconCardTrivia,
-                    'iin_card_trivia'   => $iinTrivia,
-                    'gateway'           => $this->gateway
+                    'info_code'           => Base\InfoCode::IIN_TRIVIA_ABSENT,
+                    'message'             => 'IIN does not contain trivia.',
+                    'payment_id'          => $this->payment->getId(),
+                    'iin_id'              => $this->paymentIin->getKey(),
+                    'recon_card_trivia'   => $reconCardTrivia,
+                    'iin_card_trivia'     => $iinTrivia,
+                    'amount'              => $this->payment->getAmount(),
+                    'gateway_fee'         => $gatewayFee,
+                    'gateway_service_tax' => $gatewayServiceTax,
+                    'gateway'             => $this->gateway
                 ]);
         }
     }
@@ -1290,31 +1291,28 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * @param String $reconCardType
      * @throws ReconciliationException
      */
-    protected function persistCardType($reconCardType)
+    protected function traceCardType($reconCardType, $gatewayFee, $gatewayServiceTax)
     {
         // Assumption: This function will not be called if IIN is missing.
         // If IIN is missing, it will be created and this function will not be called.
 
         $iinCardType = $this->paymentIin->getType();
-
-        if ((empty($iinCardType) === true) or ($iinCardType === Card\Type::UNKNOWN))
-        {
-            $this->paymentIin->setType($reconCardType);
-        }
-        else if ($iinCardType !== $reconCardType)
+        if ($iinCardType !== $reconCardType)
         {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'message'         => 'Card types in recon file and db do not match. Updating.',
-                    'info_code'       => 'CARD_TYPE_MISMATCH',
-                    'recon_card_type' => $reconCardType,
-                    'iin_card_type'   => $iinCardType,
-                    'payment_id'      => $this->payment->getId(),
-                    'gateway'         => $this->gateway
+                    'message'             => 'Card types in recon file and db do not match.',
+                    'info_code'           => Base\InfoCode::CARD_TYPE_MISMATCH,
+                    'recon_card_type'     => $reconCardType,
+                    'iin_card_type'       => $iinCardType,
+                    'payment_id'          => $this->payment->getId(),
+                    'iin_id'              => $this->paymentIin->getKey(),
+                    'amount'              => $this->payment->getAmount(),
+                    'gateway_fee'         => $gatewayFee,
+                    'gateway_service_tax' => $gatewayServiceTax,
+                    'gateway'             => $this->gateway
                 ]);
-
-            $this->paymentIin->setType($reconCardType);
         }
     }
 
@@ -1382,7 +1380,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->repo->saveOrFail($iin);
     }
 
-    protected function persistCardLocale($reconCardLocale)
+    protected function traceCardLocale($reconCardLocale, $gatewayFee, $gatewayServiceTax)
     {
         $shouldPersistCardLocale = $this->shouldPersistCardLocale();
 
@@ -1394,12 +1392,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
         if ($reconCardLocale === BaseReconciliate::INTERNATIONAL)
         {
-            $countryCode = null;
             $reconInternational = true;
         }
         else
         {
-            $countryCode = 'IN';
             $reconInternational = false;
         }
 
@@ -1409,25 +1405,15 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             ($currentInternational === false) and
             ($reconInternational === true))
         {
-            $this->paymentIin->setCountry($countryCode);
-
-            // Make sure that international returns true in this case, after the country code is set.
-            assertTrue($this->paymentIin->isInternational());
-
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'info_code'  => 'IIN_INTERNATIONAL_SET',
-                    'message'    => 'Setting an IIN to international.',
-                    'iin_id'     => $this->paymentIin->getKey(),
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $this->payment->getId(),
-                ]
-            );
+            $this->traceCardLocaleMismatch('DB says domestic but recon says international',
+                $gatewayFee,
+                $gatewayServiceTax);
         }
         else if (($currentInternational === true) and ($reconInternational === false))
         {
-            $this->tracePaymentIinMismatchAndNotify(!$shouldPersistCardLocale);
+            $this->traceCardLocaleMismatch('DB says international but recon says domestic',
+                $gatewayFee,
+                $gatewayServiceTax);
         }
     }
 
@@ -2246,22 +2232,20 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
      * Traces and sends slack alert if mismatch in payment IIN found.
      * Will not send slack alert if we are not saving IIN metadata in recon
      */
-    protected function tracePaymentIinMismatchAndNotify($shouldSkipSlack = false)
+    protected function traceCardLocaleMismatch($message, $gatewayFee, $gatewayServiceTax)
     {
-        $this->messenger->setSkipSlack($shouldSkipSlack);
-
-        $this->messenger->raiseReconAlert(
+        $this->trace->info(
+            TraceCode::RECON_MISMATCH,
             [
-                'trace_code'    => TraceCode::RECON_MISMATCH,
-                'message'       => 'DB says international but recon says domestic',
-                'payment_id'    => $this->payment->getId(),
-                'amount'        => $this->payment->getAmount(),
-                'iin_id'        => $this->paymentIin->getKey(),
-                'gateway'       => $this->gateway
+                'info_code'           => Base\InfoCode::CARD_LOCALE_MISMATCH,
+                'message'             => $message,
+                'payment_id'          => $this->payment->getId(),
+                'iin_id'              => $this->paymentIin->getKey(),
+                'amount'              => $this->payment->getAmount(),
+                'gateway_fee'         => $gatewayFee,
+                'gateway_service_tax' => $gatewayServiceTax,
+                'gateway'             => $this->gateway
             ]);
-
-        // Enabling slack messages for further alerts.
-        $this->messenger->setSkipSlack(false);
     }
 
 

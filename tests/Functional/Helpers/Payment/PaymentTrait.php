@@ -2026,7 +2026,12 @@ trait PaymentTrait
                     'status_code'   => 500,
                 ];
 
-                throw new Exception\GatewayRequestException('cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ');
+                throw new Exception\GatewayRequestException(
+                    'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                    new \Requests_Exception_Transport_cURL('SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                        'curlerror',
+                        'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to upi.hdfcbank.com:443 ',
+                        35));
             }
 
         });

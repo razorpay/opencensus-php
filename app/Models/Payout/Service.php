@@ -343,7 +343,7 @@ class Service extends Base\Service
         {
             $user = $this->auth->getUser();
 
-            $pending = $this->repo->payout->fetchSummaryOfPayoutsPendingOnUser($user);
+            $pending = $this->repo->payout->fetchSummaryOfPayoutsPendingOnUser($user, $this->merchant);
         }
 
         return [
