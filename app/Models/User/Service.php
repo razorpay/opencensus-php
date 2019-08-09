@@ -305,7 +305,7 @@ class Service extends Base\Service
     public function checkUserAccess(string $id, array $input)
     {
         $merchantId = Account\Entity::verifyIdAndSilentlyStripSign(
-            $input['merchant_id'],
+            $input['merchant_id']
         );
 
         return (new Core)->checkUserAccess($id, $merchantId);
