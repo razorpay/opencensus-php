@@ -148,7 +148,8 @@ class Repository extends Base\Repository
                 ErrorCode::SERVER_ERROR_MULTIPLE_REVERSALS_FOR_UTR,
                 [
                     'balance_id'    => $balanceId,
-                    'utr'           => $utr
+                    'utr'           => $utr,
+                    'count'         => $reversals->count()
                 ]);
         }
 

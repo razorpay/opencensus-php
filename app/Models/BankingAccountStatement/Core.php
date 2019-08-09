@@ -272,7 +272,8 @@ class Core extends Base\Core
                 [
                     'bas_id'        => $basEntity->getId(),
                     'balance_id'    => $balance->getId(),
-                    'utr'           => $utr
+                    'utr'           => $utr,
+                    'count'         => $payouts->count()
                 ]);
         }
 
