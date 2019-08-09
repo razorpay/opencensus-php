@@ -10,20 +10,21 @@ import {
   editPaymentPage,
   activatePaymentPage,
   deactivatePaymentPage,
-} from './model';
+} from '../model';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import Spinner from 'rzp/ui/Spinner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { trackDetailViewEdits, trackShareActions } from './ga';
+import { trackDetailViewEdits, trackShareActions } from '../ga';
 
 import NoEntityResultsFound from 'common/NoEntityResultsFound';
 
-import PaymentPagesV2Entity from './V2/Entity';
+import PaymentPagesV2Entity from './V2';
+import PaymentPagesV3Entity from './V3';
 
-import ActivateAgain from './Modals/ActivateAgain';
+import ActivateAgain from '../Modals/ActivateAgain';
 
 /* Human readable reason to be displayed */
 const inActiveStatusReasonMap = {
@@ -392,7 +393,17 @@ export default class extends React.Component {
       );
     }
 
-    return (
+    return this.props.user.isPPV3Enabled ? (
+      <PaymentPagesV3Entity
+        {...this.props}
+        {...this.state}
+        fetchEntity={this.fetchEntity}
+        fetchEntityPayments={this.fetchEntityPayments}
+        editPaymentPage={this.editPaymentPage}
+        toggleManualActivation={this.toggleManualActivation}
+        reActivateLink={this.reActivateLink}
+      />
+    ) : (
       <PaymentPagesV2Entity
         {...this.props}
         {...this.state}

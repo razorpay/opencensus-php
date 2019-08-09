@@ -218,26 +218,6 @@ export function constructFieldSchema(fieldData) {
   };
 }
 
-export const FIELD_CONST = {
-  get email() {
-    return {
-      name: 'email',
-      required: true,
-      title: 'Email',
-      ...fUnits.email.schema,
-    };
-  },
-
-  get phone() {
-    return {
-      name: 'phone',
-      title: 'Phone',
-      required: true,
-      ...fUnits.phone.schema,
-    };
-  },
-};
-
 // Check if keys have only supported keys in udf schema and non-duplicate keys
 export function _areKeysSupported(keys) {
   const exhaustiveSet = [

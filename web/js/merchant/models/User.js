@@ -351,6 +351,10 @@ export default class User {
   get isEnhancedEPOSEnabled() {
     return this.getExpStatus('sellerapp_plus');
   }
+
+  get isPPV3Enabled() {
+    return this.getExpStatus('paymentpages_v3');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

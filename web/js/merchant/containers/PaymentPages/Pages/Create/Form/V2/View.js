@@ -3,7 +3,7 @@ import Button from 'component/Button';
 import { AmountCreator, AmountField, FormFooter } from './Amount';
 import { GenericCreator, GenericField } from './Generic';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
-import { constructFieldSchema } from './Fields/helpers';
+import { constructFieldSchema } from '../Fields/V2';
 
 import {
   updateData,

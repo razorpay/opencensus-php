@@ -4,7 +4,7 @@ import debounce from 'rzp/utils/debounce';
 import { showNotification } from 'rzp/modules/notifications';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
-import { uploadImageInDescription } from '../../../model';
+import { uploadImageInDescription } from '../../model';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [

@@ -7,21 +7,18 @@ import Pager from 'rzp/ui/Pager';
 import Spinner from 'rzp/ui/Spinner';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
-import { fetchPaymentPagesList } from './model';
+import { fetchPaymentPagesList } from '../model';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import EntityItemRow from 'merchant/containers/EntityItemRow';
-import Amount from 'rzp/ui/Amount';
-import TableBody from 'rzp/ui/TableBody';
-import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
-import Time from 'rzp/ui/Time';
-import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 
+import PaymentPagesV2List from './V2';
+import PaymentPagesV3List from './V3';
+
 import { populateRPLReduxList } from 'merchant/modules/invoices/list';
 
-import OnboardingPP from './OnboardingPP';
-import { trackListActions } from './ga';
+import OnboardingPP from '../OnboardingPP';
+import { trackListActions } from '../ga';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
   showNotification,
@@ -169,85 +166,11 @@ export default class PaymentPagesContainer extends ListContainer {
               />
             </div>
           </ListFilter>
-          <div class="table-responsive">
-            <table class="table table-hover table-striped">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Amount</th>
-                  <th>Available Quantity</th>
-                  <th>Total Sales</th>
-                  <th>Page Url</th>
-                  <th>Created At</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <TableBody
-                isLoading={loading}
-                colSpan={8}
-                rows={paymentPages}
-                emptyTableMsg="No data found!"
-              >
-                {paymentPages.map(item => (
-                  <EntityItemRow id={item.id} key={item.id}>
-                    <td>
-                      <NavLink
-                        to={`/paymentpages/${item.id}`}
-                        onClick={() => {
-                          trackListActions('Title Click');
-                        }}
-                      >
-                        {item.title}
-                      </NavLink>
-                    </td>
-                    <td class="text-right">
-                      {item.amount ? (
-                        <Amount value={item.amount} currency={item.currency} />
-                      ) : (
-                        '--'
-                      )}
-                    </td>
-                    <td>
-                      {item.times_payable
-                        ? Number(item.times_payable) -
-                          Number(item.times_paid) +
-                          '/' +
-                          Number(item.times_payable)
-                        : 'No Limit'}
-                    </td>
-
-                    <td className="text-right">
-                      <Amount
-                        value={item.total_amount_paid}
-                        currency={item.currency}
-                      />
-                    </td>
-                    <td>
-                      {item.short_url && (
-                        <span class="CopyLink">
-                          <span>{item.short_url}</span>
-                          <CustomClipboard
-                            value={item.short_url}
-                            onCopy={() => {
-                              trackListActions('Click Copy URL');
-                            }}
-                          >
-                            <button class="btn btn-default btn-xs">copy</button>
-                          </CustomClipboard>
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <Time value={item.created_at} />
-                    </td>
-                    <td>
-                      <PaymentPagesStatusLabel status={item.status} />
-                    </td>
-                  </EntityItemRow>
-                ))}
-              </TableBody>
-            </table>
-          </div>
+          {this.props.user.isPPV3Enabled ? (
+            <PaymentPagesV3List loading={loading} paymentPages={paymentPages} />
+          ) : (
+            <PaymentPagesV2List loading={loading} paymentPages={paymentPages} />
+          )}
           {!loading &&
             !!paymentPages.length && (
               <Pager

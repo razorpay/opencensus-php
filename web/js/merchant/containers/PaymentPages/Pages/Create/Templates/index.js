@@ -8,7 +8,7 @@ import {
   trackGoBackToTemplates,
   trackTemplateSelection,
   trackStartCreation,
-} from '../../../ga';
+} from '../../ga';
 
 const createYourOwn = {
   card: {

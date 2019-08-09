@@ -6,10 +6,10 @@ import { Link } from 'react-router-dom';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Svelte from './Svelte';
-import DetailsView from './views/Details/index';
-import FormView from './views/Form/index';
+import DetailsView from './Details';
+import FormView from './Form';
 
-import TemplatesMask from './views/Templates';
+import TemplatesMask from './Templates';
 import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
@@ -25,7 +25,7 @@ import {
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
+import { validateUISchema } from 'merchant/containers/PaymentPages/Pages/Create/Form/Fields/V2';
 
 import {
   trackWYSIWYGCloseIntent,

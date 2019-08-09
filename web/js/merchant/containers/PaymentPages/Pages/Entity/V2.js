@@ -128,7 +128,7 @@ export default class PaymentPagesV2Entity extends React.Component {
             <div class="btn-toolbar pull-right">
               {isRoleAllowedEdit && (
                 <Link
-                  class="btn Button Button--primary--invert btn-sm"
+                  class="btn Button--primary--invert btn-sm"
                   to={`/paymentpages/${paymentPageEntity.id}/edit`}
                 >
                   Edit

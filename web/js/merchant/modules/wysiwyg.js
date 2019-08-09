@@ -7,7 +7,9 @@ import {
   deepMerge,
 } from 'rzp/utils/immutable';
 import { fetchPaymentPageEntity } from 'merchant/containers/PaymentPages/Pages/model';
-import { FIELD_CONST } from 'merchant/containers/PaymentPages/Pages/V2/views/Form/Fields/helpers';
+
+// TODO: Remove dependency from here
+import { FIXED_FIELDS } from 'merchant/containers/PaymentPages/Pages/Create/Form/Fields/fields';
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
@@ -73,7 +75,7 @@ export const markDataSaved = _ => ({
 let initialState = {
   paymentPageEntity: {},
   payment_page_id: null,
-  FORM_SCHEMA: [FIELD_CONST.email, FIELD_CONST.phone], // Email and Phone not to be sent in udf_schema in all cases.
+  FORM_SCHEMA: [FIXED_FIELDS.email, FIXED_FIELDS.phone], // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API.
   isPageDirty: false,
 };
 
