@@ -306,7 +306,7 @@ class Service extends Base\Service
     {
         $merchantId = Account\Entity::verifyIdAndSilentlyStripSign($input['merchant_id']);
 
-        return (new Core)->checkUserAccess($userId, $merchantId);
+        return $this->core()->checkUserAccess($userId, $merchantId);
     }
 
     public function setup2faMobileOnLogin(array $input): array
