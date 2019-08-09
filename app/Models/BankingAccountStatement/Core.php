@@ -187,7 +187,8 @@ class Core extends Base\Core
     {
         $payout = $this->fetchExistingPayoutIfPresent($basEntity);
 
-        if ($payout === null)
+        if (($payout === null) or
+            ($payout->isStatusFailed() === true))
         {
             return $this->processExternal($basEntity);
         }
