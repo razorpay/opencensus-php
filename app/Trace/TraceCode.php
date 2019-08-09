@@ -236,7 +236,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_INITIATE_TIMES                                    = 'FTA_INITIATE_TIMES';
     const FTA_NOT_FOUND                                         = 'FTA_NOT_FOUND';
     const FTA_CHANNEL_NOT_SUPPORTED                             = 'FTA_CHANNEL_NOT_SUPPORTED';
-    const FTA_BENEFICIARY_NOT_REGISTERED_OR_VERIFIED            = 'FTA_BENEFICIARY_NOT_REGISTERED_OR_VERIFIED';
+    const FTA_BENEFICIARY_NOT_REGISTERED                        = 'FTA_BENEFICIARY_NOT_REGISTERED';
+    const FTA_BENEFICIARY_NOT_VERIFIED                          = 'FTA_BENEFICIARY_NOT_VERIFIED';
     const FTA_TRANSFER_JOB_DELAYED                              = 'FTA_TRANSFER_JOB_DELAYED';
     const UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT                     = 'UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT';
     const UNKNOWN_FTA_STATUS_SENT_TO_REFUND                     = 'UNKNOWN_FTA_STATUS_SENT_TO_REFUND';
@@ -305,6 +306,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REQUESTS_JOB_RESPONSE                                 = 'REQUESTS_JOB_RESPONSE';
     const REQUESTS_JOB_ERROR                                    = 'REQUESTS_JOB_ERROR';
     const MOCK_DRIP_REQUEST                                     = 'MOCK_DRIP_REQUEST';
+    const HUBSPOT_JOB_REQUEST                                   = 'HUBSPOT_JOB_REQUEST';
 
     const DASHBOARD_JOB_ERROR                                   = 'DASHBOARD_JOB_ERROR';
 
@@ -1073,6 +1075,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_RESPONSE                                   = 'CARD_VAULT_RESPONSE';
     const CARD_VAULT_RETRY                                      = 'CARD_VAULT_RETRY';
     const CARD_VAULT_REQUEST_FAILED                             = 'CARD_VAULT_REQUEST_FAILED';
+    const CARD_VAULT_TOKEN_MISSING                              = 'CARD_VAULT_TOKEN_MISSING';
     const CORE_PAYMENT_SERVICE_REQUEST                          = 'CORE_PAYMENT_SERVICE_REQUEST';
     const CORE_PAYMENT_SERVICE_RESPONSE                         = 'CORE_PAYMENT_SERVICE_RESPONSE';
     const CORE_PAYMENT_SERVICE_RETRY                            = 'CORE_PAYMENT_SERVICE_RETRY';
@@ -1378,6 +1381,20 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USERS_VERIFY_OTP_FOR_ACTION                           = 'USERS_VERIFY_OTP_FOR_ACTION';
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
+
+    //Trace codes for users 2fa factory
+    const SEND_2FA_OTP_SMS_FOR_ACTION                           = 'SEND_2FA_OTP_SMS_FOR_ACTION';
+    const VERIFY_2FA_OTP_SMS_FOR_ACTION                         = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
+    const SEND_2FA_OTP_SMS_FAILED                               = 'SEND_2FA_OTP_SMS_FAILED';
+    const VERIFY_2FA_OTP_SMS_FOR_ACTION_FAILED                  = 'VERIFY_2FA_OTP_SMS_FOR_ACTION';
+
+    //Trace codes for 2fa features
+    const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';
+    const USER_LOGIN_2FA_ENABLED                                = 'USER_LOGIN_2FA_ENABLED';
+    const USER_LOGIN_2FA_ENABLED_NO_SETUP                       = 'USER_LOGIN_2FA_ENABLED_NO_SETUP';
+    const USER_LOGIN_2FA_WRONG_OTP                              = 'USER_LOGIN_2FA_WRONG_OTP';
+    const USER_LOGIN_2FA_OTP_SENT                               = 'USER_LOGIN_2FA_OTP_SENT';
+    const USER_LOGIN_2FA_ACCOUNT_LOCKED                         = 'USER_LOGIN_2FA_ACCOUNT_LOCKED';
 
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';
@@ -1700,6 +1717,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAILED_TO_ENQUEUE_BANK_ACCOUNT_VERIFICATION           = 'FAILED_TO_ENQUEUE_BANK_ACCOUNT_VERIFICATION';
     const BENEFICIARY_REGISTRATION_REDIS_KEY_REMOVED            = 'BENEFICIARY_REGISTRATION_REDIS_KEY_REMOVED';
     const BENEFICIARY_VERIFICATION_REDIS_KEY_REMOVED            = 'BENEFICIARY_VERIFICATION_REDIS_KEY_REMOVED';
+    const BENEFICIARY_REGISTRATION_ALREADY_IN_PROGRESS          = 'BENEFICIARY_REGISTRATION_ALREADY_IN_PROGRESS';
+    const BENEFICIARY_VERIFICATION_ALREADY_IN_PROGRESS          = 'BENEFICIARY_VERIFICATION_ALREADY_IN_PROGRESS';
 
     //beneficiary verification trace codes
     const BENEFICIARY_VERIFY_PROCESS_RETRY                      = 'BENEFICIARY_VERIFY_PROCESS_RETRY';

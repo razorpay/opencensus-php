@@ -2554,7 +2554,7 @@ class Gateway extends Base\Gateway
     {
         $cvv = $input['card']['cvv'];
 
-        $key = $this->getCacheKey($input['payment']['id']);
+        $key = $this->getCacheKey($input);
 
         $data = [
             'cvv' => $this->app['encrypter']->encrypt($cvv),

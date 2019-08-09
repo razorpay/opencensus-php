@@ -2285,6 +2285,19 @@ trait Authorize
 
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
+            if ($this->subscription === null)
+            {
+                $this->subscription = $this->app['module']
+                     ->subscription
+                     ->fetchSubscriptionInfo(
+                        [
+                            Payment\Entity::AMOUNT          => $payment->getAmount(),
+                            Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId()),
+                        ],
+                        $payment->merchant,
+                        $callback = true);
+            }
+
             if ($this->subscription->isExternal() === false)
             {
                 $this->associateSubscriptionToPayment($payment, $input);
@@ -4313,6 +4326,19 @@ trait Authorize
 
     protected function fillReturnDataWithSubscription(Payment\Entity $payment, array & $data)
     {
+        if ($this->subscription === null)
+        {
+            $this->subscription = $this->app['module']
+                                       ->subscription
+                                       ->fetchSubscriptionInfo(
+                                           [
+                                                Payment\Entity::AMOUNT          => $payment->getAmount(),
+                                                Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId()),
+                                            ],
+                                            $payment->merchant,
+                                            $callback = true);
+        }
+
         $data['razorpay_subscription_id'] = $this->subscription->getPublicId();
 
         $this->fillReturnDataWithSignatureIfApplicable($data);

@@ -549,6 +549,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    protected function getModeForRefunds($refunds)
+    {
+        $refundModes = [];
+
+        $refundsArray = $refunds->toArrayWithItems();
+
+        foreach ($refundsArray[Base\PublicCollection::ITEMS] as $refundArray)
+        {
+            $speed = ($refundArray->getSpeedProcessed() === Speed::NORMAL)? Speed::NORMAL : Speed::INSTANT;
+
+            $refundId = $refundArray[Entity::ID];
+
+            $refundModes[$refundId] = $speed;
+        }
+
+        return $refundModes;
+    }
+
     protected function getPublicStatusForRefunds($refunds)
     {
         $refundStatus = [];
@@ -583,14 +601,35 @@ class Service extends Base\Service
             {
                 $refundStatus = $this->getPublicStatusForRefunds($refunds);
 
-                foreach ($refundsArray[Base\PublicCollection::ITEMS] as $key => $refundArray)
+                foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
                 {
                     $refundId = $refundArray[Entity::ID];
 
-                    Entity::verifyIdAndSilentlyStripSign($refundId);
+                    Entity::verifyIdAndStripSign($refundId);
 
-                    $refundsArray[Base\PublicCollection::ITEMS][$key][Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
+                    $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
                 }
+            }
+        }
+    }
+
+    public function addModeAndPublicStatus(&$refundsArray, $refunds)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_TRANSFER_REFUND) === true)
+        {
+            $refundModes = $this->getModeForRefunds($refunds);
+
+            $refundStatus = $this->getPublicStatusForRefunds($refunds);
+
+            foreach ($refundsArray[Base\PublicCollection::ITEMS] as &$refundArray)
+            {
+                $refundId = $refundArray[Entity::ID];
+
+                Entity::verifyIdAndStripSign($refundId);
+
+                $refundArray[Entity::MODE] = $refundModes[$refundId];
+
+                $refundArray[Entity::PUBLIC_STATUS] = $refundStatus[$refundId];
             }
         }
     }

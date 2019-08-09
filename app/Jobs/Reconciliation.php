@@ -30,12 +30,12 @@ class Reconciliation extends Job
 
     protected $queueConfigKey = 'recon_batch';
 
-    const MAX_KUBERNETES_JOB_COUNT = 5;
+    const MAX_KUBERNETES_JOB_COUNT = 8;
 
     const KUBERNETES_RECON_JOB_LIST = 'kubernetes_recon_job_list';
 
-    // will release the batch into queue after 30 minutes again.
-    const RELEASE_WAIT_SECS = 1800;
+    // will release the batch into queue after 15 minutes again.
+    const RELEASE_WAIT_SECS = 900;
 
     const JOB_TO_BE_SCHEDULED = 'job_to_be_scheduled';
 

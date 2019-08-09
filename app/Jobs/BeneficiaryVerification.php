@@ -51,6 +51,8 @@ class BeneficiaryVerification extends Job
 
             if (in_array($this->channel, Channel::getChannelsWithOnlineBeneficiaryVerification(), true) === false)
             {
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+
                 return;
             }
 
@@ -64,6 +66,8 @@ class BeneficiaryVerification extends Job
             // No live bank account exists for the merchant: BcqrSKvM8bIq2g
             if (empty($bankAccount) === true)
             {
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+
                 $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_VERIFY);
 
                 return;
@@ -73,6 +77,8 @@ class BeneficiaryVerification extends Job
             // checks for the type and returns false for the bank account which are not `merchant` or `contact`
             if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
             {
+                (new Beneficiary)->removeBeneficiaryVerificationCacheKey($this->bankAccountId);
+
                 return;
             }
 

@@ -51,6 +51,8 @@ class BeneficiaryRegistration extends Job
 
             if (in_array($this->channel, Channel::getChannelsWithOnlineBeneficiaryRegistration(), true) === false)
             {
+                (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+
                 return;
             }
 
@@ -64,6 +66,8 @@ class BeneficiaryRegistration extends Job
             // No live bank account exists for the merchant: BcqrSKvM8bIq2g
             if (empty($bankAccount) === true)
             {
+                (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+
                 $this->traceData(TraceCode::BANK_ACCOUNT_NOT_FOUND_FOR_BENE_REG);
 
                 return;
@@ -74,6 +78,8 @@ class BeneficiaryRegistration extends Job
             // and returns false for the bank account which are not `merchant` or `contact`
             if (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false)
             {
+                (new Beneficiary)->removeBeneficiaryRegistrationCacheKey($this->bankAccountId);
+
                 return;
             }
 

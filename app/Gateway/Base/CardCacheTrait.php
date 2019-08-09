@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 
 /*                                                            *\
 |-------------------------------------------------------------|
@@ -38,7 +39,7 @@ trait CardCacheTrait
             $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
         }
 
-        $key = $this->getCacheKey($input['payment']['id']);
+        $key = $this->getCacheKey($input);
 
         $data = [
             'vault_token' => $vaultToken
@@ -49,7 +50,7 @@ trait CardCacheTrait
             $data['cvv'] = $this->app['encrypter']->encrypt($cvv);
         }
 
-        $cacheTtl = $this->getCardCacheTtl();
+        $cacheTtl = $this->getCardCacheTtl($input);
 
         // If this is set to 0, set the cache forever
         if ($cacheTtl === 0)
@@ -71,7 +72,22 @@ trait CardCacheTrait
     {
         $data = $this->getCardDetailsFromCache($input);
 
-        $vaultToken = $input['card']['vault_token'] ?? $data['vault_token'];
+        $vaultToken = null;
+
+        if (empty($input['card'][Card\Entity::VAULT_TOKEN]) === true)
+        {
+            $this->trace->warning(
+                TraceCode::CARD_VAULT_TOKEN_MISSING,
+                [
+                   'message' => 'vault_token not present in card.vault_token'
+                ]);
+
+            $vaultToken = $data['vault_token'];
+        }
+        else
+        {
+            $vaultToken = $input['card'][Card\Entity::VAULT_TOKEN];
+        }
 
         $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken);
 
@@ -88,7 +104,7 @@ trait CardCacheTrait
      */
     protected function getCardDetailsFromCache($input)
     {
-        $key = $this->getCacheKey($input['payment']['id']);
+        $key = $this->getCacheKey($input);
 
         return $this->app['cache']->store($this->secureCacheDriver)->get($key) ?: [];
     }
@@ -97,11 +113,9 @@ trait CardCacheTrait
      * @param $paymentId
      * @return string
      */
-    protected function getCacheKey($paymentId)
+    protected function getCacheKey($input)
     {
-        $key = sprintf(static::CACHE_KEY, $paymentId);
-
-        return $key;
+        return sprintf(static::CACHE_KEY, $input['payment']['id']);
     }
 
     protected function getDriver()
@@ -112,7 +126,7 @@ trait CardCacheTrait
     // Fetches the cache ttl
     // Added this in a function because, some gateways' would have
     // multiple cache TTLs based on the payment network
-    protected function getCardCacheTtl()
+    protected function getCardCacheTtl($input)
     {
         return static::CARD_CACHE_TTL;
     }
