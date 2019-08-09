@@ -18,6 +18,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MailChimpSubscribe;
 use RZP\Mail\User\Otp as OtpMail;
+use RZP\Models\Merchant\MerchantUser;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 
 class Core extends Base\Core
@@ -187,6 +188,25 @@ class Core extends Base\Core
         $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
 
         return $this->get($user);
+    }
+
+    public function checkUserAccess($id, $merchantId)
+    {
+        $accessMaps = $this->repo->merchant_user->fetch([
+            'user_id'       => $id,
+            'merchant_id'   => $merchantId,
+        ]);
+
+        if($accessMaps->isEmpty() === false)
+        {
+            $access = true;
+        }
+        else
+        {
+            $access = false;
+        }
+
+        return [ 'access' => $access ];
     }
 
     // User 2fa is enabled and 2fa is setup. If the request has the otp, it will check
