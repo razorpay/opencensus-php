@@ -818,7 +818,12 @@ final class Route
         'user_verify_contact'                      => ['post',     'users/verify_contact',                           'UserController@verifyContactWithOtp'                               ],
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
-
+        // 2fa route for user
+        'user_login_2fa_setup_mobile'              => ['post',     'users/login/2fa_setup/mobile',                   'UserController@setup2faMobileOnLogin'                              ],
+        'user_login_2fa_setup_verify_mobile'       => ['post',     'users/login/2fa_setup/verify-mobile',            'UserController@setup2faVerifyMobileOnLogin'                        ],
+        //user change his/her 2fa setting
+        'user_2fa_change_setting'                  => ['patch',    'users/2fa',                                      'UserController@change2faSetting'                                   ],
+        'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
         'tax_get_meta_states'                      => ['get',      'taxes/meta/states',                              'TaxController@getMetaStates'                                       ],
@@ -1520,9 +1525,12 @@ final class Route
         'subscriptions_expire',
         'subscriptions_retry',
         'user_change_password',
+        'user_2fa_change_setting',
         'user_confirm_by_data',
         'user_fetch',
         'user_login',
+        'user_login_2fa_setup_mobile',
+        'user_login_2fa_setup_verify_mobile',
         'user_merchant_upgrade',
         'user_register',
         'user_resend_verification',
@@ -1581,6 +1589,7 @@ final class Route
         'user_merchant_upgrade',
         'user_edit_self',
         'user_otp_create',
+        'user_2fa_change_setting',
         'user_verify_contact',
         'payout_create_with_otp',
         // payouts approve reject routes
@@ -1796,6 +1805,7 @@ final class Route
         'banking_account_credentials',
         'banking_accounts_list',
         'workflow_payout_amount_rules',
+        'merchant_2fa_change_setting',
     ];
 
     //
@@ -2751,12 +2761,15 @@ final class Route
         // won't have any merchant or admin in context.
         'dashboard_guest' => [
             'user_login',
+            'user_login_2fa_setup_mobile',
+            'user_login_2fa_setup_verify_mobile',
             'user_register',
             'razorx_guest',
             'org_get_by_hostname',
             'user_reset_password_create',
             'user_merchant_upgrade',
             'user_change_password',
+            'user_2fa_change_setting',
             'user_fetch',
             'invitation_action',
             'invitation_fetch_by_token',

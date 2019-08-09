@@ -71,7 +71,7 @@
     function showSuccessMsg() {
 
         var respPaymentId = requestParams.razorpay_payment_id;
-        var amountPaid = data.payment_link.amount;
+        var amountPaid = requestParams.amount;
         var currency = data.payment_link.currency;
 
         var successMsg = 'Your payment is successful';

@@ -1029,6 +1029,20 @@ class ErrorCode
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
 
+    const BAD_REQUEST_USER_2FA_ALREADY_SETUP                                        = 'BAD_REQUEST_USER_2FA_ALREADY_SETUP';
+    const BAD_REQUEST_LOCKED_USER_LOGIN                                             = 'BAD_REQUEST_LOCKED_USER_LOGIN';
+    const BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP                                       = 'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP';
+    const BAD_REQUEST_2FA_SETUP_INCORRECT_OTP                                       = 'BAD_REQUEST_2FA_SETUP_INCORRECT_OTP';
+    const BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA                              = 'BAD_REQUEST_RESTRICTED_USER_CANNOT_SETUP_2FA';
+    const BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED                                   = 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED';
+    const BAD_REQUEST_USER_2FA_SETUP_REQUIRED                                       = 'BAD_REQUEST_USER_2FA_SETUP_REQUIRED';
+    const BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED                                 = 'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED';
+    const BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED                                = 'BAD_REQUEST_2FA_SETUP_USER_2FA_NOT_ENABLED';
+    const BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED                                      = 'BAD_REQUEST_2FA_SETUP_ACCOUNT_LOCKED';
+    const BAD_REQUEST_USER_2FA_ENFORCED                                             = 'BAD_REQUEST_USER_2FA_ENFORCED';
+    const BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER                               = 'BAD_REQUEST_OPERATION_ONLY_ALLOWED_BY_OWNER';
+    const BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY                                     = 'BAD_REQUEST_OWNER_2FA_SETUP_MANDATORY';
+
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
 
